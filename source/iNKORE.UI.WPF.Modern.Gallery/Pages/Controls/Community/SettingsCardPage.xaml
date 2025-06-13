@@ -1,0 +1,130 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Community.SettingsCardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern" xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    Title="Border" d:DesignWidth="800"
+    Loaded="Page_Loaded" mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="Simple SettingsCards">
+            <local:ControlExample.Example>
+                <ikw:SimpleStackPanel Spacing="4">
+                    <ui:SettingsCard x:Name="settingsCard"
+                        Description="This is a default card, with the Header, HeaderIcon, Description and Content set."
+                        Header="This is the Header"
+                        IsEnabled="{Binding ElementName=EnableToggle1, Path=IsOn}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Glyph="&#xE799;"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem>Option 1</ComboBoxItem>
+                            <ComboBoxItem>Option 2</ComboBoxItem>
+                            <ComboBoxItem>Option 3</ComboBoxItem>
+                        </ComboBox>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Description="You can use a FontIcon, SymbolIcon or BitmapIcon to set the cards HeaderIcon."
+                        Header="Icon options"
+                        IsEnabled="{Binding ElementName=EnableToggle1, Path=IsOn}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <Image Width="20" Height="20" Source="/Assets/WpfLibrary_256w.png"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch />
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="A card with custom objects as its Description"
+                        IsEnabled="{Binding ElementName=EnableToggle1, Path=IsOn}">
+                        <ui:SettingsCard.Description>
+                            <ui:HyperlinkButton Content="Learn more about Inkways" />
+                        </ui:SettingsCard.Description>
+                        <Button Content="Open Inkways Editor" Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}" />
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Description="When resizing a SettingsCard, the Content will wrap vertically. You can override this breakpoint by setting the SettingsCardWrapThreshold resource. For edge cases, you can also hide the icon by setting SettingsCardWrapNoIconThreshold."
+                        Header="Adaptive layouts"
+                        IsEnabled="{Binding ElementName=EnableToggle1, Path=IsOn}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Glyph="&#xE745;"/>
+                        </ui:SettingsCard.HeaderIcon>
+
+                        <Button Content="This control will wrap vertically!"/>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="This is a card with a Header only" 
+                        IsEnabled="{Binding ElementName=EnableToggle1, Path=IsOn}"/>
+
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Example>
+
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <ui:ToggleSwitch x:Name="EnableToggle1" Header="Is Enabled" IsOn="True" Toggled="EnableToggle1_Toggled"/>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+
+        <TextBlock Margin="0,15" TextWrapping="Wrap">
+            SettingsCard can also be turned into a button, by setting the 
+            <Run FontWeight="Bold">IsClickEnabled</Run> 
+            property. This can be useful whenever you want your settings component to navigate to a detail page or open an external link. You can set a custom icon by setting the 
+            <Run FontWeight="Bold">ActionIcon</Run>, 
+            or hiding it completely by setting the
+            <Run FontWeight="Bold">IsActionIconVisible</Run>
+            to 
+            <Run FontWeight="Bold">false</Run>.
+        </TextBlock>
+
+        <local:ControlExample x:Name="Example2" HeaderText="Clickable SettingsCards">
+            <local:ControlExample.Example>
+                <ikw:SimpleStackPanel Spacing="4">
+
+                    <ui:SettingsCard Click="OnCardClicked"
+                        Description="A SettingsCard can be made clickable and you can leverage the Command property or Click event."
+                        Header="A clickable SettingsCard" IsClickEnabled="True"
+                        IsEnabled="{Binding ElementName=EnableToggle2, Path=IsOn}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Glyph="&#xE799;"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <TextBlock Foreground="{DynamicResource {x:Static ui:ThemeKeys.TextFillColorSecondaryBrushKey}}"
+                       Text="This is content" />
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard ActionIconToolTip="Open in new window"
+                        Click="OnCardClicked" IsClickEnabled="True"
+                        Description="You can customize the ActionIcon and ActionIconToolTip."
+                        Header="Customizing the ActionIcon" 
+                        IsEnabled="{Binding ElementName=EnableToggle2, Path=IsOn}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Glyph="&#xE774;"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:SettingsCard.ActionIcon>
+                            <ui:FontIcon Glyph="&#xE8A7;"/>
+                        </ui:SettingsCard.ActionIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Click="OnCardClicked"
+                        IsActionIconVisible="False" IsClickEnabled="True"
+                        Header="Hiding the ActionIcon"
+                        IsEnabled="{Binding ElementName=EnableToggle2, Path=IsOn}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Glyph="&#xE72E;"/>
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Example>
+
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <ui:ToggleSwitch x:Name="EnableToggle2" Header="Is Enabled" IsOn="True" Toggled="EnableToggle2_Toggled"/>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+
+    </StackPanel>
+</ui:Page>

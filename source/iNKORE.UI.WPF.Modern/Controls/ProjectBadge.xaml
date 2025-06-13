@@ -1,0 +1,151 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls" 
+    xmlns:ch="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Helpers"
+    xmlns:rt="clr-namespace:iNKORE.UI.WPF.Modern"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf">
+
+    <Style x:Key="ProjectBadgeButtonStyle" TargetType="{x:Type local:ProjectBadge}">
+        <Setter Property="Content" Value="Proudly using"/>
+        <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
+        <Setter Property="Padding" Value="11,6,11,7" />
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="ch:FocusVisualHelper.UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="ch:FocusVisualHelper.FocusVisualMargin" Value="-3" />
+        <Setter Property="ch:ControlHelper.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource DefaultBadgeForegroundBrush}"/>
+        <Setter Property="ToolTip">
+            <Setter.Value>
+                <ToolTip MaxWidth="Infinity" MaxHeight="Infinity" Padding="0">
+                    <ikw:ClippedContent CornerRadius="3">
+                        <Image Width="512" Height="256" RenderOptions.BitmapScalingMode="HighQuality">
+                            <Image.Source>
+                                <BitmapImage UriSource="{x:Static rt:ThemeManager.BannerUri_1280w}"/>
+                            </Image.Source>
+                        </Image>
+                    </ikw:ClippedContent>
+                </ToolTip>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ProjectBadge">
+                    <Grid>
+                        <ikw:ClippedContent x:Name="Border" Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding ch:ControlHelper.CornerRadius}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <local:ContentPresenterEx x:Name="ContentPresenter" Opacity="1"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Focusable="False" RecognizesAccessKey="True"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                    Margin="{TemplateBinding Padding}"/>
+                                <Border Grid.Column="1" Margin="0,0,0,0" Padding="{TemplateBinding Padding}"
+                                    Background="{DynamicResource DefaultBadgeTertiaryBrush}"
+                                    TextElement.FontWeight="Bold" Opacity="{Binding ElementName=ContentPresenter, Path=Opacity}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="18" Height="18" Margin="-4,0,8,-1" RenderOptions.BitmapScalingMode="HighQuality"
+                                            Source="/iNKORE.UI.WPF.Modern;component/Resources/Images/WpfLibrary_256w.png"/>
+                                        <TextBlock>
+                                            <Run>iNKORE.</Run><Run Foreground="White">UI.WPF.Modern</Run>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </ikw:ClippedContent>
+                        <local:ElevationBorder x:Name="Background"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            CornerRadius="{TemplateBinding ch:ControlHelper.CornerRadius}"
+                            SnapsToDevicePixels="True">
+                        </local:ElevationBorder>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+                            <Setter TargetName="Background" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
+                            <Setter TargetName="ContentPresenter" Property="Opacity" Value="0.8" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+                            <Setter TargetName="Background" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
+                            <Setter TargetName="ContentPresenter" Property="Opacity" Value="0.6" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
+                            <Setter TargetName="Background" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
+                            <Setter TargetName="ContentPresenter" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ProjectBadgeShieldStyle" TargetType="{x:Type local:ProjectBadge}" BasedOn="{StaticResource ProjectBadgeButtonStyle}">
+        <Setter Property="Content" Value="ui framework"/>
+        <Setter Property="Padding" Value="6,2,6,3" />
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="Background" Value="#805AE9"/>
+        <Setter Property="FontFamily" Value="Verdana, Microsoft Yahei UI, Segoe UI" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="ch:ControlHelper.CornerRadius" Value="4" />
+        <Setter Property="UseLayoutRounding" Value="true" />
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ProjectBadge">
+                    <ikw:ClippedContent Background="{TemplateBinding Background}" 
+                        CornerRadius="{TemplateBinding ch:ControlHelper.CornerRadius}">
+                        <FrameworkElement.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="0" ShadowDepth="1" Direction="270" Opacity="0.25"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </FrameworkElement.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Border Background="#555555">
+                                <local:ContentPresenterEx x:Name="ContentPresenter" Opacity="1"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Focusable="False" RecognizesAccessKey="True"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                    Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                            <TextBlock Grid.Column="1" Margin="{TemplateBinding Padding}"
+                                Text="inkore.ui.wpf.modern"/>
+                        </Grid>
+                    </ikw:ClippedContent>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:ProjectBadge}" BasedOn="{StaticResource ProjectBadgeButtonStyle}"/>
+
+</ResourceDictionary>

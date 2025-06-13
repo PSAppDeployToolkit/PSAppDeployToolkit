@@ -1,0 +1,168 @@
+{
+    "type": "object",
+    "properties":
+    {
+        "Groups":
+        {
+            "type": "array",
+            "items":
+            {
+                "type": "object",
+                "properties":
+                {
+                    "UniqueId":
+                    {
+                        "type": "string",
+                        "description": "Globally unique id of this group",
+                        "uniqueItems": true
+                    },
+                    "Title":
+                    {
+                        "type": "string",
+                        "description": "Title appears on the overview card and control page"
+                    },
+                    "Subtitle":
+                    {
+                        "type": "string",
+                        "description": "Subtitle appears on the overview card of a specific control"
+                    },
+                    "ImagePath":
+                    {
+                        "type": "string",
+                        "description": "Not used."
+                    },
+                    "ImageIconPath":
+                    {
+                        "type": "string",
+                        "description": "ImageIconPath appears as an icon of this control group on the NavigationViewItem. Should be a Unicode glyph of the icon"
+                    },
+                    "Description":
+                    {
+                        "type": "string",
+                        "description": "Not used. Leave empty"
+                    },
+                    "Items":
+                    {
+                        "type": "array",
+                        "description": "Individual control info",
+                        "items":
+                        {
+                            "type": "object",
+                            "properties":
+                            {
+                                "UniqueId":
+                                {
+                                    "type": "string",
+                                    "description": "Globally unique id of this control",
+                                    "uniqueItems": true
+                                },
+                                "Title":
+                                {
+                                    "type": "string",
+                                    "description": "Title appears on the overview card and control page of this control"
+                                },
+                                "Subtitle":
+                                {
+                                    "type": "string",
+                                    "description": "Subtitle appears on the overview card of this control"
+                                },
+                                "ImagePath":
+                                {
+                                    "type": "string",
+                                    "description": "Appears as the image of this control on the overriew card. Should be a uri starts with ms-appx:///Assets/ControlImages/..."
+                                },
+                                "ImageIconPath":
+                                {
+                                    "type": "string",
+                                    "description": "Appears as the icon image of this control on the NavigationViewItem. Should be a uri starts with ms-appx:///Assets/ControlIcons/..."
+                                },
+                                "Description":
+                                {
+                                    "type": "string",
+                                    "description": "Appears on the control page"
+                                },
+                                "Content":
+                                {
+                                    "type": "string",
+                                    "description": "Not used. Leave empty"
+                                },
+                                "IsNew":
+                                {
+                                    "type": "boolean",
+                                    "default": true,
+                                    "description": "Show on the Recently Added Sample section on the main page and will add a dot on the overview card of this control"
+                                },
+                                "IsUpdated":
+                                {
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "Show on the Recently Updated Sample section on the main page and will add a dot on the overview card of this control"
+                                },
+                                "Docs":
+                                {
+                                    "type": "array",
+                                    "items":
+                                    {
+                                        "type": "object",
+                                        "properties":
+                                        {
+                                            "Title":
+                                            {
+                                                "type": "string",
+                                                "description": "Link name that appears in the Documentation dropdown"
+                                            },
+                                            "Uri":
+                                            {
+                                                "type": "string",
+                                                "description": "Documentation link url"
+                                            }
+                                        },
+                                        "required":
+                                        [
+                                            "Title",
+                                            "Uri"
+                                        ]
+                                    },
+                                    "description": "Add a link to the doc in the Documentation dropdown on the detail page of this control"
+                                },
+                                "RelatedControls":
+                                {
+                                    "type": "array",
+                                    "items":
+                                    {
+                                        "type": "string",
+                                        "description": "Name of the related control"
+                                    },
+                                    "description": "Array of names of the related control"
+                                }
+                            },
+                            "required":
+                            [
+                                "UniqueId",
+                                "Title",
+                                "Subtitle",
+                                "ImagePath",
+                                "ImageIconPath",
+                                "Description",
+                                "Content"
+                            ]
+                        }
+                    }
+                },
+                "required":
+                [
+                    "UniqueId",
+                    "Title",
+                    "Subtitle",
+                    "ImagePath",
+                    "ImageIconPath",
+                    "Description",
+                    "Items"
+                ]
+            }
+        }
+    },
+
+    "allowComments": true,
+    "allowTrailingCommas": true
+}

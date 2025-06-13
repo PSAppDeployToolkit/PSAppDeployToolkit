@@ -1,0 +1,1 @@
+This app (iNKORE.UI.WPF.Modern Gallery) respects your privacy and is designed to operate without accessing, collecting, storing, or processing any personal information from your mobile device. We do not interact with your contacts, messages, photos, or any other personal data.

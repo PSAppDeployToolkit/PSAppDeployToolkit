@@ -1,0 +1,102 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.BorderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Border"
+    d:DesignWidth="800"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A Border around a TextBlock.">
+            <local:ControlExample.Example>
+                <Border
+                    x:Name="Control1"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Left"
+                    Background="#FFFFFFFF"
+                    BorderBrush="#FFFFD700"
+                    BorderThickness="2">
+                    <TextBlock
+                        Margin="8,5"
+                        FontSize="18"
+                        Foreground="Black"
+                        Text="Text inside a border" />
+                </Border>
+            </local:ControlExample.Example>
+
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <Slider
+                        x:Name="ThicknessSlider"
+                        ui:ControlHelper.Header="BorderThickness"
+                        AutoToolTipPlacement="TopLeft"
+                        Maximum="10"
+                        Minimum="0"
+                        TickFrequency="1"
+                        ValueChanged="ThicknessSlider_ValueChanged"
+                        Value="2" SmallChange="1" IsSnapToTickEnabled="True" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <ui:RadioButtons Header="Background">
+
+                            <RadioButton
+                                Checked="BGRadioButton_Checked"
+                                Content="Green"
+                                GroupName="BGColor" />
+
+                            <RadioButton
+                                Checked="BGRadioButton_Checked"
+                                Content="Yellow"
+                                GroupName="BGColor" />
+
+                            <RadioButton
+                                Checked="BGRadioButton_Checked"
+                                Content="Blue"
+                                GroupName="BGColor" />
+
+                            <RadioButton
+                                Checked="BGRadioButton_Checked"
+                                Content="White"
+                                GroupName="BGColor"
+                                IsChecked="True" />
+                        </ui:RadioButtons>
+
+                        <ui:RadioButtons Grid.Column="1" Header="BorderBrush">
+
+                            <RadioButton
+                                Checked="RadioButton_Checked"
+                                Content="Green"
+                                GroupName="BorderBrush" />
+
+                            <RadioButton
+                                Checked="RadioButton_Checked"
+                                Content="Yellow"
+                                GroupName="BorderBrush"
+                                IsChecked="True" />
+
+                            <RadioButton
+                                Checked="RadioButton_Checked"
+                                Content="Blue"
+                                GroupName="BorderBrush" />
+
+                            <RadioButton
+                                Checked="RadioButton_Checked"
+                                Content="White"
+                                GroupName="BorderBrush" />
+                        </ui:RadioButtons>
+                    </Grid>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

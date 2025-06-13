@@ -1,0 +1,125 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Extended.MessageBoxPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    Title="Border" d:DesignWidth="800"
+    Loaded="Page_Loaded" mc:Ignorable="d">
+    <FrameworkElement.Resources>
+        <BitmapImage x:Key="WpfLibraryLogo" UriSource="/Assets/WpfLibrary_256w.png"/>
+    </FrameworkElement.Resources>
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple MessageBox with just message">
+            <local:ControlExample.Example>
+                <Button x:Name="Button_ShowMsg1" Content="Show MessageBox" Click="Button_ShowMsg1_Click"/>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+        
+        <local:ControlExample x:Name="Example2" HeaderText="MessageBoxes with title and icon">
+            <local:ControlExample.Example>
+
+                <ikw:SimpleStackPanel Spacing="16">
+                    <TextBlock TextWrapping="Wrap">
+                        Multiple icons and titles are used in this example. The sound to play is automatically selected based on the icon, you can also customize it by passing a SystemSound argument.
+                    </TextBlock>
+                    <ikw:SimpleStackPanel Spacing="8" Orientation="Horizontal">
+                        <Button x:Name="Button_ShowMsg2_Warning" Content="Warning" Click="Button_ShowMsg2_Warning_Click"/>
+                        <Button x:Name="Button_ShowMsg2_Info" Content="Info" Click="Button_ShowMsg2_Info_Click"/>
+                        <Button x:Name="Button_ShowMsg2_Question" Content="Question" Click="Button_ShowMsg2_Question_Click"/>
+                        <Button x:Name="Button_ShowMsg2_Error" Content="Error" Click="Button_ShowMsg2_Error_Click"/>
+                        <Button x:Name="Button_ShowMsg2_FontIconData" Content="Custom (using FontIconData)" Click="Button_ShowMsg2_FontIconData_Click"/>
+                        <Button x:Name="Button_ShowMsg2_IconSource" Content="Custom (using IconSource)" Click="Button_ShowMsg2_IconSource_Click"/>
+                    </ikw:SimpleStackPanel>
+
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example3" HeaderText="MessageBoxes with Buttons">
+            <local:ControlExample.Example>
+                <ikw:SimpleStackPanel Spacing="10">
+                    <ikw:SimpleStackPanel Spacing="8" Orientation="Horizontal">
+                        <Button x:Name="Button_ShowMsg3_YesNo" Content="YesNo" Click="Button_ShowMsg3_YesNo_Click"/>
+                        <Button x:Name="Button_ShowMsg3_YesNoCancel" Content="YesNoCancel" Click="Button_ShowMsg3_YesNoCancel_Click"/>
+                        <Button x:Name="Button_ShowMsg3_OKCancel" Content="OKCancel" Click="Button_ShowMsg3_OKCancel_Click"/>
+                    </ikw:SimpleStackPanel>
+                    <TextBlock x:Name="TextBlock_Example3_Result" Text="Not clicked yet."/>
+
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example4" HeaderText="Change the backdrop of MessageBoxes">
+            <local:ControlExample.Example>
+                <ikw:SimpleStackPanel Spacing="8">
+                    <ikw:SimpleStackPanel Spacing="8" Orientation="Vertical">
+                        <TextBlock>
+                            Select the backdrop style you want, and click the buttons (in other examples elsewhere in this page) to see the effect.
+                        </TextBlock>
+                        <ui:RadioButtons x:Name="RadioButtons_DefaultBackdropStyle"
+                            ItemsSource="{Binding Source={x:Type ui:BackdropType}, Converter={StaticResource EnumValuesConverter}}"
+                            SelectionChanged="RadioButtons_SelectionChanged" MaxColumns="3"/>
+                    </ikw:SimpleStackPanel>
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+
+        <local:ControlExample x:Name="Example5" HeaderText="API in action">
+            <local:ControlExample.Example>
+                <ikw:SimpleStackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                    <Button x:Name="Button_ShowMsg5" Content="Show Message" HorizontalAlignment="Center" Click="Button_ShowMsg5_Click"/>
+                    <TextBlock x:Name="TextBlock_Example5_Result" Text="Not clicked yet." HorizontalAlignment="Center"/>
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Example>
+            <local:ControlExample.Options>
+                <ikw:SimpleStackPanel Style="{StaticResource OptionsPanelStyle}"
+                    MaxWidth="280">
+                    <FrameworkElement.Resources>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Static ui:ThemeKeys.DefaultTextBoxStyleKey}}">
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                        </Style>
+                        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Static ui:ThemeKeys.DefaultComboBoxStyleKey}}">
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        </Style>
+                    </FrameworkElement.Resources>
+                    <TextBox x:Name="TextBox_Example5_Message" 
+                         ui:ControlHelper.Header="Message" 
+                         Text="Always wondered why people never use their strongest attack first. What? You think i'm just gonna stand there and take it?"
+                         TextChanged="TextBox_Example5_Message_TextChanged"/>
+                    <TextBox x:Name="TextBox_Example5_Title"
+                         ui:ControlHelper.Header="Title"
+                         Text="sans."
+                         TextChanged="TextBox_Example5_Title_TextChanged"/>
+                    <ComboBox x:Name="ComboBox_Example5_Button"
+                        ui:ControlHelper.Header="Button"
+                        ItemsSource="{Binding Source={x:Type MessageBoxButton}, Converter={StaticResource EnumValuesConverter}}"
+                        SelectedIndex="1"
+                        SelectionChanged="ComboBox_Example5_Button_SelectionChanged"/>
+                    <ComboBox x:Name="ComboBox_Example5_Image"
+                        ui:ControlHelper.Header="Button"
+                        ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ui:Page}, Path=Example5_IconSelects}"
+                        SelectedIndex="1"
+                        SelectionChanged="ComboBox_Example5_Image_SelectionChanged"/>
+                    <ComboBox x:Name="ComboBox_Example5_DefaultButton"
+                        ui:ControlHelper.Header="DefaultButton"
+                        ItemsSource="{Binding Source={x:Type MessageBoxResult}, Converter={StaticResource EnumValuesConverter}}"
+                        SelectedIndex="1"
+                        SelectionChanged="ComboBox_Example5_DefaultButton_SelectionChanged"/>
+                    <ComboBox x:Name="ComboBox_Example5_Sound"
+                        ui:ControlHelper.Header="Sound"
+                        ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=ui:Page}, Path=Example5_SoundSelects}"
+                        SelectedIndex="1"
+                        SelectionChanged="ComboBox_Example5_Sound_SelectionChanged"/>
+
+                </ikw:SimpleStackPanel>
+            </local:ControlExample.Options>
+
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

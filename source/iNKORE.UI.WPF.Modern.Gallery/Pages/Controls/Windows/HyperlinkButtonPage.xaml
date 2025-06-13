@@ -1,0 +1,39 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.HyperlinkButtonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Hyperlink Button"
+    d:DesignWidth="800"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A hyperlink button that navigates to a URI.">
+            <local:ControlExample.Example>
+                <ui:HyperlinkButton x:Name="Control1"
+                    Content="iNKORE Studios home page"
+                    IsEnabled="{Binding IsChecked, ElementName=DisableControl1, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    NavigateUri="http://www.inkore.net" />
+            </local:ControlExample.Example>
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <CheckBox x:Name="DisableControl1" Content="Disable hyperlink button" Click="DisableControl1_Click"/>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example2" HeaderText="A hyperlink button that handles a Click event.">
+            <local:ControlExample.Example>
+                <ui:HyperlinkButton
+                    x:Name="Control2"
+                    Click="GoToHyperlinkButton_Click"
+                    RaiseHyperlinkClicks="False"
+                    Content="Go to ToggleButton" />
+            </local:ControlExample.Example>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

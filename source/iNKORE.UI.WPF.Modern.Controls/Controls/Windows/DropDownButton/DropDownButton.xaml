@@ -1,0 +1,101 @@
+﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information.  -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
+
+    <Style x:Key="DefaultDropDownButtonStyle" TargetType="local:DropDownButton">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
+        <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:DropDownButton">
+                    <ui:ElevationBorder
+                        x:Name="RootBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="True">
+
+                        <Border
+                            x:Name="InnerBorder"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <ui:ContentPresenterEx
+                                    x:Name="ContentPresenter"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Focusable="False"
+                                    RecognizesAccessKey="True"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+
+                                <ui:FontIcon
+                                    x:Name="ChevronTextBlock"
+                                    Grid.Column="1"
+                                    Width="12"
+                                    Height="12"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{DynamicResource FluentSystemIcons}"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource DropDownButtonForegroundSecondary}"
+                                    Glyph="&#xF2A3;" />
+                            </Grid>
+                        </Border>
+
+                    </ui:ElevationBorder>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+                            <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
+                            <Setter TargetName="ChevronTextBlock" Property="Foreground" Value="{DynamicResource DropDownButtonForegroundSecondaryPointerOver}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+                            <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
+                            <Setter TargetName="ChevronTextBlock" Property="Foreground" Value="{DynamicResource DropDownButtonForegroundSecondaryPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
+                            <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+                            <Setter TargetName="ChevronTextBlock" Property="Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+                        </Trigger>
+                        <Trigger Property="ShowChevronArrow" Value="False">
+                            <Setter TargetName="ChevronTextBlock" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource DefaultDropDownButtonStyle}" TargetType="local:DropDownButton" />
+
+</ResourceDictionary>

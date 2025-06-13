@@ -1,0 +1,109 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:SamplesCommon">
+
+    <Style TargetType="local:ControlExample">
+        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource SystemControlPageTextBaseHighBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ControlExample">
+                    <Grid SnapsToDevicePixels="True">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MaxWidth="{TemplateBinding MaxContentWidth}" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            Grid.Column="0"
+                            Margin="0,16"
+                            Style="{DynamicResource SubtitleTextBlockStyle}"
+                            Text="{TemplateBinding HeaderText}" />
+
+                        <Border
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
+                            BorderBrush="{DynamicResource SystemControlBackgroundListLowBrush}"
+                            BorderThickness="1">
+                            <Grid x:Name="ExampleContainer">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition
+                                        x:Name="OptionsColumn"
+                                        Width="Auto"
+                                        MinWidth="200"
+                                        MaxWidth="320" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Example Display  -->
+                                <ContentPresenter
+                                    x:Name="ControlPresenter"
+                                    Margin="12"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Example}"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+
+                                <!--  Options Display  -->
+                                <Border
+                                    x:Name="OptionsRoot"
+                                    Grid.Column="1"
+                                    Margin="0,12,12,12"
+                                    Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
+                                    <ContentPresenter
+                                        x:Name="OptionsPresenter"
+                                        Margin="16"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        Content="{TemplateBinding Options}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Options" Value="{x:Null}">
+                            <Setter TargetName="OptionsRoot" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="OptionsColumn" Property="MinWidth" Value="0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="local:CrossFadeContentControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:CrossFadeContentControl">
+                    <Grid>
+                        <ContentPresenter
+                            x:Name="FirstContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{x:Null}" />
+                        <ContentPresenter
+                            x:Name="SecondContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{x:Null}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

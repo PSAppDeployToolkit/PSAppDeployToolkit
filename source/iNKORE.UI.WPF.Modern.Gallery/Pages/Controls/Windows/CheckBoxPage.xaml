@@ -1,0 +1,77 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.CheckBoxPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sc="clr-namespace:SamplesCommon;assembly=SamplesCommon"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="CheckBox"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A 2-state CheckBox.">
+            <local:ControlExample.Example>
+                <StackPanel Orientation="Horizontal">
+                    <!--  A two-state CheckBox.  -->
+                    <CheckBox
+                        Checked="Control1_Checked"
+                        Content="Two-state CheckBox"
+                        Unchecked="Control1_Unchecked" />
+                </StackPanel>
+            </local:ControlExample.Example>
+            <local:ControlExample.Output>
+                <TextBlock x:Name="Control1Output" />
+            </local:ControlExample.Output>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example2" HeaderText="A 3-state CheckBox.">
+            <local:ControlExample.Example>
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox
+                        Checked="Control2_Checked"
+                        Content="Three-state CheckBox"
+                        Indeterminate="Control2_Indeterminate"
+                        IsThreeState="True"
+                        Unchecked="Control2_Unchecked" />
+                </StackPanel>
+            </local:ControlExample.Example>
+            <local:ControlExample.Output>
+                <TextBlock x:Name="Control2Output" />
+            </local:ControlExample.Output>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example3" HeaderText="Using a 3-state CheckBox.">
+            <local:ControlExample.Example>
+                <StackPanel>
+                    <CheckBox
+                        x:Name="OptionsAllCheckBox"
+                        Checked="SelectAll_Checked"
+                        Content="Select all"
+                        Indeterminate="SelectAll_Indeterminate"
+                        IsThreeState="True"
+                        Unchecked="SelectAll_Unchecked" />
+                    <CheckBox
+                        x:Name="Option1CheckBox"
+                        Margin="24,0,0,0"
+                        Checked="Option_Checked"
+                        Content="Option 1"
+                        Unchecked="Option_Unchecked" />
+                    <CheckBox
+                        x:Name="Option2CheckBox"
+                        Margin="24,0,0,0"
+                        Checked="Option_Checked"
+                        Content="Option 2"
+                        IsChecked="True"
+                        Unchecked="Option_Unchecked" />
+                    <CheckBox
+                        x:Name="Option3CheckBox"
+                        Margin="24,0,0,0"
+                        Checked="Option_Checked"
+                        Content="Option 3"
+                        Unchecked="Option_Unchecked" />
+                </StackPanel>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

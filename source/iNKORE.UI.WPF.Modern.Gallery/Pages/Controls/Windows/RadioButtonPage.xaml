@@ -1,0 +1,27 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.RadioButtonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="RadioButton Page"
+    d:DesignWidth="800"
+    mc:Ignorable="d" Loaded="Page_Loaded">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A group of RadioButton controls in a RadioButtons group.">
+            <StackPanel>
+                <ui:RadioButtons Header="Options:">
+                    <RadioButton Checked="RadioButton_Checked" Content="Option 1" />
+                    <RadioButton Checked="RadioButton_Checked" Content="Option 2" />
+                    <RadioButton Checked="RadioButton_Checked" Content="Option 3" />
+                </ui:RadioButtons>
+            </StackPanel>
+            <local:ControlExample.Output>
+                <TextBlock x:Name="Control1Output" Text="Select an option." />
+            </local:ControlExample.Output>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

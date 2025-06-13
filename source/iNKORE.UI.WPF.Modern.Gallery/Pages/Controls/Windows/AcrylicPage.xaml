@@ -1,0 +1,191 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.AcrylicPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Acrylic"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="ColorTemplate">
+                <StackPanel AutomationProperties.Name="{Binding Color}" Orientation="Horizontal">
+                    <Rectangle
+                        Width="20"
+                        Height="20"
+                        Fill="{Binding}" />
+                    <TextBlock Margin="4,0,0,0" Text="{Binding Color}" />
+                </StackPanel>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Page.Resources>
+    <StackPanel>
+        <TextBlock>
+            Acrylic Brush might fall back to SolidColorbrush in certain scenarios.
+            If you can't see the Acrylic effect, please refer to<Hyperlink NavigateUri="https://docs.microsoft.com/windows/apps/design/style/acrylic#usability-and-adaptability">Acrylic brush adaptability documentation</Hyperlink>
+            .</TextBlock>
+        <local:ControlExample x:Name="Example1" HeaderText="Default in-app acrylic brush.">
+            <local:ControlExample.Example>
+                <Grid
+                    x:Name="Example1Grid"
+                    Width="320"
+                    Height="200"
+                    HorizontalAlignment="Left">
+                    <Grid x:Name="Acrylic1Grid" 
+                        Background="{DynamicResource {x:Static ui:ThemeKeys.SolidBackgroundFillColorBaseBrushKey}}">
+                        <Rectangle
+                            Width="100"
+                            Height="200"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Fill="Aqua" />
+                        <Ellipse
+                            Width="152"
+                            Height="152"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Fill="Magenta" />
+                        <Rectangle
+                            Width="80"
+                            Height="100"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Fill="Yellow" />
+                    </Grid>
+                    <ui:AcrylicPanel
+                        Margin="12"
+                        Target="{Binding ElementName=Acrylic1Grid}"
+                        TintOpacity="0.8" />
+                </Grid>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example3" HeaderText="Custom acrylic in-app brush.">
+            <local:ControlExample.Example>
+                <Grid
+                    x:Name="Example3Grid"
+                    Width="320"
+                    Height="200"
+                    HorizontalAlignment="Left">
+                    <Grid x:Name="Acrylic3Grid" 
+                        Background="{DynamicResource {x:Static ui:ThemeKeys.SolidBackgroundFillColorBaseBrushKey}}">
+                        <Rectangle
+                            Width="100"
+                            Height="200"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Fill="Aqua" />
+                        <Ellipse
+                            Width="152"
+                            Height="152"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Fill="Magenta" />
+                        <Rectangle
+                            Width="80"
+                            Height="100"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Fill="Yellow" />
+                    </Grid>
+                    <ui:AcrylicPanel
+                        x:Name="CustomAcrylicShapeInApp"
+                        Margin="12"
+                        Target="{Binding ElementName=Acrylic3Grid}"
+                        TintColor="Black"
+                        TintOpacity="0.8" />
+                </Grid>
+            </local:ControlExample.Example>
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <TextBlock Margin="0,0,0,12" Text="Tint Opacity :" />
+                    <Slider
+                        x:Name="OpacitySliderInApp"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.Name="tint opacity"
+                        Maximum="1"
+                        Minimum="0"
+                        SmallChange="0.001"
+                        TickFrequency="0.001"
+                        Value="{Binding TintOpacity, ElementName=CustomAcrylicShapeInApp, Mode=TwoWay}"
+                        ValueChanged="OpacitySliderInApp_ValueChanged"/>
+                    <TextBlock Margin="0,12" Text="Tint Color :" />
+                    <ComboBox
+                        x:Name="ColorSelectorInApp"
+                        AutomationProperties.Name="tint color"
+                        ItemTemplate="{StaticResource ColorTemplate}"
+                        SelectionChanged="ColorSelector_SelectionChanged">
+                        <SolidColorBrush Color="Black" />
+                        <SolidColorBrush Color="Red" />
+                        <SolidColorBrush Color="Blue" />
+                    </ComboBox>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example4" HeaderText="Luminosity with in-app Acrylic.">
+            <local:ControlExample.Example>
+                <Grid
+                    x:Name="Example4Grid"
+                    Width="320"
+                    Height="200"
+                    HorizontalAlignment="Left">
+                    <Grid x:Name="Acrylic4Grid" 
+                        Background="{DynamicResource {x:Static ui:ThemeKeys.SolidBackgroundFillColorBaseBrushKey}}">
+                        <Rectangle
+                            Width="100"
+                            Height="200"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Fill="Aqua" />
+                        <Ellipse
+                            Width="152"
+                            Height="152"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Fill="Magenta" />
+                        <Rectangle
+                            Width="80"
+                            Height="100"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Fill="Yellow" />
+                    </Grid>
+                    <ui:AcrylicPanel
+                        x:Name="CustomAcrylicShapeLumin"
+                        Margin="12"
+                        Target="{Binding ElementName=Acrylic4Grid}"
+                        TintColor="SkyBlue"
+                        TintOpacity="0.8" />
+                </Grid>
+            </local:ControlExample.Example>
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <TextBlock Margin="0,0,0,12" Text="Tint Opacity :" />
+                    <Slider
+                        x:Name="OpacitySliderLumin"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.Name="tint opacity"
+                        Maximum="1"
+                        Minimum="0"
+                        SmallChange="0.001"
+                        TickFrequency="0.001"
+                        Value="{Binding TintOpacity, ElementName=CustomAcrylicShapeLumin, Mode=TwoWay}" />
+                    <TextBlock Margin="0,0,0,12" Text="Tint Luminosity Opacity :" />
+                    <ui:NumberBox
+                        x:Name="LuminositySlider"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.Name="tint luminosity"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Inline"
+                        Value="{Binding Amount, ElementName=CustomAcrylicShapeLumin, Mode=TwoWay}" />
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

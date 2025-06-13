@@ -1,0 +1,63 @@
+﻿<Window x:Class="ButtonsOnTitlebar.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+        xmlns:local="clr-namespace:ButtonsOnTitlebar" xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen"
+        ui:WindowHelper.UseModernWindowStyle="True" ui:WindowHelper.SystemBackdropType="Tabbed"
+        ui:TitleBar.ExtendViewIntoTitleBar="True">
+    <FrameworkElement.Resources>
+
+        <Style TargetType="ui:TitleBarButton">
+            <Setter Property="IsActive" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=IsActive}"/>
+        </Style>
+        
+    </FrameworkElement.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Border x:Name="Border_TitleBarRoot"
+                Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=(ui:TitleBar.Height)}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=Title}" 
+                           VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12"/>
+
+                <!--Right Inset-->
+                <Rectangle Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=(ui:TitleBar.SystemOverlayRightInset)}"
+                    Grid.Column="2"/>
+
+                <!--Right Buttons-->
+                <ikw:SimpleStackPanel x:Name="StackPanel_RightButtons"
+                    Orientation="Horizontal" Grid.Column="1" Spacing="5">
+
+                    <Button x:Name="Button_0" FontSize="12" Padding="8,4"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                        Hello
+                    </Button>
+                    <ui:TitleBarButton x:Name="TitleBarButton_1">
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChromeFullScreen}" FontSize="10"/>
+                    </ui:TitleBarButton>
+                    
+                </ikw:SimpleStackPanel>
+            </Grid>
+        </Border>
+
+        <Border x:Name="Border_MainArea" Grid.Row="1"
+                Background="{DynamicResource {x:Static ui:ThemeKeys.ApplicationPageBackgroundThemeBrushKey}}">
+            
+        </Border>
+    </Grid>
+</Window>

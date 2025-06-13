@@ -1,0 +1,124 @@
+name: 🐞 Problem Report
+description: Report a problem with iNKORE.UI.WPF.Modern library
+title: "Your Title Here"
+labels: ["status: needs-triage"]
+type: "Bug"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Make sure you are reporting that something is wrong with the library and should be fixed. If you are requesting a feature, please do not use this template; if it has something to do with the documentation, please go to the [documentation repo](https://github.com/iNKORE-NET/Documentation/issues/new/choose) instead. Keep in mind that fields without a red asterisk are all optional.
+
+        > [!WARNING]
+        > ## If you are Chinese, or going to fill out this form with Chinese, please read the notice below. Or you can straightly go forward to the first question.
+        >
+        > **请不要继续在 issues 板块下发表任何无意义且无法促进此项目持续发展的内容**。在提交 issue 之前，请仔细思考你要发布的内容**是否合理**，如果不能，请不要浪费其他人的时间；同时请考虑**开发者能否修复/实现**，如果不能，请自己提交 PR 而不是 issue。
+        > 在交流时请尊重他人，不要使用不文明用语。请不要催促或强求开发者和其他贡献者，他们是一群热爱开源的志愿者，不是你的私人雇员！
+        > 
+        > 尽可能在除国内社交平台外的其他地方使用英语而不是中文，我们会优先处理英文内容。
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: What happened?  A clear and concise description of what the bug is. Also tell us, what did you expect to happen?
+      placeholder: I am doing ... What I expect is ... What actually happening is ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: How can we reproduce the bug? If you can, please provide the link to the repo that we can reproduce the bug in. Or provide the steps to reproduce the bug.
+      placeholder: https://github.com/ghost/my-bug-reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggested Solution
+      description: |
+        Do you have any ideas how to fix this problem? If you do, write that down clearly below, if not, tell us that you don't know as well. 
+        Please remember those issues with suggested solution submitted by the poster will have a higher priority and be handled first.
+      placeholder: I think this can be fixed by...
+    validations:
+      required: false
+  - type: input
+    id: package-version
+    attributes:
+      label: Library Version
+      description: Which version of this library are you using? (PS. The version of this library, not the version of .NET). You can see this in your .csproj file
+      placeholder: 0.9.30 / 0.10.0 / ...
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Operating System
+      description: Which operating system are you using to reproduce the bug?
+      multiple: false
+      options:
+        - Windows 11
+        - Windows 10
+        - Windows 8/8.1
+        - Windows 7
+    validations:
+      required: true
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Framework
+      description: Which framework are you using here?
+      multiple: false
+      options:
+        - .NET Framework
+        - .NET Core and .NET
+    validations:
+      required: true
+  - type: input
+    id: framework-version
+    attributes:
+      label: Framework Version
+      description: Which version of the framework are you using? (PS. The version of .NET, not the version of this library)
+      placeholder: 4.5.2 / 3.1 / 6.0.22 / 7...
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source of Package
+      description: Where do you get the library package from? Or where did you download them?
+      multiple: false
+      options:
+        - NuGet.org
+        - Self-Compiled
+        - Other (Tell us in the Additional Notes)
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Notes
+      description: Is there anything else you'd like to tell us? If it's related to theming, please tell us
+    validations:
+      required: false
+  - type: checkboxes
+    id: checkboxes
+    attributes:
+      label: Validations
+      description: Before submitting the issue, please make sure you do the following.
+      options:
+        - label: "Check that there isn't [already an issue](https://github.com/iNKORE-NET/UI.WPF.Modern/issues) that reports the same or similar problem."
+          required: true
+        - label: "Check that this is a bug in the library that should be fixed, not a feature, also this is not about the documentation. (Or please choose the right repo and template.)"
+          required: true
+        - label: "This is one single problem, or a few problems with the same cause. (If you want to report multiple problems, please create one issue for every single problem.)"
+          required: true
+        - label: "You've checked that this problem still exists in the latest version. (Keep in mind that we don't provide any support for old versions.)"
+          required: true
+        - label: "You know that we can't guarantee that we will satisfy your request. This is not really our duty to do everything anyone asks for. Also, you will treat our staff, contributors, and other users with respect and kindness."
+          required: true
+        - label: "You're sure there's something wrong with the library itself, not how you're using it. (If you are having issues using it and need help, please go to [discussion](https://github.com/iNKORE-NET/UI.WPF.Modern/discussions/new?category=help-support).)"
+          required: true
+    validations:
+      required: true

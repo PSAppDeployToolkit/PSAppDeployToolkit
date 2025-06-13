@@ -1,0 +1,124 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
+    xmlns:primitives="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Primitives"
+    xmlns:converters="clr-namespace:iNKORE.UI.WPF.Modern.Common.Converters"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:chelper="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Helpers"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ToggleButton.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style
+        x:Key="EllipsisButton"
+        BasedOn="{StaticResource DefaultToggleButtonStyle}"
+        TargetType="ToggleButton">
+        <Setter Property="Background" Value="{DynamicResource AppBarButtonBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBarButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBarButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="Width" Value="{DynamicResource AppBarExpandButtonThemeWidth}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="chelper:FocusVisualHelper.UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="chelper:FocusVisualHelper.FocusVisualMargin" Value="-3" />
+        <Setter Property="chelper:ControlHelper.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border
+                        x:Name="Border"
+                        Margin="{DynamicResource AppBarEllipsisButtonInnerBorderMargin}"
+                        Padding="0"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius}"
+                        SnapsToDevicePixels="True">
+                        <local:ContentPresenterEx
+                            x:Name="ContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource AppBarButtonBackgroundPointerOver}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AppBarButtonForegroundPointerOver}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AppBarButtonBorderBrushPointerOver}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource AppBarButtonBackgroundPressed}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AppBarButtonForegroundPressed}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AppBarButtonBorderBrushPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource AppBarButtonBackgroundDisabled}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AppBarButtonForegroundDisabled}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AppBarButtonBorderBrushDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style
+        x:Key="CommandBarFlyoutEllipsisButtonStyle"
+        BasedOn="{StaticResource EllipsisButton}"
+        TargetType="ToggleButton">
+        <Setter Property="Background" Value="{DynamicResource CommandBarFlyoutAppBarButtonBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource CommandBarFlyoutAppBarButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CommandBarFlyoutAppBarButtonBorderBrush}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="44" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="chelper:FocusVisualHelper.FocusVisualMargin" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border
+                        x:Name="Border"
+                        Margin="{DynamicResource CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin}"
+                        Padding="0"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius}"
+                        SnapsToDevicePixels="True">
+                        <local:ContentPresenterEx
+                            x:Name="ContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                            <Setter Property="Foreground" Value="{DynamicResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                            <Setter Property="Foreground" Value="{DynamicResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource CommandBarFlyoutAppBarButtonBackgroundDisabled}" />
+                            <Setter Property="Foreground" Value="{DynamicResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

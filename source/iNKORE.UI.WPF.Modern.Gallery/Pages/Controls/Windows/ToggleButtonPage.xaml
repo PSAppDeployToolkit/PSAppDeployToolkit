@@ -1,0 +1,39 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ToggleButtonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Toggle Button"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple ToggleButton with text content.">
+            <local:ControlExample.Example>
+                <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
+                    <ToggleButton
+                        Checked="ToggleButton_Checked"
+                        Content="ToggleButton"
+                        Loaded="Toggle_Loaded"
+                        Tag="Toggle1"
+                        Unchecked="ToggleButton_Unchecked" />
+                </StackPanel>
+            </local:ControlExample.Example>
+            <local:ControlExample.Output>
+                <TextBlock Loaded="TextBlock_Loaded" Tag="Control1Output" />
+            </local:ControlExample.Output>
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <CheckBox x:Name="CheckBox_IsEnabled"
+                        Content="Disable ToggleButton"
+                        Loaded="CheckBox_Loaded"
+                        Tag="DisableToggle1" 
+                        Click="CheckBox_IsEnabled_Click"/>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

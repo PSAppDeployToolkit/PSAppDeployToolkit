@@ -1,0 +1,138 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
+    xmlns:primitives="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Primitives"
+    xmlns:converters="clr-namespace:iNKORE.UI.WPF.Modern.Common.Converters"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:chelper="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Helpers"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <ikw:BrushTranslationConverter x:Key="BrushTranslationConverter" />
+            <ikw:ColorToBrushConverter x:Key="ColorToSolidColorBrushConverter" />
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style x:Key="AcrylicContentControlStyle" TargetType="ContentControl">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border
+                        x:Name="ContextMenuBorder"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <!--  Color tint overlay  -->
+                            <Border
+                                x:Name="TintColorLayer"
+                                Background="{TemplateBinding local:AcrylicElement.TintColor,
+                                                       Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                Opacity="{TemplateBinding local:AcrylicElement.TintOpacity}" 
+                                CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius}"/>
+                            <!--  Tiled noise texture  -->
+                            <Border x:Name="NoiseLayer" Opacity="{TemplateBinding local:AcrylicElement.NoiseOpacity}" CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius}">
+                                <Border.Background>
+                                    <ImageBrush
+                                        ImageSource="/iNKORE.UI.WPF.Modern;component/Resources/Images/NoiseAsset_256X256_PNG.png"
+                                        Stretch="None"
+                                        TileMode="Tile"
+                                        Viewport="0,0,128,128"
+                                        ViewportUnits="Absolute" />
+                                </Border.Background>
+                            </Border>
+                            <ContentPresenter />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DefaultAcrylicPanelStyle" TargetType="local:AcrylicPanel">
+        <Setter Property="TintColor" Value="{DynamicResource SolidBackgroundFillColorQuarternary}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:AcrylicPanel">
+                    <Grid x:Name="Grid_Root" ClipToBounds="True">
+                        <!--<Grid.OpacityMask>
+                            <VisualBrush Stretch="None">
+                                <VisualBrush.Visual>
+                                    <Border CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AcrylicPanel}}" Width="{Binding ElementName=Grid_Root, Path=ActualWidth}" Height="{Binding ElementName=Grid_Root, Path=ActualHeight}" Background="Black"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Grid.OpacityMask>-->
+                        <!--  background  -->
+                        <Border CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border.Background>
+                                <PriorityBinding>
+                                    <Binding Path="Target.Background" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                    <Binding Path="Target.Fill" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                </PriorityBinding>
+                            </Border.Background>
+                        </Border>
+                        <!--  main  -->
+                        <ikw:ClippedContent CornerRadius="{TemplateBinding CornerRadius}">
+                            <Canvas>
+                                <ContentControl chelper:ControlHelper.CornerRadius="{TemplateBinding CornerRadius}">
+                                    <ContentControl.Template>
+                                        <ControlTemplate TargetType="ContentControl">
+                                            <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="{TemplateBinding Padding}">
+                                                <AdornerDecorator>
+                                                    <ContentPresenter/>
+                                                </AdornerDecorator>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </ContentControl.Template>
+                                    <ContentControl.CacheMode>
+                                        <BitmapCache RenderAtScale="0.2" />
+                                    </ContentControl.CacheMode>
+                                    <Border
+                                    x:Name="Rect"
+                                    Width="{Binding Target.ActualWidth, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                    Height="{Binding Target.ActualHeight, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                    ClipToBounds="False"
+                                    IsHitTestVisible="False">
+                                        <Border.Background>
+                                            <VisualBrush
+                                            AlignmentX="Left"
+                                            AlignmentY="Top"
+                                            Stretch="None"
+                                            ViewboxUnits="Absolute"
+                                            Visual="{Binding Target, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                                        </Border.Background>
+                                        <Border.RenderTransform>
+                                            <MultiBinding Converter="{StaticResource BrushTranslationConverter}">
+                                                <Binding Path="Target" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                                <Binding Path="Source" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                            </MultiBinding>
+                                        </Border.RenderTransform>
+                                        <Border.Effect>
+                                            <BlurEffect Radius="{Binding Amount, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                                        </Border.Effect>
+                                    </Border>
+                                </ContentControl>
+                            </Canvas>
+
+                        </ikw:ClippedContent>
+
+                        <ContentControl Style="{StaticResource AcrylicContentControlStyle}" chelper:ControlHelper.CornerRadius="{TemplateBinding CornerRadius}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </ContentControl>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource DefaultAcrylicPanelStyle}" TargetType="local:AcrylicPanel" />
+
+</ResourceDictionary>

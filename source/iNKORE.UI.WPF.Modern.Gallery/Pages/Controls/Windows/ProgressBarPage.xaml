@@ -1,0 +1,88 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ProgressBarPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sc="clr-namespace:SamplesCommon;assembly=SamplesCommon"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    mc:Ignorable="d" Loaded="Page_Loaded">
+    <ikw:SimpleStackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="An indeterminate progress bar.">
+            <ui:ProgressBar x:Name="ProgressBar1"
+                Width="130"
+                Margin="10,10,0,0"
+                VerticalAlignment="Top"
+                IsIndeterminate="True"
+                ShowError="{Binding IsChecked, ElementName=ErrorRB}"
+                ShowPaused="{Binding IsChecked, ElementName=PausedRB}" />
+
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <RadioButton
+                        x:Name="RunningRB"
+                        Content="Running"
+                        GroupName="ProgressState"
+                        IsChecked="True"
+                        Click="RadioButton_Click"/>
+                    <RadioButton
+                        x:Name="PausedRB"
+                        Content="Paused"
+                        GroupName="ProgressState"
+                        Click="RadioButton_Click"/>
+                    <RadioButton
+                        x:Name="ErrorRB"
+                        Content="Error"
+                        GroupName="ProgressState"
+                        Click="RadioButton_Click"/>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example2" HeaderText="A determinate progress bar.">
+            <StackPanel Orientation="Horizontal">
+                <ProgressBar
+                    x:Name="ProgressBar2"
+                    Width="130"
+                    Value="{Binding ElementName=ProgressValue, Path=Value, Mode=OneWay}" />
+                <TextBlock
+                    x:Name="Control2Output"
+                    Width="60"
+                    Style="{StaticResource OutputTextBlockStyle}"
+                    TextAlignment="Center" />
+                <TextBlock
+                    x:Name="ProgresLabel"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    Text="Progress" />
+                <ui:NumberBox
+                    x:Name="ProgressValue"
+                    AutomationProperties.LabeledBy="{Binding ElementName=ProgresLabel}"
+                    Maximum="100"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline"
+                    Value="0"
+                    ValueChanged="ProgressValue_ValueChanged"/>
+            </StackPanel>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example3" VerticalContentAlignment="Center" HeaderText="An indeterminate progress ring.">
+            <ui:ProgressRing x:Name="ProgressRing1"
+                Width="60"
+                Height="60"
+                IsActive="{Binding IsOn, ElementName=ProgressToggle}" />
+
+            <local:ControlExample.Options>
+                <ui:ToggleSwitch
+                    x:Name="ProgressToggle"
+                    Header="Toggle work"
+                    IsOn="True"
+                    OffContent="Do work"
+                    OnContent="Working"
+                    Toggled="ProgressToggle_Toggled"/>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+    </ikw:SimpleStackPanel>
+</ui:Page>

@@ -1,0 +1,56 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.DropDownButtonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="DropDown Button"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="Simple DropDownButton">
+            <StackPanel x:Name="Control1" Orientation="Horizontal">
+                <ui:DropDownButton Content="Email">
+                    <ui:DropDownButton.Flyout>
+                        <ui:MenuFlyout Placement="Bottom">
+                            <MenuItem Header="Send" />
+                            <MenuItem Header="Reply" />
+                            <MenuItem Header="Reply All" />
+                        </ui:MenuFlyout>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
+            </StackPanel>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example2" HeaderText="DropDownButton with Icons">
+            <StackPanel x:Name="Control2" Orientation="Horizontal">
+                <ui:DropDownButton AutomationProperties.Name="Email">
+                    <ui:DropDownButton.Content>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Mail}" />
+                    </ui:DropDownButton.Content>
+                    <ui:DropDownButton.Flyout>
+                        <ui:MenuFlyout Placement="Bottom">
+                            <MenuItem Header="Send">
+                                <MenuItem.Icon>
+                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Send}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Reply">
+                                <MenuItem.Icon>
+                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.MailReply}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Reply All">
+                                <MenuItem.Icon>
+                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.MailReplyAll}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ui:MenuFlyout>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
+            </StackPanel>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

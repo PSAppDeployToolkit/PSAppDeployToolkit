@@ -1,0 +1,103 @@
+﻿<Window x:Class="FlyoutExample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+        xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+        xmlns:local="clr-namespace:FlyoutExample"
+        mc:Ignorable="d"
+        Title="iNKORE.UI.WPF.Modern Flyout Samples" Height="450" Width="800">
+    <Grid Margin="20" VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <ikw:SimpleStackPanel Spacing="5">
+            <TextBlock Text="Method 1" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold"/>
+            <TextBlock Text="Use buttons that has a Flyout property (recommended)" FontSize="16" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+            <ikw:SimpleStackPanel Spacing="5" Orientation="Horizontal" HorizontalAlignment="Center">
+                
+                <ui:DropDownButton Content="Click me!">
+                    <ui:DropDownButton.Flyout>
+                        <ui:Flyout Placement="Bottom">
+                            <TextBlock Text="Flyout 1"/>
+                        </ui:Flyout>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
+                <ui:DropDownButton Content="Arrowless!" ShowChevronArrow="False">
+                    <ui:DropDownButton.Flyout>
+                        <ui:Flyout Placement="Bottom">
+                            <TextBlock Text="Flyout 2"/>
+                        </ui:Flyout>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
+                <ui:DropDownButton x:Name="DropDownButton_3" Content="Right click pls!" FlyoutOpeningMode="RightMouseButtonUp" Click="DropDownButton_3_Click">
+                    <ui:DropDownButton.Flyout>
+                        <ui:Flyout Placement="Bottom">
+                            <TextBlock Text="Flyout 3"/>
+                        </ui:Flyout>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
+
+            </ikw:SimpleStackPanel>
+
+            <ikw:SimpleStackPanel Margin="0,10,0,0">
+                <ui:CommandBar HorizontalAlignment="Center">
+                    <ui:AppBarButton Label="Click me!" ChevronStyle="Down">
+                        <ui:AppBarButton.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.GiftboxOpen}"/>
+                        </ui:AppBarButton.Icon>
+                        <ui:AppBarButton.Flyout>
+                            <ui:Flyout Placement="Bottom">
+                                <TextBlock Text="Flyout 4"/>
+                            </ui:Flyout>
+
+                        </ui:AppBarButton.Flyout>
+                    </ui:AppBarButton>
+                    <ui:AppBarButton Label="Arrowless!">
+                        <ui:AppBarButton.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Hide}"/>
+                        </ui:AppBarButton.Icon>
+                        <ui:AppBarButton.Flyout>
+                            <ui:Flyout Placement="Bottom">
+                                <TextBlock Text="Flyout 4"/>
+                            </ui:Flyout>
+
+                        </ui:AppBarButton.Flyout>
+                    </ui:AppBarButton>
+
+                    <ui:AppBarButton Label="Right click" Click="DropDownButton_3_Click" ChevronStyle="Right" FlyoutOpeningMode="RightMouseButtonUp">
+                        <ui:AppBarButton.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Forward}"/>
+                        </ui:AppBarButton.Icon>
+                        <ui:AppBarButton.Flyout>
+                            <ui:Flyout Placement="Bottom">
+                                <TextBlock Text="Flyout 4"/>
+                            </ui:Flyout>
+
+                        </ui:AppBarButton.Flyout>
+                    </ui:AppBarButton>
+
+                </ui:CommandBar>
+            </ikw:SimpleStackPanel>
+            
+        </ikw:SimpleStackPanel>
+
+        <ikw:SimpleStackPanel Grid.Column="1" Spacing="5">
+            <TextBlock Text="Method 2" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold"/>
+            <TextBlock Text="Put a flyout into ikw:XamlCachedElements and open it in your c# code." FontSize="16" TextAlignment="Center" TextWrapping="Wrap"/>
+            
+            <Button x:Name="Button_ShowFlyout" Content="Open a Flyout using code!" HorizontalAlignment="Center" Click="Button_ShowFlyout_Click" Margin="0,20,0,0"/>
+
+            <ikw:XamlCachedElements>
+                <ui:Flyout x:Name="Flyout_Test" Placement="Bottom">
+                    <TextBlock Text="Hi there, I'm a flyout!"/>
+                </ui:Flyout>
+            </ikw:XamlCachedElements>
+
+        </ikw:SimpleStackPanel>
+    </Grid>
+</Window>

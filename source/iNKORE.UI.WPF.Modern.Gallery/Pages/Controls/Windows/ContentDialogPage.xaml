@@ -1,0 +1,31 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ContentDialogPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:page="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows"
+    xmlns:sc="clr-namespace:SamplesCommon;assembly=SamplesCommon"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Content Dialog"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1"
+            HeaderText="A basic content dialog with content.">
+            <local:ControlExample.Example>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="ShowDialog"
+                        Content="Show dialog" Click="ShowDialog_Click"/>
+                    <TextBlock x:Name="DialogResult" Style="{StaticResource OutputTextBlockStyle}" />
+                </StackPanel>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example2" HeaderText="API in action.">
+            <local:ControlExample.Example>
+                <page:ContentDialogTestContent />
+            </local:ControlExample.Example>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

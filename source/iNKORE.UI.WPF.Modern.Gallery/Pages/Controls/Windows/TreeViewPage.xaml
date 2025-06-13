@@ -1,0 +1,117 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.TreeViewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:pcw="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d" d:DesignWidth="1093.41" UseLayoutRounding="True">
+
+    <FrameworkElement.Resources>
+        <HierarchicalDataTemplate x:Key="FolderTemplate" ItemsSource="{Binding Children}">
+            <StackPanel Orientation="Horizontal">
+                <Image Width="20" Source="/Assets/folder.png" />
+                <TextBlock Margin="0,0,10,0" />
+                <TextBlock Text="{Binding Name}" />
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <DataTemplate x:Key="FileTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Image Width="20" Source="/Assets/file.png" />
+                <TextBlock Margin="0,0,10,0" />
+                <TextBlock Text="{Binding Name}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <pcw:ExplorerItemTemplateSelector
+            x:Key="ExplorerItemTemplateSelector"
+            FileTemplate="{StaticResource FileTemplate}"
+            FolderTemplate="{StaticResource FolderTemplate}" />
+
+        <Style x:Key="TreeContainerBorderStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="400"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+    </FrameworkElement.Resources>
+
+    <ikw:SimpleStackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple TreeView">
+            <Border Style="{StaticResource TreeContainerBorderStyle}">
+                <TreeView x:Name="sampleTreeView"
+                        MinWidth="345"
+                        MaxHeight="400"
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top">
+                    <TreeViewItem Header="Work Documents" IsExpanded="True">
+                        <TreeViewItem Header="XYZ Functional Spec" />
+                        <TreeViewItem Header="Feature Schedule" />
+                        <TreeViewItem Header="Overall Project Plan" />
+                        <TreeViewItem Header="Feature Resources Allocation" />
+                    </TreeViewItem>
+                    <TreeViewItem Header="Personal Documents" IsExpanded="True">
+                        <TreeViewItem Header="Home Remodel" IsExpanded="True">
+                            <TreeViewItem Header="Contractor Contact Info" />
+                            <TreeViewItem Header="Paint Color Scheme" />
+                            <TreeViewItem Header="Flooring woodgrain type" />
+                            <TreeViewItem Header="Kitchen cabinet style" />
+                        </TreeViewItem>
+                    </TreeViewItem>
+                </TreeView>
+            </Border>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example2" HeaderText="A TreeView with DataBinding Using ItemSource">
+            <local:ControlExample.Example>
+                <Border Style="{StaticResource TreeContainerBorderStyle}">
+                    <TreeView x:Name="TreeView1"
+                            MinWidth="345"
+                            MaxHeight="400"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            ItemsSource="{Binding}">
+                        <TreeView.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource {x:Static ui:ThemeKeys.DefaultTreeViewItemStyleKey}}" TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Name}" />
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Border>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example3" HeaderText="A TreeView with ItemTemplateSelector">
+            <local:ControlExample.Example>
+                <Border Style="{StaticResource TreeContainerBorderStyle}">
+                    <TreeView x:Name="FileTree"
+                            MinWidth="345"
+                            MaxHeight="400"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}"
+                            ItemsSource="{Binding}">
+                        <TreeView.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource DefaultTreeViewItemStyle}" TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                    </TreeView>
+                </Border>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+    </ikw:SimpleStackPanel>
+</ui:Page>

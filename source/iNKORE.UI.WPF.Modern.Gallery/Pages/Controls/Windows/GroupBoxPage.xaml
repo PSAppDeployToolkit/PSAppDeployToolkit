@@ -1,0 +1,69 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.GroupBoxPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style
+            x:Key="ComboBoxHeaderStyle"
+            BasedOn="{StaticResource BodyTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+        <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
+            <Setter Property="MinWidth" Value="180" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+    </Page.Resources>
+
+    <ikw:SimpleStackPanel
+        Width="404"
+        HorizontalAlignment="Left"
+        Spacing="0">
+        <TextBlock
+            Margin="0,8,0,12"
+            FontSize="28"
+            Style="{StaticResource TitleTextBlockStyle}"
+            Text="Power &amp; Sleep" />
+        <GroupBox Header="Screen">
+            <StackPanel>
+                <TextBlock Style="{StaticResource ComboBoxHeaderStyle}" Text="On battery power, turn off after" />
+                <ComboBox>
+                    <ComboBoxItem IsSelected="True">5 minutes</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Style="{StaticResource ComboBoxHeaderStyle}" Text="When plugged in, turn off after" />
+                <ComboBox>
+                    <ComboBoxItem IsSelected="True">10 minutes</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Sleep">
+            <StackPanel>
+                <TextBlock Style="{StaticResource ComboBoxHeaderStyle}" Text="On battery power, PC goes to sleep after" />
+                <ComboBox>
+                    <ComboBoxItem IsSelected="True">5 minutes</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Style="{StaticResource ComboBoxHeaderStyle}" Text="When plugged in, PC goes to sleep after" />
+                <ComboBox>
+                    <ComboBoxItem IsSelected="True">10 minutes</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Network connection">
+            <StackPanel>
+                <TextBlock Style="{StaticResource ComboBoxHeaderStyle}" Text="When my PC is asleep and on battery power, disconnect from the network" />
+                <ComboBox>
+                    <ComboBoxItem IsSelected="True">Never</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </GroupBox>
+    </ikw:SimpleStackPanel>
+</ui:Page>

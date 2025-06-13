@@ -1,0 +1,36 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.MediaPlayerElementPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="MediaPlayerElement"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A MediaPlayerElement with transport controls.">
+            <local:ControlExample.Example>
+                <ui:MediaPlayerElement
+                    MaxWidth="400"
+                    HorizontalAlignment="Left"
+                    AreTransportControlsEnabled="True"
+                    AutoPlay="False"
+                    Source="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource RelativeToAbsoluteConverter}}"
+                    Tag="Assets/SampleMedia/ladybug.wmv" />
+            </local:ControlExample.Example>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example2" HeaderText="A MediaPlayerElement that autoplays the video.">
+            <local:ControlExample.Example>
+                <ui:MediaPlayerElement
+                    MaxWidth="400"
+                    HorizontalAlignment="Left"
+                    AutoPlay="True"
+                    Source="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource RelativeToAbsoluteConverter}}"
+                    Tag="Assets/SampleMedia/fishes.wmv" />
+            </local:ControlExample.Example>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

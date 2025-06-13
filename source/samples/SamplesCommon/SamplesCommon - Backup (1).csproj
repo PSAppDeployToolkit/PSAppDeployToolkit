@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-windows10.0.18362.0</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="Properties\DesignTimeResources.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\iNKORE.UI.WPF.Modern.Controls\iNKORE.UI.WPF.Modern.Controls.csproj" />
+    <ProjectReference Include="..\..\iNKORE.UI.WPF.Modern\iNKORE.UI.WPF.Modern.csproj" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <None Include="Properties\DesignTimeResources.xaml">
+      <ContainsDesignTimeResources>True</ContainsDesignTimeResources>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+
+</Project>

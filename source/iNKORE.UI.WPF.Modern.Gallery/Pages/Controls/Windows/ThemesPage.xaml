@@ -1,0 +1,138 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ThemesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:presets="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Presets"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:sc="clr-namespace:SamplesCommon;assembly=SamplesCommon"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <sys:Double x:Key="ItemWidth">280</sys:Double>
+        <sc:AppThemeConverter x:Key="AppThemeConverter" />
+    </Page.Resources>
+
+    <ScrollViewer>
+        <ikw:SimpleStackPanel Margin="{StaticResource ControlPageContentMargin}" Spacing="24">
+
+            <ui:RadioButtons Header="Theme Mode" SelectedItem="{Binding Source={x:Static sc:ThemeManagerProxy.Current}, Path=ApplicationTheme, Converter={StaticResource AppThemeConverter}}">
+                <ui:RadioButtons.ItemsSource>
+                    <sc:AppThemes />
+                </ui:RadioButtons.ItemsSource>
+            </ui:RadioButtons>
+
+            <ComboBox
+                x:Name="ColorPresetsComboBox"
+                MinWidth="{StaticResource ItemWidth}"
+                ui:ControlHelper.Header="Color Presets"
+                SelectedItem="{Binding ColorPreset, Source={x:Static presets:PresetManager.Current}}">
+                <sys:String>Default</sys:String>
+                <sys:String>Forest</sys:String>
+                <sys:String>Lavender</sys:String>
+                <sys:String>Nighttime</sys:String>
+            </ComboBox>
+
+            <ComboBox
+                x:Name="ShapePresetsComboBox"
+                MinWidth="{StaticResource ItemWidth}"
+                ui:ControlHelper.Header="Shape Presets"
+                DisplayMemberPath="DisplayName"
+                SelectedValue="{Binding ShapePreset, Source={x:Static presets:PresetManager.Current}}"
+                SelectedValuePath="Value" />
+
+            <sc:AccentColorPicker x:Name="AccentColorPicker" />
+
+            <StackPanel>
+                <TextBlock
+                    Margin="0,0,0,4"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Text="App-level custom theme brush" />
+                <Rectangle
+                    Width="{StaticResource ItemWidth}"
+                    Height="50"
+                    HorizontalAlignment="Left"
+                    Fill="{DynamicResource CustomThemeBrush}" />
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock
+                    Margin="0,0,0,4"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Text="App-level custom theme brush overriden at element level" />
+                <Rectangle
+                    Width="{StaticResource ItemWidth}"
+                    Height="50"
+                    HorizontalAlignment="Left"
+                    ui:ThemeManager.HasThemeResources="True"
+                    Fill="{DynamicResource CustomThemeBrush}">
+                    <Rectangle.Resources>
+                        <ui:ResourceDictionaryEx>
+                            <ui:ResourceDictionaryEx.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Light">
+                                    <SolidColorBrush x:Key="CustomThemeBrush" Color="DarkRed" />
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="CustomThemeBrush" Color="Orange" />
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <SolidColorBrush x:Key="CustomThemeBrush" Color="DarkBlue" />
+                                </ResourceDictionary>
+                            </ui:ResourceDictionaryEx.ThemeDictionaries>
+                        </ui:ResourceDictionaryEx>
+                    </Rectangle.Resources>
+                </Rectangle>
+            </StackPanel>
+
+            <GroupBox
+                x:Name="InverseAppThemeGroupBox"
+                Margin="-24,0,-24,0"
+                Padding="24,0,24,15"
+                ui:ThemeManager.RequestedTheme="{Binding Source={x:Static sc:ThemeManagerProxy.Current}, Path=ActualApplicationTheme, Converter={StaticResource InverseAppThemeConverter}}"
+                Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
+                Header="Inverse app theme">
+                <GroupBox.Resources>
+                    <Thickness x:Key="GroupBoxHeaderMargin">24,4,24,20</Thickness>
+                </GroupBox.Resources>
+                <ikw:SimpleStackPanel Spacing="24">
+                    <TextBox
+                        Width="{StaticResource ItemWidth}"
+                        HorizontalAlignment="Left"
+                        ui:ControlHelper.Header="Actual application theme"
+                        IsReadOnly="True"
+                        Text="{Binding Source={x:Static sc:ThemeManagerProxy.Current}, Path=ActualApplicationTheme, Mode=OneWay}" />
+
+                    <TextBox
+                        Width="{StaticResource ItemWidth}"
+                        HorizontalAlignment="Left"
+                        ui:ControlHelper.Header="Actual window theme"
+                        IsReadOnly="True"
+                        Text="{Binding Path=(ui:ThemeManager.ActualTheme), RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay}" />
+
+                    <TextBox
+                        x:Name="AET"
+                        Width="{StaticResource ItemWidth}"
+                        HorizontalAlignment="Left"
+                        ui:ControlHelper.Header="Actual element theme"
+                        IsReadOnly="True"
+                        Text="{Binding ElementName=InverseAppThemeGroupBox, Path=(ui:ThemeManager.ActualTheme), Mode=OneWay}" />
+
+                    <TextBox
+                        Width="{StaticResource ItemWidth}"
+                        HorizontalAlignment="Left"
+                        ui:ControlHelper.Header="Actual accent color"
+                        IsReadOnly="True"
+                        Text="{Binding Source={x:Static sc:ThemeManagerProxy.Current}, Path=ActualAccentColor, Mode=OneWay}" />
+
+                    <ui:ToggleSwitch
+                        Header="High contrast"
+                        IsEnabled="False"
+                        IsOn="{Binding Path=(SystemParameters.HighContrast), Mode=OneWay}" />
+                </ikw:SimpleStackPanel>
+            </GroupBox>
+        </ikw:SimpleStackPanel>
+    </ScrollViewer>
+</ui:Page>
