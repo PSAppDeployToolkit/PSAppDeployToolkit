@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462;net8.0-windows10.0.17763.0</TargetFrameworks>
+    <TargetFrameworks>net462;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>$(NoWarn)</NoWarn>
@@ -37,7 +37,7 @@
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -50,7 +50,7 @@
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
@@ -58,6 +58,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\PSADT\PSADT\PSADT.csproj" />
+    <ProjectReference Include="..\..\..\lib\iNKORE.UI.WPF.Modern\source\iNKORE.UI.WPF.Modern.Controls\iNKORE.UI.WPF.Modern.Controls.csproj" />
+    <ProjectReference Include="..\..\..\lib\iNKORE.UI.WPF.Modern\source\iNKORE.UI.WPF.Modern\iNKORE.UI.WPF.Modern.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -87,10 +89,6 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.0" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Management.Automation">
@@ -99,7 +97,7 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" />
     <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />

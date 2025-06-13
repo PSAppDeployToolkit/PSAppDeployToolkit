@@ -10,23 +10,23 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.6.1')) or
+  <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.6.1'))) or
                             '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <DefineConstants>$(DefineConstants);NET461_OR_NEWER</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.6.2')) or
+  <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.6.2'))) or
                             '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <DefineConstants>$(DefineConstants);NET462_OR_NEWER</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7')) or
+  <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7'))) or
                             '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <DefineConstants>$(DefineConstants);NET47_OR_NEWER</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2')) or
+  <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2'))) or
                             '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <DefineConstants>$(DefineConstants);NET472_OR_NEWER</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.8')) or
+  <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.8'))) or
                             '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <DefineConstants>$(DefineConstants);NET48_OR_NEWER</DefineConstants>
   </PropertyGroup>
