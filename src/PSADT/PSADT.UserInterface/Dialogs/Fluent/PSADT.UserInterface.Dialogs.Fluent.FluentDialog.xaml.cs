@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -21,7 +22,6 @@ using PSADT.UserInterface.DialogOptions;
 using Windows.Win32;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
-using iNKORE.UI.WPF.Modern.Controls.Helpers;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -112,16 +112,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonMiddle.Visibility = Visibility.Collapsed;
             ButtonRight.Visibility = Visibility.Collapsed;
 
-            // Set app icon
-            if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark && File.Exists(options.AppIconDarkImage))
+            // Set up everything related to the dialog icon.
+            _dialogBitmapCache = new ReadOnlyDictionary<ApplicationTheme, BitmapSource>(new Dictionary<ApplicationTheme, BitmapSource>
             {
-                SetDialogIcon(options.AppIconDarkImage);
-            }
-            else
-            {
-                SetDialogIcon(options.AppIconImage);
-            }
-
+                { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
+                { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage) }
+            });
+            ThemeManager.AddActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
+            SetDialogIcon();
 
             // Set the expiry timer if specified.
             if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
@@ -518,11 +516,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Sets the application icon displayed in the header and the window's taskbar icon.
-        /// Uses a cache for performance.
+        /// Retrieves a bitmap representation of the icon specified by the given file path.
         /// </summary>
-        /// <param name="dialogIconPath">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
-        private void SetDialogIcon(string dialogIconPath)
+        /// <remarks>The method caches the retrieved icons to improve performance on subsequent calls with
+        /// the same file path.  If the icon or image can be frozen, it is made shareable across threads.</remarks>
+        /// <param name="dialogIconPath">The absolute file path to the icon. This can be a path to an .ico file or another image format.</param>
+        /// <returns>A <see cref="BitmapSource"/> representing the icon. If the icon is an .ico file, the highest resolution
+        /// frame is returned.</returns>
+        private static BitmapSource GetIcon(string dialogIconPath)
         {
             // Try to get from cache first.
             if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapSource))
@@ -559,8 +560,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     bitmapSource = bitmapImage;
                 }
             }
-            AppIconImage.Source = bitmapSource;
-            Icon = bitmapSource;
+            return bitmapSource;
+        }
+
+        /// <summary>
+        /// Sets the icon for the dialog using the specified bitmap source.
+        /// </summary>
+        /// <remarks>This method updates both the dialog's window icon and any associated UI element
+        /// displaying the application icon.</remarks>
+        private void SetDialogIcon()
+        {
+            Icon = AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
         }
 
         /// <summary>
@@ -871,6 +881,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Represents the initial left position of the window.
         /// </summary>
         private double _startingLeft;
+
+        /// <summary>
+        /// A read-only dictionary that caches dialog icons for different application themes.
+        /// </summary>
+        /// <remarks>This dictionary maps <see cref="ApplicationTheme"/> values to their corresponding
+        /// <see cref="BitmapSource"/> icons. It is intended to optimize access to preloaded icons for dialogs, ensuring
+        /// consistent and efficient retrieval.</remarks>
+        private readonly ReadOnlyDictionary<ApplicationTheme, BitmapSource> _dialogBitmapCache; 
 
         /// <summary>
         /// Dialog icon cache for improved performance
