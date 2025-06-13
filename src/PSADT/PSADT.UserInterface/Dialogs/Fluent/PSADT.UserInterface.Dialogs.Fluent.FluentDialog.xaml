@@ -203,13 +203,13 @@
                     AutomationProperties.Name="Application Icon"
                     />
 
-               <ikw:SimpleStackPanel Spacing="2"
-                                     Orientation="Vertical">
+                <ikw:SimpleStackPanel Spacing="2"
+                                      Orientation="Vertical">
 
                 <TextBlock
                         x:Name="AppTitleTextBlock"
                         MaxWidth="420"
-                        HorizontalAlignment="Left" 
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Application Title"
                         FontSize="28"
@@ -424,7 +424,7 @@
                     <Separator
                         Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
                         />
-                    
+
                     <TextBox
                         x:Name="InputBoxText"
                         Margin="16,0,16,16"
