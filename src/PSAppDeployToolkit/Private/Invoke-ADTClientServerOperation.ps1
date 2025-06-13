@@ -262,7 +262,7 @@ function Private:Invoke-ADTClientServerOperation
         if ($return.ExitCode -ne 0)
         {
             $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The client/server process failed with exit code [$($return.ExitCode)].")
+                Exception = [System.InvalidOperationException]::new("The client/server process failed with exit code [$($return.ExitCode)] ($(if ([System.Enum]::IsDefined([PSADT.ClientServer.ClientExitCode], $return.ExitCode)) { [PSADT.ClientServer.ClientExitCode]$return.ExitCode } else { $return.ExitCode })).")
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = 'ClientServerRuntimeFailure'
                 TargetObject = $return
