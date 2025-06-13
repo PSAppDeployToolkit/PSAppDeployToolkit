@@ -242,7 +242,7 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
-                [PSADT.UserInterface.DialogOptions.RestartDialogOptions]$dialogOptions = $dialogOptions
+                $dialogOptions = [PSADT.UserInterface.DialogOptions.RestartDialogOptions]::new($deploymentType, $dialogOptions)
 
                 # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
                 if ($adtSession)
