@@ -35,63 +35,59 @@ namespace PSADT.UserInterface.TestHarness
             var stringTable = (Hashtable)stringsAst.Find(x => x is HashtableAst, false).SafeGetValue();
 
             // Set up parameters for testing
-            string appTitle = "Super Street Fighter 2 Turbo XL";
-            string subtitle = "CapComNom Entertainment Ltd - App Install";
+            string appTitle = "Adobe Creative Suite 2.1.45 EN";
+            string subtitle = "EQ Bank Global IT Services - App Install";
             string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
             string appIconDarkImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIconDark.png");
             string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
             // var FluentAccentColor = ValueTypeConverter.ToInt(0xFF01C9D9); // Cyan
             DialogPosition dialogPosition = DialogPosition.BottomRight;
-            //DialogPosition dialogPosition = DialogPosition.Center;
+            // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
-            bool dialogAllowMove = false;
+            bool dialogAllowMove = true;
             DeploymentType deploymentType = DeploymentType.Install;
 
             ProcessDefinition[] appsToClose =
             {
-                new("excel", "Microsoft Office Excel"),
-                // new("notepad", "Microsoft Notepad"),
-                // new("cmd", "Command Prompt"),
                 new("chrome", "Google Chrome"),
-                new("firefox"),
                 // new("msedge", "Microsoft Edge", null, null, null),
-                // new("explorer", null, null, null, null),
-                new("spotify"),
-                new("code", "Visual Studio Code"),
-                new("taskmgr", "Task Manager"),
-                new("regedit", "Registry Editor"),
-                new("powerpnt", "Microsoft Office PowerPoint"),
-                new("winword", "Microsoft Office Word"),
-                new("outlook", "Microsoft Office Outlook"),
-                new("onenote", "Microsoft Office OneNote"),
-                new("skype", "Skype"),
-                new("slack", "Slack"),
-                new("zoom", "Zoom"),
-                new("webex", "WebEx"),
+                new("firefox", "Mozilla FireFox"),
+                new("notepad++", "NotePad++"),
+                new("spotify", "Spotify"),
                 new("acrobat", "Adobe Acrobat Reader"),
                 new("photoshop", "Adobe Photoshop"),
+                new("code", "Microsoft Visual Studio Code"),
+                new("excel", "Microsoft Office Excel"),
+                new("onenote", "Microsoft Office OneNote"),
+                new("outlook", "Microsoft Office Outlook"),
+                new("powerpnt", "Microsoft Office PowerPoint"),
+                new("winword", "Microsoft Office Word"),
+                // new("cmd", "Windows Command Prompt"),
+                new("notepad", "Windows Notepad"),
+                new("regedit", "Windows Registry Editor"),
+                new("taskmgr", "Windows Task Manager")
             };
 
             TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            string customMessageText = "Oh yeah. You can do *italics* now. And **bold text strings**. And 'accent colored text strings!' This is a custom message that can be added using the *-CustomText* parameter on *Show-ADTInstallationWelcome* and *Show-ADTInstallationRestartPrompt*.";
+            string customMessageText = "Oh yeah. You can do [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And [accent]accent colored text strings![/accent] This is a custom message that can be added using the [bold]-CustomText[/bold] parameter on [bold]Show-ADTInstallationWelcome[/bold] and [bold]Show-ADTInstallationRestartPrompt[/bold].";
 
             uint deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-06-20T13:00:00");
 
             // DateTime? deferralDeadline = null;
-            string progressMessageText = "Performing pre-flight checks…";
-            string progressDetailMessageText = "Testing your system to ensure compatibility, please wait…";
+            string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";
+            string progressDetailMessageText = "Testing your [accent]system to ensure compatibility[/accent]. Please wait…";
 
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
 
-            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed?";
+            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? And don't forget to visit this website [url]https://psappdeploytoolkit.com[/url]";
 
-            string inputDialogMessageText = "Enter the Server Name provided by your local IT team:";
-            string inputDialogTextBox = "Server Name, e.g. remotesf2txl.capnomnom.ca";
+            string inputDialogMessageText = "Enter the server name e.g. [italic]remotesvr1.psadt.ca[/italic]";
+            string inputDialogTextBox = "YouCompleteMe";
             string inputDialogButtonLeftText = "Continue";
             string inputDialogButtonRightText = "Cancel";
 
@@ -122,7 +118,7 @@ namespace PSADT.UserInterface.TestHarness
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color: Cyan #00B7C3
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -138,7 +134,7 @@ namespace PSADT.UserInterface.TestHarness
             var customDialogOptions = new CustomDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color: Cyan #00B7C3
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -190,9 +186,9 @@ namespace PSADT.UserInterface.TestHarness
                 { "AppIconImage", appIconImage },
                 { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
-                { "CountdownDuration", restartCountdownDuration },
-                { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
-                { "CustomMessageText", customMessageText },
+                // { "CountdownDuration", restartCountdownDuration },
+                // { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
+                // { "CustomMessageText", customMessageText },
                 { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };
 
