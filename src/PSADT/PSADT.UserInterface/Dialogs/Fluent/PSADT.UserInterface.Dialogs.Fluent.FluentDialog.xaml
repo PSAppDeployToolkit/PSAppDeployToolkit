@@ -132,7 +132,7 @@
 
             <ui:ImageIcon
                 x:Name="SidebarIcon"
-                Width="16"
+                Width="17"
                 Margin="1,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
