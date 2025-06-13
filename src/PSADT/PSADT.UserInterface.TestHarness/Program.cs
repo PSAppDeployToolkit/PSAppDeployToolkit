@@ -38,7 +38,7 @@ namespace PSADT.UserInterface.TestHarness
             string appTitle = "Adobe Creative Suite 2.1.45 EN";
             string subtitle = "EQ Bank Global IT Services - App Install";
             string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
-            string appIconDarkImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIconDark.png");
+            string appIconDarkImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
             string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
             // var FluentAccentColor = ValueTypeConverter.ToInt(0xFF01C9D9); // Cyan
             DialogPosition dialogPosition = DialogPosition.BottomRight;
