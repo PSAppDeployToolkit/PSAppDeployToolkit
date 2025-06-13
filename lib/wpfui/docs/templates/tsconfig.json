@@ -1,7 +1,0 @@
-{
-  "compilerOptions": {
-    "removeComments": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true
-  }
-}
