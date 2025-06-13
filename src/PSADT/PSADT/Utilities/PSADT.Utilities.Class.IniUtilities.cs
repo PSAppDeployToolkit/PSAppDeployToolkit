@@ -124,54 +124,24 @@ namespace PSADT.Utilities
             {
                 foreach (DictionaryEntry entry in content)
                 {
-                    if (!(entry.Key is System.String ||
-                          entry.Key is System.Int32 ||
-                          entry.Key is System.Double ||
-                          entry.Key is System.Boolean ||
-                          entry.Key is System.Char ||
-                          entry.Key is System.Int16 ||
-                          entry.Key is System.Int64 ||
-                          entry.Key is System.Decimal ||
-                          entry.Key is System.Single ||
-                          entry.Key is System.UInt16 ||
-                          entry.Key is System.UInt32 ||
-                          entry.Key is System.UInt64 ||
-                          entry.Key is System.Byte ||
-                          entry.Key is System.SByte ||
-                          entry.Key is System.Enum))
+                    if (!(entry.Key is string || entry.Key is ValueType))
                     {
                         throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.", nameof(content));
                     }
+
                     string key = entry.Key?.ToString()?.Trim() ?? string.Empty;
                     if (string.IsNullOrWhiteSpace(key))
                     {
                         throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]", nameof(content));
                     }
 
-                    if (!(entry.Value is System.String ||
-                          entry.Value is System.Int32 ||
-                          entry.Value is System.Double ||
-                          entry.Value == null ||
-                          entry.Value is System.Boolean ||
-                          entry.Value is System.Char ||
-                          entry.Value is System.Int16 ||
-                          entry.Value is System.Int64 ||
-                          entry.Value is System.Decimal ||
-                          entry.Value is System.Single ||
-                          entry.Value is System.UInt16 ||
-                          entry.Value is System.UInt32 ||
-                          entry.Value is System.UInt64 ||
-                          entry.Value is System.Byte ||
-                          entry.Value is System.SByte ||
-                          entry.Value is System.Enum))
+                    if (!(entry.Value is string || entry.Value is ValueType || entry.Value == null))
                     {
                         throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
                     }
-                    string value = entry.Value?.ToString()?.Trim() ?? string.Empty;
-
                     entries.Append(key);
                     entries.Append('=');
-                    entries.Append(value);
+                    entries.Append(entry.Value?.ToString()?.Trim() ?? string.Empty);
                     entries.Append('\0');
                 }
             }
@@ -180,7 +150,6 @@ namespace PSADT.Utilities
                 entries.Append('\0');
             }
             entries.Append('\0');
-
             Kernel32.WritePrivateProfileSection(section, entries.ToString(), filepath);
         }
     }
