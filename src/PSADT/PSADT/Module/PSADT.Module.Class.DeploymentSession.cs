@@ -505,7 +505,7 @@ namespace PSADT.Module
                     }
                     catch (Exception ex)
                     {
-                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", LogSeverity.Error);
+                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex}", LogSeverity.Error);
                     }
                 }
 
@@ -902,7 +902,7 @@ namespace PSADT.Module
             }
             catch (Exception ex)
             {
-                WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", LogSeverity.Error);
+                WriteLogEntry($"Failure occurred while instantiating new deployment session: {ex}", LogSeverity.Error);
                 SetExitCode(60008); Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
@@ -1019,7 +1019,7 @@ namespace PSADT.Module
                 }
                 catch (Exception ex)
                 {
-                    WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", LogSeverity.Error);
+                    WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex}", LogSeverity.Error);
                 }
             }
 
