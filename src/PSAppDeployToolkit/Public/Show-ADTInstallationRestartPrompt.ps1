@@ -216,6 +216,7 @@ function Show-ADTInstallationRestartPrompt
                     AppTitle = $PSBoundParameters.Title
                     Subtitle = $PSBoundParameters.Subtitle
                     AppIconImage = $adtConfig.Assets.Logo
+                    AppIconDarkImage = $adtConfig.Assets.LogoDark
                     AppBannerImage = $adtConfig.Assets.Banner
                     DialogTopMost = !$NotTopMost
                     Strings = $adtStrings.RestartPrompt

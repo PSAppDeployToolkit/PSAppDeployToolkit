@@ -126,6 +126,7 @@ function Block-ADTAppExecution
                     AppTitle = $adtSession.InstallTitle
                     Subtitle = $adtStrings.BlockExecutionText.Subtitle.($DeploymentType.ToString())
                     AppIconImage = $adtConfig.Assets.Logo
+                    AppIconDarkImage = $adtConfig.Assets.LogoDark
                     AppBannerImage = $adtConfig.Assets.Banner
                     DialogTopMost = $true
                     MinimizeWindows = $false

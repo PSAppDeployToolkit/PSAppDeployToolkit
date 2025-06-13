@@ -32,6 +32,13 @@
 				<text id="Logo" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="Logo" required="true" expandable="true" />
 			</elements>
 		</policy>
+		<policy name="LogoDark" class="Machine" displayName="$(string.LogoDark_Display)" explainText="$(string.LogoDark_Explain)" presentation="$(presentation.LogoDark)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets">
+			<parentCategory ref="Assets" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="LogoDark" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="LogoDark" required="true" expandable="true" />
+			</elements>
+		</policy>
 		<policy name="Banner" class="Machine" displayName="$(string.Banner_Display)" explainText="$(string.Banner_Explain)" presentation="$(presentation.Banner)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets">
 			<parentCategory ref="Assets" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />

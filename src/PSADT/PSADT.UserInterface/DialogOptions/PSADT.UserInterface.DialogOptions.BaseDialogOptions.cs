@@ -55,11 +55,10 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
             }
-            // But we can skip performing this one
-            // if (!File.Exists(appIconDarkImage))
-            // {
-            //     throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
-            // }
+            if (!File.Exists(appIconDarkImage))
+            {
+                throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
+            }
             if (!File.Exists(appBannerImage))
             {
                 throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);

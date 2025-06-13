@@ -943,6 +943,7 @@ function Show-ADTInstallationWelcome
                         AppTitle = $PSBoundParameters.Title
                         Subtitle = $PSBoundParameters.Subtitle
                         AppIconImage = $adtConfig.Assets.Logo
+                        AppIconDarkImage = $adtConfig.Assets.LogoDark
                         AppBannerImage = $adtConfig.Assets.Banner
                         DialogTopMost = !$NotTopMost
                         MinimizeWindows = !!$MinimizeWindows

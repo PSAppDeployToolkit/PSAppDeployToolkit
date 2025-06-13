@@ -9,6 +9,8 @@
 			<string id="Assets_Category">Assets</string>
 			<string id="Logo_Display">Logo</string>
 			<string id="Logo_Explain">Specify filename of the logo.</string>
+			<string id="Logo_Display">Logo</string>
+			<string id="Logo_Explain">Specify filename of the logo (for dark mode).</string>
 			<string id="Banner_Display">Banner</string>
 			<string id="Banner_Explain">Specify filename of the banner (Classic-only).</string>
 			<string id="MSI_Category">MSI</string>
@@ -130,6 +132,11 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<presentation id="Logo">
 				<textBox refId="Logo">
 					<label>Logo</label>
+				</textBox>
+			</presentation>
+			<presentation id="LogoDark">
+				<textBox refId="LogoDark">
+					<label>LogoDark</label>
 				</textBox>
 			</presentation>
 			<presentation id="Banner">
