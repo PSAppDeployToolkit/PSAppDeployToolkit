@@ -23,10 +23,10 @@ The type of deployment to perform.
 .PARAMETER DeployMode
 Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), or NonInteractive (dialogs without prompts) mode.
 
-NonInteractive mode is automatically set if it is detected that the process is not user interactive.
+Silent mode is automatically set if it is detected that the process is not user interactive, no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
 
-.PARAMETER AllowRebootPassThru
-Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
+.PARAMETER SuppressRebootPassThru
+Suppresses the 3010 return code (requires restart) from being passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
 
 .PARAMETER TerminalServerMode
 Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
@@ -35,16 +35,16 @@ Changes to "user install mode" and back to "user execute mode" for installing/un
 Disables logging to file for the script.
 
 .EXAMPLE
-powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
+powershell.exe -File Invoke-AppDeployToolkit.ps1
 
 .EXAMPLE
-powershell.exe -File Invoke-AppDeployToolkit.ps1 -AllowRebootPassThru
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
 
 .EXAMPLE
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
 
 .EXAMPLE
-Invoke-AppDeployToolkit.exe -DeploymentType "Install" -DeployMode "Silent"
+Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
 
 .INPUTS
 None. You cannot pipe objects to this script.
@@ -68,16 +68,14 @@ param
 (
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
-    [PSDefaultValue(Help = 'Install', Value = 'Install')]
     [System.String]$DeploymentType,
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
-    [PSDefaultValue(Help = 'Interactive', Value = 'Interactive')]
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
-    [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
+    [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$TerminalServerMode,
@@ -91,6 +89,8 @@ param
 ## MARK: Variables
 ##================================================
 
+# Zero-Config MSI support is provided when "AppName" is null or empty.
+# By setting the "AppName" property, Zero-Config MSI will be disabled.
 $adtSession = @{
     # App variables.
     AppVendor = 'Martin Prikryl'
@@ -101,6 +101,7 @@ $adtSession = @{
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
+    AppProcessesToClose = @(@{ Name = 'WinSCP'; Description = 'WinSCP' })
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2024-10-21'
     AppScriptAuthor = 'PSAppDeployToolkit'
@@ -111,19 +112,33 @@ $adtSession = @{
 
     # Script variables.
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
-    DeployAppScriptVersion = '4.1.0'
     DeployAppScriptParameters = $PSBoundParameters
+    DeployAppScriptVersion = '4.1.0'
 }
 
 function Install-ADTDeployment
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     ##================================================
     ## MARK: Pre-Install
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## Show Welcome Message, close WinSCP if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'WinSCP'; Description = $adtSession.AppName } -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt
+    ## Show Welcome Message, close processes if specified, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
+    $saiwParams = @{
+        AllowDeferCloseProcesses = $true
+        DeferTimes = 3
+        PersistPrompt = $true
+    }
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        $saiwParams.Add('CloseProcesses', $adtSession.AppProcessesToClose)
+    }
+    Show-ADTInstallationWelcome @saiwParams
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -179,13 +194,21 @@ function Install-ADTDeployment
 
 function Uninstall-ADTDeployment
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     ##================================================
     ## MARK: Pre-Uninstall
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'WinSCP'; Description = $adtSession.AppName } -CloseProcessesCountdown 60
+    ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+    }
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -223,13 +246,21 @@ function Uninstall-ADTDeployment
 
 function Repair-ADTDeployment
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     ##================================================
     ## MARK: Pre-Repair
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'WinSCP'; Description = $adtSession.AppName } -CloseProcessesCountdown 60
+    ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+    }
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -285,6 +316,7 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
+    # Import the module locally if available, otherwise try to find it from PSModulePath.
     if ([System.IO.File]::Exists("$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
     {
         Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
@@ -294,8 +326,11 @@ try
     {
         Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
+
+    # Open a new deployment session, replacing $adtSession with a DeploymentSession.
     $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
-    $adtSession = Open-ADTSession -SessionState $PSCmdlet.SessionState @adtSession @iadtParams -PassThru
+    $adtSession = Remove-ADTHashtableNullOrEmptyValues -Hashtable $adtSession
+    $adtSession = Open-ADTSession @adtSession @iadtParams -PassThru
 }
 catch
 {
@@ -308,21 +343,30 @@ catch
 ## MARK: Invocation
 ##================================================
 
+# Commence the actual deployment operation.
 try
 {
-    Get-ChildItem -LiteralPath $PSScriptRoot -Directory -Filter PSAppDeployToolkit.* | & {
+    # Import any found extensions before proceeding with the deployment.
+    Get-ChildItem -LiteralPath $PSScriptRoot -Directory | & {
         process
         {
-            Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
-            Import-Module -Name $_.FullName -Force
+            if ($_.Name -match 'PSAppDeployToolkit\..+$')
+            {
+                Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
+                Import-Module -Name $_.FullName -Force
+            }
         }
     }
+
+    # Invoke the deployment and close out the session.
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }
 catch
 {
-    Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_) -Severity 3
-    Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
+    # An unhandled error has been caught.
+    $mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_
+    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
+    Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait
     Close-ADTSession -ExitCode 60001
 }
