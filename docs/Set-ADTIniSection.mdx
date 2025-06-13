@@ -12,7 +12,7 @@ Opens an INI file and sets the values of the specified section.
 ## SYNTAX
 
 ```powershell
-Set-ADTIniSection [-FilePath] <String> [-Section] <String> [-Content] <IDictionary> [-Force]
+Set-ADTIniSection [-FilePath] <String> [-Section] <String> [-Content] <IDictionary> [-Overwrite] [-Force]
  [<CommonParameters>]
 ```
 
@@ -25,34 +25,26 @@ Opens an INI file and sets the values of the specified section.
 ### EXAMPLE 1
 
 ```powershell
-Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{'KeyFileName' = 'MyFile.ID'}
+Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content ([ordered]@{'KeyFileName' = 'MyFile.ID'; 'KeyFileType' = 'ID'})
 ```
 
-Sets the 'Notes' section to only contain the content specified, supplied as hashtable.
+Adds the provided content to the 'Notes' section, preserving input order
 
 ### EXAMPLE 2
 
 ```powershell
-Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content ([ordered]@{'KeyFileName' = 'MyFile.ID'; 'KeyFileType' = 'ID'})
+Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{'KeyFileName' = 'MyFile.ID'} -Overwrite
 ```
 
-Sets the 'Notes' section to only contain the content specified, supplied as an ordered hashtable to maintain the desired order.
+Overwrites the 'Notes' section to only contain the content specified.
 
 ### EXAMPLE 3
 
 ```powershell
-Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{}
+Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content $null -Overwrite
 ```
 
-Sets the 'Notes' section to be empty by sending an empty hashtable.
-
-### EXAMPLE 4
-
-```powershell
-Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content $null
-```
-
-Sets the 'Notes' section to be empty by sending a null value.
+Sets the 'Notes' section to be empty by sending null content in combination with the -Overwrite switch.
 
 ## PARAMETERS
 
@@ -91,6 +83,9 @@ Accept wildcard characters: False
 ### -Content
 
 A hashtable or dictionary object containing the key-value pairs to set in the specified section.
+      Supply an ordered hashtable to preserve the order of supplied entries.
+Values can be strings, numbers, booleans, enums, or null.
+      Supply $null or an empty hashtable in combination with -Overwrite to empty an entire section.
 
 ```yaml
 Type: IDictionary
@@ -100,6 +95,22 @@ Aliases:
 Required: True
 Position: 3
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Overwrite
+
+Specifies whether the provided INI content should overwrite all existing section content.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
