@@ -107,7 +107,7 @@ MyKey2=MyValue2
             { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content @{} } | Should -Not -Throw
         }
         It 'Should throw if Content is not IDictionary' {
-            { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content @('Dude',"Where's",'My','Dictionary') } | Should -Throw
+            { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content @('Dude', "Where's", 'My', 'Dictionary') } | Should -Throw
         }
         It 'Should accept null Content' {
             { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content $null } | Should -Not -Throw
