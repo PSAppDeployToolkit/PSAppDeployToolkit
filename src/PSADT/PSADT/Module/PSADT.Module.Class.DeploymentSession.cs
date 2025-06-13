@@ -689,13 +689,13 @@ namespace PSADT.Module
                 bool deployModeChanged = false;
                 if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !DeviceUtilities.IsOOBEComplete())
                 {
+                    if (deployModeChanged)
+                    {
+                        WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{_deployMode}]");
+                    }
                     if (_deployMode != DeployMode.Interactive)
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment mode was manually set to [{_deployMode}].");
-                    }
-                    else if (deployModeChanged)
-                    {
-                        WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{_deployMode}]");
                     }
                     else if ((bool)configToolkit["OobeDetection"]!)
                     {
@@ -724,13 +724,13 @@ namespace PSADT.Module
                                 {
                                     if (syncDoneValue.Equals(0))
                                     {
-                                        if (_deployMode != DeployMode.Interactive)
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was manually set to [{_deployMode}].");
-                                        }
-                                        else if (deployModeChanged)
+                                        if (deployModeChanged)
                                         {
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
+                                        }
+                                        else if (_deployMode != DeployMode.Interactive)
+                                        {
+                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was manually set to [{_deployMode}].");
                                         }
                                         else if ((bool)configToolkit["OobeDetection"]!)
                                         {
@@ -781,13 +781,13 @@ namespace PSADT.Module
                 if ((bool)adtEnv["SessionZero"]!)
                 {
                     // If the script was launched with deployment mode manually set, then continue.
-                    if (_deployMode != DeployMode.Interactive)
-                    {
-                        WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
-                    }
-                    else if (deployModeChanged)
+                    if (deployModeChanged)
                     {
                         WriteLogEntry($"Session 0 detected but deployment has already been changed to [{_deployMode}]");
+                    }
+                    else if (_deployMode != DeployMode.Interactive)
+                    {
+                        WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
                     }
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
@@ -817,13 +817,13 @@ namespace PSADT.Module
                 if (_appProcessesToClose.Count > 0)
                 {
                     // If the script was launched with deployment mode manually set, then continue.
-                    if (_deployMode != DeployMode.Interactive)
-                    {
-                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
-                    }
-                    else if (deployModeChanged)
+                    if (deployModeChanged)
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
+                    }
+                    else if (_deployMode != DeployMode.Interactive)
+                    {
+                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
                     }
                     else if ((bool)configToolkit["ProcessDetection"]!)
                     {
