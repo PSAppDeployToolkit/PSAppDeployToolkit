@@ -219,14 +219,21 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Farm this out to a new process.
-        $return = if ($NoWait)
+        $return = try
         {
-            Start-ADTProcessAsUser @sapauParams -NoWait
-            return
+            if ($NoWait)
+            {
+                Start-ADTProcessAsUser @sapauParams -NoWait
+                return
+            }
+            else
+            {
+                Start-ADTProcessAsUser @sapauParams -PassThru
+            }
         }
-        else
+        catch [System.Runtime.InteropServices.ExternalException]
         {
-            Start-ADTProcessAsUser @sapauParams -PassThru
+            $_.TargetObject
         }
 
         # Confirm we were successful in our operation.
