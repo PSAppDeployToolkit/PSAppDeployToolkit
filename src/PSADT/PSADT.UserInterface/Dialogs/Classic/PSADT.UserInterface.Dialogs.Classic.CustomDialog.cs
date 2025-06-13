@@ -43,7 +43,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set up the buttons.
                 if (options.ButtonLeftText != null)
                 {
-                    this.buttonLeft.Text = options.ButtonLeftText;
+                    this.buttonLeft.Text = StripFormattingTags(options.ButtonLeftText);
                     this.buttonLeft.Visible = true;
                 }
                 else
@@ -52,7 +52,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 if (options.ButtonMiddleText != null)
                 {
-                    this.buttonMiddle.Text = options.ButtonMiddleText;
+                    this.buttonMiddle.Text = StripFormattingTags(options.ButtonMiddleText);
                     this.buttonMiddle.Visible = true;
                 }
                 else
@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 if (options.ButtonRightText != null)
                 {
-                    this.buttonRight.Text = options.ButtonRightText;
+                    this.buttonRight.Text = StripFormattingTags(options.ButtonRightText);
                     this.buttonRight.Visible = true;
                 }
                 else
@@ -91,7 +91,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     this.labelMessage.TextAlign = alignment;
                 }
-                this.labelMessage.Text = options.MessageText;
+                this.labelMessage.Text = StripFormattingTags(options.MessageText);
             }
 
             // Resume the dialog now that we've applied any options.

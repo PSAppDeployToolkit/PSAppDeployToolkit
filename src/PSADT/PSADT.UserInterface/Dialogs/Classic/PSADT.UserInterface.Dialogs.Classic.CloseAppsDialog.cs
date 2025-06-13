@@ -45,18 +45,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
             if (null != options)
             {
                 // Set up main options.
-                this.labelWelcomeMessage.Text = options.Strings.Classic.WelcomeMessage;
-                this.labelAppName.Text = options.AppTitle.Replace("&", "&&");
-                this.labelCloseProcessesMessage.Text = options.Strings.Classic.CloseAppsMessage;
-                this.labelDeferralExpiryMessage.Text = options.Strings.Classic.ExpiryMessage;
-                this.labelDeferWarningMessage.Text = options.Strings.Classic.ExpiryWarning;
+                this.labelWelcomeMessage.Text = StripFormattingTags(options.Strings.Classic.WelcomeMessage);
+                this.labelAppName.Text = StripFormattingTags(options.AppTitle.Replace("&", "&&"));
+                this.labelCloseProcessesMessage.Text = StripFormattingTags(options.Strings.Classic.CloseAppsMessage);
+                this.labelDeferralExpiryMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryMessage);
+                this.labelDeferWarningMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryWarning);
                 this.toolTipButtonContinue.RemoveAll();
                 hideCloseButton = options.HideCloseButton;
                 forcedCountdown = options.ForcedCountdown;
                 countdownDuration = options.CountdownDuration;
-                countdownClose = options.Strings.Classic.CountdownClose;
-                countdownDefer = options.Strings.Classic.CountdownDefer;
-                buttonContinueToolTipText = options.Strings.Classic.ButtonContinueTooltip;
+                countdownClose = StripFormattingTags(options.Strings.Classic.CountdownClose);
+                countdownDefer = StripFormattingTags(options.Strings.Classic.CountdownDefer);
+                buttonContinueToolTipText = StripFormattingTags(options.Strings.Classic.ButtonContinueTooltip);
                 continueOnProcessClosure = options.ContinueOnProcessClosure;
 
                 // Set up the picturebox.
@@ -65,7 +65,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the custom message text if we have one.
                 if (null != options.CustomMessageText)
                 {
-                    this.labelCustomMessage.Text = options.CustomMessageText;
+                    this.labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
                 }
                 else
                 {
@@ -108,7 +108,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.labelDeferDeadline.Text = null;
                     if (null != options.DeferralsRemaining && !options.UnlimitedDeferrals)
                     {
-                        this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim();
+                        this.labelDeferDeadline.Text = StripFormattingTags($"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim());
                         if (options.DeferralsRemaining <= 0)
                         {
                             this.buttonDefer.Enabled = false;
@@ -116,7 +116,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     }
                     if (null != options.DeferralDeadline)
                     {
-                        this.labelDeferDeadline.Text = $"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim();
+                        this.labelDeferDeadline.Text = StripFormattingTags($"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim());
                         if (options.DeferralDeadline <= DateTime.Now)
                         {
                             this.buttonDefer.Enabled = false;

@@ -82,13 +82,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Update the progress message.
             if (!string.IsNullOrWhiteSpace(progressMessage))
             {
-                this.labelMessage.Text = progressMessage;
+                this.labelMessage.Text = StripFormattingTags(progressMessage!);
             }
 
             // Update the detail message.
             if (!string.IsNullOrWhiteSpace(progressMessageDetail))
             {
-                this.labelDetail.Text = progressMessageDetail;
+                this.labelDetail.Text = StripFormattingTags(progressMessageDetail!);
             }
 
             // Update the message alignment.

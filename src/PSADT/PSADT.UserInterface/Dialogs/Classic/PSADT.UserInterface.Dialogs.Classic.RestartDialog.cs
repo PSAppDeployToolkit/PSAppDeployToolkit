@@ -36,7 +36,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.SuspendLayout();
 
             // Reset the dialog's title. It must be that of the string table in the options.
-            this.Text = options.Strings.Title;
+            this.Text = StripFormattingTags(options.Strings.Title);
 
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
@@ -62,7 +62,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the custom message text if we have one.
                 if (null != options.CustomMessageText)
                 {
-                    this.labelCustomMessage.Text = options.CustomMessageText;
+                    this.labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
                 }
                 else
                 {
@@ -70,11 +70,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up remaining options.
-                this.labelMessage.Text = options.Strings.Message;
-                this.labelRestartMessage.Text = $"{options.Strings.MessageTime} {options.Strings.MessageRestart}";
-                this.labelTimeRemaining.Text = options.Strings.TimeRemaining;
-                this.buttonRestartNow.Text = options.Strings.ButtonRestartNow;
-                this.buttonMinimize.Text = options.Strings.ButtonRestartLater;
+                this.labelMessage.Text = StripFormattingTags(options.Strings.Message);
+                this.labelRestartMessage.Text = StripFormattingTags($"{options.Strings.MessageTime} {options.Strings.MessageRestart}");
+                this.labelTimeRemaining.Text = StripFormattingTags(options.Strings.TimeRemaining);
+                this.buttonRestartNow.Text = StripFormattingTags(options.Strings.ButtonRestartNow);
+                this.buttonMinimize.Text = StripFormattingTags(options.Strings.ButtonRestartLater);
             }
 
             // Resume the dialog now that we've applied any options.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
@@ -40,7 +41,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 // Base properties.
                 this.SuspendLayout();   
-                this.Text = options.AppTitle;
+                this.Text = StripFormattingTags(options.AppTitle);
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.TopMost = options.DialogTopMost;
                 this.ActiveControl = this.buttonDefault;
@@ -237,6 +238,39 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 persistTimer.Stop();
                 persistTimer.Start();
             }
+        }
+
+        /// <summary>
+        /// Removes formatting tags (e.g., bold, italic, accent, and URL tags) from the specified text, replacing them
+        /// with their corresponding plain text content.
+        /// </summary>
+        /// <remarks>This method processes text to remove specific formatting tags, such as bold, italic,
+        /// accent, and URL tags, as defined by the <see cref="DialogTools.TextFormattingRegex"/> regular expression.
+        /// The content within these tags is preserved and included in the returned string.</remarks>
+        /// <param name="text">The input string containing formatting tags to be stripped.</param>
+        /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
+        protected string StripFormattingTags(string text)
+        {
+            foreach (Match match in DialogTools.TextFormattingRegex.Matches(text))
+            {
+                if (match.Groups["UrlLink"].Success)
+                {
+                    text = text.Replace(match.Groups["UrlLink"].Value, match.Groups["UrlLinkContent"].Value);
+                }
+                else if (match.Groups["Accent"].Success)
+                {
+                    text = text.Replace(match.Groups["Accent"].Value, match.Groups["AccentText"].Value);
+                }
+                else if (match.Groups["Bold"].Success)
+                {
+                    text = text.Replace(match.Groups["Bold"].Value, match.Groups["BoldText"].Value);
+                }
+                else if (match.Groups["Italic"].Success)
+                {
+                    text = text.Replace(match.Groups["Italic"].Value, match.Groups["ItalicText"].Value);
+                }
+            }
+            return text;
         }
 
         protected override void WndProc(ref Message m)

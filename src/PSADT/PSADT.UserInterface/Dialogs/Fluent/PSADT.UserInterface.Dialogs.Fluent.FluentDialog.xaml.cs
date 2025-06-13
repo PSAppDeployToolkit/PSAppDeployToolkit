@@ -361,7 +361,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             var lastPos = 0;
-            foreach (Match match in _markdownRegex.Matches(message))
+            foreach (Match match in DialogTools.TextFormattingRegex.Matches(message))
             {
                 // Add text before the current match
                 if (match.Index > lastPos)
@@ -371,7 +371,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
                 // Process the matched element
                 ProcessMatch(textBlock, match);
-
                 lastPos = match.Index + match.Length;
             }
 
@@ -480,7 +479,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="button"></param>
         /// <param name="text"></param>
-        protected void SetButtonContentWithAccelerator(Button button, string? text)
+        protected void SetButtonContentWithAccelerator(Button button, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -894,22 +893,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Dialog icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
-
-        /// <summary>
-        /// Represents a compiled regular expression used to parse and identify specific Markdown elements.
-        /// </summary>
-        /// <remarks>This regular expression matches the following Markdown elements: <list type="bullet">
-        /// <item> <description> URLs enclosed in [url]...[/url] tags. </description> </item> <item> 
-        /// <item> <description> Text enclosed in [accent]...[/accent] representing accented text. </description> </item> <item>
-        /// <item> <description> Text enclosed in [bold]...[/bold] representing bold text. </description> </item> <item>
-        /// <item> <description> Text enclosed in [italic]...[/italic] representing italic text. </description> </item>
-        /// </list> The regular expression is compiled for improved performance during repeated use.</remarks>
-        private static readonly Regex _markdownRegex = new Regex(
-            @"(?<UrlLink>\[url\](?<UrlLinkContent>.+?)\[/url\])" + @"|" +
-            @"(?<Accent>\[accent\](?<AccentText>.+?)\[/accent\])" + @"|" +
-            @"(?<Bold>\[bold\](?<BoldText>.+?)\[/bold\])" + @"|" +
-            @"(?<Italic>\[italic\](?<ItalicText>.+?)\[/italic\])",
-            RegexOptions.Compiled);
 
         /// <summary>
         /// Event handler for when a window property has changed.
