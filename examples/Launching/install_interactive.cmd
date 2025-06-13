@@ -1,1 +1,1 @@
-"%~dp0Invoke-AppDeployToolkit.exe" -DeploymentType Install -DeployMode Interactive -AllowRebootPassThru
+"%~dp0Invoke-AppDeployToolkit.exe" -DeploymentType Install -DeployMode Interactive

@@ -25,8 +25,8 @@ Specifies whether the installation should be run in Interactive (shows dialogs),
 
 Silent mode is automatically set if it is detected that the process is not user interactive, no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
 
-.PARAMETER AllowRebootPassThru
-Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
+.PARAMETER SuppressRebootPassThru
+Suppresses the 3010 return code (requires restart) from being passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
 
 .PARAMETER TerminalServerMode
 Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
@@ -35,16 +35,16 @@ Changes to "user install mode" and back to "user execute mode" for installing/un
 Disables logging to file for the script.
 
 .EXAMPLE
-powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
+powershell.exe -File Invoke-AppDeployToolkit.ps1
 
 .EXAMPLE
-powershell.exe -File Invoke-AppDeployToolkit.ps1 -AllowRebootPassThru
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
 
 .EXAMPLE
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
 
 .EXAMPLE
-Invoke-AppDeployToolkit.exe -DeploymentType "Install" -DeployMode "Silent"
+Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
 
 .INPUTS
 None. You cannot pipe objects to this script.
@@ -75,7 +75,7 @@ param
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
-    [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
+    [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$TerminalServerMode,

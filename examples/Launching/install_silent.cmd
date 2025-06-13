@@ -1,1 +1,1 @@
-"%~dp0Invoke-AppDeployToolkit.exe" -DeploymentType Install -DeployMode Silent -AllowRebootPassThru
+"%~dp0Invoke-AppDeployToolkit.exe" -DeploymentType Install -DeployMode Silent

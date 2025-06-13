@@ -13,7 +13,7 @@ Opens a new ADT session.
 
 ```powershell
 Open-ADTSession [[-SessionState] <SessionState>] [[-DeploymentType] <DeploymentType>]
- [[-DeployMode] <DeployMode>] [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging]
+ [[-DeployMode] <DeployMode>] [-SuppressRebootPassThru] [-TerminalServerMode] [-DisableLogging]
  [[-AppVendor] <String>] [[-AppName] <String>] [[-AppVersion] <String>] [[-AppArch] <String>]
  [[-AppLang] <String>] [[-AppRevision] <String>] [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>]
  [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
@@ -96,9 +96,9 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AllowRebootPassThru
+### -SuppressRebootPassThru
 
-Allows reboot pass-through.
+Suppresses reboot pass-through.
 
 ```yaml
 Type: SwitchParameter

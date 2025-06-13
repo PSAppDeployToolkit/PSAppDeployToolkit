@@ -22,8 +22,8 @@ function Open-ADTSession
     .PARAMETER DeployMode
         Specifies the deployment mode: Interactive, NonInteractive, or Silent.
 
-    .PARAMETER AllowRebootPassThru
-        Allows reboot pass-through.
+    .PARAMETER SuppressRebootPassThru
+        Suppresses reboot pass-through.
 
     .PARAMETER TerminalServerMode
         Enables Terminal Server mode.
@@ -167,7 +167,7 @@ function Open-ADTSession
         [PSADT.Module.DeployMode]$DeployMode,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
-        [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
+        [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [System.Management.Automation.SwitchParameter]$TerminalServerMode,

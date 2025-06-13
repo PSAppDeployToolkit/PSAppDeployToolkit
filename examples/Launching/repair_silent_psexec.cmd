@@ -1,4 +1,4 @@
 net session >nul 2>&1
 if ERRORLEVEL 1 powershell.exe -NoProfile -Command Start-Process -FilePath '%~0' -Verb RunAs & exit
 
-"%~dp0PsExec64.exe" /accepteula /s "%~dp0Invoke-AppDeployToolkit.exe" -DeploymentType Repair -DeployMode Silent -AllowRebootPassThru
+"%~dp0PsExec64.exe" /accepteula /s "%~dp0Invoke-AppDeployToolkit.exe" -DeploymentType Repair -DeployMode Silent

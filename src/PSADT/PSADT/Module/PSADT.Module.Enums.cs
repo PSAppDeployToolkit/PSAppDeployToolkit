@@ -10,7 +10,7 @@ namespace PSADT.Module
     {
         None = 0,
         Disposed = 1,
-        AllowRebootPassThru = 2,
+        SuppressRebootPassThru = 2,
         TerminalServerMode = 4,
         DisableLogging = 8,
         NoExitOnClose = 16,

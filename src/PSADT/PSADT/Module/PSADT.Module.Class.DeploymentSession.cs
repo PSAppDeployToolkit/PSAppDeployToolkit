@@ -78,9 +78,9 @@ namespace PSADT.Module
                     {
                         _deployMode = (DeployMode)paramValue;
                     }
-                    if (parameters.TryGetValue("AllowRebootPassThru", out paramValue) && (SwitchParameter)paramValue)
+                    if (parameters.TryGetValue("SuppressRebootPassThru", out paramValue) && (SwitchParameter)paramValue)
                     {
-                        Settings |= DeploymentSettings.AllowRebootPassThru;
+                        Settings |= DeploymentSettings.SuppressRebootPassThru;
                     }
                     if (parameters.TryGetValue("TerminalServerMode", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -952,7 +952,7 @@ namespace PSADT.Module
                     ResetDeferHistory();
 
                     // Handle reboot prompts on successful script completion.
-                    if (deploymentStatus.Equals(DeploymentStatus.RestartRequired) && AllowRebootPassThru)
+                    if (deploymentStatus.Equals(DeploymentStatus.RestartRequired) && !SuppressRebootPassThru)
                     {
                         WriteLogEntry("A restart has been flagged as required.");
                     }
@@ -1533,7 +1533,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets whether this deployment session is allowed to exit with a reboot exit code.
         /// </summary>
-        public bool AllowRebootPassThru => GetPropertyValue<bool>();
+        public bool SuppressRebootPassThru => GetPropertyValue<bool>();
 
         /// <summary>
         /// Gets whether this deployment session should enable terminal services install mode.
