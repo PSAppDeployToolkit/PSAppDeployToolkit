@@ -22,6 +22,7 @@
     FontFamily="Segoe UI Variable"
     FontSize="14"
     FontWeight="Regular"
+    RenderOptions.BitmapScalingMode="HighQuality"
     ResizeMode="NoResize"
     SizeToContent="Height"
     SnapsToDevicePixels="True"
