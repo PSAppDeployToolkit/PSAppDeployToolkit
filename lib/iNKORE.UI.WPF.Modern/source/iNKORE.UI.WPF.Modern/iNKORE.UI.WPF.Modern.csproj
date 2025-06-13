@@ -11,7 +11,7 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\assets\others\iNKORE.Pulic.snk</AssemblyOriginatorKeyFile>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591;1701;1702;CA1416;CS8632</NoWarn>
 	</PropertyGroup>
 
