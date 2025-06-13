@@ -41,25 +41,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AutomationProperties.SetName(ButtonRight, options.ButtonRightText);
             }
 
-            // Focus the default button
-            if (setFocus)
-            {
-                Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
-                {
-                    if (ButtonLeft.Visibility == Visibility.Visible)
-                    {
-                        ButtonLeft.Focus();
-                    }
-                    else if (ButtonMiddle.Visibility == Visibility.Visible)
-                    {
-                        ButtonMiddle.Focus();
-                    }
-                    else if (ButtonRight.Visibility == Visibility.Visible)
-                    {
-                        ButtonRight.Focus();
-                    }
-                });
-            }
         }
 
         /// <summary>

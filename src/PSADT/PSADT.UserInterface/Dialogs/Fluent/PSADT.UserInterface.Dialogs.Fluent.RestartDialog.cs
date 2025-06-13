@@ -1,7 +1,8 @@
-﻿using System.Windows;
+﻿using iNKORE.UI.WPF.Modern;
+using PSADT.UserInterface.DialogOptions;
+using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Threading;
-using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -31,21 +32,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             ButtonPanel.Visibility = Visibility.Visible;
 
-            // Configure buttons
+            // Configure left button
             SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);
-            ButtonLeft.Visibility = Visibility.Visible;
-            SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
-            ButtonRight.Visibility = Visibility.Visible;
-
-            // Set button automation properties
             AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartNow);
-            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
+            ButtonLeft.Visibility = Visibility.Visible;
 
-            // Focus the restart button by default
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
-            {
-                ButtonLeft.Focus();
-            });
+            // Configure right button
+            SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
+            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
+            ButtonRight.Visibility = Visibility.Visible;
+            ButtonRight.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
         }
 
         /// <summary>

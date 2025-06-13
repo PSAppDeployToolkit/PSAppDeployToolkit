@@ -53,7 +53,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             if (!string.IsNullOrWhiteSpace(progressMessageDetail))
             {
-                ProgressMessageDetailTextBlock.Text = progressMessageDetail;
+                FormatMessageWithHyperlinks(ProgressMessageDetailTextBlock, progressMessageDetail!);
                 AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessage);
             }
 

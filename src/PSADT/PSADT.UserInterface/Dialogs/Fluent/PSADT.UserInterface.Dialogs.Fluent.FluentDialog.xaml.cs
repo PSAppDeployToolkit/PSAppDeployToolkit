@@ -392,9 +392,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="match">The regex match to process.</param>
         private void ProcessMatch(TextBlock textBlock, Match match)
         {
-            if (match.Groups["PlainUrl"].Success)
+            if (match.Groups["UrlLink"].Success)
             {
-                ProcessUrlLink(textBlock, match.Groups["PlainUrl"].Value);
+                ProcessUrlLink(textBlock, match.Groups["UrlLinkContent"].Value);
             }
             else if (match.Groups["Accent"].Success)
             {
@@ -882,16 +882,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Represents a compiled regular expression used to parse and identify specific Markdown elements.
         /// </summary>
         /// <remarks>This regular expression matches the following Markdown elements: <list type="bullet">
-        /// <item> <description> Plain URLs, including HTTP, FTP, and email links. </description> </item> <item>
-        /// <description> Text enclosed in single quotes, representing accented text. </description> </item> <item>
-        /// <description> Text enclosed in double asterisks (**), representing bold text. </description> </item> <item>
-        /// <description> Text enclosed in single asterisks (*), representing italic text. </description> </item>
+        /// <item> <description> URLs enclosed in [url]...[/url] tags. </description> </item> <item> 
+        /// <item> <description> Text enclosed in [accent]...[/accent] representing accented text. </description> </item> <item>
+        /// <item> <description> Text enclosed in [bold]...[/bold] representing bold text. </description> </item> <item>
+        /// <item> <description> Text enclosed in [italic]...[/italic] representing italic text. </description> </item>
         /// </list> The regular expression is compiled for improved performance during repeated use.</remarks>
         private static readonly Regex _markdownRegex = new Regex(
-            @"(?<PlainUrl>(?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])" + @"|" +
-            @"(?<Accent>'(?<AccentText>[^']+)')" + @"|" +
-            @"(?<Bold>\*\*(?<BoldText>[^*]+)\*\*)" + @"|" +
-            @"(?<Italic>(?<!\*)\*(?<ItalicText>[^*]+)\*(?!\*))",
+            @"(?<UrlLink>\[url\](?<UrlLinkContent>.+?)\[/url\])" + @"|" +
+            @"(?<Accent>\[accent\](?<AccentText>.+?)\[/accent\])" + @"|" +
+            @"(?<Bold>\[bold\](?<BoldText>.+?)\[/bold\])" + @"|" +
+            @"(?<Italic>\[italic\](?<ItalicText>.+?)\[/italic\])",
             RegexOptions.Compiled);
 
         /// <summary>

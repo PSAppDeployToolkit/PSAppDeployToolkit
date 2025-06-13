@@ -92,6 +92,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
             AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
             ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            ButtonRight.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
             ButtonLeft.Visibility = Visibility.Visible;
 
             // Set up/process optional values.
@@ -106,12 +107,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 _logWriter = state.LogWriter;
             }
             UpdateDeferralValues();
-
-            // Focus the continue button by default
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
-            {
-                ButtonLeft.Focus();
-            });
 
             // Set the dialog result to a default value.
             DialogResult = CloseAppsDialogResult.Timeout;
