@@ -3,11 +3,14 @@
     Import-Module "$PSScriptRoot\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }
 Describe 'Set-ADTIniValue' {
+
     BeforeAll {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'IniContent', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
         $IniContent = @"
 [MySection]
 MyKey=MyValue
 "@
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'IniPath', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
         $IniPath = "$TestDrive\IniFile.ini"
 
         # Mock Set-ADTPreferenceVariables due to its expense when running via Pester.
