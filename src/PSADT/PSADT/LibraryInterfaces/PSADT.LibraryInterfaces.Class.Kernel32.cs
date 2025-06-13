@@ -181,11 +181,11 @@ namespace PSADT.LibraryInterfaces
             fixed (char* lpAppNameLocal = lpAppName)
             {
                 var res = PInvoke.WritePrivateProfileString(lpAppNameLocal, !string.IsNullOrWhiteSpace(lpKeyName) ? lpKeyNameLocal : null, (lpString != null) ? lpStringLocal : null, lpFileNameLocal);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
         }
 
