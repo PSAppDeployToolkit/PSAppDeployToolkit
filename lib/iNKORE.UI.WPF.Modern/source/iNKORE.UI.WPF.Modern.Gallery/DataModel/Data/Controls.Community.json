@@ -1,0 +1,115 @@
+{
+    // Everything from CommunityToolkit
+    "$schema": "../ControlInfoData.schema.json",
+
+    "Groups":
+    [
+        //{
+        //    "UniqueId": "Input",
+        //    "Title": "Input",
+        //    "Subtitle": "",
+        //    "ImagePath": "",
+        //    "ImageIconPath": "",
+        //    "Description": "",
+        //    "Items":
+        //    [
+        //    ]
+        //},
+        {
+            "UniqueId": "Layout",
+            "Title": "Layout",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": "Use layout controls to arrange the controls and content in your app.",
+            "Items":
+            [
+                {
+                    "UniqueId": "SettingsCard",
+                    "Title": "SettingsCard",
+                    "Subtitle": "A card control that can be used to create Windows 11 style settins experiences.",
+                    "ImagePath": "ms-appx:///Assets/ControlImages/SettingsCard.png",
+                    "ImageIconPath": "",
+                    "Description": "SettingsCard is a control that can be used to display settings in your experience. It uses the default styling found in Windows 11 and is easy to use, meets all accessibility standards and will make your settings page look great! You can set the Header, Description, HeaderIcon and Content properties to create an easy to use experience.",
+                    "IsNew": true,
+                    "IsUpdated": true,
+                    "Docs":
+                    [
+                        // To be updated
+                        //{
+                        //    "Title": "CheckBox - API",
+                        //    "Uri": "https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.checkbox"
+                        //},
+                        //{
+                        //    "Title": "Guidelines",
+                        //    "Uri": "https://docs.microsoft.com/windows/apps/design/controls/checkbox"
+                        //}
+                    ],
+                    "RelatedControls":
+                    [
+                        "SettingsExpander"
+                    ]
+                },
+                {
+                    "UniqueId": "SettingsExpander",
+                    "Title": "SettingsExpander",
+                    "Subtitle": "A card control that can be used to create Windows 11 style settins experiences.",
+                    "ImagePath": "ms-appx:///Assets/ControlImages/SettingsExpander.png",
+                    "ImageIconPath": "",
+                    "Description": "The SettingsExpander can be used to group multiple s into a single collapsible group. A SettingsExpander can have it's own content to display a setting on the right, just like a SettingsCard, but in addition can have any number of extra Items to include as additional settings. These items are SettingsCards themselves, which means you can easily move a setting into or out of Expanders just by cutting and pasting their XAML!",
+                    "IsNew": true,
+                    "IsUpdated": true,
+                    "Docs":
+                    [
+                        // To be updated
+                        //{
+                        //    "Title": "CheckBox - API",
+                        //    "Uri": "https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.checkbox"
+                        //},
+                        //{
+                        //    "Title": "Guidelines",
+                        //    "Uri": "https://docs.microsoft.com/windows/apps/design/controls/checkbox"
+                        //}
+                    ],
+                    "RelatedControls":
+                    [
+                        "SettingsCard"
+                    ]
+                }
+
+            ]
+        },
+        {
+            "UniqueId": "Media",
+            "Title": "Media",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": ""
+        },
+        {
+            "UniqueId": "Sizers",
+            "Title": "Sizers",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": ""
+        },
+        {
+            "UniqueId": "StatusAndInfo",
+            "Title": "Status and Info",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": ""
+        },
+        {
+            "UniqueId": "Text",
+            "Title": "Text",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": ""
+        }
+    ]
+}

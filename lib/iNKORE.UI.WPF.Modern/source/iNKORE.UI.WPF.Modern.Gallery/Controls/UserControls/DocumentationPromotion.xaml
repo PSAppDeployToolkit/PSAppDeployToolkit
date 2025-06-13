@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="iNKORE.UI.WPF.Modern.Gallery.Controls.UserControls.DocumentationPromotion"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Controls.UserControls" 
+             xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+             xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+             d:DesignWidth="640"
+             mc:Ignorable="d" >
+    <Grid>
+        <Border Background="{DynamicResource {x:Static ui:ThemeKeys.LayerFillColorDefaultBrushKey}}"
+                                BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"
+                                CornerRadius="8" BorderThickness="1" Padding="12, 10" TextElement.FontSize="14">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8" TextElement.Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorPrimaryBrushKey}}"
+                                                     Margin="0,3,0,0">
+                    <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextBulletListSquareEdit_24_Regular}" FontSize="24"/>
+                    <TextBlock FontSize="16" VerticalAlignment="Center" FontWeight="SemiBold">It's time for a brand-new docmentation set!</TextBlock>
+                </ikw:SimpleStackPanel>
+
+                <ikw:SimpleStackPanel Orientation="Vertical" Spacing="12" Grid.Row="1" Margin="5,10">
+                    <FrameworkElement.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="LineHeight" Value="21"/>
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                            <Setter Property="TextAlignment" Value="Justify"/>
+                        </Style>
+                    </FrameworkElement.Resources>
+
+                    <TextBlock>
+                                        <Run>We are looking for passionate volunteers to help us write and improve the documentation for the iNKORE.UI.WPF.Modern library. Your contributions will be invaluable in making this project more accessible and user-friendly for the entire community.</Run>
+                    </TextBlock>
+                    <TextBlock>
+                                        <Run>Whether you are an experienced developer or just enthusiastic about contributing to open-source, we welcome your help!</Run>
+                    </TextBlock>
+
+                    <TextBlock>
+                                        <Run>It's very easy to join us! You can create a PR in our</Run>
+                                        <Hyperlink x:Name="Hyperlink_DoucmentationRepo" Click="Hyperlink_DoucmentationRepo_Click">Doucmentation repository</Hyperlink>
+                                        <Run>when you're free. You can also join our</Run>
+                                        <Hyperlink x:Name="Hyperlink_Discord" Click="Hyperlink_Discord_Click">Discord server</Hyperlink>
+                                        <Run>and</Run>
+                                        <Hyperlink x:Name="Hyperlink_Telegram" Click="Hyperlink_Telegram_Click">Telegram group</Hyperlink>
+                                        <Run>to hang out with us.</Run>
+                    </TextBlock>
+                    <Separator Opacity="0.2"/>
+                </ikw:SimpleStackPanel>
+
+                <ikw:SimpleStackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10">
+
+                    <ui:HyperlinkButton x:Name="HyperlinkButton_Repository" Content="Repository" Click="HyperlinkButton_Repository_Click"/>
+                    <ui:HyperlinkButton x:Name="HyperlinkButton_Package" Content="Package" Click="HyperlinkButton_Package_Click"/>
+
+                    <ui:HyperlinkButton x:Name="HyperlinkButton_DocRepository" Content="Docs Repository" Click="Hyperlink_DoucmentationRepo_Click"/>
+                    <ui:HyperlinkButton x:Name="HyperlinkButton_Facebook" Content="Follow us on Facebook!" Click="HyperlinkButton_Facebook_Click"/>
+
+                </ikw:SimpleStackPanel>
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>

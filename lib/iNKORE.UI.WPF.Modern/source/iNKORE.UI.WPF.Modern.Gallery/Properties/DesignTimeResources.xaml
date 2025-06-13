@@ -1,0 +1,8 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
+    <ResourceDictionary.MergedDictionaries>
+        <ui:IntellisenseResources Source="/iNKORE.UI.WPF.Modern;component/DesignTime/DesignTimeResources.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

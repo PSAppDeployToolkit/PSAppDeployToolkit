@@ -1,0 +1,220 @@
+﻿<Application
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Common"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:presets="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Presets"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:sc="clr-namespace:SamplesCommon;assembly=SamplesCommon"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    StartupUri="MainWindow.xaml" DispatcherUnhandledException="Application_DispatcherUnhandledException">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemeResources CanBeAccessedAcrossThreads="{x:Static local:App.IsMultiThreaded}">
+                    <ui:ThemeResources.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light" ui:ThemeDictionary.Key="Light">
+                            <ResourceDictionary.MergedDictionaries>
+                                <presets:ColorPresetResources TargetTheme="Light" />
+                                <presets:ShapePresetResources />
+                            </ResourceDictionary.MergedDictionaries>
+                            <Thickness x:Key="SearchBoxBorderThickness">0</Thickness>
+                            <SolidColorBrush x:Key="CustomThemeBrush" Color="Red" />
+                            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#FFF1F1F1" />
+                            <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="Black" />
+                            <Thickness x:Key="ControlExampleDisplayBorderThickness">0</Thickness>
+                            <SolidColorBrush x:Key="SearchBoxBorderBrush" Color="Transparent" />
+                            <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
+                            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+                            <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="{StaticResource SystemAltHighColor}" />
+                            <StaticResource x:Key="ControlExampleDisplayBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                        </ResourceDictionary>
+
+                        <ResourceDictionary x:Key="Dark" ui:ThemeDictionary.Key="Dark">
+                            <ResourceDictionary.MergedDictionaries>
+                                <presets:ColorPresetResources TargetTheme="Dark" />
+                                <presets:ShapePresetResources />
+                            </ResourceDictionary.MergedDictionaries>
+                            <Thickness x:Key="SearchBoxBorderThickness">0</Thickness>
+                            <SolidColorBrush x:Key="CustomThemeBrush" Color="Yellow" />
+                            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#FF232323" />
+                            <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="White" />
+                            <Thickness x:Key="ControlExampleDisplayBorderThickness">0</Thickness>
+                            <SolidColorBrush x:Key="SearchBoxBorderBrush" Color="Transparent" />
+                            <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
+                            <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="#FF282828" />
+                            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+                            <StaticResource x:Key="ControlExampleDisplayBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                        </ResourceDictionary>
+
+                        <ResourceDictionary x:Key="HighContrast" ui:ThemeDictionary.Key="HighContrast">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary Source="/Themes/HighContrast.xaml" />
+                            </ResourceDictionary.MergedDictionaries>
+                            <Thickness x:Key="SearchBoxBorderThickness">2</Thickness>
+                            <Thickness x:Key="ControlExampleDisplayBorderThickness">1</Thickness>
+                            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+                            <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="{DynamicResource SystemColorWindowColor}" />
+                            <SolidColorBrush x:Key="SearchBoxBorderBrush" Color="{DynamicResource SystemColorWindowTextColor}" />
+                            <SolidColorBrush x:Key="ControlExampleDisplayBrush" Color="{DynamicResource SystemColorWindowColor}" />
+                            <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="{DynamicResource SystemColorWindowTextColor}" />
+                        </ResourceDictionary>
+                    </ui:ThemeResources.ThemeDictionaries>
+                </ui:ThemeResources>
+
+                <ui:XamlControlsResources />
+
+                <!--  Font Overrides  -->
+                <!--<sc:FontOverrides FontFamily="Comic Sans MS" />-->
+                <!--<ResourceDictionary>
+                    <FontFamily x:Key="DefaultFontFamily">Comic Sans MS</FontFamily>
+                    <StaticResource x:Key="{x:Static SystemFonts.MessageFontFamilyKey}" ResourceKey="DefaultFontFamily" />
+                    <StaticResource x:Key="ContentControlThemeFontFamily" ResourceKey="DefaultFontFamily" />
+                    <StaticResource x:Key="PivotHeaderItemFontFamily" ResourceKey="DefaultFontFamily" />
+                    <StaticResource x:Key="PivotTitleFontFamily" ResourceKey="DefaultFontFamily" />
+                </ResourceDictionary>-->
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style BasedOn="{StaticResource DefaultScrollViewerStyle}" TargetType="ScrollViewer">
+                <Setter Property="sc:AutoPanningMode.IsEnabled" Value="True" />
+            </Style>
+
+            <Style x:Key="OptionsPanelStyle" TargetType="ikw:SimpleStackPanel">
+                <Setter Property="Spacing" Value="12" />
+                <Style.Resources>
+                    <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
+                        <Setter Property="MinWidth" Value="200" />
+                    </Style>
+                    <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="TextBox">
+                        <Setter Property="MinWidth" Value="200" />
+                    </Style>
+                    <Style BasedOn="{StaticResource {x:Type DatePicker}}" TargetType="DatePicker">
+                        <Setter Property="MinWidth" Value="200" />
+                    </Style>
+                </Style.Resources>
+            </Style>
+
+            <Thickness x:Key="ControlPageContentMargin">24,0,24,20</Thickness>
+
+            <Style x:Key="ControlPageContentPanelStyle" TargetType="ikw:SimpleStackPanel">
+                <Setter Property="Margin" Value="{StaticResource ControlPageContentMargin}" />
+                <Setter Property="Spacing" Value="16" />
+            </Style>
+
+            <Style x:Key="ScrollableContentDialogStyle" TargetType="ui:ContentDialog">
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                <Style.Resources>
+                    <Thickness x:Key="ContentDialogContentMargin">24,0,24,0</Thickness>
+                    <Thickness x:Key="ContentDialogContentScrollViewerMargin">-24,0,-24,0</Thickness>
+                    <Thickness x:Key="ContentDialogTitleMargin">24,0,24,12</Thickness>
+                </Style.Resources>
+            </Style>
+
+            <Style x:Key="ControlExampleFullStyle" TargetType="sc:ControlExample">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="MaxContentWidth" Value="{x:Static sys:Double.PositiveInfinity}" />
+            </Style>
+
+            <Style
+                x:Key="RichTextBlockStyle"
+                BasedOn="{StaticResource DefaultRichTextBoxStyle}"
+                TargetType="RichTextBox">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RichTextBox">
+                            <ui:ScrollViewerEx x:Name="PART_ContentHost" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Resources>
+                    <Style TargetType="Paragraph">
+                        <Setter Property="Margin" Value="0" />
+                    </Style>
+                </Style.Resources>
+            </Style>
+
+            <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+
+            <LinearGradientBrush x:Key="HeroImageGradientBrush" StartPoint="0.5,0" EndPoint="0.5,1.5">
+                <GradientStop Offset="0" Color="Transparent" />
+                <GradientStop Offset="0.5" Color="{DynamicResource LayerFillColorDefault}" />
+                <GradientStop Offset="1" Color="{DynamicResource LayerFillColorDefault}" />
+            </LinearGradientBrush>
+
+            <!--  Application-specific resources  -->
+            <common:NullToVisibilityConverter x:Key="nullToVisibilityConverter" />
+            <common:NullToVisibilityConverter
+                x:Key="inverseNullToVisibilityConverter"
+                NonNullValue="Collapsed"
+                NullValue="Visible" />
+            <sc:EnumValuesConverter x:Key="EnumValuesConverter" />
+            <sc:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+            <common:BrushToColorConverter x:Key="BrushToColorConverter" />
+            <common:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <common:BooleanToValueConverter x:Key="booleanToValueConverter" />
+            <common:InverseAppThemeConverter x:Key="InverseAppThemeConverter" />
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <common:RelativeToAbsoluteConverter x:Key="RelativeToAbsoluteConverter" />
+            <common:CornerRadiusToDoubleConverter x:Key="CornerRadiusToDoubleConverter" />
+
+            <!--  Breakpoints  -->
+            <sys:Double x:Key="Breakpoint640Plus">641</sys:Double>
+
+            <Thickness x:Key="PageHeaderDefaultPadding">0</Thickness>
+            <Thickness x:Key="PageHeaderMinimalPadding">-4,0,12,0</Thickness>
+
+            <Thickness x:Key="ControlElementScreenshotModePadding">67</Thickness>
+
+            <!--  L-Pattern Overwriting resources  -->
+            <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
+            <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+            <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+            <Thickness x:Key="NavigationViewHeaderMargin">56,34,0,0</Thickness>
+
+            <SolidColorBrush x:Key="GridViewHeaderItemDividerStroke" Color="Transparent" />
+
+            <sys:String x:Key="ControlsName">All controls</sys:String>
+            <sys:String x:Key="AppTitleName">iNKORE.UI.WPF.Modern Gallery</sys:String>
+
+            <sys:String x:Key="NewControlsName">What's New</sys:String>
+
+            <Style
+                x:Key="OutputTextBlockStyle"
+                BasedOn="{StaticResource BodyTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="Margin" Value="8,8,0,0" />
+            </Style>
+
+            <Style x:Key="ControlPageScrollStyle" TargetType="ScrollViewer">
+                <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            </Style>
+
+            <Style x:Key="GridViewItemStyle" TargetType="ui:GridViewItem">
+                <Setter Property="Margin" Value="0,0,12,12" />
+            </Style>
+
+            <Style x:Key="IndentedGridViewItemStyle" TargetType="ui:GridViewItem">
+                <Setter Property="Margin" Value="12,0,0,12" />
+            </Style>
+
+            <Style x:Key="GridViewItemStyleSmall" TargetType="ui:GridViewItem">
+                <Setter Property="Margin" Value="0,0,0,12" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+
+            <Style x:Key="IndentedGridViewItemStyleSmall" TargetType="ui:GridViewItem">
+                <Setter Property="Margin" Value="12,0,12,12" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+
+            <sys:Double x:Key="TeachingTipMinWidth">50</sys:Double>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

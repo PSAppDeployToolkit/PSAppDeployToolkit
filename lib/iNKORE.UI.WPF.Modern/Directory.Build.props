@@ -1,0 +1,6 @@
+﻿<Project>
+  <PropertyGroup>
+    <Product>iNKORE.UI.WPF.Modern</Product>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>

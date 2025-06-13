@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="image_lorenzo-herrera-p0j-mE6mGo4-unsplash.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\iNKORE.UI.WPF.Modern.Controls\iNKORE.UI.WPF.Modern.Controls.csproj" />
+    <ProjectReference Include="..\..\iNKORE.UI.WPF.Modern\iNKORE.UI.WPF.Modern.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="image_lorenzo-herrera-p0j-mE6mGo4-unsplash.jpg" />
+  </ItemGroup>
+
+</Project>

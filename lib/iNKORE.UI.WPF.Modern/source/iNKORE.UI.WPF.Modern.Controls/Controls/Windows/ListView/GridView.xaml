@@ -1,0 +1,331 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <ikw:CornerRadiusExtractionConverter x:Key="TopLeftCornerRadiusDoubleValueConverter" TargetMember="TopLeft" />
+            <ikw:CornerRadiusExtractionConverter x:Key="BottomRightCornerRadiusDoubleValueConverter" TargetMember="BottomRight" />
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style x:Key="DefaultGridViewItemStyle" TargetType="local:GridViewItem">
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="Background" Value="{DynamicResource GridViewItemBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource GridViewItemForeground}" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
+        <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,4,4" />
+        <Setter Property="MinWidth" Value="{DynamicResource GridViewItemMinWidth}" />
+        <Setter Property="MinHeight" Value="{DynamicResource GridViewItemMinHeight}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource GridViewItemCornerRadius}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="ui:FocusVisualHelper.FocusVisualPrimaryBrush" Value="{DynamicResource GridViewItemFocusVisualPrimaryBrush}" />
+        <Setter Property="ui:FocusVisualHelper.FocusVisualPrimaryThickness" Value="2" />
+        <Setter Property="ui:FocusVisualHelper.FocusVisualSecondaryBrush" Value="{DynamicResource GridViewItemFocusVisualSecondaryBrush}" />
+        <Setter Property="ui:FocusVisualHelper.FocusVisualSecondaryThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:GridViewItem">
+                    <Border
+                        x:Name="ContentBorder"
+                        ui:PressHelper.IsEnabled="True"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <VisualStateManager.CustomVisualStateManager>
+                            <ui:SimpleVisualStateManager />
+                        </VisualStateManager.CustomVisualStateManager>
+                        <Grid>
+                            <ui:ContentPresenterEx
+                                x:Name="ContentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <Border
+                                x:Name="BorderRectangle"
+                                BorderBrush="{DynamicResource GridViewItemSelectedBorderBrush}"
+                                BorderThickness="{DynamicResource GridViewItemSelectedBorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0">
+                                <Rectangle
+                                    x:Name="InnerBorderRectangle"
+                                    Opacity="0"
+                                    RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                    RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                    Stroke="{DynamicResource GridViewItemSelectedInnerBorderBrush}"
+                                    StrokeThickness="1" />
+                            </Border>
+                            <Border
+                                x:Name="MultiSelectSquare"
+                                Width="{DynamicResource CheckBoxSize}"
+                                Height="{DynamicResource CheckBoxSize}"
+                                Margin="0,2,2,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Background="{DynamicResource GridViewItemCheckBoxBrush}"
+                                BorderBrush="{DynamicResource GridViewItemCheckBoxBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{DynamicResource GridViewItemCheckBoxCornerRadius}"
+                                Visibility="Collapsed">
+                                <ui:FontIcon
+                                    x:Name="MultiSelectCheck"
+                                    FontFamily="{DynamicResource FluentSystemIconsFilled}"
+                                    FontSize="{DynamicResource CheckBoxGlyphSize}"
+                                    Glyph="{DynamicResource CheckBoxCheckedGlyph}"
+                                    Opacity="0"
+                                    Visibility="Collapsed" />
+                            </Border>
+                        </Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="MultiSelectStates">
+                                <VisualState x:Name="MultiSelectDisabled">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.333" Value="{x:Static Visibility.Collapsed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ui:FadeOutThemeAnimation TargetName="MultiSelectSquare" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="MultiSelectEnabled">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheck" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ui:FadeInThemeAnimation TargetName="MultiSelectSquare" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ContentBorder" Property="Opacity" Value="{DynamicResource GridViewItemDisabledThemeOpacity}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxDisabledBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxDisabledBrush}" />
+                        </Trigger>
+                        <Trigger SourceName="ContentBorder" Property="ui:PressHelper.IsPressed" Value="True">
+                            <Setter TargetName="ContentBorder" Property="ui:ControlHelper.VisualState" Value="Pressed" />
+                        </Trigger>
+                        <Trigger SourceName="ContentBorder" Property="ui:PressHelper.IsPressed" Value="False">
+                            <Setter TargetName="ContentBorder" Property="ui:ControlHelper.VisualState" Value="Normal" />
+                        </Trigger>
+                        <!--  Focused  -->
+                        <Trigger Property="ui:FocusVisualHelper.ShowFocusVisual" Value="True">
+                            <Setter TargetName="BorderRectangle" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  PointerOver  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="False" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="BorderRectangle" Property="Opacity" Value="1" />
+                            <Setter TargetName="BorderRectangle" Property="BorderThickness" Value="1" />
+                            <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource GridViewItemBackgroundPointerOver}" />
+                            <Setter Property="Foreground" Value="{DynamicResource GridViewItemForegroundPointerOver}" />
+                            <Setter TargetName="BorderRectangle" Property="BorderBrush" Value="{DynamicResource GridViewItemPointerOverBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxPointerOverBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxPointerOverBrush}" />
+                        </MultiTrigger>
+                        <!--  Pressed  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="False" />
+                                <Condition SourceName="ContentBorder" Property="ui:PressHelper.IsPressed" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource GridViewItemBackgroundPressed}" />
+                            <Setter Property="Foreground" Value="{DynamicResource GridViewItemForegroundPointerOver}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxPressedBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxPressedBrush}" />
+                        </MultiTrigger>
+                        <!--  Selected  -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="MultiSelectCheck" Property="Opacity" Value="1" />
+                            <Setter TargetName="BorderRectangle" Property="Opacity" Value="1" />
+                            <Setter TargetName="InnerBorderRectangle" Property="Opacity" Value="1" />
+                            <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource GridViewItemBackgroundSelected}" />
+                            <Setter Property="Foreground" Value="{DynamicResource GridViewItemForegroundSelected}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxSelectedBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxSelectedBrush}" />
+                            <Setter TargetName="MultiSelectCheck" Property="Foreground" Value="{DynamicResource GridViewItemCheckBrush}" />
+                        </Trigger>
+                        <!--  SelectedPointerOver  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource GridViewItemBackgroundSelectedPointerOver}" />
+                            <Setter Property="Foreground" Value="{DynamicResource GridViewItemForegroundSelectedPointerOver}" />
+                            <Setter TargetName="BorderRectangle" Property="BorderBrush" Value="{DynamicResource GridViewItemSelectedPointerOverBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxSelectedPointerOverBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxSelectedPointerOverBrush}" />
+                            <Setter TargetName="MultiSelectCheck" Property="Foreground" Value="{DynamicResource GridViewItemCheckBrush}" />
+                        </MultiTrigger>
+                        <!--  SelectedPressed  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition SourceName="ContentBorder" Property="ui:PressHelper.IsPressed" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource GridViewItemBackgroundSelectedPressed}" />
+                            <Setter Property="Foreground" Value="{DynamicResource GridViewItemForegroundSelectedPressed}" />
+                            <Setter TargetName="BorderRectangle" Property="BorderBrush" Value="{DynamicResource GridViewItemSelectedPressedBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxSelectedPressedBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxSelectedPressedBrush}" />
+                            <Setter TargetName="MultiSelectCheck" Property="Foreground" Value="{DynamicResource GridViewItemCheckPressedBrush}" />
+                        </MultiTrigger>
+                        <!--  SelectedDisabled  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource GridViewItemBackgroundSelectedDisabled}" />
+                            <Setter TargetName="BorderRectangle" Property="BorderBrush" Value="{DynamicResource GridViewItemSelectedDisabledBorderBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="BorderBrush" Value="{DynamicResource GridViewItemCheckBoxSelectedDisabledBrush}" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource GridViewItemCheckBoxSelectedDisabledBrush}" />
+                            <Setter TargetName="MultiSelectCheck" Property="Foreground" Value="{DynamicResource GridViewItemCheckDisabledBrush}" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="local:GridViewHeaderItem">
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource GridViewHeaderItemThemeFontSize}" />
+        <Setter Property="Background" Value="{DynamicResource GridViewHeaderItemBackground}" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="Padding" Value="12,8,12,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="MinHeight" Value="{DynamicResource GridViewHeaderItemMinHeight}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:GridViewHeaderItem">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <StackPanel>
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <Rectangle x:Name="Divider"
+                                Visibility="{TemplateBinding DividerVisibility}"
+                                Height="1"
+                                Margin="12,8,12,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Stroke="{DynamicResource GridViewHeaderItemDividerStroke}"
+                                StrokeThickness="0.5" />
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource DefaultGridViewItemStyle}" TargetType="local:GridViewItem" />
+
+    <Style TargetType="local:GridView">
+        <Setter Property="Padding" Value="0,0,0,10" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-2" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="ui:ScrollViewerHelper.AutoHideScrollBars" Value="{DynamicResource AutoHideScrollBars}" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:GridView">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="True">
+                        <ui:ScrollViewerEx
+                            x:Name="ScrollViewer"
+                            AutoHideScrollBars="{TemplateBinding ui:ScrollViewerHelper.AutoHideScrollBars}"
+                            Focusable="false"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            KeyboardNavigation.TabNavigation="{TemplateBinding KeyboardNavigation.TabNavigation}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ContentPresenter
+                                    Grid.Row="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                                <ItemsPresenter
+                                    Grid.Row="1"
+                                    Margin="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                <ContentPresenter
+                                    Grid.Row="2"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Content="{TemplateBinding Footer}"
+                                    ContentTemplate="{TemplateBinding FooterTemplate}" />
+                            </Grid>
+                        </ui:ScrollViewerEx>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsGrouping" Value="true" />
+                                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

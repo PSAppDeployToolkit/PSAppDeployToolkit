@@ -1,0 +1,43 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.RepeatButtonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Repeat Button Page"
+    d:DesignWidth="800"
+    mc:Ignorable="d" Loaded="Page_Loaded">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple RepeatButton with text content.">
+            <local:ControlExample.Resources>
+                <ui:BindingProxy x:Key="DisableControl1" Value="{x:Reference DisableControl1}" />
+            </local:ControlExample.Resources>
+
+            <StackPanel Orientation="Horizontal">
+                <RepeatButton
+                    x:Name="Control1"
+                    Click="RepeatButton_Click"
+                    Content="Click and hold"
+                    IsEnabled="{Binding IsChecked, ElementName=DisableControl1, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                <TextBlock
+                    x:Name="Control1Output"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center" />
+            </StackPanel>
+
+            <local:ControlExample.Options>
+                <CheckBox x:Name="DisableControl1" Content="Disable RepeatButton" Click="DisableControl1_Click"/>
+            </local:ControlExample.Options>
+
+            <local:ControlExample.Substitutions>
+                <local:ControlExampleSubstitution
+                    Key="IsEnabled"
+                    IsEnabled="{Binding Value.IsChecked, Source={StaticResource DisableControl1}, Mode=OneWay}"
+                    Value="IsEnabled=&quot;False&quot; " />
+            </local:ControlExample.Substitutions>
+        </local:ControlExample>
+    </StackPanel>
+</ui:Page>

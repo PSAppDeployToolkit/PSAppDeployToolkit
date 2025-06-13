@@ -1,0 +1,87 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ButtonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Title="Button"
+    d:DesignWidth="800"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <StackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple Button with text content.">
+            <local:ControlExample.Example>
+                <Button
+                    x:Name="Button1"
+                    Click="Button_Click"
+                    Content="Standard XAML button"
+                    IsEnabled="{Binding IsChecked, ElementName=DisableButton1, Converter={StaticResource BoolNegationConverter}}" />
+            </local:ControlExample.Example>
+            <local:ControlExample.Output>
+                <TextBlock x:Name="Control1Output" FontFamily="Global User Interface" />
+            </local:ControlExample.Output>
+            <local:ControlExample.Options>
+                <StackPanel>
+                    <CheckBox x:Name="DisableButton1" Content="Disable button" Click="DisableButton1_Click"/>
+                </StackPanel>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example2" HeaderText="A Button with graphical content.">
+            <local:ControlExample.Example>
+                <StackPanel Orientation="Horizontal">
+                    <Button
+                        x:Name="Button2"
+                        Width="50"
+                        Height="50"
+                        AutomationProperties.Name="Pie"
+                        Click="Button_Click">
+                        <Image AutomationProperties.Name="Slice" Source="/Assets/Slices.png" />
+                    </Button>
+                </StackPanel>
+            </local:ControlExample.Example>
+            <local:ControlExample.Output>
+                <TextBlock x:Name="Control2Output" />
+            </local:ControlExample.Output>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example3" HeaderText="Wrapping Buttons with large content">
+            <local:ControlExample.Example>
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        Text="The following buttons' content may get clipped if we don't pay careful attention to their layout containers."
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        Text="One option to mitigate clipped content is to place Buttons underneath each other, allowing for more space to grow horizontally:"
+                        TextWrapping="Wrap" />
+                    <Button Margin="0,0,0,5" HorizontalAlignment="Stretch">
+                        This is some text that is too long and will get cut off
+                    </Button>
+                    <Button HorizontalAlignment="Stretch">This is another text that would result in being cut off</Button>
+
+                    <TextBlock Margin="0,8,0,8" Text="Another option is to explicitly wrap the Button's content" />
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <Button MaxWidth="240" Margin="0,0,8,0">
+                            <TextBlock Text="This is some text that is too long and will get cut off" TextWrapping="Wrap" />
+                        </Button>
+                        <Button MaxWidth="240">
+                            <TextBlock Text="This is another text that would result in being cut off" TextWrapping="Wrap" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example4" HeaderText="Accent style applied to Button.">
+            <local:ControlExample.Example>
+                <Button Content="Accent style button" Style="{DynamicResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}" />
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+    </StackPanel>
+</ui:Page>

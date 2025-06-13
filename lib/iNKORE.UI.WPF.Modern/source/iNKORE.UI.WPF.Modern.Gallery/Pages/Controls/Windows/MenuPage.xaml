@@ -1,0 +1,98 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.MenuPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d">
+    <ikw:SimpleStackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple Menu">
+            <Menu>
+                <MenuItem Header="File">
+                    <MenuItem Header="New" />
+                    <MenuItem Header="Open..." />
+                    <MenuItem Header="Save" />
+                    <MenuItem Header="Exit" />
+                </MenuItem>
+
+                <MenuItem Header="Edit">
+                    <MenuItem Header="Undo" />
+                    <MenuItem Header="Cut" />
+                    <MenuItem Header="Copy" />
+                    <MenuItem Header="Paste" />
+                </MenuItem>
+
+                <MenuItem Header="Help">
+                    <MenuItem Header="About" />
+                </MenuItem>
+            </Menu>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example2" HeaderText="Menu with input gesture texts">
+            <Menu>
+                <MenuItem Header="File">
+                    <MenuItem Header="New" InputGestureText="Ctrl+N" />
+                    <MenuItem Header="Open..." InputGestureText="Ctrl+O" />
+                    <MenuItem Header="Save" InputGestureText="Ctrl+S" />
+                    <MenuItem Header="Exit" InputGestureText="Ctrl+E" />
+                </MenuItem>
+
+                <MenuItem Header="Edit">
+                    <MenuItem Header="Undo" InputGestureText="Ctrl+Z" />
+                    <MenuItem Header="Cut" InputGestureText="Ctrl+X" />
+                    <MenuItem Header="Copy" InputGestureText="Ctrl+C" />
+                    <MenuItem Header="Paste" InputGestureText="Ctrl+V" />
+                </MenuItem>
+
+                <MenuItem Header="Help">
+                    <MenuItem Header="About" InputGestureText="Ctrl+I" />
+                </MenuItem>
+            </Menu>
+        </local:ControlExample>
+        <local:ControlExample x:Name="Example3" HeaderText="Menu with submenus, seperators, and radio items">
+            <Menu>
+                <MenuItem Header="File">
+                    <MenuItem Header="New">
+                        <MenuItem Header="Plain Text Document" />
+                        <MenuItem Header="Rich Text Document" />
+                        <MenuItem Header="Other Formats..." />
+                    </MenuItem>
+                    <MenuItem Header="Open..." />
+                    <MenuItem Header="Save" />
+                    <Separator />
+                    <MenuItem Header="Exit" />
+                </MenuItem>
+
+                <MenuItem Header="Edit">
+                    <MenuItem Header="Undo" />
+                    <MenuItem Header="Cut" />
+                    <MenuItem Header="Copy" />
+                    <MenuItem Header="Paste" />
+                </MenuItem>
+
+                <MenuItem Header="View">
+                    <MenuItem Header="Output" />
+                    <Separator />
+                    <ui:RadioMenuItem GroupName="OrientationGroup" Header="Landscape" />
+                    <ui:RadioMenuItem
+                        GroupName="OrientationGroup"
+                        Header="Portrait"
+                        IsChecked="True" />
+                    <Separator />
+                    <ui:RadioMenuItem GroupName="SizeGroup" Header="Small icons" />
+                    <ui:RadioMenuItem
+                        GroupName="SizeGroup"
+                        Header="Medium icons"
+                        IsChecked="True" />
+                    <ui:RadioMenuItem GroupName="SizeGroup" Header="Large icons" />
+                </MenuItem>
+
+                <MenuItem Header="Help">
+                    <MenuItem Header="About" />
+                </MenuItem>
+            </Menu>
+        </local:ControlExample>
+    </ikw:SimpleStackPanel>
+</ui:Page>

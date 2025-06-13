@@ -1,0 +1,144 @@
+﻿<Page x:Class="SettingsNavigationTest.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+      xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="MainPage">
+
+    <ikw:SimpleStackPanel Spacing="10">
+        <ui:SettingsCard Header="App Appearance"
+                         Description="Set the appearance of this app."
+                         IsClickEnabled="True"
+                         Click="ToAppearancePage">
+            <ui:SettingsCard.HeaderIcon>
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Apps}"/>
+            </ui:SettingsCard.HeaderIcon>
+        </ui:SettingsCard>
+        <ui:SettingsCard Header="Browser Search Engine" IsEnabled="False"
+                         Description="Choose the search engine you like.">
+            <ui:SettingsCard.HeaderIcon>
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CloudSearch}"/>
+            </ui:SettingsCard.HeaderIcon>
+            <ComboBox SelectedIndex="2">
+                <ComboBoxItem Content="Google"/>
+                <ComboBoxItem Content="Bing"/>
+                <ComboBoxItem Content="Yahoo"/>
+                <ComboBoxItem Content="DuckDuckGo"/>
+                <ComboBoxItem Content="Ask.com"/>
+                <ComboBoxItem Content="Yandex"/>
+            </ComboBox>
+        </ui:SettingsCard>
+
+        <ui:SettingsExpander x:Name="settingsCard"
+                            Description="The SettingsExpander has the same properties as a Card, and you can set SettingsCard as part of the Items collection."
+                            Header="SettingsExpander" IsExpanded="True">
+            <ui:SettingsExpander.HeaderIcon>
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}"/>
+            </ui:SettingsExpander.HeaderIcon>
+            <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+            <ComboBox SelectedIndex="0">
+                <ComboBoxItem>Option 1</ComboBoxItem>
+                <ComboBoxItem>Option 2</ComboBoxItem>
+                <ComboBoxItem>Option 3</ComboBoxItem>
+            </ComboBox>
+
+            <ui:SettingsExpander.Items>
+                <ui:SettingsCard Header="A basic SettingsCard within an SettingsExpander">
+                    <Button Content="Button" />
+                </ui:SettingsCard>
+                <ui:SettingsCard Description="SettingsCard within an Expander can be made clickable too!"
+                                Header="This item can be clicked"
+                                IsClickEnabled="True" />
+
+                <ui:SettingsCard ContentAlignment="Left">
+                    <CheckBox Content="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons." />
+                </ui:SettingsCard>
+
+                <ui:SettingsCard HorizontalContentAlignment="Left"
+                                ContentAlignment="Vertical"
+                                Description="You can also align your content vertically. Make sure to set the HorizontalAlignment to Left when you do!"
+                                Header="Vertically aligned">
+                    <ui:GridView SelectedIndex="1">
+                        <ui:GridViewItem>
+                            <Border Width="64"
+                                Height="64"
+                                Background="#0078D4"
+                                CornerRadius="4" />
+                        </ui:GridViewItem>
+                        <ui:GridViewItem>
+                            <Border Width="64"
+                                Height="64"
+                                Background="#005EB7"
+                                CornerRadius="4" />
+                        </ui:GridViewItem>
+                        <ui:GridViewItem>
+                            <Border Width="64"
+                                Height="64"
+                                Background="#003D92"
+                                CornerRadius="4" />
+                        </ui:GridViewItem>
+                        <ui:GridViewItem>
+                            <Border Width="64"
+                                Height="64"
+                                Background="#001968"
+                                CornerRadius="4" />
+                        </ui:GridViewItem>
+                    </ui:GridView>
+                </ui:SettingsCard>
+                <ui:SettingsCard Description="You can override the Left indention of a SettingsCard by overriding the SettingsCardLeftIndention"
+                                Header="Customization">
+
+                </ui:SettingsCard>
+            </ui:SettingsExpander.Items>
+        </ui:SettingsExpander>
+
+        <ui:SettingsExpander x:Name="settingsCard2"
+                            Description="The SettingsExpander has the same properties as a Card, and you can set SettingsCard as part of the Items collection."
+                            Header="SettingsExpander Collapsed" IsExpanded="False">
+            <ui:SettingsExpander.HeaderIcon>
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}"/>
+            </ui:SettingsExpander.HeaderIcon>
+            <!--  TODO: This should be TwoWay bound but throws compile error in Uno.  -->
+            <ComboBox SelectedIndex="0">
+                <ComboBoxItem>Option 1</ComboBoxItem>
+                <ComboBoxItem>Option 2</ComboBoxItem>
+                <ComboBoxItem>Option 3</ComboBoxItem>
+            </ComboBox>
+
+            <ui:SettingsExpander.Items>
+                <ui:SettingsCard Header="A basic SettingsCard within an SettingsExpander">
+                    <Button Content="Button" />
+                </ui:SettingsCard>
+                <ui:SettingsCard Description="SettingsCard within an Expander can be made clickable too!"
+                                Header="This item can be clicked"
+                                IsClickEnabled="True" />
+
+                <ui:SettingsCard ContentAlignment="Left">
+                    <CheckBox Content="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons." />
+                </ui:SettingsCard>
+
+            </ui:SettingsExpander.Items>
+        </ui:SettingsExpander>
+
+
+        <ui:SettingsCard Header="Sidebar"
+                         Description="Provides many useful tools.">
+            <ui:SettingsCard.HeaderIcon>
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ActionCenter}"/>
+            </ui:SettingsCard.HeaderIcon>
+            <ui:ToggleSwitch HorizontalContentAlignment="Right" IsRightAlignedCompact="True"/>
+        </ui:SettingsCard>
+        <ui:SettingsCard Header="Check Update" IsClickEnabled="True"
+                         Description="Current Version: 1.0.0">
+            <ui:SettingsCard.HeaderIcon>
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Processing}"/>
+            </ui:SettingsCard.HeaderIcon>
+            <ui:ToggleSwitch HorizontalContentAlignment="Right"/>
+        </ui:SettingsCard>
+
+    </ikw:SimpleStackPanel>
+</Page>

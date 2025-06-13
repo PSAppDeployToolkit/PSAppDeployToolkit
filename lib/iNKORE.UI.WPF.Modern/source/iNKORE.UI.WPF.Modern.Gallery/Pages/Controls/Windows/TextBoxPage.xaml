@@ -1,0 +1,102 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.TextBoxPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d">
+    <ikw:SimpleStackPanel>
+        <local:ControlExample x:Name="Example1" HeaderText="A simple TextBox.">
+            <TextBox AutomationProperties.Name="simple TextBox" />
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example2" HeaderText="A TextBox with a header and placeholder text.">
+            <local:ControlExample.Example>
+                <TextBox ui:ControlHelper.Header="Enter your name:" ui:ControlHelper.PlaceholderText="Name" />
+            </local:ControlExample.Example>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example3" HeaderText="A read-only TextBox with various properties set.">
+            <TextBox AutomationProperties.Name="customized TextBox"
+                FontFamily="Arial" FontSize="24"
+                FontStyle="Italic" IsReadOnly="True"
+                Foreground="CornflowerBlue"
+                Text="I am super excited to be here!" />
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example4" HeaderText="A multi-line TextBox with spell checking and custom selection highlight color.">
+            <TextBox AcceptsReturn="True"
+                AutomationProperties.Name="multi-line TextBox"
+                SelectionBrush="Green"
+                SpellCheck.IsEnabled="True"
+                TextWrapping="Wrap" />
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example5"
+            HeaderText="API in action.">
+            <TextBox x:Name="textBox"
+                ui:ControlHelper.Header="Control header"
+                ui:ControlHelper.PlaceholderText="Placeholder text" />
+
+            <local:ControlExample.Options>
+                <Expander x:Name="OptionsExpander"
+                    Collapsed="OptionsExpander_Collapsed"
+                    Expanded="OptionsExpander_Expanded"
+                    Header="Show options" IsExpanded="True">
+                    <ikw:SimpleStackPanel Margin="0,12,0,0" Style="{StaticResource OptionsPanelStyle}">
+                        <Button Click="ClearClipboard" Content="Clear clipboard" />
+                        <CheckBox Content="AcceptsReturn" 
+                            IsChecked="{Binding ElementName=textBox, Path=AcceptsReturn}" 
+                            Click="CheckBox_Click"/>
+                        <CheckBox Content="IsReadOnly" 
+                            IsChecked="{Binding ElementName=textBox, Path=IsReadOnly}"
+                            Click="CheckBox_Click"/>
+                        <CheckBox Content="IsReadOnlyCaretVisible" 
+                            IsChecked="{Binding ElementName=textBox, Path=IsReadOnlyCaretVisible}"
+                            Click="CheckBox_Click"/>
+                        <CheckBox Content="IsUndoEnabled" 
+                            IsChecked="{Binding ElementName=textBox, Path=IsUndoEnabled}" 
+                            Click="CheckBox_Click"/>
+                        <CheckBox Content="IsInactiveSelectionHighlightEnabled" 
+                            IsChecked="{Binding ElementName=textBox, Path=IsInactiveSelectionHighlightEnabled}"
+                            Click="CheckBox_Click"/>
+                        <TextBox ui:ControlHelper.Header="Header" 
+                            Text="{Binding ElementName=textBox, Path=(ui:ControlHelper.Header), UpdateSourceTrigger=PropertyChanged}" 
+                            TextChanged="TextBox_TextChanged"/>
+                        <TextBox ui:ControlHelper.Header="PlaceholderText" 
+                            Text="{Binding ElementName=textBox, Path=(ui:ControlHelper.PlaceholderText), UpdateSourceTrigger=PropertyChanged}"
+                            TextChanged="TextBox_TextChanged"/>
+                        <ComboBox
+                            ui:ControlHelper.Header="TextWrapping"
+                            ItemsSource="{Binding Source={x:Type TextWrapping}, Converter={StaticResource EnumValuesConverter}}"
+                            SelectedItem="{Binding ElementName=textBox, Path=TextWrapping}"
+                            SelectionChanged="ComboBox_SelectionChanged" />
+                        <ComboBox
+                            ui:ControlHelper.Header="HorizontalScrollBarVisibility"
+                            ItemsSource="{Binding Source={x:Type ScrollBarVisibility}, Converter={StaticResource EnumValuesConverter}}"
+                            SelectedItem="{Binding ElementName=textBox, Path=HorizontalScrollBarVisibility}"
+                            SelectionChanged="ComboBox_SelectionChanged" />
+                        <ComboBox
+                            ui:ControlHelper.Header="VerticalScrollBarVisibility"
+                            ItemsSource="{Binding Source={x:Type ScrollBarVisibility}, Converter={StaticResource EnumValuesConverter}}"
+                            SelectedItem="{Binding ElementName=textBox, Path=VerticalScrollBarVisibility}"
+                            SelectionChanged="ComboBox_SelectionChanged" />
+                        <ComboBox
+                            ui:ControlHelper.Header="SelectionOpacity"
+                            IsEditable="True"
+                            SelectedItem="{Binding ElementName=textBox, Path=SelectionOpacity}"
+                            SelectionChanged="ComboBox_SelectionChanged">
+                            <sys:Double>0</sys:Double>
+                            <sys:Double>0.4</sys:Double>
+                            <sys:Double>1</sys:Double>
+                        </ComboBox>
+                    </ikw:SimpleStackPanel>
+                </Expander>
+            </local:ControlExample.Options>
+        </local:ControlExample>
+    </ikw:SimpleStackPanel>
+</ui:Page>

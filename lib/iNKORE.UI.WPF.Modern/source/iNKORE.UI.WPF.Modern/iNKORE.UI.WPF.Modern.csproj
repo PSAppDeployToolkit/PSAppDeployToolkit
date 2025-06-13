@@ -1,0 +1,118 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0-windows10.0.18362.0;net452</TargetFrameworks>
+		<UseWPF>true</UseWPF>
+		<UseWinRT>true</UseWinRT>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<NoWarn>1701;1702;1573;1591;CA1416</NoWarn>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<ApplicationIcon>..\..\assets\icons\WpfLibrary.ico</ApplicationIcon>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\..\assets\others\iNKORE.Pulic.snk</AssemblyOriginatorKeyFile>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;1701;1702;CA1416;CS8632</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<CsWinRTEmbedded>true</CsWinRTEmbedded>
+		<CsWinRTWindowsMetadata>10.0.18362.0</CsWinRTWindowsMetadata>
+		<CsWinRTIncludes>
+			Windows.Foundation;
+			Windows.UI.Color;
+			Windows.UI.IColors;
+			Windows.UI.ViewManagement.HandPreference;
+			Windows.UI.ViewManagement.IUISettings;
+			Windows.UI.ViewManagement.UIColorType;
+			Windows.UI.ViewManagement.UIElementType;
+			Windows.UI.ViewManagement.UISettings;
+		</CsWinRTIncludes>
+		<CsWinRTExcludes>
+			Windows.Foundation.Diagnostics;
+			Windows.Foundation.PropertyType;
+		</CsWinRTExcludes>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+		<PackageReference Include="Resource.Embedder" Version="2.2.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup Condition="!$(DefineConstants.Contains('NET47_OR_NEWER'))">
+		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Common\VisualStates\**" />
+	  <EmbeddedResource Remove="Common\VisualStates\**" />
+	  <None Remove="Common\VisualStates\**" />
+	  <Page Remove="Common\VisualStates\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Controls\SimpleStackPanel.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="iNKORE.UI.WPF.Modern.Controls" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '4.6.1'))">
+		<Reference Include="Windows">
+			<HintPath>..\..\libraries\Windows.WinMD</HintPath>
+			<IsWinMDFile>true</IsWinMDFile>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Windows.Foundation.FoundationContract">
+			<HintPath>..\..\libraries\Windows.Foundation.FoundationContract.winmd</HintPath>
+			<IsWinMDFile>true</IsWinMDFile>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Windows.Foundation.UniversalApiContract">
+			<HintPath>..\..\libraries\Windows.Foundation.UniversalApiContract.winmd</HintPath>
+			<IsWinMDFile>true</IsWinMDFile>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Resources\Fonts\FluentSystemIcons-Filled.ttf" />
+		<None Remove="Resources\Fonts\FluentSystemIcons-Regular.ttf" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="..\..\assets\icons\WpfLibrary_256w.png" Link="Resources\Images\WpfLibrary_256w.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="..\..\assets\images\banners\UI.WPF.Modern_Main_1280w.png" Link="Resources\Images\UI.WPF.Modern_Main_1280w.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\Fonts\FluentSystemIcons-Filled.ttf" />
+		<Resource Include="Resources\Fonts\FluentSystemIcons-Regular.ttf" />
+		<Resource Include="Resources\Images\NoiseAsset_256X256_PNG.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Resources\Strings\Strings.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Strings.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\Strings\Strings.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Strings.Designer.cs</LastGenOutput>
+			<CustomToolNamespace>iNKORE.UI.WPF.Modern</CustomToolNamespace>
+		</EmbeddedResource>
+	</ItemGroup>
+
+</Project>

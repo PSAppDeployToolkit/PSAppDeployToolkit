@@ -1,0 +1,38 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ThreadedUIPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sc="clr-namespace:SamplesCommon;assembly=SamplesCommon"
+    xmlns:threaded="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.ThreadedUI"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <ikw:SimpleStackPanel Style="{StaticResource ControlPageContentPanelStyle}">
+            <sc:ControlExample
+                x:Name="ProgressBarExample"
+                VerticalContentAlignment="Center"
+                HeaderText="A threaded progress control.">
+                <threaded:ThreadedVisualHost
+                    x:Name="ProgressControlHost"
+                    ChildChanged="ProgressControlHost_ChildChanged"
+                    ChildType="{x:Type threaded:ThreadedProgressBar}"
+                    Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                <sc:ControlExample.Options>
+                    <ikw:SimpleStackPanel Style="{StaticResource OptionsPanelStyle}">
+                        <CheckBox Content="IsBusy" IsChecked="{Binding IsBusy}" />
+                        <CheckBox Content="IsVisible" IsChecked="{Binding IsVisible}" />
+                        <Button Click="LoadOrUnload" Content="Unload" />
+                        <Button Click="ToggleChildType" Content="Toggle ChildType" />
+                        <Button Click="BlockMainThread" Content="Block main thread" />
+                    </ikw:SimpleStackPanel>
+                </sc:ControlExample.Options>
+            </sc:ControlExample>
+        </ikw:SimpleStackPanel>
+    </ScrollViewer>
+</ui:Page>

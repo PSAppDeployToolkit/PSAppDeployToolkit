@@ -1,0 +1,45 @@
+{
+    "$schema": "../ControlInfoData.schema.json",
+    "Groups":
+    [
+        {
+            "UniqueId": "DialogsAndFlyouts",
+            "Title": "Dialogs and Flyouts",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": "",
+            "Items":
+            [
+                {
+                    "UniqueId": "MessageBox",
+                    "Title": "MessageBox",
+                    "Subtitle": "A message box that can be used to show messages to the user.",
+                    "ImagePath": "ms-appx:///Assets/ControlImages/ContentDialog.png",
+                    "ImageIconPath": "ms-appx:///Assets/ControlIcons/DefaultIcon.png",
+                    "Description": "MessageBox is a control that can be used to display messages to the user. It uses the default styling found in Windows 11 and is easy to use, meets all accessibility standards and will make your message look great! You can set the Title, Content, PrimaryButtonText, SecondaryButtonText and CloseButtonText properties to create an easy to use experience.",
+                    "IsNew": true,
+                    "IsUpdated": true,
+                    "Docs":
+                    [
+                        // To be updated
+                        //{
+                        //    "Title": "ContentDialog - API",
+                        //    "Uri": "https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.contentdialog"
+                        //},
+                        //{
+                        //    "Title": "Guidelines",
+                        //    "Uri": "https://docs.microsoft.com/windows/apps/design/controls/dialogs-and-flyouts/dialogs"
+                        //}
+                    ],
+                    "RelatedControls":
+                    [
+                        "Flyout",
+                        "ContentDialog"
+                    ]
+
+                }
+            ]
+        }
+    ]
+}

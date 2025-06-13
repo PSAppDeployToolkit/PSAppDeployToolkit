@@ -1,0 +1,32 @@
+﻿<ui:Page
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.PivotPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    mc:Ignorable="d" Loaded="Page_Loaded">
+    <ikw:SimpleStackPanel>
+        <local:ControlExample x:Name="Example1" Margin="0,0,24,0" HeaderText="A basic pivot.">
+            <TabControl
+                MinHeight="400"
+                ui:PivotHelper.Title="EMAIL"
+                Style="{StaticResource TabControlPivotStyle}">
+                <TabItem Header="All">
+                    <TextBlock Text="all emails go here." />
+                </TabItem>
+                <TabItem Header="Unread">
+                    <TextBlock Text="unread emails go here." />
+                </TabItem>
+                <TabItem Header="Flagged">
+                    <TextBlock Text="flagged emails go here." />
+                </TabItem>
+                <TabItem Header="Urgent">
+                    <TextBlock Text="urgent emails go here." />
+                </TabItem>
+            </TabControl>
+        </local:ControlExample>
+    </ikw:SimpleStackPanel>
+</ui:Page>
