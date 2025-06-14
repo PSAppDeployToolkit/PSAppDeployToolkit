@@ -38,6 +38,7 @@ function Private:Set-ADTClientServerProcessPermissions
     if (Test-ADTModuleInitialized)
     {
         Set-ADTItemPermission @saipParams -Path ($adtConfig = Get-ADTConfig).Assets.Logo
+        Set-ADTItemPermission @saipParams -Path $adtConfig.Assets.LogoDark
         Set-ADTItemPermission @saipParams -Path $adtConfig.Assets.Banner
     }
 }
