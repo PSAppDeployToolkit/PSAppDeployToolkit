@@ -1202,7 +1202,7 @@ function Show-ADTInstallationWelcome
         finally
         {
             # Close the client/server process if we're running without a session.
-            if (!$adtSession)
+            if (!$adtSession -and $Script:ADT.ClientServerProcess)
             {
                 Close-ADTClientServerProcess
             }
