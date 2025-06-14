@@ -258,7 +258,7 @@ namespace PSADT.ClientServer
                         {
                             // Split the line on the pipe operator, it's our delimiter for args. We don't
                             // use a switch here so it's easier to break the while loop if we're exiting.
-                            var parts = line.Split(ServerInstance.ArgumentSeparator);
+                            var parts = line.Split(CommonUtilities.ArgumentSeparator);
                             if (parts[0] == "InitCloseAppsDialog")
                             {
                                 // Deserialize the process definitions if we have them, then right back that we were successful.
@@ -402,7 +402,7 @@ namespace PSADT.ClientServer
                         catch (Exception ex)
                         {
                             // Something we weren't expecting occurred. We should never get here.
-                            outputWriter.WriteLine($"Error{ServerInstance.ArgumentSeparator}An unhandled exception occurred while processing line [{line}]: {ex}");
+                            outputWriter.WriteLine($"Error{CommonUtilities.ArgumentSeparator}An unhandled exception occurred while processing line [{line}]: {ex}");
                         }
                     }
                 }
@@ -606,7 +606,7 @@ namespace PSADT.ClientServer
                             }
                             catch (Exception ex)
                             {
-                                logWriter.WriteLine($"2{ServerInstance.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
+                                logWriter.WriteLine($"2{CommonUtilities.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
                             }
 
                             // Close out the main window and spin until completion.
@@ -629,7 +629,7 @@ namespace PSADT.ClientServer
                                 // Test whether we succeeded.
                                 if (openWindow.Count > 0)
                                 {
-                                    logWriter.WriteLine($"2{ServerInstance.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
+                                    logWriter.WriteLine($"2{CommonUtilities.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
                                 }
                                 else
                                 {
@@ -638,12 +638,12 @@ namespace PSADT.ClientServer
                             }
                             else
                             {
-                                logWriter.WriteLine($"3{ServerInstance.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
+                                logWriter.WriteLine($"3{CommonUtilities.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
                             }
                         }
                         catch (Exception ex)
                         {
-                            logWriter.WriteLine($"3{ServerInstance.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
+                            logWriter.WriteLine($"3{CommonUtilities.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
                         }
                     }
                 }

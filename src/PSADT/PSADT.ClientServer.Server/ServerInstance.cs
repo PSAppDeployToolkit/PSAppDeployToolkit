@@ -123,7 +123,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(ProcessDefinition[]? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke($"InitCloseAppsDialog{(null != closeProcesses ? $"{ArgumentSeparator}{SerializationUtilities.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(closeProcesses)}" : null)}");
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace PSADT.ClientServer
         public bool PromptToCloseApps(TimeSpan promptToCloseTimeout)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke($"PromptToCloseApps{ArgumentSeparator}{promptToCloseTimeout}");
+            return Invoke($"PromptToCloseApps{CommonUtilities.ArgumentSeparator}{promptToCloseTimeout}");
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace PSADT.ClientServer
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke($"ShowProgressDialog{ArgumentSeparator}{dialogStyle}{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
+            return Invoke($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace PSADT.ClientServer
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke($"UpdateProgressDialog{ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{ArgumentSeparator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{ArgumentSeparator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
+            return Invoke($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace PSADT.ClientServer
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
             _logSource = "Show-ADTBalloonTip";
-            return Invoke($"ShowBalloonTip{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
+            return Invoke($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace PSADT.ClientServer
         public bool SendKeys(SendKeysOptions options)
         {
             _logSource = "Send-ADTKeys";
-            return Invoke($"SendKeys{ArgumentSeparator}{options}");
+            return Invoke($"SendKeys{CommonUtilities.ArgumentSeparator}{options}");
         }
 
         /// <summary>
@@ -325,7 +325,7 @@ namespace PSADT.ClientServer
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
+            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
             return SerializationUtilities.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
         }
 
@@ -399,7 +399,7 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
                 _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
             };
-            _outputStreamWriter.WriteLine($"ShowModalDialog{ArgumentSeparator}{dialogType}{ArgumentSeparator}{dialogStyle}{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
+            _outputStreamWriter.WriteLine($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
             return SerializationUtilities.DeserializeFromString<TResult>(ReadInput());
         }
 
@@ -511,7 +511,7 @@ namespace PSADT.ClientServer
             {
                 throw new InvalidDataException("The client process returned a null response.");
             }
-            if (response.StartsWith($"Error{ArgumentSeparator}", StringComparison.OrdinalIgnoreCase))
+            if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(response.Substring(6));
             }
@@ -532,9 +532,9 @@ namespace PSADT.ClientServer
                 if (ModuleDatabase.IsDeploymentSessionActive())
                 {
                     // Test the line for a log severity.
-                    if (line.Contains(ArgumentSeparator.ToString()))
+                    if (line.Contains(CommonUtilities.ArgumentSeparator.ToString()))
                     {
-                        var parts = line.Split(ArgumentSeparator);
+                        var parts = line.Split(CommonUtilities.ArgumentSeparator);
                         ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0]), _logSource);
                     }
                     else
@@ -653,12 +653,5 @@ namespace PSADT.ClientServer
         /// application domain  whose file name ends with "PSADT.ClientServer.Client.exe". It is intended for internal use
         /// only.</remarks>
         private static readonly string _assemblyLocation = typeof(ServerInstance).Assembly.Location.Replace("Server.dll", "Client.exe");
-
-        /// <summary>
-        /// Represents the character used to separate command parameters in pipe communication.
-        /// </summary>
-        /// <remarks>The separator is defined as the Unicode character with the value 0x1F. This character
-        /// is used internally to delimit parameters in inter-process communication.</remarks>
-        internal const char ArgumentSeparator = (char)0x1F;
     }
 }
