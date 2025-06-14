@@ -283,7 +283,7 @@ function Start-ADTMsiProcess
                         {
                             (Get-Item -LiteralPath $FilePath).FullName
                         }
-                        elseif ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
+                        elseif ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath)) -PathType Leaf))
                         {
                             $dirFilesPath
                         }
@@ -323,7 +323,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Transforms.Length; $i++)
                         {
-                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', ''))))
+                            if (Test-Path -LiteralPath ($fullPath = Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', '')) -PathType Leaf)
                             {
                                 $Transforms[$i] = $fullPath
                             }
@@ -335,7 +335,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Patches.Length; $i++)
                         {
-                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', ''))))
+                            if (Test-Path -LiteralPath ($fullPath = Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', '')) -PathType Leaf)
                             {
                                 $Patches[$i] = $fullPath
                             }

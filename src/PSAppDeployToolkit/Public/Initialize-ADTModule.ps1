@@ -111,7 +111,7 @@ function Initialize-ADTModule
                     {
                         [System.String[]]$Script:ADT.Directories.$_ = foreach ($directory in $Script:ADT.Directories.Script)
                         {
-                            if ([System.IO.File]::Exists([System.IO.Path]::Combine($directory, $_, "$($_.ToLower()).psd1")))
+                            if (Test-Path -LiteralPath ([System.IO.Path]::Combine($directory, $_, "$($_.ToLower()).psd1")) -PathType Leaf)
                             {
                                 [System.IO.Path]::Combine($directory, $_)
                             }

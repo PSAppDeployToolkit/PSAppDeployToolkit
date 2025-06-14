@@ -131,7 +131,7 @@ function New-ADTZipFile
                 Write-ADTLogEntry -Message "Creating a zip archive with the requested content at destination path [$DestinationPath]."
 
                 # If the destination archive already exists, delete it if the -OverwriteArchive option was selected.
-                if ([System.IO.File]::Exists($DestinationPath) -and $OverwriteArchive)
+                if ((Test-Path -LiteralPath $DestinationPath -PathType Leaf) -and $OverwriteArchive)
                 {
                     Write-ADTLogEntry -Message "An archive at the destination path already exists, deleting file [$DestinationPath]."
                     $null = Remove-Item -LiteralPath $DestinationPath -Force

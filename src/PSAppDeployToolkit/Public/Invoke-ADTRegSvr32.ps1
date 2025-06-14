@@ -56,7 +56,7 @@ function Invoke-ADTRegSvr32
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (![System.IO.File]::Exists($_) -and ([System.IO.Path]::GetExtension($_) -ne '.dll'))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf) -and ([System.IO.Path]::GetExtension($_) -ne '.dll'))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist or is not a DLL file.'))
                 }

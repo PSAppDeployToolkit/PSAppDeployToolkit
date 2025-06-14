@@ -138,7 +138,7 @@ function Invoke-ADTAllUsersRegistryAction
                         Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         foreach ($regHive in $manualRegHives)
                         {
-                            if (![System.IO.File]::Exists($regHive.Path))
+                            if (!(Test-Path -LiteralPath $regHive.Path -PathType Leaf))
                             {
                                 $naerParams = @{
                                     Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...")

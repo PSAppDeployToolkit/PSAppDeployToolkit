@@ -301,7 +301,7 @@ Set-StrictMode -Version 1
 try
 {
     # Import the module locally if available, otherwise try to find it from PSModulePath.
-    if ([System.IO.File]::Exists("$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
+    if (Test-Path -LiteralPath "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -PathType Leaf)
     {
         Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
         Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force

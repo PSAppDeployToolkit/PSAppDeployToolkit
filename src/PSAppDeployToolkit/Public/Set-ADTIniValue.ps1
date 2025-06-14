@@ -103,7 +103,7 @@ function Set-ADTIniValue
             try
             {
                 # Create the INI file if it does not exist.
-                if (![System.IO.File]::Exists($FilePath))
+                if (!(Test-Path -LiteralPath $FilePath -PathType Leaf))
                 {
                     if (!$Force)
                     {

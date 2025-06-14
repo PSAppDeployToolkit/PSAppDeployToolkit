@@ -276,7 +276,7 @@ function Uninstall-ADTApplication
                     if ($uninstallString -match $validUninstallString)
                     {
                         $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        if (![System.IO.File]::Exists($sapParams.FilePath) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
+                        if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
                         {
                             $sapParams.FilePath = $commandPath.Source
                         }

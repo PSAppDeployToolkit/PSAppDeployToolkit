@@ -48,7 +48,7 @@ function Unregister-ADTDll
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (![System.IO.File]::Exists($_))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }

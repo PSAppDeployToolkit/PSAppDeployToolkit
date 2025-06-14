@@ -85,7 +85,7 @@ function Start-ADTMspProcess
             try
             {
                 # If the MSP is in the Files directory, set the full path to the MSP.
-                $mspFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
+                $mspFile = if ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath)) -PathType Leaf))
                 {
                     $dirFilesPath
                 }
