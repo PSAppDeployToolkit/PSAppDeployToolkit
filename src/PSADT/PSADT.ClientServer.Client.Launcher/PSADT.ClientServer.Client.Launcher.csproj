@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net462;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <OutputType>WinExe</OutputType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <NoWarn>$(NoWarn)</NoWarn>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
+    <Nullable>enable</Nullable>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <RootNamespace>PSADT.ClientServer.Launcher</RootNamespace>
+    <AssemblyName>PSADT.ClientServer.Client.Launcher</AssemblyName>
+    <Product>PSAppDeployToolkit Client/Server Client GUI Launcher</Product>
+    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+    <AssemblyTitle>PSAppDeployToolkit Client/Server Client GUI Launcher</AssemblyTitle>
+    <AssemblyDescription>This product is utilised by PSAppDeployToolkit for launching the Client/Server client without a visible console window.</AssemblyDescription>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <InformationalVersion>4.1.0</InformationalVersion>
+    <ApplicationIcon>..\PSADT.ClientServer.Client\Properties\appIcon.ico</ApplicationIcon>
+    <Platforms>AnyCPU</Platforms>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <WarningLevel>9999</WarningLevel>
+    <StartupObject>PSADT.ClientServer.Launcher.Program</StartupObject>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+  </ItemGroup>
+</Project>

@@ -119,7 +119,7 @@ function Block-ADTAppExecution
                 }
 
                 # Configure the appropriate permissions for the client/server process.
-                Set-ADTClientServerProcessPermissions
+                Set-ADTClientServerProcessPermissions -User (Get-ADTClientServerUser)
 
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{
@@ -140,11 +140,16 @@ function Block-ADTAppExecution
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
 
+                # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.
+                $blockExecArgs = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
+                $blockExecArgs.Add('Options', [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))
+                $blockExecArgs.Add('DialogType', [PSADT.UserInterface.Dialogs.DialogType]::CustomDialog.ToString())
+                $blockExecArgs.Add('DialogStyle', $adtConfig.UI.DialogStyle)
+
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = Convert-ADTRegistryPath -Key (Join-Path -Path $adtConfig.Toolkit.RegPath -ChildPath $adtEnv.appDeployToolkitName)
-                $blockExecCommand = "& '$($Script:PSScriptRoot)\lib\PSADT.ClientServer.Client.exe' /SingleDialog -DialogType $([PSADT.UserInterface.Dialogs.DialogType]::CustomDialog) -DialogStyle $($adtConfig.UI.DialogStyle) -DialogOptions $([PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))"
-                $blockExecDbgPath = "conhost.exe --headless $([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) -NonInteractive -NoProfile -Command & ([scriptblock]::Create([Microsoft.Win32.Registry]::GetValue('$($blockExecRegPath -replace '^Microsoft\.PowerShell\.Core\\Registry::')', 'BlockExecutionCommand', `$null))); #"
-                Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value $blockExecCommand
+                $blockExecDbgPath = "`"$($Script:PSScriptRoot)\lib\PSADT.ClientServer.Client.Launcher.exe`" /ShowModalDialog -ArgumentsDictionary $($blockExecRegPath.Split('::', [System.StringSplitOptions]::RemoveEmptyEntries)[1])\BlockExecutionCommand"
+                Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value ([PSADT.Utilities.SerializationUtilities]::SerializeToString($blockExecArgs)) -InformationAction SilentlyContinue
 
                 # Enumerate each process and set the debugger value to block application execution.
                 foreach ($process in $ProcessName)

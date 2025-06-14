@@ -7,6 +7,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.Types;
@@ -150,6 +151,30 @@ namespace PSADT.ClientServer
                     throw new ProgramException($"The argument [{args[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
                 arguments.Add(key, value);
+            }
+
+            // Check whether an ArgumentsDictionary was provided.
+            if (arguments.TryGetValue("ArgumentsDictionary", out string? argsDictValue))
+            {
+                if (argsDictValue.StartsWith("HKEY"))
+                {
+                    // Provided value is a registry key path.
+                    if ((argsDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argsDictValue.Substring(0, valueDivider), argsDictValue.Substring(valueDivider + 1), null) is not string argsDictContent)
+                    {
+                        throw new ProgramException($"The specified ArgumentsDictionary registry key [{argsDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
+                    }
+                    arguments = DeserializeString<Dictionary<string, string>>(argsDictContent);
+                }
+                else if (File.Exists(argsDictValue))
+                {
+                    // Provided value is a file path.
+                    arguments = DeserializeString<Dictionary<string, string>>(File.ReadAllText(argsDictValue));
+                }
+                else
+                {
+                    // Assume anything else is a literal Base64-encoded string.
+                    arguments = DeserializeString<Dictionary<string, string>>(argsDictValue);
+                }
             }
 
             // This data should never change once read, so return read-only.
