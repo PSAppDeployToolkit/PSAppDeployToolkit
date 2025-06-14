@@ -65,7 +65,7 @@ namespace PSADT.Utilities
                 throw new Exception($"Failed to get section [{section}] from the INI file.", ex);
             }
 
-            var dictionary = new OrderedDictionary();
+            OrderedDictionary dictionary = new();
             foreach (var entry in buffer.Slice(0, (int)res).ToString().Split('\0'))
             {
                 if (string.IsNullOrWhiteSpace(entry))
@@ -119,7 +119,7 @@ namespace PSADT.Utilities
                 return;
             }
 
-            var entries = new StringBuilder();
+            StringBuilder entries = new();
             if (content.Count > 0)
             {
                 foreach (DictionaryEntry entry in content)

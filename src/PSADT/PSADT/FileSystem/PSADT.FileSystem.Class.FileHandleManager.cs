@@ -98,7 +98,7 @@ namespace PSADT.FileSystem
                 SafeFileHandle fileDupHandle;
                 try
                 {
-                    using (var fileOpenHandle = new SafeFileHandle((HANDLE)sysHandle.HandleValue, false))
+                    using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
                     {
                         Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
                     }
@@ -169,7 +169,7 @@ namespace PSADT.FileSystem
                 foreach (var handleEntry in handleEntries)
                 {
                     using (var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32()))
-                    using (var fileOpenHandle = new SafeFileHandle((HANDLE)handleEntry.HandleValue, false))
+                    using (SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false))
                     {
                         Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                         localHandle.Dispose();
@@ -292,7 +292,7 @@ namespace PSADT.FileSystem
         private static SafeVirtualAllocHandle GetObjectTypeShellcode(FARPROC ntQueryObject, IntPtr fileHandle, OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength, FARPROC exitThread)
         {
             // Build the shellcode stub to call NtQueryObject.
-            var shellcode = new List<byte>();
+            List<byte> shellcode = [];
             switch (ProcessManager.ProcessArchitecture)
             {
                 case SystemArchitecture.AMD64:
@@ -376,7 +376,7 @@ namespace PSADT.FileSystem
                     break;
                 case SystemArchitecture.ARM64:
                     // x0 = handle
-                    var code = new List<uint>();
+                    List<uint> code = [];
                     code.AddRange(NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()));
 
                     // x1 = infoClass (zero-extended)

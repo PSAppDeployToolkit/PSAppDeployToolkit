@@ -133,7 +133,7 @@ namespace PSADT.Execution
                         }
 
                         // Handle user process creation, otherwise just create the process for the running user.
-                        var pi = new PROCESS_INFORMATION();
+                        PROCESS_INFORMATION pi = new();
                         if (null != launchInfo.Username)
                         {
                             // Perform initial tests prior to trying to query a user token.
@@ -239,7 +239,7 @@ namespace PSADT.Execution
                         }
 
                         // Start tracking the process and allow it to resume execution.
-                        using (var hThread = new SafeThreadHandle(pi.hThread, true))
+                        using (SafeThreadHandle hThread = new(pi.hThread, true))
                         {
                             Kernel32.AssignProcessToJobObject(job, (hProcess = new SafeProcessHandle(pi.hProcess, true)));
                             Kernel32.ResumeThread(hThread);
@@ -303,7 +303,7 @@ namespace PSADT.Execution
                 }
 
                 // These tasks read all outputs and wait for the process to complete.
-                var tcs = new TaskCompletionSource<ProcessResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                TaskCompletionSource<ProcessResult> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
                 Task.Run(async () =>
                 {
                     using (iocp)

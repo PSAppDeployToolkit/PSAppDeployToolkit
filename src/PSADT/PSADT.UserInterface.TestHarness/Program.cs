@@ -96,7 +96,7 @@ namespace PSADT.UserInterface.TestHarness
             string ButtonRightText = "RightButton";
 
             // Set up options for the dialogs
-            var closeAppsDialogState = new CloseAppsDialogState(appsToClose, null);
+            CloseAppsDialogState closeAppsDialogState = new(appsToClose, null);
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },

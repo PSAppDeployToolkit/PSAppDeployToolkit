@@ -26,7 +26,7 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(obj), "The object to serialize cannot be null.");
             }
-            using (var ms = new MemoryStream())
+            using (MemoryStream ms = new())
             {
                 new DataContractSerializer(typeof(T)).WriteObject(ms, obj);
                 return Convert.ToBase64String(ms.ToArray());
@@ -45,7 +45,7 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(obj), "The object to serialize cannot be null.");
             }
-            using (var ms = new MemoryStream())
+            using (MemoryStream ms = new())
             {
                 new DataContractSerializer(obj.GetType()).WriteObject(ms, obj);
                 return Convert.ToBase64String(ms.ToArray());
@@ -64,7 +64,7 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(str), "The input string cannot be null or empty.");
             }
-            using (var ms = new MemoryStream(Convert.FromBase64String(str)))
+            using (MemoryStream ms = new(Convert.FromBase64String(str)))
             {
                 return (T)new DataContractSerializer(typeof(T)).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
             }
@@ -83,8 +83,8 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(str), "The input string cannot be null or empty.");
             }
-            using (var ms = new MemoryStream(Convert.FromBase64String(str)))
-            using (var reader = new StreamReader(ms))
+            using (MemoryStream ms = new(Convert.FromBase64String(str)))
+            using (StreamReader reader = new(ms))
             {
                 // Work out the type name via regex if we can.
                 string dcsData = reader.ReadToEnd(); string typeName = string.Empty;

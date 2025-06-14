@@ -22,8 +22,8 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>The resized image.</returns>
         internal static Bitmap ResizeImage(Bitmap img, int width, int height)
         {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
+            Rectangle destRect = new(0, 0, width, height);
+            Bitmap destImage = new(width, height);
 
             destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
 
@@ -35,7 +35,7 @@ namespace PSADT.UserInterface.Utilities
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                using (var wrapMode = new ImageAttributes())
+                using (ImageAttributes wrapMode = new())
                 {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
                     graphics.DrawImage(img, destRect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
@@ -59,11 +59,11 @@ namespace PSADT.UserInterface.Utilities
             }
 
             Icon icon;
-            using (var msImg = new MemoryStream())
-            using (var msIco = new MemoryStream())
+            using (MemoryStream msImg = new())
+            using (MemoryStream msIco = new())
             {
                 img.Save(msImg, ImageFormat.Png);
-                using (var bw = new BinaryWriter(msIco))
+                using (BinaryWriter bw = new(msIco))
                 {
                     bw.Write((short)0);           //0-1 reserved
                     bw.Write((short)1);           //2-3 image type, 1 = icon, 2 = cursor

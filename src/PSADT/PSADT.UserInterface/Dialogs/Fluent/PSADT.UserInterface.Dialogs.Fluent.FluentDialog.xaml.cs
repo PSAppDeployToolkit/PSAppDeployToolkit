@@ -413,7 +413,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="text">The text to add.</param>
         private static void AddAccentText(TextBlock textBlock, string text)
         {
-            var accentRun = new Run(text) { FontWeight = FontWeights.Bold };
+            Run accentRun = new(text) { FontWeight = FontWeights.Bold };
             accentRun.SetResourceReference(ForegroundProperty, ThemeKeys.AccentTextFillColorPrimaryBrushKey);
             textBlock.Inlines.Add(accentRun);
         }
@@ -459,7 +459,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Add the URL as a proper hyperlink
             if (Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
             {
-                var link = new Hyperlink(new Run(url))
+                Hyperlink link = new(new Run(url))
                 {
                     NavigateUri = uri,
                     ToolTip = $"Open link: {url}"
@@ -544,7 +544,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 else
                 {
                     // Use BeginInit/EndInit pattern for better performance.
-                    var bitmapImage = new BitmapImage();
+                    BitmapImage bitmapImage = new();
                     bitmapImage.BeginInit();
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
@@ -675,7 +675,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void UpdateButtonLayout()
         {
             // Build a list of visible buttons in the order they appear.
-            var visibleButtons = new List<UIElement>();
+            List<UIElement> visibleButtons = [];
             if (ButtonLeft.Visibility == Visibility.Visible)
             {
                 visibleButtons.Add(ButtonLeft);

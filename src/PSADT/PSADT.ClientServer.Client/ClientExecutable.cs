@@ -137,7 +137,7 @@ namespace PSADT.ClientServer
         private static ReadOnlyDictionary<string, string> ConvertArgsToDictionary(string[] args)
         {
             // Loop through arguments and match argument names to their values.
-            var arguments = new Dictionary<string, string>();
+            Dictionary<string, string> arguments = [];
             for (int i = 0; i < args!.Length; i++)
             {
                 if (!args[i].StartsWith("-"))
@@ -241,9 +241,9 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (var outputWriter = new StreamWriter(outputPipeClient) { AutoFlush = true })
-                using (var inputReader = new StreamReader(inputPipeClient))
-                using (var logWriter = new StreamWriter(logPipeClient) { AutoFlush = true })
+                using (StreamWriter outputWriter = new(outputPipeClient) { AutoFlush = true })
+                using (StreamReader inputReader = new(inputPipeClient))
+                using (StreamWriter logWriter = new(logPipeClient) { AutoFlush = true })
                 {
                     // Initialize variables needed throughout the loop.
                     CloseAppsDialogState closeAppsDialogState = default!;
@@ -613,7 +613,7 @@ namespace PSADT.ClientServer
                             if (runningApp.Process.CloseMainWindow())
                             {
                                 // Start spinning.
-                                var promptToCloseStopwatch = new Stopwatch();
+                                Stopwatch promptToCloseStopwatch = new();
                                 IReadOnlyList<WindowInfo> openWindow;
                                 do
                                 {

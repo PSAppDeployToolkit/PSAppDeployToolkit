@@ -120,7 +120,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Store the process information.
-                    var runningProcess = new RunningProcess(process, procDescription, commandLine[0], commandLine.Length > 1 ? string.Join(" ", commandLine.Skip(1)) : null);
+                    RunningProcess runningProcess = new(process, procDescription, commandLine[0], commandLine.Length > 1 ? string.Join(" ", commandLine.Skip(1)) : null);
                     if ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess))
                     {
                         runningProcesses.Add(runningProcess);

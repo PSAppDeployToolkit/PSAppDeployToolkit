@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.Dialogs
         internal static void RestartComputer()
         {
             // Reboot the system and hard-exit this process.
-            using (var process = new Process())
+            using (Process process = new())
             {
                 process.StartInfo.FileName = "shutdown.exe";
                 process.StartInfo.Arguments = "/r /f /t 0";

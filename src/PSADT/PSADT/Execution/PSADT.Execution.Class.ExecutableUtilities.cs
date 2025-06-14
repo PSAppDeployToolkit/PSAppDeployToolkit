@@ -42,8 +42,8 @@ namespace PSADT.Execution
                 }
             }
 
-            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            using var reader = new BinaryReader(fs);
+            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
+            using BinaryReader reader = new(fs);
 
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem = LibraryInterfaces.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_UNKNOWN;
             uint? entryPoint = null;

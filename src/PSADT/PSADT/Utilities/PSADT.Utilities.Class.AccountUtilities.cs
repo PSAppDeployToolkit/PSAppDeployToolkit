@@ -30,7 +30,7 @@ namespace PSADT.Utilities
         /// <returns></returns>
         internal static bool IsSidMemberOfWellKnownGroup(SecurityIdentifier targetSid, WellKnownSidType wellKnownGroupSid)
         {
-            using (var groupEntry = new DirectoryEntry($"WinNT://./{new SecurityIdentifier(wellKnownGroupSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
+            using (DirectoryEntry groupEntry = new($"WinNT://./{new SecurityIdentifier(wellKnownGroupSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
             {
                 var visited = new HashSet<string>();
                 return CheckMemberRecursive(groupEntry, targetSid, visited);
@@ -51,7 +51,7 @@ namespace PSADT.Utilities
             {
                 foreach (object member in members)
                 {
-                    using (var memberEntry = new DirectoryEntry(member))
+                    using (DirectoryEntry memberEntry = new(member))
                     {
                         // Skip over already parsed groups (group membership loops).
                         if (!visited.Add(memberEntry.Path))
