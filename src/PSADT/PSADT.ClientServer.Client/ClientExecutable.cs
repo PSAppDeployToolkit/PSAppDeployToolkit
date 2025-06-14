@@ -75,10 +75,10 @@ namespace PSADT.ClientServer
                 }
                 else
                 {
-                    throw new ProgramException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
+                    throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
                 }
             }
-            catch (ProgramException ex)
+            catch (ClientException ex)
             {
                 // We've caught our own error. Write it out and exit with its code.
                 Console.Error.WriteLine(ex.ToString());
@@ -101,9 +101,9 @@ namespace PSADT.ClientServer
         /// <remarks>This method shows a dialog box containing the application's version, copyright
         /// information,  and a message indicating that the application is intended to be used with the
         /// PSAppDeployToolkit  PowerShell module. It also advises end-users to contact their helpdesk for assistance. 
-        /// After displaying the dialog, the method throws a <see cref="ProgramException"/> to indicate  that no
+        /// After displaying the dialog, the method throws a <see cref="ClientException"/> to indicate  that no
         /// arguments were provided to the application.</remarks>
-        /// <exception cref="ProgramException">Thrown to indicate that no arguments were provided to the application.</exception>
+        /// <exception cref="ClientException">Thrown to indicate that no arguments were provided to the application.</exception>
         private static void ShowHelpDialog()
         {
             var fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
@@ -120,7 +120,7 @@ namespace PSADT.ClientServer
                 "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
             });
             DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
-            throw new ProgramException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
+            throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace PSADT.ClientServer
                 var value = (i + 1 < args.Length) ? args[i + 1].Trim() : null;
                 if (null == value || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
                 {
-                    throw new ProgramException($"The argument [{args[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
+                    throw new ClientException($"The argument [{args[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
                 arguments.Add(key, value);
             }
@@ -161,7 +161,7 @@ namespace PSADT.ClientServer
                     // Provided value is a registry key path.
                     if ((argsDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argsDictValue.Substring(0, valueDivider), argsDictValue.Substring(valueDivider + 1), null) is not string argsDictContent)
                     {
-                        throw new ProgramException($"The specified ArgumentsDictionary registry key [{argsDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
+                        throw new ClientException($"The specified ArgumentsDictionary registry key [{argsDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
                     }
                     arguments = DeserializeString<Dictionary<string, string>>(argsDictContent);
                 }
@@ -195,15 +195,15 @@ namespace PSADT.ClientServer
             // Get the pipe handles from the arguments.
             if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || null == outputPipeHandle || string.IsNullOrWhiteSpace(outputPipeHandle))
             {
-                throw new ProgramException("The specified OutputPipe handle was null or invalid.", ClientExitCode.NoOutputPipe);
+                throw new ClientException("The specified OutputPipe handle was null or invalid.", ClientExitCode.NoOutputPipe);
             }
             if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || null == inputPipeHandle || string.IsNullOrWhiteSpace(inputPipeHandle))
             {
-                throw new ProgramException("The specified InputPipe handle was null or invalid.", ClientExitCode.NoInputPipe);
+                throw new ClientException("The specified InputPipe handle was null or invalid.", ClientExitCode.NoInputPipe);
             }
             if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || null == logPipeHandle || string.IsNullOrWhiteSpace(logPipeHandle))
             {
-                throw new ProgramException("The specified LogPipe handle was null or invalid.", ClientExitCode.NoLogPipe);
+                throw new ClientException("The specified LogPipe handle was null or invalid.", ClientExitCode.NoLogPipe);
             }
 
             // Establish the pipe objects.
@@ -216,7 +216,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to open a pipe client for the specified OutputHandle.", ex, ClientExitCode.InvalidOutputPipe);
+                throw new ClientException($"Failed to open a pipe client for the specified OutputHandle.", ex, ClientExitCode.InvalidOutputPipe);
             }
             try
             {
@@ -224,7 +224,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to open a pipe client for the specified InputHandle.", ex, ClientExitCode.InvalidInputPipe);
+                throw new ClientException($"Failed to open a pipe client for the specified InputHandle.", ex, ClientExitCode.InvalidInputPipe);
             }
             try
             {
@@ -232,7 +232,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to open a pipe client for the specified LogHandle.", ex, ClientExitCode.InvalidLogPipe);
+                throw new ClientException($"Failed to open a pipe client for the specified LogHandle.", ex, ClientExitCode.InvalidLogPipe);
             }
 
             // Start reading data from the pipes. We only return
@@ -270,14 +270,14 @@ namespace PSADT.ClientServer
                                 // Confirm the length of our parts showing the dialog and writing back the result.
                                 if (parts.Length != 2)
                                 {
-                                    throw new ProgramException("The PromptToCloseApps command requires exactly one argument: PromptToCloseTimeout.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The PromptToCloseApps command requires exactly one argument: PromptToCloseTimeout.", ClientExitCode.InvalidArguments);
                                 }
                                 var promptToCloseTimeout = TimeSpan.Parse(parts[1]);
 
                                 // Process each running app.
                                 if (null == closeAppsDialogState.RunningProcessService)
                                 {
-                                    throw new ProgramException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
+                                    throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
                                 }
 
                                 // Perform the operation to prompt the user to close apps and write back that we were successful.
@@ -289,7 +289,7 @@ namespace PSADT.ClientServer
                                 // Confirm the length of our parts showing the dialog and writing back the result.
                                 if (parts.Length != 4)
                                 {
-                                    throw new ProgramException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ClientExitCode.InvalidArguments);
                                 }
                                 outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
                             }
@@ -298,13 +298,13 @@ namespace PSADT.ClientServer
                                 // Confirm the length of our parts showing the dialog and writing back the result.
                                 if (parts.Length != 3)
                                 {
-                                    throw new ProgramException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and Options.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and Options.", ClientExitCode.InvalidArguments);
                                 }
 
                                 // Confirm the DialogStyle is valid.
                                 if (!Enum.TryParse(parts[1], true, out DialogStyle dialogStyle))
                                 {
-                                    throw new ProgramException($"The specified DialogStyle of [{parts[1]}] is invalid.", ClientExitCode.InvalidDialogStyle);
+                                    throw new ClientException($"The specified DialogStyle of [{parts[1]}] is invalid.", ClientExitCode.InvalidDialogStyle);
                                 }
 
                                 // Show the progress dialog and write back that we were successful.
@@ -321,7 +321,7 @@ namespace PSADT.ClientServer
                                 // Confirm the length of our parts showing the dialog and writing back the result.
                                 if (parts.Length != 5)
                                 {
-                                    throw new ProgramException("The UpdateProgressDialog command requires exactly four arguments: ProgressMessage, ProgressDetailMessage, ProgressPercentage, and MessageAlignment.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The UpdateProgressDialog command requires exactly four arguments: ProgressMessage, ProgressDetailMessage, ProgressPercentage, and MessageAlignment.", ClientExitCode.InvalidArguments);
                                 }
 
                                 // Update the progress dialog with the provided parameters.
@@ -339,7 +339,7 @@ namespace PSADT.ClientServer
                                 // Confirm we have a valid number of arguments before calling ShowBalloonTip().
                                 if (parts.Length != 2)
                                 {
-                                    throw new ProgramException("The ShowBalloonTip command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The ShowBalloonTip command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
                                 }
                                 outputWriter.WriteLine(ShowBalloonTip(new Dictionary<string, string> { { "Options", parts[1] } }));
                             }
@@ -360,7 +360,7 @@ namespace PSADT.ClientServer
                                 // Confirm the length of our parts showing the dialog and writing back the result.
                                 if (parts.Length != 2)
                                 {
-                                    throw new ProgramException("The SendKeys command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The SendKeys command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
                                 }
                                 outputWriter.WriteLine(SendKeys(new Dictionary<string, string> { { "Options", parts[1] } }));
                             }
@@ -369,7 +369,7 @@ namespace PSADT.ClientServer
                                 // Confirm we have a valid number of arguments before calling GetProcessWindowInfo().
                                 if (parts.Length != 2)
                                 {
-                                    throw new ProgramException("The GetProcessWindowInfo command requires exactly one argument: WindowInfoOptions.", ClientExitCode.InvalidArguments);
+                                    throw new ClientException("The GetProcessWindowInfo command requires exactly one argument: WindowInfoOptions.", ClientExitCode.InvalidArguments);
                                 }
                                 outputWriter.WriteLine(GetProcessWindowInfo(new Dictionary<string, string> { { "Options", parts[1] } }));
                             }
@@ -396,7 +396,7 @@ namespace PSADT.ClientServer
                             else
                             {
                                 // We don't have the supporting code for the specified command.
-                                throw new ProgramException($"The specified command [{parts[0]}] is not recognised.", ClientExitCode.InvalidArguments);
+                                throw new ClientException($"The specified command [{parts[0]}] is not recognised.", ClientExitCode.InvalidArguments);
                             }
                         }
                         catch (Exception ex)
@@ -409,7 +409,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to read or write from the pipe.", ex, ClientExitCode.PipeReadWriteError);
+                throw new ClientException($"Failed to read or write from the pipe.", ex, ClientExitCode.PipeReadWriteError);
             }
         }
 
@@ -427,7 +427,7 @@ namespace PSADT.ClientServer
         /// JSON-serialized string containing the options specific to the dialog type.</description> </item> </list></param>
         /// <returns>A JSON-serialized string representing the result of the dialog. The format and content of the result depend
         /// on the dialog type.</returns>
-        /// <exception cref="ProgramException">Thrown if any of the following conditions occur: <list type="bullet"> <item><description>The
+        /// <exception cref="ClientException">Thrown if any of the following conditions occur: <list type="bullet"> <item><description>The
         /// <c>DialogType</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
@@ -437,21 +437,21 @@ namespace PSADT.ClientServer
             // Confirm we have a DialogType and that it's valid.
             if (!arguments.TryGetValue("DialogType", out string? dialogTypeArg) || string.IsNullOrWhiteSpace(dialogTypeArg))
             {
-                throw new ProgramException("A required DialogType was not specified on the command line.", ClientExitCode.NoDialogType);
+                throw new ClientException("A required DialogType was not specified on the command line.", ClientExitCode.NoDialogType);
             }
             if (!Enum.TryParse(dialogTypeArg, true, out DialogType dialogType))
             {
-                throw new ProgramException($"The specified DialogType of [{dialogTypeArg}] is invalid.", ClientExitCode.InvalidDialog);
+                throw new ClientException($"The specified DialogType of [{dialogTypeArg}] is invalid.", ClientExitCode.InvalidDialog);
             }
 
             // Confirm we've got a DialogStyle and that it's valid.
             if (!arguments.TryGetValue("DialogStyle", out string? dialogStyleArg) || string.IsNullOrWhiteSpace(dialogStyleArg))
             {
-                throw new ProgramException("A required DialogStyle was not specified on the command line.", ClientExitCode.NoDialogStyle);
+                throw new ClientException("A required DialogStyle was not specified on the command line.", ClientExitCode.NoDialogStyle);
             }
             if (!Enum.TryParse(dialogStyleArg, true, out DialogStyle dialogStyle))
             {
-                throw new ProgramException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
+                throw new ClientException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
             }
 
             // Show the dialog and return the serialised result for the caller to handle.
@@ -463,7 +463,7 @@ namespace PSADT.ClientServer
                 DialogType.CustomDialog => SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(GetOptionsFromArguments(arguments)))),
                 DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments)))),
                 DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!)),
-                _ => throw new ProgramException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog),
+                _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog),
             };
         }
 
@@ -556,21 +556,21 @@ namespace PSADT.ClientServer
         /// Retrieves the value of the "Options" key from the provided arguments dictionary.
         /// </summary>
         /// <remarks>This method ensures that the "Options" key exists and its value is valid. If the key
-        /// is missing or the value is invalid, a <see cref="ProgramException"/> is thrown.</remarks>
+        /// is missing or the value is invalid, a <see cref="ClientException"/> is thrown.</remarks>
         /// <param name="arguments">A read-only dictionary containing key-value pairs of command-line arguments. Must include a valid "Options"
         /// key.</param>
         /// <returns>The value associated with the "Options" key in the dictionary.</returns>
-        /// <exception cref="ProgramException">Thrown if the "Options" key is missing, null, or contains only whitespace.</exception>
+        /// <exception cref="ClientException">Thrown if the "Options" key is missing, null, or contains only whitespace.</exception>
         private static string GetOptionsFromArguments(IReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we have options and they're not null/invalid.
             if (!arguments.TryGetValue("Options", out string? options))
             {
-                throw new ProgramException("The required options were not specified on the command line.", ClientExitCode.NoOptions);
+                throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions);
             }
             if (null == options || string.IsNullOrWhiteSpace(options))
             {
-                throw new ProgramException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions);
+                throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions);
             }
             return options;
         }
@@ -661,7 +661,7 @@ namespace PSADT.ClientServer
         /// <typeparam name="T">The type of the object to deserialize.</typeparam>
         /// <param name="input">The string representation of the object to deserialize. Cannot be null or empty.</param>
         /// <returns>An object of type <typeparamref name="T"/> deserialized from the input string.</returns>
-        /// <exception cref="ProgramException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
+        /// <exception cref="ClientException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
         private static T DeserializeString<T>(string input)
         {
             try
@@ -670,7 +670,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"An error occurred while deserializing the provided input.", ex, ClientExitCode.InvalidOptions);
+                throw new ClientException($"An error occurred while deserializing the provided input.", ex, ClientExitCode.InvalidOptions);
             }
         }
 
@@ -680,7 +680,7 @@ namespace PSADT.ClientServer
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="result">The object to be serialized. Cannot be null.</param>
         /// <returns>A string representation of the serialized object.</returns>
-        /// <exception cref="ProgramException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
+        /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
         private static string SerializeObject<T>(T result)
         {
             try
@@ -689,41 +689,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"An error occurred while serializing the provided result.", ex, ClientExitCode.InvalidResult);
-            }
-        }
-
-        /// <summary>
-        /// Represents an exception that occurs during program execution, providing an error message and an associated
-        /// exit code.
-        /// </summary>
-        /// <remarks>The <see cref="ProgramException"/> class is used to signal errors that occur during
-        /// program execution, with an optional exit code that is set to the <see cref="Exception.HResult"/> property.
-        /// This allows the exception to convey both the error details and a numeric code that can be used for
-        /// programmatic handling  or process termination.</remarks>
-        private class ProgramException : Exception
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ProgramException"/> class with a specified error message
-            /// and exit code.
-            /// </summary>
-            /// <param name="message">The error message that explains the reason for the exception.</param>
-            /// <param name="exitCode">The exit code associated with the exception, which is used to set the <see cref="HResult"/> property.</param>
-            internal ProgramException(string message, ClientExitCode exitCode) : base(message)
-            {
-                HResult = (int)exitCode;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ProgramException"/> class with a specified error message, 
-            /// a reference to the inner exception that caused this exception, and an exit code.
-            /// </summary>
-            /// <param name="message">The error message that explains the reason for the exception.</param>
-            /// <param name="innerException">The exception that is the cause of the current exception, or <see langword="null"/> if no inner exception is specified.</param>
-            /// <param name="exitCode">The exit code associated with the exception, which is used to set the <see cref="HResult"/> property.</param>
-            internal ProgramException(string message, Exception innerException, ClientExitCode exitCode) : base(message, innerException)
-            {
-                HResult = (int)exitCode;
+                throw new ClientException($"An error occurred while serializing the provided result.", ex, ClientExitCode.InvalidResult);
             }
         }
     }
