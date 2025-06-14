@@ -78,7 +78,7 @@ function Copy-ADTContentToCache
     process
     {
         # Create the cache folder if it does not exist.
-        if (![System.IO.Directory]::Exists($Path))
+        if (!(Test-Path -LiteralPath $Path -PathType Container))
         {
             Write-ADTLogEntry -Message "Creating cache folder [$Path]."
             try

@@ -162,7 +162,7 @@ function Mount-ADTWimFile
                 }
 
                 # If we're using the force, forcibly remove the existing directory.
-                if ([System.IO.Directory]::Exists($Path))
+                if (Test-Path -LiteralPath $Path -PathType Container)
                 {
                     if (Get-ChildItem -LiteralPath $Path -ErrorAction Ignore)
                     {
@@ -183,7 +183,7 @@ function Mount-ADTWimFile
                 }
 
                 # If the path doesn't exist, create it.
-                if (![System.IO.Directory]::Exists($Path))
+                if (!(Test-Path -LiteralPath $Path -PathType Container))
                 {
                     Write-ADTLogEntry -Message "Creating path [$Path] as it does not exist."
                     $Path = [System.IO.Directory]::CreateDirectory($Path).FullName

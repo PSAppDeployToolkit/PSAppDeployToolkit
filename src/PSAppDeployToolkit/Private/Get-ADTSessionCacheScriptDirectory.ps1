@@ -11,13 +11,13 @@ function Private:Get-ADTSessionCacheScriptDirectory
     {
         if ($adtSession.ScriptDirectory.Count -gt 1)
         {
-            $adtSession.ScriptDirectory | & { process { if ([System.IO.Directory]::Exists([System.IO.Path]::Combine($_, 'Files'))) { return $_ } } } | Select-Object -First 1
+            $adtSession.ScriptDirectory | & { process { if (Test-Path -LiteralPath ([System.IO.Path]::Combine($_, 'Files')) -PathType Container) { return $_ } } } | Select-Object -First 1
         }
-        elseif ([System.IO.Directory]::Exists([System.IO.Path]::Combine($($adtSession.ScriptDirectory), 'Files')))
+        elseif (Test-Path -LiteralPath ([System.IO.Path]::Combine($($adtSession.ScriptDirectory), 'Files')) -PathType Container)
         {
             $($adtSession.ScriptDirectory)
         }
-        elseif ($adtSession.DirFiles -and [System.IO.Directory]::Exists($adtSession.DirFiles))
+        elseif ($adtSession.DirFiles -and (Test-Path -LiteralPath $adtSession.DirFiles -PathType Container))
         {
             [System.IO.DirectoryInfo]::new($adtSession.DirFiles).Parent.FullName
         }

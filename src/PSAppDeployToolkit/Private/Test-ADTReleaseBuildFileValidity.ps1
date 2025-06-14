@@ -15,7 +15,7 @@ function Private:Test-ADTReleaseBuildFileValidity
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (![System.IO.Directory]::Exists($_))
+                if (!(Test-Path -LiteralPath $_ -PathType Container))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
                 }

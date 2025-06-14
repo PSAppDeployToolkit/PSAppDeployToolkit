@@ -59,7 +59,7 @@ function New-ADTFolder
 
     process
     {
-        if ([System.IO.Directory]::Exists($Path))
+        if (Test-Path -LiteralPath $Path -PathType Container)
         {
             Write-ADTLogEntry -Message "Folder [$Path] already exists."
             return

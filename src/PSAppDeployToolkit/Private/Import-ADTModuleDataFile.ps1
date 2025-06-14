@@ -16,7 +16,7 @@ function Private:Import-ADTModuleDataFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (![System.IO.Directory]::Exists($_))
+                if (!(Test-Path -LiteralPath $_ -PathType Container))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
                 }

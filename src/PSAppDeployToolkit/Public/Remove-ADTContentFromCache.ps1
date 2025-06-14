@@ -67,7 +67,7 @@ function Remove-ADTContentFromCache
 
     process
     {
-        if (![System.IO.Directory]::Exists($Path))
+        if (!(Test-Path -LiteralPath $Path -PathType Container))
         {
             Write-ADTLogEntry -Message "Cache folder [$Path] does not exist."
             return

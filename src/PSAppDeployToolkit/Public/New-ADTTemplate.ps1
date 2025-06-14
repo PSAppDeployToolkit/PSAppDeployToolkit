@@ -135,7 +135,7 @@ function New-ADTTemplate
                 }
 
                 # Create directories.
-                if ([System.IO.Directory]::Exists($templatePath) -and [System.IO.Directory]::GetFileSystemEntries($templatePath))
+                if ((Test-Path -LiteralPath $templatePath -PathType Container) -and [System.IO.Directory]::GetFileSystemEntries($templatePath))
                 {
                     if (!$Force)
                     {

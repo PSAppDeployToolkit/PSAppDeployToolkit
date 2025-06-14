@@ -411,7 +411,7 @@ function Start-ADTMsiProcess
                     if (![System.String]::IsNullOrWhiteSpace($adtConfig.MSI.LogPath))
                     {
                         # Create the Log directory if it doesn't already exist.
-                        if (![System.IO.Directory]::Exists($adtConfig.MSI.LogPath))
+                        if (!(Test-Path -LiteralPath $adtConfig.MSI.LogPath -PathType Container))
                         {
                             $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.LogPath)
                         }
@@ -428,7 +428,7 @@ function Start-ADTMsiProcess
                     else
                     {
                         # Fall back to the toolkit's LogPath.
-                        if (![System.IO.Directory]::Exists($adtConfig.Toolkit.LogPath))
+                        if (!(Test-Path -LiteralPath $adtConfig.Toolkit.LogPath -PathType Container))
                         {
                             $null = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath)
                         }
