@@ -203,19 +203,22 @@ function Private:Invoke-ADTClientServerOperation
         {
             $naerParams = @{
                 TargetObject = $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)
-                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })$(if ($clientResult.StdOut) { " Console Output: [$([System.String]::Join("`n", $clientResult.StdOut))]" })", $_.Exception)
+                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })$(if ($clientResult.StdOut) { " Console Output: [$([System.String]::Join("`n", $clientResult.StdOut))]" })", ($result = $_).Exception)
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = 'ClientServerProcessCommandFailure'
             }
-            $Script:ADT.ClientServerProcess.Dispose()
-            $Script:ADT.ClientServerProcess = $null
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         catch
         {
-            $Script:ADT.ClientServerProcess.Dispose()
-            $Script:ADT.ClientServerProcess = $null
-            $PSCmdlet.ThrowTerminatingError($_)
+            $PSCmdlet.ThrowTerminatingError(($result = $_))
+        }
+        finally
+        {
+            if ($result -is [System.Management.Automation.ErrorRecord])
+            {
+                Close-ADTClientServerProcess
+            }
         }
     }
     else
