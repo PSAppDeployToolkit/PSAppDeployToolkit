@@ -148,7 +148,7 @@ function Private:Invoke-ADTClientServerOperation
             {
                 $naerParams = @{
                     TargetObject = $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)
-                    Exception = [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })", $_.Exception)
+                    Exception = [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })$(if ($clientResult.StdOut) { " Other Output: [$([System.String]::Join("`n", $clientResult.StdOut))]" })", $_.Exception)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'ClientServerProcessOpenFailure'
                 }
@@ -168,33 +168,54 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Invoke the right method depending on the mode.
-        if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
+        try
         {
-            $result = $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+            if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
+            {
+                $result = $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+            }
+            elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
+            {
+                $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
+            }
+            elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
+            {
+                $result = $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
+            }
+            elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
+            {
+                $result = $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
+            }
+            elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
+            {
+                $result = $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
+            }
+            elseif ($PSBoundParameters.ContainsKey('Options'))
+            {
+                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
+            }
+            else
+            {
+                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+            }
         }
-        elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
+        catch [System.IO.InvalidDataException]
         {
-            $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
+            $naerParams = @{
+                TargetObject = $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)
+                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })$(if ($clientResult.StdOut) { " Other Output: [$([System.String]::Join("`n", $clientResult.StdOut))]" })", $_.Exception)
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'ClientServerProcessCommandFailure'
+            }
+            $Script:ADT.ClientServerProcess.Dispose()
+            $Script:ADT.ClientServerProcess = $null
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
+        catch
         {
-            $result = $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
-        }
-        elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
-        {
-            $result = $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
-        }
-        elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
-        {
-            $result = $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
-        }
-        elseif ($PSBoundParameters.ContainsKey('Options'))
-        {
-            $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
-        }
-        else
-        {
-            $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+            $Script:ADT.ClientServerProcess.Dispose()
+            $Script:ADT.ClientServerProcess = $null
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
     else
