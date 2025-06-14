@@ -15,15 +15,14 @@
         private static int Main(string[] args)
         {
             // Set up a new process to run the main application.
-            using (var process = new System.Diagnostics.Process())
+            using (System.Diagnostics.Process process = new())
             {
                 // Set the process start information.
-                process.StartInfo.FileName = System.Reflection.Assembly.GetExecutingAssembly().Location.Replace(".Launcher", null);
+                process.StartInfo.FileName = $"{System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().Location.Replace(".Launcher", null))}.exe";
                 process.StartInfo.Arguments = string.Join(" ", args);
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
-                process.Start();
-                process.WaitForExit();
+                process.Start(); process.WaitForExit();
                 return process.ExitCode;
             }
         }
