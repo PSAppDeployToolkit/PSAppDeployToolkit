@@ -376,6 +376,20 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
+        /// </summary>
+        /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
+        /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
+        public AggregateException? GetLogWriterException()
+        {
+            if (null != _logWriterTask)
+            {
+                return _logWriterTask.Exception;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
         /// result.
         /// </summary>

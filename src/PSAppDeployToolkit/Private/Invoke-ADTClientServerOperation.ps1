@@ -198,6 +198,18 @@ function Private:Invoke-ADTClientServerOperation
             {
                 $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
             }
+
+            # If the log writer gave up the ghost, throw its exception.
+            if ($loggingException = $Script:ADT.ClientServerProcess.GetLogWriterException())
+            {
+                $naerParams = @{
+                    Exception = [System.ApplicationException]::new("The log writer failed and was unable to continue execution.", $loggingException)
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'ClientServerProcessLoggingFailure'
+                    TargetObject = $loggingException
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
         }
         catch [System.IO.InvalidDataException]
         {
