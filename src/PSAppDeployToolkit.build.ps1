@@ -353,6 +353,7 @@ Add-BuildTask DotNetBuild {
     if ([System.IO.File]::Exists("$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.exe"))
     {
         Remove-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe" -Force -Confirm:$false
+        Remove-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.pdb" -Force -Confirm:$false -ErrorAction Ignore
         Rename-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.exe" -NewName Deploy-Application.exe -Force -Confirm:$false
     }
     Write-Build Green '      ...C# Compilation Complete!'
@@ -811,6 +812,11 @@ Add-BuildTask Build {
     {
         Remove-Item "$Script:BuildModuleRoot\ImportsLast.ps1" -Force -ErrorAction Ignore
     }
+
+    # Remove any PDB files that might have snuck in.
+    Write-Build Gray '        Removing PDB files from output...'
+    Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Exclude lib -Filter *.pdb -Recurse | Remove-Item -Force
+    Write-Build Gray '        ...PDB removal completed.'
 
     # Update the parent level docs.
     if (Test-Path $Script:MarkdownExportPath)
