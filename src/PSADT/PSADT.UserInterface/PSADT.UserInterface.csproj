@@ -28,31 +28,25 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <WarningLevel>9999</WarningLevel>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
     <Optimize>false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
