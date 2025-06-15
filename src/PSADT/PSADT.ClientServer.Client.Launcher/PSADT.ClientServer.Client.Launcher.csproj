@@ -29,7 +29,7 @@
     <StartupObject>PSADT.ClientServer.Launcher.Program</StartupObject>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">

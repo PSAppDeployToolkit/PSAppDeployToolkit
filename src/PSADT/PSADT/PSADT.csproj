@@ -23,7 +23,7 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <Platforms>AnyCPU</Platforms>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>
