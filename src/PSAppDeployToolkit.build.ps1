@@ -815,7 +815,7 @@ Add-BuildTask Build {
 
     # Remove any PDB files that might have snuck in.
     Write-Build Gray '        Removing PDB files from output...'
-    Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Exclude lib -Filter *.pdb -Recurse | Remove-Item -Force
+    Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Directory | Where-Object -Property Name -NE -Value lib | Get-ChildItem -Filter *.pdb -Recurse | Remove-Item -Force
     Write-Build Gray '        ...PDB removal completed.'
 
     # Update the parent level docs.
