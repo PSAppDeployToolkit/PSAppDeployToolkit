@@ -42,7 +42,7 @@ namespace PSADT.Module
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            var stackFrames = new StackTrace(true).GetFrames().Skip(1); string callerFileName = string.Empty; string callerSource = string.Empty;
+            var stackFrames = new StackTrace(true).GetFrames().Skip(1); string? callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
@@ -52,7 +52,7 @@ namespace PSADT.Module
                     invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
                 }
                 var method = invoker.GetMethod()!;
-                callerFileName = invoker.GetFileName()!;
+                callerFileName = invoker.GetFileName()! ?? "<Unavailable>";
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }
             else

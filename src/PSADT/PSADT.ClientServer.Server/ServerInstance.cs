@@ -382,11 +382,7 @@ namespace PSADT.ClientServer
         /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
         public AggregateException? GetLogWriterException()
         {
-            if (null != _logWriterTask)
-            {
-                return _logWriterTask.Exception;
-            }
-            return null;
+            return _logWriterTask?.Exception;
         }
 
         /// <summary>
