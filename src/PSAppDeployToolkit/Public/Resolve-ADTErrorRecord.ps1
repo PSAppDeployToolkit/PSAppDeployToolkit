@@ -30,8 +30,8 @@ function Resolve-ADTErrorRecord
     .PARAMETER ExcludeErrorException
         Exclude ErrorRecord exception details as represented by $ErrorRecord.Exception.
 
-    .PARAMETER ExcludeErrorInnerException
-        Exclude ErrorRecord inner exception details as represented by $ErrorRecord.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
+    .PARAMETER IncludeErrorInnerException
+        Includes further ErrorRecord inner exception details as represented by $ErrorRecord.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
 
     .INPUTS
         System.Management.Automation.ErrorRecord
@@ -98,7 +98,7 @@ function Resolve-ADTErrorRecord
         [System.Management.Automation.SwitchParameter]$ExcludeErrorException,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ExcludeErrorInnerException
+        [System.Management.Automation.SwitchParameter]$IncludeErrorInnerException
     )
 
     begin
@@ -179,7 +179,7 @@ function Resolve-ADTErrorRecord
         $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
 
         # Capture Error Inner Exception(s).
-        if (!$ExcludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
+        if ($IncludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
         {
             # Set up initial variables.
             $innerExceptions = [System.Collections.Generic.List[System.String]]::new()
