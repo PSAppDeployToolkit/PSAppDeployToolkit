@@ -349,7 +349,7 @@ try
 catch
 {
     # An unhandled error has been caught.
-    $mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_
+    $mainErrorMessage = "An unhandled error within [$($MyInvocation.MyCommand.Name)] has occurred.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)"
     Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
 
     ## Error details hidden from the user by default. Show a simple dialog with full stack trace:
