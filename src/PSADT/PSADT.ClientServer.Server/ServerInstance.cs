@@ -75,6 +75,7 @@ namespace PSADT.ClientServer
                 null,
                 true,
                 true,
+                true,
                 Encoding.UTF8,
                 ProcessWindowStyle.Hidden,
                 null,

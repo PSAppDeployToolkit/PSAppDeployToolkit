@@ -49,6 +49,12 @@ namespace PSADT.Execution
             bool iocpAddRefOuter = false; iocp.DangerousAddRef(ref iocpAddRefOuter);
             Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
 
+            // Set up the required job limit if child processes must be killed with the parent.
+            if (launchInfo.KillChildProcessesWithParent)
+            {
+                Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION { BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION { LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE } });
+            }
+
             // Declare all handles C-style so we can close them in the finally block for cleanup.
             SafeProcessHandle? hProcess = null;
             uint? processId = null;

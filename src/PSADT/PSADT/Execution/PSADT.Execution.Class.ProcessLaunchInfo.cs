@@ -47,6 +47,7 @@ namespace PSADT.Execution
             string? verb = null,
             bool createNoWindow = false,
             bool waitForChildProcesses = false,
+            bool killChildProcessesWithParent = false,
             Encoding? streamEncoding = null,
             ProcessWindowStyle? windowStyle = null,
             ProcessPriorityClass? priorityClass = null,
@@ -113,6 +114,7 @@ namespace PSADT.Execution
             ExpandEnvironmentVariables = expandEnvironmentVariables;
             UseShellExecute = useShellExecute;
             WaitForChildProcesses = waitForChildProcesses;
+            KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
             CommandLine = $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
         }
@@ -187,6 +189,11 @@ namespace PSADT.Execution
         /// Gets a value indicating whether the process should wait for child processes to exit before completing.
         /// </summary>
         public readonly bool WaitForChildProcesses;
+
+        /// <summary>
+        /// Gets a value indicating whether any child processes spawned with the parent should terminate when the parent closes.
+        /// </summary>
+        public readonly bool KillChildProcessesWithParent;
 
         /// <summary>
         /// Gets the encoding type to use when parsing stdout/stderr text.

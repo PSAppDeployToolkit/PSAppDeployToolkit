@@ -71,6 +71,9 @@ function Start-ADTProcess
     .PARAMETER WaitForChildProcesses
         Specifies whether the started process should be considered finished only when any child processes it spawns have finished also.
 
+    .PARAMETER KillChildProcessesWithParent
+        Specifies whether any child processes started by the provided executable should be closed when the provided executable closes. This is handy for application installs that open web browsers and other programs that cannot be suppressed.
+
     .PARAMETER Timeout
         How long to wait for the process before timing out.
 
@@ -314,6 +317,10 @@ function Start-ADTProcess
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$WaitForChildProcesses,
 
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$KillChildProcessesWithParent,
+
         # Wait Option: Timeout (only in sets where wait is "Timeout")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
@@ -514,6 +521,7 @@ function Start-ADTProcess
                     $Verb,
                     $CreateNoWindow,
                     $WaitForChildProcesses,
+                    $KillChildProcessesWithParent,
                     $StreamEncoding,
                     $WindowStyle,
                     $PriorityClass,

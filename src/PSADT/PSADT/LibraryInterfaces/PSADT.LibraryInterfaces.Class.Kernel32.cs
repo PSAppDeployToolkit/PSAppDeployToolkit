@@ -257,6 +257,18 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Wrapper around SetInformationJobObject to provide a managed interface for JOBOBJECT_EXTENDED_LIMIT_INFORMATION setups.
+        /// </summary>
+        /// <param name="hJob"></param>
+        /// <param name="JobObjectInformationClass"></param>
+        /// <param name="lpJobObjectInformation"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
+        {
+            return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+        }
+
+        /// <summary>
         /// Wrapper around CreateProcess to manage error handling.
         /// </summary>
         /// <param name="lpApplicationName"></param>
