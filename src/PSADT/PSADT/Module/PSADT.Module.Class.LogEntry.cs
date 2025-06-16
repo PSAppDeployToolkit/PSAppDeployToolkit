@@ -38,7 +38,7 @@ namespace PSADT.Module
             CallerFileName = callerFileName;
             CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
-            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Trim().Split('\n').Select(static m => CMTraceBlankLine.Replace(m.Trim(), $"{(char)0x2008}"))) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">";
+            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new string(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>
@@ -103,10 +103,24 @@ namespace PSADT.Module
         private static readonly int PID = Process.GetCurrentProcess().Id;
 
         /// <summary>
-        /// Represents a compiled regular expression that matches blank lines or lines containing only spaces.
+        /// Represents the punctuation space character used to replace leading whitespace in CMTrace logs.
         /// </summary>
-        /// <remarks>This regular expression is useful for identifying and processing lines that are
-        /// either empty or consist solely of whitespace.</remarks>
-        private static readonly Regex CMTraceBlankLine = new("^( +|$)", RegexOptions.Compiled);
+        /// <remarks>This character is a Unicode punctuation space (U+2008) and is used specifically to
+        /// handle leading whitespace in log entries for CMTrace compatibility.</remarks>
+        private static readonly char LeadingSpaceChar = (char)0x2008;
+
+        /// <summary>
+        /// Represents a string containing a single leading space character.
+        /// </summary>
+        /// <remarks>This field is initialized using the <see cref="LeadingSpaceChar"/> constant and is
+        /// intended for use in scenarios where a predefined string with a leading space is required.</remarks>
+        private static readonly string LeadingSpaceString = LeadingSpaceChar.ToString();
+
+        /// <summary>
+        /// Represents a compiled regular expression that matches the first non-whitespace character in a string.
+        /// </summary>
+        /// <remarks>This regular expression is precompiled for performance and is used to identify the
+        /// first character in a string that is not a whitespace character.</remarks>
+        private static readonly Regex CMTraceFirstChar = new(@"[^\s]", RegexOptions.Compiled);
     }
 }
