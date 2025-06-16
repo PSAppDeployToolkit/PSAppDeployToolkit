@@ -368,11 +368,7 @@ namespace PSADT.ClientServer
         /// otherwise, <see langword="null"/>.</returns>
         public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing)
         {
-            if (iKnowWhatImDoing)
-            {
-                return _clientProcess!.Task.GetAwaiter().GetResult();
-            }
-            return null!;
+            return iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
         }
 
         /// <summary>
