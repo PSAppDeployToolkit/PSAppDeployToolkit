@@ -220,10 +220,10 @@ namespace PSADT.Execution
                                         if (launchInfo.ExpandEnvironmentVariables)
                                         {
                                             var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
-                                            commandLine = ExpandEnvironmentVariables(launchInfo.CommandLine, environmentDictionary);
+                                            commandLine = ExpandEnvironmentVariables(session.NTAccount, launchInfo.CommandLine, environmentDictionary);
                                             if (null != workingDirectory)
                                             {
-                                                workingDirectory = ExpandEnvironmentVariables(workingDirectory, environmentDictionary);
+                                                workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
                                             }
                                         }
                                         Kernel32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
@@ -497,7 +497,7 @@ namespace PSADT.Execution
         /// Placeholders that cannot be resolved are left unchanged.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
         /// if <paramref name="environment"/> is invalid.</exception>
-        private static string ExpandEnvironmentVariables(string input, ReadOnlyDictionary<string, string> environment)
+        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -507,7 +507,7 @@ namespace PSADT.Execution
             {
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
-            return Regex.Replace(input, "%([^%]+)%", m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : m.Groups[1].Value);
+            return Regex.Replace(input, "%([^%]+)%", m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
 
         /// <summary>
