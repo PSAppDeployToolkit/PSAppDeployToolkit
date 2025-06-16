@@ -15,7 +15,7 @@
 			<string id="Banner_Explain">Specify filename of the banner (Classic-only).</string>
 			<string id="MSI_Category">MSI</string>
 			<string id="InstallParams_Display">InstallParams</string>
-			<string id="InstallParams_Explain">Installation parameters used for non-silent MSI actions.</string>
+			<string id="InstallParams_Explain">MSI install parameters used in interactive mode.</string>
 			<string id="LoggingOptions_Display">LoggingOptions</string>
 			<string id="LoggingOptions_Explain">Logging level used for MSI logging.</string>
 			<string id="LogPath_MSI_Display">LogPath</string>
@@ -25,9 +25,9 @@
 			<string id="MutexWaitTime_Display">MutexWaitTime</string>
 			<string id="MutexWaitTime_Explain">The length of time in seconds to wait for the MSI installer service to become available.</string>
 			<string id="SilentParams_Display">SilentParams</string>
-			<string id="SilentParams_Explain">Installation parameters used for silent MSI actions.</string>
+			<string id="SilentParams_Explain">MSI install parameters used in silent mode.</string>
 			<string id="UninstallParams_Display">UninstallParams</string>
-			<string id="UninstallParams_Explain">Installation parameters used for MSI uninstall actions.</string>
+			<string id="UninstallParams_Explain">MSI uninstall parameters.</string>
 			<string id="Toolkit_Category">Toolkit</string>
 			<string id="CachePath_Display">CachePath</string>
 			<string id="CachePath_Explain">Specify the path for the cache folder.</string>
