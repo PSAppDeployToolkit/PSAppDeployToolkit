@@ -129,7 +129,7 @@ namespace PSADT.Utilities
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 // Skip non-PSADT assemblies.
-                if (null == assembly.FullName || !assembly.FullName.StartsWith("PSADT"))
+                if (null == assembly.FullName)
                 {
                     continue;
                 }
@@ -140,9 +140,16 @@ namespace PSADT.Utilities
                     {
                         continue;
                     }
-                    typesLookup[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(rocAssemblyBaseName, type.AssemblyQualifiedName))!;
-                    typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
-                    typesLookup[type.FullName] = type;
+                    if (assembly.FullName.StartsWith("PSADT"))
+                    {
+                        typesLookup[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(rocAssemblyBaseName, type.AssemblyQualifiedName))!;
+                        typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
+                        typesLookup[type.FullName] = type;
+                    }
+                    else if (type.IsSerializable)
+                    {
+                        typesLookup[type.FullName] = type;
+                    }
                 }
             }
 

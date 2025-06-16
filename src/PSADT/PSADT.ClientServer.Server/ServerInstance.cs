@@ -521,9 +521,9 @@ namespace PSADT.ClientServer
             {
                 throw new InvalidDataException("The client process returned a null response.");
             }
-            if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.OrdinalIgnoreCase))
+            if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
             {
-                throw new InvalidOperationException(response.Substring(6));
+                throw new ServerException("The client process returned an exception.", SerializationUtilities.DeserializeFromString(response.Substring(6)));
             }
             return response;
         }

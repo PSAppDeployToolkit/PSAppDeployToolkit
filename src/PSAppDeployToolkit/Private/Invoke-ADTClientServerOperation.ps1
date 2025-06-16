@@ -227,7 +227,7 @@ function Private:Invoke-ADTClientServerOperation
         }
         finally
         {
-            if ($result -is [System.Management.Automation.ErrorRecord])
+            if (($result -is [System.Management.Automation.ErrorRecord]) -and ($result.Exception -is [System.IO.InvalidDataException]))
             {
                 Close-ADTClientServerProcess
             }

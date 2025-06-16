@@ -402,7 +402,7 @@ namespace PSADT.ClientServer
                         catch (Exception ex)
                         {
                             // Something we weren't expecting occurred. We should never get here.
-                            outputWriter.WriteLine($"Error{CommonUtilities.ArgumentSeparator}An unhandled exception occurred while processing line [{line}]: {ex}");
+                            outputWriter.WriteLine($"Error{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString((object)ex)}");
                         }
                     }
                 }
