@@ -106,17 +106,13 @@ namespace PSADT.ProcessManagement
                     {
                         procDescription = processDefinition.Description!;
                     }
+                    else if (FileVersionInfo.GetVersionInfo(commandLine[0]) is FileVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                    {
+                        procDescription = procInfo.FileDescription;
+                    }
                     else
                     {
-                        var procInfo = FileVersionInfo.GetVersionInfo(commandLine[0]);
-                        if (!string.IsNullOrWhiteSpace(procInfo.FileDescription))
-                        {
-                            procDescription = procInfo.FileDescription;
-                        }
-                        else
-                        {
-                            procDescription = process.ProcessName;
-                        }
+                        procDescription = process.ProcessName;
                     }
 
                     // Store the process information.

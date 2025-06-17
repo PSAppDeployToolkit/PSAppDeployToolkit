@@ -139,102 +139,64 @@ namespace PSADT.Execution
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.Username)
+                    if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !session.NTAccount!.Value.Equals(AccountUtilities.CallerUsername, StringComparison.OrdinalIgnoreCase))
                     {
-                        // Perform initial tests prior to trying to query a user token.
-                        using WindowsIdentity caller = WindowsIdentity.GetCurrent();
-                        SessionInfo? session = null;
-
-                        // You can only run a process as a user if they're logged on.
-                        var userSessions = SessionManager.GetSessionInfo();
-                        if (userSessions.Count == 0)
+                        // We can only run a process if we can act as part of the operating system.
+                        if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                         {
-                            throw new InvalidOperationException("No user sessions are available to launch the process in.");
+                            throw new UnauthorizedAccessException($"The calling account of [{AccountUtilities.CallerUsername}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
                         }
 
-                        // You can only run a process as a user if they're active.
-                        if (!launchInfo.Username.Value.Contains('\\'))
-                        {
-                            session = userSessions.First(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
-                        }
-                        else
-                        {
-                            session = userSessions.First(s => s.NTAccount == launchInfo.Username);
-                        }
-                        if (null == session)
-                        {
-                            throw new InvalidOperationException($"No session found for user {launchInfo.Username}.");
-                        }
-                        if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
-                        {
-                            throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
-                        }
+                        // Enable the required tokens. SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
-                        // We can only run a process as a user if it's different from the caller.
-                        if (!session.NTAccount!.Value.Equals(caller.Name, StringComparison.OrdinalIgnoreCase))
+                        // First we get the user's token.
+                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                        SafeFileHandle hPrimaryToken;
+                        using (userToken)
                         {
-                            // We can only run a process if we can act as part of the operating system.
-                            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
+                            // If we're to get their linked token, we get it via their user token.
+                            // Once done, we duplicate the linked token to get a primary token to create the new process.
+                            if (launchInfo.UseLinkedAdminToken)
                             {
-                                throw new UnauthorizedAccessException($"The calling account of [{caller.Name}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
-                            }
-
-                            // Enable the required tokens. SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-
-                            // First we get the user's token.
-                            WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
-                            SafeFileHandle hPrimaryToken;
-                            using (userToken)
-                            {
-                                // If we're to get their linked token, we get it via their user token.
-                                // Once done, we duplicate the linked token to get a primary token to create the new process.
-                                if (launchInfo.UseLinkedAdminToken)
+                                using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
                                 {
-                                    using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
-                                    {
-                                        AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                                        AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                    }
-                                }
-                                else
-                                {
-                                    AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                                    AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+                                    AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
                                 }
                             }
-
-                            // Finally, start the process off for the user.
-                            using (hPrimaryToken)
+                            else
                             {
-                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                                using (lpEnvironment)
+                                AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                            }
+                        }
+
+                        // Finally, start the process off for the user.
+                        using (hPrimaryToken)
+                        {
+                            UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                            using (lpEnvironment)
+                            {
+                                // This is important so that a windowed application can be shown.
+                                using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
                                 {
-                                    // This is important so that a windowed application can be shown.
-                                    using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
+                                    startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                    string? workingDirectory = launchInfo.WorkingDirectory;
+                                    string commandLine = launchInfo.CommandLine;
+                                    if (launchInfo.ExpandEnvironmentVariables)
                                     {
-                                        startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                        string? workingDirectory = launchInfo.WorkingDirectory;
-                                        string commandLine = launchInfo.CommandLine;
-                                        if (launchInfo.ExpandEnvironmentVariables)
+                                        var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
+                                        commandLine = ExpandEnvironmentVariables(session.NTAccount, launchInfo.CommandLine, environmentDictionary);
+                                        if (null != workingDirectory)
                                         {
-                                            var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
-                                            commandLine = ExpandEnvironmentVariables(session.NTAccount, launchInfo.CommandLine, environmentDictionary);
-                                            if (null != workingDirectory)
-                                            {
-                                                workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
-                                            }
+                                            workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
                                         }
-                                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                     }
+                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                 }
                             }
-                        }
-                        else
-                        {
-                            // The caller is the same as the user, so we can just create the process as the current user.
-                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
                     }
                     else
@@ -376,6 +338,51 @@ namespace PSADT.Execution
 
             // Return a ProcessResult object with the result of the process.
             return new ProcessHandle(processId, tcs.Task);
+        }
+
+        /// <summary>
+        /// Retrieves the session information for the specified user.
+        /// </summary>
+        /// <remarks>This method queries the system for session information associated with the specified
+        /// user. The user must be logged on and their session must be active for the method to succeed.</remarks>
+        /// <param name="username">The <see cref="NTAccount"/> representing the user whose session information is to be retrieved. The account
+        /// must correspond to a logged-on and active user.</param>
+        /// <returns>A <see cref="SessionInfo"/> object containing details about the user's session.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if no user sessions are available, if no session is found for the specified user, or if the user's
+        /// session is not active.</exception>
+        private static SessionInfo GetSessionForUsername(NTAccount username)
+        {
+            // Perform initial tests prior to trying to query a user token.
+            using WindowsIdentity caller = WindowsIdentity.GetCurrent();
+            SessionInfo? session = null;
+
+            // You can only run a process as a user if they're logged on.
+            var userSessions = SessionManager.GetSessionInfo();
+            if (userSessions.Count == 0)
+            {
+                throw new InvalidOperationException("No user sessions are available to launch the process in.");
+            }
+
+            // You can only run a process as a user if they're active.
+            if (!username!.Value.Contains('\\'))
+            {
+                session = userSessions.First(s => username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                session = userSessions.First(s => s.NTAccount == username);
+            }
+            if (null == session)
+            {
+                throw new InvalidOperationException($"No session found for user {username}.");
+            }
+            if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
+            {
+                throw new InvalidOperationException($"The session for user {username} is not active.");
+            }
+
+            // Return the session information for the user.
+            return session;
         }
 
         /// <summary>
