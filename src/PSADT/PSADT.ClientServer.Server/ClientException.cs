@@ -10,6 +10,7 @@ namespace PSADT.ClientServer
     /// program execution, with an optional exit code that is set to the <see cref="Exception.HResult"/> property.
     /// This allows the exception to convey both the error details and a numeric code that can be used for
     /// programmatic handling  or process termination.</remarks>
+    [Serializable]
     internal class ClientException : InvalidOperationException
     {
         /// <summary>
