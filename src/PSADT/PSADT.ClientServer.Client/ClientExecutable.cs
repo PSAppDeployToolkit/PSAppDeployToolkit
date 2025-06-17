@@ -216,7 +216,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified OutputHandle.", ex, ClientExitCode.InvalidOutputPipe);
+                throw new ClientException($"Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
             }
             try
             {
@@ -224,7 +224,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified InputHandle.", ex, ClientExitCode.InvalidInputPipe);
+                throw new ClientException($"Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
             }
             try
             {
@@ -232,7 +232,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified LogHandle.", ex, ClientExitCode.InvalidLogPipe);
+                throw new ClientException($"Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
             }
 
             // Start reading data from the pipes. We only return
@@ -409,7 +409,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ClientException($"Failed to read or write from the pipe.", ex, ClientExitCode.PipeReadWriteError);
+                throw new ClientException($"Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
         }
 
@@ -670,7 +670,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ClientException($"An error occurred while deserializing the provided input.", ex, ClientExitCode.InvalidOptions);
+                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
         }
 
@@ -689,7 +689,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ClientException($"An error occurred while serializing the provided result.", ex, ClientExitCode.InvalidResult);
+                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
         }
     }
