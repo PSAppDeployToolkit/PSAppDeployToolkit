@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace PSADT.ClientServer
 {
@@ -34,6 +35,39 @@ namespace PSADT.ClientServer
         internal ClientException(string message, Exception innerException, ClientExitCode exitCode) : base(message, innerException)
         {
             HResult = (int)exitCode;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientException"/> class with serialized data.
+        /// </summary>
+        /// <remarks>This constructor is used during deserialization to reconstruct the exception object
+        /// transmitted over a stream.</remarks>
+        /// <param name="info">The <see cref="SerializationInfo"/> object that holds the serialized object data about the exception being
+        /// thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> object that contains contextual information about the source or
+        /// destination.</param>
+        #if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
+        #endif
+        protected ClientException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+
+        /// <summary>
+        /// Populates a <see cref="SerializationInfo"/> object with the data needed to serialize the current object.
+        /// </summary>
+        /// <remarks>This method overrides the base implementation to provide serialization support for
+        /// the current object.</remarks>
+        /// <param name="info">The <see cref="SerializationInfo"/> object to populate with serialization data. Cannot be <see
+        /// langword="null"/>.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> structure that contains the source and destination of the serialized
+        /// stream.</param>
+        #if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
+        #endif
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
         }
     }
 }
