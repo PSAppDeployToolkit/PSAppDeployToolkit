@@ -17,7 +17,7 @@ Displays a custom installation prompt with the toolkit branding and optional but
 Show-ADTInstallationPrompt -Message <String> [-MessageAlignment <DialogMessageAlignment>]
  [-ButtonRightText <String>] [-ButtonLeftText <String>] [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>]
  [-WindowLocation <DialogPosition>] [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout]
- [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
+ [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String> [-Timeout <UInt32>] [<CommonParameters>]
 ```
 
 ### ShowInputDialog
@@ -27,7 +27,7 @@ Show-ADTInstallationPrompt [-RequestInput] [-DefaultValue <String>] -Message <St
  [-MessageAlignment <DialogMessageAlignment>] [-ButtonRightText <String>] [-ButtonLeftText <String>]
  [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>] [-WindowLocation <DialogPosition>] [-PersistPrompt]
  [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String>
- [-Timeout <TimeSpan>] [<CommonParameters>]
+ [-Timeout <UInt32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -324,7 +324,7 @@ Accept wildcard characters: False
 Specifies how long to show the message prompt before aborting.
 
 ```yaml
-Type: TimeSpan
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 

@@ -13,8 +13,8 @@ Display a custom dialog box with optional title, buttons, icon, and timeout.
 
 ```powershell
 Show-ADTDialogBox [-Text] <String> [-Buttons <DialogBoxButtons>] [-DefaultButton <DialogBoxDefaultButton>]
- [-Icon <DialogBoxIcon>] [-NoWait] [-ExitOnTimeout] [-NotTopMost] [-Force] -Title <String>
- [-Timeout <TimeSpan>] [<CommonParameters>]
+ [-Icon <DialogBoxIcon>] [-NoWait] [-ExitOnTimeout] [-NotTopMost] [-Force] -Title <String> [-Timeout <UInt32>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -172,7 +172,7 @@ Accept wildcard characters: False
 Specifies how long to show the message prompt before aborting.
 
 ```yaml
-Type: TimeSpan
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
