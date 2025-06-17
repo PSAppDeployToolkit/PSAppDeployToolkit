@@ -103,7 +103,7 @@ namespace PSADT.SafeHandles
         /// <returns></returns>
         internal PWSTR ToPWSTR()
         {
-            return new PWSTR(handle);
+            return new(handle);
         }
 
         /// <summary>

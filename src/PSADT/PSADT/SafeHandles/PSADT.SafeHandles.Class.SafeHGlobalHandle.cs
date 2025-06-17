@@ -22,7 +22,7 @@ namespace PSADT.SafeHandles
             {
                 throw new OutOfMemoryException("Failed to allocate memory.");
             }
-            return new SafeHGlobalHandle(handle, length, true);
+            return new(handle, length, true);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace PSADT.SafeHandles
         /// <returns></returns>
         internal static SafeHGlobalHandle StringToUni(string input)
         {
-            return new SafeHGlobalHandle(Marshal.StringToHGlobalUni(input), (input.Length + 1) * 2, true);
+            return new(Marshal.StringToHGlobalUni(input), (input.Length + 1) * 2, true);
         }
 
         /// <summary>

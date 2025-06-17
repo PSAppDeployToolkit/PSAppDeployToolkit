@@ -87,7 +87,7 @@ namespace PSADT.Execution
                 throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
             }
 
-            return new ExecutableInfo(
+            return new(
                 filePath,
                 machine,
                 subsystem,

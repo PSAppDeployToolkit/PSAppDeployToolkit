@@ -42,7 +42,7 @@ namespace PSADT.Security
             using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
             {
                 AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                return new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken);
+                return new(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken);
             }
         }
 
@@ -91,7 +91,7 @@ namespace PSADT.Security
             using (var buffer = SafeHGlobalHandle.Alloc(1024))
             {
                 AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
-                return new SecurityIdentifier((IntPtr)buffer.ToStructure<TOKEN_USER>().User.Sid);
+                return new((IntPtr)buffer.ToStructure<TOKEN_USER>().User.Sid);
             }
         }
     }

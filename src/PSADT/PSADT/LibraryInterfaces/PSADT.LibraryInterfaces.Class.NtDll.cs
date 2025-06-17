@@ -503,7 +503,7 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
-        internal static ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int>(new Dictionary<OBJECT_INFORMATION_CLASS, int>
+        internal static ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>
         {
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },

@@ -169,7 +169,7 @@ namespace PSADT.Utilities
             typesLookup["unsignedLong"] = typeof(ulong);
 
             // Return a read-only dictionary to prevent modification of the types lookup table.
-            return new ReadOnlyDictionary<string, Type>(typesLookup);
+            return new(typesLookup);
         }
 
         /// <summary>

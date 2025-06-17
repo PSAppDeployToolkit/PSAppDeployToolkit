@@ -276,7 +276,7 @@ namespace PSADT.FileSystem
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
-            return new ReadOnlyDictionary<ushort, string>(typeTable);
+            return new(typeTable);
         }
 
         /// <summary>

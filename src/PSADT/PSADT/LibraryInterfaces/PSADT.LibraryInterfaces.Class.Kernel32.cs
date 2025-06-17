@@ -726,7 +726,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            return new SafeVirtualAllocHandle(new IntPtr(res), true);
+            return new((IntPtr)res, true);
         }
 
         /// <summary>

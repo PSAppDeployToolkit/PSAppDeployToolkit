@@ -38,7 +38,7 @@ namespace PSADT.WindowManagement
 
             // Create a list to hold the window information.
             Regex? windowTitleRegex = null != windowTitleFilter ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
-            List<WindowInfo> windowInfos = new List<WindowInfo>();
+            List<WindowInfo> windowInfos = [];
             foreach (var window in WindowTools.EnumWindows())
             {
                 // Continue if window isn't visible.

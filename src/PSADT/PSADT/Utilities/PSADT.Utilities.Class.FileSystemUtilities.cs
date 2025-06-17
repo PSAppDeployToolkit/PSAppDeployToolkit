@@ -39,7 +39,7 @@ namespace PSADT.Utilities
                 }
                 targetPath.Clear();
             }
-            return new ReadOnlyDictionary<string, string>(lookupTable);
+            return new(lookupTable);
         }
     }
 }

@@ -178,7 +178,7 @@ namespace PSADT.ClientServer
             }
 
             // This data should never change once read, so return read-only.
-            return new ReadOnlyDictionary<string, string>(arguments);
+            return new(arguments);
         }
 
         /// <summary>

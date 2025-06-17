@@ -17,7 +17,7 @@ namespace PSADT.WindowManagement
         /// <returns>A list of window handles.</returns>
         internal static List<nint> EnumWindows()
         {
-            List<nint> windows = new List<nint>();
+            List<nint> windows = [];
             GCHandle hItems = GCHandle.Alloc(windows);
             try
             {

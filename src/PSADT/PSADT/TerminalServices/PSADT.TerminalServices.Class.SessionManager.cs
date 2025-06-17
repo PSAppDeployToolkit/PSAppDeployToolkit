@@ -109,7 +109,7 @@ namespace PSADT.TerminalServices
             }
 
             // Instantiate a SessionInfo object and return it to the caller.
-            return new SessionInfo(
+            return new(
                 ntAccount,
                 sid,
                 userName,

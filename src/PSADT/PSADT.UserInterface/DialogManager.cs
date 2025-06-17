@@ -365,7 +365,7 @@ namespace PSADT.UserInterface
         private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>>
         {
             {
-                DialogStyle.Classic, new ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>
+                DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>
                 {
                     { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                     { DialogType.CustomDialog, (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
@@ -375,7 +375,7 @@ namespace PSADT.UserInterface
                 })
             },
             {
-                DialogStyle.Fluent, new ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>
+                DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>
                 {
                     { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                     { DialogType.CustomDialog, (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },

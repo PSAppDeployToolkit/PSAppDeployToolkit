@@ -33,7 +33,7 @@ namespace PSADT.Utilities
         {
             using (DirectoryEntry groupEntry = new($"WinNT://./{new SecurityIdentifier(wellKnownGroupSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
             {
-                var visited = new HashSet<string>();
+                HashSet<string> visited = new();
                 return CheckMemberRecursive(groupEntry, targetSid, visited);
             }
         }

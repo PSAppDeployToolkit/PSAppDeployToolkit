@@ -42,7 +42,7 @@ namespace PSADT.LibraryInterfaces
         /// Provides a lookup table that maps <see cref="TASKDIALOG_ICON"/> values to their corresponding <see cref="PCWSTR"/> representations for use in task dialog configurations.
         /// </summary>
         /// <remarks>This read-only dictionary is pre-populated with mappings between standard task dialog icons (e.g., error, information, shield, and warning) and their associated native pointers (<see cref="PCWSTR"/>). It is intended to simplify the process of retrieving the appropriate icon resource for task dialogs.</remarks>
-        private static readonly ReadOnlyDictionary<TASKDIALOG_ICON, PCWSTR> TaskDialogIconLookupTable = new ReadOnlyDictionary<TASKDIALOG_ICON, PCWSTR>(new Dictionary<TASKDIALOG_ICON, PCWSTR>
+        private static readonly ReadOnlyDictionary<TASKDIALOG_ICON, PCWSTR> TaskDialogIconLookupTable = new(new Dictionary<TASKDIALOG_ICON, PCWSTR>
         {
             { TASKDIALOG_ICON.TD_ERROR_ICON, PInvoke.TD_ERROR_ICON },
             { TASKDIALOG_ICON.TD_INFORMATION_ICON, PInvoke.TD_INFORMATION_ICON },

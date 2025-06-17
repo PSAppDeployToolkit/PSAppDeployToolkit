@@ -341,7 +341,7 @@ namespace PSADT.Execution
             });
 
             // Return a ProcessResult object with the result of the process.
-            return new ProcessHandle(processId, tcs.Task);
+            return new(processId, tcs.Task);
         }
 
         /// <summary>
@@ -515,7 +515,7 @@ namespace PSADT.Execution
                 {
                     throw new ArgumentException("The environment block is empty.", nameof(environmentBlock));
                 }
-                return new ReadOnlyDictionary<string, string>(envDict);
+                return new(envDict);
             }
             finally
             {

@@ -53,7 +53,7 @@ namespace PSADT.RegistryManagement
         /// <summary>
         /// Registry hive lookup table.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, SafeRegistryHandle> HiveMap = new ReadOnlyDictionary<string, SafeRegistryHandle>(new Dictionary<string, SafeRegistryHandle>()
+        private static readonly ReadOnlyDictionary<string, SafeRegistryHandle> HiveMap = new(new Dictionary<string, SafeRegistryHandle>()
         {
             { "HKEY_LOCAL_MACHINE", new SafeRegistryHandle(HKEY.HKEY_LOCAL_MACHINE, false) },
             { "HKEY_CURRENT_USER", new SafeRegistryHandle(HKEY.HKEY_CURRENT_USER, false) },

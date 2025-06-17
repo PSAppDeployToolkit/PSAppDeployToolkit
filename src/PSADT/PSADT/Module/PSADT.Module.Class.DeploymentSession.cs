@@ -1227,7 +1227,7 @@ namespace PSADT.Module
             {
                 return null;
             }
-            return new DeferHistory(
+            return new(
                 null != deferTimesRemaining ? deferTimesRemaining is string ? (uint)int.Parse((string)deferTimesRemaining) : (uint)(int)deferTimesRemaining : null,
                 null != deferDeadline ? DateTime.Parse((string)deferDeadline) : null,
                 null != deferRunIntervalLastTime ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
@@ -1360,7 +1360,7 @@ namespace PSADT.Module
         /// <returns>The log path as a DirectoryInfo object.</returns>
         public DirectoryInfo GetLogPath()
         {
-            return new DirectoryInfo(LogPath);
+            return new(LogPath);
         }
 
         /// <summary>
@@ -1415,7 +1415,7 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new ReadOnlyDictionary<string, FieldInfo> (typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.

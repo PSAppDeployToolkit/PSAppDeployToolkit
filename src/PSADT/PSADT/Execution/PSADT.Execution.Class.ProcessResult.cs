@@ -30,6 +30,7 @@ namespace PSADT.Execution
         /// <param name="exitCode"></param>
         public ProcessResult(int exitCode)
         {
+            StdOut = StdErr = Interleaved = new ReadOnlyCollection<string>([]);
             ExitCode = exitCode;
         }
 
@@ -41,16 +42,16 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public readonly IReadOnlyList<string> StdOut = new ReadOnlyCollection<string>([]);
+        public readonly IReadOnlyList<string> StdOut;
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public readonly IReadOnlyList<string> StdErr = new ReadOnlyCollection<string>([]);
+        public readonly IReadOnlyList<string> StdErr;
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
-        public readonly IReadOnlyList<string> Interleaved = new ReadOnlyCollection<string>([]);
+        public readonly IReadOnlyList<string> Interleaved;
     }
 }
