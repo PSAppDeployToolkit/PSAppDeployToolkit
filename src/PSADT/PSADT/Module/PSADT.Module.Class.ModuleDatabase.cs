@@ -93,7 +93,7 @@ namespace PSADT.Module
         /// langword="false"/>.</returns>
         public static bool IsDeploymentSessionActive()
         {
-            return ((List<DeploymentSession>?)_database?.Properties["Sessions"].Value)?.Count > 0;
+            return ((List<DeploymentSession>)_database?.Properties["Sessions"].Value!).Count > 0;
         }
 
         /// <summary>
