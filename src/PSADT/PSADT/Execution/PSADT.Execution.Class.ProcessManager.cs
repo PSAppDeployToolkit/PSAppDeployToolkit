@@ -408,6 +408,10 @@ namespace PSADT.Execution
                     {
                         throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
                     }
+                    if (TokenManager.IsTokenElevated(hProcessToken))
+                    {
+                        throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.");
+                    }
                     return TokenManager.GetPrimaryToken(hProcessToken);
                 }
             }
