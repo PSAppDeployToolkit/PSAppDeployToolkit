@@ -114,7 +114,7 @@ function Show-ADTDialogBox
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.TimeSpan], $(
+                'Timeout', [System.UInt32], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
@@ -150,7 +150,7 @@ function Show-ADTDialogBox
         }
         else
         {
-            $PSBoundParameters.Timeout
+            [System.TimeSpan]::FromSeconds($PSBoundParameters.Timeout)
         }
     }
 
