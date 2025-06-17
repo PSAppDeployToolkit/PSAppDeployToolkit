@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
@@ -17,9 +18,9 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
-        public static Dictionary<string, object?> ConvertValuesFromRemainingArguments(List<object> remainingArguments)
+        public static IReadOnlyDictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
-            Dictionary<string, object?> values = [];
+            Dictionary<string, object> values = [];
             string currentKey = string.Empty;
             if ((null == remainingArguments) || (remainingArguments.Count == 0))
             {
@@ -40,7 +41,7 @@ namespace PSADT.Utilities
                     }
                     else if (!string.IsNullOrWhiteSpace(currentKey))
                     {
-                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null;
+                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null!;
                         currentKey = string.Empty;
                     }
                 }
@@ -49,7 +50,7 @@ namespace PSADT.Utilities
             {
                 throw new FormatException("The parser was unable to process the provided arguments.", ex);
             }
-            return values;
+            return new ReadOnlyDictionary<string, object>(values);
         }
 
         /// <summary>
@@ -58,10 +59,10 @@ namespace PSADT.Utilities
         /// <param name="dict">A dictionary of key-value pairs to convert.</param>
         /// <param name="exclusions">An array of keys to exclude from the conversion.</param>
         /// <returns>A string of PowerShell arguments representing the dictionary.</returns>
-        public static string ConvertDictToPowerShellArgs(IDictionary dict, string[]? exclusions = null)
+        internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, string[]? exclusions = null)
         {
             List<string> args = [];
-            foreach (DictionaryEntry entry in dict)
+            foreach (var entry in dict)
             {
                 string key = entry.Key.ToString()!;
                 string val = string.Empty;
@@ -79,7 +80,7 @@ namespace PSADT.Utilities
                 // Handle nested dictionaries.
                 if (entry.Value is IDictionary dictionary)
                 {
-                    args.Add(ConvertDictToPowerShellArgs(dictionary, exclusions));
+                    args.Add(ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value!), exclusions));
                     continue;
                 }
 

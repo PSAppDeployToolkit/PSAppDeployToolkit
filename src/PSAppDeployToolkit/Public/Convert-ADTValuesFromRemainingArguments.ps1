@@ -44,7 +44,7 @@ function Convert-ADTValuesFromRemainingArguments
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.Generic.Dictionary[System.String, System.Object]])]
+    [OutputType([System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]])]
     param
     (
         [Parameter(Mandatory = $true)]
