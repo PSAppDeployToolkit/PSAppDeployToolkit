@@ -26,9 +26,12 @@ namespace PSADT.Execution
         /// <param name="useLinkedAdminToken"></param>
         /// <param name="inheritEnvironmentVariables"></param>
         /// <param name="expandEnvironmentVariables"></param>
+        /// <param name="useUnelevatedToken"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="verb"></param>
         /// <param name="createNoWindow"></param>
+        /// <param name="waitForChildProcesses"></param>
+        /// <param name="killChildProcessesWithParent"></param>
         /// <param name="streamEncoding"></param>
         /// <param name="windowStyle"></param>
         /// <param name="priorityClass"></param>
@@ -43,6 +46,7 @@ namespace PSADT.Execution
             bool useLinkedAdminToken = false,
             bool inheritEnvironmentVariables = false,
             bool expandEnvironmentVariables = false,
+            bool useUnelevatedToken = false,
             bool useShellExecute = false,
             string? verb = null,
             bool createNoWindow = false,
@@ -112,6 +116,7 @@ namespace PSADT.Execution
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             ExpandEnvironmentVariables = expandEnvironmentVariables;
+            UseUnelevatedToken = useUnelevatedToken;
             UseShellExecute = useShellExecute;
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
@@ -169,6 +174,11 @@ namespace PSADT.Execution
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
         public readonly bool ExpandEnvironmentVariables;
+
+        /// <summary>
+        /// Indicates whether an unelevated token should be used for operations.
+        /// </summary>
+        public readonly bool UseUnelevatedToken;
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.

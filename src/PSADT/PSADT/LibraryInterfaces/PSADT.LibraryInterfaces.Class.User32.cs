@@ -501,6 +501,21 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Retrieves the handle to the shell's desktop window.
+        /// </summary>
+        /// <returns>A <see cref="HWND"/> representing the handle to the shell's desktop window.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the shell window handle cannot be retrieved.</exception>
+        internal static HWND GetShellWindow()
+        {
+            var res = PInvoke.GetShellWindow();
+            if (res.IsNull)
+            {
+                throw new InvalidOperationException("Failed to retrieve the shell window handle.");
+            }
+            return res;
+        }
+
+        /// <summary>
         /// A window command to minimise all windows.
         /// </summary>
         internal const nuint MIN_ALL = 419;

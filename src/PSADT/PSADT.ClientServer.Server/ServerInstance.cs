@@ -72,6 +72,7 @@ namespace PSADT.ClientServer
                 false,
                 false,
                 false,
+                true,
                 null,
                 true,
                 true,

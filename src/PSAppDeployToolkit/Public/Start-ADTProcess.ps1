@@ -39,6 +39,9 @@ function Start-ADTProcess
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
+    .PARAMETER UseUnelevatedToken
+        If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
+
     .PARAMETER UseShellExecute
         Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
 
@@ -238,6 +241,17 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$UseUnelevatedToken,
 
         # Identity: UseShellExecute (only present in sets where identity is "UseShellExecute")
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
@@ -517,6 +531,7 @@ function Start-ADTProcess
                     $UseLinkedAdminToken,
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
+                    $UseUnelevatedToken,
                     $UseShellExecute,
                     $Verb,
                     $CreateNoWindow,

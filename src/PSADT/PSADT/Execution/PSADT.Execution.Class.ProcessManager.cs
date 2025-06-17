@@ -161,15 +161,11 @@ namespace PSADT.Execution
                             // Once done, we duplicate the linked token to get a primary token to create the new process.
                             if (launchInfo.UseLinkedAdminToken)
                             {
-                                using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
-                                {
-                                    AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                                    AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                }
+                                hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
                             }
                             else
                             {
-                                AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                                hPrimaryToken = TokenManager.GetPrimaryToken(userToken);
                             }
                         }
 
@@ -199,9 +195,17 @@ namespace PSADT.Execution
                             }
                         }
                     }
+                    else if (launchInfo.UseUnelevatedToken)
+                    {
+                        // We're running elevated but have been asked to de-elevate.
+                        using (var hPrimaryToken = GetUnelevatedToken())
+                        {
+                            Kernel32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, launchInfo.CommandLine, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                        }
+                    }
                     else
                     {
-                        // No username was specified, so we're just creating the process as the current user.
+                        // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
                         Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                     }
 
@@ -383,6 +387,30 @@ namespace PSADT.Execution
 
             // Return the session information for the user.
             return session;
+        }
+
+        /// <summary>
+        /// Retrieves a primary token for the Explorer process with limited access rights.q
+        /// </summary>
+        /// <remarks>This method obtains a token associated with the Explorer process and duplicates it to
+        /// create a primary token. The returned token can be used for operations requiring an unelevated
+        /// context.</remarks>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the Explorer process, or <see
+        /// langword="null"/> if the operation fails.</returns>
+        private static SafeFileHandle GetUnelevatedToken()
+        {
+            using (var hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId()))
+            {
+                AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                using (hProcessToken)
+                {
+                    if (!TokenManager.GetTokenSid(hProcessToken).Equals(AccountUtilities.CallerSid))
+                    {
+                        throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
+                    }
+                    return TokenManager.GetPrimaryToken(hProcessToken);
+                }
+            }
         }
 
         /// <summary>

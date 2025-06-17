@@ -13,6 +13,7 @@ CreateJobObjectW
 CreatePipe
 CreateProcessAsUserW
 CreateProcessW
+CreateProcessWithTokenW
 DeleteObject
 DestroyEnvironmentBlock
 DestroyIcon
@@ -36,6 +37,7 @@ GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
+GetLengthSid
 GetNativeSystemInfo
 GetPrivateProfileSection
 GetPrivateProfileSectionNames
@@ -44,6 +46,7 @@ GetProcAddress
 GetProcessId
 GetProductInfo
 GetQueuedCompletionStatus
+GetShellWindow
 GetSystemMenu
 GetTickCount64
 GetTokenInformation
@@ -167,7 +170,9 @@ TD_SHIELD_ICON
 TD_WARNING_ICON
 TerminateJobObject
 THREAD_ACCESS_RIGHTS
+TOKEN_ELEVATION
 TOKEN_LINKED_TOKEN
+TOKEN_USER
 UNICODE_STRING
 VER_NT_DOMAIN_CONTROLLER
 VER_NT_SERVER

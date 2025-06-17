@@ -57,6 +57,19 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
+        /// Retrieves the process ID of the Windows Explorer shell process.
+        /// </summary>
+        /// <remarks>This method uses the Windows API to obtain the process ID associated with the shell
+        /// window. It is intended for internal use and may not be suitable for general-purpose process
+        /// management.</remarks>
+        /// <returns>The process ID of the Windows Explorer shell process as an unsigned integer.</returns>
+        internal static uint GetExplorerProcessId()
+        {
+            User32.GetWindowThreadProcessId(User32.GetShellWindow(), out var pid);
+            return pid;
+        }
+
+        /// <summary>
         /// Represents the handle to the system's taskbar window.
         /// </summary>
         /// <remarks>This field holds a handle to the taskbar window, which is retrieved using the <see cref="User32.FindWindow(string, string?)"/> method with the class name "Shell_TrayWnd". It is used to interact with the taskbar in scenarios where direct access to the taskbar window is required.</remarks>

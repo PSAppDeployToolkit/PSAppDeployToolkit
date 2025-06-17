@@ -294,8 +294,59 @@ namespace PSADT.LibraryInterfaces
             try
             {
                 lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
+                Span<char> lpCommandLineSpan = lpCommandLine.ToCharArray();
                 var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+            finally
+            {
+                if (lpEnvironmentAddRef)
+                {
+                    lpEnvironment.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a new process using the specified token, application name, command line, and other parameters.
+        /// </summary>
+        /// <remarks>This method wraps the native Windows API function <c>CreateProcessWithTokenW</c>,
+        /// providing a managed interface for creating processes with a specified access token. The caller is
+        /// responsible for ensuring that the provided token and environment block are valid.</remarks>
+        /// <param name="hToken">A handle to the access token that will be used to create the process. This handle must be valid and have the
+        /// necessary privileges.</param>
+        /// <param name="dwLogonFlags">Flags that control the logon behavior of the process. These flags determine how the process is created and
+        /// logged on.</param>
+        /// <param name="lpApplicationName">The name of the application to execute. Can be null if the application name is included in <paramref
+        /// name="lpCommandLine"/>.</param>
+        /// <param name="lpCommandLine">The command line to be executed, including the application name if <paramref name="lpApplicationName"/> is
+        /// null.</param>
+        /// <param name="dwCreationFlags">Flags that control the creation of the process, such as whether it is created in a suspended state.</param>
+        /// <param name="lpEnvironment">A handle to the environment block for the new process. This handle must not be null, closed, or invalid.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process. Can be null to use the current directory of the
+        /// calling process.</param>
+        /// <param name="lpStartupInfo">A structure containing startup information for the new process, such as window settings and standard
+        /// handles.</param>
+        /// <param name="lpProcessInformation">When the method returns, contains information about the newly created process and its primary thread.</param>
+        /// <returns><see langword="true"/> if the process is successfully created; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
+        internal static unsafe BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, string lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        {
+            if (lpEnvironment is not object || lpEnvironment.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(lpEnvironment));
+            }
+
+            bool lpEnvironmentAddRef = false;
+            try
+            {
+                lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
+                Span<char> lpCommandLineSpan = lpCommandLine.ToCharArray();
+                var res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLineSpan, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -338,7 +389,7 @@ namespace PSADT.LibraryInterfaces
             try
             {
                 lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
+                Span<char> lpCommandLineSpan = lpCommandLine.ToCharArray();
                 var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {

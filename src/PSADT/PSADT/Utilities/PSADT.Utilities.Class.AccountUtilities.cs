@@ -19,6 +19,7 @@ namespace PSADT.Utilities
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
                 CallerUsername = identity.Name;
+                CallerSid = identity.User!;
             }
         }
 
@@ -94,5 +95,12 @@ namespace PSADT.Utilities
         /// </summary>
         /// <returns></returns>
         public static readonly string CallerUsername;
+
+        /// <summary>
+        /// Represents the security identifier (SID) of the caller.
+        /// </summary>
+        /// <remarks>This field provides the SID associated with the caller, which can be used for 
+        /// security-related operations such as access control or identity verification.</remarks>
+        public static readonly SecurityIdentifier CallerSid;
     }
 }
