@@ -44,7 +44,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
         internal static void MinimizeAllWindows()
         {
-            User32.SendMessage(TrayWnd, PInvoke.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+            User32.SendMessage(User32.FindWindow("Shell_TrayWnd", null), PInvoke.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no  windows are currently minimized.</remarks>
         internal static void RestoreAllWindows()
         {
-            User32.SendMessage(TrayWnd, PInvoke.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+            User32.SendMessage(User32.FindWindow("Shell_TrayWnd", null), PInvoke.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
         }
 
         /// <summary>
@@ -68,11 +68,5 @@ namespace PSADT.Utilities
             User32.GetWindowThreadProcessId(User32.GetShellWindow(), out var pid);
             return pid;
         }
-
-        /// <summary>
-        /// Represents the handle to the system's taskbar window.
-        /// </summary>
-        /// <remarks>This field holds a handle to the taskbar window, which is retrieved using the <see cref="User32.FindWindow(string, string?)"/> method with the class name "Shell_TrayWnd". It is used to interact with the taskbar in scenarios where direct access to the taskbar window is required.</remarks>
-        private static readonly HWND TrayWnd = User32.FindWindow("Shell_TrayWnd", null);
     }
 }
