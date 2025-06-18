@@ -168,7 +168,10 @@ namespace PSADT.Serialization
             {
                 throw new ArgumentNullException(nameof(type), "Input cannot be null or empty.");
             }
-            AddSerializableTypeImpl(type);
+            if (!typesTable.ContainsKey(type.FullName!))
+            {
+                AddSerializableTypeImpl(type);
+            }
         }
 
         /// <summary>
@@ -180,16 +183,12 @@ namespace PSADT.Serialization
         /// <param name="type">The <see cref="Type"/> to be added to the serialization type table. Cannot be <see langword="null"/>.</param>
         private static void AddSerializableTypeImpl(Type type)
         {
-            if (typesTable.ContainsKey(type.FullName!))
-            {
-                return;
-            }
             if (!type.FullName!.Equals("System.Void"))
             {
                 typesTable[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(ReadOnlyCollectionAssemblyQualifiedNameBase, type.AssemblyQualifiedName))!;
             }
             typesTable[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName!.Replace(type.FullName, $"{type.FullName}[]"))!;
-            typesTable[type.FullName!] = type;
+            typesTable.Add(type.FullName!, type);
         }
 
         /// <summary>
