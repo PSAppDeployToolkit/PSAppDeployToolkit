@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.Security;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.RemoteDesktop;
@@ -88,8 +90,8 @@ namespace PSADT.TerminalServices
 
             // Declare initial variables for data we need to get from a structured object.
             string domainName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSDomainName)!;
-            NTAccount ntAccount = new NTAccount(domainName, userName);
-            SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
+            NTAccount ntAccount = new(domainName, userName);
+            SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
             var state = (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSConnectState)!;
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string pWinStationName = session.pWinStationName.ToString().TrimRemoveNull();
@@ -131,6 +133,52 @@ namespace PSADT.TerminalServices
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
                 (null != clientName) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
+        }
+
+        /// <summary>
+        /// Retrieves the security identifier (SID) associated with a specified session and user account.
+        /// </summary>
+        /// <remarks>This method attempts multiple approaches to retrieve the SID, including translating
+        /// the user account to a SID,  querying the user's token if the necessary privileges are enabled, and
+        /// retrieving group policy information. If none of these methods succeed, the method returns <see
+        /// langword="null"/>.</remarks>
+        /// <param name="sessionid">The ID of the session for which the SID is being retrieved.</param>
+        /// <param name="usermame">The user account, represented as an <see cref="NTAccount"/>, for which the SID is being retrieved.</param>
+        /// <returns>A <see cref="SecurityIdentifier"/> representing the SID of the specified session and user account</returns>
+        private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount usermame)
+        {
+            // Try everything we can to get the SID for the given session and user.
+            try
+            {
+                return (SecurityIdentifier)usermame.Translate(typeof(SecurityIdentifier));
+            }
+            catch
+            {
+                // If we have the privileges, we can get the SID from the user's token.
+                if (PrivilegeManager.IsPrivilegeEnabled(SE_PRIVILEGE.SeTcbPrivilege))
+                {
+                    try
+                    {
+                        WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken);
+                        using (hUserToken)
+                        {
+                            return TokenManager.GetTokenSid(hUserToken);
+                        }
+                    }
+                    catch
+                    {
+                        // Just fall through here.
+                    }
+                }
+
+                // Try and retrieve it from group policy information. This is the last chance we have.
+                if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(usermame))?.SID is not SecurityIdentifier sid)
+                {
+                    // Throw the original exception.
+                    throw;
+                }
+                return sid;
+            }
         }
 
         /// <summary>

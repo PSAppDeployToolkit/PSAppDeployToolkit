@@ -116,6 +116,64 @@ function ConvertTo-ADTNTAccountOrSID
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
+        # Internal worker function for SID to NTAccount translation.
+        function Convert-ADTSIDToNTAccount
+        {
+            [CmdletBinding()]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.Security.Principal.SecurityIdentifier]$TargetSid
+            )
+
+            # Try a regular translation first.
+            try
+            {
+                return $TargetSid.Translate([System.Security.Principal.NTAccount])
+            }
+            catch
+            {
+                # Device likely is off the domain network and had no line of sight to a domain controller.
+                # Attempt to rummage through the group policy cache and see what's available to us.
+                # Failing this, throw out the original error as there's not much we can do otherwise.
+                if (!($TargetNtAccount = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { if ($_.SID.Equals($TargetSid)) { return $_.Username } } | Select-Object -First 1))
+                {
+                    throw
+                }
+                return $TargetNtAccount
+            }
+        }
+
+        # Internal worker function for SID to NTAccount translation.
+        function Convert-ADTNTAccountToSID
+        {
+            [CmdletBinding()]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.Security.Principal.NTAccount]$TargetNtAccount
+            )
+
+            # Try a regular translation first.
+            try
+            {
+                return $TargetNtAccount.Translate([System.Security.Principal.SecurityIdentifier])
+            }
+            catch
+            {
+                # Device likely is off the domain network and had no line of sight to a domain controller.
+                # Attempt to rummage through the group policy cache and see what's available to us.
+                # Failing this, throw out the original error as there's not much we can do otherwise.
+                if (!($TargetSid = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { if ($_.Username.Equals($TargetNtAccount)) { return $_.SID } } | Select-Object -First 1))
+                {
+                    throw
+                }
+                return $TargetSid
+            }
+        }
+
         # Pre-calculate the domain SID.
         $DomainSid = if ($PSCmdlet.ParameterSetName.StartsWith('WellKnownName') -and !$LocalHost)
         {
@@ -141,26 +199,12 @@ function ConvertTo-ADTNTAccountOrSID
                     '^SIDToNTAccount'
                     {
                         Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
-                        try
-                        {
-                            return $SID.Translate([System.Security.Principal.NTAccount])
-                        }
-                        catch
-                        {
-                            # Device likely is off the domain network and had no line of sight to a domain controller.
-                            # Attempt to rummage through the group policy cache and see what's available to us.
-                            # Failing this, throw out the original error as there's not much we can do otherwise.
-                            if (!($ntAccount = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\DataStore\$($SID.ToString())" -ErrorAction Ignore | & { process { if ($_.PSChildName -match '^\d+$') { return $_ } } } | Sort-Object -Property { [System.Int32]$_.PSChildName } -Descending | Get-ItemProperty | Select-Object -ExpandProperty szName -First 1 -ErrorAction Ignore))
-                            {
-                                throw
-                            }
-                            return [System.Security.Principal.NTAccount]::new($ntAccount)
-                        }
+                        return (Convert-ADTSIDToNTAccount -TargetSid $SID)
                     }
                     '^NTAccountToSID'
                     {
                         Write-ADTLogEntry -Message "Converting $(($msg = "the NT Account [$AccountName] to a SID"))."
-                        return $AccountName.Translate([System.Security.Principal.SecurityIdentifier])
+                        return (Convert-ADTNTAccountToSID -TargetNtAccount $AccountName)
                     }
                     '^WellKnownName'
                     {
@@ -168,7 +212,7 @@ function ConvertTo-ADTNTAccountOrSID
                         $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new($WellKnownSIDName, $DomainSid)
                         if ($WellKnownToNTAccount)
                         {
-                            return $NTAccountSID.Translate([System.Security.Principal.NTAccount])
+                            return (Convert-ADTSIDToNTAccount -TargetSid $NTAccountSID)
                         }
                         return $NTAccountSID
                     }

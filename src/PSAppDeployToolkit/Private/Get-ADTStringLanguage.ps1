@@ -14,7 +14,7 @@ function Private:Get-ADTStringLanguage
     elseif (($runAsActiveUser = ($adtEnv = Get-ADTEnvironmentTable).RunAsActiveUser))
     {
         # A user is logged on. If we're running as SYSTEM, the user's locale could be different so try to get theirs if we can.
-        if ($runAsActiveUser.SID.Equals($adtEnv.CurrentProcessSID) -and ($userLanguage = [Microsoft.Win32.Registry]::GetValue('HKEY_CURRENT_USER\Control Panel\International\User Profile', 'Languages', $null) | Select-Object -First 1))
+        if ($adtEnv.CurrentProcessSID.Equals($runAsActiveUser.SID) -and ($userLanguage = [Microsoft.Win32.Registry]::GetValue('HKEY_CURRENT_USER\Control Panel\International\User Profile', 'Languages', $null) | Select-Object -First 1))
         {
             # We got the current user's locale from the registry.
             $userLanguage

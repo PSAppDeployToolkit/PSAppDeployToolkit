@@ -18,7 +18,7 @@ function Private:Set-ADTClientServerProcessPermissions
     $currentWindowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     try
     {
-        if ($User.SID.Equals($currentWindowsIdentity.User))
+        if ($currentWindowsIdentity.User.Equals($User.SID))
         {
             return
         }
