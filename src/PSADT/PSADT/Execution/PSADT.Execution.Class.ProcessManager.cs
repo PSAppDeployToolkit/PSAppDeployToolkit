@@ -249,14 +249,14 @@ namespace PSADT.Execution
                     lpParameters = launchInfo.Arguments,
                     lpDirectory = launchInfo.WorkingDirectory,
                 };
-                if (launchInfo.CreateNoWindow || (null != launchInfo.WindowStyle && ((SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE)))
+                if (null != launchInfo.WindowStyle)
+                {
+                    startupInfo.nShow = launchInfo.WindowStyle.Value;
+                }
+                if (launchInfo.CreateNoWindow)
                 {
                     startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
                     startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
-                }
-                else if (null != launchInfo.WindowStyle)
-                {
-                    startupInfo.nShow = launchInfo.WindowStyle.Value;
                 }
 
                 // Start the process and assign it to the job object if we have a handle.
