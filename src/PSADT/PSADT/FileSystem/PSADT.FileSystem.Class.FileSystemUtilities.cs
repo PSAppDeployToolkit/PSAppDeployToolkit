@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PSADT.LibraryInterfaces;
 
-namespace PSADT.Utilities
+namespace PSADT.FileSystem
 {
     /// <summary>
     /// A class containing utility methods for file system operations.
