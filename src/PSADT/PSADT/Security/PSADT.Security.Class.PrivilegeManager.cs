@@ -13,7 +13,7 @@ namespace PSADT.Security
     /// <summary>
     /// Utility methods for working with security tokens.
     /// </summary>
-	internal static class PrivilegeManagement
+	internal static class PrivilegeManager
     {
         /// <summary>
         /// Ensures that a security token is enabled.
