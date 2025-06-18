@@ -8,7 +8,7 @@ using Windows.Win32.Security;
 
 namespace PSADT.Security
 {
-    internal static class TokenManager
+    internal static class TokenManagement
     {
         /// <summary>
         /// Determines whether the specified access token is elevated.

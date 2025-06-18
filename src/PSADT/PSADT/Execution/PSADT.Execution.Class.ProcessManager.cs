@@ -142,15 +142,15 @@ namespace PSADT.Execution
                     if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !session.NTAccount!.Value.Equals(AccountUtilities.CallerUsername, StringComparison.OrdinalIgnoreCase))
                     {
                         // We can only run a process if we can act as part of the operating system.
-                        if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
+                        if (!PrivilegeManagement.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                         {
                             throw new UnauthorizedAccessException($"The calling account of [{AccountUtilities.CallerUsername}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
                         }
 
                         // Enable the required tokens. SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                        PrivilegeManagement.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        PrivilegeManagement.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                        PrivilegeManagement.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                         // First we get the user's token.
                         WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
@@ -161,11 +161,11 @@ namespace PSADT.Execution
                             // Once done, we duplicate the linked token to get a primary token to create the new process.
                             if (launchInfo.UseLinkedAdminToken)
                             {
-                                hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
+                                hPrimaryToken = TokenManagement.GetLinkedPrimaryToken(userToken);
                             }
                             else
                             {
-                                hPrimaryToken = TokenManager.GetPrimaryToken(userToken);
+                                hPrimaryToken = TokenManagement.GetPrimaryToken(userToken);
                             }
                         }
 
@@ -266,7 +266,7 @@ namespace PSADT.Execution
                     hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
                     processId = Kernel32.GetProcessId(hProcess);
                     Kernel32.AssignProcessToJobObject(job, hProcess);
-                    if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManagement.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
                         Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                     }
@@ -410,15 +410,15 @@ namespace PSADT.Execution
                 AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
                 using (hProcessToken)
                 {
-                    if (!TokenManager.GetTokenSid(hProcessToken).Equals(AccountUtilities.CallerSid))
+                    if (!TokenManagement.GetTokenSid(hProcessToken).Equals(AccountUtilities.CallerSid))
                     {
                         throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
                     }
-                    if (TokenManager.IsTokenElevated(hProcessToken))
+                    if (TokenManagement.IsTokenElevated(hProcessToken))
                     {
                         throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.");
                     }
-                    return TokenManager.GetPrimaryToken(hProcessToken);
+                    return TokenManagement.GetPrimaryToken(hProcessToken);
                 }
             }
         }
