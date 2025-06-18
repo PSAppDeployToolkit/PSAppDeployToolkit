@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -32,11 +33,11 @@ namespace PSADT.Serialization
                 foreach (var type in assembly.GetTypes())
                 {
                     // Skip any invalid type that aren't deserialisable.
-                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName || !type.IsSerializable)
+                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName || (!type.IsSerializable && !type.FullName.StartsWith("PSADT")))
                     {
                         continue;
                     }
-                    typesTable[type.FullName] = type;
+                    AddSerializableTypeImpl(type);
                 }
             }
 
@@ -167,10 +168,28 @@ namespace PSADT.Serialization
             {
                 throw new ArgumentNullException(nameof(type), "Input cannot be null or empty.");
             }
-            if (!typesTable.ContainsKey(type.FullName!))
+            AddSerializableTypeImpl(type);
+        }
+
+        /// <summary>
+        /// Adds the specified type and its related collection types to the internal serialization type table.
+        /// </summary>
+        /// <remarks>This method registers the provided type along with its corresponding read-only
+        /// collection type and array type in the serialization type table. The type is added only if it is not already
+        /// present in the table.</remarks>
+        /// <param name="type">The <see cref="Type"/> to be added to the serialization type table. Cannot be <see langword="null"/>.</param>
+        private static void AddSerializableTypeImpl(Type type)
+        {
+            if (typesTable.ContainsKey(type.FullName!))
             {
-                typesTable[type.FullName!] = type;
+                return;
             }
+            if (!type.FullName!.Equals("System.Void"))
+            {
+                typesTable[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(ReadOnlyCollectionAssemblyQualifiedNameBase, type.AssemblyQualifiedName))!;
+            }
+            typesTable[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName!.Replace(type.Name, $"{type.Name}[]"))!;
+            typesTable[type.FullName!] = type;
         }
 
         /// <summary>
@@ -195,5 +214,14 @@ namespace PSADT.Serialization
         /// and captures the type name. This is useful for parsing serialized XML data that includes type
         /// information.</remarks>
         private static readonly Regex typeRegex = new Regex("^<(\\w+) xmlns=\"http://schemas.datacontract.org/2004/07/([^\"]+)\"", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Represents the assembly-qualified name of the <see cref="ReadOnlyCollection{T}"/> type,  formatted to allow
+        /// substitution of a type argument.
+        /// </summary>
+        /// <remarks>The placeholder <c>"[{0}]"</c> in the formatted string can be replaced with the
+        /// assembly-qualified name  of a specific type to construct the assembly-qualified name for a <see
+        /// cref="ReadOnlyCollection{T}"/>  of that type.</remarks>
+        private static readonly string ReadOnlyCollectionAssemblyQualifiedNameBase = Regex.Replace(typeof(ReadOnlyCollection<object>).AssemblyQualifiedName!, @"\[.+\]", "[[{0}]]");
     }
 }
