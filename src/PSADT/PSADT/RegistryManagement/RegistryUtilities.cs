@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.Registry;

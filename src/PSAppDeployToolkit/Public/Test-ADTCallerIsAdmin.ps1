@@ -40,5 +40,5 @@ function Test-ADTCallerIsAdmin
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTCallerIsAdmin
     #>
 
-    return [PSADT.Utilities.AccountUtilities]::CallerIsAdmin
+    return [PSADT.AccountManagement.AccountUtilities]::CallerIsAdmin
 }

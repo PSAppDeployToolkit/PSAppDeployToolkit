@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.DirectoryServices;
 using System.Security.Principal;
 
-namespace PSADT.Utilities
+namespace PSADT.AccountManagement
 {
     /// <summary>
     /// Utility methods for working with Windows accounts and groups.
