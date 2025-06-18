@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -175,11 +174,10 @@ namespace PSADT.Serialization
         }
 
         /// <summary>
-        /// A read-only dictionary that maps string keys to their corresponding <see cref="Type"/> objects.
+        /// Represents a mapping between type names and their corresponding <see cref="Type"/> objects.
         /// </summary>
-        /// <remarks>This dictionary is initialized with a predefined set of mappings using the <see
-        /// cref="BuildTypesLookupTable"/> method. It provides a thread-safe, immutable lookup table for type
-        /// associations.</remarks>
+        /// <remarks>This dictionary is used to store and retrieve type information based on string keys.
+        /// It is intended for internal use and should not be accessed directly by external code.</remarks>
         private static readonly Dictionary<string, Type> typesTable = [];
 
         /// <summary>
