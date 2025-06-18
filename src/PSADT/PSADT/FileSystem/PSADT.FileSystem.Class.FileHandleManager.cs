@@ -38,6 +38,30 @@ namespace PSADT.FileSystem
             {
                 ExitThreadProcAddr = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
             }
+
+            // Query the system for all object type info.
+            var objectTypesSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
+            var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
+            using var typesBufferPtr = SafeHGlobalHandle.Alloc(objectTypesSize);
+            var status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
+            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            {
+                typesBufferPtr.ReAlloc(typesBufferReqLength);
+                status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
+            }
+
+            // Read the number of types from the buffer and store the built-out dictionary.
+            var typesCount = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPES_INFORMATION>().NumberOfTypes;
+            var typeTable = new Dictionary<ushort, string>((int)typesCount);
+            var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
+            for (uint i = 0; i < typesCount; i++)
+            {
+                // Marshal the data into our structure and add the necessary values to the dictionary.
+                var typeInfo = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPE_INFORMATION>(ptrOffset);
+                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
+                ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
+            }
+            ObjectTypeLookupTable = new(typeTable);
         }
 
         /// <summary>
@@ -249,37 +273,6 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Retrieves a lookup table of object types.
-        /// </summary>
-        /// <returns></returns>
-        private static ReadOnlyDictionary<ushort, string> GetObjectTypeLookupTable()
-        {
-            // Query the system for all object type info.
-            var objectTypesSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
-            var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
-            using var typesBufferPtr = SafeHGlobalHandle.Alloc(objectTypesSize);
-            var status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
-            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
-            {
-                typesBufferPtr.ReAlloc(typesBufferReqLength);
-                status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
-            }
-
-            // Read the number of types from the buffer and return a built-out dictionary.
-            var typesCount = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPES_INFORMATION>().NumberOfTypes;
-            var typeTable = new Dictionary<ushort, string>((int)typesCount);
-            var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
-            for (uint i = 0; i < typesCount; i++)
-            {
-                // Marshal the data into our structure and add the necessary values to the dictionary.
-                var typeInfo = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPE_INFORMATION>(ptrOffset);
-                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
-                ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
-            }
-            return new(typeTable);
-        }
-
-        /// <summary>
         /// The context for the thread that retrieves the object name.
         /// </summary>
         /// <param name="exitThread"></param>
@@ -420,7 +413,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The lookup table of object types.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable = GetObjectTypeLookupTable();
+        private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
 
         /// <summary>
         /// The duration to wait for a hung NtQueryObject thread to terminate.

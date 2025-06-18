@@ -83,7 +83,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    this.pictureIcon.Image = SystemIcons.SystemIconLookupTable[options.Icon.Value];
+                    this.pictureIcon.Image = SystemIcons.Get(options.Icon.Value);
                 }
 
                 // Set up the message.

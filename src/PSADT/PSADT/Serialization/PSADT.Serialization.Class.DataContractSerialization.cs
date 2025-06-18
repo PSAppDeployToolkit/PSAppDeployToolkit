@@ -14,6 +14,50 @@ namespace PSADT.Serialization
     public static class DataContractSerialization
     {
         /// <summary>
+        /// Initializes static data for the <see cref="DataContractSerialization"/> class.
+        /// </summary>
+        /// <remarks>This static constructor builds a lookup table of serializable types from the loaded
+        /// assemblies in the current application domain. It also includes mappings for common primitive types. The
+        /// lookup table is used to facilitate serialization and deserialization of objects by their type
+        /// names.</remarks>
+        static DataContractSerialization()
+        {
+            // Build out a lookup table of types from loaded assemblies.
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                // Skip assemblies that have a null name.
+                if (null == assembly.FullName)
+                {
+                    continue;
+                }
+                foreach (var type in assembly.GetTypes())
+                {
+                    // Skip any invalid type that aren't deserialisable.
+                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName || !type.IsSerializable)
+                    {
+                        continue;
+                    }
+                    typesTable[type.FullName] = type;
+                }
+            }
+
+            // Inject types for primitives also.
+            typesTable["int"] = typeof(int);
+            typesTable["long"] = typeof(long);
+            typesTable["string"] = typeof(string);
+            typesTable["boolean"] = typeof(bool);
+            typesTable["double"] = typeof(double);
+            typesTable["float"] = typeof(float);
+            typesTable["decimal"] = typeof(decimal);
+            typesTable["char"] = typeof(char);
+            typesTable["byte"] = typeof(sbyte);
+            typesTable["unsignedByte"] = typeof(byte);
+            typesTable["unsignedShort"] = typeof(ushort);
+            typesTable["unsignedInt"] = typeof(uint);
+            typesTable["unsignedLong"] = typeof(ulong);
+        }
+
+        /// <summary>
         /// Serializes the specified object to a Base64-encoded XML string.
         /// </summary>
         /// <remarks>This method uses the <see cref="DataContractSerializer"/> to serialize the object into XML format and then encodes the resulting XML string into a Base64 string. The output can be used for safe transmission or storage of the serialized data.</remarks>
@@ -112,58 +156,6 @@ namespace PSADT.Serialization
         }
 
         /// <summary>
-        /// Creates a lookup table of all types available in the current application domain.
-        /// </summary>
-        /// <remarks>The method iterates through all assemblies loaded in the current application domain
-        /// and collects their types into a dictionary, using the fully qualified type name as the key. The resulting
-        /// dictionary is returned as a read-only collection.</remarks>
-        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are fully qualified type names and the
-        /// values are the corresponding <see cref="Type"/> objects.</returns>
-        private static Dictionary<string, Type> BuildTypesLookupTable()
-        {
-            // Store base asembly name for ReadOnlyCollection types.
-            string rocAssemblyBaseName = Regex.Replace(typeof(ReadOnlyCollection<object>).AssemblyQualifiedName!, @"\[.+\]", "[[{0}]]");
-
-            // Build out a lookup table of types from loaded assemblies.
-            Dictionary<string, Type> typesLookup = [];
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                // Skip non-PSADT assemblies.
-                if (null == assembly.FullName)
-                {
-                    continue;
-                }
-                foreach (var type in assembly.GetTypes())
-                {
-                    // For valid types, generate lookups for ReadOnlyCollections of the type, Arrays of the type, and the type itself.
-                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName || !type.IsSerializable)
-                    {
-                        continue;
-                    }
-                    typesLookup[type.FullName] = type;
-                }
-            }
-
-            // Inject types for primitives also.
-            typesLookup["int"] = typeof(int);
-            typesLookup["long"] = typeof(long);
-            typesLookup["string"] = typeof(string);
-            typesLookup["boolean"] = typeof(bool);
-            typesLookup["double"] = typeof(double);
-            typesLookup["float"] = typeof(float);
-            typesLookup["decimal"] = typeof(decimal);
-            typesLookup["char"] = typeof(char);
-            typesLookup["byte"] = typeof(sbyte);
-            typesLookup["unsignedByte"] = typeof(byte);
-            typesLookup["unsignedShort"] = typeof(ushort);
-            typesLookup["unsignedInt"] = typeof(uint);
-            typesLookup["unsignedLong"] = typeof(ulong);
-
-            // Return a read-only dictionary to prevent modification of the types lookup table.
-            return new(typesLookup);
-        }
-
-        /// <summary>
         /// Adds the specified type to the lookup table if it is not already present.
         /// </summary>
         /// <remarks>If the type's fully qualified name is already present in the lookup table,  this
@@ -188,7 +180,7 @@ namespace PSADT.Serialization
         /// <remarks>This dictionary is initialized with a predefined set of mappings using the <see
         /// cref="BuildTypesLookupTable"/> method. It provides a thread-safe, immutable lookup table for type
         /// associations.</remarks>
-        private static readonly Dictionary<string, Type> typesTable = BuildTypesLookupTable();
+        private static readonly Dictionary<string, Type> typesTable = [];
 
         /// <summary>
         /// Represents a compiled regular expression used to match primitive type names in a specific format.
