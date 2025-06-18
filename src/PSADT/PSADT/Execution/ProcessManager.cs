@@ -119,10 +119,6 @@ namespace PSADT.Execution
                             creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
                         }
                     }
-                    else
-                    {
-                        creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
-                    }
 
                     // If we're to read the output, we create pipes for stdout and stderr.
                     if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
