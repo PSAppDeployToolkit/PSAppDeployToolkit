@@ -338,9 +338,8 @@ namespace PSADT.ClientServer
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            _outputWriter.Write($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
-            _outputWriter.Flush();
-            return DataContractSerialization.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
+            WriteCommand($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            return DataContractSerialization.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadResult());
         }
 
         /// <summary>
@@ -366,9 +365,8 @@ namespace PSADT.ClientServer
         public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
             _logSource = "Get-ADTUserNotificationState";
-            _outputWriter.Write("GetUserNotificationState");
-            _outputWriter.Flush();
-            return DataContractSerialization.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadInput());
+            WriteCommand("GetUserNotificationState");
+            return DataContractSerialization.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadResult());
         }
 
         /// <summary>
@@ -420,9 +418,8 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
                 _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
             };
-            _outputWriter.Write($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
-            _outputWriter.Flush();
-            return DataContractSerialization.DeserializeFromString<TResult>(ReadInput());
+            WriteCommand($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            return DataContractSerialization.DeserializeFromString<TResult>(ReadResult());
         }
 
         /// <summary>
@@ -517,9 +514,21 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the server's response indicates success; otherwise, <see langword="false"/>.</returns>
         private bool Invoke(string command)
         {
+            WriteCommand(command);
+            return bool.Parse(ReadResult());
+        }
+
+        /// <summary>
+        /// Sends a command to the output writer and ensures it is immediately flushed.
+        /// </summary>
+        /// <remarks>This method writes the specified command to the underlying output writer and flushes
+        /// the writer to ensure the command is transmitted without delay. The caller is responsible for ensuring the
+        /// validity of the command string.</remarks>
+        /// <param name="command">The command string to be written. Cannot be null or empty.</param>
+        private void WriteCommand(string command)
+        {
             _outputWriter.Write(command);
             _outputWriter.Flush();
-            return bool.Parse(ReadInput());
         }
 
         /// <summary>
@@ -527,7 +536,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <returns>The next line of input from the stream as a <see cref="string"/>.</returns>
         /// <exception cref="InvalidDataException">Thrown if the input stream is unexpectedly closed or no data is available to read.</exception>
-        private string ReadInput()
+        private string ReadResult()
         {
             string response;
             try

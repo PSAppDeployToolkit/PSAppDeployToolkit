@@ -247,6 +247,13 @@ namespace PSADT.ClientServer
                 using (BinaryReader inputReader = new(inputPipeClient, Encoding.UTF8, true))
                 using (BinaryWriter logWriter = new(logPipeClient, Encoding.UTF8, true))
                 {
+                    // Helper method to reduce some boilerplate.
+                    void WriteResult<T>(T result)
+                    {
+                        outputWriter.Write(result!.ToString()!);
+                        outputWriter.Flush();
+                    };
+
                     // Initialize variables needed throughout the loop.
                     CloseAppsDialogState closeAppsDialogState = default!;
 
@@ -267,8 +274,7 @@ namespace PSADT.ClientServer
                                 {
                                     // Deserialize the process definitions if we have them, then right back that we were successful.
                                     closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                 }
                                 else if (parts[0] == "PromptToCloseApps")
                                 {
@@ -287,8 +293,7 @@ namespace PSADT.ClientServer
 
                                     // Perform the operation to prompt the user to close apps and write back that we were successful.
                                     PromptToCloseApps(closeAppsDialogState.RunningProcessService.RunningProcesses, promptToCloseTimeout, logWriter);
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                 }
                                 else if (parts[0] == "ShowModalDialog")
                                 {
@@ -297,8 +302,7 @@ namespace PSADT.ClientServer
                                     {
                                         throw new ClientException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ClientExitCode.InvalidArguments);
                                     }
-                                    outputWriter.Write(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
-                                    outputWriter.Flush();
+                                    WriteResult(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
                                 }
                                 else if (parts[0] == "ShowProgressDialog")
                                 {
@@ -316,14 +320,12 @@ namespace PSADT.ClientServer
 
                                     // Show the progress dialog and write back that we were successful.
                                     DialogManager.ShowProgressDialog(dialogStyle, DeserializeString<ProgressDialogOptions>(parts[2]));
-                                    outputWriter.Write(DialogManager.ProgressDialogOpen().ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(DialogManager.ProgressDialogOpen());
                                 }
                                 else if (parts[0] == "ProgressDialogOpen")
                                 {
                                     // Directly write the state of the progress dialog to the output pipe.
-                                    outputWriter.Write(DialogManager.ProgressDialogOpen().ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(DialogManager.ProgressDialogOpen());
                                 }
                                 else if (parts[0] == "UpdateProgressDialog")
                                 {
@@ -335,15 +337,13 @@ namespace PSADT.ClientServer
 
                                     // Update the progress dialog with the provided parameters.
                                     DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3]) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                 }
                                 else if (parts[0] == "CloseProgressDialog")
                                 {
                                     // Close the progress dialog and write back that we were successful.
                                     DialogManager.CloseProgressDialog();
-                                    outputWriter.Write((!DialogManager.ProgressDialogOpen()).ToString());
-                                    outputWriter.Flush();
+                                    WriteResult((!DialogManager.ProgressDialogOpen()));
                                 }
                                 else if (parts[0] == "ShowBalloonTip")
                                 {
@@ -352,22 +352,19 @@ namespace PSADT.ClientServer
                                     {
                                         throw new ClientException("The ShowBalloonTip command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
                                     }
-                                    outputWriter.Write(ShowBalloonTip(new Dictionary<string, string> { { "Options", parts[1] } }).ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(ShowBalloonTip(new Dictionary<string, string> { { "Options", parts[1] } }));
                                 }
                                 else if (parts[0] == "MinimizeAllWindows")
                                 {
                                     // Minimize all windows and write back that we were successful.
                                     ShellUtilities.MinimizeAllWindows();
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                 }
                                 else if (parts[0] == "RestoreAllWindows")
                                 {
                                     // Restore all windows and write back that we were successful.
                                     ShellUtilities.RestoreAllWindows();
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                 }
                                 else if (parts[0] == "SendKeys")
                                 {
@@ -376,8 +373,7 @@ namespace PSADT.ClientServer
                                     {
                                         throw new ClientException("The SendKeys command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
                                     }
-                                    outputWriter.Write(SendKeys(new Dictionary<string, string> { { "Options", parts[1] } }).ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(SendKeys(new Dictionary<string, string> { { "Options", parts[1] } }));
                                 }
                                 else if (parts[0] == "GetProcessWindowInfo")
                                 {
@@ -386,32 +382,27 @@ namespace PSADT.ClientServer
                                     {
                                         throw new ClientException("The GetProcessWindowInfo command requires exactly one argument: WindowInfoOptions.", ClientExitCode.InvalidArguments);
                                     }
-                                    outputWriter.Write(GetProcessWindowInfo(new Dictionary<string, string> { { "Options", parts[1] } }));
-                                    outputWriter.Flush();
+                                    WriteResult(GetProcessWindowInfo(new Dictionary<string, string> { { "Options", parts[1] } }));
                                 }
                                 else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
                                 {
                                     // Refresh the desktop and environment variables. This will write out true upon success.
-                                    outputWriter.Write(RefreshDesktopAndEnvironmentVariables());
-                                    outputWriter.Flush();
+                                    WriteResult(RefreshDesktopAndEnvironmentVariables());
                                 }
                                 else if (parts[0] == "GetUserNotificationState")
                                 {
                                     // Get the user notification state and write it back to the output pipe.
-                                    outputWriter.Write(GetUserNotificationState());
-                                    outputWriter.Flush();
+                                    WriteResult(GetUserNotificationState());
                                 }
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                 }
                                 else if (parts[0] == "Close")
                                 {
                                     // Indicate that we're going to terminate.
-                                    outputWriter.Write(true.ToString());
-                                    outputWriter.Flush();
+                                    WriteResult(true);
                                     break;
                                 }
                                 else
@@ -423,8 +414,7 @@ namespace PSADT.ClientServer
                             catch (Exception ex)
                             {
                                 // Something we weren't expecting occurred. We should never get here.
-                                outputWriter.Write($"Error{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString((object)ex)}");
-                                outputWriter.Flush();
+                                WriteResult($"Error{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString((object)ex)}");
                             }
                         }
                         catch (EndOfStreamException)
