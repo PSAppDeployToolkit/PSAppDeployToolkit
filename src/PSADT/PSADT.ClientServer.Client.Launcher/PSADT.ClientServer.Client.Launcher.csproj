@@ -19,7 +19,7 @@
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
     <AssemblyVersion>4.1.0.0</AssemblyVersion>
     <InformationalVersion>4.1.0</InformationalVersion>
-    <ApplicationIcon>..\PSADT.ClientServer.Client\Properties\appIcon.ico</ApplicationIcon>
+    <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <Platforms>AnyCPU</Platforms>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
