@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using PSADT.Serialization;
 
 namespace PSADT.WindowManagement
 {
@@ -9,6 +10,17 @@ namespace PSADT.WindowManagement
     [DataContract]
     public sealed record WindowInfo
     {
+        /// <summary>
+        /// Initializes the <see cref="WindowInfo"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="WindowInfo"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static WindowInfo()
+        {
+            DataContractSerialization.AddSerializableType(typeof(WindowInfo));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfo"/> struct.
         /// </summary>

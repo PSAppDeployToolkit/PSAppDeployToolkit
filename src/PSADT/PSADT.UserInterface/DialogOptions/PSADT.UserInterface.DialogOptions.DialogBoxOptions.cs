@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Serialization;
+using PSADT.Serialization;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -11,6 +12,17 @@ namespace PSADT.UserInterface.DialogOptions
     [DataContract]
     public sealed record DialogBoxOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="DialogBoxOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="DialogBoxOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static DialogBoxOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(DialogBoxOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DialogBoxOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.

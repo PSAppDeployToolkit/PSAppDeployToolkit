@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
+using PSADT.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -16,6 +17,17 @@ namespace PSADT.UserInterface.DialogOptions
     [DataContract]
     public sealed record BalloonTipOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="BalloonTipOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="BalloonTipOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static BalloonTipOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(BalloonTipOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BalloonTipOptions"/> class using the specified options.
         /// </summary>

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using PSADT.Module;
+using PSADT.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -11,6 +12,17 @@ namespace PSADT.UserInterface.DialogOptions
     [DataContract]
     public sealed record RestartDialogOptions : BaseOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="RestartDialogOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="RestartDialogOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static RestartDialogOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(RestartDialogOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class.
         /// </summary>
@@ -83,6 +95,17 @@ namespace PSADT.UserInterface.DialogOptions
         [DataContract]
         public sealed record RestartDialogStrings
         {
+            /// <summary>
+            /// Initializes the <see cref="RestartDialogStrings"/> class and registers it as a serializable type.
+            /// </summary>
+            /// <remarks>This static constructor ensures that the <see cref="RestartDialogStrings"/> type is added
+            /// to the list of serializable types for data contract serialization. This allows instances of <see
+            /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+            static RestartDialogStrings()
+            {
+                DataContractSerialization.AddSerializableType(typeof(RestartDialogStrings));
+            }
+
             /// <summary>
             /// Initializes a new instance of the <see cref="RestartDialogStrings"/> class with the specified strings.
             /// </summary>

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using PSADT.Module;
+using PSADT.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -11,6 +12,17 @@ namespace PSADT.UserInterface.DialogOptions
     [DataContract]
     public sealed record CloseAppsDialogOptions : BaseOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="CloseAppsDialogOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static CloseAppsDialogOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.
         /// </summary>
@@ -154,6 +166,17 @@ namespace PSADT.UserInterface.DialogOptions
         public sealed record CloseAppsDialogStrings
         {
             /// <summary>
+            /// Initializes the <see cref="CloseAppsDialogStrings"/> class and registers it as a serializable type.
+            /// </summary>
+            /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogStrings"/> type is added
+            /// to the list of serializable types for data contract serialization. This allows instances of <see
+            /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+            static CloseAppsDialogStrings()
+            {
+                DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogStrings));
+            }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class.
             /// </summary>
             /// <param name="strings"></param>
@@ -194,6 +217,17 @@ namespace PSADT.UserInterface.DialogOptions
             [DataContract]
             public sealed record CloseAppsDialogClassicStrings
             {
+                /// <summary>
+                /// Initializes the <see cref="CloseAppsDialogClassicStrings"/> class and registers it as a serializable type.
+                /// </summary>
+                /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogClassicStrings"/> type is added
+                /// to the list of serializable types for data contract serialization. This allows instances of <see
+                /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+                static CloseAppsDialogClassicStrings()
+                {
+                    DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogClassicStrings));
+                }
+
                 /// <summary>
                 /// Initializes a new instance of the <see cref="CloseAppsDialogClassicStrings"/> class.
                 /// </summary>
@@ -346,6 +380,17 @@ namespace PSADT.UserInterface.DialogOptions
             [DataContract]
             public sealed record CloseAppsDialogFluentStrings
             {
+                /// <summary>
+                /// Initializes the <see cref="CloseAppsDialogFluentStrings"/> class and registers it as a serializable type.
+                /// </summary>
+                /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogFluentStrings"/> type is added
+                /// to the list of serializable types for data contract serialization. This allows instances of <see
+                /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+                static CloseAppsDialogFluentStrings()
+                {
+                    DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogFluentStrings));
+                }
+
                 /// <summary>
                 /// Initializes a new instance of the <see cref="CloseAppsDialogFluentStrings"/> class.
                 /// </summary>

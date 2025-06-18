@@ -34,6 +34,17 @@ namespace PSADT.ClientServer
     public class ServerInstance : IDisposable
     {
         /// <summary>
+        /// Initializes the <see cref="ServerInstance"/> class and registers the <see cref="ClientException"/> class as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="ClientException"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static ServerInstance()
+        {
+            DataContractSerialization.AddSerializableType(typeof(ClientException));
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication
         /// using anonymous pipes.
         /// </summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Serialization;
+using PSADT.Serialization;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -12,6 +13,17 @@ namespace PSADT.UserInterface.DialogOptions
     [KnownType(typeof(InputDialogOptions))]
     public record CustomDialogOptions : BaseOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="CustomDialogOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="CustomDialogOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static CustomDialogOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(CustomDialogOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
         /// </summary>

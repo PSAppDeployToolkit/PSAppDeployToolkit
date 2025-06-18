@@ -119,7 +119,7 @@ namespace PSADT.Serialization
         /// dictionary is returned as a read-only collection.</remarks>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are fully qualified type names and the
         /// values are the corresponding <see cref="Type"/> objects.</returns>
-        private static ReadOnlyDictionary<string, Type> BuildTypesLookupTable()
+        private static Dictionary<string, Type> BuildTypesLookupTable()
         {
             // Store base asembly name for ReadOnlyCollection types.
             string rocAssemblyBaseName = Regex.Replace(typeof(ReadOnlyCollection<object>).AssemblyQualifiedName!, @"\[.+\]", "[[{0}]]");
@@ -136,20 +136,11 @@ namespace PSADT.Serialization
                 foreach (var type in assembly.GetTypes())
                 {
                     // For valid types, generate lookups for ReadOnlyCollections of the type, Arrays of the type, and the type itself.
-                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName)
+                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName || !type.IsSerializable)
                     {
                         continue;
                     }
-                    if (assembly.FullName.StartsWith("PSADT"))
-                    {
-                        typesLookup[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(rocAssemblyBaseName, type.AssemblyQualifiedName))!;
-                        typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
-                        typesLookup[type.FullName] = type;
-                    }
-                    else if (type.IsSerializable)
-                    {
-                        typesLookup[type.FullName] = type;
-                    }
+                    typesLookup[type.FullName] = type;
                 }
             }
 
@@ -173,12 +164,31 @@ namespace PSADT.Serialization
         }
 
         /// <summary>
+        /// Adds the specified type to the lookup table if it is not already present.
+        /// </summary>
+        /// <remarks>If the type's fully qualified name is already present in the lookup table,  this
+        /// method does nothing.</remarks>
+        /// <param name="type">The type to add to the lookup table. Cannot be <see langword="null"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="type"/> is <see langword="null"/>.</exception>
+        internal static void AddSerializableType(Type type)
+        {
+            if (null == type)
+            {
+                throw new ArgumentNullException(nameof(type), "Input cannot be null or empty.");
+            }
+            if (!typesTable.ContainsKey(type.FullName!))
+            {
+                typesTable[type.FullName!] = type;
+            }
+        }
+
+        /// <summary>
         /// A read-only dictionary that maps string keys to their corresponding <see cref="Type"/> objects.
         /// </summary>
         /// <remarks>This dictionary is initialized with a predefined set of mappings using the <see
         /// cref="BuildTypesLookupTable"/> method. It provides a thread-safe, immutable lookup table for type
         /// associations.</remarks>
-        private static readonly ReadOnlyDictionary<string, Type> typesTable = BuildTypesLookupTable();
+        private static readonly Dictionary<string, Type> typesTable = BuildTypesLookupTable();
 
         /// <summary>
         /// Represents a compiled regular expression used to match primitive type names in a specific format.

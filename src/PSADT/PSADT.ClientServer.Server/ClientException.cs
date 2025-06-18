@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using PSADT.Serialization;
 
 namespace PSADT.ClientServer
 {
@@ -10,10 +11,21 @@ namespace PSADT.ClientServer
     /// <remarks>The <see cref="ClientException"/> class is used to signal errors that occur during
     /// program execution, with an optional exit code that is set to the <see cref="Exception.HResult"/> property.
     /// This allows the exception to convey both the error details and a numeric code that can be used for
-    /// programmatic handling  or process termination.</remarks>
+    /// programmatic handling or process termination.</remarks>
     [Serializable]
     internal class ClientException : InvalidOperationException
     {
+        /// <summary>
+        /// Initializes the <see cref="ClientException"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="ClientException"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static ClientException()
+        {
+            DataContractSerialization.AddSerializableType(typeof(ClientException));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientException"/> class with a specified error message
         /// and exit code.

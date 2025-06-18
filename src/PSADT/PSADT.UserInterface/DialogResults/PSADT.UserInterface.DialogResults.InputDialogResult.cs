@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using PSADT.Serialization;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -8,6 +9,17 @@ namespace PSADT.UserInterface.DialogResults
     [DataContract]
     public sealed record InputDialogResult
     {
+        /// <summary>
+        /// Initializes the <see cref="InputDialogResult"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="InputDialogResult"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static InputDialogResult()
+        {
+            DataContractSerialization.AddSerializableType(typeof(InputDialogResult));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InputDialogResult"/> class.
         /// </summary>

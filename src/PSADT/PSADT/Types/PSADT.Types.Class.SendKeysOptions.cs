@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using PSADT.Serialization;
 
 namespace PSADT.Types
 {
@@ -11,6 +12,17 @@ namespace PSADT.Types
     [DataContract]
     public sealed record SendKeysOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="SendKeysOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="SendKeysOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static SendKeysOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(SendKeysOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SendKeysOptions"/> class with the specified window handle and
         /// keys.

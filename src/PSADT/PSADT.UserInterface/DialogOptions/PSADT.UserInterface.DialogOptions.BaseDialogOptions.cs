@@ -2,6 +2,7 @@
 using System.Collections;
 using System.IO;
 using System.Runtime.Serialization;
+using PSADT.Serialization;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -17,6 +18,17 @@ namespace PSADT.UserInterface.DialogOptions
     [KnownType(typeof(RestartDialogOptions))]
     public abstract record BaseOptions
     {
+        /// <summary>
+        /// Initializes the <see cref="BaseOptions"/> class and registers it as a serializable type.
+        /// </summary>
+        /// <remarks>This static constructor ensures that the <see cref="BaseOptions"/> type is added
+        /// to the list of serializable types for data contract serialization. This allows instances of <see
+        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
+        static BaseOptions()
+        {
+            DataContractSerialization.AddSerializableType(typeof(BaseOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
