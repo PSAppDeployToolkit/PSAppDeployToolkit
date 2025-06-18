@@ -188,7 +188,7 @@ namespace PSADT.Serialization
             {
                 typesTable[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(ReadOnlyCollectionAssemblyQualifiedNameBase, type.AssemblyQualifiedName))!;
             }
-            typesTable[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName!.Replace(type.Name, $"{type.Name}[]"))!;
+            typesTable[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName!.Replace(type.FullName, $"{type.FullName}[]"))!;
             typesTable[type.FullName!] = type;
         }
 
