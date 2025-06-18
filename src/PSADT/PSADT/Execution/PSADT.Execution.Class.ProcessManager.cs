@@ -84,12 +84,12 @@ namespace PSADT.Execution
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
             if ((!guiApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
             {
-                var startupInfo = new STARTUPINFOW
+                var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
+                if (null != launchInfo.WindowStyle)
                 {
-                    cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
-                    dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW,
-                    wShowWindow = launchInfo.WindowStyle,
-                };
+                    startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                    startupInfo.wShowWindow = launchInfo.WindowStyle.Value;
+                }
                 SafeFileHandle? hStdOutWrite = default;
                 SafeFileHandle? hStdErrWrite = default;
                 bool hStdOutWriteAddRef = false;
@@ -197,6 +197,12 @@ namespace PSADT.Execution
                     }
                     else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
                     {
+                        // Throw if the caller is expecting to be able to capture stdout/stderr but is running elevated.
+                        if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                        {
+                            throw new InvalidOperationException("The underlying API to create a process using an unelevated token does not support capturing stdout/stderr.");
+                        }
+
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
@@ -243,14 +249,14 @@ namespace PSADT.Execution
                     lpParameters = launchInfo.Arguments,
                     lpDirectory = launchInfo.WorkingDirectory,
                 };
-                if (launchInfo.CreateNoWindow || ((SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                if (launchInfo.CreateNoWindow || (null != launchInfo.WindowStyle && ((SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE)))
                 {
                     startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
                     startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
                 }
-                else
+                else if (null != launchInfo.WindowStyle)
                 {
-                    startupInfo.nShow = launchInfo.WindowStyle;
+                    startupInfo.nShow = launchInfo.WindowStyle.Value;
                 }
 
                 // Start the process and assign it to the job object if we have a handle.

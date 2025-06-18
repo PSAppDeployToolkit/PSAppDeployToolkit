@@ -58,28 +58,6 @@ namespace PSADT.Execution
             CancellationToken? cancellationToken = null,
             bool noTerminateOnTimeout = false)
         {
-            // Ensure CreateNoWindow and the WindowStyle are compatible.
-            if (null != windowStyle)
-            {
-                if (windowStyle != ProcessWindowStyle.Hidden)
-                {
-                    if (createNoWindow)
-                    {
-                        throw new ArgumentException("Cannot set WindowStyle to a value other than Hidden when CreateNoWindow is true.");
-                    }
-                }
-                else
-                {
-                    CreateNoWindow = true;
-                }
-                WindowStyle = WindowStyleMap[windowStyle.Value];
-            }
-            else if (createNoWindow)
-            {
-                WindowStyle = WindowStyleMap[ProcessWindowStyle.Hidden];
-                CreateNoWindow = true;
-            }
-
             // Validate all nullable parameters.
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
@@ -101,6 +79,10 @@ namespace PSADT.Execution
             {
                 StreamEncoding = streamEncoding;
             }
+            if (null != windowStyle)
+            {
+                WindowStyle = WindowStyleMap[windowStyle.Value];
+            }
             if (null != priorityClass)
             {
                 PriorityClass = priorityClass.Value;
@@ -108,6 +90,13 @@ namespace PSADT.Execution
             if (null != cancellationToken)
             {
                 CancellationToken = cancellationToken.Value;
+            }
+
+            // Handle the CreateNoWindow parameter.
+            if (createNoWindow)
+            {
+                WindowStyle = WindowStyleMap[ProcessWindowStyle.Hidden];
+                CreateNoWindow = true;
             }
 
             // Set remaining boolean parameters.
@@ -213,7 +202,7 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public readonly ushort WindowStyle = WindowStyleMap[ProcessWindowStyle.Normal];
+        public readonly ushort? WindowStyle;
 
         /// <summary>
         /// Gets the priority class of the process.
