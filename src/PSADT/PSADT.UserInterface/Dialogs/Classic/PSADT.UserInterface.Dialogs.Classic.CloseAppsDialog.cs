@@ -315,7 +315,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (e.ProcessesToClose.Count > 0)
                 {
                     var runningApps = e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
-                    logWriter?.WriteLine($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
+                    if (null != logWriter)
+                    {
+                        logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
+                        logWriter.Flush();
+                    }
                     this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
                     this.richTextBoxCloseProcesses.Lines = runningApps;
                     this.labelCountdownMessage.Text = countdownClose;
@@ -330,7 +334,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    logWriter?.WriteLine("Previously detected running processes are no longer running.");
+                    if (null != logWriter)
+                    {
+                        logWriter.Write("Previously detected running processes are no longer running.");
+                        logWriter.Flush();
+                    }
                     this.toolTipButtonContinue.RemoveAll();
                     this.labelCountdownMessage.Text = countdownDefer;
                     this.flowLayoutPanelCloseApps.Visible = false;
@@ -400,6 +408,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <remarks>This field holds a reference to a <see cref="StreamWriter"/> instance, which is used
         /// to write log entries. If <c>null</c>, logging operations may be disabled or unavailable.</remarks>
-        private readonly StreamWriter? logWriter;
+        private readonly BinaryWriter? logWriter;
     }
 }

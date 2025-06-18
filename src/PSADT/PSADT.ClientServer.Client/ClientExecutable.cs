@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
@@ -242,168 +243,193 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (StreamWriter outputWriter = new(outputPipeClient) { AutoFlush = true })
-                using (StreamReader inputReader = new(inputPipeClient))
-                using (StreamWriter logWriter = new(logPipeClient) { AutoFlush = true })
+                using (BinaryWriter outputWriter = new(outputPipeClient, Encoding.UTF8, true))
+                using (BinaryReader inputReader = new(inputPipeClient, Encoding.UTF8, true))
+                using (BinaryWriter logWriter = new(logPipeClient, Encoding.UTF8, true))
                 {
                     // Initialize variables needed throughout the loop.
                     CloseAppsDialogState closeAppsDialogState = default!;
-                    string? line;
 
                     // Continuously loop until the end. When we receive null, the
                     // server has closed the pipe, so we should break and exit.
-                    while ((line = inputReader.ReadLine()) != null)
+                    while (true)
                     {
-                        // We never let an exception kill the pipe.
                         try
                         {
                             // Split the line on the pipe operator, it's our delimiter for args. We don't
                             // use a switch here so it's easier to break the while loop if we're exiting.
-                            var parts = line.Split(CommonUtilities.ArgumentSeparator);
-                            if (parts[0] == "InitCloseAppsDialog")
-                            {
-                                // Deserialize the process definitions if we have them, then right back that we were successful.
-                                closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
-                                outputWriter.WriteLine(true);
-                            }
-                            else if (parts[0] == "PromptToCloseApps")
-                            {
-                                // Confirm the length of our parts showing the dialog and writing back the result.
-                                if (parts.Length != 2)
-                                {
-                                    throw new ClientException("The PromptToCloseApps command requires exactly one argument: PromptToCloseTimeout.", ClientExitCode.InvalidArguments);
-                                }
-                                var promptToCloseTimeout = TimeSpan.Parse(parts[1]);
+                            var parts = inputReader.ReadString().Split(CommonUtilities.ArgumentSeparator);
 
-                                // Process each running app.
-                                if (null == closeAppsDialogState.RunningProcessService)
+                            // Process the command in the first part. We never let an exception here kill the pipe.
+                            try
+                            {
+                                if (parts[0] == "InitCloseAppsDialog")
                                 {
-                                    throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
+                                    // Deserialize the process definitions if we have them, then right back that we were successful.
+                                    closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
                                 }
+                                else if (parts[0] == "PromptToCloseApps")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ClientException("The PromptToCloseApps command requires exactly one argument: PromptToCloseTimeout.", ClientExitCode.InvalidArguments);
+                                    }
+                                    var promptToCloseTimeout = TimeSpan.Parse(parts[1]);
 
-                                // Perform the operation to prompt the user to close apps and write back that we were successful.
-                                PromptToCloseApps(closeAppsDialogState.RunningProcessService.RunningProcesses, promptToCloseTimeout, logWriter);
-                                outputWriter.WriteLine(true);
-                            }
-                            else if (parts[0] == "ShowModalDialog")
-                            {
-                                // Confirm the length of our parts showing the dialog and writing back the result.
-                                if (parts.Length != 4)
-                                {
-                                    throw new ClientException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ClientExitCode.InvalidArguments);
-                                }
-                                outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
-                            }
-                            else if (parts[0] == "ShowProgressDialog")
-                            {
-                                // Confirm the length of our parts showing the dialog and writing back the result.
-                                if (parts.Length != 3)
-                                {
-                                    throw new ClientException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and Options.", ClientExitCode.InvalidArguments);
-                                }
+                                    // Process each running app.
+                                    if (null == closeAppsDialogState.RunningProcessService)
+                                    {
+                                        throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
+                                    }
 
-                                // Confirm the DialogStyle is valid.
-                                if (!Enum.TryParse(parts[1], true, out DialogStyle dialogStyle))
-                                {
-                                    throw new ClientException($"The specified DialogStyle of [{parts[1]}] is invalid.", ClientExitCode.InvalidDialogStyle);
+                                    // Perform the operation to prompt the user to close apps and write back that we were successful.
+                                    PromptToCloseApps(closeAppsDialogState.RunningProcessService.RunningProcesses, promptToCloseTimeout, logWriter);
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
                                 }
+                                else if (parts[0] == "ShowModalDialog")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 4)
+                                    {
+                                        throw new ClientException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ClientExitCode.InvalidArguments);
+                                    }
+                                    outputWriter.Write(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "ShowProgressDialog")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 3)
+                                    {
+                                        throw new ClientException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and Options.", ClientExitCode.InvalidArguments);
+                                    }
 
-                                // Show the progress dialog and write back that we were successful.
-                                DialogManager.ShowProgressDialog(dialogStyle, DeserializeString<ProgressDialogOptions>(parts[2]));
-                                outputWriter.WriteLine(DialogManager.ProgressDialogOpen());
-                            }
-                            else if (parts[0] == "ProgressDialogOpen")
-                            {
-                                // Directly write the state of the progress dialog to the output pipe.
-                                outputWriter.WriteLine(DialogManager.ProgressDialogOpen());
-                            }
-                            else if (parts[0] == "UpdateProgressDialog")
-                            {
-                                // Confirm the length of our parts showing the dialog and writing back the result.
-                                if (parts.Length != 5)
-                                {
-                                    throw new ClientException("The UpdateProgressDialog command requires exactly four arguments: ProgressMessage, ProgressDetailMessage, ProgressPercentage, and MessageAlignment.", ClientExitCode.InvalidArguments);
-                                }
+                                    // Confirm the DialogStyle is valid.
+                                    if (!Enum.TryParse(parts[1], true, out DialogStyle dialogStyle))
+                                    {
+                                        throw new ClientException($"The specified DialogStyle of [{parts[1]}] is invalid.", ClientExitCode.InvalidDialogStyle);
+                                    }
 
-                                // Update the progress dialog with the provided parameters.
-                                DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3]) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
-                                outputWriter.WriteLine(true);
-                            }
-                            else if (parts[0] == "CloseProgressDialog")
-                            {
-                                // Close the progress dialog and write back that we were successful.
-                                DialogManager.CloseProgressDialog();
-                                outputWriter.WriteLine(!DialogManager.ProgressDialogOpen());
-                            }
-                            else if (parts[0] == "ShowBalloonTip")
-                            {
-                                // Confirm we have a valid number of arguments before calling ShowBalloonTip().
-                                if (parts.Length != 2)
-                                {
-                                    throw new ClientException("The ShowBalloonTip command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
+                                    // Show the progress dialog and write back that we were successful.
+                                    DialogManager.ShowProgressDialog(dialogStyle, DeserializeString<ProgressDialogOptions>(parts[2]));
+                                    outputWriter.Write(DialogManager.ProgressDialogOpen().ToString());
+                                    outputWriter.Flush();
                                 }
-                                outputWriter.WriteLine(ShowBalloonTip(new Dictionary<string, string> { { "Options", parts[1] } }));
-                            }
-                            else if (parts[0] == "MinimizeAllWindows")
-                            {
-                                // Minimize all windows and write back that we were successful.
-                                ShellUtilities.MinimizeAllWindows();
-                                outputWriter.WriteLine(true);
-                            }
-                            else if (parts[0] == "RestoreAllWindows")
-                            {
-                                // Restore all windows and write back that we were successful.
-                                ShellUtilities.RestoreAllWindows();
-                                outputWriter.WriteLine(true);
-                            }
-                            else if (parts[0] == "SendKeys")
-                            {
-                                // Confirm the length of our parts showing the dialog and writing back the result.
-                                if (parts.Length != 2)
+                                else if (parts[0] == "ProgressDialogOpen")
                                 {
-                                    throw new ClientException("The SendKeys command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
+                                    // Directly write the state of the progress dialog to the output pipe.
+                                    outputWriter.Write(DialogManager.ProgressDialogOpen().ToString());
+                                    outputWriter.Flush();
                                 }
-                                outputWriter.WriteLine(SendKeys(new Dictionary<string, string> { { "Options", parts[1] } }));
-                            }
-                            else if (parts[0] == "GetProcessWindowInfo")
-                            {
-                                // Confirm we have a valid number of arguments before calling GetProcessWindowInfo().
-                                if (parts.Length != 2)
+                                else if (parts[0] == "UpdateProgressDialog")
                                 {
-                                    throw new ClientException("The GetProcessWindowInfo command requires exactly one argument: WindowInfoOptions.", ClientExitCode.InvalidArguments);
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 5)
+                                    {
+                                        throw new ClientException("The UpdateProgressDialog command requires exactly four arguments: ProgressMessage, ProgressDetailMessage, ProgressPercentage, and MessageAlignment.", ClientExitCode.InvalidArguments);
+                                    }
+
+                                    // Update the progress dialog with the provided parameters.
+                                    DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3]) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
                                 }
-                                outputWriter.WriteLine(GetProcessWindowInfo(new Dictionary<string, string> { { "Options", parts[1] } }));
+                                else if (parts[0] == "CloseProgressDialog")
+                                {
+                                    // Close the progress dialog and write back that we were successful.
+                                    DialogManager.CloseProgressDialog();
+                                    outputWriter.Write((!DialogManager.ProgressDialogOpen()).ToString());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "ShowBalloonTip")
+                                {
+                                    // Confirm we have a valid number of arguments before calling ShowBalloonTip().
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ClientException("The ShowBalloonTip command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
+                                    }
+                                    outputWriter.Write(ShowBalloonTip(new Dictionary<string, string> { { "Options", parts[1] } }).ToString());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "MinimizeAllWindows")
+                                {
+                                    // Minimize all windows and write back that we were successful.
+                                    ShellUtilities.MinimizeAllWindows();
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "RestoreAllWindows")
+                                {
+                                    // Restore all windows and write back that we were successful.
+                                    ShellUtilities.RestoreAllWindows();
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "SendKeys")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ClientException("The SendKeys command requires exactly one argument: Options.", ClientExitCode.InvalidArguments);
+                                    }
+                                    outputWriter.Write(SendKeys(new Dictionary<string, string> { { "Options", parts[1] } }).ToString());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "GetProcessWindowInfo")
+                                {
+                                    // Confirm we have a valid number of arguments before calling GetProcessWindowInfo().
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ClientException("The GetProcessWindowInfo command requires exactly one argument: WindowInfoOptions.", ClientExitCode.InvalidArguments);
+                                    }
+                                    outputWriter.Write(GetProcessWindowInfo(new Dictionary<string, string> { { "Options", parts[1] } }));
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
+                                {
+                                    // Refresh the desktop and environment variables. This will write out true upon success.
+                                    outputWriter.Write(RefreshDesktopAndEnvironmentVariables());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "GetUserNotificationState")
+                                {
+                                    // Get the user notification state and write it back to the output pipe.
+                                    outputWriter.Write(GetUserNotificationState());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "Open")
+                                {
+                                    // Write that we're good to go.
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
+                                }
+                                else if (parts[0] == "Close")
+                                {
+                                    // Indicate that we're going to terminate.
+                                    outputWriter.Write(true.ToString());
+                                    outputWriter.Flush();
+                                    break;
+                                }
+                                else
+                                {
+                                    // We don't have the supporting code for the specified command.
+                                    throw new ClientException($"The specified command [{parts[0]}] is not recognised.", ClientExitCode.InvalidArguments);
+                                }
                             }
-                            else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
+                            catch (Exception ex)
                             {
-                                // Refresh the desktop and environment variables. This will write out true upon success.
-                                outputWriter.WriteLine(RefreshDesktopAndEnvironmentVariables());
-                            }
-                            else if (parts[0] == "GetUserNotificationState")
-                            {
-                                // Get the user notification state and write it back to the output pipe.
-                                outputWriter.WriteLine(GetUserNotificationState());
-                            }
-                            else if (parts[0] == "Open")
-                            {
-                                // Write that we're good to go.
-                                outputWriter.WriteLine(true);
-                            }
-                            else if (parts[0] == "Close")
-                            {
-                                // Indicate that we're going to terminate.
-                                outputWriter.WriteLine(true); break;
-                            }
-                            else
-                            {
-                                // We don't have the supporting code for the specified command.
-                                throw new ClientException($"The specified command [{parts[0]}] is not recognised.", ClientExitCode.InvalidArguments);
+                                // Something we weren't expecting occurred. We should never get here.
+                                outputWriter.Write($"Error{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString((object)ex)}");
+                                outputWriter.Flush();
                             }
                         }
-                        catch (Exception ex)
+                        catch (EndOfStreamException)
                         {
-                            // Something we weren't expecting occurred. We should never get here.
-                            outputWriter.WriteLine($"Error{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString((object)ex)}");
+                            break;
                         }
                     }
                 }
@@ -586,7 +612,7 @@ namespace PSADT.ClientServer
         /// <param name="promptToCloseTimeout">The maximum duration to wait for a user to save their work and close the application's windows, specified as
         /// a <see cref="TimeSpan"/>.</param>
         /// <param name="logWriter">A <see cref="StreamWriter"/> used to log the actions and results of the method.</param>
-        private static void PromptToCloseApps(IReadOnlyList<RunningProcess> runningProcesses, TimeSpan promptToCloseTimeout, StreamWriter logWriter)
+        private static void PromptToCloseApps(IReadOnlyList<RunningProcess> runningProcesses, TimeSpan promptToCloseTimeout, BinaryWriter logWriter)
         {
             foreach (var runningApp in runningProcesses)
             {
@@ -600,14 +626,16 @@ namespace PSADT.ClientServer
                         try
                         {
                             // Try to bring the window to the front before closing. This doesn't always work.
-                            logWriter.WriteLine($"Stopping process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] and prompt to save if there is work to be saved (timeout in [{promptToCloseTimeout}] seconds)...");
+                            logWriter.Write($"Stopping process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] and prompt to save if there is work to be saved (timeout in [{promptToCloseTimeout}] seconds)...");
+                            logWriter.Flush();
                             try
                             {
                                 WindowTools.BringWindowToFront(window.WindowHandle);
                             }
                             catch (Exception ex)
                             {
-                                logWriter.WriteLine($"2{CommonUtilities.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
+                                logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
+                                logWriter.Flush();
                             }
 
                             // Close out the main window and spin until completion.
@@ -630,27 +658,32 @@ namespace PSADT.ClientServer
                                 // Test whether we succeeded.
                                 if (openWindow.Count > 0)
                                 {
-                                    logWriter.WriteLine($"2{CommonUtilities.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
+                                    logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
+                                    logWriter.Flush();
                                 }
                                 else
                                 {
-                                    logWriter.WriteLine($"Window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}] was successfully closed.");
+                                    logWriter.Write($"Window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}] was successfully closed.");
+                                    logWriter.Flush();
                                 }
                             }
                             else
                             {
-                                logWriter.WriteLine($"3{CommonUtilities.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
+                                logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
+                                logWriter.Flush();
                             }
                         }
                         catch (Exception ex)
                         {
-                            logWriter.WriteLine($"3{CommonUtilities.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
+                            logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
+                            logWriter.Flush();
                         }
                     }
                 }
                 else
                 {
-                    logWriter.WriteLine($"Stopping process {runningApp.Process.ProcessName}...");
+                    logWriter.Write($"Stopping process {runningApp.Process.ProcessName}...");
+                    logWriter.Flush();
                     runningApp.Process.Kill();
                 }
             }

@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
-        internal CloseAppsDialogState(ProcessDefinition[]? closeProcesses, StreamWriter? logWriter)
+        internal CloseAppsDialogState(ProcessDefinition[]? closeProcesses, BinaryWriter? logWriter)
         {
             // Only initialise these variables if they're not null.
             if (closeProcesses?.Length > 0)
@@ -43,7 +43,7 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <remarks>This field is intended for internal use only and may be null if logging is disabled
         /// or not configured.</remarks>
-        internal readonly StreamWriter? LogWriter;
+        internal readonly BinaryWriter? LogWriter;
 
         /// <summary>
         /// A stopwatch used to track the remaining time for a countdown operation.

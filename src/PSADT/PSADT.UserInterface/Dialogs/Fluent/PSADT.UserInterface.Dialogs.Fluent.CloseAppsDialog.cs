@@ -208,7 +208,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
-                _logWriter?.WriteLine($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
+                if (null != _logWriter)
+                {
+                    _logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
+                    _logWriter.Flush();
+                }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 CloseAppsSeparator.Visibility = Visibility.Visible;
@@ -227,7 +231,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else
             {
-                _logWriter?.WriteLine("Previously detected running processes are no longer running.");
+                if (null != _logWriter)
+                {
+                    _logWriter.Write("Previously detected running processes are no longer running.");
+                    _logWriter.Flush();
+                }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
@@ -426,7 +434,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <remarks>This field is used internally to write log messages to a stream. It may be null if
         /// logging is disabled or the stream has not been initialized.</remarks>
-        private readonly StreamWriter? _logWriter;
+        private readonly BinaryWriter? _logWriter;
 
         /// <summary>
         /// Whether this window has been disposed.

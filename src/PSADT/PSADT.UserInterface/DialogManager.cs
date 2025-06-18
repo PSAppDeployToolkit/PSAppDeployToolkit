@@ -46,7 +46,8 @@ namespace PSADT.UserInterface
                 var procsRunning = state.RunningProcessService?.ProcessesToClose;
                 if (procsRunning?.Count > 0)
                 {
-                    state.LogWriter.WriteLine($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...");
+                    state.LogWriter.Write($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...");
+                    state.LogWriter.Flush();
                 }
 
                 // Announce the current countdown information.
@@ -59,11 +60,13 @@ namespace PSADT.UserInterface
                     }
                     if (procsRunning?.Count > 0)
                     {
-                        state.LogWriter.WriteLine($"Close applications countdown has [{elapsed}] seconds remaining.");
+                        state.LogWriter.Write($"Close applications countdown has [{elapsed}] seconds remaining.");
+                        state.LogWriter.Flush();
                     }
                     else
                     {
-                        state.LogWriter.WriteLine($"Countdown has [{elapsed}] seconds remaining.");
+                        state.LogWriter.Write($"Countdown has [{elapsed}] seconds remaining.");
+                        state.LogWriter.Flush();
                     }
                 }
             }
@@ -77,13 +80,16 @@ namespace PSADT.UserInterface
                 switch (result)
                 {
                     case CloseAppsDialogResult.Close:
-                        state.LogWriter.WriteLine("Close application(s) countdown timer has elapsed. Force closing application(s).");
+                        state.LogWriter.Write("Close application(s) countdown timer has elapsed. Force closing application(s).");
+                        state.LogWriter.Flush();
                         break;
                     case CloseAppsDialogResult.Defer:
-                        state.LogWriter.WriteLine("Countdown timer has elapsed and deferrals remaining. Force deferral.");
+                        state.LogWriter.Write("Countdown timer has elapsed and deferrals remaining. Force deferral.");
+                        state.LogWriter.Flush();
                         break;
                     case CloseAppsDialogResult.Continue:
-                        state.LogWriter.WriteLine("Countdown timer has elapsed and no processes running. Force continue.");
+                        state.LogWriter.Write("Countdown timer has elapsed and no processes running. Force continue.");
+                        state.LogWriter.Flush();
                         break;
                 }
             }

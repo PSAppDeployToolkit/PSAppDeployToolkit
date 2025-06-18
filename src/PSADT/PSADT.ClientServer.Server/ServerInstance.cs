@@ -55,12 +55,12 @@ namespace PSADT.ClientServer
         {
             // Initialize the anonymous pipe streams for inter-process communication.
             Username = user ?? throw new ArgumentNullException(nameof(user), "User cannot be null.");
-            _outputPipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
-            _inputPipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
-            _logPipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
-            _outputStreamWriter = new StreamWriter(_outputPipeServer) { AutoFlush = true };
-            _inputStreamReader = new StreamReader(_inputPipeServer);
-            _logStreamReader = new StreamReader(_logPipeServer);
+            _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
+            _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
+            _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
+            _outputWriter = new(_outputServer, Encoding.UTF8, true);
+            _inputReader = new(_inputServer, Encoding.UTF8, true);
+            _logReader = new(_logServer, Encoding.UTF8, true);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace PSADT.ClientServer
             // Start the server to listen for incoming connections and process data.
             _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
                 _assemblyLocation,
-                ["/ClientServer", "-InputPipe", _outputPipeServer.GetClientHandleAsString(), "-OutputPipe", _inputPipeServer.GetClientHandleAsString(), "-LogPipe", _logPipeServer.GetClientHandleAsString()],
+                ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
                 null,
                 Username,
                 false,
@@ -94,9 +94,9 @@ namespace PSADT.ClientServer
                 _clientProcessCts.Token,
                 false
             ));
-            _outputPipeServer.DisposeLocalCopyOfClientHandle();
-            _inputPipeServer.DisposeLocalCopyOfClientHandle();
-            _logPipeServer.DisposeLocalCopyOfClientHandle();
+            _outputServer.DisposeLocalCopyOfClientHandle();
+            _inputServer.DisposeLocalCopyOfClientHandle();
+            _logServer.DisposeLocalCopyOfClientHandle();
 
             // Confirm the client starts and is ready to receive commands.
             if (!Invoke("Open"))
@@ -338,7 +338,8 @@ namespace PSADT.ClientServer
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            _outputWriter.Write($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            _outputWriter.Flush();
             return DataContractSerialization.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
         }
 
@@ -365,7 +366,8 @@ namespace PSADT.ClientServer
         public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
             _logSource = "Get-ADTUserNotificationState";
-            _outputStreamWriter.WriteLine("GetUserNotificationState");
+            _outputWriter.Write("GetUserNotificationState");
+            _outputWriter.Flush();
             return DataContractSerialization.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadInput());
         }
 
@@ -418,7 +420,8 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
                 _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
             };
-            _outputStreamWriter.WriteLine($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            _outputWriter.Write($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            _outputWriter.Flush();
             return DataContractSerialization.DeserializeFromString<TResult>(ReadInput());
         }
 
@@ -487,22 +490,22 @@ namespace PSADT.ClientServer
                 }
 
                 // Kill all input.
-                _inputStreamReader.Dispose();
-                _inputStreamReader = null!;
-                _inputPipeServer.Dispose();
-                _inputPipeServer = null!;
+                _inputReader.Dispose();
+                _inputReader = null!;
+                _inputServer.Dispose();
+                _inputServer = null!;
 
                 // Kill all output.
-                _outputStreamWriter.Dispose();
-                _outputStreamWriter = null!;
-                _outputPipeServer.Dispose();
-                _outputPipeServer = null!;
+                _outputWriter.Dispose();
+                _outputWriter = null!;
+                _outputServer.Dispose();
+                _outputServer = null!;
 
                 // Kill all logging.
-                _logStreamReader.Dispose();
-                _logStreamReader = null!;
-                _logPipeServer.Dispose();
-                _logPipeServer = null!;
+                _logReader.Dispose();
+                _logReader = null!;
+                _logServer.Dispose();
+                _logServer = null!;
             }
             _disposed = true;
         }
@@ -514,7 +517,8 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the server's response indicates success; otherwise, <see langword="false"/>.</returns>
         private bool Invoke(string command)
         {
-            _outputStreamWriter.WriteLine(command);
+            _outputWriter.Write(command);
+            _outputWriter.Flush();
             return bool.Parse(ReadInput());
         }
 
@@ -525,10 +529,18 @@ namespace PSADT.ClientServer
         /// <exception cref="InvalidDataException">Thrown if the input stream is unexpectedly closed or no data is available to read.</exception>
         private string ReadInput()
         {
-            var response = _inputStreamReader.ReadLine();
-            if (string.IsNullOrWhiteSpace(response))
+            string response;
+            try
             {
-                throw new InvalidDataException("The client process returned a null response.");
+                response = _inputReader.ReadString();
+            }
+            catch (EndOfStreamException ex)
+            {
+                throw new InvalidDataException("The input stream was unexpectedly closed or no data is available to read.", ex);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidDataException("An error occurred while reading from the input stream.", ex);
             }
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
             {
@@ -545,21 +557,35 @@ namespace PSADT.ClientServer
         private void ReadLog()
         {
             // Read the log stream until cancellation is requested or the end of the stream is reached.
-            string? line; while (!_logWriterTaskCts.IsCancellationRequested && (line = _logStreamReader.ReadLine()) != null)
+            while (!_logWriterTaskCts.IsCancellationRequested)
             {
-                // Only log the message if a deployment session is active.
-                if (ModuleDatabase.IsDeploymentSessionActive())
+                try
                 {
-                    // Test the line for a log severity.
-                    if (line.Contains(CommonUtilities.ArgumentSeparator.ToString()))
+                    // Only log the message if a deployment session is active.
+                    string line = _logReader.ReadString();
+                    if (ModuleDatabase.IsDeploymentSessionActive())
                     {
-                        var parts = line.Split(CommonUtilities.ArgumentSeparator);
-                        ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0]), _logSource);
+                        // Test the line for a log severity.
+                        if (line.Contains(CommonUtilities.ArgumentSeparator.ToString()))
+                        {
+                            var parts = line.Split(CommonUtilities.ArgumentSeparator);
+                            ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0]), _logSource);
+                        }
+                        else
+                        {
+                            ModuleDatabase.GetDeploymentSession().WriteLogEntry(line.Trim(), _logSource);
+                        }
                     }
-                    else
-                    {
-                        ModuleDatabase.GetDeploymentSession().WriteLogEntry(line.Trim(), _logSource);
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // The log writer task was cancelled, exit the loop.
+                    break;
+                }
+                catch (EndOfStreamException)
+                {
+                    // The log writer task reached the end of the stream, exit the loop.
+                    break;
                 }
             }
         }
@@ -590,7 +616,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used to manage the server stream for logging purposes. It provides a
         /// communication channel between processes, allowing data to be sent from the server to a connected
         /// client.</remarks>
-        private AnonymousPipeServerStream _logPipeServer;
+        private AnonymousPipeServerStream _logServer;
 
         /// <summary>
         /// Represents a server-side anonymous pipe stream for reading data.
@@ -598,7 +624,7 @@ namespace PSADT.ClientServer
         /// <remarks>This pipe stream is initialized with an input direction and inheritable handle
         /// settings, allowing it to be used for inter-process communication where the handle can be passed to a child
         /// process.</remarks>
-        private AnonymousPipeServerStream _inputPipeServer;
+        private AnonymousPipeServerStream _inputServer;
 
         /// <summary>
         /// Represents the server side of an anonymous pipe used for interprocess communication.
@@ -606,26 +632,26 @@ namespace PSADT.ClientServer
         /// <remarks>This pipe server is initialized with an output direction and allows the handle to be
         /// inherited by child processes. It is typically used to send data from the current process to another
         /// process.</remarks>
-        private AnonymousPipeServerStream _outputPipeServer;
+        private AnonymousPipeServerStream _outputServer;
 
         /// <summary>
         /// Represents the stream reader used to read log data.
         /// </summary>
         /// <remarks>This field is intended for internal use and provides access to the underlying stream
         /// for reading log information. It is not exposed publicly.</remarks>
-        private StreamReader _logStreamReader;
+        private BinaryReader _logReader;
 
         /// <summary>
         /// Represents the <see cref="StreamReader"/> used to read input data from a stream.
         /// </summary>
         /// <remarks>This field is read-only and is intended for internal use to process input streams.</remarks>
-        private StreamReader _inputStreamReader;
+        private BinaryReader _inputReader;
 
         /// <summary>
         /// Represents the output stream writer used for writing data to a stream.
         /// </summary>
         /// <remarks>This field is read-only and is intended to be used internally for managing output operations.</remarks>
-        private StreamWriter _outputStreamWriter;
+        private BinaryWriter _outputWriter;
 
         /// <summary>
         /// Represents an asynchronous operation that retrieves the result of a client process.
