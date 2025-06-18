@@ -64,19 +64,19 @@
     <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.AbortableDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.CloseAppsDialog.cs">
+    <Compile Update="Dialogs\Classic\CloseAppsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.CustomDialog.cs">
+    <Compile Update="Dialogs\Classic\CustomDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.InputDialog.cs">
+    <Compile Update="Dialogs\Classic\InputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.ProgressDialog.cs">
+    <Compile Update="Dialogs\Classic\ProgressDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.RestartDialog.cs">
+    <Compile Update="Dialogs\Classic\RestartDialog.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

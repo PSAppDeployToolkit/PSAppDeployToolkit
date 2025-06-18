@@ -1,4 +1,4 @@
-﻿namespace PSADT.ClientServer.Launcher
+﻿namespace PSADT.ClientServer
 {
     /// <summary>
     /// Provides the main entry point for the application.
@@ -7,7 +7,7 @@
     /// process using the current assembly's location (with ".Launcher" removed from the file name) and passes the
     /// provided command-line arguments to it. The process is configured to run without creating a new window and does
     /// not use the shell to execute.</remarks>
-    internal static class Program
+    internal static class ClientLauncher
     {
         /// <summary>
         /// The main entry point for the application.

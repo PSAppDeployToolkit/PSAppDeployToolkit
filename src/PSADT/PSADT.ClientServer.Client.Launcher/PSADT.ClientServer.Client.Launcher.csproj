@@ -10,7 +10,7 @@
     <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <Nullable>enable</Nullable>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
-    <RootNamespace>PSADT.ClientServer.Launcher</RootNamespace>
+    <RootNamespace>PSADT.ClientServer</RootNamespace>
     <AssemblyName>PSADT.ClientServer.Client.Launcher</AssemblyName>
     <Product>PSAppDeployToolkit Client/Server Client GUI Launcher</Product>
     <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
@@ -26,7 +26,7 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <WarningLevel>9999</WarningLevel>
-    <StartupObject>PSADT.ClientServer.Launcher.Program</StartupObject>
+    <StartupObject>PSADT.ClientServer.ClientLauncher</StartupObject>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
