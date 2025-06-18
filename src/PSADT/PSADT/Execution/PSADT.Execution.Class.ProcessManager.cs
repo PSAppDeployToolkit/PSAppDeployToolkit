@@ -195,10 +195,10 @@ namespace PSADT.Execution
                             }
                         }
                     }
-                    else if (launchInfo.UseUnelevatedToken && GetUnelevatedToken() is SafeFileHandle hPrimaryToken)
+                    else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
                     {
                         // We're running elevated but have been asked to de-elevate.
-                        using (hPrimaryToken)
+                        using (var hPrimaryToken = GetUnelevatedToken())
                         {
                             Kernel32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, launchInfo.CommandLine, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
@@ -397,12 +397,8 @@ namespace PSADT.Execution
         /// context.</remarks>
         /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the Explorer process, or <see
         /// langword="null"/> if the operation fails.</returns>
-        private static SafeFileHandle? GetUnelevatedToken()
+        private static SafeFileHandle GetUnelevatedToken()
         {
-            if (!AccountUtilities.CallerIsAdmin)
-            {
-                return null;
-            }
             using (var hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId()))
             {
                 AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
