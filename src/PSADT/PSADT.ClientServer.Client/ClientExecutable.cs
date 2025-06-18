@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
+using PSADT.Serialization;
 using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
@@ -402,7 +403,7 @@ namespace PSADT.ClientServer
                         catch (Exception ex)
                         {
                             // Something we weren't expecting occurred. We should never get here.
-                            outputWriter.WriteLine($"Error{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString((object)ex)}");
+                            outputWriter.WriteLine($"Error{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString((object)ex)}");
                         }
                     }
                 }
@@ -666,7 +667,7 @@ namespace PSADT.ClientServer
         {
             try
             {
-                return SerializationUtilities.DeserializeFromString<T>(input);
+                return DataContractSerialization.DeserializeFromString<T>(input);
             }
             catch (Exception ex)
             {
@@ -685,7 +686,7 @@ namespace PSADT.ClientServer
         {
             try
             {
-                return SerializationUtilities.SerializeToString(result);
+                return DataContractSerialization.SerializeToString(result);
             }
             catch (Exception ex)
             {

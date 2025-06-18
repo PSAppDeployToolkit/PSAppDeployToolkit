@@ -12,11 +12,11 @@ using PSADT.Execution;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
+using PSADT.Serialization;
 using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
-using PSADT.Utilities;
 using PSADT.WindowManagement;
 
 namespace PSADT.ClientServer
@@ -125,7 +125,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(ProcessDefinition[]? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(closeProcesses)}" : null)}");
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace PSADT.ClientServer
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
+            return Invoke($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace PSADT.ClientServer
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
             _logSource = "Show-ADTBalloonTip";
-            return Invoke($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
+            return Invoke($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -327,8 +327,8 @@ namespace PSADT.ClientServer
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
-            return SerializationUtilities.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
+            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            return DataContractSerialization.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace PSADT.ClientServer
         {
             _logSource = "Get-ADTUserNotificationState";
             _outputStreamWriter.WriteLine("GetUserNotificationState");
-            return SerializationUtilities.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadInput());
+            return DataContractSerialization.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadInput());
         }
 
         /// <summary>
@@ -407,8 +407,8 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
                 _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
             };
-            _outputStreamWriter.WriteLine($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
-            return SerializationUtilities.DeserializeFromString<TResult>(ReadInput());
+            _outputStreamWriter.WriteLine($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString(options)}");
+            return DataContractSerialization.DeserializeFromString<TResult>(ReadInput());
         }
 
         /// <summary>
@@ -521,7 +521,7 @@ namespace PSADT.ClientServer
             }
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
             {
-                throw new ServerException("The client process returned an exception.", SerializationUtilities.DeserializeFromString(response.Substring(6)));
+                throw new ServerException("The client process returned an exception.", DataContractSerialization.DeserializeFromString(response.Substring(6)));
             }
             return response;
         }

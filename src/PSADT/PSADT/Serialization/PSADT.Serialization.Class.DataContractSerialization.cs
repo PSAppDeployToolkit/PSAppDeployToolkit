@@ -5,13 +5,13 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
-namespace PSADT.Utilities
+namespace PSADT.Serialization
 {
     /// <summary>
     /// Provides utility methods for serializing and deserializing objects.
     /// </summary>
     /// <remarks>This class contains static methods for working with serialization, such as converting objects to XML strings. It is designed to simplify common serialization tasks and ensure consistent formatting.</remarks>
-    public static class SerializationUtilities
+    public static class DataContractSerialization
     {
         /// <summary>
         /// Serializes the specified object to a Base64-encoded XML string.

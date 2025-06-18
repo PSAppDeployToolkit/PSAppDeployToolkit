@@ -241,7 +241,7 @@ function Private:Invoke-ADTClientServerOperation
         $null = $PSBoundParameters.Remove('User')
         if ($PSBoundParameters.ContainsKey('Options'))
         {
-            $PSBoundParameters.Options = [PSADT.Utilities.SerializationUtilities]::SerializeToString($Options)
+            $PSBoundParameters.Options = [PSADT.Serialization.DataContractSerialization]::SerializeToString($Options)
         }
 
         # Set up the parameters for Start-ADTProcessAsUser.
@@ -319,7 +319,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Deserialise the result for returning to the caller.
-        $result = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $return.StdOut))
+        $result = [PSADT.Serialization.DataContractSerialization]::DeserializeFromString([System.String]::Join([System.String]::Empty, $return.StdOut))
     }
 
     # Test that the received result is valid and expected.
