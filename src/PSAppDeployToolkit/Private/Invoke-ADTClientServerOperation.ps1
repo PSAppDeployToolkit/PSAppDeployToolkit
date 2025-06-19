@@ -247,7 +247,6 @@ function Private:Invoke-ADTClientServerOperation
         # Set up the parameters for Start-ADTProcessAsUser.
         $sapauParams = @{
             Username = $User.NTAccount
-            FilePath = "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe"
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             MsiExecWaitTime = 1
             CreateNoWindow = $true
@@ -259,12 +258,12 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ($NoWait)
             {
-                Start-ADTProcessAsUser @sapauParams -NoWait
+                Start-ADTProcessAsUser @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait
                 return
             }
             else
             {
-                Start-ADTProcessAsUser @sapauParams -PassThru
+                Start-ADTProcessAsUser @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -PassThru
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]
