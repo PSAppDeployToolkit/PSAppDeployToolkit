@@ -414,7 +414,7 @@ namespace PSADT.ClientServer
                             catch (Exception ex)
                             {
                                 // Something we weren't expecting occurred. We should never get here.
-                                WriteResult($"Error{CommonUtilities.ArgumentSeparator}{DataContractSerialization.SerializeToString((object)ex)}");
+                                WriteResult($"Error{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(ex)}");
                             }
                         }
                         catch (EndOfStreamException)
@@ -690,7 +690,7 @@ namespace PSADT.ClientServer
         {
             try
             {
-                return DataContractSerialization.DeserializeFromString<T>(input);
+                return JsonSerialization.DeserializeFromString<T>(input);
             }
             catch (Exception ex)
             {
@@ -709,7 +709,7 @@ namespace PSADT.ClientServer
         {
             try
             {
-                return DataContractSerialization.SerializeToString(result);
+                return JsonSerialization.SerializeToString(result);
             }
             catch (Exception ex)
             {

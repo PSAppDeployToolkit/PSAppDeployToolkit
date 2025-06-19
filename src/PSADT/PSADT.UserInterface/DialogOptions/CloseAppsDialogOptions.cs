@@ -1,28 +1,16 @@
 ﻿using System;
 using System.Collections;
-using System.Runtime.Serialization;
 using PSADT.Module;
-using PSADT.Serialization;
+using PSADT.UserInterface.Dialogs;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the CloseAppsDialog.
     /// </summary>
-    [DataContract]
     public sealed record CloseAppsDialogOptions : BaseOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="CloseAppsDialogOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static CloseAppsDialogOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.
         /// </summary>
@@ -106,76 +94,110 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class with the specified dialog
+        /// configuration options.
+        /// </summary>
+        /// <remarks>This constructor is primarily used for deserialization purposes and allows
+        /// customization of various dialog properties, including appearance, behavior, and timing settings. It is
+        /// marked as private to restrict direct instantiation.</remarks>
+        /// <param name="appTitle">The title of the application displayed in the dialog.</param>
+        /// <param name="subtitle">The subtitle text displayed below the application title in the dialog.</param>
+        /// <param name="appIconImage">The path or URI to the application's icon image used in the dialog.</param>
+        /// <param name="appIconDarkImage">The path or URI to the application's dark mode icon image used in the dialog.</param>
+        /// <param name="appBannerImage">The path or URI to the banner image displayed in the dialog.</param>
+        /// <param name="dialogPosition">The position of the dialog on the screen. If <see langword="null"/>, the default position is used.</param>
+        /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If <see langword="null"/>, the default behavior is
+        /// used.</param>
+        /// <param name="dialogTopMost">A value indicating whether the dialog should always appear on top of other windows.</param>
+        /// <param name="fluentAccentColor">The accent color used for Fluent design elements in the dialog. If <see langword="null"/>, the default
+        /// accent color is used.</param>
+        /// <param name="dialogExpiryDuration">The duration after which the dialog expires and closes automatically. If <see langword="null"/>, the dialog
+        /// does not expire.</param>
+        /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, persistence is disabled.</param>
+        /// <param name="strings">An object containing localized strings used in the dialog.</param>
+        /// <param name="deferralsRemaining">The number of deferrals remaining for the dialog. If <see langword="null"/>, deferrals are not tracked.</param>
+        /// <param name="deferralDeadline">The deadline by which all deferrals must be completed. If <see langword="null"/>, no deadline is enforced.</param>
+        /// <param name="unlimitedDeferrals">A value indicating whether the dialog allows unlimited deferrals.</param>
+        /// <param name="continueOnProcessClosure">A value indicating whether the dialog should continue to display even if the associated process is closed.</param>
+        /// <param name="countdownDuration">The duration of the countdown timer displayed in the dialog. If <see langword="null"/>, no countdown is
+        /// displayed.</param>
+        /// <param name="forcedCountdown">A value indicating whether the countdown timer is mandatory and cannot be skipped.</param>
+        /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
+        /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
+        [JsonConstructor]
+        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, DialogPosition? dialogPosition, bool? dialogAllowMove, bool dialogTopMost, int? fluentAccentColor, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogPosition, dialogAllowMove, dialogTopMost, fluentAccentColor, dialogExpiryDuration, dialogPersistInterval)
+        {
+            // Assign the values.
+            Strings = strings;
+            DeferralsRemaining = deferralsRemaining;
+            DeferralDeadline = deferralDeadline;
+            UnlimitedDeferrals = unlimitedDeferrals;
+            ContinueOnProcessClosure = continueOnProcessClosure;
+            CountdownDuration = countdownDuration;
+            ForcedCountdown = forcedCountdown;
+            HideCloseButton = hideCloseButton;
+            CustomMessageText = customMessageText;
+        }
+
+        /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly CloseAppsDialogStrings Strings;
 
         /// <summary>
         /// The number of deferrals remaining for the user.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly uint? DeferralsRemaining;
 
         /// <summary>
         /// The deadline for deferrals.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly DateTime? DeferralDeadline;
 
         /// <summary>
         /// Indicates whether the system allows an unlimited number of deferrals.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool UnlimitedDeferrals;
 
         /// <summary>
         /// Indicates whether the continue button should be implied when all processes have closed.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool ContinueOnProcessClosure;
 
         /// <summary>
         /// The duration of the countdown before the dialog automatically closes.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
         /// Specifies whether the countdown is "forced" or not (affects countdown decisions).
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool ForcedCountdown;
 
         /// <summary>
         /// Indicates whether the close button should be hidden.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool HideCloseButton;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string? CustomMessageText;
 
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
-        [DataContract]
         public sealed record CloseAppsDialogStrings
         {
-            /// <summary>
-            /// Initializes the <see cref="CloseAppsDialogStrings"/> class and registers it as a serializable type.
-            /// </summary>
-            /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogStrings"/> type is added
-            /// to the list of serializable types for data contract serialization. This allows instances of <see
-            /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-            static CloseAppsDialogStrings()
-            {
-                DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogStrings));
-            }
-
             /// <summary>
             /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class.
             /// </summary>
@@ -200,34 +222,38 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             /// <summary>
+            /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class with the specified classic
+            /// and fluent dialog strings.
+            /// </summary>
+            /// <param name="classicStrings">The strings used for the classic dialog style. Cannot be <see langword="null"/>.</param>
+            /// <param name="fluentStrings">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="classicStrings"/> or <paramref name="fluentStrings"/> is <see
+            /// langword="null"/>.</exception>
+            [JsonConstructor]
+            private CloseAppsDialogStrings(CloseAppsDialogClassicStrings classic, CloseAppsDialogFluentStrings fluent)
+            {
+                // Assign the values.
+                Classic = classic ?? throw new ArgumentNullException(nameof(classic), "Classic strings cannot be null.");
+                Fluent = fluent ?? throw new ArgumentNullException(nameof(fluent), "Fluent strings cannot be null.");
+            }
+
+            /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly CloseAppsDialogClassicStrings Classic;
 
             /// <summary>
             /// The strings used for the Fluent CloseAppsDialog.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly CloseAppsDialogFluentStrings Fluent;
 
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
-            [DataContract]
             public sealed record CloseAppsDialogClassicStrings
             {
-                /// <summary>
-                /// Initializes the <see cref="CloseAppsDialogClassicStrings"/> class and registers it as a serializable type.
-                /// </summary>
-                /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogClassicStrings"/> type is added
-                /// to the list of serializable types for data contract serialization. This allows instances of <see
-                /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-                static CloseAppsDialogClassicStrings()
-                {
-                    DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogClassicStrings));
-                }
-
                 /// <summary>
                 /// Initializes a new instance of the <see cref="CloseAppsDialogClassicStrings"/> class.
                 /// </summary>
@@ -302,95 +328,120 @@ namespace PSADT.UserInterface.DialogOptions
                 }
 
                 /// <summary>
+                /// Initializes a new instance of the <see cref="CloseAppsDialogClassicStrings"/> class with the
+                /// specified dialog strings.
+                /// </summary>
+                /// <remarks>This constructor is intended for use with JSON deserialization. It
+                /// allows the initialization of all dialog-related strings used in the classic close apps
+                /// dialog.</remarks>
+                /// <param name="welcomeMessage">The welcome message displayed at the start of the dialog.</param>
+                /// <param name="closeAppsMessage">The message prompting the user to close applications.</param>
+                /// <param name="expiryMessage">The message indicating the expiration of the dialog or action.</param>
+                /// <param name="deferralsRemaining">The message showing the number of deferrals remaining.</param>
+                /// <param name="deferralDeadline">The message indicating the deadline for deferrals.</param>
+                /// <param name="expiryWarning">The warning message displayed when the expiration is imminent.</param>
+                /// <param name="countdownDefer">The message displayed during the countdown for deferring the action.</param>
+                /// <param name="countdownClose">The message displayed during the countdown for closing applications.</param>
+                /// <param name="buttonClose">The label for the button used to close applications.</param>
+                /// <param name="buttonDefer">The label for the button used to defer the action.</param>
+                /// <param name="buttonContinue">The label for the button used to continue the process.</param>
+                /// <param name="buttonContinueTooltip">The tooltip text for the continue button, providing additional context or instructions.</param>
+                [JsonConstructor]
+                private CloseAppsDialogClassicStrings(string welcomeMessage, string closeAppsMessage, string expiryMessage, string deferralsRemaining, string deferralDeadline, string expiryWarning, string countdownDefer, string countdownClose, string buttonClose, string buttonDefer, string buttonContinue, string buttonContinueTooltip)
+                {
+                    // Assign the values.
+                    WelcomeMessage = welcomeMessage;
+                    CloseAppsMessage = closeAppsMessage;
+                    ExpiryMessage = expiryMessage;
+                    DeferralsRemaining = deferralsRemaining;
+                    DeferralDeadline = deferralDeadline;
+                    ExpiryWarning = expiryWarning;
+                    CountdownDefer = countdownDefer;
+                    CountdownClose = countdownClose;
+                    ButtonClose = buttonClose;
+                    ButtonDefer = buttonDefer;
+                    ButtonContinue = buttonContinue;
+                    ButtonContinueTooltip = buttonContinueTooltip;
+                }
+
+                /// <summary>
                 /// Text displayed when only the deferral dialog is to be displayed and there are no applications to close
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string WelcomeMessage;
 
                 /// <summary>
                 /// Text displayed when prompting to close running programs.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string CloseAppsMessage;
 
                 /// <summary>
                 /// Text displayed when a deferral option is available.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ExpiryMessage;
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string DeferralsRemaining;
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string DeferralDeadline;
 
                 /// <summary>
                 /// Text displayed after the deferral options.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ExpiryWarning;
 
                 /// <summary>
                 /// The countdown message displayed at the Welcome Screen to indicate when the deployment will continue if no response from user.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string CountdownDefer;
 
                 /// <summary>
                 /// Text displayed when counting down to automatically closing applications.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string CountdownClose;
 
                 /// <summary>
                 /// Text displayed on the close button when prompting to close running programs.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonClose;
 
                 /// <summary>
                 /// Text displayed on the defer button when prompting to close running programs
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonDefer;
 
                 /// <summary>
                 /// Text displayed on the continue button when prompting to close running programs.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonContinue;
 
                 /// <summary>
                 /// Tooltip text displayed on the continue button when prompting to close running programs.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonContinueTooltip;
             }
 
             /// <summary>
             /// Strings used for the Fluent CloseAppsDialog.
             /// </summary>
-            [DataContract]
             public sealed record CloseAppsDialogFluentStrings
             {
-                /// <summary>
-                /// Initializes the <see cref="CloseAppsDialogFluentStrings"/> class and registers it as a serializable type.
-                /// </summary>
-                /// <remarks>This static constructor ensures that the <see cref="CloseAppsDialogFluentStrings"/> type is added
-                /// to the list of serializable types for data contract serialization. This allows instances of <see
-                /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-                static CloseAppsDialogFluentStrings()
-                {
-                    DataContractSerialization.AddSerializableType(typeof(CloseAppsDialogFluentStrings));
-                }
-
                 /// <summary>
                 /// Initializes a new instance of the <see cref="CloseAppsDialogFluentStrings"/> class.
                 /// </summary>
@@ -445,51 +496,80 @@ namespace PSADT.UserInterface.DialogOptions
                 }
 
                 /// <summary>
+                /// Initializes a new instance of the <see cref="CloseAppsDialogFluentStrings"/> class with the
+                /// specified dialog text and button labels.
+                /// </summary>
+                /// <remarks>This constructor is marked with the <see
+                /// cref="JsonConstructorAttribute"/> to enable deserialization of the object from JSON. It is intended
+                /// for internal use and should not be called directly by external code.</remarks>
+                /// <param name="dialogMessage">The message displayed in the dialog when processes are detected.</param>
+                /// <param name="dialogMessageNoProcesses">The message displayed in the dialog when no processes are detected.</param>
+                /// <param name="automaticStartCountdown">The text representing the countdown timer for automatic start.</param>
+                /// <param name="deferralsRemaining">The text indicating the number of deferrals remaining.</param>
+                /// <param name="deferralDeadline">The text representing the deadline for deferrals.</param>
+                /// <param name="buttonLeftText">The text displayed on the left button when processes are detected.</param>
+                /// <param name="buttonRightText">The text displayed on the right button.</param>
+                /// <param name="buttonLeftNoProcessesText">The text displayed on the left button when no processes are detected.</param>
+                [JsonConstructor]
+                private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftNoProcessesText)
+                {
+                    // Assign the values.
+                    DialogMessage = dialogMessage;
+                    DialogMessageNoProcesses = dialogMessageNoProcesses;
+                    AutomaticStartCountdown = automaticStartCountdown;
+                    DeferralsRemaining = deferralsRemaining;
+                    DeferralDeadline = deferralDeadline;
+                    ButtonLeftText = buttonLeftText;
+                    ButtonRightText = buttonRightText;
+                    ButtonLeftTextNoProcesses = buttonLeftNoProcessesText;
+                }
+
+                /// <summary>
                 /// This is a message to prompt users to save their work.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string DialogMessage;
 
                 /// <summary>
                 /// This is a message to when there are no running processes available.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string DialogMessageNoProcesses;
 
                 /// <summary>
                 /// A string to describe the automatic start countdown.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string AutomaticStartCountdown;
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string DeferralsRemaining;
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string DeferralDeadline;
 
                 /// <summary>
                 /// This is a phrase used to describe the process of deferring a deploymen
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonLeftText;
 
                 /// <summary>
                 /// This is a phrase used to describe the process of closing applications and commencing the deployment.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonRightText;
 
                 /// <summary>
                 /// This is a phrase used to describe the process of commencing the deployment.
                 /// </summary>
-                [DataMember]
+                [JsonProperty]
                 public readonly string ButtonLeftTextNoProcesses;
             }
         }

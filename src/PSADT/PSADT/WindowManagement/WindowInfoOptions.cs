@@ -1,5 +1,4 @@
-﻿using System.Runtime.Serialization;
-using PSADT.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace PSADT.WindowManagement
 {
@@ -15,20 +14,8 @@ namespace PSADT.WindowManagement
     /// of the values in this array will be included. If null, no filtering by handle is applied.</param>
     /// <param name="parentProcessFilter">An array of strings specifying parent process names to match. Only windows associated with processes whose names
     /// match one of the strings in this array will be included. If null, no filtering by parent process is applied.</param>
-    [DataContract]
     public sealed record WindowInfoOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="WindowInfoOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="WindowInfoOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static WindowInfoOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(WindowInfoOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfoOptions"/> class with optional filters for window
         /// titles, handles, and parent processes.
@@ -39,6 +26,7 @@ namespace PSADT.WindowManagement
         /// filtering is applied based on window handles.</param>
         /// <param name="parentProcessFilter">An optional array of strings specifying parent process names to filter. If <see langword="null"/>, no
         /// filtering is applied based on parent processes.</param>
+        [JsonConstructor]
         public WindowInfoOptions(string[]? windowTitleFilter = null, nint[]? windowHandleFilter = null, string[]? parentProcessFilter = null)
         {
             WindowTitleFilter = windowTitleFilter;
@@ -49,7 +37,7 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the filter criteria for window titles.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string[]? WindowTitleFilter;
 
         /// <summary>
@@ -57,7 +45,7 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered.  If the array is <see langword="null"/>, no filtering is applied.</remarks>
-        [DataMember]
+        [JsonProperty]
         public readonly nint[]? WindowHandleFilter;
 
         /// <summary>
@@ -66,7 +54,7 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
         /// array is null or empty,  no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
-        [DataMember]
+        [JsonProperty]
         public readonly string[]? ParentProcessFilter;
     }
 }

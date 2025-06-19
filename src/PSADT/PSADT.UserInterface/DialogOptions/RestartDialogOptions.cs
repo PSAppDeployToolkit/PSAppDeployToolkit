@@ -1,28 +1,16 @@
 ﻿using System;
 using System.Collections;
-using System.Runtime.Serialization;
 using PSADT.Module;
-using PSADT.Serialization;
+using PSADT.UserInterface.Dialogs;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the RestartDialog.
     /// </summary>
-    [DataContract]
     public sealed record RestartDialogOptions : BaseOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="RestartDialogOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="RestartDialogOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static RestartDialogOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(RestartDialogOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class.
         /// </summary>
@@ -66,46 +54,70 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class with the specified configuration
+        /// options.
+        /// </summary>
+        /// <param name="appTitle">The title of the application displayed in the dialog.</param>
+        /// <param name="subtitle">The subtitle displayed in the dialog, providing additional context.</param>
+        /// <param name="appIconImage">The path or URI to the application's icon image used in the dialog.</param>
+        /// <param name="appIconDarkImage">The path or URI to the application's dark mode icon image used in the dialog.</param>
+        /// <param name="appBannerImage">The path or URI to the banner image displayed in the dialog.</param>
+        /// <param name="dialogPosition">The position of the dialog on the screen. If <see langword="null"/>, the default position is used.</param>
+        /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If <see langword="null"/>, the default behavior is
+        /// used.</param>
+        /// <param name="dialogTopMost">A value indicating whether the dialog should always appear on top of other windows.</param>
+        /// <param name="fluentAccentColor">The accent color used for Fluent design elements in the dialog. If <see langword="null"/>, the default
+        /// accent color is used.</param>
+        /// <param name="dialogExpiryDuration">The duration after which the dialog expires and closes automatically. If <see langword="null"/>, the dialog
+        /// does not expire.</param>
+        /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, the default interval is
+        /// used.</param>
+        /// <param name="strings">The localized strings used for dialog text and labels. Cannot be <see langword="null"/>.</param>
+        /// <param name="countdownDuration">The duration of the countdown timer displayed in the dialog. If <see langword="null"/>, no countdown timer
+        /// is displayed.</param>
+        /// <param name="countdownNoMinimizeDuration">The duration during which the countdown timer cannot be minimized. If <see langword="null"/>, the default
+        /// behavior is used.</param>
+        /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is displayed.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
+        [JsonConstructor]
+        private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, DialogPosition? dialogPosition, bool? dialogAllowMove, bool dialogTopMost, int? fluentAccentColor, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogPosition, dialogAllowMove, dialogTopMost, fluentAccentColor, dialogExpiryDuration, dialogPersistInterval)
+        {
+            // Nothing here is allowed to be null.
+            Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
+            CountdownDuration = countdownDuration;
+            CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
+            CustomMessageText = customMessageText;
+        }
+
+        /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly RestartDialogStrings Strings;
 
         /// <summary>
         /// The duration for which the countdown will be displayed.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
         /// The duration for which the countdown will be displayed without minimizing the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly TimeSpan? CountdownNoMinimizeDuration;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string? CustomMessageText;
 
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
-        [DataContract]
         public sealed record RestartDialogStrings
         {
-            /// <summary>
-            /// Initializes the <see cref="RestartDialogStrings"/> class and registers it as a serializable type.
-            /// </summary>
-            /// <remarks>This static constructor ensures that the <see cref="RestartDialogStrings"/> type is added
-            /// to the list of serializable types for data contract serialization. This allows instances of <see
-            /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-            static RestartDialogStrings()
-            {
-                DataContractSerialization.AddSerializableType(typeof(RestartDialogStrings));
-            }
-
             /// <summary>
             /// Initializes a new instance of the <see cref="RestartDialogStrings"/> class with the specified strings.
             /// </summary>
@@ -155,45 +167,71 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             /// <summary>
+            /// Initializes a new instance of the <see cref="RestartDialogStrings"/> class with the specified dialog
+            /// strings.
+            /// </summary>
+            /// <remarks>This constructor is marked as private and is intended for use with JSON
+            /// deserialization. It ensures that all required dialog strings are provided and valid.</remarks>
+            /// <param name="title">The title of the restart dialog. Cannot be <see langword="null"/>.</param>
+            /// <param name="message">The main message displayed in the restart dialog. Cannot be <see langword="null"/>.</param>
+            /// <param name="messageTime">The message indicating the time remaining before the restart. Cannot be <see langword="null"/>.</param>
+            /// <param name="messageRestart">The message displayed when the restart is imminent. Cannot be <see langword="null"/>.</param>
+            /// <param name="timeRemaining">The string representing the remaining time before the restart. Cannot be <see langword="null"/>.</param>
+            /// <param name="buttonRestartNow">The label for the "Restart Now" button. Cannot be <see langword="null"/>.</param>
+            /// <param name="buttonRestartLater">The label for the "Restart Later" button. Cannot be <see langword="null"/>.</param>
+            /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
+            [JsonConstructor]
+            private RestartDialogStrings(string title, string message, string messageTime, string messageRestart, string timeRemaining, string buttonRestartNow, string buttonRestartLater)
+            {
+                Title = title ?? throw new ArgumentNullException(nameof(title), "Title value is null or invalid.");
+                Message = message ?? throw new ArgumentNullException(nameof(message), "Message value is null or invalid.");
+                MessageTime = messageTime ?? throw new ArgumentNullException(nameof(messageTime), "MessageTime value is null or invalid.");
+                MessageRestart = messageRestart ?? throw new ArgumentNullException(nameof(messageRestart), "MessageRestart value is null or invalid.");
+                TimeRemaining = timeRemaining ?? throw new ArgumentNullException(nameof(timeRemaining), "TimeRemaining value is null or invalid.");
+                ButtonRestartNow = buttonRestartNow ?? throw new ArgumentNullException(nameof(buttonRestartNow), "ButtonRestartNow value is null or invalid.");
+                ButtonRestartLater = buttonRestartLater ?? throw new ArgumentNullException(nameof(buttonRestartLater), "ButtonRestartLater value is null or invalid.");
+            }
+
+            /// <summary>
             /// Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string Title;
 
             /// <summary>
             /// Text displayed when the device requires a restart.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string Message;
 
             /// <summary>
             /// Text displayed as a prefix to the time remaining, indicating that users should save their work, etc.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string MessageTime;
 
             /// <summary>
             /// Text displayed when indicating when the device will be restarted.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string MessageRestart;
 
             /// <summary>
             /// Text displayed to indicate the amount of time remaining until a restart will occur.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string TimeRemaining;
 
             /// <summary>
             /// Button text for when wanting to restart the device now.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string ButtonRestartNow;
 
             /// <summary>
             /// Button text for allowing the user to restart later.
             /// </summary>
-            [DataMember]
+            [JsonProperty]
             public readonly string ButtonRestartLater;
         }
     }

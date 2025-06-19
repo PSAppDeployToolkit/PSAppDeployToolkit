@@ -1,34 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
-using System.Runtime.Serialization;
-using PSADT.Serialization;
 using PSADT.UserInterface.Dialogs;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    [DataContract]
-    [KnownType(typeof(CloseAppsDialogOptions))]
-    [KnownType(typeof(CustomDialogOptions))]
-    [KnownType(typeof(InputDialogOptions))]
-    [KnownType(typeof(ProgressDialogOptions))]
-    [KnownType(typeof(RestartDialogOptions))]
     public abstract record BaseOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="BaseOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="BaseOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static BaseOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(BaseOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
@@ -128,69 +110,105 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified application settings
+        /// and dialog configuration.
+        /// </summary>
+        /// <remarks>This constructor is protected and intended for use by derived classes. It ensures
+        /// that essential application settings and dialog configurations are provided.</remarks>
+        /// <param name="appTitle">The title of the application. Cannot be null or empty.</param>
+        /// <param name="subtitle">The subtitle of the application. Cannot be null or empty.</param>
+        /// <param name="appIconImage">The path to the application's icon image. Cannot be null or empty.</param>
+        /// <param name="appIconDarkImage">The path to the application's dark mode icon image. Cannot be null or empty.</param>
+        /// <param name="appBannerImage">The path to the application's banner image. Cannot be null or empty.</param>
+        /// <param name="dialogPosition">The position of the dialog on the screen. If null, the default position is used.</param>
+        /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If null, the default behavior is used.</param>
+        /// <param name="dialogTopMost">Indicates whether the dialog should always appear on top of other windows. Defaults to <see
+        /// langword="true"/>.</param>
+        /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
+        /// <param name="dialogExpiryDuration">The duration after which the dialog expires. If null, the dialog does not expire.</param>
+        /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
+        /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
+        [JsonConstructor]
+        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool dialogTopMost = true, int? fluentAccentColor = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        {
+            AppTitle = appTitle ?? throw new ArgumentNullException(nameof(appTitle), "AppTitle cannot be null or empty.");
+            Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle), "Subtitle cannot be null or empty.");
+            AppIconImage = appIconImage ?? throw new ArgumentNullException(nameof(appIconImage), "AppIconImage cannot be null or empty.");
+            AppIconDarkImage = appIconDarkImage ?? throw new ArgumentNullException(nameof(appIconDarkImage), "AppIconDarkImage cannot be null or empty.");
+            AppBannerImage = appBannerImage ?? throw new ArgumentNullException(nameof(appBannerImage), "AppBannerImage cannot be null or empty.");
+            DialogPosition = dialogPosition;
+            DialogAllowMove = dialogAllowMove;
+            DialogTopMost = dialogTopMost;
+            FluentAccentColor = fluentAccentColor;
+            DialogExpiryDuration = dialogExpiryDuration;
+            DialogPersistInterval = dialogPersistInterval;
+        }
+
+        /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string AppTitle;
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string Subtitle;
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string AppIconImage;
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string AppIconDarkImage;
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string AppBannerImage;
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly DialogPosition? DialogPosition;
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool? DialogAllowMove;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool DialogTopMost;
 
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly int? FluentAccentColor;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly TimeSpan? DialogExpiryDuration;
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly TimeSpan? DialogPersistInterval;
     }
 }

@@ -1,28 +1,15 @@
 ﻿using System;
 using System.Collections;
-using System.Runtime.Serialization;
-using PSADT.Serialization;
 using PSADT.UserInterface.Dialogs;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the ProgressDialog.
     /// </summary>
-    [DataContract]
     public sealed record ProgressDialogOptions : BaseOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="ProgressDialogOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="ProgressDialogOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static ProgressDialogOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(ProgressDialogOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
         /// </summary>
@@ -63,27 +50,63 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class with specified options for
+        /// configuring a progress dialog.
+        /// </summary>
+        /// <param name="appTitle">The title of the application displayed in the dialog.</param>
+        /// <param name="subtitle">The subtitle displayed below the application title in the dialog.</param>
+        /// <param name="appIconImage">The path or identifier for the application's icon image used in the dialog.</param>
+        /// <param name="appIconDarkImage">The path or identifier for the application's dark mode icon image used in the dialog.</param>
+        /// <param name="appBannerImage">The path or identifier for the banner image displayed in the dialog.</param>
+        /// <param name="dialogPosition">The position of the dialog on the screen. If <see langword="null"/>, the default position is used.</param>
+        /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If <see langword="null"/>, the default behavior is
+        /// used.</param>
+        /// <param name="dialogTopMost">A value indicating whether the dialog should always appear on top of other windows.</param>
+        /// <param name="fluentAccentColor">The accent color used for Fluent design elements in the dialog. If <see langword="null"/>, the default
+        /// accent color is used.</param>
+        /// <param name="dialogExpiryDuration">The duration after which the dialog automatically expires. If <see langword="null"/>, the dialog does not
+        /// expire automatically.</param>
+        /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, the default interval is
+        /// used.</param>
+        /// <param name="progressMessageText">The main progress message text displayed in the dialog. Cannot be <see langword="null"/>.</param>
+        /// <param name="progressDetailMessageText">The detailed progress message text displayed in the dialog. Cannot be <see langword="null"/>.</param>
+        /// <param name="progressPercentage">The percentage of progress completed, represented as a value between 0 and 100. If <see langword="null"/>,
+        /// progress is not displayed.</param>
+        /// <param name="messageAlignment">The alignment of the progress messages within the dialog. If <see langword="null"/>, the default alignment
+        /// is used.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="progressMessageText"/> or <paramref name="progressDetailMessageText"/> is <see
+        /// langword="null"/>.</exception>
+        [JsonConstructor]
+        private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, DialogPosition? dialogPosition, bool? dialogAllowMove, bool dialogTopMost, int? fluentAccentColor, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogPosition, dialogAllowMove, dialogTopMost, fluentAccentColor, dialogExpiryDuration, dialogPersistInterval)
+        {
+            ProgressMessageText = progressMessageText ?? throw new ArgumentNullException(nameof(progressMessageText));
+            ProgressDetailMessageText = progressDetailMessageText ?? throw new ArgumentNullException(nameof(progressDetailMessageText));
+            ProgressPercentage = progressPercentage;
+            MessageAlignment = messageAlignment;
+        }
+
+        /// <summary>
         /// The message to be displayed in the progress dialog, indicating the current status or action being performed.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string ProgressMessageText;
 
         /// <summary>
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string ProgressDetailMessageText;
 
         /// <summary>
         /// The percentage value to be displayed on the status bar, if available.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly double? ProgressPercentage;
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly DialogMessageAlignment? MessageAlignment;
     }
 }

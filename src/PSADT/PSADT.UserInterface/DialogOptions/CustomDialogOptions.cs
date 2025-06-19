@@ -1,29 +1,15 @@
 ﻿using System;
 using System.Collections;
-using System.Runtime.Serialization;
-using PSADT.Serialization;
 using PSADT.UserInterface.Dialogs;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the CustomDialog.
     /// </summary>
-    [DataContract]
-    [KnownType(typeof(InputDialogOptions))]
     public record CustomDialogOptions : BaseOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="CustomDialogOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="CustomDialogOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static CustomDialogOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(CustomDialogOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
         /// </summary>
@@ -94,45 +80,87 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class with the specified dialog
+        /// configuration options.
+        /// </summary>
+        /// <param name="appTitle">The title of the application displayed in the dialog.</param>
+        /// <param name="subtitle">The subtitle displayed in the dialog, providing additional context.</param>
+        /// <param name="appIconImage">The path to the application's icon image used in the dialog.</param>
+        /// <param name="appIconDarkImage">The path to the application's dark mode icon image used in the dialog.</param>
+        /// <param name="appBannerImage">The path to the banner image displayed in the dialog.</param>
+        /// <param name="dialogPosition">The position of the dialog on the screen. If <see langword="null"/>, the default position is used.</param>
+        /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If <see langword="null"/>, the default behavior is
+        /// used.</param>
+        /// <param name="dialogTopMost">A value indicating whether the dialog should always appear on top of other windows.</param>
+        /// <param name="fluentAccentColor">The accent color used for fluent design elements in the dialog. If <see langword="null"/>, the default
+        /// accent color is used.</param>
+        /// <param name="dialogExpiryDuration">The duration after which the dialog expires and closes automatically. If <see langword="null"/>, the dialog
+        /// does not expire.</param>
+        /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, the default interval is
+        /// used.</param>
+        /// <param name="messageText">The main message text displayed in the dialog. Cannot be <see langword="null"/> or empty.</param>
+        /// <param name="messageAlignment">The alignment of the message text within the dialog. If <see langword="null"/>, the default alignment is
+        /// used.</param>
+        /// <param name="buttonLeftText">The text displayed on the left button in the dialog. If <see langword="null"/>, the button is not displayed.</param>
+        /// <param name="buttonMiddleText">The text displayed on the middle button in the dialog. If <see langword="null"/>, the button is not
+        /// displayed.</param>
+        /// <param name="buttonRightText">The text displayed on the right button in the dialog. If <see langword="null"/>, the button is not
+        /// displayed.</param>
+        /// <param name="icon">The system icon displayed in the dialog. If <see langword="null"/>, no icon is displayed.</param>
+        /// <param name="minimizeWindows">Indicates whether all other windows should be minimized when the dialog is displayed.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="messageText"/> is <see langword="null"/> or empty.</exception>
+        [JsonConstructor]
+        protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, DialogPosition? dialogPosition, bool? dialogAllowMove, bool dialogTopMost, int? fluentAccentColor, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogPosition, dialogAllowMove, dialogTopMost, fluentAccentColor, dialogExpiryDuration, dialogPersistInterval)
+        {
+            MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText), "MessageText cannot be null or empty.");
+            MessageAlignment = messageAlignment;
+            ButtonLeftText = buttonLeftText;
+            ButtonMiddleText = buttonMiddleText;
+            ButtonRightText = buttonRightText;
+            Icon = icon;
+            MinimizeWindows = minimizeWindows;
+        }
+
+        /// <summary>
         /// The custom message to be displayed in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string MessageText;
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly DialogMessageAlignment? MessageAlignment;
 
         /// <summary>
         /// The text for the left button in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string? ButtonLeftText;
 
         /// <summary>
         /// The text for the middle button in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string? ButtonMiddleText;
 
         /// <summary>
         /// The text for the right button in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string? ButtonRightText;
 
         /// <summary>
         /// The icon to be displayed in the dialog.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly DialogSystemIcon? Icon;
 
         /// <summary>
         /// Gets a value indicating whether windows should be minimized.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly bool MinimizeWindows;
     }
 }

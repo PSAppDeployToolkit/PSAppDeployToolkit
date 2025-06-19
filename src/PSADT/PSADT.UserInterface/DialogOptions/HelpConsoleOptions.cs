@@ -1,29 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using System.Runtime.Serialization;
 using Microsoft.PowerShell;
-using PSADT.Serialization;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    [DataContract]
     public sealed record HelpConsoleOptions
     {
-        /// <summary>
-        /// Initializes the <see cref="HelpConsoleOptions"/> class and registers it as a serializable type.
-        /// </summary>
-        /// <remarks>This static constructor ensures that the <see cref="HelpConsoleOptions"/> type is added
-        /// to the list of serializable types for data contract serialization. This allows instances of <see
-        /// cref="ClientException"/> to be serialized and deserialized using data contract serializers.</remarks>
-        static HelpConsoleOptions()
-        {
-            DataContractSerialization.AddSerializableType(typeof(HelpConsoleOptions));
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HelpConsoleOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
@@ -47,15 +34,31 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="HelpConsoleOptions"/> class with the specified execution policy
+        /// and module paths.
+        /// </summary>
+        /// <remarks>This constructor is intended for internal use only and is marked as
+        /// private.</remarks>
+        /// <param name="executionPolicy">The execution policy to be applied. Cannot be <see langword="null"/>.</param>
+        /// <param name="modulePaths">An array of module paths to be used. Cannot be <see langword="null"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="executionPolicy"/> or <paramref name="modulePaths"/> is <see langword="null"/>.</exception>
+        [JsonConstructor]
+        private HelpConsoleOptions(ExecutionPolicy executionPolicy, string[] modulePaths)
+        {
+            ExecutionPolicy = executionPolicy;
+            ModulePaths = modulePaths ?? throw new ArgumentNullException(nameof(modulePaths));
+        }
+
+        /// <summary>
         /// Gets the execution policy that determines how operations are executed.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly ExecutionPolicy ExecutionPolicy;
 
         /// <summary>
         /// Gets the collection of file paths to the modules associated with the current instance.
         /// </summary>
-        [DataMember]
+        [JsonProperty]
         public readonly string[] ModulePaths;
     }
 }
