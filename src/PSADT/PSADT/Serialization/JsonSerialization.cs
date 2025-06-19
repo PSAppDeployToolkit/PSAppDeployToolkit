@@ -93,7 +93,7 @@ namespace PSADT.Serialization
         /// serialization.</description></item> <item><description>Includes a converter for serializing and
         /// deserializing enums as strings.</description></item> </list> This static field can be used as a standard
         /// configuration for JSON serialization across the application.</remarks>
-        public static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
+        private static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
         {
             TypeNameHandling = TypeNameHandling.All,
             DefaultValueHandling = DefaultValueHandling.Ignore,
