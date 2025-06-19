@@ -181,6 +181,13 @@ function Show-ADTInstallationRestartPrompt
         {
             try
             {
+                # Check if we are already displaying a restart prompt.
+                if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
+                {
+                    Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
+                    return
+                }
+
                 # If in non-interactive mode.
                 if ($adtSession -and $adtSession.IsSilent())
                 {
@@ -191,15 +198,8 @@ function Show-ADTInstallationRestartPrompt
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipping restart,because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
+                        Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
                     }
-                    return
-                }
-
-                # Check if we are already displaying a restart prompt.
-                if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
-                {
-                    Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
                     return
                 }
 
