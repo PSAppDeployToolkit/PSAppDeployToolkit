@@ -42,6 +42,18 @@ namespace PSADT.Execution
         /// <exception cref="TaskCanceledException"></exception>
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
+            // Set up initial variables needed throughout method.
+            Task stdOutTask = Task.CompletedTask;
+            Task stdErrTask = Task.CompletedTask;
+            List<string> stdout = []; List<string> stderr = [];
+            ConcurrentQueue<string> interleaved = [];
+            SafeProcessHandle? hProcess = null;
+            uint? processId = null;
+
+            // Determine whether the process we're starting is a console app or not. This is important
+            // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
+            bool cliApp = File.Exists(launchInfo.FilePath) ? ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).ExecutableType != ExecutableType.GUI : launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
+
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1);
@@ -56,23 +68,6 @@ namespace PSADT.Execution
             {
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION { BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION { LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE } });
             }
-
-            // Declare all handles C-style so we can close them in the finally block for cleanup.
-            SafeProcessHandle? hProcess = null;
-            uint? processId = null;
-
-            // Lists for output streams to be read into.
-            ConcurrentQueue<string> interleaved = [];
-            List<string> stdout = [];
-            List<string> stderr = [];
-
-            // Tasks for reading the output streams.
-            var stdOutTask = Task.CompletedTask;
-            var stdErrTask = Task.CompletedTask;
-
-            // Determine whether the process we're starting is a console app or not. This is important
-            // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
-            bool cliApp = File.Exists(launchInfo.FilePath) ? ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).ExecutableType != ExecutableType.GUI : launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
