@@ -110,16 +110,19 @@ namespace PSADT.Execution
                     }
 
                     // If we're to read the output, we create pipes for stdout and stderr.
-                    if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                    void SetupStreamPipes()
                     {
-                        CreatePipe(out var hStdOutRead, out hStdOutWrite);
-                        CreatePipe(out var hStdErrRead, out hStdErrWrite);
-                        stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
-                        stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
-                        hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
-                        hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
-                        startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
-                        startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
+                        if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                        {
+                            CreatePipe(out var hStdOutRead, out hStdOutWrite);
+                            CreatePipe(out var hStdErrRead, out hStdErrWrite);
+                            stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
+                            stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
+                            hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
+                            hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
+                            startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
+                            startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
+                        }
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
@@ -175,7 +178,7 @@ namespace PSADT.Execution
                                             workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
                                         }
                                     }
-                                    AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                                    SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                 }
                             }
                         }
@@ -197,7 +200,7 @@ namespace PSADT.Execution
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                        SetupStreamPipes(); Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                     }
 
                     // Start tracking the process and allow it to resume execution.
