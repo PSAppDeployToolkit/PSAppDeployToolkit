@@ -129,6 +129,12 @@ function Initialize-ADTModule
                     & $callback
                 }
 
+                # Close out and reset any client/server process that exists. This should never occur, though.
+                if ($null -ne $Script:ADT.ClientServerProcess)
+                {
+                    Close-ADTClientServerProcess -InformationAction SilentlyContinue
+                }
+
                 # Initialize the module's global state.
                 $Script:ADT.Environment = New-ADTEnvironmentTable @PSBoundParameters
                 $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
