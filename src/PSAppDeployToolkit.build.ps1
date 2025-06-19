@@ -234,7 +234,7 @@ Enter-Build {
 
     # Ensure our builds fail until if below a minimum defined code test coverage threshold.
     $Script:coverageThreshold = 0
-    [System.Version]$Script:MinPesterVersion = '5.2.2'
+    [System.Version]$Script:MinPesterVersion = '5.7.1'
     [System.Version]$Script:MaxPesterVersion = '5.99.99'
     $Script:testOutputFormat = 'NUnitXML'
 }
@@ -564,7 +564,7 @@ Add-BuildTask DevCC {
 Add-BuildTask CreateHelpStart {
     Write-Build White '      Performing all help related actions.'
     Write-Build Gray '           Importing platyPS...'
-    Import-Module platyPS -RequiredVersion 0.14.2
+    Import-Module platyPS -MinimumVersion 0.14.2
     Write-Build Gray '           ...platyPS imported successfully.'
 }
 

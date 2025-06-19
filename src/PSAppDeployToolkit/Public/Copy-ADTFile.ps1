@@ -232,7 +232,7 @@ function Copy-ADTFile
                         }
                         else
                         {
-                           (Get-Item -LiteralPath $ParentPath -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            (Get-Item -LiteralPath $ParentPath -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         }
                         $robocopyDestination = (Get-Item -LiteralPath $Destination.TrimEnd('\') -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         $robocopyFile = (Split-Path -Path $srcPath -Leaf)
@@ -299,7 +299,7 @@ function Copy-ADTFile
                     $robocopyResult = Start-ADTProcess -FilePath $robocopyCommand -ArgumentList $robocopyArgs -CreateNoWindow -PassThru -SuccessExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
 
                     # Trim the last line plus leading whitespace from each line of Robocopy output.
-                    $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -Replace '\n\s+', "`n" }
+                    $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -replace '\n\s+', "`n" }
                     Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
 
                     # Restore folder attributes in case Robocopy overwrote them.

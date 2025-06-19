@@ -182,7 +182,7 @@ function Set-ADTShortcut
                         Maximized { 3; break }
                         Minimized { 7; break }
                     }
-                    If ($null -ne $windowStyleInt)
+                    if ($null -ne $windowStyleInt)
                     {
                         $shortcut.WindowStyle = $WindowStyleInt
                     }
