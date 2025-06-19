@@ -248,7 +248,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: PowerShell And CLR (.NET) Versions
     $variables.Add('envPSVersionTable', $PSVersionTable)
-    $variables.Add('envPSProcessPath', (Get-ADTPowerShellProcessPath))
+    $variables.Add('envPSProcessPath', [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName)
 
     # PowerShell Version
     $variables.Add('envPSVersion', [System.Version]$variables.envPSVersionTable.PSVersion)
