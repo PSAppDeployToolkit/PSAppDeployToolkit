@@ -65,7 +65,7 @@ function Unblock-ADTAppExecution
         # Bypass if no admin rights.
         if (!(Test-ADTCallerIsAdmin))
         {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([PSADT.AccountManagement.AccountUtilities]::CallerUsername)] is not admin."
             return
         }
 

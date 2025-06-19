@@ -18,7 +18,7 @@ namespace PSADT.AccountManagement
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-                CallerUsername = identity.Name;
+                CallerUsername = new(identity.Name);
                 CallerSid = identity.User!;
             }
         }
@@ -94,7 +94,7 @@ namespace PSADT.AccountManagement
         /// Returns the current user's username.
         /// </summary>
         /// <returns></returns>
-        public static readonly string CallerUsername;
+        public static readonly NTAccount CallerUsername;
 
         /// <summary>
         /// Represents the security identifier (SID) of the caller.

@@ -500,7 +500,7 @@ function Set-ADTActiveSetup
                 }
 
                 $processResult = $null
-                if ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
+                if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
                 {
                     if (!$runAsActiveUser)
                     {

@@ -45,32 +45,24 @@ function Get-ADTRunAsActiveUser
     # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
     # The active console user will be chosen first. Failing that, for multi-session operating systems, the first logged on user will be used instead.
     Write-ADTLogEntry -Message 'Finding the active user session on this device.'
-    $currentWindowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    try
+    $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
+    $userSessions = Get-ADTLoggedOnUser -InformationAction SilentlyContinue
+    $callerSid = [PSADT.AccountManagement.AccountUtilities]::CallerSid
+    foreach ($session in $userSessions)
     {
-        $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
-        $userSessions = Get-ADTLoggedOnUser -InformationAction SilentlyContinue
-        foreach ($session in $userSessions)
+        if ($callerSid.Equals($session.SID) -and $session.IsActiveUserSession)
         {
-            if ($currentWindowsIdentity.User.Equals($session.SID) -and $session.IsActiveUserSession)
-            {
-                Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-                return $session
-            }
+            Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
+            return $session
         }
-        foreach ($session in $userSessions)
-        {
-            if ($session.NTAccount -and $session.$sessionInfoMember)
-            {
-                Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-                return $session
-            }
-        }
-        Write-ADTLogEntry -Message 'There was no active user session found on this device.'
     }
-    finally
+    foreach ($session in $userSessions)
     {
-        $currentWindowsIdentity.Dispose()
-        $currentWindowsIdentity = $null
+        if ($session.NTAccount -and $session.$sessionInfoMember)
+        {
+            Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
+            return $session
+        }
     }
+    Write-ADTLogEntry -Message 'There was no active user session found on this device.'
 }

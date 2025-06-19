@@ -129,7 +129,7 @@ namespace PSADT.Execution
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !session.NTAccount!.Value.Equals(AccountUtilities.CallerUsername, StringComparison.OrdinalIgnoreCase))
+                    if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !AccountUtilities.CallerUsername.Equals(session.NTAccount))
                     {
                         // We can only run a process if we can act as part of the operating system.
                         if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
@@ -352,10 +352,6 @@ namespace PSADT.Execution
         /// session is not active.</exception>
         private static SessionInfo GetSessionForUsername(NTAccount username)
         {
-            // Perform initial tests prior to trying to query a user token.
-            using WindowsIdentity caller = WindowsIdentity.GetCurrent();
-            SessionInfo? session = null;
-
             // You can only run a process as a user if they're logged on.
             var userSessions = SessionManager.GetSessionInfo();
             if (userSessions.Count == 0)
@@ -364,6 +360,7 @@ namespace PSADT.Execution
             }
 
             // You can only run a process as a user if they're active.
+            SessionInfo? session = null;
             if (!username!.Value.Contains('\\'))
             {
                 session = userSessions.First(s => username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));

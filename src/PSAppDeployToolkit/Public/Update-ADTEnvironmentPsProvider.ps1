@@ -63,7 +63,7 @@ function Update-ADTEnvironmentPsProvider
         }
         else
         {
-            [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+            [PSADT.AccountManagement.AccountUtilities]::CallerSid
         }
     }
 

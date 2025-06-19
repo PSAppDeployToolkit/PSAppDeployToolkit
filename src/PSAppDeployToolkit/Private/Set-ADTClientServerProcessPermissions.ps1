@@ -15,18 +15,9 @@ function Private:Set-ADTClientServerProcessPermissions
     )
 
     # If we're running under the active user's account, return early as the user already has access.
-    $currentWindowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    try
+    if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.Equals($User.SID))
     {
-        if ($currentWindowsIdentity.User.Equals($User.SID))
-        {
-            return
-        }
-    }
-    finally
-    {
-        $currentWindowsIdentity.Dispose()
-        $currentWindowsIdentity = $null
+        return
     }
 
     # Set required permissions on this module's library files.
