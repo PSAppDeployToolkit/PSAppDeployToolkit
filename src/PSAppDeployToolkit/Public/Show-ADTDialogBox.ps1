@@ -193,7 +193,7 @@ function Show-ADTDialogBox
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying dialog box with message: [$Text]."
-                $result = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType DialogBox -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                [PSADT.UserInterface.DialogResults.DialogBoxResult]$result = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType DialogBox -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Process results.
                 if ($result -eq [PSADT.UserInterface.DialogResults.DialogBoxResult]::Timeout)
