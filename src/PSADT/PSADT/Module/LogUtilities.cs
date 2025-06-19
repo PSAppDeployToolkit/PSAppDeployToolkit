@@ -37,7 +37,7 @@ namespace PSADT.Module
             Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
             if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!))
             {
-                return Array.Empty<LogEntry>();
+                return new ReadOnlyCollection<LogEntry>([]);
             }
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.

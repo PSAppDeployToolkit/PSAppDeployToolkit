@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Security.Principal;
 using Microsoft.Win32;
 
@@ -31,7 +32,7 @@ namespace PSADT.AccountManagement
                 // Return early if null.
                 if (null == datastore)
                 {
-                    return Array.Empty<GroupPolicyAccountInfo>();
+                    return new ReadOnlyCollection<GroupPolicyAccountInfo>([]);
                 }
 
                 // Create list to hold the account information.
