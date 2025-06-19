@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
@@ -11,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
+using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
@@ -24,7 +26,6 @@ using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
-using PSADT.AccountManagement;
 
 namespace PSADT.Execution
 {
@@ -71,19 +72,11 @@ namespace PSADT.Execution
 
             // Determine whether the process we're starting is a console app or not. This is important
             // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
-            bool guiApp;
-            try
-            {
-                guiApp = ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).ExecutableType == ExecutableType.GUI;
-            }
-            catch
-            {
-                guiApp = false;
-            }
+            bool cliApp = File.Exists(launchInfo.FilePath) ? ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).ExecutableType != ExecutableType.GUI : launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            if ((!guiApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
+            if ((cliApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
             {
                 var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
                 if (null != launchInfo.WindowStyle)
@@ -104,7 +97,7 @@ namespace PSADT.Execution
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
                     // We must create a console window for console apps when the window is shown.
-                    if (!guiApp)
+                    if (cliApp)
                     {
                         if (launchInfo.CreateNoWindow)
                         {
