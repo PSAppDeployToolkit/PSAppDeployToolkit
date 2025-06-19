@@ -194,7 +194,7 @@ function Show-ADTInstallationRestartPrompt
                     if ($SilentRestart)
                     {
                         Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
-                        Start-Process -FilePath (Get-ADTEnvironmentTable).envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
+                        $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
                     }
                     else
                     {
@@ -207,7 +207,14 @@ function Show-ADTInstallationRestartPrompt
                 if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
-                    Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
+                    if ($adtSession)
+                    {
+                        $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
+                    }
+                    else
+                    {
+                        Invoke-ADTSilentRestart -Delay $SilentCountdownSeconds
+                    }
                     return
                 }
 

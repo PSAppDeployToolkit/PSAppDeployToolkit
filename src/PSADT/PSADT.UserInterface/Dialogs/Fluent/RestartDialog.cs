@@ -2,6 +2,7 @@
 using System.Windows.Automation;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.Utilities;
 using iNKORE.UI.WPF.Modern;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
@@ -52,7 +53,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
-            DialogTools.RestartComputer();
+            DeviceUtilities.RestartComputer();
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -77,7 +78,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                DialogTools.RestartComputer();
+                DeviceUtilities.RestartComputer();
             }
             else if (null != _countdownWarningDuration && _countdownStopwatch.Elapsed >= _countdownWarningDuration)
             {

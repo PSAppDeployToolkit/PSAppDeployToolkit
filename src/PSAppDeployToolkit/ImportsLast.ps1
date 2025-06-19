@@ -47,6 +47,7 @@ try
                 ModuleInit = $null
             }
             SessionState = $ExecutionContext.SessionState
+            RestartOnExitCountdown = $null
             ClientServerProcess = $null
             Sessions = $null
             Environment = $null

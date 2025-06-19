@@ -71,6 +71,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(SerializeObject(SendKeys(ConvertArgsToDictionary(args))));
                 }
+                else if (args.Any(static arg => arg.Equals("/SilentRestart")))
+                {
+                    Console.WriteLine(SerializeObject(SilentRestart(ConvertArgsToDictionary(args))));
+                }
                 else if (args.Any(static arg => arg.Equals("/ClientServer")))
                 {
                     EnterClientServerMode(ConvertArgsToDictionary(args));
@@ -566,6 +570,27 @@ namespace PSADT.ClientServer
 
             // Send the keys and write back that we were successful.
             System.Windows.Forms.SendKeys.SendWait(options.Keys);
+            return true;
+        }
+
+        /// <summary>
+        /// Restarts the computer silently after a specified delay.
+        /// </summary>
+        /// <remarks>This method pauses execution for the specified delay duration before initiating the
+        /// restart. Ensure that the <c>"Delay"</c> argument is provided and valid to avoid exceptions.</remarks>
+        /// <param name="arguments">A read-only dictionary containing the arguments for the restart operation.  The dictionary must include a
+        /// key named <c>"Delay"</c> with a non-empty, valid integer value  representing the delay in seconds before the
+        /// restart.</param>
+        /// <returns><see langword="true"/> if the restart operation was successfully initiated.</returns>
+        /// <exception cref="ClientException">Thrown if the <c>"Delay"</c> argument is missing, empty, or invalid.</exception>
+        private static bool SilentRestart(IReadOnlyDictionary<string, string> arguments)
+        {
+            if (!arguments.TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out var delayValue))
+            {
+                throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
+            }
+            Thread.Sleep(delayValue * 1000);
+            DeviceUtilities.RestartComputer();
             return true;
         }
 

@@ -134,6 +134,7 @@ function Initialize-ADTModule
                 $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
                 $Script:ADT.Language = Get-ADTStringLanguage
                 $Script:ADT.Strings = Import-ADTStringTable -BaseDirectory $Script:ADT.Directories.Strings -UICulture $Script:ADT.Language
+                $Script:ADT.RestartOnExitCountdown = $null
                 $Script:ADT.LastExitCode = 0
 
                 # Calculate how long this process took before finishing.

@@ -63,6 +63,12 @@ function Private:Exit-ADTInvocation
         $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
     }
 
+    # Invoke a silent restart on the device if specified.
+    if ($null -ne $Script:ADT.RestartOnExitCountdown)
+    {
+        Invoke-ADTSilentRestart -Delay $Script:ADT.RestartOnExitCountdown
+    }
+
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
     if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($progressOpen -or $clientOpen)))

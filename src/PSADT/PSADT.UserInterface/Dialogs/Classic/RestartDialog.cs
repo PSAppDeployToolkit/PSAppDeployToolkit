@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.Utilities;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -137,7 +138,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Restart the computer immediately.
-            DialogTools.RestartComputer();
+            DeviceUtilities.RestartComputer();
             base.ButtonLeft_Click(sender, e);
         }
 
