@@ -136,7 +136,7 @@ function Private:New-ADTEnvironmentTable
 
     # Get the OS Architecture.
     $variables.Add('Is64Bit', [System.Environment]::Is64BitOperatingSystem)
-    $variables.Add('envOSArchitecture', [PSADT.OperatingSystem.OSHelper]::GetSystemArchitecture())
+    $variables.Add('envOSArchitecture', [System.Runtime.InteropServices.RuntimeInformation, mscorlib, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089]::OSArchitecture)
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)

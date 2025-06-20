@@ -9,6 +9,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
@@ -63,7 +64,7 @@ namespace PSADT.Module
                 var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
                 var RunAsActiveUser = (SessionInfo?)adtEnv["RunAsActiveUser"];
                 var currentLanguage = (string)adtEnv["currentLanguage"]!;
-                var envOSArchitecture = (SystemArchitecture)adtEnv["envOSArchitecture"]!;
+                var envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
                 var processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;
                 var isAdmin = (bool)adtEnv["IsAdmin"]!;
 
@@ -257,17 +258,8 @@ namespace PSADT.Module
                             string[] msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
                             var formattedOSArch = string.Empty;
 
-                            // Build out the OS architecture string.
-                            formattedOSArch = envOSArchitecture switch
-                            {
-                                SystemArchitecture.i386 => "x86",
-                                SystemArchitecture.AMD64 => "x64",
-                                SystemArchitecture.ARM64 => "arm64",
-                                _ => envOSArchitecture.ToString(),
-                            };
-
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLower()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }

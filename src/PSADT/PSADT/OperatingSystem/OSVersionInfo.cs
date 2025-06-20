@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
-using PSADT.Types;
 using Windows.Win32;
 using Windows.Win32.System.SystemInformation;
 
@@ -24,6 +24,22 @@ namespace PSADT.OperatingSystem
         /// </summary>
         private OSVersionInfo()
         {
+            static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
+            {
+                // If the ProductType is 3 (Server), perform additional checks.
+                if (productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
+                {
+                    if ("EnterpriseMultiSession".Equals(editionId, StringComparison.InvariantCultureIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (!string.IsNullOrWhiteSpace(productName) && (productName!.IndexOf("Virtual Desktops", StringComparison.OrdinalIgnoreCase) >= 0 || productName!.IndexOf("Multi-Session", StringComparison.OrdinalIgnoreCase) >= 0))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
             NtDll.RtlGetVersion(out var osVersion);
             var suiteMask = (SUITE_MASK)osVersion.wSuiteMask;
             var productType = (PRODUCT_TYPE)osVersion.wProductType;
@@ -65,10 +81,10 @@ namespace PSADT.OperatingSystem
             Name = string.Format(((DescriptionAttribute[])typeof(WindowsOS).GetField(OperatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description, editionId);
             Version = new Version((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
-            Architecture = OSHelper.GetSystemArchitecture();
+            Architecture = RuntimeInformation.OSArchitecture;
             Is64BitOperatingSystem = Environment.Is64BitOperatingSystem;
             IsTerminalServer = ((suiteMask & SUITE_MASK.VER_SUITE_TERMINAL) == SUITE_MASK.VER_SUITE_TERMINAL) && !((suiteMask & SUITE_MASK.VER_SUITE_SINGLEUSERTS) == SUITE_MASK.VER_SUITE_SINGLEUSERTS);
-            IsWorkstationEnterpriseMultiSessionOS = OSHelper.IsOperatingSystemEnterpriseMultiSessionOS(edition, editionId, productName);
+            IsWorkstationEnterpriseMultiSessionOS = IsOperatingSystemEnterpriseMultiSessionOS(edition, editionId, productName);
             IsWorkstation = productType == PRODUCT_TYPE.VER_NT_WORKSTATION;
             IsServer = !IsWorkstation;
             IsDomainController = productType == PRODUCT_TYPE.VER_NT_DOMAIN_CONTROLLER;
@@ -107,7 +123,7 @@ namespace PSADT.OperatingSystem
         /// <summary>
         /// Architecture of the operating system.
         /// </summary>
-        public readonly SystemArchitecture Architecture;
+        public readonly Architecture Architecture;
 
         /// <summary>
         /// Whether the operating system is 64-bit.
