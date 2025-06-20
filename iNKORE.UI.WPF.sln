@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{D6C9
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfApp1", "source\samples\WpfApp1\WpfApp1.csproj", "{B58816CF-AC94-4096-89A0-4EE78167DECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iNKORE.UI.WPF.DirectX", "source\iNKORE.UI.WPF.DirectX\iNKORE.UI.WPF.DirectX.csproj", "{73154957-3D91-48DA-8068-D425B523ED93}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,10 +23,6 @@ Global
 		{B58816CF-AC94-4096-89A0-4EE78167DECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B58816CF-AC94-4096-89A0-4EE78167DECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B58816CF-AC94-4096-89A0-4EE78167DECB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73154957-3D91-48DA-8068-D425B523ED93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{73154957-3D91-48DA-8068-D425B523ED93}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{73154957-3D91-48DA-8068-D425B523ED93}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73154957-3D91-48DA-8068-D425B523ED93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

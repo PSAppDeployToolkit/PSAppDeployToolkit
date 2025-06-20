@@ -6,7 +6,7 @@
 		<RootNamespace>$(MSBuildProjectName)</RootNamespace>
 		<NoWarn>1701;1702;CA1416;8618;8622;8625;MSB3539;8767;8601;8602;8604;8603;8600;CS8603;CS8618;CS8600</NoWarn>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<ApplicationIcon>..\..\assets\icons\iNKORE.ico</ApplicationIcon>
+		<ApplicationIcon>..\..\assets\icons\WpfLibrary.ico</ApplicationIcon>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\assets\misc\iNKORE.Pulic.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
