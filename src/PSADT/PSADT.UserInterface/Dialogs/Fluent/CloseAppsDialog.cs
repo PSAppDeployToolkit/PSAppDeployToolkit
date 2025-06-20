@@ -99,9 +99,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (null != state.RunningProcessService)
             {
                 _runningProcessService = state.RunningProcessService;
-                AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
+                AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
+            UpdateRunningProcesses();
             if (null != state.LogWriter)
             {
                 _logWriter = state.LogWriter;
@@ -201,7 +202,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void UpdateRunningProcesses()
         {
             // Update the UI based on the changes in the collection.
             AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
@@ -247,6 +248,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     ButtonLeft.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the event when the collection of apps to close changes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateRunningProcesses();
         }
 
         /// <summary>
