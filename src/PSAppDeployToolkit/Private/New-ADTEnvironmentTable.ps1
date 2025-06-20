@@ -140,7 +140,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
-    $variables.Add('psArchitecture', [PSADT.Execution.ProcessManager]::ProcessArchitecture)
+    $variables.Add('psArchitecture', [System.Runtime.InteropServices.RuntimeInformation, mscorlib, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089]::ProcessArchitecture)
 
     ## Variables: Get normalized paths that vary depending on process bitness.
     if ($variables.Is64Bit)

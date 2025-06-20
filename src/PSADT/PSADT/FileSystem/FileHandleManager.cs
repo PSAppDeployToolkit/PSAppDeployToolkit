@@ -5,11 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Execution;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
-using PSADT.Types;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -286,9 +284,9 @@ namespace PSADT.FileSystem
         {
             // Build the shellcode stub to call NtQueryObject.
             List<byte> shellcode = [];
-            switch (ProcessManager.ProcessArchitecture)
+            switch (RuntimeInformation.ProcessArchitecture)
             {
-                case SystemArchitecture.AMD64:
+                case Architecture.X64:
                     // mov rcx, handle
                     shellcode.Add(0x48); shellcode.Add(0xB9);
                     shellcode.AddRange(BitConverter.GetBytes((ulong)fileHandle));
@@ -329,7 +327,7 @@ namespace PSADT.FileSystem
                     // call rax
                     shellcode.Add(0xFF); shellcode.Add(0xD0);
                     break;
-                case SystemArchitecture.i386:
+                case Architecture.X86:
                     // push NULL (ReturnLength)
                     shellcode.Add(0x6A);
                     shellcode.Add(0x00);
@@ -367,7 +365,7 @@ namespace PSADT.FileSystem
                     // call eax
                     shellcode.Add(0xFF); shellcode.Add(0xD0);
                     break;
-                case SystemArchitecture.ARM64:
+                case Architecture.Arm64:
                     // x0 = handle
                     List<uint> code = [];
                     code.AddRange(NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()));
@@ -403,7 +401,7 @@ namespace PSADT.FileSystem
                     }
                     break;
                 default:
-                    throw new PlatformNotSupportedException("Unsupported architecture: " + ProcessManager.ProcessArchitecture);
+                    throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
             }
             SafeVirtualAllocHandle mem = Kernel32.VirtualAlloc(IntPtr.Zero, (UIntPtr)shellcode.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
             mem.Write(shellcode.ToArray());

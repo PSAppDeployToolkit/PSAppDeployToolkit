@@ -541,11 +541,6 @@ namespace PSADT.Execution
         }
 
         /// <summary>
-        /// The architecture of the current process.
-        /// </summary>
-        public static readonly SystemArchitecture ProcessArchitecture = ExecutableUtilities.GetExecutableInfo(Process.GetCurrentProcess().MainModule!.FileName).Architecture;
-
-        /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.
         /// The value is `'PSAppDeployToolkit'.GetHashCode()` under Windows PowerShell 5.1.
         /// </summary>
