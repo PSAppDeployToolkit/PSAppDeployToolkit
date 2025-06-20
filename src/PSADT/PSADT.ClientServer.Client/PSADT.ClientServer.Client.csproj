@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>$(NoWarn)</NoWarn>
@@ -8,7 +8,6 @@
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <Nullable>enable</Nullable>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
@@ -33,7 +32,7 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
     <Optimize>false</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
@@ -42,7 +41,7 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
     <Optimize>true</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>

@@ -10,7 +10,7 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\assets\misc\iNKORE.Pulic.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
-		<TargetFrameworks>net6.0-windows;net452</TargetFrameworks>
+		<TargetFrameworks>net8.0-windows;net472</TargetFrameworks>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>

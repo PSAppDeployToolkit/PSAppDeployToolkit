@@ -171,14 +171,14 @@ $buildItems = @(
     @{
         SourcePath = 'src\PSADT'
         SolutionPath = 'src\PSADT\PSADT.slnx'
-        BinaryPath = 'src\PSADT\PSADT.ClientServer.Client.Launcher\bin\Debug\net462'
+        BinaryPath = 'src\PSADT\PSADT.ClientServer.Client.Launcher\bin\Debug\net472'
         OutputPath = 'src\PSAppDeployToolkit\lib'
         OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Launcher.exe', 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe', 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Server.dll', 'src\PSAppDeployToolkit\lib\PSADT.dll', 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll'
     },
     @{
         SourcePath = 'src\PSADT.Invoke'
         SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.slnx'
-        BinaryPath = 'src\PSADT.Invoke\PSADT.Invoke\bin\Release\net462'
+        BinaryPath = 'src\PSADT.Invoke\PSADT.Invoke\bin\Release\net472'
         OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
         OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
     }
@@ -697,7 +697,7 @@ Add-BuildTask AssetCopy -Before Build {
     Copy-Item -Path "$Script:ModuleSourcePath\*" -Destination $Script:BuildModuleRoot -Exclude "$($Script:ModuleName).ps*1" -Recurse
     foreach ($buildItem in $Script:buildItems)
     {
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.slnx', ''), 'bin\Release\net462\*')
+        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.slnx', ''), 'bin\Release\net472\*')
         $buildItem.OutputPath.Replace("src\PSAppDeployToolkit\", $null) | ForEach-Object {
             $destPath = [System.IO.Path]::Combine($Script:BuildModuleRoot, $_)
             Write-Build Gray "        Copying from $sourcePath to $destPath..."

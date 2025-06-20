@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net462;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseWPF>true</UseWPF>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -32,7 +31,7 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
     <Optimize>false</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
@@ -41,7 +40,7 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
     <Optimize>true</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
@@ -54,7 +53,7 @@
     <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="System.Management.Automation">
       <HintPath>$(SystemRoot)\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
       <Private>False</Private>

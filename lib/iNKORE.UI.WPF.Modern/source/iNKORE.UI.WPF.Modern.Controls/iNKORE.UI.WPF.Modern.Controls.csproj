@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8.0-windows10.0.18362.0;net452</TargetFrameworks>
+		<TargetFrameworks>net8.0-windows10.0.18362.0;net472</TargetFrameworks>
 		<UseWPF>true</UseWPF>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);GetDocumentationFile</TargetsForTfmSpecificBuildOutput>
@@ -42,7 +42,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="!$(DefineConstants.Contains('NET47_OR_NEWER'))">
-		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+		<PackageReference Include="System.ValueTuple" Version="4.6.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -50,10 +50,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<ProjectReference Include="..\..\..\iNKORE.UI.WPF\source\iNKORE.UI.WPF\iNKORE.UI.WPF.csproj" />
 		<ProjectReference Include="..\iNKORE.UI.WPF.Modern\iNKORE.UI.WPF.Modern.csproj" />
 	</ItemGroup>
 
