@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
@@ -15,10 +14,11 @@ namespace PSADT.Utilities
     {
         /// <summary>
         /// Converts a list of remaining arguments to a dictionary of key-value pairs.
+        /// This MUST NOT return a ReadOnlyDictionary! The API must match $PSBoundParameters.
         /// </summary>
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
-        public static IReadOnlyDictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
+        public static Dictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
             Dictionary<string, object> values = [];
             string currentKey = string.Empty;
@@ -50,7 +50,7 @@ namespace PSADT.Utilities
             {
                 throw new FormatException("The parser was unable to process the provided arguments.", ex);
             }
-            return new ReadOnlyDictionary<string, object>(values);
+            return values;
         }
 
         /// <summary>
