@@ -170,7 +170,11 @@ function Private:Invoke-ADTClientServerOperation
         # Invoke the right method depending on the mode.
         try
         {
-            if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
+            if ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox.Equals($DialogType))
+            {
+                $result = $Script:ADT.ClientServerProcess.ShowDialogBox($Options)
+            }
+            elseif ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
             {
                 $result = $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
             }
