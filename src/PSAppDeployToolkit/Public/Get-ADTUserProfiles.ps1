@@ -131,6 +131,17 @@ function Get-ADTUserProfiles
                 Get-ItemProperty -Path "$userProfileListRegKey\*" | & {
                     process
                     {
+                        # Try to parse the registry string into a SecurityIdentifier.
+                        $sid = try
+                        {
+                            [System.Security.Principal.SecurityIdentifier]$_.PSChildName
+                        }
+                        catch
+                        {
+                            Write-ADTLogEntry -Message "Unable to convert [$($_.PSChildName)] into a SecurityIdentifier, skipping entry..." -Severity Warning
+                            return
+                        }
+
                         # Return early if the SID is to be excluded.
                         if ($_.PSChildName -match $excludedSids)
                         {
