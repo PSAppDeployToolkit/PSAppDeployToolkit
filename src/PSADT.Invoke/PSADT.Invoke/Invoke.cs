@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Security.Principal;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Language;
+using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using PSADT.Invoke.LibraryInterfaces;
 using PSADT.Invoke.Utilities;
@@ -279,7 +280,7 @@ namespace PSADT.Invoke
                 // Remove the /32 command line argument so that it is not passed to PowerShell script
                 WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
                 cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-                if (Kernel32.GetNativeSystemInfo().uProcessorInfo.wProcessorArchitecture.ToString().EndsWith("64"))
+                if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64"))
                 {
                     pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\PowerShell.exe");
                 }

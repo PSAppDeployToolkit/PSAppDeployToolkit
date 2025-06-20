@@ -10,49 +10,6 @@ namespace PSADT.Invoke.LibraryInterfaces
     internal static class Kernel32
     {
         /// <summary>
-        /// Contains information about the current system.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct SYSTEM_INFO
-        {
-            [StructLayout(LayoutKind.Explicit)]
-            internal struct SYSTEM_INFO_PROCESSORINFO_UNION
-            {
-                [FieldOffset(0)]
-                internal ProcessorArchitecture wProcessorArchitecture;
-
-                [FieldOffset(2)]
-                internal ushort wReserved;
-            }
-
-            internal SYSTEM_INFO_PROCESSORINFO_UNION uProcessorInfo;
-            internal uint dwPageSize;
-            internal IntPtr lpMinimumApplicationAddress;
-            internal IntPtr lpMaximumApplicationAddress;
-            internal IntPtr dwActiveProcessorMask;
-            internal uint dwNumberOfProcessors;
-            internal uint dwProcessorType;
-            internal uint dwAllocationGranularity;
-            internal ushort wProcessorLevel;
-            internal ushort wProcessorRevision;
-        }
-
-        /// <summary>
-        /// Retrieves information about the current system to an application running under WOW64.
-        /// </summary>
-        /// <returns></returns>
-        internal static SYSTEM_INFO GetNativeSystemInfo()
-        {
-            // Import the GetNativeSystemInfo function from kernel32.dll.
-            [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
-            static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
-
-            // Call the GetNativeSystemInfo function to retrieve system information.
-            GetNativeSystemInfo(out var systemInfo);
-            return systemInfo;
-        }
-
-        /// <summary>
         /// Gets a handle to the allocated console window.
         /// </summary>
         /// <returns></returns>
