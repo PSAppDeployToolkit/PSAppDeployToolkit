@@ -43,7 +43,7 @@ function Private:Import-ADTModuleDataFile
         param
         (
             [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
+            [AllowEmptyCollection()]
             [System.Collections.Hashtable]$DataFile,
 
             [Parameter(Mandatory = $true)]
