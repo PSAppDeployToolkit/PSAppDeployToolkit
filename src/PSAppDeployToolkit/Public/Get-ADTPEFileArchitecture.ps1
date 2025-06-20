@@ -55,7 +55,7 @@ function Get-ADTPEFileArchitecture
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
-    [OutputType([PSADT.Types.SystemArchitecture])]
+    [OutputType([PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -112,7 +112,7 @@ function Get-ADTPEFileArchitecture
 
                     # Get the file header from the header's address, factoring in any offsets.
                     $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
-                    $peArchEnum = [PSADT.Types.SystemArchitecture]::Unknown; $null = [PSADT.Types.SystemArchitecture]::TryParse($peArchValue, [ref]$peArchEnum)
+                    $peArchEnum = [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_UNKNOWN; $null = [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::TryParse($peArchValue, [ref]$peArchEnum)
                     Write-ADTLogEntry -Message "File [$($file.FullName)] has a detected file architecture of [$peArchEnum]."
                     if ($PassThru)
                     {
