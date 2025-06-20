@@ -143,13 +143,13 @@ function Get-ADTUserProfiles
                         }
 
                         # Return early if the SID is to be excluded.
-                        if ($_.PSChildName -match $excludedSids)
+                        if ($sid -match $excludedSids)
                         {
                             return
                         }
 
                         # Return early for accounts that have a null NTAccount.
-                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName -InformationAction SilentlyContinue))
+                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $sid -InformationAction SilentlyContinue))
                         {
                             return
                         }
@@ -163,7 +163,7 @@ function Get-ADTUserProfiles
                         # Establish base profile.
                         $userProfile = [PSADT.Types.UserProfile]::new(
                             $ntAccount,
-                            $_.PSChildName,
+                            $sid,
                             $_.ProfileImagePath
                         )
 
