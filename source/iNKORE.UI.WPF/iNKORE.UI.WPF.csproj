@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<RootNamespace>$(MSBuildProjectName)</RootNamespace>
+		<NoWarn>1701;1702;CA1416;8618;8622;8625;MSB3539;8767;8601;8602;8604;8603;8600;CS8603;CS8618;CS8600</NoWarn>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<ApplicationIcon>..\..\assets\icons\iNKORE.ico</ApplicationIcon>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\..\assets\misc\iNKORE.Pulic.snk</AssemblyOriginatorKeyFile>
+		<SignAssembly>True</SignAssembly>
+		<TargetFrameworks>net6.0-windows;net452</TargetFrameworks>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Platforms>AnyCPU;ARM32</Platforms>
+		<LangVersion>9.0</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="CalcBinding\**" />
+	  <Compile Remove="TrayIcon\Diagrams\**" />
+	  <EmbeddedResource Remove="CalcBinding\**" />
+	  <EmbeddedResource Remove="TrayIcon\Diagrams\**" />
+	  <None Remove="CalcBinding\**" />
+	  <None Remove="TrayIcon\Diagrams\**" />
+	  <Page Remove="CalcBinding\**" />
+	  <Page Remove="TrayIcon\Diagrams\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="DragDrop\Icons\EffectCopy.png" />
+	  <None Remove="DragDrop\Icons\EffectLink.png" />
+	  <None Remove="DragDrop\Icons\EffectMove.png" />
+	  <None Remove="DragDrop\Icons\EffectNone.png" />
+	</ItemGroup>
+
+	<!-- <ItemGroup>
+	  <ProjectReference Include="..\..\..\iNKORE.Coreworks\source\iNKORE.Coreworks.Windows\iNKORE.Coreworks.Windows.csproj" />
+	</ItemGroup> -->
+
+	<ItemGroup>
+		<Resource Include="DragDrop\Icons\EffectCopy.png" />
+		<Resource Include="DragDrop\Icons\EffectLink.png" />
+		<Resource Include="DragDrop\Icons\EffectMove.png" />
+		<Resource Include="DragDrop\Icons\EffectNone.png" />
+		<Resource Include="Resources\Images\CircularHueGradient.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\Images\transparentbg_mini.png" />
+	</ItemGroup>
+
+</Project>

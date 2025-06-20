@@ -1,0 +1,64 @@
+﻿<local:PickerControlBase x:Class="iNKORE.UI.WPF.ColorPicker.SquarePicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker"
+             xmlns:controls="clr-namespace:iNKORE.UI.WPF.ColorPicker.UserControls"
+             xmlns:conv="clr-namespace:iNKORE.UI.WPF.Converters"
+             mc:Ignorable="d" 
+             MinWidth="100"
+             MinHeight="100"
+             d:DesignHeight="200" d:DesignWidth="200"
+             x:Name="uc">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <conv:MinConverter x:Key="MinConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid x:Name="grid">
+        <Grid.Width>
+            <MultiBinding Converter="{StaticResource MinConverter}">
+                <Binding ElementName="uc" Path="ActualWidth"/>
+                <Binding ElementName="uc" Path="ActualHeight"/>
+            </MultiBinding>
+        </Grid.Width>
+        <Grid.Height>
+            <MultiBinding Converter="{StaticResource MinConverter}">
+                <Binding ElementName="uc" Path="ActualWidth"/>
+                <Binding ElementName="uc" Path="ActualHeight"/>
+            </MultiBinding>
+        </Grid.Height>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.22*"/>
+            <RowDefinition Height="0.56*"/>
+            <RowDefinition Height="0.22*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.22*"/>
+            <ColumnDefinition Width="0.56*"/>
+            <ColumnDefinition Width="0.22*"/>
+        </Grid.ColumnDefinitions>
+
+        <controls:HueSlider Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Grid.ColumnSpan="3"
+                            SmallChange="{Binding ElementName=uc, Path=SmallChange}"
+                            Value="{Binding ElementName=uc, Path=Color.HSV_H, Mode=TwoWay}"/>
+        <controls:SquareSlider Grid.Row="1" Grid.Column="1" RangeX="100" RangeY="100"
+                               Hue="{Binding ElementName=uc, Path=Color.HSV_H}"
+                               PickerType="{Binding ElementName=uc, Path=PickerType}">
+            <controls:SquareSlider.Style>
+                <Style TargetType="controls:SquareSlider">
+                    <Setter Property="HeadX" Value="{Binding ElementName=uc, Path=Color.HSV_S, Mode=TwoWay}"/>
+                    <Setter Property="HeadY" Value="{Binding ElementName=uc, Path=Color.HSV_V, Mode=TwoWay}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=uc, Path=PickerType}" Value="HSL">
+                            <Setter Property="HeadX" Value="{Binding ElementName=uc, Path=Color.HSL_S, Mode=TwoWay}"/>
+                            <Setter Property="HeadY" Value="{Binding ElementName=uc, Path=Color.HSL_L, Mode=TwoWay}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </controls:SquareSlider.Style>
+        </controls:SquareSlider>
+
+    </Grid>
+</local:PickerControlBase>

@@ -1,0 +1,134 @@
+﻿<local:DualPickerControlBase x:Class="iNKORE.UI.WPF.ColorPicker.ColorDisplay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker"
+             xmlns:conv="clr-namespace:iNKORE.UI.WPF.Converters" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             x:Name="uc"
+             MaxWidth="250"
+             MaxHeight="250"
+             MinWidth="25"
+             MinHeight="25"
+             d:DesignHeight="70" d:DesignWidth="70">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <conv:MinConverter x:Key="MinConverter"/>
+            <conv:DividedSizeConverter x:Key="DividedSizeConverter"/>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/ImageButtonStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid>
+            <Grid.Width>
+                <MultiBinding Converter="{StaticResource MinConverter}">
+                    <Binding ElementName="uc" Path="ActualWidth"/>
+                    <Binding ElementName="uc" Path="ActualHeight"/>
+                </MultiBinding>
+            </Grid.Width>
+            <Grid.Height>
+                <MultiBinding Converter="{StaticResource MinConverter}">
+                    <Binding ElementName="uc" Path="ActualWidth"/>
+                    <Binding ElementName="uc" Path="ActualHeight"/>
+                </MultiBinding>
+            </Grid.Height>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="3*"/>
+            </Grid.RowDefinitions>
+            <Viewbox Grid.Row="2" Margin="1">
+                <Button ToolTip="Swap colors" Width="28" Height="28" Click="SwapButton_Click"
+                                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="Transparent"
+                                    Style="{StaticResource ImageButtonStyle}" Opacity="0.5">
+                    <Path Stroke="#FF252525" Fill="#FFFEFEFE" StrokeThickness="1.5" Data="M 9,1 L 2,8 L 6,8 L 6,22 L 20,22 L 20,26 L 27,19 L 20,12 L 20,16 L 12,16 L 12,8 L 16,8 L 9,1 Z"/>
+                </Button>
+            </Viewbox>
+
+            <Grid Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="2.5"
+                  d:Height="15" d:Width="15" Visibility="{Binding ElementName=uc, Path=UseHintColor, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.Width>
+                    <Binding ElementName="item1" Path="ActualWidth" Converter="{StaticResource DividedSizeConverter}">
+                        <Binding.ConverterParameter>
+                            <sys:Double>2</sys:Double>
+                        </Binding.ConverterParameter>
+                    </Binding>
+                </Grid.Width>
+                <Grid.Height>
+                    <Binding ElementName="item1" Path="ActualHeight" Converter="{StaticResource DividedSizeConverter}">
+                        <Binding.ConverterParameter>
+                            <sys:Double>2</sys:Double>
+                        </Binding.ConverterParameter>
+                    </Binding>
+                </Grid.Height>
+                <Rectangle Cursor="Hand" Stroke="Black" StrokeThickness="1" Panel.ZIndex="1" MouseLeftButtonDown="HintColor_OnMouseLeftButtonDown">
+                    <Rectangle.RadiusX>
+                        <Binding ElementName="uc" Path="CornerRadius" Converter="{StaticResource DividedSizeConverter}">
+                            <Binding.ConverterParameter>
+                                <sys:Double>2</sys:Double>
+                            </Binding.ConverterParameter>
+                        </Binding>
+                    </Rectangle.RadiusX>
+                    <Rectangle.RadiusY>
+                        <Binding ElementName="uc" Path="CornerRadius" Converter="{StaticResource DividedSizeConverter}">
+                            <Binding.ConverterParameter>
+                                <sys:Double>2</sys:Double>
+                            </Binding.ConverterParameter>
+                        </Binding>
+                    </Rectangle.RadiusY>
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="{Binding ElementName=uc, Path=HintColor}"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Border HorizontalAlignment="Stretch" Margin="0.35" VerticalAlignment="Stretch" RenderOptions.BitmapScalingMode="NearestNeighbor" Panel.ZIndex="0">
+                    <Border.CornerRadius>
+                        <Binding ElementName="uc" Path="CornerRadius" Converter="{StaticResource DividedSizeConverter}">
+                            <Binding.ConverterParameter>
+                                <sys:Double>2</sys:Double>
+                            </Binding.ConverterParameter>
+                        </Binding>
+                    </Border.CornerRadius>
+                    <Border.Background>
+                        <ImageBrush ImageSource="/iNKORE.UI.WPF;component/Resources/Images/transparentbg_mini.png" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute"/>
+                    </Border.Background>
+                </Border>
+            </Grid>
+
+            <Grid Grid.ColumnSpan="2" Grid.RowSpan="2" Grid.Row="1" Grid.Column="1">
+                <Rectangle Name="item1" Stroke="Black" StrokeThickness="1" Panel.ZIndex="1" RadiusX="{Binding ElementName=uc, Path=CornerRadius}" RadiusY="{Binding ElementName=uc, Path=CornerRadius}">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="{Binding ElementName=uc, Path=SecondaryColor}"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Border HorizontalAlignment="Stretch" Margin="0.35" CornerRadius="{Binding ElementName=uc, Path=CornerRadius}" VerticalAlignment="Stretch" RenderOptions.BitmapScalingMode="NearestNeighbor" Panel.ZIndex="0">
+                    <Border.Background>
+                        <ImageBrush ImageSource="/iNKORE.UI.WPF;component/Resources/Images/transparentbg_mini.png" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute"/>
+                    </Border.Background>
+                </Border>
+            </Grid>
+            <Grid Grid.ColumnSpan="2" Grid.RowSpan="2">
+                <Rectangle Stroke="Black" StrokeThickness="1" Panel.ZIndex="3" 
+                           RadiusX="{Binding ElementName=uc, Path=CornerRadius}" RadiusY="{Binding ElementName=uc, Path=CornerRadius}">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="{Binding ElementName=uc, Path=SelectedColor}" />
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Border HorizontalAlignment="Stretch" CornerRadius="{Binding ElementName=uc, Path=CornerRadius}" Margin="0.35" VerticalAlignment="Stretch" RenderOptions.BitmapScalingMode="NearestNeighbor" Panel.ZIndex="0">
+                    <Border.Background>
+                        <ImageBrush ImageSource="/iNKORE.UI.WPF;component/Resources/Images/transparentbg_mini.png" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute"/>
+                    </Border.Background>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</local:DualPickerControlBase>

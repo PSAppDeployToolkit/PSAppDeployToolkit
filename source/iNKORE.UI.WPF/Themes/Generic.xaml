@@ -1,0 +1,19 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:iNKORE.UI.WPF.Controls">
+    
+    <Style TargetType="c:OpacityMaskedImage">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="c:OpacityMaskedImage">
+                    <Rectangle x:Name="PART_Rectangle" Fill="{TemplateBinding Foreground}">
+                        <FrameworkElement.Tag>
+                            <Image x:Name="PART_Image" Source="{TemplateBinding Source}" Stretch="{TemplateBinding Stretch}" StretchDirection="{TemplateBinding StretchDirection}"/>
+                        </FrameworkElement.Tag>
+                    </Rectangle>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

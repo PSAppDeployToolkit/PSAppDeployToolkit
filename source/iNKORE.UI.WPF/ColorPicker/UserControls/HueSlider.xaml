@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="iNKORE.UI.WPF.ColorPicker.UserControls.HueSlider"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker"
+             mc:Ignorable="d"
+             x:ClassModifier="internal"
+             x:Name="uc">
+    <Viewbox>
+        <Grid>
+            <Image Source="/iNKORE.UI.WPF;component/Resources/Images/CircularHueGradient.png" Stretch="Fill"
+                   IsHitTestVisible="False">
+                <Image.OpacityMask>
+                    <RadialGradientBrush GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                        <RadialGradientBrush.GradientStops>
+                            <GradientStop Color="Transparent" Offset="0" />
+                            <GradientStop Color="Transparent" Offset="0.839" />
+                            <GradientStop Color="#2d2d30" Offset="0.84" />
+                            <GradientStop Color="#2d2d30" Offset="0.992" />
+                            <GradientStop Color="Transparent" Offset="0.993" />
+                        </RadialGradientBrush.GradientStops>
+                    </RadialGradientBrush>
+                </Image.OpacityMask>
+            </Image>
+            <Ellipse HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                     Stroke="#aa000000" StrokeThickness="2" Width="260" Height="260" IsHitTestVisible="False"/>
+            <Ellipse HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                     Stroke="#aa000000" StrokeThickness="2"  IsHitTestVisible="False" Width="220" Height="220"/>
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Rectangle Height="15" Width="24" Stroke="#2d2d30" StrokeThickness="3" IsHitTestVisible="False"/>
+                <Rectangle Height="11" Width="20" Stroke="Snow" StrokeThickness="2" IsHitTestVisible="False"/>
+                <Grid.RenderTransform>
+                    <TransformGroup>
+                        <RotateTransform Angle="{Binding ElementName=uc, Path=Value}" CenterX="131" CenterY="7.5" />
+                        <TranslateTransform X="-119"/>
+                    </TransformGroup>
+                </Grid.RenderTransform>
+            </Grid>
+            <Path Fill="Transparent" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0.8" MouseDown="OnMouseDown" MouseMove="OnMouseMove" MouseUp="OnMouseUp" PreviewMouseWheel="OnPreviewMouseWheel">
+                <Path.Data>
+                    <CombinedGeometry GeometryCombineMode="Exclude">
+                        <CombinedGeometry.Geometry1>
+                            <EllipseGeometry RadiusX="129.2" RadiusY="129.2"></EllipseGeometry>
+                        </CombinedGeometry.Geometry1>
+                        <CombinedGeometry.Geometry2>
+                            <EllipseGeometry RadiusX="109" RadiusY="109"></EllipseGeometry>
+                        </CombinedGeometry.Geometry2>
+                    </CombinedGeometry>
+                </Path.Data>
+            </Path>
+        </Grid>
+    </Viewbox>
+</UserControl>
