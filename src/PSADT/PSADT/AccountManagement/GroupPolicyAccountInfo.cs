@@ -62,14 +62,11 @@ namespace PSADT.AccountManagement
                             // Open each index's subkey so we can extrapolate the user information within.
                             using (var info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}"))
                             {
-                                // Skip over any entry where the name is invalid.
-                                if (info?.GetValue("szName", null) is not string username)
+                                // If the username is available, add it to the list and skip to the next SID.
+                                if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
                                 {
-                                    continue;
+                                    accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
                                 }
-
-                                // Create a new object with the information that we have.
-                                accountInfoList.Add(new(new(username), new(sid))); break;
                             }
                         }
                     }
