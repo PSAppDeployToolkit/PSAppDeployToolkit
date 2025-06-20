@@ -81,34 +81,20 @@ namespace PSADT.TerminalServices
                 return default;
             }
 
-            // Bomb out if we have no username (not a proper session).
-            string? userName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSUserName);
-            if (null == userName)
+            // Get extended information about the session, bombing out if we have no username (not a proper session).
+            var sessionInfo = GetValue<WTSINFOEXW>(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx).Data.WTSInfoExLevel1;
+            if (sessionInfo.UserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
             {
                 return null;
             }
 
             // Declare initial variables for data we need to get from a structured object.
-            string domainName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSDomainName)!;
+            string domainName = sessionInfo.DomainName.ToString();
             NTAccount ntAccount = new(domainName, userName);
             SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
-            var state = (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSConnectState)!;
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string pWinStationName = session.pWinStationName.ToString().TrimRemoveNull();
-            DateTime? logonTime = null;
-            TimeSpan? idleTime = null;
-            DateTime? disconnectTime = null;
-
-            // Get the extended session info and fill the above variables.
-            if (GetValue<WTSINFOEXW>(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx) is WTSINFOEXW wtsInfoEx && (WTS_INFO_LEVEL)wtsInfoEx.Level == WTS_INFO_LEVEL.WTSINFOEX_LEVEL1)
-            {
-                logonTime = DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.LogonTime);
-                idleTime = DateTime.Now - DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.LastInputTime);
-                if (wtsInfoEx.Data.WTSInfoExLevel1.DisconnectTime != 0)
-                {
-                    disconnectTime = DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.DisconnectTime);
-                }
-            }
+            ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
 
             // Instantiate a SessionInfo object and return it to the caller.
             return new(
@@ -118,18 +104,18 @@ namespace PSADT.TerminalServices
                 domainName,
                 session.SessionId,
                 pWinStationName,
-                state,
+                (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)sessionInfo.SessionState,
                 session.SessionId == CurrentSessionId,
                 session.SessionId == PInvoke.WTSGetActiveConsoleSessionId(),
-                state == LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive,
+                sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive,
                 pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
-                GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType) != 0,
+                clientProtocolType != 0,
                 AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid),
-                logonTime,
-                idleTime,
-                disconnectTime,
+                DateTime.FromFileTime(sessionInfo.LogonTime),
+                DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime),
+                sessionInfo.DisconnectTime != 0 ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
                 clientName,
-                (WTS_PROTOCOL_TYPE)GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!,
+                (WTS_PROTOCOL_TYPE)clientProtocolType!,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
                 (null != clientName) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
