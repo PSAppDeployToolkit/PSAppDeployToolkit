@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="GoToStateActionTargetHasNoStateGroups" xml:space="preserve">
+    <value>Target {0} does not define any VisualStateGroups. </value>
+    <comment>
+			{0} is an element name and could be an empty string
+		</comment>
+  </data>
+  <data name="UnsupportedRemoveTargetExceptionMessage" xml:space="preserve">
+    <value>The target of the RemoveElementAction is not supported.</value>
+  </data>
+  <data name="ChangePropertyActionCannotFindPropertyNameExceptionMessage" xml:space="preserve">
+    <value>Cannot find a property named "{0}" on type "{1}".</value>
+    <comment>
+			{0} is the PropertyName property value specified by the user
+			{1} is the Type we are trying to find a property on
+		</comment>
+  </data>
+  <data name="ChangePropertyActionCannotSetValueExceptionMessage" xml:space="preserve">
+    <value>Cannot assign value of type "{0}" to property "{1}" of type "{2}". The "{1}" property can be assigned only values of type "{2}".</value>
+    <comment>
+			{0} is the type name of the illegal value, or "null" if value is null
+			{1} is the name of the property
+			{2} is the type of the property
+		</comment>
+  </data>
+  <data name="ChangePropertyActionPropertyIsReadOnlyExceptionMessage" xml:space="preserve">
+    <value>Property "{0}" defined by type "{1}" does not expose a set method and therefore cannot be modified.</value>
+    <comment>
+			{0} is the name of the property
+			{1} is the name of the type that defines the property
+		</comment>
+  </data>
+  <data name="ChangePropertyActionCannotIncrementAnimatedPropertyChangeExceptionMessage" xml:space="preserve">
+    <value>The Increment property cannot be set to True if the Duration property is set.</value>
+    <comment>
+			This message is shown if a user attempts to animate and increment a property change.
+		</comment>
+  </data>
+  <data name="ChangePropertyActionCannotAnimateTargetTypeExceptionMessage" xml:space="preserve">
+    <value>Cannot animate a property change on a type '{0}' Target. Property changes can only be animated on types derived from DependencyObject.</value>
+    <comment>
+			{0} is the name of the type the user tried to target.
+			This message is shown if a user attempts to animate a property on a non-DependencyObject type.
+		</comment>
+  </data>
+  <data name="ChangePropertyActionCannotIncrementWriteOnlyPropertyExceptionMessage" xml:space="preserve">
+    <value>The '{0}' property cannot be incremented because its value cannot be read.</value>
+    <comment>
+			{0} is the name of write-only property
+			This message is shown if a user attempts to increment a write-only property.
+		</comment>
+  </data>
+  <data name="ChangePropertyActionAmbiguousAdditionOperationExceptionMessage" xml:space="preserve">
+    <value>More than one potential addition operator was found on type '{0}'.</value>
+    <comment>
+			{0} is the type on which multiple usable op_Addition overloads were found.
+			Shown when attempting to increment using an type with more than one applicable op_Addition method defined.
+		</comment>
+  </data>
+  <data name="InvalidLeftOperand" xml:space="preserve">
+    <value>LeftOperand of type "{0}" cannot be used with operator "{1}".</value>
+    <comment>Exception thrown by ConditionalExpression. {0} represent an english type, {1} represent an english operator 'greaterthan'. Both are non localizable</comment>
+  </data>
+  <data name="InvalidOperands" xml:space="preserve">
+    <value>LeftOperand of type "{1}" and RightOperand of type "{0}" cannot be used with operator "{2}".</value>
+    <comment>Exception thrown by ConditionalExpression. {0}and {1} represent an english type, {2} represent an english operator 'greaterthan'. Both are non localizable</comment>
+  </data>
+  <data name="InvalidRightOperand" xml:space="preserve">
+    <value>RightOperand of type "{0}" cannot be used with operator "{1}".</value>
+    <comment>Exception thrown by ConditionalExpression. {0} represents an english type, {1} represent an english operator 'greaterthan'. Both are non localizable</comment>
+  </data>
+  <data name="CallMethodActionValidMethodNotFoundExceptionMessage" xml:space="preserve">
+    <value>Could not find method named '{0}' on object of type '{1}' that matches the expected signature.</value>
+    <comment>
+			{0} is the name of the method that could not be found
+			{1} is the name of the type that was searched for the method
+		</comment>
+  </data>
+  <data name="DataStateBehaviorStateNameNotFoundExceptionMessage" xml:space="preserve">
+    <value>Cannot find state named '{0}' on type '{1}'. Ensure that the state exists and that it can be accessed from this context.</value>
+    <comment>
+			{0} is the name of the state that could not be found
+			{1} is the name of the type that was searched for the state, or null if that type was null
+		</comment>
+  </data>
+  <data name="CannotHostBehaviorCollectionMultipleTimesExceptionMessage" xml:space="preserve">
+    <value>Cannot set the same BehaviorCollection on multiple objects.</value>
+  </data>
+  <data name="CannotHostBehaviorMultipleTimesExceptionMessage" xml:space="preserve">
+    <value>An instance of a Behavior cannot be attached to more than one object at a time.</value>
+  </data>
+  <data name="CannotHostTriggerActionMultipleTimesExceptionMessage" xml:space="preserve">
+    <value>Cannot host an instance of a TriggerAction in multiple TriggerCollections simultaneously. Remove it from one TriggerCollection before adding it to another.</value>
+  </data>
+  <data name="CannotHostTriggerCollectionMultipleTimesExceptionMessage" xml:space="preserve">
+    <value>Cannot set the same TriggerCollection on multiple objects.</value>
+  </data>
+  <data name="CannotHostTriggerMultipleTimesExceptionMessage" xml:space="preserve">
+    <value>An instance of a trigger cannot be attached to more than one object at a time.</value>
+  </data>
+  <data name="CommandDoesNotExistOnBehaviorWarningMessage" xml:space="preserve">
+    <value>The command "{0}" does not exist or is not publicly exposed on {1}.</value>
+    <comment>{0} is the non-existant command name the user specified. {1} is the type name of the Behavior the command could not be found on.</comment>
+  </data>
+  <data name="DefaultTriggerAttributeInvalidTriggerTypeSpecifiedExceptionMessage" xml:space="preserve">
+    <value>"{0}" is not a valid type for the TriggerType parameter. Make sure "{0}" derives from TriggerBase.</value>
+    <comment>{0} is the name of the type the user specified</comment>
+  </data>
+  <data name="DuplicateItemInCollectionExceptionMessage" xml:space="preserve">
+    <value>Cannot add the same instance of "{0}" to a "{1}" more than once.</value>
+    <comment>{0} is the name of the type being added to the collection. {1} is the type name of the collection</comment>
+  </data>
+  <data name="EventTriggerBaseInvalidEventExceptionMessage" xml:space="preserve">
+    <value>The event "{0}" on type "{1}" has an incompatible signature. Make sure the event is public and satisfies the EventHandler delegate.</value>
+    <comment>{0} is the EventName property value specified by the user. {1} is the Type we are trying to find an event on</comment>
+  </data>
+  <data name="EventTriggerCannotFindEventNameExceptionMessage" xml:space="preserve">
+    <value>Cannot find an event named "{0}" on type "{1}".</value>
+    <comment>{0} is the EventName property value specified by the user. {1} is the Type we are trying to find an event on</comment>
+  </data>
+  <data name="RetargetedTypeConstraintViolatedExceptionMessage" xml:space="preserve">
+    <value>An object of type "{0}" cannot have a {3} property of type "{1}". Instances of type "{0}" can have only a {3} property of type "{2}".</value>
+    <comment>{0} is the type name of the constrained type. {1} is the type name of the object to which the constrained type's property cannot be set. {2} is the type name of the type to which instances of the constrained type's property can be set. {3} is either "Source" or "Target", depending on the constrained type's property name</comment>
+  </data>
+  <data name="TypeConstraintViolatedExceptionMessage" xml:space="preserve">
+    <value>Cannot attach type "{0}" to type "{1}". Instances of type "{0}" can only be attached to objects of type "{2}".</value>
+    <comment>{0} is the type name of the constrained type. {1} is the type name of the object to which the constrainted type cannot be attached. {2} is the type name of the constraint type</comment>
+  </data>
+  <data name="UnableToResolveTargetNameWarningMessage" xml:space="preserve">
+    <value>Unable to resolve TargetName "{0}".</value>
+    <comment>{0} is the user-specified TargetName that could not be resolved.</comment>
+  </data>
+</root>

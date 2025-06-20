@@ -1,0 +1,61 @@
+﻿<local:DualPickerControlBase x:Class="iNKORE.UI.WPF.ColorPicker.StandardColorPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors"
+             xmlns:converters="clr-namespace:iNKORE.UI.WPF.Converters"
+             xmlns:behaviours="clr-namespace:iNKORE.UI.WPF.ColorPicker.Behaviors"
+             xmlns:controls="clr-namespace:iNKORE.UI.WPF.ColorPicker.UserControls"
+             xmlns:ui="clr-namespace:iNKORE.UI.WPF.ColorPicker.UIExtensions" 
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker"
+             mc:Ignorable="d"
+             x:Name="uc"
+             MinWidth="200"
+             MinHeight="380"
+             d:DesignWidth="268.356" d:DesignHeight="463.308">
+    <local:DualPickerControlBase.Resources>
+        <ResourceDictionary>
+            <converters:PickerTypeToIntConverter x:Key="PickerTypeToIntConverter"/>
+        </ResourceDictionary>
+    </local:DualPickerControlBase.Resources>
+    <Grid Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="6*"/>
+            <RowDefinition Height="1.4*"/>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="1.1*" MaxHeight="35"/>
+            <RowDefinition Height="4*" MaxHeight="110"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" MaxWidth="100"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <ComboBox Width="50" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0"
+                  Grid.Row="1" Grid.Column="1"
+                  SelectedIndex="{Binding ElementName=uc, Path=PickerType, Converter={StaticResource PickerTypeToIntConverter}}">
+            <ComboBoxItem IsSelected="True">HSV</ComboBoxItem>
+            <ComboBoxItem>HSL</ComboBoxItem>
+        </ComboBox>
+
+        <local:SquarePicker Grid.ColumnSpan="3" Grid.RowSpan="2" Margin="5 5 5 15" VerticalAlignment="Stretch" 
+                         PickerType="{Binding ElementName=uc, Path=PickerType}"
+                         SmallChange="{Binding ElementName=uc, Path=SmallChange}"
+                         ColorState="{Binding ElementName=uc, Path=ColorState, Mode=TwoWay}"/>
+        <local:ColorDisplay Grid.RowSpan="3" Grid.Row="1" Margin="5" MaxWidth="80" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                            ColorState="{Binding ElementName=uc, Path=ColorState, Mode=TwoWay}"
+                            SecondColorState="{Binding ElementName=uc, Path=SecondColorState, Mode=TwoWay}"
+                            HintColorState="{Binding ElementName=uc, Path=HintColorState, Mode=TwoWay}"
+                            UseHintColor="{Binding ElementName=uc, Path=UseHintColor, Mode=TwoWay}"/>
+        <DockPanel Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,10,0">
+            <Label Content="Hex"/>
+            <local:HexColorTextBox ColorState="{Binding ElementName=uc, Path=ColorState, Mode=TwoWay}"
+                                   ShowAlpha="{Binding ElementName=uc, Path=ShowAlpha}"/>
+        </DockPanel>
+        <local:ColorSliders Grid.Row="3" Grid.ColumnSpan="3" Grid.RowSpan="3"
+                            ColorState="{Binding ElementName=uc, Path=ColorState, Mode=TwoWay}"
+                            SmallChange="{Binding ElementName=uc, Path=SmallChange}"
+                            ShowAlpha="{Binding ElementName=uc, Path=ShowAlpha}"/>
+    </Grid>
+</local:DualPickerControlBase>

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net472;net6.0-windows</TargetFrameworks>
+		<OutputType>Library</OutputType>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<UseWindowsForms>true</UseWindowsForms>
+		<UseWPF>true</UseWPF>
+		<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>default</LangVersion>
+
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="DirectShowLib-2005, Version=2.1.0.26626, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
+			<SpecificVersion>False</SpecificVersion>
+			<HintPath>Libraries\DirectShowLib-2005.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<Resource Include="Effects\DeeperColor.ps" />
+		<AppDesigner Include="Properties\" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Effects\DeeperColor.fx" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Libraries\DirectShowLib-2005.dll" />
+	</ItemGroup>
+</Project>

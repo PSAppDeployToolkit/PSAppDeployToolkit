@@ -1,0 +1,27 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker.Styles"
+                    >
+    <Style TargetType="UserControl" x:Key="DefaultColorPickerStyle">
+        <Style.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="DarkTabControlStyle.xaml" />
+                    <ResourceDictionary Source="DarkTextBoxStyle.xaml" />
+                    <ResourceDictionary Source="DarkComboBoxStyle.xaml" />
+                    <ResourceDictionary Source="RoundedColorDisplayStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+                <Style TargetType="Label">
+                    <Setter Property="Foreground" Value="Snow" />
+                </Style>
+                <Style TargetType="Grid" >
+                    <Style.Triggers>
+                        <Trigger Property="Name" Value="MainGrid">
+                            <Setter Property="Background" Value="#252525" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ResourceDictionary>
+        </Style.Resources>
+    </Style>
+</ResourceDictionary>

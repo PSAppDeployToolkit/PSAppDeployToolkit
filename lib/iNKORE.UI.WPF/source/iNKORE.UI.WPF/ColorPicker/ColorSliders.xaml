@@ -1,0 +1,278 @@
+﻿<local:PickerControlBase x:Class="iNKORE.UI.WPF.ColorPicker.ColorSliders"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors"
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker"
+             xmlns:conv="clr-namespace:iNKORE.UI.WPF.Converters"
+             xmlns:ui="clr-namespace:iNKORE.UI.WPF.ColorPicker.UIExtensions"
+             xmlns:behaviors="clr-namespace:iNKORE.UI.WPF.ColorPicker.Behaviors"
+             mc:Ignorable="d" 
+             MinWidth="200"
+             MinHeight="150"
+             x:Name="uc"
+             d:DesignHeight="150" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <conv:RangeConstrainedDoubleToDoubleConverter x:Key="HueChannelConverter" Min="0" Max="359"/>
+            <conv:RangeConstrainedDoubleToDoubleConverter x:Key="HundredChannelConverter" Min="0" Max="100"/>
+            <conv:RangeConstrainedDoubleToDoubleConverter x:Key="TwoFiftyFiveChannelConverter" Min="0" Max="255"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/ColorSliderStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <TabControl Canvas.Top="290" Margin="10" MaxHeight="130" VerticalAlignment="Top">
+        <TabControl.Resources>
+            <Style TargetType="TabPanel">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+            </Style>
+        </TabControl.Resources>
+        <TabItem Header="HSV">
+            <Grid Margin="0,10,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="18"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="45"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition>
+                        <RowDefinition.Style>
+                            <Style TargetType="RowDefinition">
+                                <Setter Property="Height" Value="20" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=uc, Path=ShowAlpha}" Value="False">
+                                        <Setter Property="Height" Value="0" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </RowDefinition.Style>
+                    </RowDefinition>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="H" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0"/>
+                <ui:HsvColorSlider Height="12" Grid.Row="0" Grid.Column="1" TabIndex="1"
+                                       SliderHsvType="H" Minimum="0" Maximum="360" IsMoveToPointEnabled="True"
+                                       SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                       Value="{Binding Path=Color.HSV_H, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="0" Grid.Column="2" Width="40" Height="18" TabIndex="5"
+                         Text="{Binding Path=Color.HSV_H, Converter={StaticResource HueChannelConverter}, StringFormat=N1, ElementName=uc}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="S" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0"/>
+                <ui:HsvColorSlider Height="12" Grid.Row="1" Grid.Column="1" TabIndex="2"
+                                   SliderHsvType="S" Minimum="0" Maximum="100" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.HSV_S, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="1" Grid.Column="2" Width="40" Height="18" TabIndex="6"
+                         Text="{Binding Path=Color.HSV_S, Converter={StaticResource HundredChannelConverter}, ElementName=uc, StringFormat=N1}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="V" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="0" />
+                <ui:HsvColorSlider Height="12" Grid.Row="2" Grid.Column="1" TabIndex="3"
+                                   SliderHsvType="V" Minimum="0" Maximum="100" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.HSV_V, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="2" Grid.Column="2" Width="40" Height="18" TabIndex="7"
+                         Text="{Binding Path=Color.HSV_V, Converter={StaticResource HundredChannelConverter}, ElementName=uc, StringFormat=N1}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="A" HorizontalAlignment="Center" Grid.Row="3" Grid.Column="0" />
+                <Grid Height="12" Grid.Row="3" Grid.Column="1">
+                    <ui:RgbColorSlider SliderArgbType="A" Minimum="0" Maximum="255" IsMoveToPointEnabled="True" TabIndex="4"
+                                       IsEnabled="{Binding ElementName=uc, Path=ShowAlpha}"
+                                       SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                       Value="{Binding Path=Color.A, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                    <Border BorderThickness="0" CornerRadius="5" Panel.ZIndex="-1" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Border.Background>
+                            <ImageBrush ImageSource="/iNKORE.UI.WPF;component/Resources/Images/transparentbg_mini.png" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute" />
+                        </Border.Background>
+                    </Border>
+                </Grid>
+                <TextBox TextAlignment="Center" Grid.Row="3" Grid.Column="2" Width="40" Height="18" TabIndex="8"
+                         IsEnabled="{Binding ElementName=uc, Path=ShowAlpha}"
+                         Text="{Binding Path=Color.A, Converter={StaticResource TwoFiftyFiveChannelConverter}, ElementName=uc, StringFormat=N0}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+        </TabItem>
+        <TabItem Header="HSL">
+            <Grid Margin="0,10,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="18"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="45"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition>
+                        <RowDefinition.Style>
+                            <Style TargetType="RowDefinition">
+                                <Setter Property="Height" Value="20" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=uc, Path=ShowAlpha}" Value="False">
+                                        <Setter Property="Height" Value="0" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </RowDefinition.Style>
+                    </RowDefinition>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="H" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0"/>
+                <ui:HslColorSlider Height="12" Grid.Row="0" Grid.Column="1" TabIndex="1"
+                                       SliderHslType="H" Minimum="0" Maximum="360" IsMoveToPointEnabled="True"
+                                       SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                       Value="{Binding Path=Color.HSL_H, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="0" Grid.Column="2" Width="40" Height="18" TabIndex="5"
+                         Text="{Binding Path=Color.HSL_H, Converter={StaticResource HueChannelConverter}, StringFormat=N1, ElementName=uc}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="S" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0"/>
+                <ui:HslColorSlider Height="12" Grid.Row="1" Grid.Column="1" TabIndex="2"
+                                   SliderHslType="S" Minimum="0" Maximum="100" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.HSL_S, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="1" Grid.Column="2" Width="40" Height="18" TabIndex="6"
+                         Text="{Binding Path=Color.HSL_S, Converter={StaticResource HundredChannelConverter}, ElementName=uc, StringFormat=N1}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="L" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="0" />
+                <ui:HslColorSlider Height="12" Grid.Row="2" Grid.Column="1" TabIndex="3"
+                                   SliderHslType="L" Minimum="0" Maximum="100" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.HSL_L, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="2" Grid.Column="2" Width="40" Height="18" TabIndex="7"
+                         Text="{Binding Path=Color.HSL_L, Converter={StaticResource HundredChannelConverter}, ElementName=uc, StringFormat=N1}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="A" HorizontalAlignment="Center" Grid.Row="3" Grid.Column="0" />
+                <Grid Height="12" Grid.Row="3" Grid.Column="1">
+                    <ui:RgbColorSlider SliderArgbType="A" Minimum="0" Maximum="255" IsMoveToPointEnabled="True" IsEnabled="{Binding ElementName=uc, Path=ShowAlpha}" TabIndex="4"
+                                       SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                       Value="{Binding Path=Color.A, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                    <Border BorderThickness="0" CornerRadius="5" Panel.ZIndex="-1" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Border.Background>
+                            <ImageBrush ImageSource="/iNKORE.UI.WPF;component/Resources/Images/transparentbg_mini.png" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute" />
+                        </Border.Background>
+                    </Border>
+                </Grid>
+                <TextBox TextAlignment="Center" Grid.Row="3" Grid.Column="2" Width="40" Height="18" TabIndex="8"
+                         IsEnabled="{Binding ElementName=uc, Path=ShowAlpha}"
+                         Text="{Binding Path=Color.A, Converter={StaticResource TwoFiftyFiveChannelConverter}, ElementName=uc, StringFormat=N0}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+        </TabItem>
+        <TabItem Header="RGB">
+            <Grid Margin="0,10,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="18"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="45"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition>
+                        <RowDefinition.Style>
+                            <Style TargetType="RowDefinition">
+                                <Setter Property="Height" Value="20" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=uc, Path=ShowAlpha}" Value="False">
+                                        <Setter Property="Height" Value="0" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </RowDefinition.Style>
+                    </RowDefinition>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="R" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0"/>
+                <ui:RgbColorSlider Height="12" Grid.Row="0" Grid.Column="1" TabIndex="1"
+                                   SliderArgbType="R" Minimum="0" Maximum="255" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.RGB_R, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="0" Grid.Column="2" Width="40" Height="18" TabIndex="5"
+                         Text="{Binding Path=Color.RGB_R, Converter={StaticResource TwoFiftyFiveChannelConverter}, StringFormat=N0, ElementName=uc}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="G" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0"/>
+                <ui:RgbColorSlider Height="12" Grid.Row="1" Grid.Column="1" TabIndex="2"
+                                   SliderArgbType="G" Minimum="0" Maximum="255" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.RGB_G, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="1" Grid.Column="2" Width="40" Height="18" TabIndex="6"
+                         Text="{Binding Path=Color.RGB_G, Converter={StaticResource TwoFiftyFiveChannelConverter}, ElementName=uc, StringFormat=N0}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="B" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="0" />
+                <ui:RgbColorSlider Height="12" Grid.Row="2" Grid.Column="1" TabIndex="3"
+                                   SliderArgbType="B" Minimum="0" Maximum="255" IsMoveToPointEnabled="True"
+                                   SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                   Value="{Binding Path=Color.RGB_B, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                <TextBox TextAlignment="Center" Grid.Row="2" Grid.Column="2" Width="40" Height="18" TabIndex="7"
+                         Text="{Binding Path=Color.RGB_B, Converter={StaticResource TwoFiftyFiveChannelConverter}, ElementName=uc, StringFormat=N0}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <TextBlock Text="A" HorizontalAlignment="Center" Grid.Row="3" Grid.Column="0" />
+                <Grid Height="12" Grid.Row="3" Grid.Column="1">
+                    <ui:RgbColorSlider SliderArgbType="A" Minimum="0" Maximum="255" IsMoveToPointEnabled="True" TabIndex="4"
+                                       IsEnabled="{Binding ElementName=uc, Path=ShowAlpha}"
+                                       SmallChangeBindable="{Binding ElementName=uc, Path=SmallChange}"
+                                       Value="{Binding Path=Color.A, Mode=TwoWay, ElementName=uc}" CurrentColorState="{Binding Path=ColorState, ElementName=uc}"/>
+                    <Border BorderThickness="0" CornerRadius="5" Panel.ZIndex="-1" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Border.Background>
+                            <ImageBrush ImageSource="/iNKORE.UI.WPF;component/Resources/Images/transparentbg_mini.png" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute" />
+                        </Border.Background>
+                    </Border>
+                </Grid>
+                <TextBox TextAlignment="Center" Grid.Row="3" Grid.Column="2" Width="40" Height="18"
+                         IsEnabled="{Binding ElementName=uc, Path=ShowAlpha}" TabIndex="8"
+                         Text="{Binding Path=Color.A, Converter={StaticResource TwoFiftyFiveChannelConverter}, ElementName=uc, StringFormat=N0}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:TextBoxFocusBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</local:PickerControlBase>

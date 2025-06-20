@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="iNKORE.UI.WPF.ColorPicker.UserControls.SquareSlider"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:iNKORE.UI.WPF.ColorPicker"
+             xmlns:conv="clr-namespace:iNKORE.UI.WPF.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="400"
+             x:ClassModifier="internal"
+             x:Name="uc">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <conv:ProportialConverter x:Key="ProportionalConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid MouseDown="OnMouseDown" MouseMove="OnMouseMove" MouseUp="OnMouseUp">
+        <Image 
+            Width="{Binding ElementName=uc, Path=Width}"
+            Height="{Binding ElementName=uc, Path=Height}"
+            Source="{Binding ElementName=uc, Path=GradientBitmap}"
+            Stretch="Fill">
+
+        </Image>
+        <Canvas Background="Transparent">
+            <Grid x:Name="head">
+                <Canvas.Left>
+                    <MultiBinding Converter="{StaticResource ProportionalConverter}">
+                        <Binding ElementName="uc" Path="ActualWidth"/>
+                        <Binding ElementName="uc" Path="HeadX"/>
+                        <Binding ElementName="uc" Path="RangeX"/>
+                    </MultiBinding>
+                </Canvas.Left>
+                <Canvas.Bottom>
+                    <MultiBinding Converter="{StaticResource ProportionalConverter}">
+                        <Binding ElementName="uc" Path="ActualHeight"/>
+                        <Binding ElementName="uc" Path="HeadY"/>
+                        <Binding ElementName="uc" Path="RangeY"/>
+                    </MultiBinding>
+                </Canvas.Bottom>
+                <Ellipse Fill="Transparent" Stroke="White" StrokeThickness="2" Width="12" Height="12" />
+                <Ellipse Fill="Transparent" Stroke="Black" StrokeThickness="2" Width="14" Height="14" />
+                <Grid.RenderTransform>
+                    <TranslateTransform X="-7" Y="7" />
+                </Grid.RenderTransform>
+            </Grid>
+        </Canvas>
+    </Grid>
+</UserControl>
