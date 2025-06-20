@@ -15,23 +15,17 @@ namespace PSADT.Execution
         /// <param name="isDotNetExecutable"></param>
         /// <param name="machine"></param>
         /// <param name="subsystem"></param>
-        /// <param name="architecture"></param>
-        /// <param name="executableType"></param>
         /// <param name="entryPoint"></param>
         /// <param name="imageBase"></param>
         public ExecutableInfo(
             string filePath,
             LibraryInterfaces.IMAGE_FILE_MACHINE machine,
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem,
-            SystemArchitecture architecture,
-            ExecutableType executableType,
             bool isDotNetExecutable,
             uint? entryPoint,
             ulong? imageBase)
         {
             FileInfo = new FileInfo(filePath);
-            Architecture = architecture;
-            ExecutableType = executableType;
             Machine = machine;
             Subsystem = subsystem;
             IsDotNetExecutable = isDotNetExecutable;
@@ -53,16 +47,6 @@ namespace PSADT.Execution
         /// The subsystem of the executable.
         /// </summary>
         public readonly LibraryInterfaces.IMAGE_SUBSYSTEM Subsystem;
-
-        /// <summary>
-        /// The architecture of the executable.
-        /// </summary>
-        public readonly SystemArchitecture Architecture;
-
-        /// <summary>
-        /// The type of executable.
-        /// </summary>
-        public readonly ExecutableType ExecutableType;
 
         /// <summary>
         /// Whether the file is a .NET executable.

@@ -91,8 +91,6 @@ namespace PSADT.Execution
                 filePath,
                 machine,
                 subsystem,
-                (SystemArchitecture)machine,
-                (ExecutableType)subsystem,
                 isDotNet,
                 entryPoint,
                 imageBase
