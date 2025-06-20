@@ -418,15 +418,15 @@ namespace PSADT.Module
 
 
                 // Generate log paths from our installation properties.
-                LogTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    if (Directory.Exists(LogTempFolder))
+                    var logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
+                    if (Directory.Exists(logTempFolder))
                     {
-                        Directory.Delete(LogTempFolder, true);
+                        Directory.Delete(logTempFolder, true);
                     }
-                    LogPath = Directory.CreateDirectory(LogTempFolder).FullName;
+                    LogPath = Directory.CreateDirectory(logTempFolder).FullName;
                 }
                 else
                 {
@@ -1461,11 +1461,6 @@ namespace PSADT.Module
         /// Gets the registry path used for getting/setting deferral information.
         /// </summary>
         private readonly string RegKeyDeferHistory;
-
-        /// <summary>
-        /// Gets the deployment session's temporary filesystem log path when compressing logs.
-        /// </summary>
-        private readonly string LogTempFolder;
 
         /// <summary>
         /// Gets the deployment session's filesystem log path.
