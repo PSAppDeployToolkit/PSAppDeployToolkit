@@ -107,11 +107,11 @@ function New-ADTTemplate
         $templatePath = Join-Path -Path $Destination -ChildPath $Name
         $templateModulePath = if ($Version.Equals(3))
         {
-            [System.IO.Path]::Combine($templatePath, 'AppDeployToolkit', $moduleName)
+            Join-Path -Path $templatePath -ChildPath "AppDeployToolkit\$moduleName"
         }
         else
         {
-            [System.IO.Path]::Combine($templatePath, $moduleName)
+            Join-Path -Path $templatePath -ChildPath $moduleName
         }
     }
 
@@ -199,7 +199,7 @@ function New-ADTTemplate
                 # Display the newly created folder in Windows Explorer.
                 if ($Show)
                 {
-                    & ([System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'explorer.exe')) $templatePath
+                    & (Join-Path -Path [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows) -ChildPath explorer.exe) $templatePath
                 }
 
                 # Return a DirectoryInfo object if passing through.

@@ -35,8 +35,8 @@ try
             Directories = [pscustomobject]@{
                 Defaults = ([ordered]@{
                         Script = $PSScriptRoot
-                        Config = [System.IO.Path]::Combine($PSScriptRoot, 'Config')
-                        Strings = [System.IO.Path]::Combine($PSScriptRoot, 'Strings')
+                        Config = Join-Path -Path $PSScriptRoot -ChildPath Config
+                        Strings = Join-Path -Path $PSScriptRoot -ChildPath Strings
                     }).AsReadOnly()
                 Script = $null
                 Config = $null

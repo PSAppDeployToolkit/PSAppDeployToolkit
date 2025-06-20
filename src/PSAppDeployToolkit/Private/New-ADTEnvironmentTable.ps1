@@ -156,7 +156,7 @@ function Private:New-ADTEnvironmentTable
         {
             $variables.Add('envProgramFiles', [System.Environment]::GetEnvironmentVariable('ProgramW6432'))
             $variables.Add('envCommonProgramFiles', [System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
-            $variables.Add('envSysNativeDirectory', [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'sysnative'))
+            $variables.Add('envSysNativeDirectory', (Join-Path -Path ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows)) -ChildPath sysnative))
             $variables.Add('envSYSWOW64Directory', [System.Environment]::SystemDirectory)
         }
         $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))

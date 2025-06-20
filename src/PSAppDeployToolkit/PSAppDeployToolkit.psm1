@@ -8,14 +8,14 @@
 New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
 
 # Dot-source our initial imports.
-. ([System.IO.Path]::Combine($PSScriptRoot, 'ImportsFirst.ps1'))
+. (Join-Path -Path $PSScriptRoot -ChildPath ImportsFirst.ps1)
 
 # Dot-source our imports.
 if (!$Module.Compiled)
 {
     try
     {
-        New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles([System.IO.Path]::Combine($PSScriptRoot, 'Private')); [System.IO.Directory]::GetFiles([System.IO.Path]::Combine($PSScriptRoot, 'Public'))))
+        New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Private)); [System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Public))))
         $ModuleFiles | . {
             begin
             {
@@ -46,4 +46,4 @@ if (!$Module.Compiled)
 }
 
 # Dot-source our final imports.
-. ([System.IO.Path]::Combine($PSScriptRoot, 'ImportsLast.ps1'))
+. (Join-Path -Path $PSScriptRoot -ChildPath 'ImportsLast.ps1')

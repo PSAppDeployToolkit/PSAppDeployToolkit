@@ -4957,7 +4957,7 @@ function New-ZipFile
     $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
 
     # Convert destination parameters.
-    $PSBoundParameters.Add('DestinationPath', [System.IO.Path]::Combine($DestinationArchiveDirectoryPath, $DestinationArchiveFileName))
+    $PSBoundParameters.Add('DestinationPath', (Join-Path -Path $DestinationArchiveDirectoryPath -ChildPath $DestinationArchiveFileName))
     $null = $PSBoundParameters.Remove('DestinationArchiveDirectoryPath')
     $null = $PSBoundParameters.Remove('DestinationArchiveFileName')
 

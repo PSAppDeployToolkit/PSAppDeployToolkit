@@ -136,7 +136,7 @@ function Private:Import-ADTConfig
     }
 
     # Append the toolkit's name onto the temporary path.
-    $config.Toolkit.TempPath = [System.IO.Path]::Combine($config.Toolkit.TempPath, $adtEnv.appDeployToolkitName)
+    $config.Toolkit.TempPath = Join-Path -Path $config.Toolkit.TempPath -ChildPath $adtEnv.appDeployToolkitName
 
     # Finally, return the config for usage within module.
     return $config

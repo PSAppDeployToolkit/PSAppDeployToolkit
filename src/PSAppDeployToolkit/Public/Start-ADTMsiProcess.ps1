@@ -283,7 +283,7 @@ function Start-ADTMsiProcess
                         {
                             (Get-Item -LiteralPath $FilePath).FullName
                         }
-                        elseif ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath)) -PathType Leaf))
+                        elseif ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = Join-Path -Path $adtSession.DirFiles -ChildPath $FilePath) -PathType Leaf))
                         {
                             $dirFilesPath
                         }
@@ -417,13 +417,13 @@ function Start-ADTMsiProcess
                         }
 
                         # Build the log file path.
-                        [System.IO.Path]::Combine($adtConfig.MSI.LogPath, $logFile)
+                        Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $logFile
                     }
                     elseif ($adtSession)
                     {
                         # Get the log directory from the session. This will factor in
                         # whether we're compressing logs, or logging to a subfolder.
-                        [System.IO.Path]::Combine($adtSession.GetLogPath().FullName, $logFile)
+                        Join-Path -Path $adtSession.GetLogPath().FullName -ChildPath $logFile
                     }
                     else
                     {
@@ -434,7 +434,7 @@ function Start-ADTMsiProcess
                         }
 
                         # Build the log file path.
-                        [System.IO.Path]::Combine($adtConfig.Toolkit.LogPath, $logFile)
+                        Join-Path -Path $adtConfig.Toolkit.LogPath -ChildPath $logFile
                     }
                 }
 

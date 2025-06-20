@@ -99,7 +99,7 @@ function Private:Import-ADTModuleDataFile
             Exception = [System.InvalidOperationException]::new("The importation of the module's default $FileName file returned a null or empty result.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTDataFileImportFailure'
-            TargetObject = [System.IO.Path]::Combine($PSBoundParameters.BaseDirectory, $FileName)
+            TargetObject = Join-Path -Path $PSBoundParameters.BaseDirectory -ChildPath $FileName
             RecommendedAction = "Please ensure that this module is not corrupt or missing files, then try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))

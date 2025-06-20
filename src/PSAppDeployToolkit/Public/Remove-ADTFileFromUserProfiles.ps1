@@ -120,7 +120,7 @@ function Remove-ADTFileFromUserProfiles
     {
         foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
-            $RemoveFileSplat.Path = $pathVar.Value | & { process { [System.IO.Path]::Combine($UserProfilePath, $_) } }
+            $RemoveFileSplat.Path = $pathVar.Value | & { process { Join-Path -Path $UserProfilePath -ChildPath $_ } }
             Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
             try
             {

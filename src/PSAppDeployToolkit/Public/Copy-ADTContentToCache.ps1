@@ -109,9 +109,9 @@ function Copy-ADTContentToCache
         {
             try
             {
-                Copy-ADTFile -Path ([System.IO.Path]::Combine($scriptDir, '*')) -Destination $Path -Recurse
-                $adtSession.DirFiles = [System.IO.Path]::Combine($Path, 'Files')
-                $adtSession.DirSupportFiles = [System.IO.Path]::Combine($Path, 'SupportFiles')
+                Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $Path -Recurse
+                $adtSession.DirFiles = Join-Path -Path $Path -ChildPath Files
+                $adtSession.DirSupportFiles = Join-Path -Path $Path -ChildPath SupportFiles
             }
             catch
             {

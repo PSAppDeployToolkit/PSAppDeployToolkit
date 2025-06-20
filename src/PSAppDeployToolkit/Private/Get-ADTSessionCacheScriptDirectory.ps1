@@ -11,9 +11,9 @@ function Private:Get-ADTSessionCacheScriptDirectory
     {
         if ($adtSession.ScriptDirectory.Count -gt 1)
         {
-            $adtSession.ScriptDirectory | & { process { if (Test-Path -LiteralPath ([System.IO.Path]::Combine($_, 'Files')) -PathType Container) { return $_ } } } | Select-Object -First 1
+            $adtSession.ScriptDirectory | & { process { if (Test-Path -LiteralPath (Join-Path -Path $_ -ChildPath Files) -PathType Container) { return $_ } } } | Select-Object -First 1
         }
-        elseif (Test-Path -LiteralPath ([System.IO.Path]::Combine($($adtSession.ScriptDirectory), 'Files')) -PathType Container)
+        elseif (Test-Path -LiteralPath (Join-Path -Path $($adtSession.ScriptDirectory) -ChildPath Files) -PathType Container)
         {
             $($adtSession.ScriptDirectory)
         }
