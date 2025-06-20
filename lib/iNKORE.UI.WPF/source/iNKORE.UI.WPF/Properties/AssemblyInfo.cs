@@ -21,11 +21,12 @@ using System.Windows.Markup;
 [assembly: AssemblyProduct("iNKORE.UI.WPF")]
 [assembly: AssemblyCopyright("Copyright © iNKORE! 2024")]
 [assembly: AssemblyTrademark("iNKORE!")]
-[assembly: AssemblyVersion("1.2.5")]
+[assembly: AssemblyVersion("1.2.8")]
 [assembly: AssemblyCulture("")]
 
 [assembly: XmlnsPrefix(Extensions.XmlNamespace, "ikw")]
 [assembly: XmlnsDefinition(Extensions.XmlNamespace, "iNKORE.UI.WPF")]
+[assembly: XmlnsDefinition(Extensions.XmlNamespace, "iNKORE.UI.WPF.Common")]
 [assembly: XmlnsDefinition(Extensions.XmlNamespace, "iNKORE.UI.WPF.Converters")]
 [assembly: XmlnsDefinition(Extensions.XmlNamespace, "iNKORE.UI.WPF.Controls")]
 [assembly: XmlnsDefinition(Extensions.XmlNamespace, "iNKORE.UI.WPF.ColorPicker")]

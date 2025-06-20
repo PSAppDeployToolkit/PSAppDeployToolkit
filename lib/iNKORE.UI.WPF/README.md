@@ -1,7 +1,7 @@
 
 <p align="center">
   <a target="_blank" rel="noopener noreferrer">
-    <img width="128" src="https://raw.githubusercontent.com/iNKORE-Public/.github/main/assets/Inkore_Badge.png?raw=true)" alt="iNKORE Logo">
+    <img width="128" src="https://github.com/iNKORE-NET/UI.WPF/blob/main/assets/icons/WpfLibrary_256w.png" alt="iNKORE Logo">
   </a>
 </p>
 
@@ -45,7 +45,9 @@
 
 - [XamlBehaviorsWpf](https://github.com/microsoft/XamlBehaviorsWpf): Home for WPF XAML Behaviors on GitHub.
 
-- **TaskbarIcon**: The taskbar tray icon
+- [XamlBehaviorsWpf](https://github.com/microsoft/XamlBehaviorsWpf): WPF XAML Behaviors
+
+- **TaskbarIcon**: The taskbar tray icon (https://github.com/hardcodet/wpf-notifyicon)
 
 - **Helpers**: ControlHelper, FontHelper, ImageHelper...
 
