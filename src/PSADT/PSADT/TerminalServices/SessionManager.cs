@@ -83,13 +83,13 @@ namespace PSADT.TerminalServices
 
             // Get extended information about the session, bombing out if we have no username (not a proper session).
             var sessionInfo = GetValue<WTSINFOEXW>(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx).Data.WTSInfoExLevel1;
-            if (sessionInfo.UserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
+            if (sessionInfo.UserName.ToString().TrimRemoveNull() is not string userName || string.IsNullOrWhiteSpace(userName))
             {
                 return null;
             }
 
             // Declare initial variables for data we need to get from a structured object.
-            string domainName = sessionInfo.DomainName.ToString();
+            string domainName = sessionInfo.DomainName.ToString().TrimRemoveNull();
             NTAccount ntAccount = new(domainName, userName);
             SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
