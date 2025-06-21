@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="PSADT.UserInterface.Dialogs.Fluent.FluentDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -453,7 +453,7 @@
 
                         <ui:FontIcon
                             FontSize="24"
-                            Icon="{x:Static ui:FluentSystemIcons.Timer_24_Regular}"
+                            Glyph="&#xE916;"
                             />
 
                         <TextBlock
@@ -495,12 +495,13 @@
 
                         <ui:FontIcon
                             FontSize="24"
-                            Icon="{x:Static ui:FluentSystemIcons.ApprovalsApp_24_Regular}"
+                            Glyph="&#xE91C;"
                             />
 
                         <TextBlock
                             x:Name="DeferRemainingHeadingTextBlock"
-                            Margin="16,0,0,0"
+                            Margin="15,0,0,0"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Text="Deferrals Remaining"
                             TextWrapping="WrapWithOverflow"
@@ -534,12 +535,13 @@
 
                         <ui:FontIcon
                             FontSize="24"
-                            Icon="{x:Static ui:FluentSystemIcons.CalendarClock_24_Regular}"
+                            Glyph="&#xE787;"
                             />
 
                         <TextBlock
                             x:Name="DeferDeadlineHeadingTextBlock"
-                            Margin="16,0,0,0"
+                            Margin="15,0,0,0"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Text="Deferral Deadline"
                             TextWrapping="WrapWithOverflow"
