@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
+using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.Utilities;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {

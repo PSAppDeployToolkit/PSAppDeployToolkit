@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Threading;
+using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.Utilities;
 using iNKORE.UI.WPF.Modern;
 
 namespace PSADT.UserInterface.Dialogs.Fluent

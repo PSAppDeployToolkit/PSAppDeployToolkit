@@ -59,7 +59,7 @@ function Test-ADTOobeCompleted
         {
             try
             {
-                return ([PSADT.Utilities.DeviceUtilities]::IsOOBEComplete())
+                return ([PSADT.DeviceManagement.DeviceUtilities]::IsOOBEComplete())
             }
             catch
             {

@@ -6,7 +6,7 @@ using Windows.Win32;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 
-namespace PSADT.Utilities
+namespace PSADT.DeviceManagement
 {
     /// <summary>
     /// Utility class containing methods to do with audio tests.
