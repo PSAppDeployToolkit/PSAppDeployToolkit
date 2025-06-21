@@ -16,13 +16,13 @@ function Test-ADTBattery
     .PARAMETER PassThru
         Outputs an object containing the following properties:
 
-        - IsLaptop
-        - IsUsingACPower
         - ACPowerLineStatus
         - BatteryChargeStatus
         - BatteryLifePercent
         - BatteryLifeRemaining
         - BatteryFullLifetime
+        - IsUsingACPower
+        - IsLaptop
 
     .INPUTS
         None
@@ -34,13 +34,13 @@ function Test-ADTBattery
 
         Returns an object containing the following properties:
 
-        - IsLaptop
-        - IsUsingACPower
         - ACPowerLineStatus
         - BatteryChargeStatus
         - BatteryLifePercent
         - BatteryLifeRemaining
         - BatteryFullLifetime
+        - IsUsingACPower
+        - IsLaptop
 
     .EXAMPLE
         Test-ADTBattery
@@ -65,7 +65,7 @@ function Test-ADTBattery
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.Types.BatteryInfo])]
+    [OutputType([PSADT.DeviceManagement.BatteryInfo])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -84,77 +84,39 @@ function Test-ADTBattery
         {
             try
             {
-                # Get the system power status. Indicates whether the system is using AC power or if the status is unknown. Possible values:
-                # Offline : The system is not using AC power.
-                # Online  : The system is using AC power.
-                # Unknown : The power status of the system is unknown.
-                $acPowerLineStatus = [System.Windows.Forms.SystemInformation]::PowerStatus.PowerLineStatus
-
-                # Get the current battery charge status. Possible values: High, Low, Critical, Charging, NoSystemBattery, Unknown.
-                $batteryChargeStatus = [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryChargeStatus
-                $invalidBattery = ($batteryChargeStatus -eq 'NoSystemBattery') -or ($batteryChargeStatus -eq 'Unknown')
-
-                # Get the approximate amount, from 0.00 to 1.0, of full battery charge remaining.
-                # This property can report 1.0 when the battery is damaged and Windows can't detect a battery.
-                # Therefore, this property is only indicative of battery charge remaining if 'BatteryChargeStatus' property is not reporting 'NoSystemBattery' or 'Unknown'.
-                $batteryLifePercent = [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryLifePercent * !$invalidBattery
-
-                # The reported approximate number of seconds of battery life remaining. It will report -1 if the remaining life is unknown because the system is on AC power.
-                $batteryLifeRemainingSeconds = [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryLifeRemaining
-
-                # Get the manufacturer reported full charge lifetime of the primary battery power source in seconds.
-                # The reported number of seconds of battery life available when the battery is fully charged, or -1 if it is unknown.
-                # This will only be reported if the battery supports reporting this information. You will most likely get -1, indicating unknown.
-                $batteryFullLifetimeSeconds = [System.Windows.Forms.SystemInformation]::PowerStatus.BatteryFullLifetime
-
                 # Determine if the system is using AC power.
-                $isUsingAcPower = switch ($acPowerLineStatus)
+                switch (($batteryInfo = [PSADT.DeviceManagement.BatteryInfo]::Get()).ACPowerLineStatus)
                 {
-                    Online
+                    ([PSADT.DeviceManagement.PowerLineStatus]::Online)
                     {
                         Write-ADTLogEntry -Message 'System is using AC power.'
-                        $true
                         break
                     }
-                    Offline
+                    ([PSADT.DeviceManagement.PowerLineStatus]::Offline)
                     {
                         Write-ADTLogEntry -Message 'System is using battery power.'
-                        $false
                         break
                     }
-                    Unknown
+                    ([PSADT.DeviceManagement.PowerLineStatus]::Unknown)
                     {
-                        if ($invalidBattery)
+                        if ($batteryInfo.IsBatteryInvalid())
                         {
-                            Write-ADTLogEntry -Message "System power status is [$($acPowerLineStatus)] and battery charge status is [$batteryChargeStatus]. This is most likely due to a damaged battery so we will report system is using AC power."
-                            $true
+                            Write-ADTLogEntry -Message "System power status is [$_] and battery charge status is [$($batteryInfo.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "System power status is [$($acPowerLineStatus)] and battery charge status is [$batteryChargeStatus]. Therefore, we will report system is using battery power."
-                            $false
+                            Write-ADTLogEntry -Message "System power status is [$_] and battery charge status is [$($batteryInfo.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
                         }
                         break
                     }
                 }
-
-                # Determine if the system is a laptop.
-                $isLaptop = !$invalidBattery -and ((Get-CimInstance -ClassName Win32_SystemEnclosure).ChassisTypes -match '^(9|10|14)$')
 
                 # Return the object if we're passing through, otherwise just whether we're on AC.
                 if ($PassThru)
                 {
-                    return [PSADT.Types.BatteryInfo]::new(
-                        $acPowerLineStatus,
-                        $batteryChargeStatus,
-                        $batteryLifePercent,
-                        $batteryLifeRemainingSeconds,
-                        $batteryFullLifetimeSeconds,
-                        $isUsingAcPower,
-                        $isLaptop
-                    )
+                    return $batteryInfo
                 }
-                return $isUsingAcPower
+                return $batteryInfo.IsUsingACPower
             }
             catch
             {

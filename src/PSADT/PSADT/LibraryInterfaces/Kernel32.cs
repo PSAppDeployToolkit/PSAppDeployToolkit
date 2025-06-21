@@ -12,6 +12,7 @@ using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.Memory;
+using Windows.Win32.System.Power;
 using Windows.Win32.System.SystemInformation;
 using Windows.Win32.System.Threading;
 
@@ -729,6 +730,24 @@ namespace PSADT.LibraryInterfaces
             if (pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length)
             {
                 throw new OverflowException("Buffer was too small. Value was truncated.");
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the current system power status, including battery and AC power information.
+        /// </summary>
+        /// <remarks>This method wraps a call to the native Win32 API function
+        /// <c>GetSystemPowerStatus</c>. It throws an exception if the underlying API call fails.</remarks>
+        /// <param name="lpSystemPowerStatus">When the method returns, contains a <see cref="SYSTEM_POWER_STATUS"/> structure with details about the
+        /// system's power status.</param>
+        /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL GetSystemPowerStatus(out SYSTEM_POWER_STATUS lpSystemPowerStatus)
+        {
+            var res = PInvoke.GetSystemPowerStatus(out lpSystemPowerStatus);
+            if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }

@@ -49,6 +49,7 @@ GetQueuedCompletionStatus
 GetShellWindow
 GetSystemFirmwareTable
 GetSystemMenu
+GetSystemPowerStatus
 GetTickCount64
 GetTokenInformation
 GetWindowText
