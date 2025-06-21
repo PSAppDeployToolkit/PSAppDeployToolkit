@@ -35,6 +35,10 @@
 		<Nullable>disable</Nullable>
 	</PropertyGroup>
 
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+		<PackageReference Include="Resource.Embedder" Version="2.2.0" PrivateAssets="all" />
+	</ItemGroup>
+
 	<ItemGroup Condition="!$(DefineConstants.Contains('NET47_OR_NEWER'))">
 		<PackageReference Include="System.ValueTuple" Version="4.6.1" />
 	</ItemGroup>
