@@ -257,9 +257,9 @@ namespace PSADT.ClientServer
                 using (BinaryWriter logWriter = new(logPipeClient, Encoding.UTF8, true))
                 {
                     // Helper method to reduce some boilerplate.
-                    void WriteResult<T>(T result)
+                    void WriteResult(string result)
                     {
-                        outputWriter.Write(result!.ToString()!);
+                        outputWriter.Write(result);
                         outputWriter.Flush();
                     };
 
