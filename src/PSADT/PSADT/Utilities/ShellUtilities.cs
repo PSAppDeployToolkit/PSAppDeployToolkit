@@ -68,5 +68,18 @@ namespace PSADT.Utilities
             User32.GetWindowThreadProcessId(User32.GetShellWindow(), out var pid);
             return pid;
         }
+
+        /// <summary>
+        /// Retrieves the process ID of the application associated with the current foreground window.
+        /// </summary>
+        /// <remarks>This method uses the Windows API to determine the process ID of the foreground
+        /// window.  It is intended for internal use and may require appropriate permissions to access window
+        /// information.</remarks>
+        /// <returns>The process ID of the application owning the foreground window. Returns 0 if no foreground window is found.</returns>
+        internal static uint GetForegroundWindowProcessId()
+        {
+            User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out var pid);
+            return pid;
+        }
     }
 }

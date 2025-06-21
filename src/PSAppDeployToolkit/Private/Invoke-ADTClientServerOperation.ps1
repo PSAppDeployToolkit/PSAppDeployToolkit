@@ -40,6 +40,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [System.Management.Automation.SwitchParameter]$GetUserNotificationState,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetForegroundWindowProcessId')]
+        [System.Management.Automation.SwitchParameter]$GetForegroundWindowProcessId,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
         [System.Management.Automation.SwitchParameter]$RefreshDesktopAndEnvironmentVariables,
 
@@ -62,6 +65,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetForegroundWindowProcessId')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
         [Parameter(Mandatory = $true, ParameterSetName = 'MinimizeAllWindows')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RestoreAllWindows')]
@@ -339,7 +343,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$')
+    if ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId)$')
     {
         $PSCmdlet.WriteObject($result, $false)
     }

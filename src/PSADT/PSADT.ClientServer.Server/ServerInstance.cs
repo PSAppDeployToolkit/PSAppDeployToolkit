@@ -359,6 +359,19 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Retrieves the process ID of the application that currently owns the foreground window.
+        /// </summary>
+        /// <remarks>This method sends a command to query the foreground window's process ID and parses
+        /// the result. The returned process ID can be used to identify the application currently in focus.</remarks>
+        /// <returns>The process ID of the application that owns the foreground window.</returns>
+        public uint GetForegroundWindowProcessId()
+        {
+            // Don't set the log source here as this is a low-level operation.
+            WriteCommand("GetForegroundWindowProcessId");
+            return JsonSerialization.DeserializeFromString<uint>(ReadResult());
+        }
+
+        /// <summary>
         /// Retrieves the result of the client process task.
         /// </summary>
         /// <remarks>This method blocks the current thread if <paramref name="iKnowWhatImDoing"/> is <see

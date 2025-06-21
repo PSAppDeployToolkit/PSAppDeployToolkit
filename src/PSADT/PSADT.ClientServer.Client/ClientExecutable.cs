@@ -64,6 +64,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(GetUserNotificationState());
                 }
+                else if (args.Any(static arg => arg.Equals("/GetForegroundWindowProcessId")))
+                {
+                    Console.WriteLine(GetForegroundWindowProcessId());
+                }
                 else if (args.Any(static arg => arg.Equals("/RefreshDesktopAndEnvironmentVariables")))
                 {
                     Console.WriteLine(SerializeObject(RefreshDesktopAndEnvironmentVariables()));
@@ -399,6 +403,11 @@ namespace PSADT.ClientServer
                                     // Get the user notification state and write it back to the output pipe.
                                     WriteResult(GetUserNotificationState());
                                 }
+                                else if (parts[0] == "GetForegroundWindowProcessId")
+                                {
+                                    // Get the foreground process Id and write it back to the output pipe.
+                                    WriteResult(GetForegroundWindowProcessId());
+                                }
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.
@@ -533,6 +542,18 @@ namespace PSADT.ClientServer
         private static string GetUserNotificationState()
         {
             return SerializeObject(ShellUtilities.GetUserNotificationState());
+        }
+
+        /// <summary>
+        /// Retrieves the process ID of the foreground window and returns it as a serialized string.
+        /// </summary>
+        /// <remarks>This method uses the <see cref="ShellUtilities.GetForegroundWindowProcessId"/>
+        /// function to obtain the process ID of the currently active window and serializes the result. The returned
+        /// string can be used for further processing or logging purposes.</remarks>
+        /// <returns>A serialized string representation of the process ID of the foreground window.</returns>
+        private static string GetForegroundWindowProcessId()
+        {
+            return SerializeObject(ShellUtilities.GetForegroundWindowProcessId());
         }
 
         /// <summary>
