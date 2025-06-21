@@ -6,9 +6,11 @@ using PSADT.Extensions;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 
 namespace PSADT.LibraryInterfaces
@@ -31,10 +33,10 @@ namespace PSADT.LibraryInterfaces
             internal struct HICON_HMONITOR_UNION
             {
                 [FieldOffset(0)]
-                internal IntPtr hIcon;
+                internal HICON hIcon;
 
                 [FieldOffset(0)]
-                internal IntPtr hMonitor;
+                internal HMONITOR hMonitor;
             }
 
             /// <summary>
@@ -50,7 +52,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Handle to the parent window used for displaying a UI or error messages.
             /// </summary>
-            internal IntPtr hwnd;
+            internal HWND hwnd;
 
             /// <summary>
             /// String that specifies the verb for the execution.
@@ -127,7 +129,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The file system icon handle (must be destroyed with DestroyIcon when no longer needed).
             /// </summary>
-            internal IntPtr hIcon;
+            internal HICON hIcon;
 
             /// <summary>
             /// The index of the icon in the system image list.

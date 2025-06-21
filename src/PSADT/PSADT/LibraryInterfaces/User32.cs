@@ -18,61 +18,41 @@ namespace PSADT.LibraryInterfaces
     {
         /// <summary>
         /// Enables a menu item for the given menu handle.
-        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hMenu"></param>
         /// <param name="uIDEnableItem"></param>
         /// <param name="uEnable"></param>
         /// <returns></returns>
-        internal static int EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable)
+        internal static BOOL EnableMenuItem(SafeHandle hMenu, uint uIDEnableItem, MENU_ITEM_FLAGS uEnable)
         {
-            return PInvoke.EnableMenuItem((HMENU)hMenu, uIDEnableItem, (MENU_ITEM_FLAGS)uEnable);
-        }
-
-        /// <summary>
-        /// Destroys a given menu handle.
-        /// This method uses IntPtr for compatibility within PowerShell.
-        /// </summary>
-        /// <param name="hMenu"></param>
-        /// <returns></returns>
-        internal static bool DestroyMenu(IntPtr hMenu)
-        {
-            var res = PInvoke.DestroyMenu((HMENU)hMenu);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return PInvoke.EnableMenuItem(hMenu, uIDEnableItem, uEnable);
         }
 
         /// <summary>
         /// Tests whether a given window is visible via its handle.
-        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hWnd"></param>
         /// <returns></returns>
-        internal static bool IsWindowVisible(IntPtr hWnd)
+        internal static BOOL IsWindowVisible(HWND hWnd)
         {
-            return PInvoke.IsWindowVisible((HWND)hWnd);
+            return PInvoke.IsWindowVisible(hWnd);
         }
 
         /// <summary>
         /// Tests whether a given window is enabled via its handle.
-        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hWnd"></param>
         /// <returns></returns>
-        internal static bool IsWindowEnabled(IntPtr hWnd)
+        internal static BOOL IsWindowEnabled(HWND hWnd)
         {
-            return PInvoke.IsWindowEnabled((HWND)hWnd);
+            return PInvoke.IsWindowEnabled(hWnd);
         }
 
         /// <summary>
         /// Gets a handle to the current foreground (active) window.
-        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <returns></returns>
-        internal static IntPtr GetForegroundWindow()
+        internal static HWND GetForegroundWindow()
         {
             var res = PInvoke.GetForegroundWindow();
             if (res == HWND.Null)
@@ -182,7 +162,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="fAttach"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
+        internal static BOOL AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
             var res = PInvoke.AttachThreadInput(idAttach, idAttachTo, fAttach);
             if (!res)
@@ -298,16 +278,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Destroys an icon.
-        /// </summary>
-        /// <param name="hIcon"></param>
-        /// <returns></returns>
-        internal static BOOL DestroyIcon(IntPtr hIcon)
-        {
-            return DestroyIcon((HICON)hIcon);
-        }
-
-        /// <summary>
         /// Retrieves the display monitor that is nearest to the specified rectangle.
         /// </summary>
         /// <param name="hWnd"></param>
@@ -320,23 +290,6 @@ namespace PSADT.LibraryInterfaces
             if (res.IsInvalid)
             {
                 throw new InvalidOperationException("Failed to retrieve the menu handle.");
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Enables or disables a menu item.
-        /// </summary>
-        /// <param name="hMenu"></param>
-        /// <param name="uIDEnableItem"></param>
-        /// <param name="uEnable"></param>
-        /// <returns></returns>
-        internal static BOOL EnableMenuItem(SafeHandle hMenu, uint uIDEnableItem, MENU_ITEM_FLAGS uEnable)
-        {
-            var res = PInvoke.EnableMenuItem(hMenu, uIDEnableItem, uEnable);
-            if (res == -1)
-            {
-                throw new InvalidOperationException("Failed to change menu item.");
             }
             return res;
         }

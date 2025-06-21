@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
@@ -15,9 +16,9 @@ namespace PSADT.WindowManagement
         /// Enumerates all top-level windows on the screen.
         /// </summary>
         /// <returns>A list of window handles.</returns>
-        internal static List<nint> EnumWindows()
+        internal static ReadOnlyCollection<HWND> EnumWindows()
         {
-            List<nint> windows = [];
+            List<HWND> windows = [];
             GCHandle hItems = GCHandle.Alloc(windows);
             try
             {
@@ -43,7 +44,7 @@ namespace PSADT.WindowManagement
                     hItems.Free();
                 }
             }
-            return windows;
+            return windows.AsReadOnly();
         }
 
         /// <summary>

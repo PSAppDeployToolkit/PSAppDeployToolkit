@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -42,7 +41,7 @@ namespace PSADT.WindowManagement
             foreach (var window in WindowTools.EnumWindows())
             {
                 // Continue if window isn't visible.
-                if (!User32.IsWindowVisible((HWND)window))
+                if (!User32.IsWindowVisible(window))
                 {
                     continue;
                 }
