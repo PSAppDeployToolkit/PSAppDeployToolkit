@@ -517,7 +517,7 @@ namespace PSADT.ClientServer
         private bool Invoke(string command)
         {
             WriteCommand(command);
-            return bool.Parse(ReadResult());
+            return JsonSerialization.DeserializeFromString<bool>(ReadResult());
         }
 
         /// <summary>

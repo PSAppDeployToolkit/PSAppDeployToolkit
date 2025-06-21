@@ -54,7 +54,7 @@ namespace PSADT.ClientServer
                 }
                 else if (args.Any(static arg => arg.Equals("/ShowBalloonTip")))
                 {
-                    Console.WriteLine(SerializeObject(ShowBalloonTip(ConvertArgsToDictionary(args))));
+                    Console.WriteLine(ShowBalloonTip(ConvertArgsToDictionary(args)));
                 }
                 else if (args.Any(static arg => arg.Equals("/GetProcessWindowInfo")))
                 {
@@ -70,15 +70,15 @@ namespace PSADT.ClientServer
                 }
                 else if (args.Any(static arg => arg.Equals("/RefreshDesktopAndEnvironmentVariables")))
                 {
-                    Console.WriteLine(SerializeObject(RefreshDesktopAndEnvironmentVariables()));
+                    Console.WriteLine(RefreshDesktopAndEnvironmentVariables());
                 }
                 else if (args.Any(static arg => arg.Equals("/SendKeys")))
                 {
-                    Console.WriteLine(SerializeObject(SendKeys(ConvertArgsToDictionary(args))));
+                    Console.WriteLine(SendKeys(ConvertArgsToDictionary(args)));
                 }
                 else if (args.Any(static arg => arg.Equals("/SilentRestart")))
                 {
-                    Console.WriteLine(SerializeObject(SilentRestart(ConvertArgsToDictionary(args))));
+                    Console.WriteLine(SilentRestart(ConvertArgsToDictionary(args)));
                 }
                 else if (args.Any(static arg => arg.Equals("/ClientServer")))
                 {
@@ -283,7 +283,7 @@ namespace PSADT.ClientServer
                                 {
                                     // Deserialize the process definitions if we have them, then right back that we were successful.
                                     closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "PromptToCloseApps")
                                 {
@@ -302,7 +302,7 @@ namespace PSADT.ClientServer
 
                                     // Perform the operation to prompt the user to close apps and write back that we were successful.
                                     PromptToCloseApps(closeAppsDialogState.RunningProcessService.RunningProcesses, promptToCloseTimeout, logWriter);
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "ShowModalDialog")
                                 {
@@ -329,12 +329,12 @@ namespace PSADT.ClientServer
 
                                     // Show the progress dialog and write back that we were successful.
                                     DialogManager.ShowProgressDialog(dialogStyle, DeserializeString<ProgressDialogOptions>(parts[2]));
-                                    WriteResult(DialogManager.ProgressDialogOpen());
+                                    WriteResult(SerializeObject(DialogManager.ProgressDialogOpen()));
                                 }
                                 else if (parts[0] == "ProgressDialogOpen")
                                 {
                                     // Directly write the state of the progress dialog to the output pipe.
-                                    WriteResult(DialogManager.ProgressDialogOpen());
+                                    WriteResult(SerializeObject(DialogManager.ProgressDialogOpen()));
                                 }
                                 else if (parts[0] == "UpdateProgressDialog")
                                 {
@@ -346,13 +346,13 @@ namespace PSADT.ClientServer
 
                                     // Update the progress dialog with the provided parameters.
                                     DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3]) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "CloseProgressDialog")
                                 {
                                     // Close the progress dialog and write back that we were successful.
                                     DialogManager.CloseProgressDialog();
-                                    WriteResult((!DialogManager.ProgressDialogOpen()));
+                                    WriteResult(SerializeObject(!DialogManager.ProgressDialogOpen()));
                                 }
                                 else if (parts[0] == "ShowBalloonTip")
                                 {
@@ -367,13 +367,13 @@ namespace PSADT.ClientServer
                                 {
                                     // Minimize all windows and write back that we were successful.
                                     ShellUtilities.MinimizeAllWindows();
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "RestoreAllWindows")
                                 {
                                     // Restore all windows and write back that we were successful.
                                     ShellUtilities.RestoreAllWindows();
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "SendKeys")
                                 {
@@ -411,12 +411,12 @@ namespace PSADT.ClientServer
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "Close")
                                 {
                                     // Indicate that we're going to terminate.
-                                    WriteResult(true);
+                                    WriteResult(SerializeObject(true));
                                     break;
                                 }
                                 else
@@ -508,10 +508,10 @@ namespace PSADT.ClientServer
         /// values must conform to the expected format for deserialization into <see cref="BalloonTipOptions"/>.</param>
         /// <returns>A serialized string representing the result of the operation. Returns <see langword="true"/> if the balloon
         /// tip was successfully displayed.</returns>
-        private static bool ShowBalloonTip(IReadOnlyDictionary<string, string> arguments)
+        private static string ShowBalloonTip(IReadOnlyDictionary<string, string> arguments)
         {
             DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(arguments)));
-            return true;
+            return SerializeObject(true);
         }
 
         /// <summary>
@@ -561,10 +561,10 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <returns>A serialized string representation of the operation result. Returns <see langword="true"/> if the operation
         /// succeeds.</returns>
-        private static bool RefreshDesktopAndEnvironmentVariables()
+        private static string RefreshDesktopAndEnvironmentVariables()
         {
             ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-            return true;
+            return SerializeObject(true);
         }
 
         /// <summary>
@@ -577,7 +577,7 @@ namespace PSADT.ClientServer
         /// serialized representation of the options,  which specify the target window handle and the keys to send.</param>
         /// <returns><see langword="true"/> if the operation completes successfully.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the target window is disabled, preventing the keystrokes from being sent.</exception>
-        private static bool SendKeys(IReadOnlyDictionary<string, string> arguments)
+        private static string SendKeys(IReadOnlyDictionary<string, string> arguments)
         {
             // Deserialise the received options.
             var options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(arguments));
@@ -592,7 +592,7 @@ namespace PSADT.ClientServer
 
             // Send the keys and write back that we were successful.
             System.Windows.Forms.SendKeys.SendWait(options.Keys);
-            return true;
+            return SerializeObject(true);
         }
 
         /// <summary>
@@ -605,7 +605,7 @@ namespace PSADT.ClientServer
         /// restart.</param>
         /// <returns><see langword="true"/> if the restart operation was successfully initiated.</returns>
         /// <exception cref="ClientException">Thrown if the <c>"Delay"</c> argument is missing, empty, or invalid.</exception>
-        private static bool SilentRestart(IReadOnlyDictionary<string, string> arguments)
+        private static string SilentRestart(IReadOnlyDictionary<string, string> arguments)
         {
             if (!arguments.TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out var delayValue))
             {
@@ -613,7 +613,7 @@ namespace PSADT.ClientServer
             }
             Thread.Sleep(delayValue * 1000);
             DeviceUtilities.RestartComputer();
-            return true;
+            return SerializeObject(true);
         }
 
         /// <summary>
