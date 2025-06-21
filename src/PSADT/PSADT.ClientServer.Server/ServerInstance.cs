@@ -88,7 +88,7 @@ namespace PSADT.ClientServer
             _logServer.DisposeLocalCopyOfClientHandle();
 
             // Confirm the client starts and is ready to receive commands.
-            if (!Invoke("Open"))
+            if (!Invoke<bool>("Open"))
             {
                 throw new InvalidOperationException("The opened client process is not properly responding to commands.");
             }
@@ -105,7 +105,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the connection was successfully closed; otherwise, <see langword="false"/>.</returns>
         private bool Close()
         {
-            var res = Invoke("Close");
+            var res = Invoke<bool>("Close");
             if (!res)
             {
                 throw new InvalidOperationException("The opened client process did not properly respond to the close command.");
@@ -125,7 +125,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(ProcessDefinition[]? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke<bool>($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(closeProcesses)}" : null)}");
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace PSADT.ClientServer
         public bool PromptToCloseApps(TimeSpan promptToCloseTimeout)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke($"PromptToCloseApps{CommonUtilities.ArgumentSeparator}{promptToCloseTimeout}");
+            return Invoke<bool>($"PromptToCloseApps{CommonUtilities.ArgumentSeparator}{promptToCloseTimeout}");
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace PSADT.ClientServer
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
+            return Invoke<bool>($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
         public bool ProgressDialogOpen()
         {
-            return Invoke("ProgressDialogOpen");
+            return Invoke<bool>("ProgressDialogOpen");
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace PSADT.ClientServer
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
+            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace PSADT.ClientServer
         public bool CloseProgressDialog()
         {
             _logSource = "Close-ADTInstallationProgress";
-            return Invoke("CloseProgressDialog");
+            return Invoke<bool>("CloseProgressDialog");
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace PSADT.ClientServer
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
             _logSource = "Show-ADTBalloonTip";
-            return Invoke($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
+            return Invoke<bool>($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         public bool MinimizeAllWindows()
         {
-            return Invoke("MinimizeAllWindows");
+            return Invoke<bool>("MinimizeAllWindows");
         }
 
         /// <summary>
@@ -295,7 +295,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if all windows were successfully restored; otherwise, <see langword="false"/>.</returns>
         public bool RestoreAllWindows()
         {
-            return Invoke("RestoreAllWindows");
+            return Invoke<bool>("RestoreAllWindows");
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace PSADT.ClientServer
         public bool SendKeys(SendKeysOptions options)
         {
             _logSource = "Send-ADTKeys";
-            return Invoke($"SendKeys{CommonUtilities.ArgumentSeparator}{options}");
+            return Invoke<bool>($"SendKeys{CommonUtilities.ArgumentSeparator}{options}");
         }
 
         /// <summary>
@@ -327,8 +327,7 @@ namespace PSADT.ClientServer
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            WriteCommand($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
-            return JsonSerialization.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadResult());
+            return Invoke<ReadOnlyCollection<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -341,7 +340,7 @@ namespace PSADT.ClientServer
         public bool RefreshDesktopAndEnvironmentVariables()
         {
             _logSource = "Refresh-ADTDesktopAndEnvironmentVariables";
-            return Invoke("RefreshDesktopAndEnvironmentVariables");
+            return Invoke<bool>("RefreshDesktopAndEnvironmentVariables");
         }
 
         /// <summary>
@@ -354,8 +353,7 @@ namespace PSADT.ClientServer
         public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
             _logSource = "Get-ADTUserNotificationState";
-            WriteCommand("GetUserNotificationState");
-            return JsonSerialization.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadResult());
+            return Invoke<QUERY_USER_NOTIFICATION_STATE>("GetUserNotificationState");
         }
 
         /// <summary>
@@ -367,8 +365,7 @@ namespace PSADT.ClientServer
         public uint GetForegroundWindowProcessId()
         {
             // Don't set the log source here as this is a low-level operation.
-            WriteCommand("GetForegroundWindowProcessId");
-            return JsonSerialization.DeserializeFromString<uint>(ReadResult());
+            return Invoke<uint>("GetForegroundWindowProcessId");
         }
 
         /// <summary>
@@ -420,8 +417,7 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
                 _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
             };
-            WriteCommand($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
-            return JsonSerialization.DeserializeFromString<TResult>(ReadResult());
+            return Invoke<TResult>($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -510,27 +506,19 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Sends a command to the server and retrieves the server's response as a boolean value.
+        /// Executes the specified command and deserializes the result into an object of type <typeparamref name="T"/>.
         /// </summary>
-        /// <param name="command">The command to be sent to the server.</param>
-        /// <returns><see langword="true"/> if the server's response indicates success; otherwise, <see langword="false"/>.</returns>
-        private bool Invoke(string command)
-        {
-            WriteCommand(command);
-            return JsonSerialization.DeserializeFromString<bool>(ReadResult());
-        }
-
-        /// <summary>
-        /// Sends a command to the output writer and ensures it is immediately flushed.
-        /// </summary>
-        /// <remarks>This method writes the specified command to the underlying output writer and flushes
-        /// the writer to ensure the command is transmitted without delay. The caller is responsible for ensuring the
-        /// validity of the command string.</remarks>
-        /// <param name="command">The command string to be written. Cannot be null or empty.</param>
-        private void WriteCommand(string command)
+        /// <remarks>This method writes the provided command, processes the result, and deserializes it
+        /// into the specified type. Ensure that the command produces a result that can be successfully deserialized
+        /// into the expected type.</remarks>
+        /// <typeparam name="T">The type of the object to deserialize the result into.</typeparam>
+        /// <param name="command">The command to execute. Cannot be null or empty.</param>
+        /// <returns>An object of type <typeparamref name="T"/> representing the deserialized result of the command execution.</returns>
+        private T Invoke<T>(string command)
         {
             _outputWriter.Write(command);
             _outputWriter.Flush();
+            return JsonSerialization.DeserializeFromString<T>(ReadResult());
         }
 
         /// <summary>
