@@ -25,10 +25,6 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
     <Optimize>false</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
