@@ -369,6 +369,16 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
+        /// </summary>
+        /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
+        /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
+        public AggregateException? GetLogWriterException()
+        {
+            return _logWriterTask?.Exception;
+        }
+
+        /// <summary>
         /// Retrieves the result of the client process task.
         /// </summary>
         /// <remarks>This method blocks the current thread if <paramref name="iKnowWhatImDoing"/> is <see
@@ -381,43 +391,6 @@ namespace PSADT.ClientServer
         public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing)
         {
             return iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
-        }
-
-        /// <summary>
-        /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
-        /// </summary>
-        /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
-        /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
-        public AggregateException? GetLogWriterException()
-        {
-            return _logWriterTask?.Exception;
-        }
-
-        /// <summary>
-        /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
-        /// result.
-        /// </summary>
-        /// <remarks>The method serializes the provided <paramref name="options"/> and sends them to the
-        /// dialog system. The result is deserialized into the specified type <typeparamref name="TResult"/>.</remarks>
-        /// <typeparam name="TResult">The type of the result returned by the dialog.</typeparam>
-        /// <typeparam name="TOptions">The type of the options passed to the dialog.</typeparam>
-        /// <param name="dialogType">The type of the dialog to display.</param>
-        /// <param name="dialogStyle">The style of the dialog to display.</param>
-        /// <param name="options">The options to configure the dialog. This parameter cannot be null.</param>
-        /// <returns>The result of the dialog, deserialized to the specified type <typeparamref name="TResult"/>.</returns>
-        private TResult ShowModalDialog<TResult, TOptions>(DialogType dialogType, DialogStyle dialogStyle, TOptions options)
-        {
-            _logSource = dialogType switch
-            {
-                DialogType.CloseAppsDialog => "Show-ADTInstallationWelcome",
-                DialogType.CustomDialog => "Show-ADTInstallationPrompt",
-                DialogType.DialogBox => "Show-ADTDialogBox",
-                DialogType.InputDialog => "Show-ADTInstallationPrompt",
-                DialogType.ProgressDialog => "Show-ADTInstallationProgress",
-                DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
-                _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
-            };
-            return Invoke<TResult>($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -503,6 +476,33 @@ namespace PSADT.ClientServer
                 _logServer = null!;
             }
             _disposed = true;
+        }
+
+        /// <summary>
+        /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
+        /// result.
+        /// </summary>
+        /// <remarks>The method serializes the provided <paramref name="options"/> and sends them to the
+        /// dialog system. The result is deserialized into the specified type <typeparamref name="TResult"/>.</remarks>
+        /// <typeparam name="TResult">The type of the result returned by the dialog.</typeparam>
+        /// <typeparam name="TOptions">The type of the options passed to the dialog.</typeparam>
+        /// <param name="dialogType">The type of the dialog to display.</param>
+        /// <param name="dialogStyle">The style of the dialog to display.</param>
+        /// <param name="options">The options to configure the dialog. This parameter cannot be null.</param>
+        /// <returns>The result of the dialog, deserialized to the specified type <typeparamref name="TResult"/>.</returns>
+        private TResult ShowModalDialog<TResult, TOptions>(DialogType dialogType, DialogStyle dialogStyle, TOptions options)
+        {
+            _logSource = dialogType switch
+            {
+                DialogType.CloseAppsDialog => "Show-ADTInstallationWelcome",
+                DialogType.CustomDialog => "Show-ADTInstallationPrompt",
+                DialogType.DialogBox => "Show-ADTDialogBox",
+                DialogType.InputDialog => "Show-ADTInstallationPrompt",
+                DialogType.ProgressDialog => "Show-ADTInstallationProgress",
+                DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
+                _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
+            };
+            return Invoke<TResult>($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
