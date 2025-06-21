@@ -72,6 +72,18 @@ namespace PSADT.DeviceManagement
         }
 
         /// <summary>
+        /// Represents the current battery life percentage of a device.
+        /// </summary>
+        public bool BatterySaverEnabled
+        {
+            get
+            {
+                // Ensure the system power status is up to date.
+                UpdateSystemPowerStatus(); return systemPowerStatus.SystemStatusFlag == 1;
+            }
+        }
+
+        /// <summary>
         /// Gets the remaining battery life as a <see cref="TimeSpan"/> value, or <see langword="null"/> if the battery
         /// life cannot be determined.
         /// </summary>

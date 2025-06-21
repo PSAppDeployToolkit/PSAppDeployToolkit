@@ -19,6 +19,7 @@ function Test-ADTBattery
         - ACPowerLineStatus
         - BatteryChargeStatus
         - BatteryLifePercent
+        - BatterySaverEnabled
         - BatteryLifeRemaining
         - BatteryFullLifetime
         - IsUsingACPower
@@ -37,6 +38,7 @@ function Test-ADTBattery
         - ACPowerLineStatus
         - BatteryChargeStatus
         - BatteryLifePercent
+        - BatterySaverEnabled
         - BatteryLifeRemaining
         - BatteryFullLifetime
         - IsUsingACPower
