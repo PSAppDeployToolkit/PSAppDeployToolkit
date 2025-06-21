@@ -47,6 +47,7 @@ GetProcessId
 GetProductInfo
 GetQueuedCompletionStatus
 GetShellWindow
+GetSystemFirmwareTable
 GetSystemMenu
 GetTickCount64
 GetTokenInformation

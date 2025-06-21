@@ -12,6 +12,7 @@ using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.Memory;
+using Windows.Win32.System.SystemInformation;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
@@ -705,5 +706,31 @@ namespace PSADT.LibraryInterfaces
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool TermsrvAppInstallMode();
+
+        /// <summary>
+        /// Retrieves system firmware table data for the specified firmware table provider and table ID.
+        /// </summary>
+        /// <remarks>This method retrieves firmware table data from the system using the specified
+        /// provider and table ID. If the buffer provided in <paramref name="pFirmwareTableBuffer"/> is too small to
+        /// hold the data, an <see cref="OverflowException"/> is thrown.</remarks>
+        /// <param name="FirmwareTableProviderSignature">The signature of the firmware table provider. This identifies the type of firmware table to retrieve.</param>
+        /// <param name="FirmwareTableID">The identifier of the specific firmware table to retrieve.</param>
+        /// <param name="pFirmwareTableBuffer">A buffer to store the retrieved firmware table data. The buffer must be large enough to hold the data.</param>
+        /// <returns>The size, in bytes, of the firmware table data retrieved.</returns>
+        /// <exception cref="OverflowException">Thrown if the buffer provided in <paramref name="pFirmwareTableBuffer"/> is too small to hold the firmware
+        /// table data.</exception>
+        internal static uint GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER FirmwareTableProviderSignature, uint FirmwareTableID, Span<byte> pFirmwareTableBuffer)
+        {
+            var res = PInvoke.GetSystemFirmwareTable(FirmwareTableProviderSignature, FirmwareTableID, pFirmwareTableBuffer);
+            if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            if (pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length)
+            {
+                throw new OverflowException("Buffer was too small. Value was truncated.");
+            }
+            return res;
+        }
     }
 }
