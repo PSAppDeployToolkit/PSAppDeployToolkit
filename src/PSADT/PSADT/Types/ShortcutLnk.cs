@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace PSADT.Types
 {
@@ -7,36 +8,6 @@ namespace PSADT.Types
     /// </summary>
     public sealed record ShortcutLnk : ShortcutBase
     {
-        /// <summary>
-        /// The window style for the shortcut.
-        /// </summary>
-        public readonly string? WindowStyle;
-
-        /// <summary>
-        /// Gets or sets the arguments passed to the target application when the shortcut is executed.
-        /// </summary>
-        public readonly string? Arguments;
-
-        /// <summary>
-        /// Gets or sets the description of the shortcut.
-        /// </summary>
-        public readonly string? Description;
-
-        /// <summary>
-        /// Gets or sets the working directory for the shortcut's target application.
-        /// </summary>
-        public readonly string? WorkingDirectory;
-
-        /// <summary>
-        /// Gets or sets the hotkey associated with the shortcut.
-        /// </summary>
-        public readonly string? Hotkey;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the shortcut requires administrative privileges to run.
-        /// </summary>
-        public readonly bool RunAsAdmin;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutLnk"/> class with specified properties.
         /// </summary>
@@ -48,7 +19,7 @@ namespace PSADT.Types
         /// <param name="runAsAdmin">Indicates if the shortcut requires administrative privileges.</param>
         public ShortcutLnk(string? path, string? targetPath, string? iconIndex, string? iconLocation, string? arguments, string? description, string? workingDirectory, string? windowStyle, string? hotkey, bool runAsAdmin) : base(path, targetPath, iconIndex, iconLocation)
         {
-            if (!string.IsNullOrWhiteSpace(windowStyle) && !Enum.TryParse(windowStyle, true, out WindowStyle _))
+            if (string.IsNullOrWhiteSpace(windowStyle) || !Regex.IsMatch(windowStyle, "^(Normal|Minimized|Maximized)$", RegexOptions.IgnoreCase))
             {
                 throw new ArgumentException($"Invalid window style: {windowStyle}. Must be one of: Normal, Minimized, Maximized.");
             }
@@ -103,6 +74,36 @@ namespace PSADT.Types
         }
 
         /// <summary>
+        /// The window style for the shortcut.
+        /// </summary>
+        public readonly string? WindowStyle;
+
+        /// <summary>
+        /// Gets or sets the arguments passed to the target application when the shortcut is executed.
+        /// </summary>
+        public readonly string? Arguments;
+
+        /// <summary>
+        /// Gets or sets the description of the shortcut.
+        /// </summary>
+        public readonly string? Description;
+
+        /// <summary>
+        /// Gets or sets the working directory for the shortcut's target application.
+        /// </summary>
+        public readonly string? WorkingDirectory;
+
+        /// <summary>
+        /// Gets or sets the hotkey associated with the shortcut.
+        /// </summary>
+        public readonly string? Hotkey;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the shortcut requires administrative privileges to run.
+        /// </summary>
+        public readonly bool RunAsAdmin;
+
+        /// <summary>
         /// Helper method to check if any string in the list exists within the target string using StringComparison.
         /// </summary>
         /// <param name="target">The target string to search within.</param>
@@ -122,15 +123,5 @@ namespace PSADT.Types
 
             return -1;
         }
-    }
-
-    /// <summary>
-    /// Specifies the window style for the shortcut.
-    /// </summary>
-    public enum WindowStyle
-    {
-        Normal,
-        Minimized,
-        Maximized
     }
 }

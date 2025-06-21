@@ -67,6 +67,24 @@ namespace PSADT.Types
         }
 
         /// <summary>
+        /// Validates whether the product code is a valid GUID.
+        /// </summary>
+        /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
+        public bool IsValidProductCode()
+        {
+            return (null != ProductCode);
+        }
+
+        /// <summary>
+        /// Returns a string representation of the installed application.
+        /// </summary>
+        /// <returns>A string that contains key details about the installed application.</returns>
+        public override string ToString()
+        {
+            return $"Installed Application: {DisplayName} (Version: {DisplayVersion}, Publisher: {Publisher})";
+        }
+
+        /// <summary>
         /// Gets the registry key that contains the uninstall entry.
         /// </summary>
         public readonly string PSPath;
@@ -150,23 +168,5 @@ namespace PSADT.Types
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
         public readonly bool Is64BitApplication;
-
-        /// <summary>
-        /// Validates whether the product code is a valid GUID.
-        /// </summary>
-        /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
-        public bool IsValidProductCode()
-        {
-            return (null != ProductCode);
-        }
-
-        /// <summary>
-        /// Returns a string representation of the installed application.
-        /// </summary>
-        /// <returns>A string that contains key details about the installed application.</returns>
-        public override string ToString()
-        {
-            return $"Installed Application: {DisplayName} (Version: {DisplayVersion}, Publisher: {Publisher})";
-        }
     }
 }

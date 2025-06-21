@@ -8,26 +8,6 @@ namespace PSADT.Types
     public abstract record ShortcutBase
     {
         /// <summary>
-        /// The path to the shortcut file.
-        /// </summary>
-        public readonly string? Path;
-
-        /// <summary>
-        /// The target path of the shortcut.
-        /// </summary>
-        public readonly string? TargetPath;
-
-        /// <summary>
-        /// The index of the icon used for the shortcut.
-        /// </summary>
-        public readonly string? IconIndex;
-
-        /// <summary>
-        /// The location of the icon used for the shortcut.
-        /// </summary>
-        public readonly string? IconLocation;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutBase"/> class with optional properties.
         /// </summary>
         /// <param name="path">The path to the shortcut file.</param>
@@ -60,6 +40,26 @@ namespace PSADT.Types
             }
             IconLocation = iconLocation;
         }
+
+        /// <summary>
+        /// The path to the shortcut file.
+        /// </summary>
+        public readonly string? Path;
+
+        /// <summary>
+        /// The target path of the shortcut.
+        /// </summary>
+        public readonly string? TargetPath;
+
+        /// <summary>
+        /// The index of the icon used for the shortcut.
+        /// </summary>
+        public readonly string? IconIndex;
+
+        /// <summary>
+        /// The location of the icon used for the shortcut.
+        /// </summary>
+        public readonly string? IconLocation;
 
         /// <summary>
         /// Validates whether the provided string is a valid file path.

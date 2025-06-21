@@ -50,6 +50,20 @@ namespace PSADT.Types
         }
 
         /// <summary>
+        /// Returns a value indicating whether any reboot is pending.
+        /// </summary>
+        /// <returns>True if any reboot is pending; otherwise false.</returns>
+        public bool HasPendingReboot()
+        {
+            return IsSystemRebootPending ||
+                   IsCBServicingRebootPending ||
+                   IsWindowsUpdateRebootPending ||
+                   IsSCCMClientRebootPending == true ||
+                   IsAppVRebootPending ||
+                   IsFileRenameRebootPending == true;
+        }
+
+        /// <summary>
         /// Gets the name of the computer.
         /// </summary>
         public readonly string ComputerName;
@@ -103,19 +117,5 @@ namespace PSADT.Types
         /// Gets the error messages related to reboot operations.
         /// </summary>
         public readonly IReadOnlyList<string> ErrorMsg;
-
-        /// <summary>
-        /// Returns a value indicating whether any reboot is pending.
-        /// </summary>
-        /// <returns>True if any reboot is pending; otherwise false.</returns>
-        public bool HasPendingReboot()
-        {
-            return IsSystemRebootPending ||
-                   IsCBServicingRebootPending ||
-                   IsWindowsUpdateRebootPending ||
-                   IsSCCMClientRebootPending == true ||
-                   IsAppVRebootPending ||
-                   IsFileRenameRebootPending == true;
-        }
     }
 }
