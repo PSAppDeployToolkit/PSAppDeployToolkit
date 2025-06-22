@@ -864,12 +864,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
         /// </summary>
-        private readonly DispatcherTimer _expiryTimer = new();
+        private readonly DispatcherTimer? _expiryTimer;
 
         /// <summary>
         /// A timer used to restore the dialog's position on the screen at a configured interval.
         /// </summary>
-        private readonly DispatcherTimer _persistTimer = new();
+        private readonly DispatcherTimer? _persistTimer;
 
         /// <summary>
         /// Represents the initial top position of an element or object.
