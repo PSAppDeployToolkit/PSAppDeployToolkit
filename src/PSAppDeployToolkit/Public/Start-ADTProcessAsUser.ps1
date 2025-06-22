@@ -145,7 +145,7 @@ function Start-ADTProcessAsUser
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Default_CreateWindow_Wait')]
-    [OutputType([PSADT.Execution.ProcessResult])]
+    [OutputType([PSADT.ProcessManagement.ProcessResult])]
     param
     (
         [Parameter(Mandatory = $false)]

@@ -177,8 +177,8 @@ function Start-ADTProcess
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Default_CreateWindow_Wait')]
-    [OutputType([PSADT.Execution.ProcessHandle])]
-    [OutputType([PSADT.Execution.ProcessResult])]
+    [OutputType([PSADT.ProcessManagement.ProcessHandle])]
+    [OutputType([PSADT.ProcessManagement.ProcessResult])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -510,7 +510,7 @@ function Start-ADTProcess
                     {
                         # Default MSI exit code for install already in progress.
                         Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
-                        $result = [PSADT.Execution.ProcessResult]::new(1618)
+                        $result = [PSADT.ProcessManagement.ProcessResult]::new(1618)
                         $naerParams = @{
                             Exception = [System.Threading.SynchronizationLockException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
                             Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
@@ -523,7 +523,7 @@ function Start-ADTProcess
                 }
 
                 # Set up the process start flags.
-                $startInfo = [PSADT.Execution.ProcessLaunchInfo]::new(
+                $startInfo = [PSADT.ProcessManagement.ProcessLaunchInfo]::new(
                     $FilePath,
                     $ArgumentList,
                     $WorkingDirectory,
@@ -582,7 +582,7 @@ function Start-ADTProcess
                 }
 
                 # Start the process.
-                $process = [PSADT.Execution.ProcessManager]::LaunchAsync($startInfo)
+                $process = [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($startInfo)
 
                 # Handle if the returned value is null.
                 if (!$process)
@@ -632,7 +632,7 @@ function Start-ADTProcess
                 }
 
                 # Check whether the process timed out.
-                if (($null -eq $result.ExitCode) -or ($result.ExitCode -eq [PSADT.Execution.ProcessManager]::TimeoutExitCode))
+                if (($null -eq $result.ExitCode) -or ($result.ExitCode -eq [PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode))
                 {
                     $naerParams = if ($NoTerminateOnTimeout)
                     {

@@ -67,7 +67,7 @@ function Set-ADTActiveSetup
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Execution.ProcessResult
+        PSADT.ProcessManagement.ProcessResult
 
         This function returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
 

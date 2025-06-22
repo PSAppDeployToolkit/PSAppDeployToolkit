@@ -26,8 +26,9 @@ using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
+using PSADT.Execution;
 
-namespace PSADT.Execution
+namespace PSADT.ProcessManagement
 {
     /// <summary>
     /// Provides methods for launching processes with more control over input/output.
@@ -71,7 +72,7 @@ namespace PSADT.Execution
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            if ((cliApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
+            if (cliApp && launchInfo.CreateNoWindow || !launchInfo.UseShellExecute || null != launchInfo.Username)
             {
                 var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
                 if (null != launchInfo.WindowStyle)
@@ -206,7 +207,7 @@ namespace PSADT.Execution
                     // Start tracking the process and allow it to resume execution.
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
-                        Kernel32.AssignProcessToJobObject(job, (hProcess = new SafeProcessHandle(pi.hProcess, true)));
+                        Kernel32.AssignProcessToJobObject(job, hProcess = new SafeProcessHandle(pi.hProcess, true));
                         Kernel32.ResumeThread(hThread);
                         processId = pi.dwProcessId;
                     }
@@ -254,7 +255,7 @@ namespace PSADT.Execution
                     hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
                     processId = Kernel32.GetProcessId(hProcess);
                     Kernel32.AssignProcessToJobObject(job, hProcess);
-                    if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    if (launchInfo.PriorityClass != ProcessPriorityClass.Normal && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
                         Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                     }
@@ -289,7 +290,7 @@ namespace PSADT.Execution
                                 if (index == 0)
                                 {
                                     Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
-                                    if ((lpCompletionCode == PInvoke.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && lpOverlapped.ToInt32() == processId) || (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                                    if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && lpOverlapped.ToInt32() == processId || lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
                                     {
                                         await Task.WhenAll(stdOutTask, stdErrTask);
                                         Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
@@ -371,7 +372,7 @@ namespace PSADT.Execution
             {
                 throw new InvalidOperationException($"No session found for user {username}.");
             }
-            if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
+            if (session.ConnectState != WTS_CONNECTSTATE_CLASS.WTSActive)
             {
                 throw new InvalidOperationException($"The session for user {username} is not active.");
             }

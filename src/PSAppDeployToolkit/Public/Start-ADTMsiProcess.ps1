@@ -382,7 +382,7 @@ function Start-ADTMsiProcess
                 if ($msiInstalled -and ($Action -eq 'Install'))
                 {
                     Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
-                    return $(if ($PassThru) { [PSADT.Execution.ProcessResult]::new(1638) })
+                    return $(if ($PassThru) { [PSADT.ProcessManagement.ProcessResult]::new(1638) })
                 }
                 elseif (!$msiInstalled -and ($Action -ne 'Install'))
                 {

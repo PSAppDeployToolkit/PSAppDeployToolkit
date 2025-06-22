@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace PSADT.Execution
+namespace PSADT.ProcessManagement
 {
     /// <summary>
     /// Provides options for launching a managed process.
@@ -67,7 +67,7 @@ namespace PSADT.Execution
             {
                 WorkingDirectory = fileDir;
             }
-            if ((null != argumentList) && (string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args) && !string.IsNullOrWhiteSpace(args))
+            if (null != argumentList && string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args && !string.IsNullOrWhiteSpace(args))
             {
                 Arguments = args;
             }
@@ -110,7 +110,7 @@ namespace PSADT.Execution
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
-            CommandLine = $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
+            CommandLine = $"\"{FilePath}\"{(null != Arguments ? $" {Arguments}" : null)}\0";
         }
 
         /// <summary>

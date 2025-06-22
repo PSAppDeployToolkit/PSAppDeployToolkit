@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace PSADT.Execution
+namespace PSADT.ProcessManagement
 {
     /// <summary>
     /// Represents a handle to a process, encapsulating its optional process ID and an asynchronous task that provides
