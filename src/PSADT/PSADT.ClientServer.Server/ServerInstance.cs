@@ -92,21 +92,25 @@ namespace PSADT.ClientServer
                 _logServer.DisposeLocalCopyOfClientHandle();
             }
 
-            // Set up the log writer task to run in the background.
-            _logWriterTask = Task.Run(ReadLog, (_logWriterTaskCts = new()).Token);
-
             // Confirm the client starts and is ready to receive commands.
-            if (!Invoke<bool>("Open"))
+            bool? opened = null;
+            try
             {
-                try
+                if (!(opened = Invoke<bool>("Open")).Value)
                 {
                     throw new ApplicationException("The opened client process is not properly responding to commands.");
                 }
-                finally
+            }
+            finally
+            {
+                if (null == opened || !opened.Value)
                 {
                     Close(true);
                 }
             }
+
+            // Set up the log writer task to run in the background.
+            _logWriterTask = Task.Run(ReadLog, (_logWriterTaskCts = new()).Token);
         }
 
         /// <summary>
@@ -125,16 +129,16 @@ namespace PSADT.ClientServer
         public void Close(bool force = false)
         {
             // Confirm that the server instance is open and has not been closed already.
-            if (null == _logWriterTask || null == _clientProcess)
+            if (null == _clientProcessCts || null == _clientProcess)
             {
                 throw new InvalidOperationException("The server instance is not open or has already been closed.");
             }
 
             // Ensure the client process closes no matter what.
-            bool closed = force || Invoke<bool>("Close");
+            bool? closed = null;
             try
             {
-                if (!closed && !force)
+                if (!force && !(closed = Invoke<bool>("Close")).Value)
                 {
                     throw new ApplicationException("The opened client process did not properly respond to the close command.");
                 }
@@ -142,22 +146,25 @@ namespace PSADT.ClientServer
             finally
             {
                 // Close the log writer and wait for it to finish.
-                _logWriterTaskCts!.Cancel();
-                _logWriterTask.Wait();
-                _logWriterTask.Dispose();
-                _logWriterTask = null;
-                _logWriterTaskCts!.Dispose();
-                _logWriterTaskCts = null;
+                if (null != _logWriterTaskCts && null != _logWriterTask)
+                {
+                    _logWriterTaskCts.Cancel();
+                    _logWriterTask.Wait();
+                    _logWriterTask.Dispose();
+                    _logWriterTask = null;
+                    _logWriterTaskCts.Dispose();
+                    _logWriterTaskCts = null;
+                }
 
                 // Close the client process and wait for it to exit.
-                if (!closed || force)
+                if (null == closed || !closed.Value)
                 {
-                    _clientProcessCts!.Cancel();
+                    _clientProcessCts.Cancel();
                 }
                 _clientProcess.Task.Wait();
                 _clientProcess.Task.Dispose();
                 _clientProcess = null;
-                _clientProcessCts!.Dispose();
+                _clientProcessCts.Dispose();
                 _clientProcessCts = null;
             }
         }
@@ -473,7 +480,7 @@ namespace PSADT.ClientServer
             if (disposing)
             {
                 // Close the client process if it is running.
-                if (null != _logWriterTask || null != _clientProcess)
+                if (null != _clientProcess)
                 {
                     Close();
                 }
