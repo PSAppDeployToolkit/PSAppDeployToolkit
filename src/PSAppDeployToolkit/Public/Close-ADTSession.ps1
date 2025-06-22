@@ -91,7 +91,7 @@ function Close-ADTSession
         }
 
         # Invoke all callbacks and capture all errors.
-        $callbackErrors = $(
+        $preCloseErrors = $(
             foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PreClose)))
             {
                 try
@@ -150,7 +150,7 @@ function Close-ADTSession
         finally
         {
             # Invoke close callbacks before we remove the session, the callback owner may still need it.
-            foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PostClose)))
+            $postCloseErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PostClose)))
             {
                 try
                 {
@@ -165,7 +165,7 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking post-close callback [$($callback.Name)]."
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking post-close callback [$($callback.Name)]."
                 }
             }
             $null = $Script:ADT.Sessions.Remove($adtSession)
@@ -174,7 +174,7 @@ function Close-ADTSession
         # Hand over to our backend closure routine if this was the last session.
         if (!$Script:ADT.Sessions.Count)
         {
-            Exit-ADTInvocation -ExitCode $ExitCode -NoShellExit:(!$adtSession.CanExitOnClose()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
+            Exit-ADTInvocation -ExitCode $ExitCode -NoShellExit:(!$adtSession.CanExitOnClose()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and ($preCloseErrors -or $postCloseErrors)))
         }
     }
 

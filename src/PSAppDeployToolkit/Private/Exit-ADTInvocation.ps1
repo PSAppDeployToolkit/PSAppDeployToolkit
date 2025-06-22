@@ -20,12 +20,12 @@ function Private:Exit-ADTInvocation
         [System.Management.Automation.SwitchParameter]$Force
     )
 
-    # Attempt to close down any progress dialog here as an additional safety item.
-    $progressOpen = if ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.ProgressDialogOpen())
+    # Invoke on-exit callbacks.
+    $callbackErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnExit)))
     {
         try
         {
-            Close-ADTInstallationProgress
+            & $callback
         }
         catch
         {
@@ -33,9 +33,20 @@ function Private:Exit-ADTInvocation
         }
     }
 
-    # Attempt to close down any remaining client/server process as an additional safety item.
-    $clientOpen = if ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.IsRunning)
+    # Attempt to close down any dialog or client/server process here as an additional safety item.
+    $clientOpen = if ($Script:ADT.ClientServerProcess)
     {
+        if ($Script:ADT.ClientServerProcess.ProgressDialogOpen())
+        {
+            try
+            {
+                Close-ADTInstallationProgress
+            }
+            catch
+            {
+                $_
+            }
+        }
         try
         {
             Close-ADTClientServerProcess
@@ -49,20 +60,6 @@ function Private:Exit-ADTInvocation
     # Flag the module as uninitialized upon last session closure.
     $Script:ADT.Initialized = $false
 
-    # Invoke on-exit callbacks.
-    try
-    {
-        foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnExit)))
-        {
-            & $callback
-        }
-    }
-    catch
-    {
-        # Do not under any circumstance let a bad callback de-stabilise our exit procedure.
-        $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
-    }
-
     # Invoke a silent restart on the device if specified.
     if ($null -ne $Script:ADT.RestartOnExitCountdown)
     {
@@ -71,7 +68,7 @@ function Private:Exit-ADTInvocation
 
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
-    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($progressOpen -or $clientOpen)))
+    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or $clientOpen)))
     {
         [System.Environment]::Exit($ExitCode)
     }
