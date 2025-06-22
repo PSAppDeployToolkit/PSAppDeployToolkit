@@ -62,7 +62,7 @@ namespace PSADT.ClientServer
         public void Open()
         {
             // Start the server to listen for incoming connections and process data.
-            _clientProcessCts = new(); _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
+            _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
                 _assemblyLocation,
                 ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
                 null,
@@ -79,7 +79,7 @@ namespace PSADT.ClientServer
                 Encoding.UTF8,
                 ProcessWindowStyle.Hidden,
                 null,
-                _clientProcessCts.Token,
+                (_clientProcessCts = new()).Token,
                 false
             ));
             _outputServer.DisposeLocalCopyOfClientHandle();
@@ -87,7 +87,7 @@ namespace PSADT.ClientServer
             _logServer.DisposeLocalCopyOfClientHandle();
 
             // Set up the log writer task to run in the background.
-            _logWriterTaskCts = new(); _logWriterTask = Task.Run(ReadLog, _logWriterTaskCts.Token);
+            _logWriterTask = Task.Run(ReadLog, (_logWriterTaskCts = new()).Token);
 
             // Confirm the client starts and is ready to receive commands.
             if (!Invoke<bool>("Open"))
