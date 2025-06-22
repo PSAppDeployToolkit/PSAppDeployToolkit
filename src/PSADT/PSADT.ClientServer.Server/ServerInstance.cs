@@ -602,6 +602,11 @@ namespace PSADT.ClientServer
                     // The log writer task reached the end of the stream, exit the loop.
                     break;
                 }
+                catch (IOException ex)
+                {
+                    // Some kind of read issue occurred that was unexpected.
+                    throw new InvalidDataException("An error occurred while reading from the log stream.", ex);
+                }
             }
         }
 
