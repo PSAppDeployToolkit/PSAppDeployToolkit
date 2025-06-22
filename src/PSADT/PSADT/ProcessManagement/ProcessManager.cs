@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.Execution;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.TerminalServices;
-using PSADT.Types;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -26,7 +26,6 @@ using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
-using PSADT.Execution;
 
 namespace PSADT.ProcessManagement
 {
@@ -44,8 +43,7 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
-            Task stdOutTask = Task.CompletedTask;
-            Task stdErrTask = Task.CompletedTask;
+            Task stdOutTask = Task.CompletedTask; Task stdErrTask = Task.CompletedTask;
             List<string> stdout = []; List<string> stderr = [];
             ConcurrentQueue<string> interleaved = [];
             SafeProcessHandle? hProcess = null;
@@ -216,11 +214,11 @@ namespace PSADT.ProcessManagement
                 {
                     if (hStdOutWriteAddRef)
                     {
-                        hStdOutWrite?.DangerousRelease();
+                        hStdOutWrite!.DangerousRelease();
                     }
                     if (hStdErrWriteAddRef)
                     {
-                        hStdErrWrite?.DangerousRelease();
+                        hStdErrWrite!.DangerousRelease();
                     }
                     hStdOutWrite?.Dispose();
                     hStdErrWrite?.Dispose();

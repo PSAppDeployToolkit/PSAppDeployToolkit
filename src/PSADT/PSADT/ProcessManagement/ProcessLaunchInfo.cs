@@ -212,7 +212,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the cancellation token to cancel the process.
         /// </summary>
-        public readonly CancellationToken CancellationToken = default;
+        public readonly CancellationToken CancellationToken;
 
         /// <summary>
         /// Gets whether to not end the process upon CancellationToken expiring.

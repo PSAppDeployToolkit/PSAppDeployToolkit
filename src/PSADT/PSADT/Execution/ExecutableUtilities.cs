@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
-using PSADT.Types;
 using Windows.Win32;
 using Windows.Win32.System.SystemServices;
 using Windows.Win32.System.Diagnostics.Debug;

@@ -19,7 +19,6 @@ using PSADT.DeviceManagement;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
 using PSADT.Utilities;
-using PSADT.Types;
 
 namespace PSADT.Module
 {

@@ -24,8 +24,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Renew the cancellation token as once they're cancelled, they're not usable.
-            _cancellationTokenSource = new CancellationTokenSource();
-            _pollingTask = Task.Run(PollRunningProcesses, _cancellationTokenSource.Token);
+            _pollingTask = Task.Run(PollRunningProcesses, (_cancellationTokenSource = new()).Token);
         }
 
         /// <summary>

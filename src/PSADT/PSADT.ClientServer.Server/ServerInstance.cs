@@ -579,8 +579,7 @@ namespace PSADT.ClientServer
                 try
                 {
                     // Only log the message if a deployment session is active.
-                    string line = _logReader.ReadString();
-                    if (ModuleDatabase.IsDeploymentSessionActive())
+                    if (_logReader.ReadString() is string line && ModuleDatabase.IsDeploymentSessionActive())
                     {
                         // Test the line for a log severity.
                         if (line.Contains(CommonUtilities.ArgumentSeparator.ToString()))

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PSADT.UserInterface.Dialogs
+﻿namespace PSADT.UserInterface.Dialogs
 {
     /// <summary>
     /// Represents a dialog interface for deployment operations, providing a result and the ability to close the dialog.

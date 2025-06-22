@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.LibraryInterfaces;
-using Windows.Win32.Foundation;
 
 namespace PSADT.WindowManagement
 {
