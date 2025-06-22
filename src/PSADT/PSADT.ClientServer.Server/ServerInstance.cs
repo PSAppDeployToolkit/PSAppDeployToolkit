@@ -408,7 +408,7 @@ namespace PSADT.ClientServer
         /// <returns>The process ID of the application that owns the foreground window.</returns>
         public uint GetForegroundWindowProcessId()
         {
-            // Don't set the log source here as this is a low-level operation.
+            _logSource = "Get-ADTForegroundWindowProcessId";
             return Invoke<uint>("GetForegroundWindowProcessId");
         }
 
