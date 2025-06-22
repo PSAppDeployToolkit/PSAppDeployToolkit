@@ -62,29 +62,35 @@ namespace PSADT.ClientServer
         public void Open()
         {
             // Start the server to listen for incoming connections and process data.
-            _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
-                _assemblyLocation,
-                ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
-                null,
-                Username,
-                false,
-                false,
-                false,
-                false,
-                false,
-                null,
-                true,
-                true,
-                true,
-                Encoding.UTF8,
-                ProcessWindowStyle.Hidden,
-                null,
-                (_clientProcessCts = new()).Token,
-                false
-            ));
-            _outputServer.DisposeLocalCopyOfClientHandle();
-            _inputServer.DisposeLocalCopyOfClientHandle();
-            _logServer.DisposeLocalCopyOfClientHandle();
+            try
+            {
+                _clientProcess = ProcessManager.LaunchAsync(new(
+                    _assemblyLocation,
+                    ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
+                    null,
+                    Username,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    null,
+                    true,
+                    true,
+                    true,
+                    Encoding.UTF8,
+                    ProcessWindowStyle.Hidden,
+                    null,
+                    (_clientProcessCts = new()).Token,
+                    false
+                ));
+            }
+            finally
+            {
+                _outputServer.DisposeLocalCopyOfClientHandle();
+                _inputServer.DisposeLocalCopyOfClientHandle();
+                _logServer.DisposeLocalCopyOfClientHandle();
+            }
 
             // Set up the log writer task to run in the background.
             _logWriterTask = Task.Run(ReadLog, (_logWriterTaskCts = new()).Token);
