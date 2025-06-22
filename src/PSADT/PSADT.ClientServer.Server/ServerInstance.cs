@@ -58,12 +58,12 @@ namespace PSADT.ClientServer
         /// <remarks>This method launches the client process and establishes communication through
         /// inter-process pipes. It ensures that the client process is ready to receive commands before
         /// returning.</remarks>
-        /// <exception cref="InvalidOperationException">Thrown if the client process fails to respond to the initial command, indicating that it is not properly
+        /// <exception cref="ApplicationException">Thrown if the client process fails to respond to the initial command, indicating that it is not properly
         /// initialized.</exception>
         public void Open()
         {
             // Start the server to listen for incoming connections and process data.
-            _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
+            _clientProcessCts = new(); _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
                 _assemblyLocation,
                 ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
                 null,
@@ -87,30 +87,74 @@ namespace PSADT.ClientServer
             _inputServer.DisposeLocalCopyOfClientHandle();
             _logServer.DisposeLocalCopyOfClientHandle();
 
+            // Set up the log writer task to run in the background.
+            _logWriterTaskCts = new(); _logWriterTask = Task.Run(ReadLog, _logWriterTaskCts.Token);
+
             // Confirm the client starts and is ready to receive commands.
             if (!Invoke<bool>("Open"))
             {
-                throw new InvalidOperationException("The opened client process is not properly responding to commands.");
+                try
+                {
+                    throw new ApplicationException("The opened client process is not properly responding to commands.");
+                }
+                finally
+                {
+                    Close(true);
+                }
             }
-
-            // Set up the log writer task to run in the background.
-            _logWriterTask = Task.Run(ReadLog, _logWriterTaskCts.Token);
         }
 
         /// <summary>
-        /// Closes the connection to the server.
+        /// Closes the server instance and its associated client process.
         /// </summary>
-        /// <remarks>This method attempts to close the connection by invoking the appropriate command. 
-        /// Ensure that the connection is open before calling this method to avoid unexpected behavior.</remarks>
-        /// <returns><see langword="true"/> if the connection was successfully closed; otherwise, <see langword="false"/>.</returns>
-        private bool Close()
+        /// <remarks>This method ensures that the server instance and its client process are properly closed, releasing
+        /// all associated resources. If the server instance is not open or has already been closed, an <see
+        /// cref="InvalidOperationException"/> is thrown. The <paramref name="force"/> parameter can be used to forcibly
+        /// terminate the client process if it does not respond to the close command.</remarks>
+        /// <param name="force">A value indicating whether to forcibly close the client process. If <see langword="true"/>, the client process is
+        /// terminated regardless of its response to the close command. If <see langword="false"/>, the method attempts to close
+        /// the client process gracefully.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the server instance is not open or has already been closed.</exception>
+        /// <exception cref="ApplicationException">Thrown if the client process does not properly respond to the close command and <paramref name="force"/> is <see
+        /// langword="false"/>.</exception>
+        public void Close(bool force = false)
         {
-            var res = Invoke<bool>("Close");
-            if (!res)
+            // Confirm that the server instance is open and has not been closed already.
+            if (null == _logWriterTask || null == _clientProcess)
             {
-                throw new InvalidOperationException("The opened client process did not properly respond to the close command.");
+                throw new InvalidOperationException("The server instance is not open or has already been closed.");
             }
-            return res;
+
+            // Ensure the client process closes no matter what.
+            bool closed = force || Invoke<bool>("Close");
+            try
+            {
+                if (!closed && !force)
+                {
+                    throw new ApplicationException("The opened client process did not properly respond to the close command.");
+                }
+            }
+            finally
+            {
+                // Close the log writer and wait for it to finish.
+                _logWriterTaskCts!.Cancel();
+                _logWriterTask.Wait();
+                _logWriterTask.Dispose();
+                _logWriterTask = null;
+                _logWriterTaskCts!.Dispose();
+                _logWriterTaskCts = null;
+
+                // Close the client process and wait for it to exit.
+                if (!closed || force)
+                {
+                    _clientProcessCts!.Cancel();
+                }
+                _clientProcess.Task.Wait();
+                _clientProcess.Task.Dispose();
+                _clientProcess = null;
+                _clientProcessCts!.Dispose();
+                _clientProcessCts = null;
+            }
         }
 
         /// <summary>
@@ -423,38 +467,10 @@ namespace PSADT.ClientServer
             // Tear down this object.
             if (disposing)
             {
-                // Check whether the client process is still running.
-                if (null != _clientProcess && !_clientProcess.Task.IsCompleted)
+                // Close the client process if it is running.
+                if (null != _logWriterTask || null != _clientProcess)
                 {
-                    // Close it gracefully if we can, otherwise send cancellation.
-                    try
-                    {
-                        if (!Close())
-                        {
-                            _clientProcessCts.Cancel();
-                        }
-                    }
-                    catch
-                    {
-                        _clientProcessCts.Cancel();
-                    }
-                    _clientProcess.Task.Wait();
-                    _clientProcess.Task.Dispose();
-                    _clientProcess = null;
-                    _clientProcessCts.Dispose();
-                    _clientProcessCts = null!;
-                }
-
-                // Check whether the logging task is still running.
-                if (null != _logWriterTask && !_logWriterTask.IsCompleted)
-                {
-                    // Send cancellation and wait for it to occur.
-                    _logWriterTaskCts.Cancel();
-                    _logWriterTask.Wait();
-                    _logWriterTask.Dispose();
-                    _logWriterTask = null;
-                    _logWriterTaskCts.Dispose();
-                    _logWriterTaskCts = null!;
+                    Close();
                 }
 
                 // Kill all input.
@@ -556,7 +572,7 @@ namespace PSADT.ClientServer
         private void ReadLog()
         {
             // Read the log stream until cancellation is requested or the end of the stream is reached.
-            while (!_logWriterTaskCts.IsCancellationRequested)
+            while (!_logWriterTaskCts!.IsCancellationRequested)
             {
                 try
                 {
@@ -666,7 +682,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field is initialized as a new instance of <see cref="CancellationTokenSource"/>
         /// and is intended for internal use to signal cancellation of tasks or operations. It is not exposed
         /// publicly.</remarks>
-        private CancellationTokenSource _clientProcessCts = new();
+        private CancellationTokenSource? _clientProcessCts;
 
         /// <summary>
         /// Represents the task responsible for writing log entries asynchronously.
@@ -680,7 +696,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
         /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
-        private CancellationTokenSource _logWriterTaskCts = new();
+        private CancellationTokenSource? _logWriterTaskCts;
 
         /// <summary>
         /// Represents the source identifier for logging related to the "Show-ADTModalDialog" functionality.

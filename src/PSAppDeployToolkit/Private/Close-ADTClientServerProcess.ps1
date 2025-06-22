@@ -20,6 +20,7 @@ function Private:Close-ADTClientServerProcess
     Write-ADTLogEntry -Message 'Closing user client/server process.'
     try
     {
+        $Script:ADT.ClientServerProcess.Close()
         $Script:ADT.ClientServerProcess.Dispose()
     }
     finally
