@@ -534,16 +534,6 @@ namespace PSADT.ClientServer
         {
             _outputWriter.Write(command);
             _outputWriter.Flush();
-            return JsonSerialization.DeserializeFromString<T>(ReadResult());
-        }
-
-        /// <summary>
-        /// Reads a line of input from the underlying input stream.
-        /// </summary>
-        /// <returns>The next line of input from the stream as a <see cref="string"/>.</returns>
-        /// <exception cref="InvalidDataException">Thrown if the input stream is unexpectedly closed or no data is available to read.</exception>
-        private string ReadResult()
-        {
             string response;
             try
             {
@@ -561,7 +551,7 @@ namespace PSADT.ClientServer
             {
                 throw new ServerException("The client process returned an exception.", JsonSerialization.DeserializeFromString(response.Substring(6)));
             }
-            return response;
+            return JsonSerialization.DeserializeFromString<T>(response);
         }
 
         /// <summary>
