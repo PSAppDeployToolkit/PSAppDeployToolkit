@@ -92,13 +92,13 @@ namespace PSADT.ClientServer
             catch (ClientException ex)
             {
                 // We've caught our own error. Write it out and exit with its code.
-                Console.Error.WriteLine(ex.ToString());
+                Console.Error.WriteLine(JsonSerialization.SerializeToString(ex));
                 Environment.Exit(ex.HResult);
             }
             catch (Exception ex)
             {
                 // This block is here as a fail-safe and should never be reached.
-                Console.Error.WriteLine($"An unknown error has occurred: {ex}");
+                Console.Error.WriteLine(JsonSerialization.SerializeToString(ex));
                 Environment.Exit((int)ClientExitCode.Unknown);
             }
 
