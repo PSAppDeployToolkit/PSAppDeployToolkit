@@ -81,7 +81,7 @@ function Invoke-ADTCommandWithRetries
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Retries = 3,
+        [System.Nullable[System.UInt32]]$Retries = 3,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({

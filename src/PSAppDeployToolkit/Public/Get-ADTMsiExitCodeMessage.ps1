@@ -50,7 +50,7 @@ function Get-ADTMsiExitCodeMessage
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$MsiExitCode
+        [System.Nullable[System.UInt32]]$MsiExitCode
     )
 
     begin

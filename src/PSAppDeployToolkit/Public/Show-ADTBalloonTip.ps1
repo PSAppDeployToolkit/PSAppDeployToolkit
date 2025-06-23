@@ -73,7 +73,7 @@ function Show-ADTBalloonTip
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$BalloonTipTime = 10000,
+        [System.Nullable[System.UInt32]]$BalloonTipTime = 10000,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait

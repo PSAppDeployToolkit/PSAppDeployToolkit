@@ -15,7 +15,7 @@ function Private:Set-ADTPreferenceVariables
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Scope = 1
+        [System.Nullable[System.UInt32]]$Scope = 1
     )
 
     # Get the callstack so we can enumerate bound parameters of our callers.

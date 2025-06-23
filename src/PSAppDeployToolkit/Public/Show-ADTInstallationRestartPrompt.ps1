@@ -85,18 +85,18 @@ function Show-ADTInstallationRestartPrompt
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CountdownSeconds = 60,
+        [System.Nullable[System.UInt32]]$CountdownSeconds = 60,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CountdownNoHideSeconds = 30,
+        [System.Nullable[System.UInt32]]$CountdownNoHideSeconds = 30,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [System.Management.Automation.SwitchParameter]$SilentRestart,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$SilentCountdownSeconds = 5,
+        [System.Nullable[System.UInt32]]$SilentCountdownSeconds = 5,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

@@ -60,7 +60,7 @@ function Set-ADTDeferHistory
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$DeferTimesRemaining,
+        [System.Nullable[System.UInt32]]$DeferTimesRemaining,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

@@ -11,7 +11,7 @@ function Private:Invoke-ADTSilentRestart
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Delay
+        [System.Nullable[System.UInt32]]$Delay
     )
 
     # Hand this off to the client/server process to deal with. Run it as this current user though.

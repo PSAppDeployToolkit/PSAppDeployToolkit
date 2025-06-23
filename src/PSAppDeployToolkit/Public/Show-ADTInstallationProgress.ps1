@@ -91,7 +91,7 @@ function Show-ADTInstallationProgress
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Double]$StatusBarPercentage,
+        [System.Nullable[System.Double]]$StatusBarPercentage,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

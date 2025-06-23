@@ -99,7 +99,7 @@ function New-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$IconIndex,
+        [System.Nullable[System.UInt32]]$IconIndex,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

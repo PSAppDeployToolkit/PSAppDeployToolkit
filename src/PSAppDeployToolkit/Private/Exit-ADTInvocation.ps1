@@ -11,7 +11,7 @@ function Private:Exit-ADTInvocation
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$ExitCode,
+        [System.Nullable[System.Int32]]$ExitCode,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoShellExit,

@@ -88,7 +88,7 @@ function Write-Log
 
         [Parameter(Mandatory = $false, Position = 8)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$MaxLogHistory,
+        [System.Nullable[System.Int32]]$MaxLogHistory,
 
         [Parameter(Mandatory = $false, Position = 9)]
         [ValidateNotNullOrEmpty()]
@@ -189,7 +189,7 @@ function Exit-Script
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$ExitCode
+        [System.Nullable[System.Int32]]$ExitCode
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1103,7 +1103,7 @@ function Show-InstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Timeout,
+        [System.Nullable[System.UInt32]]$Timeout,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1285,11 +1285,11 @@ function Show-InstallationWelcome
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CloseAppsCountdown,
+        [System.Nullable[System.Int32]]$CloseAppsCountdown,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$ForceCloseAppsCountdown,
+        [System.Nullable[System.Int32]]$ForceCloseAppsCountdown,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PromptToSave,
@@ -1308,11 +1308,11 @@ function Show-InstallationWelcome
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$DeferTimes,
+        [System.Nullable[System.Int32]]$DeferTimes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$DeferDays,
+        [System.Nullable[System.Int32]]$DeferDays,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1323,7 +1323,7 @@ function Show-InstallationWelcome
 
         [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$RequiredDiskSpace,
+        [System.Nullable[System.Int32]]$RequiredDiskSpace,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1335,7 +1335,7 @@ function Show-InstallationWelcome
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$ForceCountdown,
+        [System.Nullable[System.Int32]]$ForceCountdown,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CustomText
@@ -1450,11 +1450,11 @@ function Show-InstallationRestartPrompt
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CountdownSeconds,
+        [System.Nullable[System.Int32]]$CountdownSeconds,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$CountdownNoHideSeconds,
+        [System.Nullable[System.Int32]]$CountdownNoHideSeconds,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1462,7 +1462,7 @@ function Show-InstallationRestartPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$SilentCountdownSeconds,
+        [System.Nullable[System.Int32]]$SilentCountdownSeconds,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1523,7 +1523,7 @@ function Show-BalloonTip
 
         [Parameter(Mandatory = $false, Position = 3)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$BalloonTipTime,
+        [System.Nullable[System.Int32]]$BalloonTipTime,
 
         [Parameter(Mandatory = $false, Position = 4)]
         [System.Management.Automation.SwitchParameter]$NoWait
@@ -2384,7 +2384,7 @@ function Execute-Process
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
+        [System.Nullable[System.Int32]]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3888,7 +3888,7 @@ function Install-SCCMSoftwareUpdates
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$SoftwareUpdatesScanWaitInSeconds,
+        [System.Nullable[System.Int32]]$SoftwareUpdatesScanWaitInSeconds,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3956,7 +3956,7 @@ function Send-Keys
 
         [Parameter(Mandatory = $false, Position = 4)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$WaitSeconds
+        [System.Nullable[System.Int32]]$WaitSeconds
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4174,7 +4174,7 @@ function New-Shortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$IconIndex,
+        [System.Nullable[System.Int32]]$IconIndex,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4476,7 +4476,7 @@ function Set-DeferHistory
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$DeferTimesRemaining,
+        [System.Nullable[System.Int32]]$DeferTimesRemaining,
 
         [Parameter(Mandatory = $false)]
         [AllowEmptyString()]
@@ -4526,11 +4526,11 @@ function Get-MsiTableProperty
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$TablePropertyNameColumnNum,
+        [System.Nullable[System.Int32]]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$TablePropertyValueColumnNum,
+        [System.Nullable[System.Int32]]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation,
@@ -4636,7 +4636,7 @@ function Get-MsiExitCodeMessage
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$MsiExitCode
+        [System.Nullable[System.Int32]]$MsiExitCode
     )
 
     # Set strict mode to the highest within this function's scope.

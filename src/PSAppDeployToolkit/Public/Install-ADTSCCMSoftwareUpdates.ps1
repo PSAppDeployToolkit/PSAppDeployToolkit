@@ -53,7 +53,7 @@ function Install-ADTSCCMSoftwareUpdates
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$SoftwareUpdatesScanWaitInSeconds = 180,
+        [System.Nullable[System.Int32]]$SoftwareUpdatesScanWaitInSeconds = 180,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

@@ -93,7 +93,7 @@ function Send-ADTKeys
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]
         [System.Obsolete("Please use 'WaitDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$WaitSeconds,
+        [System.Nullable[System.Int32]]$WaitSeconds,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]

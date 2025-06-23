@@ -115,7 +115,7 @@ function Mount-ADTWimFile
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Index')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$Index,
+        [System.Nullable[System.UInt32]]$Index,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
         [ValidateNotNullOrEmpty()]

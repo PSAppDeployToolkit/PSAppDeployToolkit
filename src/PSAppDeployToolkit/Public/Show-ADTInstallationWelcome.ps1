@@ -261,7 +261,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CloseProcessesCountdown,
+        [System.Nullable[System.UInt32]]$CloseProcessesCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
@@ -270,7 +270,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$ForceCloseProcessesCountdown,
+        [System.Nullable[System.UInt32]]$ForceCloseProcessesCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferForceCountdownCheckDiskSpace', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
@@ -279,7 +279,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$ForceCountdown,
+        [System.Nullable[System.UInt32]]$ForceCountdown,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = 'Specify the number of times the deferral is allowed.')]
@@ -302,7 +302,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$DeferTimes,
+        [System.Nullable[System.UInt32]]$DeferTimes,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
@@ -325,7 +325,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$DeferDays,
+        [System.Nullable[System.UInt32]]$DeferDays,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = "Specify the deadline (in either your local UI culture's date format, or ISO8601 format) for which deferral will expire as an option.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = "Specify the deadline (in either your local UI culture's date format, or ISO8601 format) for which deferral will expire as an option.")]
@@ -670,7 +670,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentCheckDiskSpace', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentCloseProcessesCheckDiskSpace', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$RequiredDiskSpace
+        [System.Nullable[System.UInt32]]$RequiredDiskSpace
     )
 
     dynamicparam
