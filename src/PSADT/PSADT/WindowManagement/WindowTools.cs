@@ -28,7 +28,7 @@ namespace PSADT.WindowManagement
                     if (hWnd != HWND.Null)
                     {
                         GCHandle hItems = GCHandle.FromIntPtr(lItems);
-                        if (hItems.Target is List<nint> items)
+                        if (hItems.Target is List<HWND> items)
                         {
                             items.Add(hWnd);
                             return true;
