@@ -68,11 +68,11 @@ function Get-ADTBoundParametersAndDefaultValues
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ParameterSetName,
+        [System.String]$ParameterSetName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$HelpMessage,
+        [System.String]$HelpMessage = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -221,7 +221,7 @@ function Get-ADTBoundParametersAndDefaultValues
                         }
 
                         # Filter out parameters without a default value.
-                        if ($null -eq $_.DefaultValue)
+                        if (($null -eq $_.DefaultValue) -or $_.DefaultValue.ToString().Equals('[System.Management.Automation.Language.NullString]::Value'))
                         {
                             return
                         }

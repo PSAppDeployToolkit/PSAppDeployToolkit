@@ -112,7 +112,7 @@ function Set-ADTActiveSetup
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Arguments,
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -131,7 +131,7 @@ function Set-ADTActiveSetup
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Locale,
+        [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
@@ -321,15 +321,15 @@ function Set-ADTActiveSetup
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$SID,
+                [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$Version,
+                [System.String]$Version = [System.Management.Automation.Language.NullString]::Value,
 
                 [Parameter(Mandatory = $false)]
                 [AllowEmptyString()]
-                [System.String]$Locale,
+                [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
 
                 [Parameter(Mandatory = $false)]
                 [System.Management.Automation.SwitchParameter]$DisableActiveSetup

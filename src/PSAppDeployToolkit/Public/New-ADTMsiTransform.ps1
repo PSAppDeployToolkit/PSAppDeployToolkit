@@ -82,12 +82,12 @@ function New-ADTMsiTransform
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$ApplyTransformPath,
+        [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'If `-ApplyTransformPath` was specified: `<ApplyTransformPath>.new.mst`; If only `-MsiPath` was specified: `<MsiPath>.mst`')]
-        [System.String]$NewTransformPath,
+        [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

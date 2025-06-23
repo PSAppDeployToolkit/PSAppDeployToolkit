@@ -194,7 +194,7 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$WorkingDirectory,
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         # Identity: Username (only present in sets where identity is "Username")
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_Wait')]
@@ -275,7 +275,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Verb,
+        [System.String]$Verb = [System.Management.Automation.Language.NullString]::Value,
 
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]

@@ -98,7 +98,7 @@ function Set-ADTRegistryKey
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
         [System.Object]$Value,

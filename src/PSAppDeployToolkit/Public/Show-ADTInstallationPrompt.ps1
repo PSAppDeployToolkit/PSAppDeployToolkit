@@ -97,11 +97,11 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowInputDialog')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultValue,
+        [System.String]$DefaultValue = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Message,
+        [System.String]$Message = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -109,15 +109,15 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ButtonRightText,
+        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ButtonLeftText,
+        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ButtonMiddleText,
+        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

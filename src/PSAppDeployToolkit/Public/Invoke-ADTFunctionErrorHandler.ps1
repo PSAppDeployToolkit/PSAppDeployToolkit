@@ -84,7 +84,7 @@ function Invoke-ADTFunctionErrorHandler
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$LogMessage,
+        [System.String]$LogMessage = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ResolveErrorProperties')]
         [ValidateNotNullOrEmpty()]

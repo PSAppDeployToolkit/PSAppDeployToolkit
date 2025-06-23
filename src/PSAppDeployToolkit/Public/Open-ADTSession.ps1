@@ -177,27 +177,27 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppVendor,
+        [System.String]$AppVendor = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppName,
+        [System.String]$AppName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppVersion,
+        [System.String]$AppVersion = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppArch,
+        [System.String]$AppArch = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppLang,
+        [System.String]$AppLang = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppRevision,
+        [System.String]$AppRevision = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -209,19 +209,19 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppScriptAuthor,
+        [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$InstallName,
+        [System.String]$InstallName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$InstallTitle,
+        [System.String]$InstallTitle = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeployAppScriptFriendlyName,
+        [System.String]$DeployAppScriptFriendlyName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -273,7 +273,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$DirFiles,
+        [System.String]$DirFiles = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -287,15 +287,15 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$DirSupportFiles,
+        [System.String]$DirSupportFiles = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultMsiFile,
+        [System.String]$DefaultMsiFile = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultMstFile,
+        [System.String]$DefaultMstFile = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -316,7 +316,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$LogName,
+        [System.String]$LogName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, DontShow = $true)]
         [ValidateScript({
