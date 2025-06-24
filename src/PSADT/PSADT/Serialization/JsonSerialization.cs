@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -28,7 +28,7 @@ namespace PSADT.Serialization
         static JsonSerialization()
         {
             // Set the default serialization binder to ensure compatibility between .NET Core and .NET Framework.
-            if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework"))
+            if (null == AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(static a => null != a.FullName && a.FullName.StartsWith("System.Private.CoreLib")))
             {
                 DefaultJsonSerializerSettings.SerializationBinder = new DotNetCompatibleSerializationBinder();
             }
