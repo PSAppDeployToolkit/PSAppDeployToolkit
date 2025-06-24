@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace PSADT.Serialization
 {
@@ -16,6 +18,21 @@ namespace PSADT.Serialization
     /// behavior.</description></item> </list> </para></remarks>
     public static class JsonSerialization
     {
+        /// <summary>
+        /// Initializes the <see cref="JsonSerialization"/> class and configures default settings to ensure
+        /// compatibility between .NET Core and .NET Framework.
+        /// </summary>
+        /// <remarks>This static constructor sets the default serialization binder to a compatibility
+        /// binder when running on the .NET Framework. This ensures that serialized objects can be properly deserialized
+        /// across different .NET runtime environments.</remarks>
+        static JsonSerialization()
+        {
+            // Set the default serialization binder to ensure compatibility between .NET Core and .NET Framework.
+            if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework"))
+            {
+                DefaultJsonSerializerSettings.SerializationBinder = new DotNetCompatibleSerializationBinder();
+            }
+        }
         /// <summary>
         /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
         /// </summary>
@@ -100,5 +117,47 @@ namespace PSADT.Serialization
             NullValueHandling = NullValueHandling.Ignore,
             Formatting = Formatting.None,
         };
+
+        /// <summary>
+        /// Provides a serialization binder that ensures compatibility between .NET Core and .NET Framework by
+        /// resolving types with special handling for core library assemblies.
+        /// </summary>
+        /// <remarks>This binder overrides the default type resolution behavior to replace the .NET
+        /// Core-specific core library assembly name ("System.Private.CoreLib") with the .NET Framework equivalent 
+        /// ("mscorlib"). This ensures that types serialized in one runtime environment can be correctly deserialized
+        /// in another.</remarks>
+        private sealed class DotNetCompatibleSerializationBinder : DefaultSerializationBinder
+        {
+            /// <summary>
+            /// Resolves a type from its assembly name and type name, with special handling for core library assemblies.
+            /// </summary>
+            /// <remarks>If the specified assembly name matches the core library assembly, it is
+            /// replaced with the standard mscorlib assembly name. This ensures compatibility when resolving types
+            /// across different runtime environments.</remarks>
+            /// <param name="assemblyName">The name of the assembly containing the type. Can be <see langword="null"/>.</param>
+            /// <param name="typeName">The name of the type to resolve.</param>
+            /// <returns>The <see cref="Type"/> object representing the resolved type.</returns>
+            public override Type BindToType(string? assemblyName, string typeName)
+            {
+                if (assemblyName == CoreLibAssembly)
+                {
+                    assemblyName = MscorlibAssembly;
+                    typeName = typeName.Replace(CoreLibAssembly, MscorlibAssembly);
+                }
+                return base.BindToType(assemblyName, typeName);
+            }
+
+            /// <summary>
+            /// Represents the name of the core library assembly used by the .NET (Core) runtime.
+            /// </summary>
+            private const string CoreLibAssembly = "System.Private.CoreLib";
+
+            /// <summary>
+            /// Represents the name of the mscorlib assembly.
+            /// </summary>
+            /// <remarks>This constant is used to reference the mscorlib assembly, which contains
+            /// fundamental classes and base types used by the .NET Framework.</remarks>
+            private const string MscorlibAssembly = "mscorlib";
+        }
     }
 }
