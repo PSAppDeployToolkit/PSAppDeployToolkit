@@ -66,8 +66,8 @@ namespace PSADT.DeviceManagement
         {
             get
             {
-                // Ensure the system power status is up to date.
-                UpdateSystemPowerStatus(); return systemPowerStatus.BatteryLifePercent != byte.MaxValue && !IsBatteryInvalid() ? systemPowerStatus.BatteryLifePercent : null;
+                // IsBatteryInvalid() will call UpdateSystemPowerStatus() internally for us.
+                return !IsBatteryInvalid() && systemPowerStatus.BatteryLifePercent != byte.MaxValue ? systemPowerStatus.BatteryLifePercent : null;
             }
         }
 
@@ -111,7 +111,14 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets a value indicating whether the system is currently using AC power.
         /// </summary>
-        public bool IsUsingACPower => ACPowerLineStatus == PowerLineStatus.Online || (ACPowerLineStatus == PowerLineStatus.Unknown && IsBatteryInvalid());
+        public bool IsUsingACPower
+        {
+            get
+            {
+                // IsBatteryInvalid() will call UpdateSystemPowerStatus() internally for us.
+                return (IsBatteryInvalid() && systemPowerStatus.ACLineStatus == (byte)PowerLineStatus.Unknown) || systemPowerStatus.ACLineStatus == (byte)PowerLineStatus.Online;
+            }
+        }
 
         /// <summary>
         /// Indicates whether the device is a laptop.
@@ -121,7 +128,11 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.
         /// </summary>
-        private bool IsBatteryInvalid() => BatteryChargeStatus == BatteryChargeStatus.NoSystemBattery || BatteryChargeStatus == BatteryChargeStatus.Unknown;
+        private bool IsBatteryInvalid()
+        {
+            // Store off BatteryChargeStatus to prevent repeated UpdateSystemPowerStatus() calls.
+            var batteryChargeStatus = BatteryChargeStatus; return batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown;
+        }
 
         /// <summary>
         /// Updates the current system power status by retrieving information about the system's power state.
