@@ -129,14 +129,14 @@ namespace PSADT.TerminalServices
         /// retrieving group policy information. If none of these methods succeed, the method returns <see
         /// langword="null"/>.</remarks>
         /// <param name="sessionid">The ID of the session for which the SID is being retrieved.</param>
-        /// <param name="usermame">The user account, represented as an <see cref="NTAccount"/>, for which the SID is being retrieved.</param>
+        /// <param name="username">The user account, represented as an <see cref="NTAccount"/>, for which the SID is being retrieved.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the SID of the specified session and user account</returns>
-        private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount usermame)
+        private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
         {
             // Try everything we can to get the SID for the given session and user.
             try
             {
-                return (SecurityIdentifier)usermame.Translate(typeof(SecurityIdentifier));
+                return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
             }
             catch
             {
@@ -158,7 +158,7 @@ namespace PSADT.TerminalServices
                 }
 
                 // Try and retrieve it from group policy information. This is the last chance we have.
-                if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(usermame))?.SID is not SecurityIdentifier sid)
+                if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(username))?.SID is not SecurityIdentifier sid)
                 {
                     // Throw the original exception.
                     throw;
