@@ -103,24 +103,24 @@ namespace PSADT.Module
         private static readonly int PID = Process.GetCurrentProcess().Id;
 
         /// <summary>
+        /// Represents a compiled regular expression that matches the first non-whitespace character in a string.
+        /// </summary>
+        /// <remarks>This regular expression is precompiled for performance and is used to identify the
+        /// first character in a string that is not a whitespace character.</remarks>
+        private static readonly Regex CMTraceFirstChar = new(@"[^\s]", RegexOptions.Compiled);
+
+        /// <summary>
         /// Represents the punctuation space character used to replace leading whitespace in CMTrace logs.
         /// </summary>
         /// <remarks>This character is a Unicode punctuation space (U+2008) and is used specifically to
         /// handle leading whitespace in log entries for CMTrace compatibility.</remarks>
-        private static readonly char LeadingSpaceChar = (char)0x2008;
+        private const char LeadingSpaceChar = (char)0x2008;
 
         /// <summary>
         /// Represents a string containing a single leading space character.
         /// </summary>
         /// <remarks>This field is initialized using the <see cref="LeadingSpaceChar"/> constant and is
         /// intended for use in scenarios where a predefined string with a leading space is required.</remarks>
-        private static readonly string LeadingSpaceString = LeadingSpaceChar.ToString();
-
-        /// <summary>
-        /// Represents a compiled regular expression that matches the first non-whitespace character in a string.
-        /// </summary>
-        /// <remarks>This regular expression is precompiled for performance and is used to identify the
-        /// first character in a string that is not a whitespace character.</remarks>
-        private static readonly Regex CMTraceFirstChar = new(@"[^\s]", RegexOptions.Compiled);
+        private const string LeadingSpaceString = "\x2008";
     }
 }

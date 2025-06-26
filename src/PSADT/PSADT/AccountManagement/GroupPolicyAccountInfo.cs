@@ -112,6 +112,6 @@ namespace PSADT.AccountManagement
         /// </summary>
         /// <remarks>This path is used to access the Group Policy Data Store in the Windows registry. It
         /// is a static, read-only field and cannot be modified.</remarks>
-        private static readonly string GroupPolicyDataStorePath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\DataStore";
+        private const string GroupPolicyDataStorePath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\DataStore";
     }
 }

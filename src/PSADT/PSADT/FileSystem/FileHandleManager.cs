@@ -231,7 +231,7 @@ namespace PSADT.FileSystem
                     using (hThread)
                     {
                         // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
-                        if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
+                        if (PInvoke.WaitForSingleObject(hThread, GetObjectNameThreadTimeout) == WAIT_EVENT.WAIT_TIMEOUT)
                         {
                             NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                         }
@@ -414,11 +414,6 @@ namespace PSADT.FileSystem
         private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
 
         /// <summary>
-        /// The duration to wait for a hung NtQueryObject thread to terminate.
-        /// </summary>
-        private static readonly TimeSpan GetObjectNameThreadTimeout = TimeSpan.FromMilliseconds(125);
-
-        /// <summary>
         /// Represents the function pointer for the NtQueryObject native API method.
         /// </summary>
         /// <remarks>This field holds the address of the NtQueryObject function, which is resolved at runtime. It is intended for internal use only and should not be accessed directly by external code.</remarks>
@@ -429,5 +424,10 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <remarks>This field holds a function pointer to the ExitThread procedure, which is typically used in low-level interop scenarios. It is initialized to the appropriate address during runtime and should not be modified directly.</remarks>
         private static readonly FARPROC ExitThreadProcAddr;
+
+        /// <summary>
+        /// The duration to wait for a hung NtQueryObject thread to terminate.
+        /// </summary>
+        private const uint GetObjectNameThreadTimeout = 125;
     }
 }

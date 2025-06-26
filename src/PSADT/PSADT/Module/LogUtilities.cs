@@ -156,11 +156,6 @@ namespace PSADT.Module
         ]);
 
         /// <summary>
-        /// Gets the log divider string.
-        /// </summary>
-        internal static readonly string LogDivider = new string('-', 79);
-
-        /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
         internal static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
@@ -192,5 +187,10 @@ namespace PSADT.Module
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
         /// "<example>").  This is typically used to identify script locations in a specific format.</remarks>
         private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Gets the log divider string.
+        /// </summary>
+        internal const string LogDivider = "-------------------------------------------------------------------------------";
     }
 }
