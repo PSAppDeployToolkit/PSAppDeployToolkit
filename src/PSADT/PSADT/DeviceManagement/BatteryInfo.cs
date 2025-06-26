@@ -121,7 +121,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.
         /// </summary>
-        public bool IsBatteryInvalid() => BatteryChargeStatus == BatteryChargeStatus.NoSystemBattery || BatteryChargeStatus == BatteryChargeStatus.Unknown;
+        private bool IsBatteryInvalid() => BatteryChargeStatus == BatteryChargeStatus.NoSystemBattery || BatteryChargeStatus == BatteryChargeStatus.Unknown;
 
         /// <summary>
         /// Updates the current system power status by retrieving information about the system's power state.
