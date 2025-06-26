@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.DirectoryServices;
 using System.Security.Principal;
+using PSADT.LibraryInterfaces;
 
 namespace PSADT.AccountManagement
 {
@@ -102,5 +104,15 @@ namespace PSADT.AccountManagement
         /// <remarks>This field provides the SID associated with the caller, which can be used for 
         /// security-related operations such as access control or identity verification.</remarks>
         public static readonly SecurityIdentifier CallerSid;
+
+        /// <summary>
+        /// Gets the process ID of the caller's current process.
+        /// </summary>
+        public static readonly uint CallerProcessId = (uint)Process.GetCurrentProcess().Id;
+
+        /// <summary>
+        /// Session Id of the current user running this library.
+        /// </summary>
+        public static readonly uint CallerSessionId = Kernel32.ProcessIdToSessionId(CallerProcessId);
     }
 }

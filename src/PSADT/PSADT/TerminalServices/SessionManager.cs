@@ -106,7 +106,7 @@ namespace PSADT.TerminalServices
                 session.SessionId,
                 pWinStationName,
                 (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)sessionInfo.SessionState,
-                session.SessionId == CurrentSessionId,
+                session.SessionId == AccountUtilities.CallerSessionId,
                 session.SessionId == PInvoke.WTSGetActiveConsoleSessionId(),
                 sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive,
                 pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
@@ -213,10 +213,5 @@ namespace PSADT.TerminalServices
                 throw new InvalidProgramException($"Failed to retrieve the SID for {username}.", ex);
             }
         }
-
-        /// <summary>
-        /// Session Id of the current user running this library.
-        /// </summary>
-        private static readonly uint CurrentSessionId = Kernel32.ProcessIdToSessionId((uint)Process.GetCurrentProcess().Id);
     }
 }

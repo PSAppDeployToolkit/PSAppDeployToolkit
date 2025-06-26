@@ -38,7 +38,7 @@ namespace PSADT.Module
             CallerFileName = callerFileName;
             CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
-            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new string(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">";
+            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new string(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>
@@ -96,11 +96,6 @@ namespace PSADT.Module
         /// </summary>
         /// <returns>A formatted string containing the exit code, standard output, and standard error.</returns>
         public override string ToString() => LegacyLogLine;
-
-        /// <summary>
-        /// Gets the current process ID.
-        /// </summary>
-        private static readonly int PID = Process.GetCurrentProcess().Id;
 
         /// <summary>
         /// Represents a compiled regular expression that matches the first non-whitespace character in a string.
