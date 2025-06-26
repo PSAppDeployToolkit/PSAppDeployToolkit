@@ -211,6 +211,7 @@ WTS_PROTOCOL_TYPE_ICA
 WTS_PROTOCOL_TYPE_RDP
 WTSEnumerateSessionsW
 WTSFreeMemory
+WTSFreeMemoryEx
 WTSGetActiveConsoleSessionId
 WTSINFOEXW
 WTSQuerySessionInformationW
