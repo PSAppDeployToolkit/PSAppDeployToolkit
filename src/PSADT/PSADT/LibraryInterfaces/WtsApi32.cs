@@ -76,9 +76,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pMemory"></param>
         internal static unsafe void WTSFreeMemory(ref IntPtr pMemory)
         {
-            if (pMemory != default && IntPtr.Zero == pMemory)
+            if (pMemory != default && IntPtr.Zero != pMemory)
             {
                 PInvoke.WTSFreeMemory(pMemory.ToPointer());
+                pMemory = default;
             }
         }
     }
