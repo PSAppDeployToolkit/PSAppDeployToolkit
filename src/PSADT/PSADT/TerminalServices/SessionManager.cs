@@ -27,12 +27,12 @@ namespace PSADT.TerminalServices
         /// <exception cref="Win32Exception"></exception>
         public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
-            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo, out var pCount);
+            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo);
             using (pSessionInfo)
             {
                 int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
                 List<SessionInfo> sessions = [];
-                for (int i = 0; i < pCount; i++)
+                for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
                     if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i)) is SessionInfo session)
                     {

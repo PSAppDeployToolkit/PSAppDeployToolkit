@@ -19,11 +19,10 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="hServer"></param>
         /// <param name="pSessionInfo"></param>
-        /// <param name="pCount"></param>
         /// <returns></returns>
-        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWTSHandle pSessionInfo, out uint pCount)
+        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWTSHandle pSessionInfo)
         {
-            var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out pCount);
+            var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
