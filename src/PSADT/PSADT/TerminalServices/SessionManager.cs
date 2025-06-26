@@ -138,7 +138,7 @@ namespace PSADT.TerminalServices
             {
                 return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
             }
-            catch
+            catch (Exception ex)
             {
                 // If we have the privileges, we can get the SID from the user's token.
                 if (PrivilegeManager.IsPrivilegeEnabled(SE_PRIVILEGE.SeTcbPrivilege))
@@ -161,7 +161,7 @@ namespace PSADT.TerminalServices
                 if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(username))?.SID is not SecurityIdentifier sid)
                 {
                     // Throw the original exception.
-                    throw;
+                    throw new InvalidProgramException($"Failed to retrieve the SID for {username}.", ex);
                 }
                 return sid;
             }
