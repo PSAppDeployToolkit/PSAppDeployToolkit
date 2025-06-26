@@ -6,7 +6,7 @@ namespace PSADT.SafeHandles
     /// <summary>
     /// Represents a wrapper for an environment block handle that ensures the handle is properly released.
     /// </summary>
-    internal sealed class SafeWTSHandle(IntPtr handle, int length, bool ownsHandle) : SafeMemoryHandle(handle, length, ownsHandle)
+    internal sealed class SafeWtsHandle(IntPtr handle, int length, bool ownsHandle) : SafeMemoryHandle(handle, length, ownsHandle)
     {
         /// <summary>
         /// Reallocates the memory block to the specified size.

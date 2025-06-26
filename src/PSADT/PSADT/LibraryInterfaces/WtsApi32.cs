@@ -20,14 +20,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hServer"></param>
         /// <param name="pSessionInfo"></param>
         /// <returns></returns>
-        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWTSHandle pSessionInfo)
+        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
         {
             var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            pSessionInfo = new SafeWTSHandle(new IntPtr(ppSessionInfo), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
+            pSessionInfo = new SafeWtsHandle(new IntPtr(ppSessionInfo), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             return res;
         }
 
@@ -40,14 +40,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pBuffer"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWTSHandle pBuffer)
+        internal static unsafe BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
             var res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out var ppBuffer, out uint bytesReturned);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            pBuffer = new SafeWTSHandle(new IntPtr(ppBuffer), (int)bytesReturned, true);
+            pBuffer = new SafeWtsHandle(new IntPtr(ppBuffer), (int)bytesReturned, true);
             return res;
         }
 
