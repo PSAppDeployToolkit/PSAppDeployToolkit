@@ -35,14 +35,14 @@ namespace PSADT.Security
         /// involving user impersonation or  elevated privileges. The caller must ensure that the provided token handle
         /// is valid and has the necessary  permissions to query linked token information.</remarks>
         /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked token is to be retrieved.</param>
-        /// <returns>A <see cref="SafeAccessTokenHandle"/> representing the linked token associated with the specified token
+        /// <returns>A <see cref="SafeFileHandle"/> representing the linked token associated with the specified token
         /// handle.</returns>
-        internal static SafeAccessTokenHandle GetLinkedToken(SafeHandle tokenHandle)
+        internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
         {
             using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
             {
                 AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                return new(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken);
+                return new(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken, true);
             }
         }
 

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <OutputType>WinExe</OutputType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <NoWarn>$(NoWarn)</NoWarn>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Nullable>enable</Nullable>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <RootNamespace>PSADT.TokenBroker</RootNamespace>
+    <AssemblyName>PSADT.TokenBroker</AssemblyName>
+    <Product>PSAppDeployToolkit Token Broker Helper Process</Product>
+    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+    <AssemblyTitle>PSAppDeployToolkit Token Broker Helper Process</AssemblyTitle>
+    <AssemblyDescription>This product is utilised by PSAppDeployToolkit for facilitating token generation under SYSTEM contexts.</AssemblyDescription>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <InformationalVersion>4.1.0</InformationalVersion>
+    <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
+    <Platforms>AnyCPU</Platforms>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <WarningLevel>9999</WarningLevel>
+    <StartupObject>PSADT.TokenBroker.Program</StartupObject>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
+    <Optimize>false</Optimize>
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
+    <Optimize>true</Optimize>
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+  </ItemGroup>
+</Project>

@@ -49,6 +49,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PSADT.TokenBroker\PSADT.TokenBroker.csproj" />
     <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
   </ItemGroup>

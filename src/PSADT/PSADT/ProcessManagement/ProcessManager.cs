@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
@@ -9,7 +10,9 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -23,7 +26,9 @@ using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
+using Windows.Win32.System.Com;
 using Windows.Win32.System.JobObjects;
+using Windows.Win32.System.TaskScheduler;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -139,25 +144,8 @@ namespace PSADT.ProcessManagement
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
-                        // First we get the user's token.
-                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
-                        SafeFileHandle hPrimaryToken;
-                        using (userToken)
-                        {
-                            // If we're to get their linked token, we get it via their user token.
-                            // Once done, we duplicate the linked token to get a primary token to create the new process.
-                            if (launchInfo.UseLinkedAdminToken)
-                            {
-                                hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
-                            }
-                            else
-                            {
-                                hPrimaryToken = TokenManager.GetPrimaryToken(userToken);
-                            }
-                        }
-
-                        // Finally, start the process off for the user.
-                        using (hPrimaryToken)
+                        // Get the user's token and create the process.
+                        using (var hPrimaryToken = GetTokenViaBroker(session.SessionId, launchInfo.UseLinkedAdminToken))
                         {
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
@@ -538,6 +526,115 @@ namespace PSADT.ProcessManagement
             }
             return Regex.Replace(input, "%([^%]+)%", m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
+
+        /// <summary>
+        /// Retrieves a security token for the specified session using a token broker.
+        /// </summary>
+        /// <remarks>This method establishes a named pipe connection with a token broker process to
+        /// retrieve the security token. The token broker process is started with the specified session ID and optional
+        /// linked administrative token. The method ensures that appropriate security settings are applied to the named
+        /// pipe.</remarks>
+        /// <param name="sessionId">The ID of the session for which the token is requested.</param>
+        /// <param name="useLinkedAdminToken">A value indicating whether to use a linked administrative token. <see langword="true"/> to use a linked
+        /// administrative token; otherwise, <see langword="false"/>.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the security token for the specified session. The caller is
+        /// responsible for disposing of the handle when it is no longer needed.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if no token is received from the token broker.</exception>
+        public static SafeFileHandle GetTokenViaBroker(uint sessionId, bool useLinkedAdminToken = false)
+        {
+            // Set up the required security for the named pipe.
+            PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new PipeAccessRule(
+                new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
+                PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite,
+                AccessControlType.Allow
+            ));
+
+            // Create a named pipe for the token broker.
+            string pipeName = $"PSADT.TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
+            using (var pipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 8, 8, pipeSecurity))
+            {
+                // Create a new token broker process and wait for a connection.
+                StartTokenBroker($"-PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -UseLinkedAdminToken {useLinkedAdminToken}");
+                pipe.WaitForConnection();
+
+                // Read the token from the pipe.
+                byte[] tokenBuf = new byte[sizeof(long)];
+                if (pipe.Read(tokenBuf, 0, tokenBuf.Length) == 0)
+                {
+                    throw new InvalidOperationException("No token received from the token broker.");
+                }
+
+                // Return the token handle.
+                return new SafeFileHandle((nint)BitConverter.ToInt64(tokenBuf, 0), true);
+            }
+        }
+
+        /// <summary>
+        /// Starts a temporary token broker process by creating and executing a scheduled task.
+        /// </summary>
+        /// <remarks>This method creates a scheduled task that runs a token broker executable with the
+        /// specified arguments. The task is registered with the SYSTEM account, executed immediately, and then deleted
+        /// to ensure no persistent artifacts remain. The method initializes and uninitializes the COM library for the
+        /// current thread as part of its operation.</remarks>
+        /// <param name="arguments">The command-line arguments to pass to the token broker executable.</param>
+        public static void StartTokenBroker(string arguments)
+        {
+            // Initialize the COM library for the current thread.
+            Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
+            try
+            {
+                // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
+                Ole32.CoCreateInstance(CLSID_TaskScheduler, null!, CLSCTX.CLSCTX_INPROC_SERVER, out ITaskService servicePtr);
+                servicePtr.Connect(null, null, null, null);
+
+                // Set up the task as required.
+                BSTR folderName = (BSTR)Marshal.StringToBSTR(@"\");
+                BSTR taskName = (BSTR)Marshal.StringToBSTR($"PSADT.TokenBroker_{CryptographicUtilities.SecureNewGuid()}");
+                BSTR userId = (BSTR)Marshal.StringToBSTR("NT AUTHORITY\\SYSTEM");
+                BSTR path = (BSTR)Marshal.StringToBSTR(typeof(ProcessManager).Assembly.Location.Replace(".dll", ".TokenBroker.exe"));
+                BSTR args = (BSTR)Marshal.StringToBSTR(arguments);
+                try
+                {
+                    // Create a new task definition.
+                    servicePtr.GetFolder(folderName, out var rootFolder);
+                    servicePtr.NewTask(0, out ITaskDefinition taskDefinition);
+                    taskDefinition.Actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC, out IAction action);
+                    IExecAction execAction = (IExecAction)action;
+                    taskDefinition.Principal.UserId = userId;
+                    taskDefinition.Principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                    execAction.Path = path;
+                    execAction.Arguments = args;
+
+                    // Define task permissions so only SYSTEM has visibility of it.
+                    const string sddl = "O:SY" + "G:SY" + "D:(A;;FA;;;SY)";
+
+                    // Register the task, start it, then delete it.
+                    rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, sddl, out var task);
+                    task.Run(null, out _); rootFolder.DeleteTask(taskName, 0);
+                }
+                finally
+                {
+                    // Free all binary strings.
+                    Marshal.FreeBSTR(args);
+                    Marshal.FreeBSTR(path);
+                    Marshal.FreeBSTR(userId);
+                    Marshal.FreeBSTR(taskName);
+                    Marshal.FreeBSTR(folderName);
+                }
+            }
+            finally
+            {
+                // Uninitialize the COM library for the current thread.
+                PInvoke.CoUninitialize();
+            }
+        }
+
+        /// <summary>
+        /// Represents the globally unique identifier (GUID) for the Task Scheduler COM class.
+        /// </summary>
+        /// <remarks>This GUID is used to identify the Task Scheduler COM class when interacting with
+        /// COM-based APIs.</remarks>
+        private static readonly Guid CLSID_TaskScheduler = new("0F87369F-A4E5-4CFC-BD3E-73E6154572DD");
 
         /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.

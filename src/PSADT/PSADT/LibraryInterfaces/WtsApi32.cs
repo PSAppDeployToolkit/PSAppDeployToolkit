@@ -92,7 +92,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="phToken"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSQueryUserToken(uint SessionId, out SafeAccessTokenHandle phToken)
+        internal static unsafe BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
         {
             HANDLE phTokenLocal;
             var res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
@@ -100,7 +100,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            phToken = new SafeAccessTokenHandle(phTokenLocal);
+            phToken = new SafeFileHandle(phTokenLocal, true);
             return res;
         }
 
