@@ -540,7 +540,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="SafeFileHandle"/> representing the security token for the specified session. The caller is
         /// responsible for disposing of the handle when it is no longer needed.</returns>
         /// <exception cref="InvalidOperationException">Thrown if no token is received from the token broker.</exception>
-        public static SafeFileHandle GetTokenViaBroker(uint sessionId, bool useLinkedAdminToken = false)
+        private static SafeFileHandle GetTokenViaBroker(uint sessionId, bool useLinkedAdminToken = false)
         {
             // Set up the required security for the named pipe.
             PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new PipeAccessRule(
@@ -577,7 +577,7 @@ namespace PSADT.ProcessManagement
         /// to ensure no persistent artifacts remain. The method initializes and uninitializes the COM library for the
         /// current thread as part of its operation.</remarks>
         /// <param name="arguments">The command-line arguments to pass to the token broker executable.</param>
-        public static void StartTokenBroker(string arguments)
+        private static void StartTokenBroker(string arguments)
         {
             // Initialize the COM library for the current thread.
             Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
