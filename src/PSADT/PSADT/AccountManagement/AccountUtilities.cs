@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.DirectoryServices;
+using System.Linq;
 using System.Security.Principal;
 using PSADT.LibraryInterfaces;
 
@@ -17,12 +20,48 @@ namespace PSADT.AccountManagement
         /// </summary>
         static AccountUtilities()
         {
+            // Cache information about the current user.
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
                 CallerUsername = new(identity.Name);
                 CallerSid = identity.User!;
             }
+
+            // Initialize the lookup table for well-known SIDs.
+            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = new();
+            foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>())
+            {
+                try
+                {
+                    wellKnownSids.Add(wellKnownSid, new(wellKnownSid, null));
+                }
+                catch
+                {
+                    // Just fall through here. Some SIDs can't be created without a domain, etc.
+                }
+            }
+            WellKnownSidLookupTable = new(wellKnownSids);
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="SecurityIdentifier"/> associated with the specified well-known SID type.
+        /// </summary>
+        /// <remarks>Well-known SIDs are predefined identifiers for common security principals, such as
+        /// "Everyone" or "Local System." Use this method to obtain the <see cref="SecurityIdentifier"/> for a specific
+        /// well-known SID type.</remarks>
+        /// <param name="wellKnownSidType">The type of the well-known SID to retrieve. This must be a valid <see cref="WellKnownSidType"/> value.</param>
+        /// <returns>A <see cref="SecurityIdentifier"/> representing the specified well-known SID type.</returns>
+        /// <exception cref="ArgumentException">Thrown if the specified <paramref name="wellKnownSidType"/> is not recognized or is unavailable in the
+        /// current context.</exception>
+        public static SecurityIdentifier GetWellKnownSid(WellKnownSidType wellKnownSidType)
+        {
+            // Return the SecurityIdentifier for the specified well-known SID type.
+            if (!WellKnownSidLookupTable.TryGetValue(wellKnownSidType, out SecurityIdentifier? sid))
+            {
+                throw new ArgumentException($"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.");
+            }
+            return sid;
         }
 
         /// <summary>
@@ -33,7 +72,7 @@ namespace PSADT.AccountManagement
         /// <returns></returns>
         internal static bool IsSidMemberOfWellKnownGroup(SecurityIdentifier targetSid, WellKnownSidType wellKnownGroupSid)
         {
-            using (DirectoryEntry groupEntry = new($"WinNT://./{new SecurityIdentifier(wellKnownGroupSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
+            using (DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
             {
                 HashSet<string> visited = new();
                 return CheckMemberRecursive(groupEntry, targetSid, visited);
@@ -114,5 +153,14 @@ namespace PSADT.AccountManagement
         /// Session Id of the current user running this library.
         /// </summary>
         public static readonly uint CallerSessionId = Kernel32.ProcessIdToSessionId(CallerProcessId);
+
+        /// <summary>
+        /// A read-only dictionary that maps <see cref="WellKnownSidType"/> values to their corresponding <see
+        /// cref="SecurityIdentifier"/> instances.
+        /// </summary>
+        /// <remarks>This dictionary provides a lookup table for well-known security identifiers (SIDs)
+        /// based on their type. It is intended to facilitate quick access to predefined SIDs commonly used in
+        /// security-related operations.</remarks>
+        private static readonly ReadOnlyDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
     }
 }

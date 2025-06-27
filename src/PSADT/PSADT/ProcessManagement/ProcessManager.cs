@@ -544,7 +544,7 @@ namespace PSADT.ProcessManagement
         {
             // Set up the required security for the named pipe.
             PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new PipeAccessRule(
-                new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
+                AccountUtilities.GetWellKnownSid(WellKnownSidType.LocalSystemSid),
                 PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite,
                 AccessControlType.Allow
             ));

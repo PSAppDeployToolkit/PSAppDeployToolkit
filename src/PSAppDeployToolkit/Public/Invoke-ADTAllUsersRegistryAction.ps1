@@ -115,7 +115,7 @@ function Invoke-ADTAllUsersRegistryAction
             # Set the path to the user's registry hive file.
             $manualRegHives = $(
                 @{ Path = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'; Mountpoint = "HKEY_USERS\$($UserProfile.SID)"; Mounted = $false }
-                if ($false -and !$UserProfile.SID.Equals([System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::NullSid, $null)))
+                if ($false -and !$UserProfile.SID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NullSid))
                 {
                     @{ Path = Join-Path -Path $UserProfile.LocalAppDataPath -ChildPath 'Microsoft\Windows\UsrClass.dat'; Mountpoint = "HKEY_USERS\$($UserProfile.SID)_Classes"; Mounted = $false }
                 }
