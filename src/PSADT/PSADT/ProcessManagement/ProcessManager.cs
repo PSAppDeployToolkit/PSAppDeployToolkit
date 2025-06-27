@@ -591,7 +591,7 @@ namespace PSADT.ProcessManagement
                 BSTR folderName = (BSTR)Marshal.StringToBSTR(@"\");
                 BSTR taskName = (BSTR)Marshal.StringToBSTR($"PSADT.TokenBroker_{CryptographicUtilities.SecureNewGuid()}");
                 BSTR userId = (BSTR)Marshal.StringToBSTR("NT AUTHORITY\\SYSTEM");
-                BSTR path = (BSTR)Marshal.StringToBSTR(typeof(ProcessManager).Assembly.Location.Replace(".dll", ".TokenBroker.exe"));
+                BSTR path = (BSTR)Marshal.StringToBSTR(TokenBrokerExecutable);
                 BSTR args = (BSTR)Marshal.StringToBSTR(arguments);
                 try
                 {
@@ -635,6 +635,14 @@ namespace PSADT.ProcessManagement
         /// <remarks>This GUID is used to identify the Task Scheduler COM class when interacting with
         /// COM-based APIs.</remarks>
         private static readonly Guid CLSID_TaskScheduler = new("0F87369F-A4E5-4CFC-BD3E-73E6154572DD");
+
+        /// <summary>
+        /// Represents the file path to the Token Broker executable associated with the current assembly.
+        /// </summary>
+        /// <remarks>The path is derived from the location of the assembly containing the <see
+        /// cref="ProcessManager"/> type, with the file extension replaced to match the expected executable
+        /// name.</remarks>
+        private static readonly string TokenBrokerExecutable = typeof(ProcessManager).Assembly.Location.Replace(".dll", ".TokenBroker.exe");
 
         /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.
