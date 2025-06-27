@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Management.Automation.Language;
@@ -75,7 +75,7 @@ namespace PSADT.UserInterface.TestHarness
             string customMessageText = "Oh yeah. You can do [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And [accent]accent colored text strings![/accent] This is a custom message that can be added using the [bold]-CustomText[/bold] parameter on [bold]Show-ADTInstallationWelcome[/bold] and [bold]Show-ADTInstallationRestartPrompt[/bold].";
 
             uint deferralsRemaining = 3;
-            DateTime deferralDeadline = DateTime.Parse("2025-06-20T13:00:00");
+            DateTime deferralDeadline = DateTime.Parse("2025-07-20T13:00:00");
 
             // DateTime? deferralDeadline = null;
             string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";

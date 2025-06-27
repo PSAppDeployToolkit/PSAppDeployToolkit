@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -102,7 +102,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Set everything to not visible by default, it's up to the derived class to enable what they need.
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
-            CloseAppsSeparator.Visibility = Visibility.Collapsed;
+            // CloseAppsSeparator.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed;
             DeferRemainingStackPanel.Visibility = Visibility.Collapsed;
@@ -924,5 +924,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             _disposed = true;
         }
+
     }
 }

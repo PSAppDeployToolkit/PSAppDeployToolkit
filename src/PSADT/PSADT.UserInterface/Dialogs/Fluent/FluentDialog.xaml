@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="PSADT.UserInterface.Dialogs.Fluent.FluentDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,11 +10,11 @@
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
     MinHeight="0"
     MaxWidth="580"
-    MaxHeight="950"
+    MaxHeight="1050"
     ui:TitleBar.CloseButtonAvailability="Collapsed"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.CornerStyle="Round"
-    ui:WindowHelper.SystemBackdropType="Acrylic"
+    ui:WindowHelper.SystemBackdropType="Acrylic10"
     ui:WindowHelper.UseModernWindowStyle="True"
     x:ClassModifier="internal"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
@@ -96,6 +96,10 @@
                     <Trigger Property="ItemsControl.AlternationIndex" Value="1">
                         <Setter Property="Background" Value="Transparent" />
                     </Trigger>
+                    <!-- Remove mouseover visual state -->
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Trigger>
                 </Style.Triggers>
             </Style>
 
@@ -104,7 +108,7 @@
 
     <Grid AutomationProperties.Name="Main Container Grid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="24" />
+            <ColumnDefinition Width="28" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -132,8 +136,8 @@
 
             <ui:ImageIcon
                 x:Name="SidebarIcon"
-                Width="17"
-                Margin="1,8,0,0"
+                Width="16"
+                Margin="2,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 AutomationProperties.Name="PSAppDeployToolkit Logo"
@@ -192,19 +196,21 @@
             Grid.Column="1"
             Width="Auto"
             Margin="24,28,24,10"
-            AutomationProperties.Name="Header Panel"
             HorizontalAlignment="Stretch"
+            AutomationProperties.Name="Header Panel"
             >
                 <Image
                     x:Name="AppIconImage"
-                    Width="72"
-                    Height="72"
+                Width="64"
+                Height="64"
                     Margin="0,0,12,0"
                     AutomationProperties.Name="Application Icon"
                     />
 
-                <ikw:SimpleStackPanel Spacing="2"
-                                      Orientation="Vertical">
+            <ikw:SimpleStackPanel
+                Orientation="Vertical"
+                Spacing="2"
+                >
 
                 <TextBlock
                         x:Name="AppTitleTextBlock"
@@ -224,9 +230,10 @@
                         MaxWidth="430"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                    AutomationProperties.Name="Subtitle"
                         FontSize="13"
-                        AutomationProperties.Name="Subtitle"
                         Text="PSAppDeployToolkit - Installation Type"
+                    Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="WrapWithOverflow"
                         />
@@ -267,7 +274,7 @@
                         Margin="16,16,16,16"
                         AutomationProperties.Name="Message Text"
                         Style="{DynamicResource {x:Static ui:ThemeKeys.BodyTextBlockStyleKey}}"
-                        Text="This is the dialog primary message. This will be replaced when the application dialog is displayed.l"
+                        Text="This is the dialog primary message. This will be replaced when the application dialog is displayed."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
                         />
@@ -284,7 +291,7 @@
 
                 </ikw:SimpleStackPanel>
 
-                <!-- Close Apps Panel-->
+                <!-- Close Apps Panel -->
                 <ikw:SimpleStackPanel
                     x:Name="CloseAppsStackPanel"
                     VerticalAlignment="Top"
@@ -292,17 +299,22 @@
                     Orientation="Vertical"
                     >
 
-                    <Separator
+
+                    <!--<Separator
                         x:Name="CloseAppsSeparator"
                         Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />
+                        />-->
 
                     <ui:ListView
                         x:Name="CloseAppsListView"
-                        MaxHeight="168"
-                        Margin="24,8,24,8"
+                        MaxHeight="222"
+                        Margin="16,0,16,16"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
                         AutomationProperties.Name="Close Applications ListView"
+                        Background="{DynamicResource {x:Static ui:ThemeKeys.CardBackgroundFillColorDefaultBrushKey}}"
+                        BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"
+                        BorderThickness="1"
+                        CornerRadius="4"
                         ItemContainerStyle="{StaticResource ListViewItemAnimationStyle}"
                         ItemsSource="{Binding AppsToCloseCollection}"
                         ScrollViewer.CanContentScroll="True"
@@ -317,7 +329,7 @@
                         >
                         <ui:ListView.ItemTemplate>
                             <DataTemplate>
-                                <Grid>
+                                <Grid Margin="4,8,4,8">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
@@ -342,19 +354,18 @@
                                         x:Name="ListViewTitle"
                                         Grid.Row="0"
                                         Grid.Column="1"
-                                        Margin="8,4,16,0"
+                                        Margin="8,0,16,0"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Description"
                                         FontWeight="Bold"
                                         Text="{Binding Description, Mode=OneWay}"
-                                        TextTrimming="CharacterEllipsis"
                                         TextWrapping="Wrap"
                                         />
                                     <TextBlock
                                         x:Name="ListViewSubTitle"
                                         Grid.Row="1"
                                         Grid.Column="1"
-                                        Margin="8,0,16,4"
+                                        Margin="8,0,16,0"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Name"
                                         FontSize="12"
@@ -377,19 +388,15 @@
                     VerticalAlignment="Center"
                     Orientation="Vertical"
                     >
-                    <Separator
-                        Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />
+                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <TextBlock
                         x:Name="ProgressMessageDetailTextBlock"
                         Margin="16,16,16,16"
-                        HorizontalAlignment="Stretch"
                         AutomationProperties.Name="Progress Detail Text"
-                        FontSize="12"
-                        FontWeight="SemiBold"
+                        Style="{DynamicResource {x:Static ui:ThemeKeys.BodyTextBlockStyleKey}}"
                         Text="Secondary Progress Message for more details ..."
-                        TextTrimming="CharacterEllipsis"
+                        TextAlignment="Left"
                         TextWrapping="Wrap"
                         />
 
@@ -421,9 +428,7 @@
                     Orientation="Vertical"
                     Visibility="Collapsed"
                     >
-                    <Separator
-                        Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />
+                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <TextBox
                         x:Name="InputBoxText"
@@ -442,9 +447,7 @@
                     Orientation="Vertical"
                     >
 
-                    <Separator
-                        Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />
+                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <DockPanel
                         x:Name="CountdownDockPanel"
@@ -484,9 +487,7 @@
                     Orientation="Vertical"
                     >
 
-                    <Separator
-                        Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />
+                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <DockPanel
                         x:Name="DeferRemainingDockPanel"
@@ -524,9 +525,7 @@
                     Orientation="Vertical"
                     >
 
-                    <Separator
-                        Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />
+                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <DockPanel
                         x:Name="DeferDeadlineDockPanel"

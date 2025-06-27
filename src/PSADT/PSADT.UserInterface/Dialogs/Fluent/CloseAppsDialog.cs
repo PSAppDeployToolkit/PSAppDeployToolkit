@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -216,7 +216,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
-                CloseAppsSeparator.Visibility = Visibility.Visible;
                 if (!_hideCloseButton)
                 {
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
@@ -241,7 +240,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
-                CloseAppsSeparator.Visibility = Visibility.Collapsed;
                 ButtonLeft.IsEnabled = true;
                 if (_continueOnProcessClosure)
                 {
