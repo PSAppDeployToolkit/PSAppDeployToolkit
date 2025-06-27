@@ -144,8 +144,25 @@ namespace PSADT.ProcessManagement
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
-                        // Get the user's token and create the process.
-                        using (var hPrimaryToken = GetTokenViaBroker(session.SessionId, launchInfo.UseLinkedAdminToken))
+                        // First we get the user's token.
+                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                        SafeFileHandle hPrimaryToken;
+                        using (userToken)
+                        {
+                            // If we're to get their linked token, we get it via their user token.
+                            // Once done, we duplicate the linked token to get a primary token to create the new process.
+                            if (launchInfo.UseLinkedAdminToken)
+                            {
+                                hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
+                            }
+                            else
+                            {
+                                hPrimaryToken = TokenManager.GetPrimaryToken(userToken);
+                            }
+                        }
+
+                        // Finally, start the process off for the user.
+                        using (hPrimaryToken)
                         {
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
@@ -168,14 +185,6 @@ namespace PSADT.ProcessManagement
                                     SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                 }
                             }
-                        }
-                    }
-                    else if (AccountUtilities.CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid))
-                    {
-                        // When running as SYSTEM, get a fresh token from the token broker that's not filtered like a ConfigMgr/Intune token.
-                        using (var hPrimaryToken = GetTokenViaBroker(0))
-                        {
-                            SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
                     }
                     else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
