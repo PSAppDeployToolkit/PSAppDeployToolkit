@@ -201,16 +201,16 @@
             >
                 <Image
                     x:Name="AppIconImage"
-                Width="64"
-                Height="64"
+                    Width="64"
+                    Height="64"
                     Margin="0,0,12,0"
                     AutomationProperties.Name="Application Icon"
                     />
 
-            <ikw:SimpleStackPanel
-                Orientation="Vertical"
-                Spacing="2"
-                >
+                <ikw:SimpleStackPanel
+                    Orientation="Vertical"
+                    Spacing="2"
+                    >
 
                 <TextBlock
                         x:Name="AppTitleTextBlock"
@@ -230,10 +230,10 @@
                         MaxWidth="430"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                    AutomationProperties.Name="Subtitle"
+                        AutomationProperties.Name="Subtitle"
                         FontSize="13"
                         Text="PSAppDeployToolkit - Installation Type"
-                    Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
+                        Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="WrapWithOverflow"
                         />
@@ -298,7 +298,6 @@
                     AutomationProperties.Name="Close Applications List Container"
                     Orientation="Vertical"
                     >
-
 
                     <!--<Separator
                         x:Name="CloseAppsSeparator"

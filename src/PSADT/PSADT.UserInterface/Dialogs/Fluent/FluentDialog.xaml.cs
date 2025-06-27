@@ -924,6 +924,5 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             _disposed = true;
         }
-
     }
 }
