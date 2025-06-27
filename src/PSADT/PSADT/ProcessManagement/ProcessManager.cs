@@ -170,6 +170,14 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
+                    else if (AccountUtilities.CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid))
+                    {
+                        // When running as SYSTEM, get a fresh token from the token broker that's not filtered like a ConfigMgr/Intune token.
+                        using (var hPrimaryToken = GetTokenViaBroker(0))
+                        {
+                            SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                        }
+                    }
                     else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
                     {
                         // Throw if the caller is expecting to be able to capture stdout/stderr but is running elevated.
