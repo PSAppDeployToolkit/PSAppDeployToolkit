@@ -233,7 +233,6 @@
                         AutomationProperties.Name="Subtitle"
                         FontSize="13"
                         Text="PSAppDeployToolkit - Installation Type"
-                        Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="WrapWithOverflow"
                         />
