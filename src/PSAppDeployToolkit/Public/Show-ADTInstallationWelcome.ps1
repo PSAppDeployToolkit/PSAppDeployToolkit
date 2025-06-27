@@ -937,7 +937,7 @@ function Show-ADTInstallationWelcome
                     }
 
                     # Check if all deferrals have expired.
-                    if (($DeferTimes -lt 0) -and !$deferDeadlineDateTime)
+                    if (($null -ne $DeferTimes) -and ($DeferTimes -lt 0) -and !$deferDeadlineDateTime)
                     {
                         $AllowDefer = $false
                     }
@@ -966,7 +966,7 @@ function Show-ADTInstallationWelcome
                     }
                     if ($AllowDefer)
                     {
-                        if ($DeferTimes -ge 0)
+                        if (($null -eq $DeferTimes) -or ($DeferTimes -ge 0))
                         {
                             $dialogOptions.Add('DeferralsRemaining', [System.UInt32]($DeferTimes + 1))
                         }
