@@ -58,7 +58,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
-    <InternalsVisibleTo Include="PSADT.TokenBroker" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
   </ItemGroup>
 
