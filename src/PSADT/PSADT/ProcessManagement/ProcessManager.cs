@@ -550,15 +550,15 @@ namespace PSADT.ProcessManagement
             ));
 
             // Create a named pipe for the token broker.
-            string pipeName = $"PSADT.TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
-            using (var pipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 8, 8, pipeSecurity))
+            string pipeName = $"PSADT.TokenBroker_{CryptographicUtilities.SecureNewGuid()}"; int bufSize = sizeof(long);
+            using (var pipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, bufSize, bufSize, pipeSecurity))
             {
                 // Create a new token broker process and wait for a connection.
                 StartTokenBroker($"-PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -UseLinkedAdminToken {useLinkedAdminToken}");
                 pipe.WaitForConnection();
 
                 // Read the token from the pipe.
-                byte[] tokenBuf = new byte[sizeof(long)];
+                byte[] tokenBuf = new byte[bufSize];
                 if (pipe.Read(tokenBuf, 0, tokenBuf.Length) == 0)
                 {
                     throw new InvalidOperationException("No token received from the token broker.");
