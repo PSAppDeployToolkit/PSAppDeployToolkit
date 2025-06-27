@@ -14,7 +14,7 @@
     ui:TitleBar.CloseButtonAvailability="Collapsed"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:WindowHelper.CornerStyle="Round"
-    ui:WindowHelper.SystemBackdropType="Acrylic10"
+    ui:WindowHelper.SystemBackdropType="Acrylic"
     ui:WindowHelper.UseModernWindowStyle="True"
     x:ClassModifier="internal"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
