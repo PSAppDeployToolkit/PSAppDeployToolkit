@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -11,6 +12,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.Security;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
 using Windows.Win32.System.RemoteDesktop;
 
 namespace PSADT.TerminalServices
@@ -146,7 +148,6 @@ namespace PSADT.TerminalServices
                     WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken);
                     using (hUserToken)
                     {
-                        Console.WriteLine("WTSQueryUserToken");
                         return TokenManager.GetTokenSid(hUserToken);
                     }
                 }
@@ -165,6 +166,19 @@ namespace PSADT.TerminalServices
                             {
                                 return new((IntPtr)process.pUserSid);
                             }
+                        }
+                    }
+                }
+
+                // Attempt to get the SID from the caller's explorer.exe process if it exists.
+                if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").FirstOrDefault(p => p.SessionId == sessionid) is Process explorerProcess)
+                {
+                    using (var hProcess = explorerProcess.SafeHandle)
+                    {
+                        AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                        using (hProcessToken)
+                        {
+                            return TokenManager.GetTokenSid(hProcessToken);
                         }
                     }
                 }
