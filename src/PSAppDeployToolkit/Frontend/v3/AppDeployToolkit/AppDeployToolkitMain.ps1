@@ -4877,8 +4877,8 @@ function Test-IsMutexAvailable
         [System.String]$MutexName,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$MutexWaitTime
+        [ValidateScript({ ($_ -ge -1) -and ($_ -le [System.Int32]::MaxValue) })]
+        [System.Nullable[System.Int32]]$MutexWaitTimeInMilliseconds = 1
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4886,6 +4886,13 @@ function Test-IsMutexAvailable
 
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
+
+    # Convert out changed parameter.
+    if ($PSBoundParameters.ContainsKey('MutexWaitTimeInMilliseconds'))
+    {
+        $PSBoundParameters.MutexWaitTime = [System.TimeSpan]::FromMilliseconds($MutexWaitTimeInMilliseconds)
+        $null = $PSBoundParameters.Remove('MutexWaitTimeInMilliseconds')
+    }
 
     # Invoke underlying function.
     try
