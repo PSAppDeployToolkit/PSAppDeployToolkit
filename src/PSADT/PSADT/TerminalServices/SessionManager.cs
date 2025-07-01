@@ -200,7 +200,7 @@ namespace PSADT.TerminalServices
                             using (var subKey = profileList.OpenSubKey(subKeyName))
                             {
                                 // We use StartsWith() here to avoid issues with profiles ending in a domain name or 000, etc.
-                                if (subKey?.GetValue("ProfileImagePath") is string profilePath && profilePath.Split('\\').Last().StartsWith(user, StringComparison.OrdinalIgnoreCase))
+                                if (subKey?.GetValue("ProfileImagePath", null) is string profilePath && profilePath.Split('\\').Last().StartsWith(user, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Accumlate these so we can confirm we found only one SID.
                                     try
