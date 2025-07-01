@@ -2414,6 +2414,10 @@ function Execute-Process
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
+    if ($PSBoundParameters.ContainsKey('MsiExecWaitTime'))
+    {
+        $PSBoundParameters.MsiExecWaitTime = [System.TimeSpan]::FromSeconds($MsiExecWaitTime)
+    }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
