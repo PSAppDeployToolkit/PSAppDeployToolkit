@@ -5134,10 +5134,28 @@ $sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
 
     end
     {
-        # Remove AppScriptDate if it's Deploy-Application.ps1's default value.
-        if ($sessionParams.ContainsKey('AppScriptDate') -and ($sessionParams.AppScriptDate -eq 'XX/XX/20XX'))
+        # Remove dates if they fail to parse using local culture settings.
+        if ($sessionParams.ContainsKey('AppScriptDate'))
         {
-            $null = $sessionParams.Remove('AppScriptDate')
+            try
+            {
+                $sessionParams.AppScriptDate = [System.DateTime]::Parse($sessionParams.AppScriptDate, $Host.CurrentCulture)
+            }
+            catch
+            {
+                $null = $sessionParams.Remove('AppScriptDate')
+            }
+        }
+        if ($sessionParams.ContainsKey('DeployAppScriptDate'))
+        {
+            try
+            {
+                $sessionParams.DeployAppScriptDate = [System.DateTime]::Parse($sessionParams.DeployAppScriptDate, $Host.CurrentCulture)
+            }
+            catch
+            {
+                $null = $sessionParams.Remove('DeployAppScriptDate')
+            }
         }
 
         # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
