@@ -68,11 +68,11 @@ param
 (
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
-    [System.String]$DeploymentType,
+    [System.String]$DeploymentType = [System.Management.Automation.Language.NullString]::Value,
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
-    [System.String]$DeployMode,
+    [System.String]$DeployMode = [System.Management.Automation.Language.NullString]::Value,
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
@@ -365,8 +365,13 @@ try
 catch
 {
     # An unhandled error has been caught.
-    $mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_
+    $mainErrorMessage = "An unhandled error within [$($MyInvocation.MyCommand.Name)] has occurred.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)"
     Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
-    Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait
+
+    ## Error details hidden from the user by default. Show a simple dialog with full stack trace:
+    # Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait
+
+    ## Or, a themed dialog with basic error message:
+    Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) failed at line $($_.InvocationInfo.ScriptLineNumber), char $($_.InvocationInfo.OffsetInLine):`n$($_.InvocationInfo.Line.Trim())`n`nMessage:`n$($_.Exception.Message)" -MessageAlignment Left -ButtonRightText OK -Icon Error -NoWait
     Close-ADTSession -ExitCode 60001
 }
