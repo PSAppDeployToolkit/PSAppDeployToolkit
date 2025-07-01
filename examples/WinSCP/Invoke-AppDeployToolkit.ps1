@@ -68,11 +68,11 @@ param
 (
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
-    [System.String]$DeploymentType = [System.Management.Automation.Language.NullString]::Value,
+    [System.String]$DeploymentType,
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
-    [System.String]$DeployMode = [System.Management.Automation.Language.NullString]::Value,
+    [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
