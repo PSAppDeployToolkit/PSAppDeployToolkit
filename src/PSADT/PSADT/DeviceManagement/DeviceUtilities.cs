@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Media.Audio;
@@ -20,47 +20,32 @@ namespace PSADT.DeviceManagement
         /// <returns></returns>
         public static bool IsMicrophoneInUse()
         {
-            // Initialize COM.
-            Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
+            // Get the default audio capture device (microphone).
+            IMMDevice microphoneDevice;
             try
             {
-                // Create an enumerator for audio devices.
-                Ole32.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null!, CLSCTX.CLSCTX_INPROC_SERVER, out IMMDeviceEnumerator deviceEnumerator);
-
-                // Get the default audio capture device (microphone).
-                IMMDevice microphoneDevice;
-                try
-                {
-                    deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out microphoneDevice);
-                }
-                catch
-                {
-                    return false;
-                }
-
-                // Activate the session manager for the capture device.
-                microphoneDevice.Activate(typeof(IAudioSessionManager2).GUID, CLSCTX.CLSCTX_ALL, null, out var sessionManagerObj);
-
-                // Enumerate through audio sessions.
-                var sessionEnumerator = ((IAudioSessionManager2)sessionManagerObj).GetSessionEnumerator();
-                sessionEnumerator.GetCount(out int sessionCount);
-                for (int i = 0; i < sessionCount; i++)
-                {
-                    // Check if the session state is active.
-                    sessionEnumerator.GetSession(i, out var sessionControl);
-                    ((IAudioSessionControl2)sessionControl).GetState(out var state);
-                    if (state == AudioSessionState.AudioSessionStateActive)
-                    {
-                        return true;
-                    }
-                }
+                ((IMMDeviceEnumerator)new MMDeviceEnumerator()).GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out microphoneDevice);
+            }
+            catch
+            {
                 return false;
             }
-            finally
+
+            // Activate the session manager for the capture device and enumerate through each session.
+            microphoneDevice.Activate<IAudioSessionManager2>(CLSCTX.CLSCTX_INPROC_SERVER, null, out var sessionManagerObj);
+            var sessionEnumerator = sessionManagerObj.GetSessionEnumerator();
+            sessionEnumerator.GetCount(out int sessionCount);
+            for (int i = 0; i < sessionCount; i++)
             {
-                // Cleanup COM.
-                PInvoke.CoUninitialize();
+                // Check if the session state is active.
+                sessionEnumerator.GetSession(i, out var sessionControl);
+                sessionControl.GetState(out var state);
+                if (state == AudioSessionState.AudioSessionStateActive)
+                {
+                    return true;
+                }
             }
+            return false;
         }
 
         /// <summary>
