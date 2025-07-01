@@ -146,22 +146,22 @@ function Get-ADTApplication
             {
                 Contains
                 {
-                    { foreach ($eachName in $Name) { if ($appRegProps.DisplayName -like "*$eachName*") { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($appDisplayName -like "*$eachName*") { $true; break } } }
                     break
                 }
                 Exact
                 {
-                    { foreach ($eachName in $Name) { if ($appRegProps.DisplayName -eq $eachName) { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($appDisplayName -eq $eachName) { $true; break } } }
                     break
                 }
                 Wildcard
                 {
-                    { foreach ($eachName in $Name) { if ($appRegProps.DisplayName -like $eachName) { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($appDisplayName -like $eachName) { $true; break } } }
                     break
                 }
                 Regex
                 {
-                    { foreach ($eachName in $Name) { if ($appRegProps.DisplayName -match $eachName) { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($appDisplayName -match $eachName) { $true; break } } }
                     break
                 }
             }
@@ -179,40 +179,38 @@ function Get-ADTApplication
                 try
                 {
                     # Set up initial variables.
-                    $appRegProps = Get-ItemProperty -LiteralPath $item.PSPath
-                    $psPropNames = $appRegProps.PSObject.Properties | Select-Object -ExpandProperty Name
                     $defUriValue = [System.Uri][System.String]::Empty
                     $installDate = [System.DateTime]::MinValue
                     $defaultGuid = [System.Guid]::Empty
 
                     # Exclude anything without any properties.
-                    if (!$psPropNames)
+                    if (!$item.GetValueNames())
                     {
                         continue
                     }
 
                     # Exclude anything without a DisplayName field.
-                    if (!$psPropNames.Contains('DisplayName') -or [System.String]::IsNullOrWhiteSpace($appRegProps.DisplayName))
+                    if (!($appDisplayName = $item.GetValue('DisplayName', $null)) -or [System.String]::IsNullOrWhiteSpace($appDisplayName))
                     {
                         continue
                     }
 
                     # Bypass any updates or hotfixes.
-                    if (!$IncludeUpdatesAndHotfixes -and ($appRegProps.DisplayName -match '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'))
+                    if (!$IncludeUpdatesAndHotfixes -and ($appDisplayName -match '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'))
                     {
                         $updatesSkippedCounter++
                         continue
                     }
 
                     # Apply application type filter if specified.
-                    $windowsInstaller = !!$(if ($psPropNames.Contains('WindowsInstaller')) { $appRegProps.WindowsInstaller })
+                    $windowsInstaller = $item.GetValue('WindowsInstaller', $false)
                     if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
                     {
                         continue
                     }
 
                     # Apply ProductCode filter if specified.
-                    $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($appRegProps.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
+                    $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($item.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
                     if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
                     {
                         continue
@@ -225,30 +223,30 @@ function Get-ADTApplication
                     }
 
                     # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
-                    if (!$psPropNames.Contains('InstallDate') -or ![System.DateTime]::TryParseExact($appRegProps.InstallDate, "yyyyMMdd", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
+                    if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
                     {
                         $installDate = [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
                     }
 
                     # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                     $app = [PSADT.Types.InstalledApplication]::new(
-                        $appRegProps.PSPath,
-                        $appRegProps.PSParentPath,
-                        $appRegProps.PSChildName,
+                        $item.PSPath,
+                        $item.PSParentPath,
+                        $item.PSChildName,
                         $appMsiGuid,
-                        $appRegProps.DisplayName,
-                        $(if ($psPropNames.Contains('DisplayVersion') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.DisplayVersion)) { $appRegProps.DisplayVersion }),
-                        $(if ($psPropNames.Contains('UninstallString') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.UninstallString)) { $appRegProps.UninstallString }),
-                        $(if ($psPropNames.Contains('QuietUninstallString') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.QuietUninstallString)) { $appRegProps.QuietUninstallString }),
-                        $(if ($psPropNames.Contains('InstallSource') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallSource)) { $appRegProps.InstallSource }),
-                        $(if ($psPropNames.Contains('InstallLocation') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallLocation)) { $appRegProps.InstallLocation }),
+                        $appDisplayName,
+                        $(if (($appDisplayVersion = $item.GetValue('DisplayVersion', $null)) -and ![System.String]::IsNullOrWhiteSpace($appDisplayVersion)) { $appDisplayVersion }),
+                        $(if (($appUninstallString = $item.GetValue('UninstallString', $null)) -and ![System.String]::IsNullOrWhiteSpace($appUninstallString)) { $appUninstallString }),
+                        $(if (($appQuietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and ![System.String]::IsNullOrWhiteSpace($appQuietUninstallString)) { $appQuietUninstallString }),
+                        $(if (($appInstallSource = $item.GetValue('InstallSource', $null)) -and ![System.String]::IsNullOrWhiteSpace($appInstallSource)) { $appInstallSource }),
+                        $(if (($appInstallLocation = $item.GetValue('InstallLocation', $null)) -and ![System.String]::IsNullOrWhiteSpace($appInstallLocation)) { $appInstallLocation }),
                         $installDate,
-                        $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.Publisher)) { $appRegProps.Publisher }),
-                        $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.HelpLink) -and [System.Uri]::TryCreate($appRegProps.HelpLink, [System.UriKind]::Absolute, [ref]$defUriValue)) { $defUriValue }),
-                        $(if ($psPropNames.Contains('EstimatedSize') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.EstimatedSize)) { $appRegProps.EstimatedSize }),
-                        !!$(if ($psPropNames.Contains('SystemComponent')) { $appRegProps.SystemComponent }),
+                        $(if (($appPublisher = $item.GetValue('Publisher', $null)) -and ![System.String]::IsNullOrWhiteSpace($appPublisher)) { $appPublisher }),
+                        $(if (($appHelpLink = $item.GetValue('HelpLink', $null)) -and ![System.String]::IsNullOrWhiteSpace($appHelpLink) -and [System.Uri]::TryCreate($appHelpLink, [System.UriKind]::Absolute, [ref]$defUriValue)) { $defUriValue }),
+                        $(if (($appEstimatedSize = $item.GetValue('EstimatedSize', $null)) -and ![System.String]::IsNullOrWhiteSpace($appEstimatedSize)) { $appEstimatedSize }),
+                        $item.GetValue('SystemComponent', $false),
                         $windowsInstaller,
-                        ([System.Environment]::Is64BitProcess -and ($appRegProps.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
+                        ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
                     )
 
                     # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
