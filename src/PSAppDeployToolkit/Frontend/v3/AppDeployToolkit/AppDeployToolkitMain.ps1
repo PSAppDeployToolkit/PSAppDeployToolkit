@@ -5145,17 +5145,6 @@ $sessionParams = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values
                 $null = $sessionParams.Remove('AppScriptDate')
             }
         }
-        if ($sessionParams.ContainsKey('DeployAppScriptDate'))
-        {
-            try
-            {
-                $sessionParams.DeployAppScriptDate = [System.DateTime]::Parse($sessionParams.DeployAppScriptDate, $Host.CurrentCulture)
-            }
-            catch
-            {
-                $null = $sessionParams.Remove('DeployAppScriptDate')
-            }
-        }
 
         # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
         if ($sessionParams.ContainsKey('DeployAppScriptParameters'))

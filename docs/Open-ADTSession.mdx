@@ -18,7 +18,6 @@ Open-ADTSession [[-SessionState] <SessionState>] [[-DeploymentType] <DeploymentT
  [[-AppLang] <String>] [[-AppRevision] <String>] [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>]
  [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
  [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
- [[-DeployAppScriptDate] <DateTime>]
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>]
  [[-AppProcessesToClose] <ProcessDefinition[]>] [[-ScriptDirectory] <String[]>] [[-DirFiles] <String>]
@@ -352,22 +351,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployAppScriptDate
-
-Specifies the date of the deploy application script.
-
-```yaml
-Type: DateTime
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 17
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DeployAppScriptParameters
 
 Specifies the parameters for the deploy application script.
@@ -378,7 +361,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 18
+Position: 17
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -394,7 +377,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 19
+Position: 18
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -410,7 +393,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 20
+Position: 19
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -426,7 +409,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 21
+Position: 20
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -442,7 +425,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 22
+Position: 21
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -458,7 +441,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 23
+Position: 22
 Default value: [System.Management.Automation.Language.NullString]::Value
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -474,7 +457,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 24
+Position: 23
 Default value: [System.Management.Automation.Language.NullString]::Value
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -490,7 +473,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 25
+Position: 24
 Default value: [System.Management.Automation.Language.NullString]::Value
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -506,7 +489,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 26
+Position: 25
 Default value: [System.Management.Automation.Language.NullString]::Value
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -522,7 +505,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 27
+Position: 26
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -554,7 +537,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 28
+Position: 27
 Default value: [System.Management.Automation.Language.NullString]::Value
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -571,7 +554,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 29
+Position: 28
 Default value: PSADT.Module.DeploymentSession
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -635,7 +618,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 30
+Position: 29
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
