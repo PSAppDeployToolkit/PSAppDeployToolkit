@@ -221,7 +221,7 @@ function Uninstall-ADTApplication
         # Build out regex for determining valid exe uninstall strings.
         $invalidFileNameChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidFileNameChars()))
         $invalidPathChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidPathChars()))
-        $validUninstallString = "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$"
+        $validUninstallString = [System.Text.RegularExpressions.Regex]::new("^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$", [System.Text.RegularExpressions.RegexOptions]::Compiled)
     }
 
     process
@@ -273,16 +273,16 @@ function Uninstall-ADTApplication
                         continue
                     }
 
-                    if ($uninstallString -match $validUninstallString)
+                    if (($results = $validUninstallString.Matches($uninstallString)).Success)
                     {
-                        $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                        $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($results.Groups[1].Value)
                         if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
                         {
                             $sapParams.FilePath = $commandPath.Source
                         }
-                        $uninstallStringParams = if ($matches.Count -gt 2)
+                        $uninstallStringParams = if (![System.String]::IsNullOrWhiteSpace($results.Groups[2].Value))
                         {
-                            [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
+                            [System.Environment]::ExpandEnvironmentVariables($results.Groups[2].Value.Trim())
                         }
                     }
                     else
