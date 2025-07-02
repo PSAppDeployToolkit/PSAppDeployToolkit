@@ -21,13 +21,13 @@ namespace PSADT.Utilities
         public static Dictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
             Dictionary<string, object> values = [];
-            string currentKey = string.Empty;
             if ((null == remainingArguments) || (remainingArguments.Count == 0))
             {
                 return values;
             }
             try
             {
+                string currentKey = string.Empty;
                 foreach (object argument in remainingArguments)
                 {
                     if (null == argument)

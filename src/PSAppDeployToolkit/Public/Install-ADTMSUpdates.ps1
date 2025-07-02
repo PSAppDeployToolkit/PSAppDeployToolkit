@@ -56,7 +56,7 @@ function Install-ADTMSUpdates
         # Announce deprecation to callers.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.2.0. Please raise a case at [https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues] if you require this function." -Severity 2
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $kbPattern = '(?i)kb\d{6,8}'
+        $kbPattern = [System.Text.RegularExpressions.Regex]::new('(?i)kb\d{6,8}', [System.Text.RegularExpressions.RegexOptions]::Compiled)
     }
 
     process
@@ -84,7 +84,7 @@ function Install-ADTMSUpdates
                             Start-ADTProcess -FilePath $file.FullName -ArgumentList '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                     }
-                    elseif ($kbNumber = [System.Text.RegularExpressions.Regex]::Match($file.Name, $kbPattern).ToString())
+                    elseif ($kbNumber = $kbPattern.Match($file.Name).ToString())
                     {
                         # Check to see whether the KB is already installed
                         if (Test-ADTMSUpdates -KbNumber $kbNumber)

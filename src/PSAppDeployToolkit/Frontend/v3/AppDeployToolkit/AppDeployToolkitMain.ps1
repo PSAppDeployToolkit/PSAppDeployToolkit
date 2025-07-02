@@ -2414,6 +2414,10 @@ function Execute-Process
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
+    if ($PSBoundParameters.ContainsKey('MsiExecWaitTime'))
+    {
+        $PSBoundParameters.MsiExecWaitTime = [System.TimeSpan]::FromSeconds($MsiExecWaitTime)
+    }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
@@ -4877,8 +4881,8 @@ function Test-IsMutexAvailable
         [System.String]$MutexName,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$MutexWaitTime
+        [ValidateScript({ ($_ -ge -1) -and ($_ -le [System.Int32]::MaxValue) })]
+        [System.Nullable[System.Int32]]$MutexWaitTimeInMilliseconds = 1
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4886,6 +4890,13 @@ function Test-IsMutexAvailable
 
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
+
+    # Convert out changed parameter.
+    if ($PSBoundParameters.ContainsKey('MutexWaitTimeInMilliseconds'))
+    {
+        $PSBoundParameters.MutexWaitTime = [System.TimeSpan]::FromMilliseconds($MutexWaitTimeInMilliseconds)
+        $null = $PSBoundParameters.Remove('MutexWaitTimeInMilliseconds')
+    }
 
     # Invoke underlying function.
     try
@@ -5031,7 +5042,7 @@ function Write-FunctionHeaderOrFooter
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Header')]
         [AllowEmptyCollection()]
-        [System.Collections.Hashtable]$CmdletBoundParameters,
+        [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]]$CmdletBoundParameters,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Header')]
         [System.Management.Automation.SwitchParameter]$Header,
@@ -5076,36 +5087,23 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Import our module backend.
-$moduleName = if (Test-Path -LiteralPath "$PSScriptRoot\PSAppDeployToolkit" -PathType Container)
+$adtModule = if (Test-Path -LiteralPath "$PSScriptRoot\PSAppDeployToolkit" -PathType Container)
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
-    "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force -PassThru -ErrorAction Stop
 }
 elseif (Test-Path -LiteralPath "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -PathType Container)
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
-    "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force -PassThru -ErrorAction Stop
 }
 else
 {
-    'PSAppDeployToolkit'
-}
-Remove-Module -Name PSAppDeployToolkit* -Force
-$adtModule = Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force -PassThru -ErrorAction Stop
-
-# Get all parameters from Open-ADTSession that are considered frontend params/variables.
-$sessionVars = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
-    process
-    {
-        if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$')
-        {
-            return $_.Name
-        }
-    }
+    Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force -PassThru -ErrorAction Stop
 }
 
 # Build out parameter hashtable and open a new deployment session.
-$sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
+$sessionParams = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
     begin
     {
         # Open collector to hold valid parameters.
@@ -5114,19 +5112,38 @@ $sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
 
     process
     {
-        # Add the parameter if it's not null.
-        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)))
+        # Skip any Open-ADTSession params that are considered frontend params/variables.
+        if ($_.ParameterSets.Values.HelpMessage -notmatch '^Frontend (Parameter|Variable)$')
         {
-            $sessionParams.Add($_.Name, $_.Value)
+            return
+        }
+
+        # Skip if we didn't get a variable value.
+        if (!($variable = Get-Variable -Name $_.Name -ErrorAction Ignore))
+        {
+            return
+        }
+
+        # Add the parameter if it's not null.
+        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $variable.Value)))
+        {
+            $sessionParams.Add($variable.Name, $variable.Value)
         }
     }
 
     end
     {
-        # Remove AppScriptDate if it's Deploy-Application.ps1's default value.
-        if ($sessionParams.ContainsKey('AppScriptDate') -and ($sessionParams.AppScriptDate -eq 'XX/XX/20XX'))
+        # Remove dates if they fail to parse using local culture settings.
+        if ($sessionParams.ContainsKey('AppScriptDate'))
         {
-            $null = $sessionParams.Remove('AppScriptDate')
+            try
+            {
+                $sessionParams.AppScriptDate = [System.DateTime]::Parse($sessionParams.AppScriptDate, $Host.CurrentCulture)
+            }
+            catch
+            {
+                $null = $sessionParams.Remove('AppScriptDate')
+            }
         }
 
         # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
@@ -5142,13 +5159,13 @@ $sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
 Open-ADTSession -SessionState $ExecutionContext.SessionState @sessionParams
 
 # Define aliases for some functions to maintain backwards compatibility.
-New-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironmentPsProvider -Option ReadOnly -Force
+New-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-SessionEnvironmentVariables -Option ReadOnly -Force
 New-Alias -Name Refresh-Desktop -Value Update-Desktop -Option ReadOnly -Force
 
 # Finalize setup of AppDeployToolkitMain.ps1.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
 New-Variable -Name noDepWarnings -Value (($adtConfig = Get-ADTConfig).Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings) -Option ReadOnly -Force
-Remove-Variable -Name adtConfig, adtModule, adtWrapperFuncs, sessionParams, sessionVars -Force -Confirm:$false
+Remove-Variable -Name adtConfig, adtWrapperFuncs, sessionParams, adtModule -Force -Confirm:$false
 Set-StrictMode -Version 1
 
 

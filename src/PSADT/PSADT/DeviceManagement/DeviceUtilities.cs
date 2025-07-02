@@ -34,7 +34,7 @@ namespace PSADT.DeviceManagement
             // Activate the session manager for the capture device and enumerate through each session.
             microphoneDevice.Activate<IAudioSessionManager2>(CLSCTX.CLSCTX_INPROC_SERVER, null, out var sessionManagerObj);
             var sessionEnumerator = sessionManagerObj.GetSessionEnumerator();
-            sessionEnumerator.GetCount(out int sessionCount);
+            sessionEnumerator.GetCount(out var sessionCount);
             for (int i = 0; i < sessionCount; i++)
             {
                 // Check if the session state is active.

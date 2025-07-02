@@ -79,9 +79,6 @@ function Open-ADTSession
     .PARAMETER DeployAppScriptVersion
         Specifies the version of the deploy application script.
 
-    .PARAMETER DeployAppScriptDate
-        Specifies the date of the deploy application script.
-
     .PARAMETER DeployAppScriptParameters
         Specifies the parameters for the deploy application script.
 
@@ -229,11 +226,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.DateTime]$DeployAppScriptDate,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
-        [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters,
+        [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]]$DeployAppScriptParameters,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -343,7 +336,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [AllowNull()][AllowEmptyCollection()]
-        [System.Collections.Generic.List[System.Object]]$UnboundArguments
+        [System.Collections.Generic.IReadOnlyList[System.Object]]$UnboundArguments
     )
 
     begin

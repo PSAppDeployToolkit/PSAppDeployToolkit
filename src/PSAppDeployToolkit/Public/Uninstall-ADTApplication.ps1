@@ -221,7 +221,7 @@ function Uninstall-ADTApplication
         # Build out regex for determining valid exe uninstall strings.
         $invalidFileNameChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidFileNameChars()))
         $invalidPathChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidPathChars()))
-        $validUninstallString = "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$"
+        $validUninstallString = [System.Text.RegularExpressions.Regex]::new("^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$", [System.Text.RegularExpressions.RegexOptions]::Compiled)
     }
 
     process
@@ -273,35 +273,28 @@ function Uninstall-ADTApplication
                         continue
                     }
 
-                    if ($uninstallString -match $validUninstallString)
-                    {
-                        $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
-                        {
-                            $sapParams.FilePath = $commandPath.Source
-                        }
-                        $uninstallStringParams = if ($matches.Count -gt 2)
-                        {
-                            [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
-                        }
-                    }
-                    else
+                    if (!($results = $validUninstallString.Matches($uninstallString)).Success)
                     {
                         Write-ADTLogEntry -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
+                    }
+                    $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($results.Groups[1].Value)
+                    if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
+                    {
+                        $sapParams.FilePath = $commandPath.Source
                     }
 
                     if (![System.String]::IsNullOrWhiteSpace($ArgumentList))
                     {
                         $sapParams.ArgumentList = $ArgumentList
                     }
-                    elseif (![System.String]::IsNullOrWhiteSpace($uninstallStringParams))
+                    elseif (![System.String]::IsNullOrWhiteSpace($results.Groups[2].Value))
                     {
-                        $sapParams.ArgumentList = $uninstallStringParams
+                        $sapParams.ArgumentList = [System.Environment]::ExpandEnvironmentVariables($results.Groups[2].Value.Trim())
                     }
                     else
                     {
-                        $sapParams.Remove('ArgumentList')
+                        $null = $sapParams.Remove('ArgumentList')
                     }
                     if ($AdditionalArgumentList)
                     {

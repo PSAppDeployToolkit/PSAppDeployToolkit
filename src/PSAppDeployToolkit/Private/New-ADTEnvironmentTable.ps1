@@ -318,15 +318,11 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]][System.IO.Path]::GetInvalidFileNameChars())
-    $variables.Add('invalidFileNameCharsRegExPattern', "[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, $variables.invalidFileNameChars)))]")
+    $variables.Add('invalidFileNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, $variables.invalidFileNameChars)))]", [System.Text.RegularExpressions.RegexOptions]::Compiled))
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
-    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "[$([System.Text.RegularExpressions.Regex]::Escape('\/:*?"<>|'))]")
-
-    # Add in WScript shell variables.
-    $variables.Add('Shell', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')))
-    $variables.Add('ShellApp', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application')))
+    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape('\/:*?"<>|'))]", [System.Text.RegularExpressions.RegexOptions]::Compiled))
 
     # Add in additional environment variables from the caller if they've provided any.
     if ($PSBoundParameters.ContainsKey('AdditionalEnvironmentVariables'))
