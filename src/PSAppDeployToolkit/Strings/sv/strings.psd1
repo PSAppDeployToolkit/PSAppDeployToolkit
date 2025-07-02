@@ -1,36 +1,36 @@
 ﻿@{
     BalloonTip = @{
         Start = @{
-            Install = 'Installationen har påbörjats.'
+            Install = 'Installation påbörjad.'
             Repair = 'Reparation påbörjad.'
             Uninstall = 'Avinstallation påbörjad.'
         }
         Complete = @{
-            Install = 'Installationen slutförd.'
+            Install = 'Installation slutförd.'
             Repair = 'Reparation slutförd.'
-            Uninstall = 'Avinstallationen slutförd.'
+            Uninstall = 'Avinstallation slutförd.'
         }
         RestartRequired = @{
-            Install = 'Installationen är slutförd. En omstart krävs.'
+            Install = 'Installationen slutförd. En omstart krävs.'
             Repair = 'Reparation slutförd. En omstart krävs.'
             Uninstall = 'Avinstallation slutförd. En omstart krävs.'
         }
         FastRetry = @{
             Install = 'Installationen slutfördes inte.'
-            Repair = 'Reparation inte slutförd.'
-            Uninstall = 'Avinstallationen inte slutförd.'
+            Repair = 'Reparationen slutfördes inte.'
+            Uninstall = 'Avinstallationen slutfördes inte.'
         }
         Error = @{
             Install = 'Installationen misslyckades.'
-            Repair = 'Reparation misslyckades.'
+            Repair = 'Reparationen misslyckades.'
             Uninstall = 'Avinstallationen misslyckades.'
         }
     }
     BlockExecutionText = @{
         Message = @{
-            Install = 'Starten av det här programmet har tillfälligt blockerats så att en installation kan slutföras.'
-            Repair = 'Lanseringen av det här programmet har tillfälligt blockerats så att en reparationsåtgärd kan slutföras.'
-            Uninstall = 'Lanseringen av det här programmet har tillfälligt blockerats så att en avinstallation kan slutföras.'
+            Install = 'Den här applikationen har temporärt blockerats så att en installation kan slutföras.'
+            Repair = 'Den här applikationen har temporärt blockerats så att en reparation kan slutföras.'
+            Uninstall = 'Den här applikationen har temporärt blockerats så att en avinstallation kan slutföras.'
         }
         Subtitle = @{
             Install = '{Toolkit\CompanyName} - Installation av App'
@@ -40,9 +40,9 @@
     }
     DiskSpaceText = @{
         Message = @{
-            Install = "Du har inte tillräckligt med diskutrymme för att slutföra installationen av:`n{0}`n`nKrävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med installationen."
-            Repair = "Du har inte tillräckligt med diskutrymme för att slutföra reparationen av:`n{0}`n`nKrävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med reparationen."
-            Uninstall = "Du har inte tillräckligt med diskutrymme för att slutföra avinstallationen av:`n{0}`n`nKrävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta avinstallationen."
+            Install = "Du har inte tillräckligt med ledigt diskutrymme för att kunna installera:`n{0}`n`nDiskutrymme som krävs: {1}MB`nLedigt diskutrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med installationen."
+            Repair = "Du har inte tillräckligt med ledigt diskutrymme för att kunna reparera:`n{0}`n`nDiskutrymme som krävs: {1}MB`nLedigt diskutrymmee: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med reparationen."
+            Uninstall = "Du har inte tillräckligt med ledigt diskutrymme för att kunna avinstallera:`n{0}`n`nDiskutrymme som krävs: {1}MB`nLedigt diskutrymmee: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med avinstallationen."
         }
     }
     InstallationPrompt = @{
@@ -54,14 +54,14 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Installationen pågår. Vänligen vänta…'
-            Repair = 'Reparation pågår. Var vänlig vänta…'
-            Uninstall = 'Avinstallation pågår. Var vänlig vänta…'
+            Install = 'Installation pågår. Var god vänta…'
+            Repair = 'Reparation pågår. Var god vänta…'
+            Uninstall = 'Avinstallation pågår. Var god vänta…'
         }
         MessageDetail = @{
-            Install = 'Det här fönstret stängs automatiskt när installationen är klar.'
-            Repair = 'Det här fönstret stängs automatiskt när reparationen är klar.'
-            Uninstall = 'Det här fönstret stängs automatiskt när avinstallationen är klar.'
+            Install = 'Detta fönster stängs automatiskt när installationen är klar.'
+            Repair = 'Detta fönster stängs automatiskt när reparationen är klar.'
+            Uninstall = 'Detta fönster stängs automatiskt när avinstallationen är klar.'
         }
         Subtitle = @{
             Install = '{Toolkit\CompanyName} - Installation av App'
@@ -78,10 +78,10 @@
             Uninstall = 'För att avinstallationen ska kunna slutföras måste du starta om datorn.'
         }
         CustomMessage = ''
-        MessageRestart = 'Datorn kommer att startas om automatiskt när nedräkningen är slut.'
-        MessageTime = 'Spara ditt arbete och starta om inom den tilldelade tiden.'
+        MessageRestart = 'Din dator kommer att startas om automatiskt när nedräkningen är slut.'
+        MessageTime = 'Var vänlig spara ditt arbete och starta om datorn innan tiden går ut.'
         TimeRemaining = 'Återstående tid:'
-        Title = 'Omstart krävs'
+        Title = 'Omstart Krävs'
         Subtitle = @{
             Install = '{Toolkit\CompanyName} - Installation av App'
             Repair = '{Toolkit\CompanyName} - Reparation av App'
@@ -91,52 +91,52 @@
     CloseAppsPrompt = @{
         Classic = @{
             WelcomeMessage = @{
-                Install = 'Följande program är på väg att installeras:'
-                Repair = 'Följande applikation är på väg att repareras:'
-                Uninstall = 'Följande program är på väg att avinstalleras:'
+                Install = 'Följande applikation kommer att installeras:'
+                Repair = 'Följande applikation kommer att repareras:'
+                Uninstall = 'Följande applikation kommer att avinstalleras:'
             }
             CloseAppsMessage = @{
-                Install = "Följande program måste stängas innan installationen kan fortsätta.`n`nSpara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på `”Stäng program`”."
-                Repair = "Följande program måste stängas innan reparationen kan fortsätta.`n`nVar vänlig spara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på `”Stäng program`”."
-                Uninstall = "Följande program måste stängas innan avinstallationen kan fortsätta.`n`nSpara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på `”Stäng program`”."
+                Install = "Följande program måste stängas innan installationen kan fortsätta.`n`nVar vänlig spara ditt arbete, stäng de öppna programmen och`nklicka sedan på `"Fortsätt`".`nAlternativt, spara ditt arbete och klicka sedan på `"Stäng Program`"."
+                Repair = "Följande program måste stängas innan reparationen kan fortsätta.`n`nVar vänlig spara ditt arbete, stäng de öppna programmen och`nklicka sedan på `"Fortsätt`".`nAlternativt, spara ditt arbete och klicka sedan på `"Stäng Program`"."
+                Uninstall = "Följande program måste stängas innan avinstallationen kan fortsätta.`n`nVar vänlig spara ditt arbete, stäng de öppna programmen och`nklicka sedan på `"Fortsätt`".`nAlternativt, spara ditt arbete och klicka sedan på `"Stäng Program`"."
             }
             ExpiryMessage = @{
-                Install = 'Du kan välja att skjuta upp installationen tills uppskjutandet löper ut:'
-                Repair = 'Du kan välja att skjuta upp reparationen tills uppskjutandet löper ut:'
-                Uninstall = 'Du kan välja att skjuta upp avinstallationen tills uppskovet löper ut:'
+                Install = 'Du kan välja att fördröja installationen ett begränsat antal gånger under en begränsad tid:'
+                Repair = 'Du kan välja att fördröja reparationen ett begränsat antal gånger under en begränsad tid:'
+                Uninstall = 'Du kan välja att fördröja avinstallationen ett begränsat antal gånger under en begränsad tid:'
             }
-            DeferralsRemaining = 'Återstående uppskjutanden:'
-            DeferralDeadline = 'Tidsfrist:'
-            ExpiryWarning = 'När uppskovet har löpt ut har du inte längre möjlighet att skjuta upp det.'
+            DeferralsRemaining = 'Antal återstående fördröjningar:'
+            DeferralDeadline = 'Deadline:'
+            ExpiryWarning = 'När antalet fördröjningar är slut eller deadline inträffat är detta alternativ inte längre tillgängligt.'
             CountdownDefer = @{
                 Install = 'Installationen kommer automatiskt att fortsätta om:'
-                Repair = 'Reparationen kommer automatiskt att fortsätta i:'
-                Uninstall = 'Avinstallationen kommer automatiskt att fortsätta i:'
+                Repair = 'Reparationen kommer automatiskt att fortsätta om:'
+                Uninstall = 'Avinstallationen kommer automatiskt att fortsätta om:'
             }
-            CountdownClose = 'OBS: Programmet/programmen kommer att stängas automatiskt i:'
+            CountdownClose = 'OBS: Program stängs automatisk om:'
             ButtonClose = 'Stäng &Program'
             ButtonDefer = '&Skjut Upp'
             ButtonContinue = '&Fortsätt'
-            ButtonContinueTooltip = "Välj ’Fortsätt’ först efter att du har stängt ovanstående program."
+            ButtonContinueTooltip = 'Välj "Fortsätt" först efter att du har stängt ovanstående program.'
         }
         Fluent = @{
-            DialogMessage = 'Spara ditt arbete innan du fortsätter eftersom följande program kommer att stängas automatiskt.'
+            DialogMessage = 'Följande program måste stängas. Var vänlig spara ditt arbete och stäng sedan de öppna programmen.'
             DialogMessageNoProcesses = @{
-                Install = 'Välj Install för att fortsätta med installationen. Om du har några uppskjutanden kvar kan du också välja att skjuta upp installationen.'
-                Repair = 'Välj Repair för att fortsätta med reparationen. Om du har några återstående förseningar kan du också välja att skjuta upp reparationen.'
-                Uninstall = 'Välj Avinstallera för att fortsätta med avinstallationen. Om du har några kvarvarande uppskjutanden kan du också välja att skjuta upp avinstallationen.'
+                Install = 'Välj Installera för att fortsätta med installationen eller välj "Skjut upp" för att installationen skall utföras vid ett senare tillfälle.'
+                Repair = 'Välj Reparera för att fortsätta med reparationen.'
+                Uninstall = 'Välj Avinstallera för att fortsätta med avinstallationen.'
             }
-            AutomaticStartCountdown = 'Automatisk startnedräkning'
-            DeferralsRemaining = 'Återstående uppskjutningar'
-            DeferralDeadline = 'Sista datum för uppskjutning'
+            AutomaticStartCountdown = 'Fortsätter automatisk om:'
+            DeferralsRemaining = 'Antal återstående fördröjningar'
+            DeferralDeadline = 'Deadline:'
             ButtonLeftText = @{
-                Install = 'Stäng Appar och Installera'
-                Repair = 'Stäng Appar och Reparera'
+                Install = 'Stäng Appar & Installera'
+                Repair = 'Stäng Appar & Reparera'
                 Uninstall = 'Stäng Appar & Avinstallera'
             }
             ButtonLeftNoProcessesText = @{
                 Install = 'Installera'
-                Repair = 'Reparation'
+                Repair = 'Reparera'
                 Uninstall = 'Avinstallera'
             }
             ButtonRightText = 'Skjut upp'
