@@ -126,7 +126,7 @@ namespace PSADT.ClientServer
         /// <exception cref="InvalidOperationException">Thrown if the server instance is not open or has already been closed.</exception>
         /// <exception cref="ApplicationException">Thrown if the client process does not properly respond to the close command and <paramref name="force"/> is <see
         /// langword="false"/>.</exception>
-        public void Close(bool force = false)
+        internal void Close(bool force = false)
         {
             // Confirm that the server instance is open and has not been closed already.
             if (null == _clientProcessCts || null == _clientProcess)
@@ -168,6 +168,14 @@ namespace PSADT.ClientServer
                 _clientProcessCts = null;
             }
         }
+
+        /// <summary>
+        /// Closes the current connection and releases associated resources.
+        /// </summary>
+        /// <remarks>This method closes the connection and optionally performs additional cleanup
+        /// operations  depending on the internal implementation. Once closed, the connection cannot be reused  and must
+        /// be reopened if needed.</remarks>
+        public void Close() => Close(false);
 
         /// <summary>
         /// Initializes a dialog to close specified applications.
