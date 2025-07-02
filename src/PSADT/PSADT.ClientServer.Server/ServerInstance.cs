@@ -283,10 +283,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method checks the state of the progress dialog and returns a boolean value
         /// indicating  whether it is currently displayed to the user.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
-        public bool ProgressDialogOpen()
-        {
-            return Invoke<bool>("ProgressDialogOpen");
-        }
+        public bool ProgressDialogOpen() => Invoke<bool>("ProgressDialogOpen");
 
         /// <summary>
         /// Updates the progress dialog with the specified message, detail message, progress percentage, and message
@@ -346,10 +343,7 @@ namespace PSADT.ClientServer
         /// indicates  whether the operation was successful. Note that the success of this operation may depend  on
         /// system permissions or the current state of the desktop environment.</remarks>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        public bool MinimizeAllWindows()
-        {
-            return Invoke<bool>("MinimizeAllWindows");
-        }
+        public bool MinimizeAllWindows() => Invoke<bool>("MinimizeAllWindows");
 
         /// <summary>
         /// Restores all minimized or hidden windows to their original state.
@@ -357,10 +351,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method attempts to restore all windows that were previously minimized or hidden.
         /// The return value indicates whether the operation was successful for all windows.</remarks>
         /// <returns><see langword="true"/> if all windows were successfully restored; otherwise, <see langword="false"/>.</returns>
-        public bool RestoreAllWindows()
-        {
-            return Invoke<bool>("RestoreAllWindows");
-        }
+        public bool RestoreAllWindows() => Invoke<bool>("RestoreAllWindows");
 
         /// <summary>
         /// Sends a sequence of keystrokes to the specified window.
@@ -437,10 +428,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
         /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
-        public AggregateException? GetLogWriterException()
-        {
-            return _logWriterTask?.Exception;
-        }
+        public AggregateException? GetLogWriterException() => _logWriterTask?.Exception;
 
         /// <summary>
         /// Retrieves the result of the client process task.
@@ -452,10 +440,7 @@ namespace PSADT.ClientServer
         /// langword="true"/>, the method will synchronously wait for the client process task to complete.</param>
         /// <returns>The result of the client process task if <paramref name="iKnowWhatImDoing"/> is <see langword="true"/>; 
         /// otherwise, <see langword="null"/>.</returns>
-        public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing)
-        {
-            return iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
-        }
+        public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing) => iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
 
         /// <summary>
         /// Releases the resources used by the current instance of the class.
