@@ -397,8 +397,8 @@ namespace PSADT.Module
                 {
                     _installName = $"{_appVendor}_{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
                 }
-                string invalidChars = (string)adtEnv["invalidFileNameCharsRegExPattern"]!;
-                _installName = Regex.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), invalidChars, string.Empty);
+                var invalidChars = (Regex)adtEnv["invalidFileNameCharsRegExPattern"]!;
+                _installName = invalidChars.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
@@ -448,7 +448,7 @@ namespace PSADT.Module
                         _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}_{adtEnv["envUserName"]}.log";
                     }
                 }
-                _logName = Regex.Replace(_logName, invalidChars, string.Empty);
+                _logName = invalidChars.Replace(_logName, string.Empty);
                 string logFile = Path.Combine(LogPath, _logName);
                 FileInfo logFileInfo = new(logFile);
                 var logMaxSize = (int)configToolkit["LogMaxSize"]!;

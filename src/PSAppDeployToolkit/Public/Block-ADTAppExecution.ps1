@@ -74,7 +74,7 @@ function Block-ADTAppExecution
             $PSCmdlet.ThrowTerminatingError($_)
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
+        $taskName = $adtEnv.InvalidScheduledTaskNameCharsRegExPattern.Replace("$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps", [System.String]::Empty)
     }
 
     process
