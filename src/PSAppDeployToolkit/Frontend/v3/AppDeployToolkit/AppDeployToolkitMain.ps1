@@ -5042,7 +5042,7 @@ function Write-FunctionHeaderOrFooter
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Header')]
         [AllowEmptyCollection()]
-        [System.Collections.Hashtable]$CmdletBoundParameters,
+        [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]]$CmdletBoundParameters,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Header')]
         [System.Management.Automation.SwitchParameter]$Header,

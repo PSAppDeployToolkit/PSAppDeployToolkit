@@ -49,7 +49,7 @@ function Convert-ADTValuesFromRemainingArguments
     (
         [Parameter(Mandatory = $true)]
         [AllowNull()][AllowEmptyCollection()]
-        [System.Collections.Generic.List[System.Object]]$RemainingArguments
+        [System.Collections.Generic.IReadOnlyList[System.Object]]$RemainingArguments
     )
 
     begin

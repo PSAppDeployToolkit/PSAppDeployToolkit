@@ -110,7 +110,7 @@ function Invoke-ADTCommandWithRetries
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Generic.List[System.Object]]$Parameters
+        [System.Collections.Generic.IReadOnlyList[System.Object]]$Parameters
     )
 
     begin

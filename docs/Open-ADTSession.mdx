@@ -18,13 +18,13 @@ Open-ADTSession [[-SessionState] <SessionState>] [[-DeploymentType] <DeploymentT
  [[-AppLang] <String>] [[-AppRevision] <String>] [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>]
  [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
  [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
- [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
+ [[-DeployAppScriptParameters] <System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>]
  [[-AppProcessesToClose] <ProcessDefinition[]>] [[-ScriptDirectory] <String[]>] [[-DirFiles] <String>]
  [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
  [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [[-SessionClass] <Type>]
  [-ForceWimDetection] [-ForceMsiDetection] [-PassThru]
- [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
+ [[-UnboundArguments] <System.Collections.Generic.IReadOnlyList`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -356,7 +356,7 @@ Accept wildcard characters: False
 Specifies the parameters for the deploy application script.
 
 ```yaml
-Type: System.Collections.Generic.Dictionary`2[System.String,System.Object]
+Type: System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object]
 Parameter Sets: (All)
 Aliases:
 
@@ -613,7 +613,7 @@ Accept wildcard characters: False
 Captures any additional arguments passed to the function.
 
 ```yaml
-Type: System.Collections.Generic.List`1[System.Object]
+Type: System.Collections.Generic.IReadOnlyList`1[System.Object]
 Parameter Sets: (All)
 Aliases:
 

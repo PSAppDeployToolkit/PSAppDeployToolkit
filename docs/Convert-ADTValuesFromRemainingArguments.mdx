@@ -13,7 +13,7 @@ Converts the collected values from a ValueFromRemainingArguments parameter value
 
 ```powershell
 Convert-ADTValuesFromRemainingArguments
- [-RemainingArguments] <System.Collections.Generic.List`1[System.Object]> [<CommonParameters>]
+ [-RemainingArguments] <System.Collections.Generic.IReadOnlyList`1[System.Object]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,7 +37,7 @@ Converts an $args array into a $PSBoundParameters-compatible dictionary.
 The collected values to enumerate and process into a dictionary.
 
 ```yaml
-Type: System.Collections.Generic.List`1[System.Object]
+Type: System.Collections.Generic.IReadOnlyList`1[System.Object]
 Parameter Sets: (All)
 Aliases:
 

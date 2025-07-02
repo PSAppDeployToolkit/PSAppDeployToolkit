@@ -226,7 +226,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters,
+        [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]]$DeployAppScriptParameters,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -336,7 +336,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [AllowNull()][AllowEmptyCollection()]
-        [System.Collections.Generic.List[System.Object]]$UnboundArguments
+        [System.Collections.Generic.IReadOnlyList[System.Object]]$UnboundArguments
     )
 
     begin

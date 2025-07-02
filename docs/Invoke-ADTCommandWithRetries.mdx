@@ -14,7 +14,7 @@ Drop-in replacement for any cmdlet/function where a retry is desirable due to tr
 ```powershell
 Invoke-ADTCommandWithRetries [-Command] <Object> [-Retries <UInt32>] [-SleepDuration <TimeSpan>]
  [-MaximumElapsedTime <TimeSpan>] [-SleepSeconds <UInt32>]
- [-Parameters <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
+ [-Parameters <System.Collections.Generic.IReadOnlyList`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -143,7 +143,7 @@ A 'ValueFromRemainingArguments' parameter to collect the parameters as would be 
 While values can be directly provided to this parameter, it's not designed to be explicitly called.
 
 ```yaml
-Type: System.Collections.Generic.List`1[System.Object]
+Type: System.Collections.Generic.IReadOnlyList`1[System.Object]
 Parameter Sets: (All)
 Aliases:
 
