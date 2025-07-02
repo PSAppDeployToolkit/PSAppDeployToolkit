@@ -5102,19 +5102,8 @@ else
     Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force -PassThru -ErrorAction Stop
 }
 
-# Get all parameters from Open-ADTSession that are considered frontend params/variables.
-$sessionVars = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
-    process
-    {
-        if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$')
-        {
-            return $_.Name
-        }
-    }
-}
-
 # Build out parameter hashtable and open a new deployment session.
-$sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
+$sessionParams = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
     begin
     {
         # Open collector to hold valid parameters.
@@ -5123,10 +5112,22 @@ $sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
 
     process
     {
-        # Add the parameter if it's not null.
-        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)))
+        # Skip any Open-ADTSession params that are considered frontend params/variables.
+        if ($_.ParameterSets.Values.HelpMessage -notmatch '^Frontend (Parameter|Variable)$')
         {
-            $sessionParams.Add($_.Name, $_.Value)
+            return
+        }
+
+        # Skip if we didn't get a variable value.
+        if (!($variable = Get-Variable -Name $_.Name -ErrorAction Ignore))
+        {
+            return
+        }
+
+        # Add the parameter if it's not null.
+        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $variable.Value)))
+        {
+            $sessionParams.Add($variable.Name, $variable.Value)
         }
     }
 
@@ -5175,7 +5176,7 @@ New-Alias -Name Refresh-Desktop -Value Update-Desktop -Option ReadOnly -Force
 # Finalize setup of AppDeployToolkitMain.ps1.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
 New-Variable -Name noDepWarnings -Value (($adtConfig = Get-ADTConfig).Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings) -Option ReadOnly -Force
-Remove-Variable -Name adtConfig, adtModule, adtWrapperFuncs, sessionParams, sessionVars -Force -Confirm:$false
+Remove-Variable -Name adtConfig, adtWrapperFuncs, sessionParams, adtModule -Force -Confirm:$false
 Set-StrictMode -Version 1
 
 
