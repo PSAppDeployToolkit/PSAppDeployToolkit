@@ -41,7 +41,7 @@ namespace PSADT.ProcessManagement
 
             // Cancel the task and wait for it to complete.
             _cancellationTokenSource!.Cancel();
-            _pollingTask.Wait();
+            _pollingTask.GetAwaiter().GetResult();
             _pollingTask.Dispose();
             _pollingTask = null;
 
