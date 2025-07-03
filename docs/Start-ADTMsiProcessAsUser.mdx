@@ -1,6 +1,6 @@
 ---
-id: Start-ADTMsiProcess
-title: Start-ADTMsiProcess
+id: Start-ADTMsiProcessAsUser
+title: Start-ADTMsiProcessAsUser
 hide_title: false
 hide_table_of_contents: false
 ---
@@ -11,24 +11,12 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 
 ## SYNTAX
 
-### UseUnelevatedToken_FilePath
-
-```powershell
-Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] [-UseUnelevatedToken] [-LoggingOptions <String>]
- [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
- [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait]
- [-PassThru] [<CommonParameters>]
-```
-
 ### Username_FilePath
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-ArgumentList <String[]>]
+Start-ADTMsiProcessAsUser [-Action <String>] -FilePath <String> [-ArgumentList <String[]>]
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] -Username <NTAccount> [-UseLinkedAdminToken]
+ [-Transforms <String[]>] [-Patches <String[]>] [-Username <NTAccount>] [-UseLinkedAdminToken]
  [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
  [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
@@ -39,20 +27,10 @@ Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-ArgumentList <String
 ### FilePath
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-ArgumentList <String[]>]
+Start-ADTMsiProcessAsUser [-Action <String>] -FilePath <String> [-ArgumentList <String[]>]
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] [-LoggingOptions <String>] [-LogFileName <String>]
- [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait] [-PassThru] [<CommonParameters>]
-```
-
-### UseUnelevatedToken_ProductCode
-
-```powershell
-Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] [-UseUnelevatedToken] [-LoggingOptions <String>]
+ [-Transforms <String[]>] [-Patches <String[]>] [-Username <NTAccount>] [-UseLinkedAdminToken]
+ [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
  [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
  [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait]
@@ -62,9 +40,9 @@ Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-ArgumentList <Strin
 ### Username_ProductCode
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-ArgumentList <String[]>]
+Start-ADTMsiProcessAsUser [-Action <String>] -ProductCode <Guid> [-ArgumentList <String[]>]
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] -Username <NTAccount> [-UseLinkedAdminToken]
+ [-Transforms <String[]>] [-Patches <String[]>] [-Username <NTAccount>] [-UseLinkedAdminToken]
  [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
  [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
@@ -75,20 +53,10 @@ Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-ArgumentList <Strin
 ### ProductCode
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-ArgumentList <String[]>]
+Start-ADTMsiProcessAsUser [-Action <String>] -ProductCode <Guid> [-ArgumentList <String[]>]
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] [-LoggingOptions <String>] [-LogFileName <String>]
- [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait] [-PassThru] [<CommonParameters>]
-```
-
-### UseUnelevatedToken_InstalledApplication
-
-```powershell
-Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplication> [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] [-UseUnelevatedToken] [-LoggingOptions <String>]
+ [-Transforms <String[]>] [-Patches <String[]>] [-Username <NTAccount>] [-UseLinkedAdminToken]
+ [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
  [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
  [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait]
@@ -98,10 +66,10 @@ Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplicati
 ### Username_InstalledApplication
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplication> [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] -Username <NTAccount> [-UseLinkedAdminToken]
- [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
+Start-ADTMsiProcessAsUser [-Action <String>] -InstalledApplication <InstalledApplication>
+ [-ArgumentList <String[]>] [-AdditionalArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] [-Transforms <String[]>] [-Patches <String[]>] [-Username <NTAccount>]
+ [-UseLinkedAdminToken] [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
  [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
  [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait]
@@ -111,12 +79,14 @@ Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplicati
 ### InstalledApplication
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplication> [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
- [-Transforms <String[]>] [-Patches <String[]>] [-LoggingOptions <String>] [-LogFileName <String>]
- [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait] [-PassThru] [<CommonParameters>]
+Start-ADTMsiProcessAsUser [-Action <String>] -InstalledApplication <InstalledApplication>
+ [-ArgumentList <String[]>] [-AdditionalArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] [-Transforms <String[]>] [-Patches <String[]>] [-Username <NTAccount>]
+ [-UseLinkedAdminToken] [-InheritEnvironmentVariables] [-ExpandEnvironmentVariables] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck]
+ [-IncludeUpdatesAndHotfixes] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -136,7 +106,7 @@ The MSI or MSP file is expected to reside in the "Files" subdirectory of the App
 ### EXAMPLE 1
 
 ```powershell
-Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
+Start-ADTMsiProcessAsUser -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 ```
 
 Install an MSI.
@@ -144,7 +114,7 @@ Install an MSI.
 ### EXAMPLE 2
 
 ```powershell
-Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transforms 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -ArgumentList '/QN'
+Start-ADTMsiProcessAsUser -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transforms 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -ArgumentList '/QN'
 ```
 
 Install an MSI, applying a transform and overriding the default MSI toolkit parameters.
@@ -152,7 +122,7 @@ Install an MSI, applying a transform and overriding the default MSI toolkit para
 ### EXAMPLE 3
 
 ```powershell
-$ExecuteMSIResult = Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
+$ExecuteMSIResult = Start-ADTMsiProcessAsUser -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
 ```
 
 Install an MSI and stores the result of the execution into a variable by using the -PassThru option.
@@ -160,7 +130,7 @@ Install an MSI and stores the result of the execution into a variable by using t
 ### EXAMPLE 4
 
 ```powershell
-Start-ADTMsiProcess -Action 'Uninstall' -ProductCode '{26923b43-4d38-484f-9b9e-de460746276c}'
+Start-ADTMsiProcessAsUser -Action 'Uninstall' -ProductCode '{26923b43-4d38-484f-9b9e-de460746276c}'
 ```
 
 Uninstall an MSI using a product code.
@@ -168,7 +138,7 @@ Uninstall an MSI using a product code.
 ### EXAMPLE 5
 
 ```powershell
-Start-ADTMsiProcess -Action 'Patch' -FilePath 'Adobe_Reader_11.0.3_EN.msp'
+Start-ADTMsiProcessAsUser -Action 'Patch' -FilePath 'Adobe_Reader_11.0.3_EN.msp'
 ```
 
 Install an MSP.
@@ -198,7 +168,7 @@ The file path to the MSI/MSP file.
 
 ```yaml
 Type: String
-Parameter Sets: UseUnelevatedToken_FilePath, Username_FilePath, FilePath
+Parameter Sets: Username_FilePath, FilePath
 Aliases:
 
 Required: True
@@ -214,7 +184,7 @@ The product code of the installed MSI.
 
 ```yaml
 Type: Guid
-Parameter Sets: UseUnelevatedToken_ProductCode, Username_ProductCode, ProductCode
+Parameter Sets: Username_ProductCode, ProductCode
 Aliases:
 
 Required: True
@@ -230,7 +200,7 @@ The InstalledApplication object of the installed MSI.
 
 ```yaml
 Type: InstalledApplication
-Parameter Sets: UseUnelevatedToken_InstalledApplication, Username_InstalledApplication, InstalledApplication
+Parameter Sets: Username_InstalledApplication, InstalledApplication
 Aliases:
 
 Required: True
@@ -346,12 +316,12 @@ Only supported while running as the SYSTEM account.
 
 ```yaml
 Type: NTAccount
-Parameter Sets: Username_FilePath, Username_ProductCode, Username_InstalledApplication
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
-Default value: None
+Default value: (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -362,7 +332,7 @@ Use a user's linked administrative token while running the process under their c
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Username_FilePath, Username_ProductCode, Username_InstalledApplication
+Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -378,7 +348,7 @@ Specifies whether the process running as a user should inherit the SYSTEM accoun
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Username_FilePath, Username_ProductCode, Username_InstalledApplication
+Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -394,26 +364,10 @@ Specifies whether to expand any Windows/DOS-style environment variables in the s
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Username_FilePath, Username_ProductCode, Username_InstalledApplication
+Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UseUnelevatedToken
-
-If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: UseUnelevatedToken_FilePath, UseUnelevatedToken_ProductCode, UseUnelevatedToken_InstalledApplication
-Aliases:
-
-Required: True
 Position: Named
 Default value: False
 Accept pipeline input: False
@@ -667,4 +621,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess](https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess)
+[https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcessAsUser](https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcessAsUser)

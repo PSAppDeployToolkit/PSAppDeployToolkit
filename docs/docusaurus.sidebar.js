@@ -116,6 +116,7 @@ module.exports = [
     'commands/Show-ADTInstallationRestartPrompt',
     'commands/Show-ADTInstallationWelcome',
     'commands/Start-ADTMsiProcess',
+    'commands/Start-ADTMsiProcessAsUser',
     'commands/Start-ADTMspProcess',
     'commands/Start-ADTProcess',
     'commands/Start-ADTProcessAsUser',

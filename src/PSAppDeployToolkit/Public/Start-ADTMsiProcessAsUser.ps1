@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Start-ADTMsiProcess
+# MARK: Start-ADTMsiProcessAsUser
 #
 #-----------------------------------------------------------------------------
 
-function Start-ADTMsiProcess
+function Start-ADTMsiProcessAsUser
 {
     <#
     .SYNOPSIS
@@ -61,9 +61,6 @@ function Start-ADTMsiProcess
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
-    .PARAMETER UseUnelevatedToken
-        If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
-
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the config.psd1 file.
 
@@ -119,27 +116,27 @@ function Start-ADTMsiProcess
         - StdErr
 
     .EXAMPLE
-        Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
+        Start-ADTMsiProcessAsUser -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi'
 
         Install an MSI.
 
     .EXAMPLE
-        Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transforms 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -ArgumentList '/QN'
+        Start-ADTMsiProcessAsUser -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -Transforms 'Adobe_FlashPlayer_11.2.202.233_x64_EN_01.mst' -ArgumentList '/QN'
 
         Install an MSI, applying a transform and overriding the default MSI toolkit parameters.
 
     .EXAMPLE
-        $ExecuteMSIResult = Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
+        $ExecuteMSIResult = Start-ADTMsiProcessAsUser -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
 
         Install an MSI and stores the result of the execution into a variable by using the -PassThru option.
 
     .EXAMPLE
-        Start-ADTMsiProcess -Action 'Uninstall' -ProductCode '{26923b43-4d38-484f-9b9e-de460746276c}'
+        Start-ADTMsiProcessAsUser -Action 'Uninstall' -ProductCode '{26923b43-4d38-484f-9b9e-de460746276c}'
 
         Uninstall an MSI using a product code.
 
     .EXAMPLE
-        Start-ADTMsiProcess -Action 'Patch' -FilePath 'Adobe_Reader_11.0.3_EN.msp'
+        Start-ADTMsiProcessAsUser -Action 'Patch' -FilePath 'Adobe_Reader_11.0.3_EN.msp'
 
         Install an MSP.
 
@@ -152,7 +149,7 @@ function Start-ADTMsiProcess
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess
+        https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcessAsUser
     #>
 
     [CmdletBinding()]
@@ -164,7 +161,6 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $true, ParameterSetName = 'FilePath', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_FilePath', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_FilePath', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
         [ValidateScript({
                 if ([System.IO.Path]::GetExtension($_) -notmatch '^\.ms[ip]$')
                 {
@@ -176,13 +172,11 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [ValidateNotNullOrEmpty()]
         [System.Guid]$ProductCode,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
@@ -210,32 +204,18 @@ function Start-ADTMsiProcess
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Patches,
 
-        # Identity: Username (only present in sets where identity is "Username")
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_FilePath')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_ProductCode')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_InstalledApplication')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username,
+        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_FilePath')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_ProductCode')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_InstalledApplication')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_FilePath')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_ProductCode')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_InstalledApplication')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_FilePath')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_ProductCode')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_InstalledApplication')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_FilePath')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_ProductCode')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_InstalledApplication')]
-        [System.Management.Automation.SwitchParameter]$UseUnelevatedToken,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

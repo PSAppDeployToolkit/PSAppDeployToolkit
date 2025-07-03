@@ -174,6 +174,7 @@
         'Show-ADTInstallationRestartPrompt'
         'Show-ADTInstallationWelcome'
         'Start-ADTMsiProcess'
+        'Start-ADTMsiProcessAsUser'
         'Start-ADTMspProcess'
         'Start-ADTProcess'
         'Start-ADTProcessAsUser'
