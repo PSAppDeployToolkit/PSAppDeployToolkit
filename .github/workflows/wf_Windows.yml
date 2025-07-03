@@ -94,7 +94,7 @@ jobs:
         if-no-files-found: error
         overwrite: true
     - name: Update Website Docs
-      if: github.ref == 'refs/heads/4.0.x'
+      if: github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/develop'
       shell: powershell
       env:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
@@ -106,9 +106,9 @@ jobs:
         # Clone the source repo.
         $srcBnch = $env:GITHUB_REF_NAME
         $srcRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/PSAppDeployToolkit.git"
-        $srcPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        $srcBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
         Write-Host -Object "Cloning source repository, please wait..."
-        git clone -b $srcBnch $srcRepo $srcPath
+        git clone -b $srcBnch $srcRepo $srcBase
         if ($Global:LASTEXITCODE)
         {
           throw "The cloning of the source repository failed."
@@ -117,9 +117,10 @@ jobs:
         # Clone the destination repo.
         $dstBnch = 'main'
         $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
-        $dstPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        $dstPath = "$dstBase\docs$(if ($srcBnch -match 'develop') { '\next' })\reference\functions"
         Write-Host -Object "Cloning destination repository, please wait..."
-        git clone -b $dstBnch $dstRepo $dstPath
+        git clone -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
         {
           throw "The cloning of the destination repository failed."
@@ -127,11 +128,11 @@ jobs:
 
         # Update the docs from the source repo to the destination.
         Write-Host -Object "Updating the markdown files in destination repository."
-        Remove-Item -Path "$dstPath\docs\reference\functions\*" -Force -Confirm:$false
-        Get-ChildItem -Path "$srcPath\docs\*" -File | Copy-Item -Destination "$dstPath\docs\reference\functions"
+        Remove-Item -Path "$dstPath\*" -Force -Confirm:$false
+        Get-ChildItem -Path "$srcBase\docs\*" -File | Copy-Item -Destination $dstPath
 
         # Change into the repository's directory.
-        Push-Location -LiteralPath $dstPath
+        Push-Location -LiteralPath $dstBase
 
         # Add any changes that may exist.
         git add --all
