@@ -14,35 +14,34 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 ### FilePath
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-Transforms <String[]>] [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
- [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
- [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairMode <String>]
- [-RepairFromSource] [-ExitOnProcessFailure] [<CommonParameters>]
+Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-ArgumentList <String[]>]
+ [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
+ [-Transforms <String[]>] [-Patches <String[]>] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait] [-PassThru] [<CommonParameters>]
 ```
 
 ### ProductCode
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-Transforms <String[]>] [-ArgumentList <String[]>]
- [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
- [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
- [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairMode <String>]
- [-RepairFromSource] [-ExitOnProcessFailure] [<CommonParameters>]
+Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-ArgumentList <String[]>]
+ [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
+ [-Transforms <String[]>] [-Patches <String[]>] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait] [-PassThru] [<CommonParameters>]
 ```
 
 ### InstalledApplication
 
 ```powershell
-Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplication> [-Transforms <String[]>]
- [-ArgumentList <String[]>] [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>]
- [-LoggingOptions <String>] [-LogFileName <String>] [-WorkingDirectory <String>]
- [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
+Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplication> [-ArgumentList <String[]>]
+ [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-WorkingDirectory <String>]
+ [-Transforms <String[]>] [-Patches <String[]>] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-RepairMode <String>] [-RepairFromSource] [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes]
  [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-RepairMode <String>] [-RepairFromSource] [-ExitOnProcessFailure]
- [<CommonParameters>]
+ [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-NoWait] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -166,23 +165,6 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -Transforms
-
-The name(s) of the transform file(s) to be applied to the MSI.
-The transform files should be in the same directory as the MSI file.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ArgumentList
 
 Overrides the default parameters specified in the config.psd1 file.
@@ -227,6 +209,40 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WorkingDirectory
+
+Overrides the working directory.
+The working directory is set to the location of the MSI file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: [System.Management.Automation.Language.NullString]::Value
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Transforms
+
+The name(s) of the transform file(s) to be applied to the MSI.
+The transform files should be in the same directory as the MSI file.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -284,10 +300,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -WorkingDirectory
+### -RepairMode
 
-Overrides the working directory.
-The working directory is set to the location of the MSI file.
+Specifies the mode of repair.
+Choosing `Repair` will repair via `msiexec.exe /p` (which can trigger unsupressable reboots).
+Choosing `Reinstall` will reinstall by adding `REINSTALL=ALL REINSTALLMODE=omus` to the standard InstallParams.
 
 ```yaml
 Type: String
@@ -296,7 +313,24 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: [System.Management.Automation.Language.NullString]::Value
+Default value: Reinstall
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RepairFromSource
+
+Specifies whether we should repair from source.
+Also rewrites local cache.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -320,39 +354,6 @@ Accept wildcard characters: False
 ### -IncludeUpdatesAndHotfixes
 
 Include matches against updates and hotfixes in results.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoWait
-
-Immediately continue after executing the process.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-
-Returns ExitCode, StdOut, and StdErr output from the process.
-Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
 ```yaml
 Type: SwitchParameter
@@ -429,33 +430,14 @@ Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 
 Required: False
 Position: Named
-Default value: Normal
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -RepairMode
+### -ExitOnProcessFailure
 
-Specifies the mode of repair.
-Choosing `Repair` will repair via `msiexec.exe /p` (which can trigger unsupressable reboots).
-Choosing `Reinstall` will reinstall by adding `REINSTALL=ALL REINSTALLMODE=omus` to the standard InstallParams.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: Reinstall
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RepairFromSource
-
-Specifies whether we should repair from source.
-Also rewrites local cache.
+Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
 ```yaml
 Type: SwitchParameter
@@ -469,9 +451,26 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExitOnProcessFailure
+### -NoWait
 
-Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+Immediately continue after executing the process.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+
+Returns ExitCode, StdOut, and StdErr output from the process.
+Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
 ```yaml
 Type: SwitchParameter

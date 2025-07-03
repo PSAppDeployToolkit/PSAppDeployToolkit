@@ -31,12 +31,6 @@ function Start-ADTMsiProcess
     .PARAMETER InstalledApplication
         The InstalledApplication object of the installed MSI.
 
-    .PARAMETER Transforms
-        The name(s) of the transform file(s) to be applied to the MSI. The transform files should be in the same directory as the MSI file.
-
-    .PARAMETER Patches
-        The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
-
     .PARAMETER ArgumentList
         Overrides the default parameters specified in the config.psd1 file.
 
@@ -46,6 +40,15 @@ function Start-ADTMsiProcess
     .PARAMETER SecureArgumentList
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.
 
+    .PARAMETER WorkingDirectory
+        Overrides the working directory. The working directory is set to the location of the MSI file.
+
+    .PARAMETER Transforms
+        The name(s) of the transform file(s) to be applied to the MSI. The transform files should be in the same directory as the MSI file.
+
+    .PARAMETER Patches
+        The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
+
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the config.psd1 file.
 
@@ -54,20 +57,17 @@ function Start-ADTMsiProcess
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
-    .PARAMETER WorkingDirectory
-        Overrides the working directory. The working directory is set to the location of the MSI file.
+    .PARAMETER RepairMode
+        Specifies the mode of repair. Choosing `Repair` will repair via `msiexec.exe /p` (which can trigger unsupressable reboots). Choosing `Reinstall` will reinstall by adding `REINSTALL=ALL REINSTALLMODE=omus` to the standard InstallParams.
+
+    .PARAMETER RepairFromSource
+        Specifies whether we should repair from source. Also rewrites local cache.
 
     .PARAMETER SkipMSIAlreadyInstalledCheck
         Skips the check to determine if the MSI is already installed on the system.
 
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
-
-    .PARAMETER NoWait
-        Immediately continue after executing the process.
-
-    .PARAMETER PassThru
-        Returns ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
@@ -81,14 +81,14 @@ function Start-ADTMsiProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
-    .PARAMETER RepairMode
-        Specifies the mode of repair. Choosing `Repair` will repair via `msiexec.exe /p` (which can trigger unsupressable reboots). Choosing `Reinstall` will reinstall by adding `REINSTALL=ALL REINSTALLMODE=omus` to the standard InstallParams.
-
-    .PARAMETER RepairFromSource
-        Specifies whether we should repair from source. Also rewrites local cache.
-
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+
+    .PARAMETER NoWait
+        Immediately continue after executing the process.
+
+    .PARAMETER PassThru
+        Returns ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
     .INPUTS
         None
@@ -167,10 +167,6 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$Transforms,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'Install (Normal): (Get-ADTConfig).MSI.InstallParams; Install (Silent): (Get-ADTConfig).MSI.SilentParams; Uninstall (Normal): (Get-ADTConfig).MSI.UninstallParams; Uninstall (Silent): (Get-ADTConfig).MSI.SilentParams')]
         [System.String[]]$ArgumentList,
 
@@ -180,6 +176,14 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Transforms,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -204,20 +208,17 @@ function Start-ADTMsiProcess
         [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [ValidateSet('Repair', 'Reinstall')]
+        [System.String]$RepairMode = 'Reinstall',
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$RepairFromSource,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipMSIAlreadyInstalledCheck,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -233,17 +234,16 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
+        [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Repair', 'Reinstall')]
-        [System.String]$RepairMode = 'Reinstall',
+        [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$RepairFromSource,
+        [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin

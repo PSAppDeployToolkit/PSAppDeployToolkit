@@ -62,9 +62,6 @@ function Start-ADTProcess
     .PARAMETER CreateNoWindow
         Specifies whether the process should be started with a new window to contain it.
 
-    .PARAMETER NoWait
-        Immediately continue after executing the process.
-
     .PARAMETER WaitForMsiExec
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
 
@@ -95,14 +92,17 @@ function Start-ADTProcess
     .PARAMETER IgnoreExitCodes
         List the exit codes to ignore or * to ignore all exit codes.
 
-    .PARAMETER PriorityClass
-        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
-
     .PARAMETER StreamEncoding
         Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
 
+    .PARAMETER PriorityClass
+        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
+
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+
+    .PARAMETER NoWait
+        Immediately continue after executing the process.
 
     .PARAMETER PassThru
         If `-NoWait` is not specified, returns an object with ExitCode, StdOut, and StdErr output from the process. If `-NoWait` is specified, returns a task that can be awaited. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
@@ -302,18 +302,6 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
-        # Wait Option: NoWait (only in sets where wait is "NoWait")
-        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
-        [System.Management.Automation.SwitchParameter]$NoWait,
-
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
@@ -392,14 +380,26 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Text.Encoding]$StreamEncoding,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
+
+        # Wait Option: NoWait (only in sets where wait is "NoWait")
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
+        [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
