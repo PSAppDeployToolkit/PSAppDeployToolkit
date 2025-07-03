@@ -92,9 +92,6 @@
         # Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.
         RegPathNoAdminRights = 'HKCU:\SOFTWARE'
 
-        # Specify if Administrator Rights are required. Note: Some functions won't work if this is set to false, such as deferral, block execution, file & registry RW access and potentially logging.
-        RequireAdmin = $true
-
         # Automatically changes DeployMode for session zero (SYSTEM) operations.
         SessionDetection = $true
 

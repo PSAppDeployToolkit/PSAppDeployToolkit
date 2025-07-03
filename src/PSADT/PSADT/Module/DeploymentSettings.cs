@@ -14,9 +14,9 @@ namespace PSADT.Module
         TerminalServerMode = 4,
         DisableLogging = 8,
         NoExitOnClose = 16,
-        ZeroConfigInitiated = 32,
-        UseDefaultMsi = 64,
-        NonInteractive = 128,
-        Silent = 256
+        UseDefaultMsi = 32,
+        NonInteractive = 64,
+        Silent = 128,
+        RequireAdmin = 256,
     }
 }

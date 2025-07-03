@@ -105,6 +105,7 @@ $adtSession = @{
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2000-12-31'
     AppScriptAuthor = '<author name>'
+    RequireAdmin = $true
 
     # Install Titles (Only set here to override defaults set by the toolkit).
     InstallName = ''

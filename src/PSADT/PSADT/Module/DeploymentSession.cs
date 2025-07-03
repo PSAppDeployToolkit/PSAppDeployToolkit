@@ -127,6 +127,10 @@ namespace PSADT.Module
                     {
                         _appScriptAuthor = (string)paramValue;
                     }
+                    if (parameters.TryGetValue("RequireAdmin", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.RequireAdmin;
+                    }
                     if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _installName = (string)paramValue;
@@ -221,7 +225,7 @@ namespace PSADT.Module
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
-                        WriteInitialDivider(ref writtenDivider); Settings |= DeploymentSettings.ZeroConfigInitiated;
+                        WriteInitialDivider(ref writtenDivider);
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                         string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
                         ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
@@ -277,7 +281,7 @@ namespace PSADT.Module
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
                     if (!string.IsNullOrWhiteSpace(_defaultMsiFile))
                     {
-                        WriteInitialDivider(ref writtenDivider); Settings |= DeploymentSettings.ZeroConfigInitiated;
+                        WriteInitialDivider(ref writtenDivider);
                         WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
 
                         // Discover if there is a zero-config MST file.
@@ -579,9 +583,9 @@ namespace PSADT.Module
 
 
                 // Check current permissions and exit if not running with Administrator rights.
-                if ((bool)configToolkit["RequireAdmin"]! && !isAdmin)
+                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
                 {
-                    throw new UnauthorizedAccessException($"[{appDeployToolkitName}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
+                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
                 }
 
 

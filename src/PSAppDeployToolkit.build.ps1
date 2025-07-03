@@ -138,7 +138,7 @@ function Confirm-ADTAdmxTemplateMatchesConfig
 
         # Test our collected session properties.
         $admxProps = $admxData.policyDefinitions.policies.policy | & { process { if ($_.parentCategory.ref.Equals($Category)) { return $_.Name.Split('_')[0] } } }
-        if ($missing = $sectionProps | & { process { if (($admxProps -notcontains $_) -and (!$categoryExclusions.ContainsKey($Category) -or ($categoryExclusions.$Category -notcontains $_))) { return $_ } } })
+        if ($missing = $sectionProps | & { process { if ($admxProps -notcontains $_) { return $_ } } })
         {
             throw "The ADMX category [$Category] is missing the following config options: ['$([System.String]::Join("', '", $missing))']."
         }
@@ -146,11 +146,6 @@ function Confirm-ADTAdmxTemplateMatchesConfig
         {
             throw "The ADMX category [$Category] has the following extra config options: ['$([System.String]::Join("', '", $extras))']."
         }
-    }
-
-    # Define list of category exclusions.
-    $categoryExclusions = @{
-        Toolkit = @('RequireAdmin')
     }
 
     # Import config and XML as required.

@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
-using System.Collections;
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Management.Automation.Runspaces;
-using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using PSADT.Invoke.LibraryInterfaces;
@@ -48,14 +46,9 @@ namespace PSADT.Invoke
                     UseShellExecute = !inDebugMode,
                     CreateNoWindow = true,
                 };
-                if (RequireElevation())
-                {
-                    processStartInfo.Verb = "runas";
-                }
                 WriteDebugMessage($"PowerShell Path: [{processStartInfo.FileName}]");
                 WriteDebugMessage($"PowerShell Args: [{processStartInfo.Arguments}]");
                 WriteDebugMessage($"Working Directory: [{processStartInfo.WorkingDirectory}]");
-                WriteDebugMessage($"Requires Admin: [{processStartInfo.Verb == "runas"}]");
 
                 // Null out PSModulePath to prevent any module conflicts.
                 // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
@@ -311,64 +304,6 @@ namespace PSADT.Invoke
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
-        }
-
-        /// <summary>
-        /// Determines whether the script requires elevation.
-        /// </summary>
-        /// <param name="toolkitPath"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidDataException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        private static bool RequireElevation()
-        {
-            // If the process is elevated, we don't need to check the config file.
-            if (IsElevated())
-            {
-                return false;
-            }
-
-            // Test whether we've got a local config before continuing.
-            if ((Path.Combine(currentPath, @"Config\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
-            {
-                // Test the file for validity prior to just blindly using it.
-                var localConfigAst = Parser.ParseFile(adtLocalConfigPath, out Token[] localConfigTokens, out ParseError[] localConfigErrors);
-                if (localConfigErrors.Length > 0)
-                {
-                    throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the [config.psd1] file at [{adtLocalConfigPath}].\n\nPlease review your configuration to ensure it's correct before starting the installation.");
-                }
-
-                // Test that the local config is a hashtable.
-                if ((localConfigAst.Find(p => p is HashtableAst, false) is HashtableAst localConfig) && (((Hashtable)localConfig.SafeGetValue())["Toolkit"] is Hashtable localConfigToolkit) && (localConfigToolkit["RequireAdmin"] is bool requireAdmin))
-                {
-                    if (requireAdmin)
-                    {
-                        return true;
-                    }
-                    return false;
-                }
-            }
-
-            // Verify if the PSAppDeployToolkit config file exists.
-            var adtConfigPath = Path.Combine(currentPath, $@"{GetToolkitPath()}\Config\config.psd1");
-            if (!File.Exists(adtConfigPath))
-            {
-                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the [config.psd1] file at [{adtConfigPath}].\n\nPlease ensure you have all of the required files available to start the installation.");
-            }
-
-            // Parse our config and throw if we have any errors.
-            var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
-            if (configErrors.Length > 0)
-            {
-                throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the [config.psd1] file at [{adtConfigPath}].\n\nPlease review your configuration to ensure it's correct before starting the installation.");
-            }
-
-            // Determine whether we require admin rights or not.
-            if ((bool)((Hashtable)((Hashtable)configAst.EndBlock.Find(p => p is HashtableAst, false).SafeGetValue())["Toolkit"])["RequireAdmin"])
-            {
-                return true;
-            }
-            return false;
         }
 
         /// <summary>

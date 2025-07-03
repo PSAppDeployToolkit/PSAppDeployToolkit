@@ -16,7 +16,7 @@ Open-ADTSession [[-SessionState] <SessionState>] [[-DeploymentType] <DeploymentT
  [[-DeployMode] <DeployMode>] [-SuppressRebootPassThru] [-TerminalServerMode] [-DisableLogging]
  [[-AppVendor] <String>] [[-AppName] <String>] [[-AppVersion] <String>] [[-AppArch] <String>]
  [[-AppLang] <String>] [[-AppRevision] <String>] [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>]
- [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
+ [[-AppScriptAuthor] <String>] [-RequireAdmin] [[-InstallName] <String>] [[-InstallTitle] <String>]
  [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
  [[-DeployAppScriptParameters] <System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>]
@@ -283,6 +283,22 @@ Aliases:
 Required: False
 Position: 12
 Default value: [System.Management.Automation.Language.NullString]::Value
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RequireAdmin
+
+Specifies that this deployment requires administrative permissions.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

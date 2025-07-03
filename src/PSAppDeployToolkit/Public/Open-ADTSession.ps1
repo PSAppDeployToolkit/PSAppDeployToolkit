@@ -67,6 +67,9 @@ function Open-ADTSession
     .PARAMETER AppScriptAuthor
         Specifies the application script author.
 
+    .PARAMETER RequireAdmin
+        Specifies that this deployment requires administrative permissions.
+
     .PARAMETER InstallName
         Specifies the install name.
 
@@ -207,6 +210,9 @@ function Open-ADTSession
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::Value,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$RequireAdmin,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
