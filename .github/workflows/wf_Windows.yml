@@ -118,7 +118,7 @@ jobs:
         $dstBnch = 'main'
         $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
-        $dstPath = "$dstBase\docs$(if ($srcBnch -match 'develop') { '\next' })\reference\functions"
+        $dstPath = ("$dstBase\docs\reference\functions", "$dstBase\versioned_docs\version-4.0.0\reference\functions")[$srcBnch -match '4\.0\.x']
         Write-Host -Object "Cloning destination repository, please wait..."
         git clone -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
