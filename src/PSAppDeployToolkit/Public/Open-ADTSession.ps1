@@ -464,6 +464,10 @@ function Open-ADTSession
                 # Change the install phase since we've finished initialising. This should get overwritten shortly.
                 $adtSession.InstallPhase = 'Execution'
             }
+            catch [System.Management.Automation.MethodInvocationException]
+            {
+                Write-Error -Exception $_.Exception.InnerException
+            }
             catch
             {
                 Write-Error -ErrorRecord $_
