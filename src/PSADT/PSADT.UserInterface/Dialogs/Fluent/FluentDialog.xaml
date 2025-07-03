@@ -28,6 +28,7 @@
     SizeToContent="Height"
     SnapsToDevicePixels="True"
     TextOptions.TextFormattingMode="Display"
+    TextOptions.TextRenderingMode="Grayscale"
     Topmost="True"
     UseLayoutRounding="True"
     mc:Ignorable="d"
