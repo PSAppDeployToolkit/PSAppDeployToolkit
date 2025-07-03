@@ -19,6 +19,7 @@
     x:ClassModifier="internal"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
+    BorderThickness="1"
     FontFamily="Segoe UI Variable"
     FontSize="14"
     FontWeight="Regular"
@@ -26,6 +27,7 @@
     ResizeMode="NoResize"
     SizeToContent="Height"
     SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
     Topmost="True"
     UseLayoutRounding="True"
     mc:Ignorable="d"
@@ -195,50 +197,47 @@
             Grid.Row="0"
             Grid.Column="1"
             Width="Auto"
-            Margin="24,28,24,10"
+            Margin="24,20,24,10"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="Header Panel"
             >
-                <Image
-                    x:Name="AppIconImage"
-                    Width="64"
-                    Height="64"
-                    Margin="0,0,12,0"
-                    AutomationProperties.Name="Application Icon"
+            <Image
+                x:Name="AppIconImage"
+                Width="64"
+                Height="64"
+                Margin="0,0,12,0"
+                AutomationProperties.Name="Application Icon"
+                />
+
+            <ikw:SimpleStackPanel
+                VerticalAlignment="Center"
+                Orientation="Vertical"
+                >
+
+                <TextBlock
+                    x:Name="AppTitleTextBlock"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Application Title"
+                    FontSize="22"
+                    FontWeight="SemiBold"
+                    Text="Excessively Long Application Title 1.1 x64 EN"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="WrapWithOverflow"
+                    />
+                <TextBlock
+                    x:Name="SubtitleTextBlock"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Subtitle"
+                    FontSize="12"
+                    Text="PSAppDeployToolkit - Installation Type"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="WrapWithOverflow"
                     />
 
-                <ikw:SimpleStackPanel
-                    Orientation="Vertical"
-                    Spacing="2"
-                    >
-
-                <TextBlock
-                        x:Name="AppTitleTextBlock"
-                        MaxWidth="420"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="Application Title"
-                        FontSize="28"
-                        FontWeight="Bold"
-                        Text="Excessively Long Vendor Application Title 1.1 x64 EN"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="WrapWithOverflow"
-                        />
-                <TextBlock
-                        x:Name="SubtitleTextBlock"
-                        Width="430"
-                        MaxWidth="430"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="Subtitle"
-                        FontSize="13"
-                        Text="PSAppDeployToolkit - Installation Type"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="WrapWithOverflow"
-                        />
-
-                </ikw:SimpleStackPanel>
-            </DockPanel>
+            </ikw:SimpleStackPanel>
+        </DockPanel>
 
         <!-- Main Content Card -->
         <Border
@@ -293,19 +292,14 @@
                 <!-- Close Apps Panel -->
                 <ikw:SimpleStackPanel
                     x:Name="CloseAppsStackPanel"
-                    VerticalAlignment="Top"
+                    VerticalAlignment="Center"
                     AutomationProperties.Name="Close Applications List Container"
                     Orientation="Vertical"
                     >
 
-                    <!--<Separator
-                        x:Name="CloseAppsSeparator"
-                        Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
-                        />-->
-
                     <ui:ListView
                         x:Name="CloseAppsListView"
-                        MaxHeight="222"
+                        MaxHeight="197"
                         Margin="16,0,16,16"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
                         AutomationProperties.Name="Close Applications ListView"
@@ -327,7 +321,10 @@
                         >
                         <ui:ListView.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="4,8,4,8">
+                                <Grid
+                                    Margin="8,12,8,8"
+                                    VerticalAlignment="Center"
+                                    >
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
@@ -338,41 +335,46 @@
                                     </Grid.ColumnDefinitions>
                                     <Image
                                         x:Name="Image"
-                                        Grid.RowSpan="2"
+                                        Grid.Row="0"
+                                        Grid.Column="0"
                                         Width="32"
                                         Height="32"
-                                        Margin="8"
+                                        Margin="4,0,4,0"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         AutomationProperties.Name="{Binding Name, StringFormat=Icon for \{0\}}"
                                         RenderOptions.BitmapScalingMode="HighQuality"
                                         Source="{Binding Icon, Mode=OneWay}"
                                         />
-                                    <TextBlock
-                                        x:Name="ListViewTitle"
+                                    <ikw:SimpleStackPanel
+                                        x:Name="CloseAppsGridStackPanel"
                                         Grid.Row="0"
                                         Grid.Column="1"
-                                        Margin="8,0,16,0"
-                                        HorizontalAlignment="Stretch"
-                                        AutomationProperties.Name="Process Description"
-                                        FontWeight="Bold"
-                                        Text="{Binding Description, Mode=OneWay}"
-                                        TextWrapping="Wrap"
-                                        />
-                                    <TextBlock
-                                        x:Name="ListViewSubTitle"
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Margin="8,0,16,0"
-                                        HorizontalAlignment="Stretch"
-                                        AutomationProperties.Name="Process Name"
-                                        FontSize="12"
-                                        Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
-                                        Text="{Binding Name, Mode=OneWay}"
-                                        TextAlignment="Left"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="Wrap"
-                                        />
+                                        Margin="24,0,16,0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Close Applications List Container"
+                                        Orientation="Vertical"
+                                        >
+                                        <TextBlock
+                                            x:Name="ListViewTitle"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.Name="Process Description"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding Description, Mode=OneWay}"
+                                            TextWrapping="Wrap"
+                                            />
+                                        <TextBlock
+                                            x:Name="ListViewSubTitle"
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.Name="Process Name"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentFillColorTertiaryBrushKey}}"
+                                            Text="{Binding Name, Mode=OneWay}"
+                                            TextAlignment="Left"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="Wrap"
+                                            />
+                                    </ikw:SimpleStackPanel>
                                 </Grid>
                             </DataTemplate>
                         </ui:ListView.ItemTemplate>
@@ -440,7 +442,7 @@
 
                 <ikw:SimpleStackPanel
                     x:Name="CountdownStackPanel"
-                    Margin="0,0,0,0"
+                    Margin="0,0,0,8"
                     VerticalAlignment="Top"
                     Orientation="Vertical"
                     >
@@ -449,11 +451,11 @@
 
                     <DockPanel
                         x:Name="CountdownDockPanel"
-                        Margin="24,12,24,12"
+                        Margin="32,12,32,8"
                         >
 
                         <ui:FontIcon
-                            FontSize="24"
+                            FontSize="18"
                             Glyph="&#xE916;"
                             />
 
@@ -485,15 +487,15 @@
                     Orientation="Vertical"
                     >
 
-                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
+                    <!--<Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />-->
 
                     <DockPanel
                         x:Name="DeferRemainingDockPanel"
-                        Margin="24,12,24,12"
+                        Margin="32,8,32,12"
                         >
 
                         <ui:FontIcon
-                            FontSize="24"
+                            FontSize="18"
                             Glyph="&#xE91C;"
                             />
 
@@ -523,15 +525,15 @@
                     Orientation="Vertical"
                     >
 
-                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
+                    <!--<Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />-->
 
                     <DockPanel
                         x:Name="DeferDeadlineDockPanel"
-                        Margin="24,12,24,12"
+                        Margin="32,12,32,12"
                         >
 
                         <ui:FontIcon
-                            FontSize="24"
+                            FontSize="18"
                             Glyph="&#xE787;"
                             />
 
@@ -605,7 +607,6 @@
                     KeyboardNavigation.TabIndex="0"
                     />
             </Grid>
-
 
         </ikw:SimpleStackPanel>
 

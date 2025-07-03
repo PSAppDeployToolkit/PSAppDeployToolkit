@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Management.Automation.Language;
@@ -44,11 +44,12 @@ namespace PSADT.UserInterface.TestHarness
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
-            bool dialogAllowMove = true;
+            bool dialogAllowMove = false;
             DeploymentType deploymentType = DeploymentType.Install;
 
             ProcessDefinition[] appsToClose =
             {
+                new("remotedesktopmanager", "Remote Desktop Manager"),
                 new("chrome", "Google Chrome"),
                 // new("msedge", "Microsoft Edge", null, null, null),
                 new("firefox", "Mozilla FireFox"),

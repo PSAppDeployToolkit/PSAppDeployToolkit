@@ -200,8 +200,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Handles the event when the collection of apps to close changes.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void UpdateRunningProcesses()
         {
             // Update the UI based on the changes in the collection.
