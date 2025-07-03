@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Principal;
-using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using PSADT.Invoke.LibraryInterfaces;
@@ -179,62 +178,6 @@ namespace PSADT.Invoke
             {
                 return;
             }
-        }
-
-        /// <summary>
-        /// Gets the PSModulePath environment variable values.
-        /// </summary>
-        /// <returns></returns>
-        private static string[] GetPSModulePaths()
-        {
-            using (var rs = RunspaceFactory.CreateRunspace())
-            {
-                rs.Open(); return ((string)rs.SessionStateProxy.GetVariable("env:PSModulePath")).Split(';');
-            }
-        }
-
-        /// <summary>
-        /// Gets the path to the PSAppDeployToolkit module.
-        /// </summary>
-        /// <returns></returns>
-        private static string GetToolkitPath()
-        {
-            // Check if there's a PSAppDeployToolkit module path three levels up (we're developing).
-            if (Directory.Exists(devToolkitPath))
-            {
-                return devToolkitPath;
-            }
-
-            // Check if there's a PSAppDeployToolkit module path in the expected v4 directory.
-            if (Directory.Exists(v4ToolkitPath))
-            {
-                return v4ToolkitPath;
-            }
-
-            // Check if there's a PSAppDeployToolkit module path in the expected v3 directory.
-            if (Directory.Exists(v3ToolkitPath))
-            {
-                return v3ToolkitPath;
-            }
-
-            // Check if there's a PSAppDeployToolkit module path in the PSModulePath environment variable.
-            foreach (var psModulePath in GetPSModulePaths())
-            {
-                var validPath = Path.Combine(psModulePath, "PSAppDeployToolkit");
-                if (Directory.Exists(validPath))
-                {
-                    var versionPath = Path.Combine(validPath, assemblyVersion);
-                    if (Directory.Exists(versionPath))
-                    {
-                        return versionPath;
-                    }
-                    else if (Directory.EnumerateDirectories(validPath).LastOrDefault() is string latestPath)
-                    {
-                        return latestPath;
-                    }
-                }
-            }
-            throw new DirectoryNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the [PSAppDeployToolkit] module directory.\n\nPlease ensure you have all of the required files available to start the installation.");
         }
 
         /// <summary>
