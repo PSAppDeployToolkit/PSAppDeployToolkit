@@ -117,7 +117,7 @@ namespace PSADT.ClientServer
         private static void ShowHelpDialog()
         {
             var fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
-            var helpVersion = fileInfo.ProductVersion!.Split('+')[0];
+            var helpVersion = new Version(fileInfo.ProductVersion!.Split('+')[0]);
             var helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
             var helpMessage = string.Join(Environment.NewLine, new[]
             {

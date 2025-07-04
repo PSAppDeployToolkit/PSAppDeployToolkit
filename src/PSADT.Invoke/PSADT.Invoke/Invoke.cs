@@ -328,14 +328,19 @@ namespace PSADT.Invoke
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
 
         /// <summary>
+        /// Represents the file path of the assembly containing the <see cref="Program"/> class.
+        /// </summary>
+        private static readonly string assemblyLocation = typeof(Program).Assembly.Location;
+
+        /// <summary>
         /// The name of the executing assembly.
         /// </summary>
-        private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
+        private static readonly string assemblyName = Path.GetFileNameWithoutExtension(assemblyLocation);
 
         /// <summary>
         /// The version of the executing assembly.
         /// </summary>
-        private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion.Split('+')[0];
+        private static readonly Version assemblyVersion = new(FileVersionInfo.GetVersionInfo(assemblyLocation).ProductVersion.Split('+')[0]);
 
         /// <summary>
         /// The path to the logging directory.
