@@ -242,7 +242,7 @@ function Get-ADTApplication
                         $(if (($appInstallLocation = $item.GetValue('InstallLocation', $null)) -and ![System.String]::IsNullOrWhiteSpace($appInstallLocation)) { $appInstallLocation }),
                         $installDate,
                         $(if (($appPublisher = $item.GetValue('Publisher', $null)) -and ![System.String]::IsNullOrWhiteSpace($appPublisher)) { $appPublisher }),
-                        $(if (($appHelpLink = $item.GetValue('HelpLink', $null)) -and ![System.String]::IsNullOrWhiteSpace($appHelpLink) -and [System.Uri]::TryCreate($appHelpLink, [System.UriKind]::Absolute, [ref]$defUriValue)) { $defUriValue }),
+                        $(if ([System.Uri]::TryCreate($item.GetValue('HelpLink', [System.String]::Empty), [System.UriKind]::Absolute, [ref]$defUriValue)) { $defUriValue }),
                         $(if (($appEstimatedSize = $item.GetValue('EstimatedSize', $null)) -and ![System.String]::IsNullOrWhiteSpace($appEstimatedSize)) { $appEstimatedSize }),
                         $item.GetValue('SystemComponent', $false),
                         $windowsInstaller,
