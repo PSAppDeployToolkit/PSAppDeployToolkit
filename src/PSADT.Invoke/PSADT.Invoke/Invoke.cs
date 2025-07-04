@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
-using System.Security.Principal;
 using System.Runtime.InteropServices;
 using PSADT.Invoke.LibraryInterfaces;
 using PSADT.Invoke.Utilities;
@@ -28,7 +26,6 @@ namespace PSADT.Invoke
 
             // Announce commencement and begin.
             WriteDebugMessage($"Preparing for PSAppDeployToolkit invocation.");
-            int exitCode = 0;
             try
             {
                 // Establish the PowerShell process start information.
@@ -86,25 +83,26 @@ namespace PSADT.Invoke
                             process.BeginErrorReadLine();
                         }
                         process.WaitForExit();
-                        exitCode = process.ExitCode;
+                        return process.ExitCode;
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteDebugMessage(ex.Message, true);
-                    exitCode = 60011;
+                    var errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
+                    WriteDebugMessage($"{errorMessage} {ex}", true); Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                    return 60011;
                 }
             }
             catch (Exception ex)
             {
-                WriteDebugMessage(ex.Message, true);
-                exitCode = 60010;
+                var errorMessage = $"Error while preparing to invoke deployment script.";
+                WriteDebugMessage($"{errorMessage} {ex}", true); Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                return 60010;
             }
             finally
             {
                 CloseDebugMode();
             }
-            return exitCode;
         }
 
         /// <summary>
@@ -113,27 +111,18 @@ namespace PSADT.Invoke
         /// <param name="debugMessage"></param>
         private static void WriteDebugMessage(string debugMessage, bool isError = false)
         {
-            // Determine whether this is an error message or not.
-            string logMessage = debugMessage.Replace("\n\n", " ");
-
-            // Output to the log file.
-            using (StreamWriter sw = new StreamWriter(logPath, true, LogEncoding))
-            {
-                sw.WriteLine(logMessage.Trim());
-            }
-
-            // Write to the console if we have one, otherwise display a modal dialog.
+            // Log only when we're in debug mode.
             if (inDebugMode)
             {
                 if (isError)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Error.WriteLine(logMessage);
+                    Console.Error.WriteLine(debugMessage);
                     Console.ResetColor();
                 }
                 else
                 {
-                    Console.WriteLine(logMessage);
+                    Console.WriteLine(debugMessage);
                 }
             }
         }
@@ -228,19 +217,6 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Determines whether the current process is elevated.
-        /// </summary>
-        /// <returns></returns>
-        private static bool IsElevated()
-        {
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-            {
-                WindowsPrincipal principal = new WindowsPrincipal(identity);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
-            }
-        }
-
-        /// <summary>
         /// Gets the arguments to pass to PowerShell.
         /// </summary>
         /// <param name="cliArguments"></param>
@@ -287,7 +263,7 @@ namespace PSADT.Invoke
             // Verify if the App Deploy script file exists.
             if (!File.Exists(adtFrontendPath))
             {
-                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at [{adtFrontendPath}].\n\nPlease ensure you have all of the required files available to start the installation.");
+                throw new FileNotFoundException($"Unable to find the deployment script file at [{adtFrontendPath}].");
             }
 
             // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
@@ -320,38 +296,8 @@ namespace PSADT.Invoke
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
 
         /// <summary>
-        /// Represents the file path of the assembly containing the <see cref="Program"/> class.
-        /// </summary>
-        private static readonly string assemblyLocation = typeof(Program).Assembly.Location;
-
-        /// <summary>
         /// The name of the executing assembly.
         /// </summary>
-        private static readonly string assemblyName = Path.GetFileNameWithoutExtension(assemblyLocation);
-
-        /// <summary>
-        /// The version of the executing assembly.
-        /// </summary>
-        private static readonly Version assemblyVersion = new(FileVersionInfo.GetVersionInfo(assemblyLocation).ProductVersion.Split('+')[0]);
-
-        /// <summary>
-        /// The path to the logging directory.
-        /// </summary>
-        private static readonly string logDir = Directory.CreateDirectory(Path.Combine(Path.Combine(Environment.GetFolderPath(IsElevated() ? Environment.SpecialFolder.Windows : Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe")).FullName;
-
-        /// <summary>
-        /// The path to the log file.
-        /// </summary>
-        private static readonly string logFile = $"{assemblyName}.exe_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log";
-
-        /// <summary>
-        /// The full path to the log file.
-        /// </summary>
-        private static readonly string logPath = Path.Combine(logDir, logFile);
-
-        /// <summary>
-        /// The encoding to use for the log file.
-        /// </summary>
-        private static readonly Encoding LogEncoding = new UTF8Encoding(true);
+        private static readonly string assemblyName = Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location);
     }
 }
