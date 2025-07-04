@@ -87,22 +87,20 @@ namespace PSADT.ClientServer
                 {
                     throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
                 }
+                return (int)ClientExitCode.Success;
             }
             catch (ClientException ex)
             {
                 // We've caught our own error. Write it out and exit with its code.
                 Console.Error.WriteLine(JsonSerialization.SerializeToString(ex));
-                Environment.Exit(ex.HResult);
+                return ex.HResult;
             }
             catch (Exception ex)
             {
                 // This block is here as a fail-safe and should never be reached.
                 Console.Error.WriteLine(JsonSerialization.SerializeToString(ex));
-                Environment.Exit((int)ClientExitCode.Unknown);
+                return (int)ClientExitCode.Unknown;
             }
-
-            // If we're here, everything went well.
-            return (int)ClientExitCode.Success;
         }
 
         /// <summary>
