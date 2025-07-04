@@ -34,7 +34,7 @@ namespace PSADT.ClientServer
                 }
                 catch (Win32Exception ex)
                 {
-                    File.WriteAllText(ErrorFilePath, $"Error launching process [{process.StartInfo.FileName}] with Win32 error code [{ex.NativeErrorCode}]: {ex}");
+                    File.WriteAllText(ErrorFilePath, $"Error launching [{process.StartInfo.FileName}] with Win32 error code [{ex.NativeErrorCode}]: {ex}");
                     return ex.NativeErrorCode;
                 }
                 catch (Exception ex)
