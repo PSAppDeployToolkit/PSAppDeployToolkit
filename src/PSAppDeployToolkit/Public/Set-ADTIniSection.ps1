@@ -159,7 +159,7 @@ function Set-ADTIniSection
                 }
 
                 $logContent = $Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } }
-                Write-ADTLogEntry -Message "$(if ($Overwrite) {'Overwriting'} else {'Writing'}) INI section: [FilePath = $FilePath] [Section = $Section] Content:$logContent"
+                Write-ADTLogEntry -Message "$(('Writing', 'Overwriting')[$Overwrite.ToBool()]) INI section: [FilePath = $FilePath] [Section = $Section] Content:$logContent"
 
                 [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $writeContent)
             }
