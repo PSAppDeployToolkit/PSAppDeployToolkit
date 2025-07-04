@@ -23,7 +23,7 @@ namespace PSADT.ClientServer
             using (Process process = new())
             {
                 // Set the process start information.
-                process.StartInfo.FileName = $"{Path.GetFileNameWithoutExtension(AssemblyPath.Replace(".Launcher", null))}.exe";
+                process.StartInfo.FileName = AssemblyPath.Replace(".Launcher", null);
                 process.StartInfo.Arguments = string.Join(" ", args);
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
