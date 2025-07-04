@@ -29,19 +29,28 @@ namespace PSADT.TerminalServices
         /// <exception cref="Win32Exception"></exception>
         public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
-            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo);
-            using (pSessionInfo)
+            // Wrap this whole thing in a try/catch block so we can re-throw whatever's caught and hopefully get a decent stack trace.
+            // Something's throwing in here with a source of "Active Directory" but the exception has no stack trace at all...
+            try
             {
-                int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
-                List<SessionInfo> sessions = [];
-                for (int i = 0; i < pSessionInfo.Length / objLength; i++)
+                WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo);
+                using (pSessionInfo)
                 {
-                    if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i)) is SessionInfo session)
+                    int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
+                    List<SessionInfo> sessions = [];
+                    for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                     {
-                        sessions.Add(session);
+                        if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i)) is SessionInfo session)
+                        {
+                            sessions.Add(session);
+                        }
                     }
+                    return sessions.AsReadOnly();
                 }
-                return sessions.AsReadOnly();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to retrieve session information.", ex);
             }
         }
 
