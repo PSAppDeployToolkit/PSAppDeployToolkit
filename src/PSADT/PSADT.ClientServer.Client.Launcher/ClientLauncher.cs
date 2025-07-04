@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 
 namespace PSADT.ClientServer
@@ -19,7 +20,7 @@ namespace PSADT.ClientServer
         private static int Main(string[] args)
         {
             // Set up a new process to run the main application.
-            using (System.Diagnostics.Process process = new())
+            using (Process process = new())
             {
                 // Set the process start information.
                 process.StartInfo.FileName = $"{Path.GetFileNameWithoutExtension(AssemblyPath.Replace(".Launcher", null))}.exe";
@@ -52,18 +53,11 @@ namespace PSADT.ClientServer
         private static readonly string AssemblyPath = typeof(ClientLauncher).Assembly.Location;
 
         /// <summary>
-        /// Gets the name of the assembly file from the specified assembly path.
-        /// </summary>
-        /// <remarks>The value is derived by extracting the file name from the <see cref="AssemblyPath"/>.
-        /// This property is read-only and provides the name of the assembly file without its directory path.</remarks>
-        private static readonly string AssemblyName = Path.GetFileName(AssemblyPath);
-
-        /// <summary>
         /// Represents the file path used to log error information.
         /// </summary>
         /// <remarks>The file path is generated dynamically using the system's temporary directory, the
         /// assembly name,  and the current timestamp in ISO 8601 format (excluding milliseconds and colons). This
-        /// ensures  uniqueness for each log file.</remarks>
-        private static readonly string ErrorFilePath = Path.Combine(Path.GetTempPath(), $"{AssemblyName}_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log");
+        /// ensures uniqueness for each log file.</remarks>
+        private static readonly string ErrorFilePath = Path.Combine(Path.GetTempPath(), $"{Path.GetFileName(AssemblyPath)}_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log");
     }
 }
