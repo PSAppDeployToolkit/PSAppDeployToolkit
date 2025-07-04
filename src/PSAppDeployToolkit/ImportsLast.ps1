@@ -8,8 +8,7 @@
 try
 {
     # Set all functions as read-only, export all public definitions and finalise the CommandTable.
-    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
-    Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
+    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
     New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
     if (!$MinimumStartup)
     {
