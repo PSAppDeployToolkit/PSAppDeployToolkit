@@ -42,11 +42,17 @@ function Get-ADTRunAsActiveUser
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTRunAsActiveUser
     #>
 
-    # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
-    # The active console user will be chosen first. Failing that, for multi-session operating systems, the first logged on user will be used instead.
+    # Determine the account that will be used to execute client/server commands in the user's context.
+    # Favour the caller's session if it's found and is currently an active user session on the device.
     Write-ADTLogEntry -Message 'Finding the active user session on this device.'
-    $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
-    $userSessions = Get-ADTLoggedOnUser -InformationAction SilentlyContinue
+    $userSessions = if (!$args.Count -or $args[-1] -isnot [System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]])
+    {
+        Get-ADTLoggedOnUser -InformationAction SilentlyContinue
+    }
+    else
+    {
+        $args[-1]
+    }
     $callerSid = [PSADT.AccountManagement.AccountUtilities]::CallerSid
     foreach ($session in $userSessions)
     {
@@ -56,6 +62,9 @@ function Get-ADTRunAsActiveUser
             return $session
         }
     }
+
+    # The caller SID isn't the active user session, try to find the best available match.
+    $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
     foreach ($session in $userSessions)
     {
         if ($session.NTAccount -and $session.$sessionInfoMember)
