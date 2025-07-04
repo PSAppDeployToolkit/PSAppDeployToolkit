@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 
 namespace PSADT.ClientServer
 {
@@ -23,7 +22,7 @@ namespace PSADT.ClientServer
             using (Process process = new())
             {
                 // Set the process start information.
-                process.StartInfo.FileName = AssemblyPath.Replace(".Launcher", null);
+                process.StartInfo.FileName = typeof(ClientLauncher).Assembly.Location.Replace(".Launcher.exe", ".exe");
                 process.StartInfo.Arguments = string.Join(" ", args);
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
@@ -34,30 +33,15 @@ namespace PSADT.ClientServer
                 }
                 catch (Win32Exception ex)
                 {
-                    File.WriteAllText(ErrorFilePath, $"Error launching [{process.StartInfo.FileName}] with Win32 error code [{ex.NativeErrorCode}]: {ex}");
+                    Environment.FailFast($"Error launching [{process.StartInfo.FileName}] with Win32 error code [{ex.NativeErrorCode}].\nException Info: {ex}", ex);
                     return ex.NativeErrorCode;
                 }
                 catch (Exception ex)
                 {
-                    File.WriteAllText(ErrorFilePath, $"An unexpected exception occurred with HRESULT [{ex.HResult}]: {ex}");
+                    Environment.FailFast($"An unexpected exception occurred with HRESULT [{ex.HResult}].\nException Info: {ex}", ex);
                     return ex.HResult;
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the file system path of the assembly containing the <see cref="ClientLauncher"/> type.
-        /// </summary>
-        /// <remarks>This property provides the location of the assembly as a string, which can be used
-        /// for tasks such as loading resources or determining the application's installation directory.</remarks>
-        private static readonly string AssemblyPath = typeof(ClientLauncher).Assembly.Location;
-
-        /// <summary>
-        /// Represents the file path used to log error information.
-        /// </summary>
-        /// <remarks>The file path is generated dynamically using the system's temporary directory, the
-        /// assembly name,  and the current timestamp in ISO 8601 format (excluding milliseconds and colons). This
-        /// ensures uniqueness for each log file.</remarks>
-        private static readonly string ErrorFilePath = Path.Combine(Path.GetTempPath(), $"{Path.GetFileName(AssemblyPath)}_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log");
     }
 }
