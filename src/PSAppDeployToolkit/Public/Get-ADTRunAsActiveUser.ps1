@@ -64,7 +64,7 @@ function Get-ADTRunAsActiveUser
     }
 
     # The caller SID isn't the active user session, try to find the best available match.
-    $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
+    $sessionInfoMember = ('IsActiveUserSession', 'IsCurrentSession')[(Get-ADTOperatingSystemInfo).IsWorkstationEnterpriseMultiSessionOS]
     foreach ($session in $userSessions)
     {
         if ($session.NTAccount -and $session.$sessionInfoMember)
