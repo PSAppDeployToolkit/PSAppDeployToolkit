@@ -339,21 +339,6 @@ namespace PSADT.Invoke
         private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion.Split('+')[0];
 
         /// <summary>
-        /// The path to the PSAppDeployToolkit module.
-        /// </summary>
-        private static readonly string v3ToolkitPath = Path.Combine(currentPath, @"AppDeployToolkit\PSAppDeployToolkit");
-
-        /// <summary>
-        /// The path to the PSAppDeployToolkit module.
-        /// </summary>
-        private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
-
-        /// <summary>
-        /// The path to the PSAppDeployToolkit module.
-        /// </summary>
-        private static readonly string devToolkitPath = Path.Combine(currentPath, @"..\..\..\PSAppDeployToolkit");
-
-        /// <summary>
         /// The path to the logging directory.
         /// </summary>
         private static readonly string logDir = Directory.CreateDirectory(Path.Combine(Path.Combine(Environment.GetFolderPath(IsElevated() ? Environment.SpecialFolder.Windows : Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe")).FullName;
