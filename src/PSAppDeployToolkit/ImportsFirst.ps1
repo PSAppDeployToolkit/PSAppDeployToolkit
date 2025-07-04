@@ -30,7 +30,7 @@ https://psappdeploytoolkit.com
 if (!([System.Environment]::StackTrace.Split("`n") -like '*Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
 {
     throw [System.Management.Automation.ErrorRecord]::new(
-        [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply a .psd1 file."),
+        [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply them."),
         'ModuleImportError',
         [System.Management.Automation.ErrorCategory]::InvalidOperation,
         $MyInvocation.MyCommand.ScriptBlock.Module
