@@ -813,21 +813,6 @@ Add-BuildTask Build {
     Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Directory | Where-Object -Property Name -NE -Value lib | Get-ChildItem -Filter *.pdb -Recurse | Remove-Item -Force
     Write-Build Gray '        ...PDB removal completed.'
 
-    # Update the parent level docs.
-    if (Test-Path $Script:MarkdownExportPath)
-    {
-        Write-Build Gray '        Overwriting docs output...'
-        if (!(Test-Path '..\docs\'))
-        {
-            New-Item -Path '..\docs\' -ItemType Directory -Force | Out-Null
-        }
-        Get-ChildItem -LiteralPath '..\docs\' -File | Remove-Item -Force -Confirm:$false
-        Move-Item "$($Script:DocusaurusExportPath)Commands\*" -Destination '..\docs\' -Force
-        Remove-Item $Script:DocusaurusExportPath -Recurse -Force
-        Remove-Item $Script:MarkdownExportPath -Recurse -Force
-        Write-Build Gray '        ...Docs output completed.'
-    }
-
     # Sign our files if we're running on a branch enabled for code-signing.
     if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop|4\.0\.x)$')))
     {

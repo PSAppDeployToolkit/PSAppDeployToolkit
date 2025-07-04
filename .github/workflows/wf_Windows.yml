@@ -103,22 +103,11 @@ jobs:
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Set-StrictMode -Version 3
 
-        # Clone the source repo.
-        $srcBnch = $env:GITHUB_REF_NAME
-        $srcRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/PSAppDeployToolkit.git"
-        $srcBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
-        Write-Host -Object "Cloning source repository, please wait..."
-        git clone -b $srcBnch $srcRepo $srcBase
-        if ($Global:LASTEXITCODE)
-        {
-          throw "The cloning of the source repository failed."
-        }
-
         # Clone the destination repo.
         $dstBnch = 'main'
         $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
-        $dstPath = ("$dstBase\docs\reference\functions", "$dstBase\versioned_docs\version-4.0.0\reference\functions")[$srcBnch -match '4\.0\.x']
+        $dstPath = ("$dstBase\docs\reference\functions", "$dstBase\versioned_docs\version-4.0.0\reference\functions")[$env:GITHUB_REF_NAME -match '4\.0\.x']
         Write-Host -Object "Cloning destination repository, please wait..."
         git clone -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
@@ -129,7 +118,7 @@ jobs:
         # Update the docs from the source repo to the destination.
         Write-Host -Object "Updating the markdown files in destination repository."
         Remove-Item -Path "$dstPath\*" -Force -Confirm:$false
-        Get-ChildItem -Path "$srcBase\docs\*" -File | Copy-Item -Destination $dstPath
+        Get-ChildItem -Path ".\src\Artifacts\Docusaurus\commands\*" -File | Copy-Item -Destination $dstPath
 
         # Change into the repository's directory.
         Push-Location -LiteralPath $dstBase

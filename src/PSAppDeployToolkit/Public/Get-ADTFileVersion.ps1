@@ -17,7 +17,7 @@ function Get-ADTFileVersion
         The path of the file.
 
     .PARAMETER ProductVersion
-        Switch that makes the command return ProductVersion instead of FileVersion.
+        Switch that makes the command return the file's ProductVersion instead of its FileVersion.
 
     .INPUTS
         None
