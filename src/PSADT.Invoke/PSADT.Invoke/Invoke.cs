@@ -89,14 +89,22 @@ namespace PSADT.Invoke
                 catch (Exception ex)
                 {
                     var errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
-                    WriteDebugMessage($"{errorMessage} {ex}", true); Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                    WriteDebugMessage($"{errorMessage} {ex}", true);
+                    if (!inDebugMode)
+                    {
+                        Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                    }
                     return 60011;
                 }
             }
             catch (Exception ex)
             {
                 var errorMessage = $"Error while preparing to invoke deployment script.";
-                WriteDebugMessage($"{errorMessage} {ex}", true); Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                WriteDebugMessage($"{errorMessage} {ex}", true);
+                if (!inDebugMode)
+                {
+                    Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                }
                 return 60010;
             }
             finally
