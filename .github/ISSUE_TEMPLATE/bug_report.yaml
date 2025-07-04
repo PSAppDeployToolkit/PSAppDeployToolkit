@@ -1,6 +1,7 @@
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
-labels: [ bug, needs-triage ]
+labels: [ bug ]
+type: "Bug"
 title: "[Bug] "
 
 
@@ -20,7 +21,6 @@ body:
   id: psadt-version
   attributes:
     label: PSAppDeployToolkit version
-    placeholder: 3.10.1
     description: The version of PSAppDeployToolkit you are using
   validations:
     required: true
