@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
-using Microsoft.VisualBasic;
 using PSADT.Invoke.LibraryInterfaces;
 using PSADT.Invoke.Utilities;
 
@@ -92,13 +91,13 @@ namespace PSADT.Invoke
                 }
                 catch (Exception ex)
                 {
-                    WriteDebugMessage(ex.Message, MsgBoxStyle.Critical);
+                    WriteDebugMessage(ex.Message, true);
                     exitCode = 60011;
                 }
             }
             catch (Exception ex)
             {
-                WriteDebugMessage(ex.Message, MsgBoxStyle.Critical);
+                WriteDebugMessage(ex.Message, true);
                 exitCode = 60010;
             }
             finally
@@ -112,11 +111,9 @@ namespace PSADT.Invoke
         /// Writes a debug message to the log file and optionally displays an error message.
         /// </summary>
         /// <param name="debugMessage"></param>
-        /// <param name="messageBoxStyle"></param>
-        private static void WriteDebugMessage(string debugMessage, MsgBoxStyle messageBoxStyle = MsgBoxStyle.Information)
+        private static void WriteDebugMessage(string debugMessage, bool isError = false)
         {
             // Determine whether this is an error message or not.
-            bool isError = messageBoxStyle != MsgBoxStyle.Information;
             string logMessage = debugMessage.Replace("\n\n", " ");
 
             // Output to the log file.
@@ -138,11 +135,6 @@ namespace PSADT.Invoke
                 {
                     Console.WriteLine(logMessage);
                 }
-            }
-            else if (isError)
-            {
-                User32.SetProcessDPIAware();
-                Interaction.MsgBox(debugMessage, messageBoxStyle | MsgBoxStyle.SystemModal, $"{assemblyName} {assemblyVersion}");
             }
         }
 
