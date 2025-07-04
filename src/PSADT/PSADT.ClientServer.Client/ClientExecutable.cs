@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using Microsoft.Win32;
@@ -117,7 +116,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown to indicate that no arguments were provided to the application.</exception>
         private static void ShowHelpDialog()
         {
-            var fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            var fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
             var helpVersion = fileInfo.ProductVersion!.Split('+')[0];
             var helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
             var helpMessage = string.Join(Environment.NewLine, new[]

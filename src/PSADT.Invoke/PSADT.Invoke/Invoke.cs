@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Principal;
@@ -336,7 +335,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// The version of the executing assembly.
         /// </summary>
-        private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion.Split('+')[0];
+        private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion.Split('+')[0];
 
         /// <summary>
         /// The path to the logging directory.
