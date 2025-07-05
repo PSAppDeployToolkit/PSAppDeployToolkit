@@ -61,7 +61,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Reference Include="System.DirectoryServices" />
+    <PackageReference Include="System.Security.Permissions" Version="9.0.6" />
+    <PackageReference Include="System.DirectoryServices" Version="9.0.6" />
     <Reference Include="System.Management.Automation">
       <HintPath>$(SystemRoot)\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
       <Private>False</Private>
