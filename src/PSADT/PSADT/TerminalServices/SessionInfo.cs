@@ -45,6 +45,7 @@ namespace PSADT.TerminalServices
             bool isUserSession,
             bool isRdpSession,
             bool? isLocalAdmin,
+            Exception? isLocalAdminException,
             DateTime? logonTime,
             TimeSpan? idleTime,
             DateTime? disconnectTime,
@@ -66,6 +67,7 @@ namespace PSADT.TerminalServices
             IsUserSession = isUserSession;
             IsRdpSession = isRdpSession;
             IsLocalAdmin = isLocalAdmin;
+            IsLocalAdminException = isLocalAdminException;
             LogonTime = logonTime;
             IdleTime = idleTime;
             DisconnectTime = disconnectTime;
@@ -139,6 +141,11 @@ namespace PSADT.TerminalServices
         /// Whether the user of the session is a local administrator.
         /// </summary>
         public readonly bool? IsLocalAdmin;
+
+        /// <summary>
+        /// Represents an exception that occurred while determining whether the current user is a local administrator.
+        /// </summary>
+        public readonly Exception? IsLocalAdminException;
 
         /// <summary>
         /// The logon time of the session.

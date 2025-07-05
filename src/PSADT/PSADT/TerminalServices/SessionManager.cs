@@ -98,14 +98,14 @@ namespace PSADT.TerminalServices
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
 
             // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
-            bool? isLocalAdmin;
+            Exception? isLocalAdminException = null; bool? isLocalAdmin = null;
             try
             {
                 isLocalAdmin = AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
             }
-            catch
+            catch (Exception ex)
             {
-                isLocalAdmin = null;
+                isLocalAdminException = ex;
             }
 
             // Instantiate a SessionInfo object and return it to the caller.
@@ -123,6 +123,7 @@ namespace PSADT.TerminalServices
                 pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
                 clientProtocolType != 0,
                 isLocalAdmin,
+                isLocalAdminException,
                 DateTime.FromFileTime(sessionInfo.LogonTime),
                 DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime),
                 sessionInfo.DisconnectTime != 0 ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
