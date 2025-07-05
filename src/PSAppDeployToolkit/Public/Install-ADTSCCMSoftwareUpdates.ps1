@@ -137,11 +137,10 @@ function Install-ADTSCCMSoftwareUpdates
                 # Wait for pending updates to finish installing or the timeout value to expire.
                 do
                 {
-                    Start-Sleep -Seconds 60
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
-                    Write-ADTLogEntry -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]."
+                    Start-Sleep -Seconds 60; [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
+                    Write-ADTLogEntry -Message "The number of updates pending installation is [$(if ($CMInstallPendingUpdates) { $CMInstallPendingUpdates.Count } else { 0 })]."
                 }
-                while (($CMInstallPendingUpdates.Count -ne 0) -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
+                while ($CMInstallPendingUpdates -and $CMInstallPendingUpdates.Count -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
             }
             catch
             {
