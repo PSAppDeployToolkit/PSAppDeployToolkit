@@ -62,58 +62,77 @@ function Install-ADTSCCMSoftwareUpdates
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
+        # Trigger SCCM client scan for Software Updates.
+        try
+        {
+            $StartTime = [System.DateTime]::Now
+            Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'; Invoke-ADTSCCMTask -ScheduleID ([PSADT.ConfigMgr.TriggerScheduleId]::SoftwareUpdatesScan)
+            Write-ADTLogEntry -Message "Suspending this thread for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
+            [System.Threading.Thread]::Sleep($SoftwareUpdatesScanWaitInSeconds * 1000)
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+
+        # Find the number of missing updates.
+        Write-ADTLogEntry -Message 'Getting the number of missing updates...'
         try
         {
             try
             {
-                # If SCCM 2007 Client or lower, exit function.
-                if (($SCCMClientVersion = Get-ADTSCCMClientVersion).Major -le 4)
+                [Microsoft.Management.Infrastructure.CimInstance[]]$CMMissingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'"
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to find the number of missing software updates."
+        }
+
+        # Return early if there's no missing updates to install.
+        if (!$CMMissingUpdates -or !$CMMissingUpdates.Count)
+        {
+            Write-ADTLogEntry -Message 'There are no missing updates.'
+            return
+        }
+
+        try
+        {
+            try
+            {
+                # Install missing updates.
+                Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
+                if (!($result = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -MethodName InstallUpdates -Arguments @{ CCMUpdates = $CMMissingUpdates }))
                 {
                     $naerParams = @{
-                        Exception = [System.Data.VersionNotFoundException]::new('SCCM 2007 or lower, which is incompatible with this function, was detected on this system.')
+                        Exception = [System.InvalidProgramException]::new("The InstallUpdates method invocation returned no result.")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'CcmExecVersionLowerThanMinimum'
-                        TargetObject = $SCCMClientVersion
-                        RecommendedAction = "Please review the installed CcmExec client and try again."
+                        ErrorId = 'InstallUpdatesMethodNullResult'
+                        TargetObject = $result
+                        RecommendedAction = "Please confirm the status of the ccmexec client and try again."
                     }
                     throw (New-ADTErrorRecord @naerParams)
                 }
-
-                # Trigger SCCM client scan for Software Updates.
-                $StartTime = [System.DateTime]::Now
-                Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'
-                Invoke-ADTSCCMTask -ScheduleID 'SoftwareUpdatesScan'
-                Write-ADTLogEntry -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
-                Start-Sleep -Seconds $SoftwareUpdatesScanWaitInSeconds
-
-                # Find the number of missing updates.
-                try
+                if ($result.ReturnValue -ne 0)
                 {
-                    Write-ADTLogEntry -Message 'Getting the number of missing updates...'
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMMissingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'"
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("The InstallUpdates method invocation returned an error code of [$($result.ReturnValue)].")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'InstallUpdatesMethodInvalidResult'
+                        TargetObject = $result
+                        RecommendedAction = "Please review the returned error value for the InstallUpdates method and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to find the number of missing software updates.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
-                    throw
-                }
-
-                # Install missing updates and wait for pending updates to finish installing.
-                if (!$CMMissingUpdates.Count)
-                {
-                    Write-ADTLogEntry -Message 'There are no missing updates.'
-                    return
-                }
-
-                # Install missing updates.
-                Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                $null = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -MethodName InstallUpdates -Arguments @{ CCMUpdates = $CMMissingUpdates }
 
                 # Wait for pending updates to finish installing or the timeout value to expire.
                 do
