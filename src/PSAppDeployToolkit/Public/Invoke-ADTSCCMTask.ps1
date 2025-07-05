@@ -11,12 +11,10 @@ function Invoke-ADTSCCMTask
         Triggers SCCM to invoke the requested schedule task ID.
 
     .DESCRIPTION
-        Triggers SCCM to invoke the requested schedule task ID. This function supports a variety of schedule IDs compatible with different versions of the SCCM client. It ensures that the correct schedule IDs are used based on the SCCM client version.
+        Triggers SCCM to invoke the requested schedule task ID. This function supports a variety of Schedule Id values as defined via https://learn.microsoft.com/en-us/intune/configmgr/develop/reference/core/clients/client-classes/triggerschedule-method-in-class-sms_client.
 
     .PARAMETER ScheduleId
-        Name of the schedule id to trigger.
-
-        Options: HardwareInventory, SoftwareInventory, HeartbeatDiscovery, SoftwareInventoryFileCollection, RequestMachinePolicy, EvaluateMachinePolicy, LocationServicesCleanup, SoftwareMeteringReport, SourceUpdate, PolicyAgentCleanup, RequestMachinePolicy2, CertificateMaintenance, PeerDistributionPointStatus, PeerDistributionPointProvisioning, ComplianceIntervalEnforcement, SoftwareUpdatesAgentAssignmentEvaluation, UploadStateMessage, StateMessageManager, SoftwareUpdatesScan, AMTProvisionCycle, UpdateStorePolicy, StateSystemBulkSend, ApplicationManagerPolicyAction, PowerManagementStartSummarizer
+        Name of the Schedule Id to trigger.
 
     .INPUTS
         None
@@ -54,40 +52,13 @@ function Invoke-ADTSCCMTask
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('HardwareInventory', 'SoftwareInventory', 'HeartbeatDiscovery', 'SoftwareInventoryFileCollection', 'RequestMachinePolicy', 'EvaluateMachinePolicy', 'LocationServicesCleanup', 'SoftwareMeteringReport', 'SourceUpdate', 'PolicyAgentCleanup', 'RequestMachinePolicy2', 'CertificateMaintenance', 'PeerDistributionPointStatus', 'PeerDistributionPointProvisioning', 'ComplianceIntervalEnforcement', 'SoftwareUpdatesAgentAssignmentEvaluation', 'UploadStateMessage', 'StateMessageManager', 'SoftwareUpdatesScan', 'AMTProvisionCycle', 'UpdateStorePolicy', 'StateSystemBulkSend', 'ApplicationManagerPolicyAction', 'PowerManagementStartSummarizer')]
-        [System.String]$ScheduleID
+        [ValidateNotNullOrEmpty()]
+        [PSADT.ConfigMgr.TriggerScheduleId]$ScheduleId
     )
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
-        # Create a hashtable of Schedule IDs compatible with SCCM Client 2007.
-        $ScheduleIds = @{
-            HardwareInventory = '{00000000-0000-0000-0000-000000000001}'  # Hardware Inventory Collection Task
-            SoftwareInventory = '{00000000-0000-0000-0000-000000000002}'  # Software Inventory Collection Task
-            HeartbeatDiscovery = '{00000000-0000-0000-0000-000000000003}'  # Heartbeat Discovery Cycle
-            SoftwareInventoryFileCollection = '{00000000-0000-0000-0000-000000000010}'  # Software Inventory File Collection Task
-            RequestMachinePolicy = '{00000000-0000-0000-0000-000000000021}'  # Request Machine Policy Assignments
-            EvaluateMachinePolicy = '{00000000-0000-0000-0000-000000000022}'  # Evaluate Machine Policy Assignments
-            RefreshDefaultMp = '{00000000-0000-0000-0000-000000000023}'  # Refresh Default MP Task
-            RefreshLocationServices = '{00000000-0000-0000-0000-000000000024}'  # Refresh Location Services Task
-            LocationServicesCleanup = '{00000000-0000-0000-0000-000000000025}'  # Location Services Cleanup Task
-            SoftwareMeteringReport = '{00000000-0000-0000-0000-000000000031}'  # Software Metering Report Cycle
-            SourceUpdate = '{00000000-0000-0000-0000-000000000032}'  # Source Update Manage Update Cycle
-            PolicyAgentCleanup = '{00000000-0000-0000-0000-000000000040}'  # Policy Agent Cleanup Cycle
-            RequestMachinePolicy2 = '{00000000-0000-0000-0000-000000000042}'  # Request Machine Policy Assignments
-            CertificateMaintenance = '{00000000-0000-0000-0000-000000000051}'  # Certificate Maintenance Cycle
-            PeerDistributionPointStatus = '{00000000-0000-0000-0000-000000000061}'  # Peer Distribution Point Status Task
-            PeerDistributionPointProvisioning = '{00000000-0000-0000-0000-000000000062}'  # Peer Distribution Point Provisioning Status Task
-            ComplianceIntervalEnforcement = '{00000000-0000-0000-0000-000000000071}'  # Compliance Interval Enforcement
-            SoftwareUpdatesAgentAssignmentEvaluation = '{00000000-0000-0000-0000-000000000108}'  # Software Updates Agent Assignment Evaluation Cycle
-            UploadStateMessage = '{00000000-0000-0000-0000-000000000111}'  # Send Unsent State Messages
-            StateMessageManager = '{00000000-0000-0000-0000-000000000112}'  # State Message Manager Task
-            SoftwareUpdatesScan = '{00000000-0000-0000-0000-000000000113}'  # Force Update Scan
-            AMTProvisionCycle = '{00000000-0000-0000-0000-000000000120}'  # AMT Provision Cycle
-        }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -96,34 +67,30 @@ function Invoke-ADTSCCMTask
         {
             try
             {
-                # If SCCM 2012 Client or higher, modify hashtabe containing Schedule IDs so that it only has the ones compatible with this version of the SCCM client.
-                Write-ADTLogEntry -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..."
-                if ((Get-ADTSCCMClientVersion).Major -ge 5)
-                {
-                    $ScheduleIds.Remove('PeerDistributionPointStatus')
-                    $ScheduleIds.Remove('PeerDistributionPointProvisioning')
-                    $ScheduleIds.Remove('ComplianceIntervalEnforcement')
-                    $ScheduleIds.Add('UpdateStorePolicy', '{00000000-0000-0000-0000-000000000114}') # Update Store Policy
-                    $ScheduleIds.Add('StateSystemBulkSend', '{00000000-0000-0000-0000-000000000116}') # State System Policy Bulk Send Low
-                    $ScheduleIds.Add('ApplicationManagerPolicyAction', '{00000000-0000-0000-0000-000000000121}') # Application Manager Policy Action
-                    $ScheduleIds.Add('PowerManagementStartSummarizer', '{00000000-0000-0000-0000-000000000131}') # Power Management Start Summarizer
-                }
-
-                # Determine if the requested Schedule ID is available on this version of the SCCM Client.
-                if (!$ScheduleIds.ContainsKey($ScheduleId))
+                # Trigger SCCM task.
+                Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
+                if (!($result = Invoke-CimMethod -Namespace ROOT\CCM -ClassName SMS_Client -MethodName TriggerSchedule -Arguments @{ sScheduleID = [System.Guid]::new([System.Byte[]](0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ([System.Int32]$ScheduleId -band 0xFF00) -shr 8, [System.Int32]$ScheduleId -band 0xFF)).ToString('b') }))
                 {
                     $naerParams = @{
-                        Exception = [System.ApplicationException]::new("The requested ScheduleId [$ScheduleId] is not available with this version of the SCCM Client [$SCCMClientVersion].")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidData
-                        ErrorId = 'CcmExecInvalidScheduleId'
-                        RecommendedAction = 'Please check the supplied ScheduleId and try again.'
+                        Exception = [System.InvalidProgramException]::new("The TriggerSchedule method invocation returned no result.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'TriggerScheduleMethodNullResult'
+                        TargetObject = $result
+                        RecommendedAction = "Please confirm the status of the ccmexec client and try again."
                     }
                     throw (New-ADTErrorRecord @naerParams)
                 }
-
-                # Trigger SCCM task.
-                Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
-                $null = Invoke-CimMethod -Namespace ROOT\CCM -ClassName SMS_Client -MethodName TriggerSchedule -Arguments @{ sScheduleID = $ScheduleIds.$ScheduleID }
+                if ($result.ReturnValue -ne 0)
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("The TriggerSchedule method invocation returned an error code of [$($result.ReturnValue)].")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'TriggerScheduleMethodInvalidResult'
+                        TargetObject = $result
+                        RecommendedAction = "Please review the returned error value for the given ScheduleId and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
             }
             catch
             {
@@ -132,7 +99,7 @@ function Invoke-ADTSCCMTask
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger SCCM Schedule Task ID [$ScheduleId]."
         }
     }
 
