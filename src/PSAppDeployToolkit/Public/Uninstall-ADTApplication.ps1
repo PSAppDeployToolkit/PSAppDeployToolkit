@@ -53,11 +53,20 @@ function Uninstall-ADTApplication
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
+    .PARAMETER WaitForChildProcesses
+        Specifies whether the started process should be considered finished only when any child processes it spawns have finished also.
+
+    .PARAMETER KillChildProcessesWithParent
+        Specifies whether any child processes started by the provided executable should be closed when the provided executable closes. This is handy for application installs that open web browsers and other programs that cannot be suppressed.
+
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
 
     .PARAMETER RebootExitCodes
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
+
+    .PARAMETER ExitOnProcessFailure
+        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER PassThru
         Returns a PSADT.Types.ProcessResult object, providing the ExitCode, StdOut, and StdErr output from the uninstallation.
@@ -161,11 +170,22 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$WaitForChildProcesses,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$KillChildProcessesWithParent,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [System.Int32[]]$SuccessExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$RebootExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -190,7 +210,7 @@ function Uninstall-ADTApplication
             }
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList, SuccessExitCodes, RebootExitCodes
+            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList, SuccessExitCodes, RebootExitCodes, WaitForChildProcesses, KillChildProcessesWithParent, ExitOnProcessFailure
             if (($installedApps = Get-ADTApplication @gaiaParams))
             {
                 $InstalledApplication = $installedApps
@@ -198,12 +218,15 @@ function Uninstall-ADTApplication
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType, SuccessExitCodes, RebootExitCodes
+        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType, SuccessExitCodes, RebootExitCodes, WaitForChildProcesses, KillChildProcessesWithParent, ExitOnProcessFailure
         $sampParams.Action = 'Uninstall'
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
         $sapParams = @{
             SecureArgumentList = $SecureArgumentList
+            WaitForChildProcesses = $WaitForChildProcesses
+            KillChildProcessesWithParent = $KillChildProcessesWithParent
+            ExitOnProcessFailure = $ExitOnProcessFailure
             WaitForMsiExec = $true
             CreateNoWindow = $true
             PassThru = $PassThru
