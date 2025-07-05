@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
@@ -144,96 +143,56 @@ namespace PSADT.TerminalServices
         /// <returns>A <see cref="SecurityIdentifier"/> representing the SID of the specified session and user account</returns>
         private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
         {
-            // Try everything we can to get the SID for the given session and user.
-            try
+            // If we have the privileges, we can get the SID from the user's token.
+            if (PrivilegeManager.IsPrivilegeEnabled(SE_PRIVILEGE.SeTcbPrivilege))
             {
-                return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
+                WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken);
+                using (hUserToken)
+                {
+                    return TokenManager.GetTokenSid(hUserToken);
+                }
             }
-            catch (Exception ex)
+
+            // If we're an admin, we can get the SID from a process running in the session.
+            if (AccountUtilities.CallerIsAdmin)
             {
-                // If we have the privileges, we can get the SID from the user's token.
-                if (PrivilegeManager.IsPrivilegeEnabled(SE_PRIVILEGE.SeTcbPrivilege))
+                WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out var pProcessInfo);
+                using (pProcessInfo)
                 {
-                    WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken);
-                    using (hUserToken)
+                    int objLength = Marshal.SizeOf(typeof(WTS_PROCESS_INFOW));
+                    for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
-                        return TokenManager.GetTokenSid(hUserToken);
-                    }
-                }
-
-                // If we're an admin, we can get the SID from a process running in the session.
-                if (AccountUtilities.CallerIsAdmin)
-                {
-                    WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out var pProcessInfo);
-                    using (pProcessInfo)
-                    {
-                        int objLength = Marshal.SizeOf(typeof(WTS_PROCESS_INFOW));
-                        for (int i = 0; i < pProcessInfo.Length / objLength; i++)
+                        WTS_PROCESS_INFOW process = pProcessInfo.ToStructure<WTS_PROCESS_INFOW>(objLength * i);
+                        if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            WTS_PROCESS_INFOW process = pProcessInfo.ToStructure<WTS_PROCESS_INFOW>(objLength * i);
-                            if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
-                            {
-                                return new((IntPtr)process.pUserSid);
-                            }
+                            return new((IntPtr)process.pUserSid);
                         }
                     }
                 }
-
-                // Attempt to get the SID from the caller's explorer.exe process if it exists.
-                if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").FirstOrDefault(p => p.SessionId == sessionid) is Process explorerProcess)
-                {
-                    using (var hProcess = explorerProcess.SafeHandle)
-                    {
-                        AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
-                        using (hProcessToken)
-                        {
-                            return TokenManager.GetTokenSid(hProcessToken);
-                        }
-                    }
-                }
-
-                // Try and retrieve it from group policy information.
-                if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(username))?.SID is SecurityIdentifier sid)
-                {
-                    return sid;
-                }
-
-                // Try and retrieve it from the ProfileList registry key. This really is the last chance we have.
-                using (var profileList = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"))
-                {
-                    if (null != profileList)
-                    {
-                        List<SecurityIdentifier> sids = []; string user = username.ToString().Split('\\').Last();
-                        foreach (var subKeyName in profileList.GetSubKeyNames())
-                        {
-                            using (var subKey = profileList.OpenSubKey(subKeyName))
-                            {
-                                // We use StartsWith() here to avoid issues with profiles ending in a domain name or 000, etc.
-                                if (subKey?.GetValue("ProfileImagePath", null) is string profilePath && profilePath.Split('\\').Last().StartsWith(user, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // Accumlate these so we can confirm we found only one SID.
-                                    try
-                                    {
-                                        sids.Add(new(subKeyName));
-                                    }
-                                    catch (ArgumentException)
-                                    {
-                                        // Just fall through here. Some admins monkey around with the ProfileList keys.
-                                        // https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1493.
-                                    }
-                                }
-                            }
-                        }
-                        if (sids.Count == 1)
-                        {
-                            return sids[0];
-                        }
-                    }
-                }
-
-                // We didn't make it... Throw the original exception.
-                throw new InvalidProgramException($"Failed to retrieve the SID for {username}.", ex);
             }
+
+            // Attempt to get the SID from the caller's explorer.exe process if it exists.
+            if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").FirstOrDefault(p => p.SessionId == sessionid) is Process explorerProcess)
+            {
+                using (var hProcess = explorerProcess.SafeHandle)
+                {
+                    AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                    using (hProcessToken)
+                    {
+                        return TokenManager.GetTokenSid(hProcessToken);
+                    }
+                }
+            }
+
+            // Try and retrieve it from group policy information.
+            if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(username))?.SID is SecurityIdentifier sid)
+            {
+                return sid;
+            }
+
+            // If any of the above fail, just try to translate the SID using the builtin API.
+            // We don't do this first off as it can fail for domain users while not on the network.
+            return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
         }
     }
 }
