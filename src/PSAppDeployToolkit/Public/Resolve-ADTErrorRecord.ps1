@@ -203,12 +203,6 @@ function Resolve-ADTErrorRecord
             $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, ($innerExceptions -join "`n")))"
         }
 
-        # Append a serialised instance of the full exception. Some exceptions require full interrogation.
-        if ($canDoException)
-        {
-            $logErrorMessage += "`n`n`nSerialized Exception:`n---------------------`n`n$([PSADT.Serialization.JsonSerialization]::SerializeToString($ErrorRecord.Exception))"
-        }
-
         # Output the error message to the caller.
         return $logErrorMessage
     }
