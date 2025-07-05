@@ -63,6 +63,7 @@ function Install-ADTSCCMSoftwareUpdates
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $StartTime = [System.DateTime]::Now
     }
 
     process
@@ -70,7 +71,6 @@ function Install-ADTSCCMSoftwareUpdates
         # Trigger SCCM client scan for Software Updates.
         try
         {
-            $StartTime = [System.DateTime]::Now
             Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'; Invoke-ADTSCCMTask -ScheduleID ([PSADT.ConfigMgr.TriggerScheduleId]::SoftwareUpdatesScan)
             Write-ADTLogEntry -Message "Suspending this thread for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
             [System.Threading.Thread]::Sleep($SoftwareUpdatesScanWaitInSeconds * 1000)
