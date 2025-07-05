@@ -44,7 +44,7 @@ namespace PSADT.TerminalServices
             bool isActiveUserSession,
             bool isUserSession,
             bool isRdpSession,
-            bool isLocalAdmin,
+            bool? isLocalAdmin,
             DateTime? logonTime,
             TimeSpan? idleTime,
             DateTime? disconnectTime,
@@ -138,7 +138,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// Whether the user of the session is a local administrator.
         /// </summary>
-        public readonly bool IsLocalAdmin;
+        public readonly bool? IsLocalAdmin;
 
         /// <summary>
         /// The logon time of the session.

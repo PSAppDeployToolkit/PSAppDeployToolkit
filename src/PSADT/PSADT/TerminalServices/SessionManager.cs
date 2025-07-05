@@ -106,6 +106,17 @@ namespace PSADT.TerminalServices
             string pWinStationName = session.pWinStationName.ToString().TrimRemoveNull();
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
 
+            // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
+            bool? isLocalAdmin;
+            try
+            {
+                isLocalAdmin = AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
+            }
+            catch
+            {
+                isLocalAdmin = null;
+            }
+
             // Instantiate a SessionInfo object and return it to the caller.
             return new(
                 ntAccount,
@@ -120,7 +131,7 @@ namespace PSADT.TerminalServices
                 sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive,
                 pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
                 clientProtocolType != 0,
-                AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid),
+                isLocalAdmin,
                 DateTime.FromFileTime(sessionInfo.LogonTime),
                 DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime),
                 sessionInfo.DisconnectTime != 0 ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
