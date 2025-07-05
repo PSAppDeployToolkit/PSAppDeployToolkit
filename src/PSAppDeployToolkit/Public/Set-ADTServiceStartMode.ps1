@@ -66,10 +66,8 @@ function Set-ADTServiceStartMode
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
         # Re-write StartMode to suit sc.exe.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         New-Variable -Name StartMode -Force -Confirm:$false -Value $(switch ($StartMode)
             {
                 'Automatic' { 'Auto'; break }

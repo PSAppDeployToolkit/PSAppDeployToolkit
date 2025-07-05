@@ -120,10 +120,8 @@ function Copy-ADTFile
             $FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode
         }
 
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
         # Verify that Robocopy can be used if selected
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Check if Robocopy is on the system.

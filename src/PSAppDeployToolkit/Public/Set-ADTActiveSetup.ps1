@@ -178,10 +178,8 @@ function Set-ADTActiveSetup
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $Description = if ($PSCmdlet.ParameterSetName.Equals('Create'))
         {
             if (!$PSBoundParameters.ContainsKey('Description'))

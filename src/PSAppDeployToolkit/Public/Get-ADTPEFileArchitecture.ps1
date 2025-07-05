@@ -77,10 +77,9 @@ function Get-ADTPEFileArchitecture
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-        [System.Int32]$MACHINE_OFFSET = 4
-        [System.Int32]$PE_POINTER_OFFSET = 60
+        # Set up required constants for processing each requested file.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        [System.Int32]$PE_POINTER_OFFSET = 60; [System.Int32]$MACHINE_OFFSET = 4
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
     }
 
@@ -107,8 +106,7 @@ function Get-ADTPEFileArchitecture
                     # Read the first 4096 bytes of the file.
                     $stream = [System.IO.FileStream]::new($file.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
                     $null = $stream.Read($data, 0, $data.Count)
-                    $stream.Flush()
-                    $stream.Close()
+                    $stream.Flush(); $stream.Close()
 
                     # Get the file header from the header's address, factoring in any offsets.
                     $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)

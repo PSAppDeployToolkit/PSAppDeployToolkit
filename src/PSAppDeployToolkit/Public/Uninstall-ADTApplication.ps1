@@ -174,9 +174,8 @@ function Uninstall-ADTApplication
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
+        # Get the InstalledApplication object based on provided input.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
             if (!($PSBoundParameters.Keys -match '^(Name|ProductCode|FilterScript)$'))

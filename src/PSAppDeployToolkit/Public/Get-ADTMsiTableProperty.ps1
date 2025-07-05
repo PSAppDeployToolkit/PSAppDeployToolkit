@@ -117,6 +117,7 @@ function Get-ADTMsiTableProperty
     begin
     {
         # Set default values.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
             $Table = ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($Path) -eq '.msi']
@@ -129,9 +130,6 @@ function Get-ADTMsiTableProperty
         {
             $TablePropertyValueColumnNum = 3 - ([System.IO.Path]::GetExtension($Path) -eq '.msi')
         }
-
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -211,11 +209,11 @@ function Get-ADTMsiTableProperty
                     $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
                 }
 
-                # Return the accumulated results. We can't use a custom object for this as we have no idea what's going to be in the properties of a given MSI.
+                # Return the accumulated results. We can't use a custom class/record for this as we have no idea what's going to be in the properties of a given MSI.
                 # We also can't use a pscustomobject accelerator here as the MSI may have the same keys with different casing, necessitating the use of a dictionary for storage.
                 if ($TableProperties.Count)
                 {
-                    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$TableProperties
+                    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]::new($TableProperties)
                 }
             }
             catch

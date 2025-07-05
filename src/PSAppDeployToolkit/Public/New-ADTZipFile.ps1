@@ -95,10 +95,8 @@ function New-ADTZipFile
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
         # Remove invalid characters from the supplied filename.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if (($DestinationArchiveFileName = Remove-ADTInvalidFileNameChars -Name $DestinationArchiveFileName).Length -eq 0)
         {
             $naerParams = @{

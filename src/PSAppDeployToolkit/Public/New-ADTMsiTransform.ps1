@@ -96,10 +96,8 @@ function New-ADTMsiTransform
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
         # Define properties for how the MSI database is opened.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $msiOpenDatabaseTypes = @{
             OpenDatabaseModeReadOnly = 0
             OpenDatabaseModeTransact = 1
