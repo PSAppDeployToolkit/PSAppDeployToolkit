@@ -338,8 +338,8 @@ namespace PSADT.ProcessManagement
                 }
             });
 
-            // Return a ProcessResult object with the result of the process.
-            return new(processId, tcs.Task);
+            // Return a ProcessHandle object with this process and its running task.
+            return new(Process.GetProcessById((int)processId), tcs.Task);
         }
 
         /// <summary>

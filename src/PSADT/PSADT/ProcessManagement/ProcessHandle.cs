@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace PSADT.ProcessManagement
 {
@@ -6,11 +7,10 @@ namespace PSADT.ProcessManagement
     /// Represents a handle to a process, encapsulating its optional process ID and an asynchronous task that provides
     /// the process result.
     /// </summary>
-    /// <remarks>The <see cref="ProcessHandle"/> type is immutable and is used to track the state of a
-    /// process. The <see cref="ProcessId"/> property may be null if the process ID is not available or applicable. The
-    /// <see cref="Task"/> property provides a mechanism to asynchronously retrieve the result of the process
+    /// <remarks>The <see cref="ProcessHandle"/> type is immutable and is used to track the state of a process.
+    /// The <see cref="Task"/> property provides a mechanism to asynchronously retrieve the result of the process
     /// execution.</remarks>
-    /// <param name="ProcessId"></param>
+    /// <param name="Process"></param>
     /// <param name="Task"></param>
-    public sealed record ProcessHandle(uint? ProcessId, Task<ProcessResult> Task);
+    public sealed record ProcessHandle(Process Process, Task<ProcessResult> Task);
 }
