@@ -39,21 +39,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Gets the Session Id for the given Process Id.
-        /// </summary>
-        /// <param name="processId"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static uint ProcessIdToSessionId(uint processId)
-        {
-            if (!PInvoke.ProcessIdToSessionId(processId, out uint sessionId))
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return sessionId;
-        }
-
-        /// <summary>
         /// Wrapper around LoadLibraryEx to manage error handling.
         /// </summary>
         /// <param name="lpLibFileName"></param>

@@ -28,6 +28,11 @@ namespace PSADT.AccountManagement
                 CallerSid = identity.User!;
             }
 
+            // Build out process/session id information.
+            var currentProcess = Process.GetCurrentProcess();
+            CallerSessionId = (uint)currentProcess.SessionId;
+            CallerProcessId = (uint)currentProcess.Id;
+
             // Initialize the lookup table for well-known SIDs.
             Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = new();
             foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>())
@@ -147,12 +152,12 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Gets the process ID of the caller's current process.
         /// </summary>
-        public static readonly uint CallerProcessId = (uint)Process.GetCurrentProcess().Id;
+        public static readonly uint CallerProcessId;
 
         /// <summary>
         /// Session Id of the current user running this library.
         /// </summary>
-        public static readonly uint CallerSessionId = Kernel32.ProcessIdToSessionId(CallerProcessId);
+        public static readonly uint CallerSessionId;
 
         /// <summary>
         /// A read-only dictionary that maps <see cref="WellKnownSidType"/> values to their corresponding <see
