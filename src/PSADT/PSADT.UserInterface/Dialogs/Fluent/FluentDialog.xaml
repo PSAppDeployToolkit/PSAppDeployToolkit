@@ -13,6 +13,7 @@
     MaxHeight="1050"
     ui:TitleBar.CloseButtonAvailability="Collapsed"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
+    ui:TitleBar.Height="24"
     ui:WindowHelper.CornerStyle="Round"
     ui:WindowHelper.SystemBackdropType="Acrylic"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -27,8 +28,6 @@
     ResizeMode="NoResize"
     SizeToContent="Height"
     SnapsToDevicePixels="True"
-    TextOptions.TextFormattingMode="Display"
-    TextOptions.TextRenderingMode="Grayscale"
     Topmost="True"
     UseLayoutRounding="True"
     mc:Ignorable="d"
@@ -117,7 +116,6 @@
 
         <Grid.RowDefinitions>
             <RowDefinition x:Name="TopHeaderRow" Height="Auto" />
-            <RowDefinition x:Name="PreHeaderRow" Height="Auto" />
             <RowDefinition x:Name="CenterPanelRow" Height="Auto" />
             <RowDefinition x:Name="BottomActionButtonRow" Height="Auto" />
         </Grid.RowDefinitions>
@@ -193,57 +191,70 @@
         </Grid>
 
         <!-- App Header Panel -->
-        <DockPanel
+        <ikw:SimpleStackPanel
             x:Name="AppHeaderPanel"
             Grid.Row="0"
             Grid.Column="1"
-            Width="Auto"
-            Margin="24,20,24,10"
+            Margin="24,24,24,16"
             HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
             AutomationProperties.Name="Header Panel"
+            Orientation="Horizontal"
             >
             <Image
                 x:Name="AppIconImage"
                 Width="64"
                 Height="64"
-                Margin="0,0,12,0"
                 AutomationProperties.Name="Application Icon"
                 />
 
-            <ikw:SimpleStackPanel
+            <Grid
+                Margin="12,0,0,0"
+                Width="Auto"
+                
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
-                Orientation="Vertical"
                 >
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="TitleRow" Height="32" />
+                    <RowDefinition x:Name="SubtitleRow" Height="32" />
+                </Grid.RowDefinitions>
 
                 <TextBlock
                     x:Name="AppTitleTextBlock"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
+                    Grid.Row="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    TextAlignment="Left"
                     AutomationProperties.Name="Application Title"
-                    FontSize="22"
-                    FontWeight="SemiBold"
+                    FontSize="24"
+                    FontWeight="Bold"
                     Text="Excessively Long Application Title 1.1 x64 EN"
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="WrapWithOverflow"
+                    LineStackingStrategy="BlockLineHeight"
                     />
                 <TextBlock
                     x:Name="SubtitleTextBlock"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
+                    Grid.Row="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    TextAlignment="Left"
                     AutomationProperties.Name="Subtitle"
                     FontSize="12"
                     Text="PSAppDeployToolkit - Installation Type"
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="WrapWithOverflow"
+                    LineStackingStrategy="BlockLineHeight"
                     />
 
-            </ikw:SimpleStackPanel>
-        </DockPanel>
+            </Grid>
+        </ikw:SimpleStackPanel>
 
         <!-- Main Content Card -->
         <Border
             x:Name="MainContentCard"
-            Grid.Row="2"
+            Grid.Row="1"
             Grid.Column="1"
             Margin="24,0,24,16"
             VerticalAlignment="Center"
@@ -270,7 +281,7 @@
 
                     <TextBlock
                         x:Name="MessageTextBlock"
-                        Margin="16,16,16,16"
+                        Margin="16"
                         AutomationProperties.Name="Message Text"
                         Style="{DynamicResource {x:Static ui:ThemeKeys.BodyTextBlockStyleKey}}"
                         Text="This is the dialog primary message. This will be replaced when the application dialog is displayed."
@@ -300,7 +311,7 @@
 
                     <ui:ListView
                         x:Name="CloseAppsListView"
-                        MaxHeight="197"
+                        MaxHeight="203"
                         Margin="16,0,16,16"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
                         AutomationProperties.Name="Close Applications ListView"
@@ -323,7 +334,7 @@
                         <ui:ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid
-                                    Margin="8,12,8,8"
+                                    Margin="8,12,8,12"
                                     VerticalAlignment="Center"
                                     >
                                     <Grid.RowDefinitions>
@@ -385,7 +396,6 @@
 
                 <ikw:SimpleStackPanel
                     x:Name="ProgressStackPanel"
-                    Margin="0,0,0,0"
                     VerticalAlignment="Center"
                     Orientation="Vertical"
                     >
@@ -404,7 +414,7 @@
                     <Border
                         x:Name="BottomBar"
                         Height="8"
-                        Margin="16,0,16,24"
+                        Margin="16,0,16,16"
                         Padding="1,2,1,2"
                         Background="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"
                         CornerRadius="2"
@@ -424,16 +434,13 @@
                 <!-- Default to Collapsed -->
                 <ikw:SimpleStackPanel
                     x:Name="InputBoxStackPanel"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Top"
                     Orientation="Vertical"
-                    Visibility="Collapsed"
                     >
                     <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <TextBox
                         x:Name="InputBoxText"
-                        Margin="16,0,16,16"
+                        Margin="16,16,16,16"
                         AutomationProperties.Name="InputBox"
                         Text=""
                         TextAlignment="Left"
@@ -441,18 +448,17 @@
                         />
                 </ikw:SimpleStackPanel>
 
+                <Separator x:Name="CountdownDeferPanelSeparator" Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
+
                 <ikw:SimpleStackPanel
                     x:Name="CountdownStackPanel"
-                    Margin="0,0,0,8"
-                    VerticalAlignment="Top"
+                    Margin="16"
                     Orientation="Vertical"
                     >
 
-                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
 
                     <DockPanel
                         x:Name="CountdownDockPanel"
-                        Margin="32,12,32,8"
                         >
 
                         <ui:FontIcon
@@ -483,7 +489,7 @@
 
                 <ikw:SimpleStackPanel
                     x:Name="DeferRemainingStackPanel"
-                    Margin="0,0,0,0"
+                    Margin="16"
                     VerticalAlignment="Top"
                     Orientation="Vertical"
                     >
@@ -492,7 +498,6 @@
 
                     <DockPanel
                         x:Name="DeferRemainingDockPanel"
-                        Margin="32,8,32,12"
                         >
 
                         <ui:FontIcon
@@ -521,8 +526,7 @@
 
                 <ikw:SimpleStackPanel
                     x:Name="DeferDeadlineStackPanel"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Top"
+                    Margin="16"
                     Orientation="Vertical"
                     >
 
@@ -530,7 +534,6 @@
 
                     <DockPanel
                         x:Name="DeferDeadlineDockPanel"
-                        Margin="32,12,32,12"
                         >
 
                         <ui:FontIcon
@@ -540,7 +543,7 @@
 
                         <TextBlock
                             x:Name="DeferDeadlineHeadingTextBlock"
-                            Margin="15,0,0,0"
+                            Margin="14,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Text="Deferral Deadline"
@@ -562,7 +565,7 @@
         <!-- Button Panel - Variable buttons based on dialog type -->
         <ikw:SimpleStackPanel
             x:Name="ButtonPanel"
-            Grid.Row="3"
+            Grid.Row="2"
             Grid.Column="1"
             AutomationProperties.Name="Action Buttons Panel"
             Visibility="Visible"

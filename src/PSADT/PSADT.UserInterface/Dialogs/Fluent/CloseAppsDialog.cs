@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -86,6 +86,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             DeferDeadlineStackPanel.Visibility = _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             DeferDeadlineHeadingTextBlock.Text = options.Strings.Fluent.DeferralDeadline;
             CountdownHeadingTextBlock.Text = options.Strings.Fluent.AutomaticStartCountdown;
+            CountdownDeferPanelSeparator.Visibility = (_deferralsRemaining.HasValue || _deferralDeadline.HasValue) ? Visibility.Visible : Visibility.Collapsed;
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons

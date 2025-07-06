@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -104,6 +104,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed;
+            CountdownDeferPanelSeparator.Visibility = Visibility.Collapsed;
             DeferRemainingStackPanel.Visibility = Visibility.Collapsed;
             DeferDeadlineStackPanel.Visibility = Visibility.Collapsed;
             ButtonPanel.Visibility = Visibility.Collapsed;
@@ -138,7 +139,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (null != _countdownDuration)
             {
                 _countdownTimer = new Timer(CountdownTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
-                CountdownStackPanel.Visibility = Visibility.Visible;
+                CountdownStackPanel.Visibility = Visibility.Visible;    
+                CountdownDeferPanelSeparator.Visibility = Visibility.Visible;
             }
 
             // Configure window events
