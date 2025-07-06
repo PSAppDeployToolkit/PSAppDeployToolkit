@@ -658,15 +658,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetCurrentProcess to manage error handling.
-        /// </summary>
-        /// <returns></returns>
-        internal static SafeFileHandle GetCurrentProcess()
-        {
-            return PInvoke.GetCurrentProcess_SafeHandle();
-        }
-
-        /// <summary>
         /// Allocates a specified number of bytes in the local heap.
         /// </summary>
         /// <param name="hMem"></param>

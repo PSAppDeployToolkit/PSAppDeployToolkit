@@ -28,9 +28,11 @@ namespace PSADT.AccountManagement
             }
 
             // Build out process/session id information.
-            var currentProcess = Process.GetCurrentProcess();
-            CallerSessionId = (uint)currentProcess.SessionId;
-            CallerProcessId = (uint)currentProcess.Id;
+            using (var currentProcess = Process.GetCurrentProcess())
+            {
+                CallerSessionId = (uint)currentProcess.SessionId;
+                CallerProcessId = (uint)currentProcess.Id;
+            }
 
             // Initialize the lookup table for well-known SIDs.
             Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = new();

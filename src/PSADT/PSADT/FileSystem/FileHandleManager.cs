@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -85,7 +86,8 @@ namespace PSADT.FileSystem
             var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
 
             // Set up required pointers for GetObjectName().
-            using var currentProcessHandle = Kernel32.GetCurrentProcess();
+            using var currentProcess = Process.GetCurrentProcess();
+            using var currentProcessHandle = currentProcess.SafeHandle;
             using var objectBufferPtr = SafeHGlobalHandle.Alloc(1024);
 
             // Start looping through all handles.
@@ -186,7 +188,8 @@ namespace PSADT.FileSystem
             }
 
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
-            using (var currentProcessHandle = Kernel32.GetCurrentProcess())
+            using (var currentProcess = Process.GetCurrentProcess())
+            using (var currentProcessHandle = currentProcess.SafeHandle)
             {
                 foreach (var handleEntry in handleEntries)
                 {
@@ -205,11 +208,9 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="currentProcessHandle"></param>
         /// <param name="fileHandle"></param>
-        /// <param name="ntQueryObject"></param>
-        /// <param name="exitThread"></param>
         /// <param name="objectBuffer"></param>
         /// <returns></returns>
-        private static string? GetObjectName(SafeFileHandle currentProcessHandle, SafeFileHandle fileHandle, SafeHGlobalHandle objectBuffer)
+        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafeHGlobalHandle objectBuffer)
         {
             if (fileHandle is not object || fileHandle.IsClosed || fileHandle.IsInvalid)
             {

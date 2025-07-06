@@ -27,7 +27,6 @@ EnumWindows
 FILE_FLAGS_AND_ATTRIBUTES
 FindWindow
 GENERIC_MAPPING
-GetCurrentProcess
 GetCurrentThreadId
 GetDpiForMonitor
 GetDpiForWindow

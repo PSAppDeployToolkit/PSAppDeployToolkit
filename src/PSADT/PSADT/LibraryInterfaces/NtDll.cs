@@ -352,7 +352,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="maximumStackSize"></param>
         /// <param name="attributeList"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, SafeFileHandle processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
+        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, SafeProcessHandle processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
         {
             if (startAddress is not object || startAddress.IsClosed || startAddress.IsInvalid)
             {

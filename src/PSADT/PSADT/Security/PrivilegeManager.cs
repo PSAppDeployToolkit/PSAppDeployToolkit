@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
@@ -21,14 +22,18 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
-            AdvApi32.OpenProcessToken(Kernel32.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
-            using (token)
+            using (var cProcess = Process.GetCurrentProcess())
+            using (var hProcess = cProcess.SafeHandle)
             {
-                if (IsPrivilegeEnabled(token, privilege))
+                AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                using (hProcessToken)
                 {
-                    return;
+                    if (IsPrivilegeEnabled(hProcessToken, privilege))
+                    {
+                        return;
+                    }
+                    EnablePrivilege(hProcessToken, privilege);
                 }
-                EnablePrivilege(token, privilege);
             }
         }
 
@@ -69,10 +74,14 @@ namespace PSADT.Security
         /// <returns></returns>
         internal static bool HasPrivilege(SE_PRIVILEGE privilege)
         {
-            AdvApi32.OpenProcessToken(Kernel32.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
-            using (token)
+            using (var cProcess = Process.GetCurrentProcess())
+            using (var hProcess = cProcess.SafeHandle)
             {
-                return HasPrivilege(token, privilege);
+                AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                using (hProcessToken)
+                {
+                    return HasPrivilege(hProcessToken, privilege);
+                }
             }
         }
 
@@ -110,10 +119,14 @@ namespace PSADT.Security
         /// <returns></returns>
         internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
-            AdvApi32.OpenProcessToken(Kernel32.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
-            using (token)
+            using (var cProcess = Process.GetCurrentProcess())
+            using (var hProcess = cProcess.SafeHandle)
             {
-                return IsPrivilegeEnabled(token, privilege);
+                AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                using (hProcessToken)
+                {
+                    return IsPrivilegeEnabled(hProcessToken, privilege);
+                }
             }
         }
 
@@ -143,31 +156,40 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         internal static void EnablePrivilege(SE_PRIVILEGE privilege)
         {
-            AdvApi32.OpenProcessToken(Kernel32.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
-            using (token)
+            using (var cProcess = Process.GetCurrentProcess())
+            using (var hProcess = cProcess.SafeHandle)
             {
-                EnablePrivilege(token, privilege);
+                AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                using (hProcessToken)
+                {
+                    EnablePrivilege(hProcessToken, privilege);
+                }
             }
         }
 
         /// <summary>
         /// Tests whether the current process has the specified access rights to a process handle.
         /// </summary>
-        /// <param name="hProcess"></param>
+        /// <param name="token"></param>
         /// <param name="accessRights"></param>
         /// <returns></returns>
-        internal static bool TestProcessAccessRights(SafeProcessHandle hProcess, PROCESS_ACCESS_RIGHTS accessRights)
+        internal static bool TestProcessAccessRights(SafeProcessHandle token, PROCESS_ACCESS_RIGHTS accessRights)
         {
-            var processHandle = Kernel32.GetCurrentProcess();
-            try
+            using (var cProcess = Process.GetCurrentProcess())
+            using (var hProcess = cProcess.SafeHandle)
             {
-                var res = Kernel32.DuplicateHandle(processHandle, hProcess, processHandle, out var newHandle, accessRights, false, 0);
-                newHandle.Dispose();
-                return res;
-            }
-            catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-            {
-                return false;
+                try
+                {
+                    var res = Kernel32.DuplicateHandle(hProcess, token, hProcess, out var newHandle, accessRights, false, 0);
+                    using (newHandle)
+                    {
+                        return res;
+                    }
+                }
+                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                {
+                    return false;
+                }
             }
         }
     }
