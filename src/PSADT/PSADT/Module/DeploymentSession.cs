@@ -323,7 +323,7 @@ namespace PSADT.Module
                         if (((bool)parameters?.TryGetValue("DisableDefaultMsiProcessList", out paramValue)! && (SwitchParameter)paramValue!))
                         {
                             var exeProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
-                            List<ProcessDefinition> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
+                            List<ProcessDefinition> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
 
                             // Generate list of MSI executables for testing later on.
                             if (msiExecList.Count > 0)
