@@ -263,7 +263,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, SafeMemoryHandle SystemInformation, out int ReturnLength)
         {
-            if (SystemInformation is not object || SystemInformation.IsClosed || SystemInformation.IsInvalid)
+            if (SystemInformation is null || SystemInformation.IsClosed || SystemInformation.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(SystemInformation));
             }
@@ -300,11 +300,11 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, SafeHGlobalHandle ObjectInformation, out int ReturnLength)
         {
-            if (ObjectInformation is not object || ObjectInformation.IsClosed || ObjectInformation.IsInvalid)
+            if (ObjectInformation is null || ObjectInformation.IsClosed || ObjectInformation.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(ObjectInformation));
             }
-            if (Handle is not object || Handle.IsClosed)
+            if (Handle is null || Handle.IsClosed)
             {
                 throw new ArgumentNullException(nameof(Handle));
             }
@@ -354,11 +354,11 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, SafeProcessHandle processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
         {
-            if (startAddress is not object || startAddress.IsClosed || startAddress.IsInvalid)
+            if (startAddress is null || startAddress.IsClosed || startAddress.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(startAddress));
             }
-            if (processHandle is not object || processHandle.IsClosed)
+            if (processHandle is null || processHandle.IsClosed)
             {
                 throw new ArgumentNullException(nameof(processHandle));
             }
@@ -400,7 +400,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtTerminateThread(SafeThreadHandle threadHandle, NTSTATUS exitStatus)
         {
-            if (threadHandle is not object || threadHandle.IsClosed)
+            if (threadHandle is null || threadHandle.IsClosed)
             {
                 throw new ArgumentNullException(nameof(threadHandle));
             }
@@ -437,11 +437,11 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, SafeMemoryHandle ProcessInformation, out uint ReturnLength)
         {
-            if (ProcessHandle is not object || ProcessHandle.IsClosed || ProcessHandle.IsInvalid)
+            if (ProcessHandle is null || ProcessHandle.IsClosed || ProcessHandle.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
-            if (ProcessInformation is not object || ProcessInformation.IsClosed)
+            if (ProcessInformation is null || ProcessInformation.IsClosed)
             {
                 throw new ArgumentNullException(nameof(ProcessInformation));
             }

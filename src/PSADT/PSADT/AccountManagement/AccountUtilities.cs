@@ -35,7 +35,7 @@ namespace PSADT.AccountManagement
             }
 
             // Initialize the lookup table for well-known SIDs.
-            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = new();
+            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
             foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>())
             {
                 try
@@ -83,7 +83,7 @@ namespace PSADT.AccountManagement
         {
             using (DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
             {
-                HashSet<string> visited = new();
+                HashSet<string> visited = [];
                 return CheckMemberRecursive(groupEntry, targetSid, visited);
             }
         }

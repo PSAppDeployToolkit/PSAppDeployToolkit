@@ -212,11 +212,11 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafeHGlobalHandle objectBuffer)
         {
-            if (fileHandle is not object || fileHandle.IsClosed || fileHandle.IsInvalid)
+            if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(fileHandle));
             }
-            if (objectBuffer is not object || objectBuffer.IsClosed || objectBuffer.IsInvalid)
+            if (objectBuffer is null || objectBuffer.IsClosed || objectBuffer.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(objectBuffer));
             }
