@@ -128,18 +128,18 @@ namespace PSADT.ProcessManagement
                     PROCESS_INFORMATION pi = new();
                     if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !AccountUtilities.CallerUsername.Equals(session.NTAccount))
                     {
+                        // Enable the required privileges. SYSTEM usually has these, but locked down environments via WDAC may require specific enablement.
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+
                         // We can only run a process if we can act as part of the operating system.
                         if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                         {
                             throw new UnauthorizedAccessException($"The calling account of [{AccountUtilities.CallerUsername}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
                         }
 
-                        // Enable the required tokens. SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-
-                        // First we get the user's token.
+                        // Get the user's primary token via WTS.
                         WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
                         SafeFileHandle hPrimaryToken;
                         using (userToken)
@@ -163,33 +163,31 @@ namespace PSADT.ProcessManagement
                             }
                         }
 
-                        // Finally, start the process off for the user.
+                        // Start the process with the user's token.
+                        using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
                         using (hPrimaryToken)
                         {
+                            // Without creating an environment block, the process will take on the environment of the SYSTEM account.
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
                             {
-                                // This is important so that a windowed application can be shown.
-                                using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
+                                startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                string? workingDirectory = launchInfo.WorkingDirectory;
+                                string commandLine = launchInfo.CommandLine;
+                                if (launchInfo.ExpandEnvironmentVariables)
                                 {
-                                    startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                    string? workingDirectory = launchInfo.WorkingDirectory;
-                                    string commandLine = launchInfo.CommandLine;
-                                    if (launchInfo.ExpandEnvironmentVariables)
+                                    var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
+                                    commandLine = ExpandEnvironmentVariables(session.NTAccount, launchInfo.CommandLine, environmentDictionary);
+                                    if (null != workingDirectory)
                                     {
-                                        var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
-                                        commandLine = ExpandEnvironmentVariables(session.NTAccount, launchInfo.CommandLine, environmentDictionary);
-                                        if (null != workingDirectory)
-                                        {
-                                            workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
-                                        }
+                                        workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
                                     }
-                                    SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                 }
+                                SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                             }
                         }
                     }
-                    else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
+                    else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem)
                     {
                         // Throw if the caller is expecting to be able to capture stdout/stderr but is running elevated.
                         if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)

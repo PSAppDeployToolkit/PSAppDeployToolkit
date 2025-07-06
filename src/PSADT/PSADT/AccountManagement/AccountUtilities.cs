@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Security.Principal;
-using PSADT.LibraryInterfaces;
 
 namespace PSADT.AccountManagement
 {
@@ -47,6 +46,9 @@ namespace PSADT.AccountManagement
                 }
             }
             WellKnownSidLookupTable = new(wellKnownSids);
+
+            // Determine if the caller is the local system account.
+            CallerIsLocalSystem = CallerSid.Equals(GetWellKnownSid(WellKnownSidType.LocalSystemSid));
         }
 
         /// <summary>
@@ -158,6 +160,11 @@ namespace PSADT.AccountManagement
         /// Session Id of the current user running this library.
         /// </summary>
         public static readonly uint CallerSessionId;
+
+        /// <summary>
+        /// Indicates whether the caller is the local system account.
+        /// </summary>
+        public static readonly bool CallerIsLocalSystem;
 
         /// <summary>
         /// A read-only dictionary that maps <see cref="WellKnownSidType"/> values to their corresponding <see
