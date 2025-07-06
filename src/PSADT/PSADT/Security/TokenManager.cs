@@ -78,6 +78,27 @@ namespace PSADT.Security
         }
 
         /// <summary>
+        /// Retrieves the highest available primary token associated with the specified token handle.
+        /// </summary>
+        /// <remarks>This method attempts to retrieve the linked primary token associated with the
+        /// specified token handle. If the linked token is unavailable, it falls back to retrieving the primary token of
+        /// the original token handle.</remarks>
+        /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the primary token is to be retrieved.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the highest available primary token.</returns>
+        internal static SafeFileHandle GetHighestPrimaryToken(SafeHandle tokenHandle)
+        {
+            // If the linked token is not available, fall back to the primary token of the original token handle.
+            try
+            {
+                return GetLinkedPrimaryToken(tokenHandle);
+            }
+            catch
+            {
+                return GetPrimaryToken(tokenHandle);
+            }
+        }
+
+        /// <summary>
         /// Retrieves the security identifier (SID) associated with the specified token handle.
         /// </summary>
         /// <remarks>This method extracts the user SID from the token handle by querying token

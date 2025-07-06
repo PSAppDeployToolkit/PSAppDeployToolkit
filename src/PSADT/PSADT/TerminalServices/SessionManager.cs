@@ -101,7 +101,7 @@ namespace PSADT.TerminalServices
             Exception? isLocalAdminException = null; bool? isLocalAdmin = null;
             try
             {
-                isLocalAdmin = AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
+                isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId, sid);
             }
             catch (Exception ex)
             {
@@ -196,6 +196,46 @@ namespace PSADT.TerminalServices
             // If any of the above fail, just try to translate the SID using the builtin API.
             // We don't do this first off as it can fail for domain users while not on the network.
             return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
+        }
+
+        /// <summary>
+        /// Determines whether the user associated with the specified Windows Terminal Services (WTS) session is a
+        /// local administrator.
+        /// </summary>
+        /// <remarks>This method checks the user's administrative status by attempting to query the user's
+        /// token and  evaluating their group membership. If the required privileges are not enabled, it falls back to 
+        /// checking the user's SID against the well-known local administrators group.</remarks>
+        /// <param name="sessionid">The ID of the WTS session for which the user's administrative status is being checked.</param>
+        /// <param name="sid">The security identifier (SID) of the user associated with the session.</param>
+        /// <returns><see langword="true"/> if the user is a member of the local administrators group; otherwise, <see
+        /// langword="false"/>.</returns>
+        private static bool IsWtsSessionUserLocalAdmin(uint sessionid, SecurityIdentifier sid)
+        {
+            // If we have the privileges, we can get the user's token and do a WindowsIdentity check.
+            if (PrivilegeManager.IsPrivilegeEnabled(SE_PRIVILEGE.SeTcbPrivilege))
+            {
+                WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken); using (hUserToken)
+                using (var hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
+                {
+                    bool hPrimaryTokenAddRef = false;
+                    try
+                    {
+                        hPrimaryToken.DangerousAddRef(ref hPrimaryTokenAddRef);
+                        using (var identity = new WindowsIdentity(hPrimaryToken.DangerousGetHandle()))
+                        {
+                            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+                        }
+                    }
+                    finally
+                    {
+                        if (hPrimaryTokenAddRef)
+                        {
+                            hPrimaryToken.DangerousRelease();
+                        }
+                    }
+                }
+            }
+            return AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
         }
     }
 }
