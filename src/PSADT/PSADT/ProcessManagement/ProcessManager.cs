@@ -148,7 +148,14 @@ namespace PSADT.ProcessManagement
                             // Once done, we duplicate the linked token to get a primary token to create the new process.
                             if (launchInfo.UseLinkedAdminToken)
                             {
-                                hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
+                                try
+                                {
+                                    hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{session.NTAccount}].", ex);
+                                }
                             }
                             else
                             {
