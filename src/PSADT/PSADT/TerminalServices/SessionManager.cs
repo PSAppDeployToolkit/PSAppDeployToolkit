@@ -188,12 +188,6 @@ namespace PSADT.TerminalServices
                 }
             }
 
-            // Try and retrieve it from group policy information.
-            if (GroupPolicyAccountInfo.Get().FirstOrDefault(info => info.Username.Equals(username))?.SID is SecurityIdentifier sid)
-            {
-                return sid;
-            }
-
             // If any of the above fail, just try to translate the SID using the builtin API.
             // We don't do this first off as it can fail for domain users while not on the network.
             return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
