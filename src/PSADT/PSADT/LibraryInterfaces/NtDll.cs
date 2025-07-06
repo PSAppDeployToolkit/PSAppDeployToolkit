@@ -455,7 +455,7 @@ namespace PSADT.LibraryInterfaces
                 fixed (uint* ReturnLengthLocal = &ReturnLength)
                 {
                     var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformation.DangerousGetHandle().ToPointer(), (uint)ProcessInformation.Length, ReturnLengthLocal);
-                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || !ProcessInformation.Length.Equals(0)))
+                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
                     }

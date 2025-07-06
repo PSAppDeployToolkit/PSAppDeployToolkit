@@ -248,12 +248,12 @@ namespace PSADT.UserInterface.TestHarness
 
                 Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 
-                if (restartResult.Equals("Restart"))
+                if (restartResult == "Restart")
                 {
                     Console.WriteLine("Proceeding with installation after restart.");
                     // Implement actual restart logic here
                 }
-                else if (restartResult.Equals("Defer"))
+                else if (restartResult == "Defer")
                 {
                     Console.WriteLine("Installation deferred by the user.");
                 }

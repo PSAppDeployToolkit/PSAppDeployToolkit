@@ -532,11 +532,11 @@ namespace PSADT.Module
                 {
                     WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
                 }
-                if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !appScriptDate.Equals("2000-12-31"))
+                if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && appScriptDate != "2000-12-31")
                 {
                     WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
                 }
-                if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && !_appScriptAuthor!.Equals("<author name>"))
+                if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && _appScriptAuthor != "<author name>")
                 {
                     WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
                 }
@@ -718,7 +718,7 @@ namespace PSADT.Module
                             {
                                 if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo isSyncDone && isSyncDone.Value is int syncDoneValue)
                                 {
-                                    if (syncDoneValue.Equals(0))
+                                    if (syncDoneValue == 0)
                                     {
                                         if (deployModeChanged)
                                         {
@@ -739,7 +739,7 @@ namespace PSADT.Module
                                             WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
                                         }
                                     }
-                                    else if (syncDoneValue.Equals(1))
+                                    else if (syncDoneValue == 1)
                                     {
                                         WriteLogEntry("The ESP User Account Setup phase is already complete.");
                                     }
@@ -948,7 +948,7 @@ namespace PSADT.Module
                     ResetDeferHistory();
 
                     // Handle reboot prompts on successful script completion.
-                    if (deploymentStatus.Equals(DeploymentStatus.RestartRequired) && !SuppressRebootPassThru)
+                    if (deploymentStatus == DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                     {
                         WriteLogEntry("A restart has been flagged as required.");
                     }

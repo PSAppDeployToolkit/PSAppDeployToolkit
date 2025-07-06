@@ -35,7 +35,7 @@ namespace PSADT.Module
             // Perform early return checks before wasting time.
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
             Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
-            if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!))
+            if ((!canLogToDisk && hostLogStream == HostLogStream.None) || (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!))
             {
                 return new ReadOnlyCollection<LogEntry>([]);
             }
@@ -113,11 +113,11 @@ namespace PSADT.Module
             }
 
             // Write out all messages to host if configured/permitted to do so.
-            if (!hostLogStream.Equals(HostLogStream.None))
+            if (hostLogStream != HostLogStream.None)
             {
                 var conOutput = logEntries.Select(static e => e.LegacyLogLine);
                 var sevCols = LogSeverityColors[(int)severity];
-                if (hostLogStream.Equals(HostLogStream.Console) || noRunspace)
+                if (hostLogStream == HostLogStream.Console || noRunspace)
                 {
                     // Writing straight to the console.
                     if (severity != LogSeverity.Info)
@@ -138,7 +138,7 @@ namespace PSADT.Module
                 else
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream.Equals(HostLogStream.Verbose));
+                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream == HostLogStream.Verbose);
                 }
             }
             return logEntries;

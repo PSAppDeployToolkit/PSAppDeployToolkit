@@ -615,7 +615,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning => null != _clientProcess && _clientProcess.Task.Status.Equals(TaskStatus.Running);
+        public bool IsRunning => null != _clientProcess && _clientProcess.Task.Status == TaskStatus.Running;
 
         /// <summary>
         /// Indicates whether the object has been disposed.

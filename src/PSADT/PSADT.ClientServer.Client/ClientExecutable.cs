@@ -47,39 +47,39 @@ namespace PSADT.ClientServer
                 {
                     ShowHelpDialog();
                 }
-                else if (args.Any(static arg => arg.Equals("/ShowModalDialog")))
+                else if (args.Any(static arg => arg == "/ShowModalDialog"))
                 {
                     Console.WriteLine(ShowModalDialog(ConvertArgsToDictionary(args)));
                 }
-                else if (args.Any(static arg => arg.Equals("/ShowBalloonTip")))
+                else if (args.Any(static arg => arg == "/ShowBalloonTip"))
                 {
                     Console.WriteLine(ShowBalloonTip(ConvertArgsToDictionary(args)));
                 }
-                else if (args.Any(static arg => arg.Equals("/GetProcessWindowInfo")))
+                else if (args.Any(static arg => arg == "/GetProcessWindowInfo"))
                 {
                     Console.WriteLine(GetProcessWindowInfo(ConvertArgsToDictionary(args)));
                 }
-                else if (args.Any(static arg => arg.Equals("/GetUserNotificationState")))
+                else if (args.Any(static arg => arg == "/GetUserNotificationState"))
                 {
                     Console.WriteLine(GetUserNotificationState());
                 }
-                else if (args.Any(static arg => arg.Equals("/GetForegroundWindowProcessId")))
+                else if (args.Any(static arg => arg == "/GetForegroundWindowProcessId"))
                 {
                     Console.WriteLine(GetForegroundWindowProcessId());
                 }
-                else if (args.Any(static arg => arg.Equals("/RefreshDesktopAndEnvironmentVariables")))
+                else if (args.Any(static arg => arg == "/RefreshDesktopAndEnvironmentVariables"))
                 {
                     Console.WriteLine(RefreshDesktopAndEnvironmentVariables());
                 }
-                else if (args.Any(static arg => arg.Equals("/SendKeys")))
+                else if (args.Any(static arg => arg == "/SendKeys"))
                 {
                     Console.WriteLine(SendKeys(ConvertArgsToDictionary(args)));
                 }
-                else if (args.Any(static arg => arg.Equals("/SilentRestart")))
+                else if (args.Any(static arg => arg == "/SilentRestart"))
                 {
                     Console.WriteLine(SilentRestart(ConvertArgsToDictionary(args)));
                 }
-                else if (args.Any(static arg => arg.Equals("/ClientServer")))
+                else if (args.Any(static arg => arg == "/ClientServer"))
                 {
                     EnterClientServerMode(ConvertArgsToDictionary(args));
                 }
