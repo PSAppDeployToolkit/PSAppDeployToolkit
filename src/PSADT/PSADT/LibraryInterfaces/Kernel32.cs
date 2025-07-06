@@ -162,18 +162,12 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
-            fixed (char* lpFileNameLocal = lpFileName)
-            fixed (char* lpStringLocal = lpString)
-            fixed (char* lpKeyNameLocal = lpKeyName)
-            fixed (char* lpAppNameLocal = lpAppName)
+            var res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
+            if (!res)
             {
-                var res = PInvoke.WritePrivateProfileString(lpAppNameLocal, !string.IsNullOrWhiteSpace(lpKeyName) ? lpKeyNameLocal : null, (lpString != null) ? lpStringLocal : null, lpFileNameLocal);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
