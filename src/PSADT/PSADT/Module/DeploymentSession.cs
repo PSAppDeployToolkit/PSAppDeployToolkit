@@ -618,7 +618,7 @@ namespace PSADT.Module
                 {
                     // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
-                    WriteLogEntry($"Session information for all logged on users:\n{(string)ModuleDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!).First().BaseObject}", false);
+                    WriteLogEntry($"Session information for all logged on users:\n\n{adtEnv["LoggedOnUserSessionsText"]}", false);
 
                     // Check if the current process is running in the context of one of the logged on users
                     if (adtEnv["CurrentLoggedOnUserSession"] is SessionInfo CurrentLoggedOnUserSession)

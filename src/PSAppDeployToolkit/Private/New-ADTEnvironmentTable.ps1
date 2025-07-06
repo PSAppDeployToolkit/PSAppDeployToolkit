@@ -301,6 +301,7 @@ function Private:New-ADTEnvironmentTable
         $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
         $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
         $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('LoggedOnUserSessionsText', ($variables.LoggedOnUserSessions | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
         $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions 4>$null))
     }
     else
@@ -308,6 +309,7 @@ function Private:New-ADTEnvironmentTable
         $variables.Add('usersLoggedOn', $null)
         $variables.Add('CurrentLoggedOnUserSession', $null)
         $variables.Add('CurrentConsoleUserSession', $null)
+        $variables.Add('LoggedOnUserSessionsText', $null)
         $variables.Add('RunAsActiveUser', $null)
     }
 
