@@ -113,14 +113,22 @@
                 Repair = 'Labošana automātiski turpināsies pēc:'
                 Uninstall = 'Atinstalēšana automātiski turpināsies pēc:'
             }
-            CountdownClose = 'PIEZĪME: Programma(-as) tiks automātiski aizvērta(-as):'
+            CountdownClose = @{
+                Install = 'PIEZĪME: Programma(-as) tiks automātiski aizvērta(-as):'
+                Repair = 'PIEZĪME: Programma(-as) tiks automātiski aizvērta(-as):'
+                Uninstall = 'PIEZĪME: Programma(-as) tiks automātiski aizvērta(-as):'
+            }
             ButtonClose = 'Aizvērt &Programmas'
             ButtonDefer = '&Atlikt'
             ButtonContinue = '&Turpināt'
             ButtonContinueTooltip = 'Izvēlieties “Turpināt” tikai pēc iepriekš minētās(-o) programmas(-u) slēgšanas.'
         }
         Fluent = @{
-            DialogMessage = 'Lūdzu, saglabājiet savu darbu pirms turpināšanas, jo šādas lietojumprogrammas tiks automātiski aizvērtas.'
+            DialogMessage = @{
+                Install = 'Lūdzu, saglabājiet savu darbu pirms turpināšanas, jo šādas lietojumprogrammas tiks automātiski aizvērtas.'
+                Repair = 'Lūdzu, saglabājiet savu darbu pirms turpināšanas, jo šādas lietojumprogrammas tiks automātiski aizvērtas.'
+                Uninstall = 'Lūdzu, saglabājiet savu darbu pirms turpināšanas, jo šādas lietojumprogrammas tiks automātiski aizvērtas.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Lūdzu, izvēlieties Instalēt, lai turpinātu instalēšanu. Ja jums ir pieejama iespēja atlikt, varat arī izvēlēties atlikt instalēšanu.'
                 Repair = 'Lūdzu, izvēlieties Labot, lai turpinātu labošanu. Ja jums ir pieejama iespēja atlikt, varat arī izvēlēties atlikt labošanu.'

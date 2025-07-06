@@ -113,14 +113,22 @@
                 Repair = 'Korjaus jatkuu automaattisesti:'
                 Uninstall = 'Asennuksen poisto jatkuu automaattisesti:'
             }
-            CountdownClose = 'HUOMAUTUS: Ohjelma(t) suljetaan automaattisesti:'
+            CountdownClose = @{
+                Install = 'HUOMAUTUS: Ohjelma(t) suljetaan automaattisesti:'
+                Repair = 'HUOMAUTUS: Ohjelma(t) suljetaan automaattisesti:'
+                Uninstall = 'HUOMAUTUS: Ohjelma(t) suljetaan automaattisesti:'
+            }
             ButtonClose = 'Sulje &ohjelmat'
             ButtonDefer = '&Siirrä'
             ButtonContinue = '&Jatka'
             ButtonContinueTooltip = 'Valitse ”Jatka” vasta, kun olet sulkenut edellä luetellut sovellukset.'
         }
         Fluent = @{
-            DialogMessage = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
+            DialogMessage = @{
+                Install = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
+                Repair = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
+                Uninstall = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Jatka asennusta valitsemalla Install. Jos sinulla on lykkäyksiä jäljellä, voit myös lykätä asennusta.'
                 Repair = 'Jatka korjausta valitsemalla Repair. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä korjausta.'

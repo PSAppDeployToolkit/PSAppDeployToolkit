@@ -113,14 +113,22 @@
                 Repair = '복구는 자동으로 다음에서 계속됩니다:'
                 Uninstall = '제거는 자동으로 다음 위치에서 계속됩니다:'
             }
-            CountdownClose = '참고: 프로그램이 자동으로 닫히는 위치:'
+            CountdownClose = @{
+                Install = '참고: 프로그램이 자동으로 닫히는 위치:'
+                Repair = '참고: 프로그램이 자동으로 닫히는 위치:'
+                Uninstall = '참고: 프로그램이 자동으로 닫히는 위치:'
+            }
             ButtonClose = '&프로그램 닫기'
             ButtonDefer = '&연기하다'
             ButtonContinue = '&계속하기'
             ButtonContinueTooltip = "위에 나열된 애플리케이션을 닫은 후에만 '계속'을 선택하세요."
         }
         Fluent = @{
-            DialogMessage = '다음 애플리케이션이 자동으로 닫히므로 계속하기 전에 작업을 저장하세요.'
+            DialogMessage = @{
+                Install = '다음 애플리케이션이 자동으로 닫히므로 계속하기 전에 작업을 저장하세요.'
+                Repair = '다음 애플리케이션이 자동으로 닫히므로 계속하기 전에 작업을 저장하세요.'
+                Uninstall = '다음 애플리케이션이 자동으로 닫히므로 계속하기 전에 작업을 저장하세요.'
+            }
             DialogMessageNoProcesses = @{
                 Install = '설치를 계속하려면 설치를 선택하세요. 연기할 항목이 남아 있는 경우 설치를 연기하도록 선택할 수도 있습니다.'
                 Repair = '수리를 계속하려면 수리를 선택하세요. 연기된 항목이 남아 있는 경우 수리를 연기하도록 선택할 수도 있습니다.'

@@ -113,14 +113,22 @@
                 Repair = 'De reparatie gaat automatisch verder na:'
                 Uninstall = 'De de-installatie wordt automatisch voortgezet na:'
             }
-            CountdownClose = "OPMERKING: De applicaties worden automatisch afgesloten na:"
+            CountdownClose = @{
+                Install = 'OPMERKING: De applicaties worden automatisch afgesloten na:'
+                Repair = 'OPMERKING: De applicaties worden automatisch afgesloten na:'
+                Uninstall = 'OPMERKING: De applicaties worden automatisch afgesloten na:'
+            }
             ButtonClose = "Sluit &Applicaties"
             ButtonDefer = '&Verwijderen'
             ButtonContinue = '&Doorgaan'
             ButtonContinueTooltip = "Selecteer alleen ‘Doorgaan’ na het sluiten van de bovengenoemde applicatie(s)."
         }
         Fluent = @{
-            DialogMessage = 'Sla uw werk op voordat u verder gaat, omdat de volgende applicaties automatisch worden gesloten. Als u nog uitstel heeft, kunt u de de-installatie ook uitstellen.'
+            DialogMessage = @{
+                Install = 'Sla uw werk op voordat u verder gaat, omdat de volgende applicaties automatisch worden gesloten. Als u nog uitstel heeft, kunt u de de-installatie ook uitstellen.'
+                Repair = 'Sla uw werk op voordat u verder gaat, omdat de volgende applicaties automatisch worden gesloten. Als u nog uitstel heeft, kunt u de de-installatie ook uitstellen.'
+                Uninstall = 'Sla uw werk op voordat u verder gaat, omdat de volgende applicaties automatisch worden gesloten. Als u nog uitstel heeft, kunt u de de-installatie ook uitstellen.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Selecteer Installeren om door te gaan met de installatie. Als u nog uitstel heeft, kunt u er ook voor kiezen om de installatie uit te stellen.'
                 Repair = 'Selecteer Repareren om door te gaan met de reparatie. Als u nog uitstel heeft, kunt u er ook voor kiezen om de reparatie uit te stellen.'

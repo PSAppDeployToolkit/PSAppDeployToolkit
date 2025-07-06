@@ -113,14 +113,22 @@
                 Repair = 'Die Reparatur wird automatisch fortgesetzt in:'
                 Uninstall = 'Die Deinstallation wird automatisch fortgesetzt in:'
             }
-            CountdownClose = 'HINWEIS: Die Anwendungen werden automatisch geschlossen in:'
+            CountdownClose = @{
+                Install = 'HINWEIS: Die Anwendungen werden automatisch geschlossen in:'
+                Repair = 'HINWEIS: Die Anwendungen werden automatisch geschlossen in:'
+                Uninstall = 'HINWEIS: Die Anwendungen werden automatisch geschlossen in:'
+            }
             ButtonClose = 'Anwendungen &schließen'
             ButtonDefer = '&Verschieben'
             ButtonContinue = '&Weiter'
             ButtonContinueTooltip = 'Wählen Sie erst „Weiter“, nachdem Sie die oben aufgeführten Anwendung(en) geschlossen haben.'
         }
         Fluent = @{
-            DialogMessage = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
+            DialogMessage = @{
+                Install = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
+                Repair = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
+                Uninstall = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Wählen Sie Installieren aus, um mit der Installation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie die Installation auch verschieben.'
                 Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur verschieben.'

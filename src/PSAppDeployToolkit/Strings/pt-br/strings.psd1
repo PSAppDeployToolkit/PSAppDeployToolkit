@@ -113,14 +113,22 @@
                 Repair = 'O reparo continuará automaticamente em:'
                 Uninstall = 'A desinstalação continuará automaticamente em:'
             }
-            CountdownClose = 'OBSERVAÇÃO: O(s) programa(s) será(ão) fechado(s) automaticamente em:'
+            CountdownClose = @{
+                Install = 'OBSERVAÇÃO: O(s) programa(s) será(ão) fechado(s) automaticamente em:'
+                Repair = 'OBSERVAÇÃO: O(s) programa(s) será(ão) fechado(s) automaticamente em:'
+                Uninstall = 'OBSERVAÇÃO: O(s) programa(s) será(ão) fechado(s) automaticamente em:'
+            }
             ButtonClose = 'Fechar &Programas'
             ButtonDefer = '&Adiar'
             ButtonContinue = '&“Continuar”'
             ButtonContinueTooltip = 'Somente selecione “Continuar” após fechar os aplicativos listados acima.'
         }
         Fluent = @{
-            DialogMessage = 'Por favor, salve seu trabalho antes de continuar, pois os seguintes aplicativos serão fechados automaticamente.'
+            DialogMessage = @{
+                Install = 'Por favor, salve seu trabalho antes de continuar, pois os seguintes aplicativos serão fechados automaticamente.'
+                Repair = 'Por favor, salve seu trabalho antes de continuar, pois os seguintes aplicativos serão fechados automaticamente.'
+                Uninstall = 'Por favor, salve seu trabalho antes de continuar, pois os seguintes aplicativos serão fechados automaticamente.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Selecione Instalar para continuar com a instalação. Se você tiver algum adiamento restante, também poderá optar por adiar a instalação.'
                 Repair = 'Selecione Reparar para continuar com o reparo. Se ainda houver adiamentos, o senhor também pode optar por adiar o reparo.'

@@ -291,7 +291,7 @@ namespace PSADT.UserInterface.DialogOptions
                     {
                         throw new ArgumentNullException("CountdownDefer value is null or invalid.", (Exception?)null);
                     }
-                    if (strings["CountdownClose"] is not string countdownClose || string.IsNullOrWhiteSpace(countdownClose))
+                    if (strings["CountdownClose"] is not Hashtable countdownCloseTable || countdownCloseTable[deploymentType.ToString()] is not string countdownClose || string.IsNullOrWhiteSpace(countdownClose))
                     {
                         throw new ArgumentNullException("CountdownClose value is null or invalid.", (Exception?)null);
                     }
@@ -451,7 +451,7 @@ namespace PSADT.UserInterface.DialogOptions
                 internal CloseAppsDialogFluentStrings(Hashtable strings, DeploymentType deploymentType)
                 {
                     // Nothing here is allowed to be null.
-                    if (strings["DialogMessage"] is not string dialogMessage || string.IsNullOrWhiteSpace(dialogMessage))
+                    if (strings["DialogMessage"] is not Hashtable dialogMessageTable || dialogMessageTable[deploymentType.ToString()] is not string dialogMessage || string.IsNullOrWhiteSpace(dialogMessage))
                     {
                         throw new ArgumentNullException("DialogMessage value is null or invalid.", (Exception?)null);
                     }

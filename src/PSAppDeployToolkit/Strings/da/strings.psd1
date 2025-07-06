@@ -113,14 +113,22 @@
                 Repair = 'Reparationen fortsætter automatisk i:'
                 Uninstall = 'Afinstallationen fortsætter automatisk om:'
             }
-            CountdownClose = 'BEMÆRK: Programmet/programmerne lukkes automatisk i:'
+            CountdownClose = @{
+                Install = 'BEMÆRK: Programmet/programmerne lukkes automatisk i:'
+                Repair = 'BEMÆRK: Programmet/programmerne lukkes automatisk i:'
+                Uninstall = 'BEMÆRK: Programmet/programmerne lukkes automatisk i:'
+            }
             ButtonClose = 'Luk &Programmer'
             ButtonDefer = '&Udskyde'
             ButtonContinue = '&Fortsæt'
             ButtonContinueTooltip = 'Vælg kun »Fortsæt«, når du har lukket ovenstående program(mer).'
         }
         Fluent = @{
-            DialogMessage = 'Gem venligst dit arbejde, før du fortsætter, da de følgende programmer lukkes automatisk.'
+            DialogMessage = @{
+                Install = 'Gem venligst dit arbejde, før du fortsætter, da de følgende programmer lukkes automatisk.'
+                Repair = 'Gem venligst dit arbejde, før du fortsætter, da de følgende programmer lukkes automatisk.'
+                Uninstall = 'Gem venligst dit arbejde, før du fortsætter, da de følgende programmer lukkes automatisk.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Vælg Install for at fortsætte med installationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde installationen.'
                 Repair = 'Vælg Repair for at fortsætte med reparationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde reparationen.'

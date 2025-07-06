@@ -113,14 +113,22 @@
                 Repair = '修复将在以下时间自动继续：'
                 Uninstall = '卸载将在以下时间自动继续：'
             }
-            CountdownClose = '注意：程序将在以下时间自动关闭：'
+            CountdownClose = @{
+                Install = '注意：程序将在以下时间自动关闭：'
+                Repair = '注意：程序将在以下时间自动关闭：'
+                Uninstall = '注意：程序将在以下时间自动关闭：'
+            }
             ButtonClose = '关闭 &程序'
             ButtonDefer = '&推迟'
             ButtonContinue = '&继续'
             ButtonContinueTooltip = '关闭以上列出的应用程序后，仅选择“继续”。'
         }
         Fluent = @{
-            DialogMessage = '请保存您的工作，然后继续，因为以下应用程序将自动关闭。'
+            DialogMessage = @{
+                Install = '请保存您的工作，然后继续，因为以下应用程序将自动关闭。'
+                Repair = '请保存您的工作，然后继续，因为以下应用程序将自动关闭。'
+                Uninstall = '请保存您的工作，然后继续，因为以下应用程序将自动关闭。'
+            }
             DialogMessageNoProcesses = @{
                 Install = '请选择安装以继续安装。如果您还有任何延迟，也可以选择延迟安装。'
                 Repair = '请选择修复以继续修复。如果您还有任何延迟，也可以选择延迟修复。'

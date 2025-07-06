@@ -113,14 +113,22 @@
                 Repair = 'Oprava bude automaticky pokračovat za:'
                 Uninstall = 'Odinstalace bude automaticky pokračovat za:'
             }
-            CountdownClose = 'POZNÁMKA: Program(y) budou automaticky ukončeny za:'
+            CountdownClose = @{
+                Install = 'POZNÁMKA: Program(y) budou automaticky ukončeny za:'
+                Repair = 'POZNÁMKA: Program(y) budou automaticky ukončeny za:'
+                Uninstall = 'POZNÁMKA: Program(y) budou automaticky ukončeny za:'
+            }
             ButtonClose = 'Zavřít &Programy'
             ButtonDefer = '&Odložení'
             ButtonContinue = '&Pokračovat'
             ButtonContinueTooltip = 'Po zavření výše uvedených aplikací vyberte pouze možnost „Pokračovat“.'
         }
         Fluent = @{
-            DialogMessage = 'Před pokračováním prosím uložte svou práci, protože následující aplikace budou automaticky ukončeny.'
+            DialogMessage = @{
+                Install = 'Před pokračováním prosím uložte svou práci, protože následující aplikace budou automaticky ukončeny.'
+                Repair = 'Před pokračováním prosím uložte svou práci, protože následující aplikace budou automaticky ukončeny.'
+                Uninstall = 'Před pokračováním prosím uložte svou práci, protože následující aplikace budou automaticky ukončeny.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Chcete-li pokračovat v instalaci, vyberte prosím možnost Install. Pokud vám zbývají nějaké odklady, můžete také zvolit odložení instalace.'
                 Repair = 'Pro pokračování v opravě vyberte prosím Repair. Pokud vám zbývají nějaké odklady, můžete opravu také odložit.'

@@ -170,7 +170,11 @@
             }
 
             # Text displayed when counting down to automatically closing applications.
-            CountdownClose = 'NOTE: The program(s) will be automatically closed in:'
+            CountdownClose = @{
+                Install = 'NOTE: The program(s) will be automatically closed in:'
+                Repair = 'NOTE: The program(s) will be automatically closed in:'
+                Uninstall = 'NOTE: The program(s) will be automatically closed in:'
+            }
 
             # Text displayed on the close button when prompting to close running programs.
             ButtonClose = 'Close &Programs'
@@ -187,7 +191,11 @@
 
         Fluent = @{
             # This is a message to prompt users to save their work.
-            DialogMessage = 'Please save your work before continuing as the following applications will be closed automatically.'
+            DialogMessage = @{
+                Install = 'Please save your work before continuing as the following applications will be closed automatically.'
+                Repair = 'Please save your work before continuing as the following applications will be closed automatically.'
+                Uninstall = 'Please save your work before continuing as the following applications will be closed automatically.'
+            }
 
             # This is a message to when there are no running processes available.
             DialogMessageNoProcesses = @{

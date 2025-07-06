@@ -113,14 +113,22 @@
                 Repair = 'Onarım otomatik olarak şu şekilde devam edecek:'
                 Uninstall = 'Kaldırma işlemi otomatik olarak şu şekilde devam edecektir:'
             }
-            CountdownClose = 'NOT: Program(lar) şu süre içinde otomatik olarak kapatılacaktır:'
+            CountdownClose = @{
+                Install = 'NOT: Program(lar) şu süre içinde otomatik olarak kapatılacaktır:'
+                Repair = 'NOT: Program(lar) şu süre içinde otomatik olarak kapatılacaktır:'
+                Uninstall = 'NOT: Program(lar) şu süre içinde otomatik olarak kapatılacaktır:'
+            }
             ButtonClose = '&Programları Kapat'
             ButtonDefer = '&Ertele'
             ButtonContinue = '&Devam etmek'
             ButtonContinueTooltip = 'Yalnızca yukarıda listelenen uygulama(lar)ı kapattıktan sonra “Devam ”ı seçin.'
         }
         Fluent = @{
-            DialogMessage = 'Aşağıdaki uygulamalar otomatik olarak kapatılacağı için devam etmeden önce lütfen çalışmanızı kaydedin.'
+            DialogMessage = @{
+                Install = 'Aşağıdaki uygulamalar otomatik olarak kapatılacağı için devam etmeden önce lütfen çalışmanızı kaydedin.'
+                Repair = 'Aşağıdaki uygulamalar otomatik olarak kapatılacağı için devam etmeden önce lütfen çalışmanızı kaydedin.'
+                Uninstall = 'Aşağıdaki uygulamalar otomatik olarak kapatılacağı için devam etmeden önce lütfen çalışmanızı kaydedin.'
+            }
             DialogMessageNoProcesses = @{
                 Install = "Lütfen yüklemeye devam etmek için Yükle'yi seçin. Kalan ertelemeleriniz varsa, kurulumu ertelemeyi de seçebilirsiniz."
                 Repair = "Onarıma devam etmek için lütfen Onar'ı seçin. Kalan ertelemeleriniz varsa onarımı geciktirmeyi de seçebilirsiniz."

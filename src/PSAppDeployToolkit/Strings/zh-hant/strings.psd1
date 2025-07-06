@@ -113,14 +113,22 @@
                 Repair = '維修會自動繼續進行：'
                 Uninstall = '卸載將自動繼續中：'
             }
-            CountdownClose = '注意：程式會自動關閉：'
+            CountdownClose = @{
+                Install = '注意：程式會自動關閉：'
+                Repair = '注意：程式會自動關閉：'
+                Uninstall = '注意：程式會自動關閉：'
+            }
             ButtonClose = '關閉程式'
             ButtonDefer = '延遲'
             ButtonContinue = '繼續'
             ButtonContinueTooltip = '僅在關閉上述列出的應用程式後選擇 「繼續」。'
         }
         Fluent = @{
-            DialogMessage = '請先保存您的工作再繼續，因為下列應用程式會自動關閉。'
+            DialogMessage = @{
+                Install = '請先保存您的工作再繼續，因為下列應用程式會自動關閉。'
+                Repair = '請先保存您的工作再繼續，因為下列應用程式會自動關閉。'
+                Uninstall = '請先保存您的工作再繼續，因為下列應用程式會自動關閉。'
+            }
             DialogMessageNoProcesses = @{
                 Install = '請選擇「安裝」繼續安裝。 如果您有任何剩餘的延遲，您也可以選擇延遲安裝。'
                 Repair = '請選擇「維修」繼續進行維修。 如果您有任何剩餘的延遲，您也可以選擇延遲修復。'

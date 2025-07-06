@@ -113,14 +113,22 @@
                 Repair = 'A javítás automatikusan folytatódik:'
                 Uninstall = 'Az eltávolítás automatikusan folytatódik:'
             }
-            CountdownClose = 'MEGJEGYZÉS: A program(ok) automatikusan bezárul(nak):'
+            CountdownClose = @{
+                Install = 'MEGJEGYZÉS: A program(ok) automatikusan bezárul(nak):'
+                Repair = 'MEGJEGYZÉS: A program(ok) automatikusan bezárul(nak):'
+                Uninstall = 'MEGJEGYZÉS: A program(ok) automatikusan bezárul(nak):'
+            }
             ButtonClose = 'Alkalmazások bezárása'
             ButtonDefer = '&Elhalasztás'
             ButtonContinue = '&Folytatás'
             ButtonContinueTooltip = 'Csak a fent felsorolt alkalmazás(ok) bezárása után válassza a „Folytatás” lehetőséget.'
         }
         Fluent = @{
-            DialogMessage = 'Kérjük, mentse el munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan bezárásra kerülnek.'
+            DialogMessage = @{
+                Install = 'Kérjük, mentse el munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan bezárásra kerülnek.'
+                Repair = 'Kérjük, mentse el munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan bezárásra kerülnek.'
+                Uninstall = 'Kérjük, mentse el munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan bezárásra kerülnek.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'A telepítés folytatásához válassza a Telepítés lehetőséget. Ha van még halasztása, akkor a telepítés elhalasztását is választhatja.'
                 Repair = 'A javítás folytatásához válassza a Repair (Javítás) lehetőséget. Ha van még halasztása, akkor a javítás elhalasztását is választhatja.'

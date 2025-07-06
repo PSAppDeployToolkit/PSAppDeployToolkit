@@ -113,14 +113,22 @@
                 Repair = 'Reparationen kommer automatiskt att fortsätta om:'
                 Uninstall = 'Avinstallationen kommer automatiskt att fortsätta om:'
             }
-            CountdownClose = 'OBS: Program stängs automatisk om:'
+            CountdownClose = @{
+                Install = 'OBS: Program stängs automatisk om:'
+                Repair = 'OBS: Program stängs automatisk om:'
+                Uninstall = 'OBS: Program stängs automatisk om:'
+            }
             ButtonClose = 'Stäng &Program'
             ButtonDefer = '&Skjut Upp'
             ButtonContinue = '&Fortsätt'
             ButtonContinueTooltip = 'Välj "Fortsätt" först efter att du har stängt ovanstående program.'
         }
         Fluent = @{
-            DialogMessage = 'Följande program måste stängas. Var vänlig spara ditt arbete och stäng sedan de öppna programmen.'
+            DialogMessage = @{
+                Install = 'Följande program måste stängas. Var vänlig spara ditt arbete och stäng sedan de öppna programmen.'
+                Repair = 'Följande program måste stängas. Var vänlig spara ditt arbete och stäng sedan de öppna programmen.'
+                Uninstall = 'Följande program måste stängas. Var vänlig spara ditt arbete och stäng sedan de öppna programmen.'
+            }
             DialogMessageNoProcesses = @{
                 Install = 'Välj Installera för att fortsätta med installationen eller välj "Skjut upp" för att installationen skall utföras vid ett senare tillfälle.'
                 Repair = 'Välj Reparera för att fortsätta med reparationen.'
