@@ -29,7 +29,7 @@ namespace PSADT.OperatingSystem
                 // If the ProductType is 3 (Server), perform additional checks.
                 if (productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
                 {
-                    if ("EnterpriseMultiSession".Equals(editionId, StringComparison.InvariantCultureIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.InvariantCultureIgnoreCase))
+                    if ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase))
                     {
                         if (!string.IsNullOrWhiteSpace(productName) && (productName!.IndexOf("Virtual Desktops", StringComparison.OrdinalIgnoreCase) >= 0 || productName!.IndexOf("Multi-Session", StringComparison.OrdinalIgnoreCase) >= 0))
                         {
