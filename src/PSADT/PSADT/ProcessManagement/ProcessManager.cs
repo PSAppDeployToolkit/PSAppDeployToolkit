@@ -128,16 +128,16 @@ namespace PSADT.ProcessManagement
                     PROCESS_INFORMATION pi = new();
                     if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !AccountUtilities.CallerUsername.Equals(session.NTAccount))
                     {
+                        // We can only run a process as another user if the caller is SYSTEM.
+                        if (!AccountUtilities.CallerIsLocalSystem)
+                        {
+                            throw new UnauthorizedAccessException($"Only the SYSTEM account has the necessary privilges to start a process as another user.");
+                        }
+
                         // Enable the required privileges. SYSTEM usually has these, but locked down environments via WDAC may require specific enablement.
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-
-                        // We can only run a process if we can act as part of the operating system.
-                        if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
-                        {
-                            throw new UnauthorizedAccessException($"The calling account of [{AccountUtilities.CallerUsername}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
-                        }
 
                         // Get the user's primary token via WTS.
                         WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
