@@ -12,16 +12,16 @@
     ClosePrompt = @{
         ButtonClose = "Programme &schließen"
         ButtonContinue = "&Weiter"
-        ButtonContinueTooltip = "Klicken Sie erst auf `"Weiter`", nachdem Sie die obigen Anwendung(en) geschlossen haben."
+        ButtonContinueTooltip = "Erst auf `"Weiter`" klicken, nachdem die oben aufgeführten Anwendung(en) geschlossen wurden."
         ButtonDefer = "&Aufschieben"
-        CountdownMessage = "HINWEIS: Diese Programme werden automatisch geschlossen:"
-        Message = "Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und dann auf `"Programme Schließen`" klicken."
+        CountdownMessage = "HINWEIS: Diese Programme werden automatisch geschlossen in:"
+        Message = "Die folgenden Programme müssen geschlossen werden, damit die Installation fortgesetzt werden kann.`n`nArbeit bitte speichern, Programme schließen und dann fortfahren. Alternativ Arbeit speichern und auf `"Programme Schließen`" klicken."
     }
     DeferPrompt = @{
-        Deadline = "Termin:"
-        ExpiryMessage = "Sie können die Installation verzögern, bis die Rückstellung abläuft:"
-        RemainingDeferrals = "Verbleibende Rückstellungen:"
-        WarningMessage = "Sobald die Rückstellung abgelaufen ist, werden Sie keine Möglichkeit mehr haben die Installation zu verschieben."
+        Deadline = "Frist:"
+        ExpiryMessage = "Die Installation kann bis zum Ablauf der Aufschiebefrist verschoben werden:"
+        RemainingDeferrals = "Verbleibende Aufschiebungen:"
+        WarningMessage = "Nach Ablauf der Frist kann die Installation nicht mehr verschoben werden."
         WelcomeMessage = "Die folgende Anwendung soll installiert werden:"
     }
     DeploymentType = @{
@@ -30,22 +30,22 @@
         Uninstall = "Deinstallation"
     }
     DiskSpace = @{
-        Message = "Sie haben nicht genug freien Speicherplatz um die Installation abzuschließen: {0}`n`nPlatzbedarf: {1}MB`nFreier Speicherplatz: {2}MB`n`nBitte geben Sie ausreichend Speicherplatz frei, um mit der Installation fortzufahren."
+        Message = "Es steht nicht genügend freier Speicherplatz zur Verfügung, um die Installation abzuschließen: {0}`n`nBenötigter Platz: {1}MB`nFreier Speicherplatz: {2}MB`n`nBitte ausreichend Speicherplatz freigeben und anschließend die Installation erneut starten."
     }
     Progress = @{
-        MessageInstall = "Installation wird durchgeführt. Bitte warten..."
-        MessageInstallDetail = "Dieses Fenster wird automatisch geschlossen, wenn die Installation abgeschlossen ist."
-        MessageRepair = "Reparatur wird durchgeführt. Bitte warten..."
-        MessageRepairDetail = "Dieses Fenster wird automatisch geschlossen, wenn die Reparatur abgeschlossen ist."
-        MessageUninstall = "Deinstallation wird durchgeführt. Bitte warten..."
-        MessageUninstallDetail = "Dieses Fenster wird automatisch geschlossen, wenn die Deinstallation abgeschlossen ist."
+        MessageInstall = "Installation läuft. Bitte warten..."
+        MessageInstallDetail = "Dieses Fenster schließt sich automatisch, wenn die Installation abgeschlossen ist."
+        MessageRepair = "Reparatur läuft. Bitte warten..."
+        MessageRepairDetail = "Dieses Fenster schließt sich automatisch, wenn die Reparatur abgeschlossen ist."
+        MessageUninstall = "Deinstallation läuft. Bitte warten..."
+        MessageUninstallDetail = "Dieses Fenster schließt sich automatisch, wenn die Deinstallation abgeschlossen ist."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimieren"
         ButtonRestartNow = "Jetzt Neustarten"
-        Message = "Zum Abschluss der Installation müssen Sie Ihren Computer neu starten."
-        MessageRestart = "Am Ende des Countdowns wird Ihr Computer automatisch neu gestartet."
-        MessageTime = "Bitte speichern Sie Ihre Arbeit und starten Sie den Computer innerhalb der vorgegebenen Zeit neu."
+        Message = "Damit die Installation abgeschlossen werden kann, muss der Computer neu gestartet werden."
+        MessageRestart = "Der Computer wird nach Ablauf des Countdowns automatisch neu gestartet."
+        MessageTime = "Arbeit bitte speichern und innerhalb des angegebenen Zeitraums neu starten."
         TimeRemaining = "Verbleibende Zeit:"
         Title = "Neustart Erforderlich"
     }
@@ -56,12 +56,12 @@
         }
         Fluent = @{
             Subtitle = 'PSAppDeployToolkit - Anwendung {0}'
-            DialogMessage = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
-            DialogMessageNoProcesses = 'Bitte wählen Sie Installieren, um mit der Installation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie die Installation auch aufschieben.'
-            ButtonDeferRemaining = 'bleiben'
+            DialogMessage = 'Arbeit bitte speichern, bevor fortgesetzt wird, da die folgenden Anwendungen automatisch geschlossen werden.'
+            DialogMessageNoProcesses = 'Zum Fortsetzen Installieren wählen. Sofern noch Aufschiebungen verfügbar sind, kann die Installation auch verschoben werden.'
+            ButtonDeferRemaining = 'verbleibend'
             ButtonLeftText = 'Aufschieben'
             ButtonRightText = 'Apps schließen & installieren'
-            ButtonRightTextNoProcesses = 'Installieren Sie'
+            ButtonRightTextNoProcesses = 'Installieren'
         }
     }
 }
