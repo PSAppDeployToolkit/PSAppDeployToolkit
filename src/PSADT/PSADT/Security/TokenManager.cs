@@ -109,7 +109,8 @@ namespace PSADT.Security
         /// <returns>A <see cref="SecurityIdentifier"/> object representing the SID associated with the specified token handle.</returns>
         internal static SecurityIdentifier GetTokenSid(SafeHandle tokenHandle)
         {
-            using (var buffer = SafeHGlobalHandle.Alloc(1024))
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, SafeMemoryHandle.Null, out var returnLength);
+            using (var buffer = SafeHGlobalHandle.Alloc((int)returnLength))
             {
                 AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
                 return new((IntPtr)buffer.ToStructure<TOKEN_USER>().User.Sid);

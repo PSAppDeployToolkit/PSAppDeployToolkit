@@ -133,7 +133,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeMemoryHandle TokenInformation, out uint ReturnLength)
         {
-            if (TokenInformation is not object || TokenInformation.IsClosed)
+            if (TokenInformation is null || TokenInformation.IsClosed)
             {
                 throw new ArgumentNullException(nameof(TokenInformation));
             }

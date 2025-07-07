@@ -93,8 +93,9 @@ namespace PSADT.Security
         /// <returns></returns>
         private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
+            AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, SafeMemoryHandle.Null, out var returnLength);
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
-            using (var buffer = SafeHGlobalHandle.Alloc(1024))
+            using (var buffer = SafeHGlobalHandle.Alloc((int)returnLength))
             {
                 AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
                 var privilegeCount = buffer.ReadInt32();
