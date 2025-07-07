@@ -147,7 +147,7 @@ namespace PSADT.TerminalServices
         private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
         {
             // If we have the privileges, we can get the SID from the user's token.
-            if (AccountUtilities.CallerIsLocalSystem)
+            if (AccountUtilities.CallerIsLocalSystem && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
                 WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken);
@@ -207,7 +207,7 @@ namespace PSADT.TerminalServices
         private static bool IsWtsSessionUserLocalAdmin(uint sessionid, SecurityIdentifier sid)
         {
             // If we have the privileges, we can get the user's token and do a WindowsIdentity check.
-            if (AccountUtilities.CallerIsLocalSystem)
+            if (AccountUtilities.CallerIsLocalSystem && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
                 WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken); using (hUserToken)
