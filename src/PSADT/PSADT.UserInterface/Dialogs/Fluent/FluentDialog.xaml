@@ -207,28 +207,22 @@
                 Height="64"
                 AutomationProperties.Name="Application Icon"
                 />
-
-            <Grid
+            <StackPanel
                 Margin="12,0,0,0"
                 Width="Auto"
                 
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
+                VerticalAlignment="Stretch"
                 >
-                <Grid.RowDefinitions>
-                    <RowDefinition x:Name="TitleRow" Height="32" />
-                    <RowDefinition x:Name="SubtitleRow" Height="32" />
-                </Grid.RowDefinitions>
 
                 <TextBlock
                     x:Name="AppTitleTextBlock"
-                    Grid.Row="0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Bottom"
+                    Width="426"
                     TextAlignment="Left"
                     AutomationProperties.Name="Application Title"
                     FontSize="24"
                     FontWeight="Bold"
+                    
                     Text="Excessively Long Application Title 1.1 x64 EN"
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="WrapWithOverflow"
@@ -236,9 +230,7 @@
                     />
                 <TextBlock
                     x:Name="SubtitleTextBlock"
-                    Grid.Row="1"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
+                    Width="426"
                     TextAlignment="Left"
                     AutomationProperties.Name="Subtitle"
                     FontSize="12"
@@ -248,7 +240,7 @@
                     LineStackingStrategy="BlockLineHeight"
                     />
 
-            </Grid>
+            </StackPanel>
         </ikw:SimpleStackPanel>
 
         <!-- Main Content Card -->
