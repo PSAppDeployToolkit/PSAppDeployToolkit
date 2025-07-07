@@ -531,7 +531,6 @@ function Start-ADTProcess
                     $UseLinkedAdminToken,
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
-                    $false,
                     $UseUnelevatedToken,
                     $UseShellExecute,
                     $Verb,

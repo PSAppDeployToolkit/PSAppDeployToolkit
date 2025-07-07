@@ -26,7 +26,6 @@ namespace PSADT.ProcessManagement
         /// <param name="useLinkedAdminToken"></param>
         /// <param name="inheritEnvironmentVariables"></param>
         /// <param name="expandEnvironmentVariables"></param>
-        /// <param name="breakawayFromJob"></param>
         /// <param name="useUnelevatedToken"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="verb"></param>
@@ -47,7 +46,6 @@ namespace PSADT.ProcessManagement
             bool useLinkedAdminToken = false,
             bool inheritEnvironmentVariables = false,
             bool expandEnvironmentVariables = false,
-            bool breakawayFromJob = false,
             bool useUnelevatedToken = false,
             bool useShellExecute = false,
             string? verb = null,
@@ -107,7 +105,6 @@ namespace PSADT.ProcessManagement
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             ExpandEnvironmentVariables = expandEnvironmentVariables;
-            BreakawayFromJob = breakawayFromJob;
             UseUnelevatedToken = useUnelevatedToken;
             UseShellExecute = useShellExecute;
             WaitForChildProcesses = waitForChildProcesses;
@@ -166,11 +163,6 @@ namespace PSADT.ProcessManagement
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
         public readonly bool ExpandEnvironmentVariables;
-
-        /// <summary>
-        /// Indicates whether the process is allowed to break away from its job object.
-        /// </summary>
-        public readonly bool BreakawayFromJob;
 
         /// <summary>
         /// Indicates whether an unelevated token should be used for operations.
