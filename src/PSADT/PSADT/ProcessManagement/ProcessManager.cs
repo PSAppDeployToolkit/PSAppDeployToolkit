@@ -90,6 +90,14 @@ namespace PSADT.ProcessManagement
                         PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
+                    // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
+                    // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
+                    // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+                    if (launchInfo.BreakawayFromJob)
+                    {
+                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
+                    }
+
                     // We must create a console window for console apps when the window is shown.
                     if (cliApp)
                     {
