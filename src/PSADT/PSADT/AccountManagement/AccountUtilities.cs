@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Security.Principal;
+using PSADT.Security;
 
 namespace PSADT.AccountManagement
 {
@@ -167,6 +168,11 @@ namespace PSADT.AccountManagement
         /// Indicates whether the caller is the local system account.
         /// </summary>
         public static readonly bool CallerIsLocalSystem;
+
+        /// <summary>
+        /// Gets a read-only list of privileges associated with the caller.
+        /// </summary>
+        public static readonly IReadOnlyList<SE_PRIVILEGE> CallerPrivileges = PrivilegeManager.GetPrivileges();
 
         /// <summary>
         /// A read-only dictionary that maps <see cref="WellKnownSidType"/> values to their corresponding <see
