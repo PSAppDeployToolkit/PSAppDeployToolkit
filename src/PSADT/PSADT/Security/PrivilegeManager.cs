@@ -32,11 +32,10 @@ namespace PSADT.Security
                 AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
                 using (hProcessToken)
                 {
-                    if (IsPrivilegeEnabled(hProcessToken, privilege))
+                    if (!IsPrivilegeEnabled(hProcessToken, privilege))
                     {
-                        return;
+                        EnablePrivilege(hProcessToken, privilege);
                     }
-                    EnablePrivilege(hProcessToken, privilege);
                 }
             }
         }
@@ -178,6 +177,10 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         private static void EnablePrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
+            if (!HasPrivilege(token, privilege))
+            {
+                throw new UnauthorizedAccessException($"The current process does not have the [{privilege}] privilege available.");
+            }
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
             var tp = new TOKEN_PRIVILEGES
             {
