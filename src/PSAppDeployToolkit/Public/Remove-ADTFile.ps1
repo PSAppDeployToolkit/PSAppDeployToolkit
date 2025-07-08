@@ -89,7 +89,7 @@ function Remove-ADTFile
                 try
                 {
                     $giParams = @{ $PSCmdlet.ParameterSetName = $Value }
-                    if (!($Item = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
+                    if (!($Items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
                     {
                         Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity 2
                         continue
@@ -119,26 +119,29 @@ function Remove-ADTFile
             # Delete specified path if it was successfully resolved.
             try
             {
-                try
+                foreach ($Item in $Items)
                 {
-                    if (Test-Path -LiteralPath $Item -PathType Container)
+                    try
                     {
-                        if (!$Recurse)
+                        if (Test-Path -LiteralPath $Item -PathType Container)
                         {
-                            Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
-                            continue
+                            if (!$Recurse)
+                            {
+                                Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
+                                continue
+                            }
+                            Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
                         }
-                        Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
+                        else
+                        {
+                            Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
+                        }
+                        $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
                     }
-                    else
+                    catch
                     {
-                        Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
+                        Write-Error -ErrorRecord $_
                     }
-                    $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
-                }
-                catch
-                {
-                    Write-Error -ErrorRecord $_
                 }
             }
             catch
