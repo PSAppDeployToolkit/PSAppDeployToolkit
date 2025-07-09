@@ -542,11 +542,11 @@ function Set-ADTActiveSetup
                         {
                             $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", $null)
                         }
-                        Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments -CreateNoWindow -PassThru:$PassThru
+                        Start-ADTProcess -FilePath $CUStubExePath -UseUnelevatedToken -CreateNoWindow -PassThru:$PassThru -ArgumentList $CUArguments
                     }
                     else
                     {
-                        Start-ADTProcess -FilePath $CUStubExePath -CreateNoWindow -PassThru:$PassThru
+                        Start-ADTProcess -FilePath $CUStubExePath -UseUnelevatedToken -CreateNoWindow -PassThru:$PassThru
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
