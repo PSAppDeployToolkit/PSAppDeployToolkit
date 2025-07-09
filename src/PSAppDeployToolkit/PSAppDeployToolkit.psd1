@@ -1,8 +1,6 @@
 ﻿#
 # Module manifest for module 'PSAppDeployToolkit'
 #
-# Generated on: 2024-04-13
-#
 
 @{
     # Script module or binary module file associated with this manifest.
