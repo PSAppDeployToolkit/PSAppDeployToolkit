@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PSADT.LibraryInterfaces;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.ProcessManagement
@@ -69,7 +70,7 @@ namespace PSADT.ProcessManagement
             }
             if (null != argumentList && argumentList.Length > 0)
             {
-                Arguments = argumentList.Length == 1 ? !string.IsNullOrWhiteSpace(argumentList[0].Trim()) ? argumentList[0] : null : ProcessTools.ArgvToCommandLine(argumentList);
+                Arguments = ProcessTools.ArgvToCommandLine(argumentList.Length == 1 ? Shell32.CommandLineToArgv(argumentList[0].Trim()) : argumentList);
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
