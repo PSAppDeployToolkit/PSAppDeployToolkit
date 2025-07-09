@@ -129,7 +129,7 @@ namespace PSADT.ProcessManagement
 
             // Build out the command line string.
             StringBuilder stringBuilder = new();
-            foreach (string argument in argv)
+            foreach (string argument in argv.Select(static a => a.Trim()))
             {
                 // Continue if the argument is null or empty.
                 if (string.IsNullOrWhiteSpace(argument))
@@ -194,7 +194,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return the built command line string.
-            return stringBuilder.ToString().TrimEnd() is string arguments && !string.IsNullOrWhiteSpace(arguments) ? arguments : null;
+            return stringBuilder.ToString().Trim() is string arguments && !string.IsNullOrWhiteSpace(arguments) ? arguments : null;
         }
     }
 }
