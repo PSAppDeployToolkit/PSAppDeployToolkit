@@ -137,58 +137,59 @@ namespace PSADT.ProcessManagement
                     continue;
                 }
 
-                // Just add the argument if it contains no whitespace or quotes.
-                if (ContainsNoWhitespaceOrQuotes(argument))
+                // Quote the argument and escape and quotes/backslashes.
+                if (!ContainsNoWhitespaceOrQuotes(argument))
                 {
-                    stringBuilder.Append(argument);
-                    continue;
-                }
-
-                // Otherwise, we need to quote the argument and escape any quotes or backslashes.
-                stringBuilder.Append(Quote); int idx = 0;
-                while (idx < argument.Length)
-                {
-                    char c = argument[idx++];
-                    if (c == Backslash)
+                    stringBuilder.Append(Quote); int idx = 0;
+                    while (idx < argument.Length)
                     {
-                        int numBackSlash = 1;
-                        while (idx < argument.Length && argument[idx] == Backslash)
+                        char c = argument[idx++];
+                        if (c == Backslash)
                         {
-                            idx++;
-                            numBackSlash++;
+                            int numBackSlash = 1;
+                            while (idx < argument.Length && argument[idx] == Backslash)
+                            {
+                                idx++;
+                                numBackSlash++;
+                            }
+
+                            if (idx == argument.Length)
+                            {
+                                // We'll emit an end quote after this so must double the number of backslashes.
+                                stringBuilder.Append(Backslash, numBackSlash * 2);
+                            }
+                            else if (argument[idx] == Quote)
+                            {
+                                // Backslashes will be followed by a quote. Must double the number of backslashes.
+                                stringBuilder.Append(Backslash, numBackSlash * 2 + 1);
+                                stringBuilder.Append(Quote);
+                                idx++;
+                            }
+                            else
+                            {
+                                // Backslash will not be followed by a quote, so emit as normal characters.
+                                stringBuilder.Append(Backslash, numBackSlash);
+                            }
+                            continue;
                         }
 
-                        if (idx == argument.Length)
+                        if (c == Quote)
                         {
-                            // We'll emit an end quote after this so must double the number of backslashes.
-                            stringBuilder.Append(Backslash, numBackSlash * 2);
-                        }
-                        else if (argument[idx] == Quote)
-                        {
-                            // Backslashes will be followed by a quote. Must double the number of backslashes.
-                            stringBuilder.Append(Backslash, numBackSlash * 2 + 1);
+                            // Escape the quote so it appears as a literal. This also guarantees that we won't end up generating a closing quote followed
+                            // by another quote (which parses differently pre-2008 vs. post-2008.)
+                            stringBuilder.Append(Backslash);
                             stringBuilder.Append(Quote);
-                            idx++;
+                            continue;
                         }
-                        else
-                        {
-                            // Backslash will not be followed by a quote, so emit as normal characters.
-                            stringBuilder.Append(Backslash, numBackSlash);
-                        }
-                        continue;
+                        stringBuilder.Append(c);
                     }
-
-                    if (c == Quote)
-                    {
-                        // Escape the quote so it appears as a literal. This also guarantees that we won't end up generating a closing quote followed
-                        // by another quote (which parses differently pre-2008 vs. post-2008.)
-                        stringBuilder.Append(Backslash);
-                        stringBuilder.Append(Quote);
-                        continue;
-                    }
-                    stringBuilder.Append(c);
+                    stringBuilder.Append(Quote);
                 }
-                stringBuilder.Append(Quote);
+                else
+                {
+                    // Argument can just be added.
+                    stringBuilder.Append(argument);
+                }
                 stringBuilder.Append(Space);
             }
 
