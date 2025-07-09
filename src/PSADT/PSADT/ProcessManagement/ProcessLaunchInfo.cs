@@ -67,9 +67,9 @@ namespace PSADT.ProcessManagement
             {
                 WorkingDirectory = fileDir;
             }
-            if (null != argumentList && string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args && !string.IsNullOrWhiteSpace(args))
+            if (null != argumentList && argumentList.Length > 0)
             {
-                Arguments = args;
+                Arguments = argumentList.Length == 1 ? !string.IsNullOrWhiteSpace(argumentList[0].Trim()) ? argumentList[0] : null : ProcessTools.ArgvToCommandLine(argumentList);
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
