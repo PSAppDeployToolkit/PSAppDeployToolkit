@@ -163,6 +163,7 @@ namespace PSADT.ClientServer
                 }
                 _clientProcess.Task.GetAwaiter().GetResult();
                 _clientProcess.Task.Dispose();
+                _clientProcess.Process.Dispose();
                 _clientProcess = null;
                 _clientProcessCts.Dispose();
                 _clientProcessCts = null;

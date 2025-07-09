@@ -138,6 +138,7 @@ namespace PSADT.FileSystem
                 finally
                 {
                     fileProcessHandle.Dispose();
+                    fileProcessHandle = null!;
                 }
 
                 // Get the handle's name to check if it's a hard drive path.
@@ -154,6 +155,7 @@ namespace PSADT.FileSystem
                 {
                     objectBufferPtr.Clear();
                     fileDupHandle.Dispose();
+                    fileDupHandle = null!;
                 }
 
                 // Add the handle information to the list if it matches the specified directory path.
@@ -198,6 +200,7 @@ namespace PSADT.FileSystem
                     {
                         Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                         localHandle.Dispose();
+                        localHandle = null;
                     }
                 }
             }

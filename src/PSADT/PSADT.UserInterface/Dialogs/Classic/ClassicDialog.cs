@@ -200,11 +200,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 persistTimer.Stop();
                 persistTimer.Dispose();
+                persistTimer = null;
             }
             if (null != expiryTimer)
             {
                 expiryTimer.Stop();
                 expiryTimer.Dispose();
+                expiryTimer = null;
             }
         }
 
@@ -389,12 +391,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// A timer used to restore the dialog's position on the screen at a configured interval.
         /// </summary>
-        private readonly Timer? persistTimer;
+        private Timer? persistTimer;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
         /// </summary>
-        private readonly Timer? expiryTimer;
+        private Timer? expiryTimer;
 
         /// <summary>
         /// Represents the position of the dialog within its container.

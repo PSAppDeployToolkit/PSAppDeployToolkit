@@ -219,6 +219,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
             countdownTimer?.Dispose();
+            countdownTimer = null;
 
             // Unhook the event handlers.
             if (null != runningProcessService)
@@ -371,7 +372,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// A restart countdown timer to perform an automatic reboot.
         /// </summary>
-        private readonly System.Threading.Timer? countdownTimer;
+        private System.Threading.Timer? countdownTimer;
 
         /// <summary>
         /// The stopwatch to keep track of the elapsed time.

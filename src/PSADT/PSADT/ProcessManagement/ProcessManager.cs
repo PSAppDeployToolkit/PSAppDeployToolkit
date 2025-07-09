@@ -231,6 +231,8 @@ namespace PSADT.ProcessManagement
                     }
                     hStdOutWrite?.Dispose();
                     hStdErrWrite?.Dispose();
+                    hStdOutWrite = null;
+                    hStdErrWrite = null;
                 }
             }
             else
