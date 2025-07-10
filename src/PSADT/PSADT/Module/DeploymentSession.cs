@@ -62,7 +62,7 @@ namespace PSADT.Module
                 var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
                 var appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
                 var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
-                var RunAsActiveUser = (SessionInfo?)adtEnv["RunAsActiveUser"];
+                var RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
                 var currentLanguage = (string)adtEnv["currentLanguage"]!;
                 var envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
                 var processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;

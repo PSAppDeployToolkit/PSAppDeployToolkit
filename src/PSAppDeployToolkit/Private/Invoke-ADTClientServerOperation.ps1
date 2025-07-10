@@ -71,7 +71,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'RestoreAllWindows')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.TerminalServices.SessionInfo]$User,
+        [PSADT.Module.RunAsActiveUser]$User,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InitCloseAppsDialog')]
         [ValidateNotNullOrEmpty()]

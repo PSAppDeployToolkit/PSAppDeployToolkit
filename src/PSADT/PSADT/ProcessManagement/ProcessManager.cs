@@ -126,7 +126,7 @@ namespace PSADT.ProcessManagement
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.Username && GetSessionForUsername(launchInfo.Username) is SessionInfo session && !AccountUtilities.CallerUsername.Equals(session.NTAccount))
+                    if (null != launchInfo.Username && !AccountUtilities.CallerUsername.Equals(launchInfo.Username) && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
                         // We can only run a process as another user if the caller is SYSTEM.
                         if (!AccountUtilities.CallerIsLocalSystem)
@@ -372,11 +372,11 @@ namespace PSADT.ProcessManagement
             SessionInfo? session = null;
             if (!username!.Value.Contains('\\'))
             {
-                session = userSessions.First(s => username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
+                session = userSessions.FirstOrDefault(s => username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
             }
             else
             {
-                session = userSessions.First(s => s.NTAccount == username);
+                session = userSessions.FirstOrDefault(s => s.NTAccount == username);
             }
             if (null == session)
             {

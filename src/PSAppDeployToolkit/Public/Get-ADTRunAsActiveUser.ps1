@@ -59,7 +59,7 @@ function Get-ADTRunAsActiveUser
         if ($callerSid.Equals($session.SID) -and $session.IsActiveUserSession)
         {
             Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-            return $session
+            return [PSADT.Module.RunAsActiveUser]::new($session.NTAccount, $session.SID)
         }
     }
 
@@ -70,7 +70,7 @@ function Get-ADTRunAsActiveUser
         if ($session.NTAccount -and $session.$sessionInfoMember)
         {
             Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-            return $session
+            return [PSADT.Module.RunAsActiveUser]::new($session.NTAccount, $session.SID)
         }
     }
     Write-ADTLogEntry -Message 'There was no active user session found on this device.'

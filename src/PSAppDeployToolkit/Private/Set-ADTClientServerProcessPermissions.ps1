@@ -11,7 +11,7 @@ function Private:Set-ADTClientServerProcessPermissions
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.TerminalServices.SessionInfo]$User
+        [PSADT.Module.RunAsActiveUser]$User
     )
 
     # If we're running under the active user's account, return early as the user already has access.
