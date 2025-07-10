@@ -35,6 +35,9 @@ function Write-ADTLogEntry
     .PARAMETER LogFileName
         Set the name of the log file.
 
+    .PARAMETER HostLogStream
+        Controls how the log entry is written to the console window.
+
     .PARAMETER PassThru
         Return the message that was passed to the function.
 
@@ -47,7 +50,7 @@ function Write-ADTLogEntry
         The message to write to the log file or output to the console.
 
     .OUTPUTS
-        System.String[]
+        PSADT.Module.LogEntry[]
 
         This function returns the provided output if -PassThru is specified.
 
@@ -105,6 +108,10 @@ function Write-ADTLogEntry
         [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.HostLogStream]$HostLogStream,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false)]
@@ -160,7 +167,7 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
                 $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
-                $null
+                $HostLogStream
             )
             if ($PassThru -and $logEntries)
             {
@@ -175,7 +182,7 @@ function Write-ADTLogEntry
             }
             $logEntries = [PSADT.Module.LogUtilities]::WriteLogEntry(
                 $messages,
-                ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)],
+                $(if ($PSBoundParameters.ContainsKey('HostLogStream')) { $HostLogStream } else { ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)] }),
                 $false,
                 $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
                 $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
