@@ -142,6 +142,20 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves the parent process of the current process.
+        /// </summary>
+        /// <remarks>The returned <see cref="Process"/> object should be disposed of by the caller when it
+        /// is no longer needed.</remarks>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
+        public static Process GetParentProcess()
+        {
+            using (var proc = Process.GetCurrentProcess())
+            {
+                return GetParentProcess(proc);
+            }
+        }
+
+        /// <summary>
         /// Retrieves a list of parent processes for the current process, starting from the immediate parent and
         /// continuing up the hierarchy until no further parent processes are found.
         /// </summary>
