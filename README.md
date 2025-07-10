@@ -81,6 +81,7 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 ### 🛠️ Other Improvements
 
 - [Show-ADTHelpConsole](https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTHelpConsole) has been given some love and a facelift with High-DPI awareness, resizability, PowerShell 7 compatibility, and extension module display
+- Reworked Invoke-AppDeployToolkit.exe to be more compliant within WDAC environments
 - Added -NoWait support to [Show-ADTDialogBox](https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTDialogBox)
 - Added process detection code to enable automatic silent deployments when processes aren't running
 - Added /Debug switch to [Invoke-AppDeployToolkit.exe](https://psappdeploytoolkit.com/docs/deployment-concepts/invoke-appdeploytoolkit) to show terminal output for debugging purposes
