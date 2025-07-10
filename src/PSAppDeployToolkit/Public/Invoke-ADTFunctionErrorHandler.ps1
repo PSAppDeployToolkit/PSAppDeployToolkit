@@ -34,6 +34,9 @@ function Invoke-ADTFunctionErrorHandler
     .PARAMETER DisableErrorResolving
         If specified, the function will not append the resolved error record to the log message.
 
+    .PARAMETER Silent
+        If specified, doesn't write anything to the log and just handles the ErrorRecord itself.
+
     .INPUTS
         None
 
@@ -82,7 +85,10 @@ function Invoke-ADTFunctionErrorHandler
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'None')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ResolveErrorProperties')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AdditionalResolveErrorProperties')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'DisableErrorResolving')]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogMessage = [System.Management.Automation.Language.NullString]::Value,
 
@@ -96,7 +102,10 @@ function Invoke-ADTFunctionErrorHandler
         [System.String[]]$AdditionalResolveErrorProperties,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'DisableErrorResolving')]
-        [System.Management.Automation.SwitchParameter]$DisableErrorResolving
+        [System.Management.Automation.SwitchParameter]$DisableErrorResolving,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Silent')]
+        [System.Management.Automation.SwitchParameter]$Silent
     )
 
     # Store out the caller's original ErrorAction for some checks and balances.
@@ -146,7 +155,10 @@ function Invoke-ADTFunctionErrorHandler
     {
         $LogMessage += " $($ErrorRecord.Exception.Message)"
     }
-    Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+    if (!$Silent)
+    {
+        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+    }
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
     # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
