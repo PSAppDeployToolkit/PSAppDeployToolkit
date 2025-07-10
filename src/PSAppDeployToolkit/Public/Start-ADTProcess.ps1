@@ -684,23 +684,23 @@ function Start-ADTProcess
                 }
                 elseif (($result.ExitCode -eq 1605) -and ($FilePath -match 'msiexec'))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed.$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed." -Severity 3 -PassThru
                 }
                 elseif (($result.ExitCode -eq -2145124329) -and ($FilePath -match 'wusa'))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system.$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system." -Severity 3 -PassThru
                 }
                 elseif (($result.ExitCode -eq 17025) -and ($FilePath -match 'fullfile'))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Office update is not applicable to this system.$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Office update is not applicable to this system." -Severity 3 -PassThru
                 }
                 elseif (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $result.ExitCode }))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage" -Severity 3 -PassThru
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)].$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)].$(if ($CreateNoWindow -and !$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
                 }
 
                 # Log any stdout/stderr if it's available.
