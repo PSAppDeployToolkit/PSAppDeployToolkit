@@ -690,10 +690,6 @@ function Start-ADTProcess
                 {
                     Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system." -Severity 3 -PassThru
                 }
-                elseif (($result.ExitCode -eq 17025) -and ($FilePath -match 'fullfile'))
-                {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Office update is not applicable to this system." -Severity 3 -PassThru
-                }
                 elseif (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $result.ExitCode }))
                 {
                     Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage" -Severity 3 -PassThru
