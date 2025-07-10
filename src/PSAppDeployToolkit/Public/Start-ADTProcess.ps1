@@ -104,6 +104,9 @@ function Start-ADTProcess
     .PARAMETER NoWait
         Immediately continue after executing the process.
 
+    .PARAMETER NoStreamLogging
+        Don't log any available stdout/stderr data to the log file.
+
     .PARAMETER PassThru
         If `-NoWait` is not specified, returns an object with ExitCode, StdOut, and StdErr output from the process. If `-NoWait` is specified, returns a task that can be awaited. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
@@ -401,6 +404,17 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$NoStreamLogging,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
@@ -656,47 +670,68 @@ function Start-ADTProcess
                 }
 
                 # Check to see whether we should ignore exit codes.
-                $errorMessage = if (($ignoreExitCode = $IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($result.ExitCode))))
+                $logEntry = if (($ignoreExitCode = $IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($result.ExitCode))))
                 {
-                    Write-ADTLogEntry -Message "Execution completed and the exit code [$($result.ExitCode)] is being ignored."
+                    Write-ADTLogEntry -Message "Execution completed and the exit code [$($result.ExitCode)] is being ignored." -PassThru
                 }
                 elseif ($SuccessExitCodes.Contains($result.ExitCode))
                 {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$($result.ExitCode)]." -Severity 0
+                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$($result.ExitCode)]." -Severity 0 -PassThru
                 }
                 elseif ($RebootExitCodes.Contains($result.ExitCode))
                 {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$($result.ExitCode)]. A reboot is required." -Severity 2
+                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$($result.ExitCode)]. A reboot is required." -Severity 2 -PassThru
                 }
                 elseif (($result.ExitCode -eq 1605) -and ($FilePath -match 'msiexec'))
                 {
-                    "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed."
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed.$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
                 }
                 elseif (($result.ExitCode -eq -2145124329) -and ($FilePath -match 'wusa'))
                 {
-                    "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system."
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system.$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
                 }
                 elseif (($result.ExitCode -eq 17025) -and ($FilePath -match 'fullfile'))
                 {
-                    "Execution failed with exit code [$($result.ExitCode)] because the Office Update is not applicable to this system."
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Office update is not applicable to this system.$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                }
+                elseif (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $result.ExitCode }))
+                {
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
                 }
                 else
                 {
-                    if (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $result.ExitCode }))
+                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)].$(if (!$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                }
+
+                # Log any stdout/stderr if it's available.
+                if (!$NoStreamLogging)
+                {
+                    foreach ($property in ('StdOut', 'StdErr', 'Interleaved'))
                     {
-                        "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage"
-                    }
-                    else
-                    {
-                        "Execution failed with exit code [$($result.ExitCode)]."
+                        $streamMessage = if ($result.$property)
+                        {
+                            if ($result.$property -gt 1)
+                            {
+                                "`n`n$([System.String]::Join("`n", $result.$property))"
+                            }
+                            else
+                            {
+                                $result.$property[0]
+                            }
+                        }
+                        else
+                        {
+                            "N/A"
+                        }
+                        Write-ADTLogEntry -Message "$property Output from Execution: $streamMessage" -HostLogStream ([PSADT.Module.HostLogStream]::None)
                     }
                 }
 
                 # If we have an error in our process, throw it and let the catch block handle it.
-                if ($errorMessage)
+                if ($logEntry.Message.StartsWith("Execution failed"))
                 {
                     $naerParams = @{
-                        Exception = [System.Runtime.InteropServices.ExternalException]::new($errorMessage, $result.ExitCode)
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new($logEntry.Message, $result.ExitCode)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'ProcessExitCodeError'
                         TargetObject = $result
@@ -751,7 +786,8 @@ function Start-ADTProcess
                     }
 
                     # Process the error and potentially close out the session.
-                    Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
+                    # This isn't logged as it's already been logged before the throw.
+                    Invoke-ADTFunctionErrorHandler @iafehParams -Silent
                     if ($iafehParams.ContainsKey('ErrorAction'))
                     {
                         Close-ADTSession
