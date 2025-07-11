@@ -126,7 +126,7 @@ namespace PSADT.ProcessManagement
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.Username && !AccountUtilities.CallerUsername.Equals(launchInfo.Username) && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
+                    if (null != launchInfo.Username && launchInfo.Username != AccountUtilities.CallerUsername && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
                         // Enable the required privileges.
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
@@ -143,7 +143,7 @@ namespace PSADT.ProcessManagement
                                 using (explorerProcess) using (explorerProcess.SafeHandle)
                                 {
                                     AdvApi32.OpenProcessToken(explorerProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
-                                    if (TokenManager.GetTokenSid(hProcessToken).Equals(session.SID))
+                                    if (TokenManager.GetTokenSid(hProcessToken) == session.SID)
                                     {
                                         hUserToken = hProcessToken;
                                         break;
@@ -440,7 +440,7 @@ namespace PSADT.ProcessManagement
                 AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
                 using (hProcessToken)
                 {
-                    if (!TokenManager.GetTokenSid(hProcessToken).Equals(AccountUtilities.CallerSid))
+                    if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
                     {
                         throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
                     }
