@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<policyDefinitionResources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" revision="4.1.0" schemaVersion="1.0" xmlns="http://www.microsoft.com/GroupPolicy/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" revision="4.1" schemaVersion="1.0" xmlns="http://www.microsoft.com/GroupPolicy/PolicyDefinitions">
 	<displayName>PSAppDeployToolkit</displayName>
 	<description>Configuration settings for PSAppDeployToolkit. Enforced over a deployment's default settings.</description>
 	<resources>
@@ -9,8 +9,8 @@
 			<string id="Assets_Category">Assets</string>
 			<string id="Logo_Display">Logo</string>
 			<string id="Logo_Explain">Specify filename of the logo.</string>
-			<string id="Logo_Display">Logo</string>
-			<string id="Logo_Explain">Specify filename of the logo (for dark mode).</string>
+			<string id="LogoDark_Display">Logo (Dark Mode)</string>
+			<string id="LogoDark_Explain">Specify filename of the logo (for dark mode).</string>
 			<string id="Banner_Display">Banner</string>
 			<string id="Banner_Explain">Specify filename of the banner (Classic-only).</string>
 			<string id="MSI_Category">MSI</string>
@@ -242,7 +242,7 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 				<decimalTextBox refId="DeferExitCode">DeferExitCode</decimalTextBox>
 			</presentation>
 			<presentation id="FluentAccentColor">
-				<decimalTextBox refId="HexValue" spin="true" spinStep="1"/>
+				<decimalTextBox refId="FluentAccentColor" spin="true" spinStep="1"/>
 			</presentation>
 			<presentation id="DialogStyle">
 				<dropdownList refId="DialogStyle" noSort="true" defaultItem="0">DialogStyle</dropdownList>
