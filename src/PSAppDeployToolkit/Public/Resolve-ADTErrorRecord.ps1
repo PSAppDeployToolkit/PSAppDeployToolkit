@@ -173,6 +173,20 @@ function Resolve-ADTErrorRecord
             }
         }
 
+        # Add some fudging to give TargetObject some buffering.
+        if ($logErrorProperties.Contains('TargetObject'))
+        {
+            $prevPropertyIndex = ([System.String[]]$logErrorProperties.Keys).IndexOf('TargetObject')
+            if (($prevPropertyIndex -gt 0) -and !$logErrorProperties[$prevPropertyIndex - 1].EndsWith("`n"))
+            {
+                $logErrorProperties[$prevPropertyIndex - 1] += "`n"
+            }
+            if (!$logErrorProperties.TargetObject.EndsWith("`n"))
+            {
+                $logErrorProperties.TargetObject += "`n"
+            }
+        }
+
         # Build out error properties.
         $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
 
