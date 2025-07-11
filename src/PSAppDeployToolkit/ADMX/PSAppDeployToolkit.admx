@@ -116,7 +116,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="FileCopyMode" class="Machine" displayName="$(string.FileCopyMode_Display)" explainText="$(string.FileCopyMode_Explain)" presentation="$(presentation.FileCopyMode)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -144,7 +144,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="LogDebugMessage" class="Machine" displayName="$(string.LogDebugMessage_Display)" explainText="$(string.LogDebugMessage_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogDebugMessage">
@@ -154,7 +154,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="LogMaxHistory" class="Machine" displayName="$(string.LogMaxHistory_Display)" explainText="$(string.LogMaxHistory_Explain)" presentation="$(presentation.LogMaxHistory)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -192,7 +192,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="LogToSubfolder" class="Machine" displayName="$(string.LogToSubfolder_Display)" explainText="$(string.LogToSubfolder_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogToSubfolder">
@@ -202,7 +202,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="LogStyle" class="Machine" displayName="$(string.LogStyle_Display)" explainText="$(string.LogStyle_Explain)" presentation="$(presentation.LogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -230,7 +230,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="LogHostOutputToStdStreams" class="Machine" displayName="$(string.LogHostOutputToStdStreams_Display)" explainText="$(string.LogHostOutputToStdStreams_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogHostOutputToStdStreams">
@@ -240,7 +240,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="OobeDetection" class="Machine" displayName="$(string.OobeDetection_Display)" explainText="$(string.OobeDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="OobeDetection">
@@ -250,7 +250,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="ProcessDetection" class="Machine" displayName="$(string.ProcessDetection_Display)" explainText="$(string.ProcessDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="ProcessDetection">
@@ -260,7 +260,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -284,7 +284,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="TempPath" class="Machine" displayName="$(string.TempPath_Display)" explainText="$(string.TempPath_Explain)" presentation="$(presentation.TempPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -308,7 +308,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<disabled />
+				<delete />
 			</disabledValue>
 		</policy>
 		<policy name="FluentAccentColor" class="Machine" displayName="$(string.FluentAccentColor_Display)" explainText="$(string.FluentAccentColor_Explain)" presentation="$(presentation.FluentAccentColor)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
