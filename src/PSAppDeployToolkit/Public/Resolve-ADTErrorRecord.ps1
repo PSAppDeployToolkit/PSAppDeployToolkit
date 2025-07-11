@@ -19,8 +19,6 @@ function Resolve-ADTErrorRecord
     .PARAMETER Property
         The list of properties to display from the ErrorRecord. Use "*" to display all properties.
 
-        Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
-
     .PARAMETER ExcludeErrorRecord
         Exclude ErrorRecord details as represented by $ErrorRecord.
 
@@ -86,7 +84,7 @@ function Resolve-ADTErrorRecord
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
-        [System.String[]]$Property = ('Message', 'InnerException', 'FullyQualifiedErrorId', 'ScriptStackTrace', 'PositionMessage'),
+        [System.String[]]$Property = ('Message', 'InnerException', 'FullyQualifiedErrorId', 'ScriptStackTrace', 'TargetObject', 'PositionMessage'),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExcludeErrorRecord,
@@ -165,7 +163,7 @@ function Resolve-ADTErrorRecord
             # Add in all properties for the object.
             foreach ($propName in ($errorObject | Get-ErrorPropertyNames))
             {
-                $logErrorProperties.Add($propName, ($errorObject.$propName).ToString().Trim())
+                $logErrorProperties.Add($propName, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines(($errorObject.$propName | Out-String -Width ([System.Int32]::MaxValue))))
             }
 
             # Append a new line to the last value for formatting purposes.

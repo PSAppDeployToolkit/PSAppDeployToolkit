@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PSADT.Utilities;
 
 namespace PSADT.ProcessManagement
 {
@@ -18,9 +19,9 @@ namespace PSADT.ProcessManagement
         public ProcessResult(int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
         {
             ExitCode = exitCode;
-            StdOut = stdOut.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
-            StdErr = stdErr.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
-            Interleaved = interleaved.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
+            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut).ToList().AsReadOnly();
+            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr).ToList().AsReadOnly();
+            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved).ToList().AsReadOnly();
         }
 
         /// <summary>
