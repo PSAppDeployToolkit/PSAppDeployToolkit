@@ -215,16 +215,27 @@ namespace PSADT.ProcessManagement
                     }
                     else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem)
                     {
-                        // Throw if the caller is expecting to be able to capture stdout/stderr but is running elevated.
-                        if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
-                        {
-                            throw new InvalidOperationException("The underlying API to create a process using an unelevated token does not support capturing stdout/stderr.");
-                        }
-
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, launchInfo.CommandLine, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                            {
+                                // Throw if the caller is expecting to be able to capture stdout/stderr but doesn't have the privileges for CreateProcessAsUser().
+                                try
+                                {
+                                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new UnauthorizedAccessException("Failed to enable one or more privileges needed to create a process with an unelevated token and stream capture.", ex);
+                                }
+                                SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            }
+                            else
+                            {
+                                AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, launchInfo.CommandLine, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            }
                         }
                     }
                     else
@@ -423,9 +434,10 @@ namespace PSADT.ProcessManagement
         /// langword="null"/> if the operation fails.</returns>
         private static SafeFileHandle GetUnelevatedToken()
         {
-            using (var hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId()))
+            using (var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()))
+            using (cProcess.SafeHandle)
             {
-                AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
                 using (hProcessToken)
                 {
                     if (!TokenManager.GetTokenSid(hProcessToken).Equals(AccountUtilities.CallerSid))
