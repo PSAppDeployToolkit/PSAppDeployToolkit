@@ -29,7 +29,7 @@ namespace PSADT.Security
             using (var cProcess = Process.GetCurrentProcess())
             using (cProcess.SafeHandle)
             {
-                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
                 using (hProcessToken)
                 {
                     if (!IsPrivilegeEnabled(hProcessToken, privilege))
@@ -203,7 +203,7 @@ namespace PSADT.Security
             using (var cProcess = Process.GetCurrentProcess())
             using (cProcess.SafeHandle)
             {
-                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
                 using (hProcessToken)
                 {
                     EnablePrivilege(hProcessToken, privilege);

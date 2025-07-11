@@ -110,7 +110,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A command-line string that represents the concatenated arguments, with necessary quoting and escaping
         /// applied. Returns <see langword="null"/> if the resulting command-line string is empty or consists only of
         /// whitespace.</returns>
-        internal static string? ArgvToCommandLine(IReadOnlyList<string> argv)
+        internal static string? ArgvToCommandLine(IEnumerable<string> argv)
         {
             // Internal worker to test the argument for whitespace or quotes.
             const char Backslash = '\\'; const char Quote = '\"'; const char Space = ' ';

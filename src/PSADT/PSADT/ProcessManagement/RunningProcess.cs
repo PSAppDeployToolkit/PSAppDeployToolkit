@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace PSADT.ProcessManagement
 {
@@ -14,14 +15,14 @@ namespace PSADT.ProcessManagement
         /// <param name="description"></param>
         /// <param name="fileName"></param>
         /// <param name="arguments"></param>
-        internal RunningProcess(Process process, string description, string fileName, string? arguments)
+        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string>? arguments)
         {
             Process = process;
             Description = description;
             FileName = fileName;
-            if (!string.IsNullOrWhiteSpace(arguments))
+            if (null != arguments)
             {
-                Arguments = arguments;
+                Arguments = ProcessTools.ArgvToCommandLine(arguments);
             }
         }
 
