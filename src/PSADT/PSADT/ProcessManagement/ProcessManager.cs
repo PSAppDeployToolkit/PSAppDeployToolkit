@@ -128,29 +128,51 @@ namespace PSADT.ProcessManagement
                     PROCESS_INFORMATION pi = new();
                     if (null != launchInfo.Username && !AccountUtilities.CallerUsername.Equals(launchInfo.Username) && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
-                        // We can only run a process as another user if the caller is SYSTEM.
-                        if (!AccountUtilities.CallerIsLocalSystem)
-                        {
-                            throw new UnauthorizedAccessException($"Only the SYSTEM account has the necessary privilges to start a process as another user.");
-                        }
-
-                        // Enable the required privileges. SYSTEM usually has these, but locked down environments via WDAC may require specific enablement.
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        // Enable the required privileges.
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
-                        // Get the user's primary token via WTS.
-                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
-                        SafeFileHandle hPrimaryToken;
-                        using (userToken)
+                        // Get the user's token.
+                        SafeFileHandle hUserToken = null!;
+                        if (!AccountUtilities.CallerIsLocalSystem)
                         {
-                            // If we're to get their linked token, we get it via their user token.
-                            // Once done, we duplicate the linked token to get a primary token to create the new process.
+                            // When we're not local system, we need to find the user's Explorer process and get its token.
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
+                            foreach (var explorerProcess in Process.GetProcessesByName("explorer").OrderBy(static p => p.StartTime))
+                            {
+                                using (explorerProcess) using (explorerProcess.SafeHandle)
+                                {
+                                    AdvApi32.OpenProcessToken(explorerProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+                                    if (TokenManager.GetTokenSid(hProcessToken).Equals(session.SID))
+                                    {
+                                        hUserToken = hProcessToken;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // When we're local system, we can just get the primary token for the user.
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                            WtsApi32.WTSQueryUserToken(session.SessionId, out hUserToken);
+                        }
+
+                        // Throw if for whatever reason, we couldn't get a token.
+                        if (null == hUserToken)
+                        {
+                            throw new InvalidOperationException($"Failed to retrieve a primary token for user [{session.NTAccount}]. Ensure the user is logged on and has an active session.");
+                        }
+
+                        // Get the primary token for the user, either linked or not.
+                        SafeFileHandle hPrimaryToken;
+                        using (hUserToken)
+                        {
                             if (launchInfo.UseLinkedAdminToken)
                             {
                                 try
                                 {
-                                    hPrimaryToken = TokenManager.GetLinkedPrimaryToken(userToken);
+                                    hPrimaryToken = TokenManager.GetLinkedPrimaryToken(hUserToken);
                                 }
                                 catch (Exception ex)
                                 {
@@ -159,7 +181,7 @@ namespace PSADT.ProcessManagement
                             }
                             else
                             {
-                                hPrimaryToken = TokenManager.GetPrimaryToken(userToken);
+                                hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
                             }
                         }
 
