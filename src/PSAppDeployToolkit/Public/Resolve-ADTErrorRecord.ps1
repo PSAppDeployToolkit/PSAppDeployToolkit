@@ -163,7 +163,14 @@ function Resolve-ADTErrorRecord
             # Add in all properties for the object.
             foreach ($propName in ($errorObject | Get-ErrorPropertyNames))
             {
-                $logErrorProperties.Add($propName, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines(($errorObject.$propName | Out-String -Width ([System.Int32]::MaxValue))))
+                if ($propName -eq 'TargetObject')
+                {
+                    $logErrorProperties.Add($propName, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines(($errorObject.$propName | Out-String -Width ([System.Int32]::MaxValue))))
+                }
+                else
+                {
+                    $logErrorProperties.Add($propName, ($errorObject.$propName).ToString().Trim())
+                }
             }
 
             # Append a new line to the last value for formatting purposes.
