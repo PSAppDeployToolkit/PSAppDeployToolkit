@@ -176,11 +176,11 @@ namespace PSADT.TerminalServices
             }
 
             // Attempt to get the SID from the caller's explorer.exe process if it exists.
-            if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").FirstOrDefault(p => p.SessionId == sessionid) is Process explorerProcess)
+            if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").Where(p => p.SessionId == sessionid).OrderBy(static p => p.StartTime).FirstOrDefault() is Process explorerProcess)
             {
-                using (var hProcess = explorerProcess.SafeHandle)
+                using (explorerProcess) using (explorerProcess.SafeHandle)
                 {
-                    AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                    AdvApi32.OpenProcessToken(explorerProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
                     using (hProcessToken)
                     {
                         return TokenManager.GetTokenSid(hProcessToken);
