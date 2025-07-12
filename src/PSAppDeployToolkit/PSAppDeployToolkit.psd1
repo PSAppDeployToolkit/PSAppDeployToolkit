@@ -180,6 +180,7 @@
         'Stop-ADTServiceAndDependencies'
         'Test-ADTBattery'
         'Test-ADTCallerIsAdmin'
+        'Test-ADTEspActive'
         'Test-ADTMicrophoneInUse'
         'Test-ADTModuleInitialized'
         'Test-ADTMSUpdates'
