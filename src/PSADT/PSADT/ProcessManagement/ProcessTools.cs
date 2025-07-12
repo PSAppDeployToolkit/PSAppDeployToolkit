@@ -63,7 +63,7 @@ namespace PSADT.ProcessManagement
                         var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                         if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
                         {
-                            throw new InvalidOperationException($"Unable to find drive letter for NT path: {ntDeviceName}.");
+                            throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imagePath}].");
                         }
                         return imagePath.Replace(ntDeviceName, driveLetter);
                     }
