@@ -66,7 +66,7 @@ function Test-ADTEspActive
                 }
 
                 # Test whether wwahost.exe is running. This is responsible for displaying the ESP.
-                if (!($wwaHostProcess = $([System.Diagnostics.Process]::GetProcessesByName('wwahost'))))
+                if (!($wwaHostProcess = [System.Diagnostics.Process]::GetProcessesByName('wwahost')).Length)
                 {
                     return $false
                 }
@@ -84,7 +84,7 @@ function Test-ADTEspActive
                 }
 
                 # Return early if the wwahost process is not owned by the currently logged on user.
-                if ($wwaHostProcess.SessionId -ne $runAsActiveUser.SessionId)
+                if ($wwaHostProcess | & { process { if ($_.SessionId -eq $runAsActiveUser.SessionId) { return $_ } } } | Select-Object -First 1)
                 {
                     return $false
                 }
