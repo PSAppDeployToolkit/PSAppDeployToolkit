@@ -84,7 +84,7 @@ function Test-ADTEspActive
                 }
 
                 # Return early if the wwahost process is not owned by the currently logged on user.
-                if ($wwaHostProcess | & { process { if ($_.SessionId -eq $runAsActiveUser.SessionId) { return $_ } } } | Select-Object -First 1)
+                if (!($wwaHostProcess | & { process { if ($_.SessionId -eq $runAsActiveUser.SessionId) { return $_ } } } | Select-Object -First 1))
                 {
                     return $false
                 }
