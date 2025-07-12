@@ -22,11 +22,8 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>The resized image.</returns>
         internal static Bitmap ResizeImage(Bitmap img, int width, int height)
         {
-            Rectangle destRect = new(0, 0, width, height);
             Bitmap destImage = new(width, height);
-
             destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
-
             using (var graphics = Graphics.FromImage(destImage))
             {
                 graphics.CompositingMode = CompositingMode.SourceCopy;
@@ -34,15 +31,13 @@ namespace PSADT.UserInterface.Utilities
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
                 using (ImageAttributes wrapMode = new())
                 {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(img, destRect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
+                    graphics.DrawImage(img, new(0, 0, width, height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
                 }
+                return destImage;
             }
-
-            return destImage;
         }
 
         /// <summary>
@@ -58,7 +53,6 @@ namespace PSADT.UserInterface.Utilities
                 img = ResizeImage(img, 128, 128);
             }
 
-            Icon icon;
             using (MemoryStream msImg = new())
             using (MemoryStream msIco = new())
             {
@@ -79,10 +73,9 @@ namespace PSADT.UserInterface.Utilities
                     bw.Write(msImg.ToArray());    // write image data
                     bw.Flush();
                     bw.Seek(0, SeekOrigin.Begin);
-                    icon = new Icon(msIco);
+                    return new(msIco);
                 }
             }
-            return icon;
         }
 
         /// <summary>
