@@ -112,7 +112,7 @@ function Set-ADTItemPermission
 
         [Parameter(Mandatory = $true, HelpMessage = 'The ACL object to apply to the given path.', ParameterSetName = 'AccessControlList')]
         [ValidateNotNullOrEmpty()]
-        [System.Security.AccessControl.FileSystemSecurity]$AccessControlList
+        [System.Security.AccessControl.FileSystemSecurity]$AccessControlList,
 
         [Parameter(Mandatory = $true, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName = 'DisableInheritance')]
         [Alias('Username', 'Users', 'SID', 'Usernames')]
