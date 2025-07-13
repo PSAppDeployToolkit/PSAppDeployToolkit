@@ -62,10 +62,6 @@ namespace PSADT.ProcessManagement
             {
                 WorkingDirectory = workingDirectory!.Trim();
             }
-            else if (!expandEnvironmentVariables && Path.GetDirectoryName(filePath) is string fileDir && !string.IsNullOrWhiteSpace(fileDir))
-            {
-                WorkingDirectory = fileDir;
-            }
             if (null != argumentList && argumentList.Length > 0)
             {
                 Arguments = ProcessTools.ArgvToCommandLine(argumentList.Length == 1 ? Shell32.CommandLineToArgv(argumentList[0].Trim()) : argumentList);
@@ -98,7 +94,7 @@ namespace PSADT.ProcessManagement
                 CreateNoWindow = true;
             }
 
-            // Set remaining boolean parameters.
+            // Set remaining parameters.
             FilePath = filePath;
             Username = username;
             UseLinkedAdminToken = useLinkedAdminToken;
