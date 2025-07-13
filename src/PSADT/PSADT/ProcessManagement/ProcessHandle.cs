@@ -11,6 +11,8 @@ namespace PSADT.ProcessManagement
     /// The <see cref="Task"/> property provides a mechanism to asynchronously retrieve the result of the process
     /// execution.</remarks>
     /// <param name="Process"></param>
+    /// <param name="ModuleInfo"></param>
+    /// <param name="LaunchInfo"></param>
     /// <param name="Task"></param>
-    public sealed record ProcessHandle(Process Process, Task<ProcessResult> Task);
+    public sealed record ProcessHandle(Process Process, ProcessModule ModuleInfo, ProcessLaunchInfo LaunchInfo, Task<ProcessResult> Task);
 }

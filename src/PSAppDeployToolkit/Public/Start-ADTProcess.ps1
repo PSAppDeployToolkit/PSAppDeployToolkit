@@ -633,7 +633,7 @@ function Start-ADTProcess
                     }
                     return
                 }
-                $result = $process.Task.GetAwaiter().GetResult()
+                $process | Out-Null; $result = $process.Task.GetAwaiter().GetResult()
 
                 # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
                 if (!$result)
