@@ -37,7 +37,7 @@ function Set-ADTActiveSetup
         Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS.
 
     .PARAMETER ExecutionPolicy
-        Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script..
+        Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
 
     .PARAMETER Version
         Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation.
