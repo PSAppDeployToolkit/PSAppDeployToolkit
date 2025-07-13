@@ -53,10 +53,11 @@ namespace PSADT.UserInterface.Utilities
                 img = ResizeImage(img, 128, 128);
             }
 
+            // Place the image into an icon object and return it.
             using (MemoryStream msImg = new())
-            using (MemoryStream msIco = new())
             {
                 img.Save(msImg, ImageFormat.Png);
+                using (MemoryStream msIco = new())
                 using (BinaryWriter bw = new(msIco))
                 {
                     bw.Write((short)0);           //0-1 reserved
