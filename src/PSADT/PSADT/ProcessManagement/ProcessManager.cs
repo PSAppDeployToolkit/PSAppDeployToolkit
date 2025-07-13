@@ -95,10 +95,6 @@ namespace PSADT.ProcessManagement
                     {
                         if (launchInfo.CreateNoWindow)
                         {
-                            if (launchInfo.CancellationToken != default && launchInfo.NoTerminateOnTimeout)
-                            {
-                                throw new InvalidOperationException("The NoTerminateOnTimeout option is not supported for console apps while reading stdout/stderr.");
-                            }
                             startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
                             creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                         }
