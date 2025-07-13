@@ -25,7 +25,7 @@ function Start-ADTProcess
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER WorkingDirectory
-        The working directory used for executing the process. Defaults to the directory of the file being executed. The use of UseShellExecute affects this parameter.
+        The working directory used for executing the process. Defaults to DirFiles if there is an active DeploymentSession. The use of UseShellExecute affects this parameter.
 
     .PARAMETER Username
         A username to invoke the process as. Only supported while running as the SYSTEM account.
@@ -466,10 +466,6 @@ function Start-ADTProcess
             {
                 $WorkingDirectory = $adtSession.DirFiles
             }
-            elseif ([System.IO.Path]::HasExtension($FilePath) -and [System.IO.Path]::IsPathRooted($FilePath))
-            {
-                $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
-            }
         }
 
         # Set up initial variables.
@@ -506,10 +502,6 @@ function Start-ADTProcess
                         throw (New-ADTErrorRecord @naerParams)
                     }
                     Write-ADTLogEntry -Message "File path [$FilePath] successfully resolved to fully qualified path [$fqPath]."
-                    if ([System.String]::IsNullOrWhiteSpace($WorkingDirectory))
-                    {
-                        $WorkingDirectory = [System.IO.Path]::GetDirectoryName($fqPath)
-                    }
                     $FilePath = $fqPath
                 }
 
