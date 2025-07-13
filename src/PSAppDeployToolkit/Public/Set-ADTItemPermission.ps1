@@ -16,6 +16,9 @@ function Set-ADTItemPermission
     .PARAMETER Path
         Path to the folder or file you want to modify (ex: C:\Temp)
 
+    .PARAMETER AccessControlList
+        The ACL object to apply to the given path.
+
     .PARAMETER User
         One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
 
@@ -94,8 +97,9 @@ function Set-ADTItemPermission
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
-        [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'AccessControlList')]
         [ValidateScript({
                 if (!(Test-Path -LiteralPath $_))
                 {
@@ -106,35 +110,39 @@ function Set-ADTItemPermission
         [Alias('File', 'Folder')]
         [System.String]$Path,
 
-        [Parameter(Mandatory = $true, Position = 1, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $true, HelpMessage = 'The ACL object to apply to the given path.', ParameterSetName = 'AccessControlList')]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.AccessControl.FileSystemSecurity]$AccessControlList
+
+        [Parameter(Mandatory = $true, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName = 'DisableInheritance')]
         [Alias('Username', 'Users', 'SID', 'Usernames')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$User,
 
-        [Parameter(Mandatory = $true, Position = 2, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName = 'DisableInheritance')]
-        [Alias('Acl', 'Grant', 'Permissions', 'Deny')]
+        [Parameter(Mandatory = $true, HelpMessage = "Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'", ParameterSetName = 'DisableInheritance')]
+        [Alias('Grant', 'Permissions', 'Deny')]
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.FileSystemRights]$Permission,
 
-        [Parameter(Mandatory = $false, Position = 3, HelpMessage = 'Whether you want to set Allow or Deny permissions', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Whether you want to set Allow or Deny permissions', ParameterSetName = 'DisableInheritance')]
         [Alias('AccessControlType')]
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.AccessControlType]$PermissionType = [System.Security.AccessControl.AccessControlType]::Allow,
 
-        [Parameter(Mandatory = $false, Position = 4, HelpMessage = 'Sets how permissions are inherited', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Sets how permissions are inherited', ParameterSetName = 'DisableInheritance')]
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.InheritanceFlags]$Inheritance = [System.Security.AccessControl.InheritanceFlags]::None,
 
-        [Parameter(Mandatory = $false, Position = 5, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName = 'DisableInheritance')]
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.PropagationFlags]$Propagation = [System.Security.AccessControl.PropagationFlags]::None,
 
-        [Parameter(Mandatory = $false, Position = 6, HelpMessage = 'Specifies which method will be used to add/remove/replace permissions.', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Specifies which method will be used to add/remove/replace permissions.', ParameterSetName = 'DisableInheritance')]
         [ValidateSet('AddAccessRule', 'SetAccessRule', 'ResetAccessRule', 'RemoveAccessRule', 'RemoveAccessRuleAll', 'RemoveAccessRuleSpecific')]
         [Alias('ApplyMethod', 'ApplicationMethod')]
         [System.String]$Method = 'AddAccessRule',
 
-        [Parameter(Mandatory = $true, Position = 1, HelpMessage = 'Enables inheritance, which removes explicit permissions.', ParameterSetName = 'EnableInheritance')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Enables inheritance, which removes explicit permissions.', ParameterSetName = 'EnableInheritance')]
         [System.Management.Automation.SwitchParameter]$EnableInheritance
     )
 
@@ -149,6 +157,14 @@ function Set-ADTItemPermission
         {
             try
             {
+                # Directly apply the permissions if an ACL object has been provided.
+                if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
+                {
+                    Write-ADTLogEntry -Message "Setting specifieds ACL on path [$Path]."
+                    $null = Set-Acl -LiteralPath $Path -AclObject $AccessControlList
+                    return
+                }
+
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
