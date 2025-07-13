@@ -596,10 +596,10 @@ function Start-ADTProcess
                 }
 
                 # Start the process.
-                $process = [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($startInfo)
+                $execution = [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($startInfo)
 
                 # Handle if the returned value is null.
-                if (!$process)
+                if (!$execution)
                 {
                     # A null result without using ShellExecute is entirely unexpected.
                     if (!$UseShellExecute)
@@ -608,7 +608,7 @@ function Start-ADTProcess
                             Exception = [System.InvalidOperationException]::new("The launching of the process returned a null result.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'ProcessExecutionNullReturn'
-                            TargetObject = $process
+                            TargetObject = $execution
                             RecommendedAction = "Please report this to the PSAppDeployToolkit development team for further review."
                         }
                         throw (New-ADTErrorRecord @naerParams)
@@ -623,17 +623,17 @@ function Start-ADTProcess
                     Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
                     if ($PassThru)
                     {
-                        if (!$process.Task.IsCompleted)
+                        if (!$execution.Task.IsCompleted)
                         {
                             Write-ADTLogEntry -Message 'PassThru parameter specified, returning task for external tracking.'
-                            return $process
+                            return $execution
                         }
                         Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
-                        return $process.Task.Result
+                        return $execution.Task.Result
                     }
                     return
                 }
-                $process | Out-Null; $result = $process.Task.GetAwaiter().GetResult()
+                $execution | Out-Null; $result = $execution.Task.GetAwaiter().GetResult()
 
                 # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
                 if (!$result)
