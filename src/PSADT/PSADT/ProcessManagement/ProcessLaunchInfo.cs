@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Security.Principal;
@@ -8,7 +7,6 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PSADT.LibraryInterfaces;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.ProcessManagement
 {
@@ -117,12 +115,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, ushort>
+        private static readonly ReadOnlyDictionary<ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, SHOW_WINDOW_CMD>
         {
-            { ProcessWindowStyle.Normal, (ushort)SHOW_WINDOW_CMD.SW_SHOWNORMAL },
-            { ProcessWindowStyle.Hidden, (ushort)SHOW_WINDOW_CMD.SW_HIDE },
-            { ProcessWindowStyle.Minimized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
-            { ProcessWindowStyle.Maximized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED }
+            { ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
+            { ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
+            { ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
+            { ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED }
         });
 
         /// <summary>
@@ -203,7 +201,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public readonly ushort? WindowStyle;
+        public readonly SHOW_WINDOW_CMD? WindowStyle;
 
         /// <summary>
         /// Gets the priority class of the process.

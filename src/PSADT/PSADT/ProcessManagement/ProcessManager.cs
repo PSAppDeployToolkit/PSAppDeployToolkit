@@ -25,7 +25,6 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.ProcessManagement
 {
@@ -76,7 +75,7 @@ namespace PSADT.ProcessManagement
                 if (null != launchInfo.WindowStyle)
                 {
                     startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                    startupInfo.wShowWindow = launchInfo.WindowStyle.Value;
+                    startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
                 }
                 SafeFileHandle? hStdOutWrite = default;
                 SafeFileHandle? hStdErrWrite = default;
@@ -278,12 +277,12 @@ namespace PSADT.ProcessManagement
                 };
                 if (null != launchInfo.WindowStyle)
                 {
-                    startupInfo.nShow = launchInfo.WindowStyle.Value;
+                    startupInfo.nShow = (int)launchInfo.WindowStyle.Value;
                 }
                 if (launchInfo.CreateNoWindow)
                 {
                     startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
-                    startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
+                    startupInfo.nShow = (int)Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE;
                 }
 
                 // Start the process and assign it to the job object if we have a handle.

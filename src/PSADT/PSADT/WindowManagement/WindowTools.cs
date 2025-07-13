@@ -6,7 +6,6 @@ using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.WindowManagement
 {
@@ -90,7 +89,7 @@ namespace PSADT.WindowManagement
             // Restore the window if it's minimized.
             if (PInvoke.IsIconic(hwnd))
             {
-                PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
+                PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE);
             }
 
             // Bring the window to the foreground.
