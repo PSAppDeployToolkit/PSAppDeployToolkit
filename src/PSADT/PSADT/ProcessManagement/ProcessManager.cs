@@ -84,10 +84,15 @@ namespace PSADT.ProcessManagement
                 try
                 {
                     // The process is created suspended so it can be assigned to the job object.
-                    var creationFlags = (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass |
-                        PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                    var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                         PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
+
+                    // Set the process priority class if specified.
+                    if (null != launchInfo.PriorityClass)
+                    {
+                        creationFlags |= (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass.Value;
+                    }
 
                     // We must create a console window for console apps when the window is shown.
                     if (cliApp)
@@ -292,9 +297,9 @@ namespace PSADT.ProcessManagement
                     hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
                     processId = Kernel32.GetProcessId(hProcess);
                     Kernel32.AssignProcessToJobObject(job, hProcess);
-                    if (launchInfo.PriorityClass != ProcessPriorityClass.Normal && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
-                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
+                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass.Value);
                     }
                 }
             }
@@ -321,8 +326,8 @@ namespace PSADT.ProcessManagement
                     try
                     {
                         iocp.DangerousAddRef(ref iocpAddRefInner);
-                        launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousAddRef(ref ctsAddRef);
-                        ReadOnlySpan<HANDLE> handles = [(HANDLE)iocp.DangerousGetHandle(), (HANDLE)launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
+                        launchInfo.CancellationToken?.WaitHandle.SafeWaitHandle.DangerousAddRef(ref ctsAddRef);
+                        ReadOnlySpan<HANDLE> handles = null != launchInfo.CancellationToken ? [(HANDLE)iocp.DangerousGetHandle(), (HANDLE)launchInfo.CancellationToken.Value.WaitHandle.SafeWaitHandle.DangerousGetHandle()] : [(HANDLE)iocp.DangerousGetHandle()];
                         using (hProcess)
                         {
                             while (true)
@@ -362,7 +367,7 @@ namespace PSADT.ProcessManagement
                     {
                         if (ctsAddRef)
                         {
-                            launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousRelease();
+                            launchInfo.CancellationToken!.Value.WaitHandle.SafeWaitHandle.DangerousRelease();
                         }
                         if (iocpAddRefInner)
                         {

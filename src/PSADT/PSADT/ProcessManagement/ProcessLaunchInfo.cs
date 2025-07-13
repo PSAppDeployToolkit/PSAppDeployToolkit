@@ -131,7 +131,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        public readonly string? Arguments = null;
+        public readonly string? Arguments;
 
         /// <summary>
         /// Gets the command line to use when starting the process.
@@ -141,7 +141,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
-        public readonly string? WorkingDirectory = null;
+        public readonly string? WorkingDirectory;
 
         /// <summary>
         /// Gets the username to use when starting the process.
@@ -176,7 +176,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the verb to use when starting the process.
         /// </summary>
-        public readonly string? Verb = null;
+        public readonly string? Verb;
 
         /// <summary>
         /// Gets a value indicating whether to create a new window for the process.
@@ -206,12 +206,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
-        public readonly ProcessPriorityClass PriorityClass = ProcessPriorityClass.Normal;
+        public readonly ProcessPriorityClass? PriorityClass;
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.
         /// </summary>
-        public readonly CancellationToken CancellationToken;
+        public readonly CancellationToken? CancellationToken;
 
         /// <summary>
         /// Gets whether to not end the process upon CancellationToken expiring.
