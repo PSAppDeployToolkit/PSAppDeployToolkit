@@ -50,7 +50,15 @@ namespace PSADT.ProcessManagement
 
             // Determine whether the process we're starting is a console app or not. This is important
             // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
-            bool cliApp = File.Exists(launchInfo.FilePath) ? ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).Subsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI : launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
+            bool cliApp;
+            try
+            {
+                cliApp = ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).Subsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+            }
+            catch
+            {
+                cliApp = launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
+            }
 
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
