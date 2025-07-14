@@ -465,9 +465,13 @@ function Start-ADTProcess
         $extInvoker = !$funcCaller -or !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
 
         # Set up cancellation token.
-        $cancellationToken = if ($Timeout)
+        $cancellationTokenSource = if ($Timeout)
         {
-            [System.Threading.CancellationTokenSource]::new($Timeout).Token
+            [System.Threading.CancellationTokenSource]::new($Timeout)
+        }
+        $cancellationToken = if ($cancellationTokenSource)
+        {
+            $cancellationTokenSource.Token
         }
     }
 
@@ -814,6 +818,14 @@ function Start-ADTProcess
                     return $result
                 }
                 Write-ADTLogEntry -Message 'PassThru parameter specified, however no result was available.'
+            }
+        }
+        finally
+        {
+            if ($cancellationTokenSource)
+            {
+                $cancellationToken = $null
+                $cancellationTokenSource.Dispose()
             }
         }
     }
