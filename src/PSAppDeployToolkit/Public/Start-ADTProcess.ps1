@@ -546,15 +546,15 @@ function Start-ADTProcess
                 # Perform all logging.
                 if ($startInfo.UseShellExecute)
                 {
-                    Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
+                    Write-ADTLogEntry -Message 'UseShellExecute is set to true, StdOut/StdErr streams will not be available.'
                     if ($PSBoundParameters.ContainsKey('PriorityClass') -and !(Test-ADTCallerIsAdmin))
                     {
                         Write-ADTLogEntry -Message "Setting a priority class on a ShellExecute process is only possible for administrators." -Severity 2
                     }
                 }
-                elseif (!$CreateNoWindow -and ![System.Diagnostics.ProcessWindowStyle]::Hidden.Equals($WindowStyle))
+                elseif (!$CreateNoWindow)
                 {
-                    Write-ADTLogEntry -Message 'CreateNoWindow not specified or WindowStyle not Hidden, standard output and error will not be available.'
+                    Write-ADTLogEntry -Message 'CreateNoWindow not specified, StdOut/StdErr streams will not be available.'
                 }
                 if ($startInfo.WorkingDirectory)
                 {
