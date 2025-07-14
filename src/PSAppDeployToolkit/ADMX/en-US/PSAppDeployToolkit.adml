@@ -242,7 +242,9 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 				<decimalTextBox refId="DeferExitCode">DeferExitCode</decimalTextBox>
 			</presentation>
 			<presentation id="FluentAccentColor">
-				<decimalTextBox refId="FluentAccentColor" spin="true" spinStep="1"/>
+				<textBox refId="FluentAccentColor">
+					<label>FluentAccentColor</label>
+				</textBox>
 			</presentation>
 			<presentation id="DialogStyle">
 				<dropdownList refId="DialogStyle" noSort="true" defaultItem="0">DialogStyle</dropdownList>

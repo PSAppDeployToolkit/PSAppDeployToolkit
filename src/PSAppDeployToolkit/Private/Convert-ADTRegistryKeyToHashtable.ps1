@@ -37,6 +37,14 @@ function Private:Convert-ADTRegistryKeyToHashtable
                             {
                                 $subdata.Add($_.Name, [System.Boolean]::Parse($_.Value))
                             }
+                            elseif ($_.Value -match '^-?\d+$')
+                            {
+                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value))
+                            }
+                            elseif ($_.Value -match '^0[xX][0-9a-fA-F]+$')
+                            {
+                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value.Replace('0x', $null), [System.Globalization.NumberStyles]::HexNumber))
+                            }
                             else
                             {
                                 $subdata.Add($_.Name, $_.Value)
