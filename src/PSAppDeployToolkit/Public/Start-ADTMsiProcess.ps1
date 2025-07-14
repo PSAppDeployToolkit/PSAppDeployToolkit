@@ -471,7 +471,7 @@ function Start-ADTMsiProcess
                     {
                         # Get the log directory from the session. This will factor in
                         # whether we're compressing logs, or logging to a subfolder.
-                        Join-Path -Path $adtSession.GetLogPath().FullName -ChildPath $logFile
+                        Join-Path -Path $adtSession.LogPath -ChildPath $logFile
                     }
                     else
                     {

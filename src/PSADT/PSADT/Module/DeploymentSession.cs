@@ -422,21 +422,21 @@ namespace PSADT.Module
                     {
                         Directory.Delete(logTempFolder, true);
                     }
-                    LogPath = Directory.CreateDirectory(logTempFolder).FullName;
+                    _logPath = Directory.CreateDirectory(logTempFolder).FullName;
                 }
                 else
                 {
-                    LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
+                    _logPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
                 }
 
                 // Append subfolder path if configured to do so.
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", string.Empty))).FullName;
+                    _logPath = Directory.CreateDirectory(Path.Combine(_logPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", string.Empty))).FullName;
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, _installName)).FullName;
+                    _logPath = Directory.CreateDirectory(Path.Combine(_logPath, _installName)).FullName;
                 }
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
@@ -453,7 +453,7 @@ namespace PSADT.Module
                     }
                 }
                 _logName = invalidChars.Replace(_logName, string.Empty);
-                string logFile = Path.Combine(LogPath, _logName);
+                string logFile = Path.Combine(_logPath, _logName);
                 FileInfo logFileInfo = new(logFile);
                 var logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
@@ -468,7 +468,7 @@ namespace PSADT.Module
                         string logFileExtension = Path.GetExtension(_logName);
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
-                        string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
+                        string archiveLogFilePath = Path.Combine(_logPath, archiveLogFileName);
                         var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
@@ -487,7 +487,7 @@ namespace PSADT.Module
                         }
 
                         // Get all log files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
+                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
                         int logFilesCount = logFiles.Count();
 
                         // Keep only the max number of log files.
@@ -508,7 +508,7 @@ namespace PSADT.Module
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(LogPath, LogName), true, LogUtilities.LogEncoding))
+                    using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding))
                     {
                         if (!Enum.TryParse<LogStyle>((string)configToolkit["LogStyle"]!, out var configStyle))
                         {
@@ -1312,12 +1312,6 @@ namespace PSADT.Module
         public bool CanExitOnClose() => !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
 
         /// <summary>
-        /// Returns the pre-calculated log file path during session instantiation.
-        /// </summary>
-        /// <returns>The log path as a DirectoryInfo object.</returns>
-        public DirectoryInfo GetLogPath() => new(LogPath);
-
-        /// <summary>
         /// Determines whether the mode is non-interactive.
         /// </summary>
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
@@ -1402,11 +1396,6 @@ namespace PSADT.Module
         private readonly string RegKeyDeferHistory;
 
         /// <summary>
-        /// Gets the deployment session's filesystem log path.
-        /// </summary>
-        private readonly string LogPath;
-
-        /// <summary>
         /// Gets the deployment session's closing exit code.
         /// </summary>
         private int ExitCode;
@@ -1441,6 +1430,7 @@ namespace PSADT.Module
         private readonly string? _defaultMsiFile;
         private readonly string? _defaultMstFile;
         private readonly ReadOnlyCollection<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
+        private readonly string _logPath;
         private readonly string _logName;
         private string? _dirFiles;
         private string? _dirSupportFiles;
@@ -1645,6 +1635,11 @@ namespace PSADT.Module
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
         /// </summary>
         public bool UseDefaultMsi => GetPropertyValue<bool>();
+
+        /// <summary>
+        /// Gets the deployment session's log path.
+        /// </summary>
+        public string LogPath => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets the deployment session's log filename.
