@@ -198,7 +198,7 @@ namespace PSADT.Module
                 }
 
                 // Establish script directories.
-                if (null != _scriptDirectory)
+                if (_scriptDirectory.Count > 0)
                 {
                     foreach (var directory in _scriptDirectory)
                     {
@@ -1426,7 +1426,7 @@ namespace PSADT.Module
         private readonly ReadOnlyDictionary<string, object>? _deployAppScriptParameters;
         private readonly string _currentDate;
         private readonly string _currentTime;
-        private readonly ReadOnlyCollection<string>? _scriptDirectory;
+        private readonly ReadOnlyCollection<string> _scriptDirectory = new ReadOnlyCollection<string>([]);
         private readonly string? _defaultMsiFile;
         private readonly string? _defaultMstFile;
         private readonly ReadOnlyCollection<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
@@ -1596,7 +1596,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public IReadOnlyList<string>? ScriptDirectory => GetPropertyValue<IReadOnlyList<string>?>();
+        public IReadOnlyList<string> ScriptDirectory => GetPropertyValue<IReadOnlyList<string>>();
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
