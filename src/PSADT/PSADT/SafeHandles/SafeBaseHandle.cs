@@ -12,10 +12,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="handle"></param>
         /// <param name="ownsHandle"></param>
-        protected SafeBaseHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
-        {
-            SetHandle(handle);
-        }
+        protected SafeBaseHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
 
         /// <summary>
         /// A null handle that can be used to represent an invalid or uninitialized handle.

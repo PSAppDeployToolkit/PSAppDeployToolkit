@@ -12,9 +12,6 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle()
-        {
-            return Kernel32.CloseHandle(ref handle);
-        }
+        protected override bool ReleaseHandle() => Kernel32.CloseHandle(ref handle);
     }
 }

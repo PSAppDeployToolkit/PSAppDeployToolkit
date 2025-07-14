@@ -53,15 +53,7 @@ namespace PSADT.Types
         /// Returns a value indicating whether any reboot is pending.
         /// </summary>
         /// <returns>True if any reboot is pending; otherwise false.</returns>
-        public bool HasPendingReboot()
-        {
-            return IsSystemRebootPending ||
-                   IsCBServicingRebootPending ||
-                   IsWindowsUpdateRebootPending ||
-                   IsSCCMClientRebootPending == true ||
-                   IsAppVRebootPending ||
-                   IsFileRenameRebootPending == true;
-        }
+        public bool HasPendingReboot() => IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending == true || IsAppVRebootPending || IsFileRenameRebootPending == true;
 
         /// <summary>
         /// Gets the name of the computer.

@@ -31,10 +31,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="progressMessageDetail">Optional new detail message.</param>
         /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
         /// <param name="messageAlignment">Unused message alignment, just here to satisfy the public interface contract.</param>
-        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
-        {
-            Dispatcher.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
-        }
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null) => Dispatcher.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
 
         /// <summary>
         /// Updates the progress display in the Progress dialog. Animates the progress bar value if `percentComplete` is provided.

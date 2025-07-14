@@ -158,7 +158,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
-        internal static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
+        internal static readonly UTF8Encoding LogEncoding = new(true);
 
         /// <summary>
         /// Gets the Write-LogEntry delegate script block.

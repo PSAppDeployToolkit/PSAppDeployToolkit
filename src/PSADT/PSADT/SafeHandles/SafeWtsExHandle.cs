@@ -16,19 +16,13 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="length"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal override void ReAlloc(int length)
-        {
-            throw new NotImplementedException();
-        }
+        internal override void ReAlloc(int length) => throw new NotImplementedException();
 
         /// <summary>
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle()
-        {
-            return WtsApi32.WTSFreeMemoryEx(type, ref handle, (uint)(Length / WtsTypeClassSizes[(int)type]));
-        }
+        protected override bool ReleaseHandle() => WtsApi32.WTSFreeMemoryEx(type, ref handle, (uint)(Length / WtsTypeClassSizes[(int)type]));
 
         /// <summary>
         /// Represents a collection of sizes for various WTS (Windows Terminal Services) type classes.

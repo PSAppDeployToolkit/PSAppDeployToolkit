@@ -42,10 +42,7 @@ namespace PSADT.Serialization
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
-        public static string SerializeToString<T>(T obj)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj, Formatting.None, DefaultJsonSerializerSettings)));
-        }
+        public static string SerializeToString<T>(T obj) => Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj, Formatting.None, DefaultJsonSerializerSettings)));
 
         /// <summary>
         /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
@@ -55,10 +52,7 @@ namespace PSADT.Serialization
         /// JSON to reconstruct the original object.</remarks>
         /// <param name="obj">The object to serialize. Must not be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
-        public static string SerializeToString(object obj)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj, Formatting.None, DefaultJsonSerializerSettings)));
-        }
+        public static string SerializeToString(object obj) => Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj, Formatting.None, DefaultJsonSerializerSettings)));
 
         /// <summary>
         /// Deserializes a Base64-encoded JSON string into an object of the specified type.

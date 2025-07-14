@@ -10,9 +10,6 @@
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        internal static string TrimRemoveNull(this string str)
-        {
-            return str.Replace("\0", string.Empty).Trim();
-        }
+        internal static string TrimRemoveNull(this string str) => str.Replace("\0", string.Empty).Trim();
     }
 }

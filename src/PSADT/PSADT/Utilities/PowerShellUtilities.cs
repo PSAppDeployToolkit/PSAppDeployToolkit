@@ -21,34 +21,33 @@ namespace PSADT.Utilities
         public static Dictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
             Dictionary<string, object> values = [];
-            if ((null == remainingArguments) || (remainingArguments.Count == 0))
+            if (remainingArguments?.Count > 0)
             {
-                return values;
-            }
-            try
-            {
-                string currentKey = string.Empty;
-                foreach (object argument in remainingArguments)
+                try
                 {
-                    if (null == argument)
+                    string currentKey = string.Empty;
+                    foreach (object argument in remainingArguments)
                     {
-                        continue;
-                    }
-                    if ((argument is string str) && Regex.IsMatch(str, "^-"))
-                    {
-                        currentKey = Regex.Replace(str, "(^-|:$)", string.Empty);
-                        values.Add(currentKey, new SwitchParameter(true));
-                    }
-                    else if (!string.IsNullOrWhiteSpace(currentKey))
-                    {
-                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null!;
-                        currentKey = string.Empty;
+                        if (null == argument)
+                        {
+                            continue;
+                        }
+                        if ((argument is string str) && Regex.IsMatch(str, "^-"))
+                        {
+                            currentKey = Regex.Replace(str, "(^-|:$)", string.Empty);
+                            values.Add(currentKey, new SwitchParameter(true));
+                        }
+                        else if (!string.IsNullOrWhiteSpace(currentKey))
+                        {
+                            values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null!;
+                            currentKey = string.Empty;
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new FormatException("The parser was unable to process the provided arguments.", ex);
+                catch (Exception ex)
+                {
+                    throw new FormatException("The parser was unable to process the provided arguments.", ex);
+                }
             }
             return values;
         }

@@ -151,10 +151,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        public new void ShowDialog()
-        {
-            base.ShowDialog();
-        }
+        public new void ShowDialog() => base.ShowDialog();
 
         /// <summary>
         /// Closes the dialog window and cancels associated operations. Can be called by timers or button clicks.
@@ -174,10 +171,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Raises the PropertyChanged event for the specified property.
         /// </summary>
         /// <param name="propertyName"></param>
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         /// <summary>
         /// Prevent window movement by handling WM_SYSCOMMAND
@@ -246,12 +240,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Prevents the user from closing the app via the taskbar
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            // Prevent the window from closing unless explicitly allowed in code
-            // This is to prevent the user from closing the dialog via taskbar
-            e.Cancel = !_canClose;
-        }
+        protected override void OnClosing(CancelEventArgs e) => e.Cancel = !_canClose;
 
         /// <summary>
         /// Clean up resources when the window is closed
@@ -318,11 +307,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void PersistTimer_Tick(object? sender, EventArgs e)
-        {
-            // Reset the window and restore its location.
-            RestoreWindow();
-        }
+        private void PersistTimer_Tick(object? sender, EventArgs e) => RestoreWindow();
 
         /// <summary>
         /// Handles the request navigate event of the hyperlink.
@@ -424,20 +409,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="textBlock">The TextBlock to add the text to.</param>
         /// <param name="text">The text to add.</param>
-        private static void AddBoldText(TextBlock textBlock, string text)
-        {
-            textBlock.Inlines.Add(new Run(text) { FontWeight = FontWeights.Bold });
-        }
+        private static void AddBoldText(TextBlock textBlock, string text) => textBlock.Inlines.Add(new Run(text) { FontWeight = FontWeights.Bold });
 
         /// <summary>
         /// Adds italicized text to the TextBlock.
         /// </summary>
         /// <param name="textBlock">The TextBlock to add the text to.</param>
         /// <param name="text">The text to add.</param>
-        private static void AddItalicText(TextBlock textBlock, string text)
-        {
-            textBlock.Inlines.Add(new Run(text) { FontStyle = FontStyles.Italic });
-        }
+        private static void AddItalicText(TextBlock textBlock, string text) => textBlock.Inlines.Add(new Run(text) { FontStyle = FontStyles.Italic });
 
         /// <summary>
         /// Creates a hyperlink with the specified URL.
@@ -497,11 +476,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Updates the Grid RowDefinition based on the current content.
         /// </summary>
-        protected void UpdateRowDefinition()
-        {
-            // Always use Auto sizing for all dialog types
-            CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
-        }
+        protected void UpdateRowDefinition() => CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
 
         /// <summary>
         /// Converts a 32-bit integer representation of a color into a <see cref="Color"/> object.
@@ -568,10 +543,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <remarks>This method updates both the dialog's window icon and any associated UI element
         /// displaying the application icon.</remarks>
-        private void SetDialogIcon()
-        {
-            Icon = AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
-        }
+        private void SetDialogIcon() => Icon = AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
 
         /// <summary>
         /// Positions the window on the screen based on the specified dialog position.
@@ -794,10 +766,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Callback executed by the countdown timer every second. Decrements remaining time, updates display, and handles auto-action on timeout.
         /// </summary>
         /// <param name="state">Timer state object (not used).</param>
-        protected virtual void CountdownTimer_Tick(object? state)
-        {
-            Dispatcher.Invoke(UpdateCountdownDisplay);
-        }
+        protected virtual void CountdownTimer_Tick(object? state) => Dispatcher.Invoke(UpdateCountdownDisplay);
 
         /// <summary>
         /// The result of the dialog interaction.

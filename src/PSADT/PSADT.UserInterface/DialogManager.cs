@@ -180,10 +180,7 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <remarks>This method checks the internal state to determine if the progress dialog has been initialized and is currently displayed.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
-        internal static bool ProgressDialogOpen()
-        {
-            return progressInitialized.IsSet;
-        }
+        internal static bool ProgressDialogOpen() => progressInitialized.IsSet;
 
         /// <summary>
         /// Updates the messages and optional progress percentage in the currently displayed Progress dialog.
@@ -280,10 +277,7 @@ namespace PSADT.UserInterface
         /// <remarks>The behavior and appearance of the message box are determined by the properties of the <paramref name="options"/> parameter.</remarks>ews
         /// <param name="options">The options for configuring the message box, such as title, message text, buttons, icon, default button, topmost behavior, and expiry duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
-        internal static DialogBoxResult ShowDialogBox(DialogBoxOptions options)
-        {
-            return ShowDialogBox(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon, options.DialogTopMost, options.DialogExpiryDuration);
-        }
+        internal static DialogBoxResult ShowDialogBox(DialogBoxOptions options) => ShowDialogBox(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon, options.DialogTopMost, options.DialogExpiryDuration);
 
         /// <summary>
         /// Displays a message box with the specified title, prompt, buttons, icon, default button, and topmost
@@ -297,10 +291,7 @@ namespace PSADT.UserInterface
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
         /// <returns>A <see cref="MsgBoxResult"/> value indicating the button clicked by the user.</returns>
-        internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, TimeSpan Timeout)
-        {
-            return (DialogBoxResult)ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST | MESSAGEBOX_STYLE.MB_SETFOREGROUND : 0), Timeout);
-        }
+        internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, TimeSpan Timeout) => (DialogBoxResult)ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST | MESSAGEBOX_STYLE.MB_SETFOREGROUND : 0), Timeout);
 
         /// <summary>
         /// Displays a message box with the specified prompt, buttons, and title.
@@ -310,10 +301,7 @@ namespace PSADT.UserInterface
         /// <param name="Options">A <see cref="MESSAGEBOX_STYLE"/> value that specifies the buttons and icons to display in the message box.</param>
         /// <param name="Timeout">An optional <see cref="TimeSpan"/> value that specifies the duration after which the message box will automatically close. If not specified, the message box will remain open until the user interacts with it.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value that indicates which button the user clicked in the message box.</returns>
-        internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default)
-        {
-            return InvokeDialogAction<MESSAGEBOX_RESULT>(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
-        }
+        internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default) => InvokeDialogAction<MESSAGEBOX_RESULT>(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
 
         /// <summary>
         /// Displays a task dialog box with the specified title, subtitle, prompt, buttons, and icon.
@@ -325,10 +313,7 @@ namespace PSADT.UserInterface
         /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> value.</param>
         /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the button that the user clicked to close the dialog.</returns>
-        private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
-        {
-            return InvokeDialogAction<MESSAGEBOX_RESULT>(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
-        }
+        private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon) => InvokeDialogAction<MESSAGEBOX_RESULT>(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
 
         /// <summary>
         /// Displays the Help Console dialog with the specified options.
@@ -339,10 +324,7 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="System.Windows.Forms.DialogResult"/> value indicating the result of the dialog interaction. For
         /// example, <see cref="System.Windows.Forms.DialogResult.OK"/> if the user confirmed, or <see
         /// cref="System.Windows.Forms.DialogResult.Cancel"/> if the user canceled.</returns>
-        internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options)
-        {
-            return InvokeDialogAction<System.Windows.Forms.DialogResult>(() => new Dialogs.Classic.HelpConsole(options).ShowDialog());
-        }
+        internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options) => InvokeDialogAction<System.Windows.Forms.DialogResult>(() => new Dialogs.Classic.HelpConsole(options).ShowDialog());
 
         /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.

@@ -183,10 +183,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+        public void Dispose() => Dispose(true);
 
         /// <summary>
         /// Gets the list of running processes.

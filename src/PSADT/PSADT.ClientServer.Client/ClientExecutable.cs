@@ -523,11 +523,7 @@ namespace PSADT.ClientServer
         /// cref="WindowInfoOptions"/>.</param>
         /// <returns>A serialized string representation of the window information. The format and content of the string depend on
         /// the options provided in <paramref name="arguments"/>.</returns>
-        private static string GetProcessWindowInfo(IReadOnlyDictionary<string, string> arguments)
-        {
-            // Get the window info and return the serialised result for the caller to handle.
-            return SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))));
-        }
+        private static string GetProcessWindowInfo(IReadOnlyDictionary<string, string> arguments) => SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))));
 
         /// <summary>
         /// Retrieves the current user notification state as a serialized string.
@@ -536,10 +532,7 @@ namespace PSADT.ClientServer
         /// as whether the user is available, busy, or away.  The returned string is a serialized representation of the
         /// state, which can be deserialized for further processing.</remarks>
         /// <returns>A serialized string representing the current user notification state.</returns>
-        private static string GetUserNotificationState()
-        {
-            return SerializeObject(ShellUtilities.GetUserNotificationState());
-        }
+        private static string GetUserNotificationState() => SerializeObject(ShellUtilities.GetUserNotificationState());
 
         /// <summary>
         /// Retrieves the process ID of the foreground window and returns it as a serialized string.
@@ -548,10 +541,7 @@ namespace PSADT.ClientServer
         /// function to obtain the process ID of the currently active window and serializes the result. The returned
         /// string can be used for further processing or logging purposes.</remarks>
         /// <returns>A serialized string representation of the process ID of the foreground window.</returns>
-        private static string GetForegroundWindowProcessId()
-        {
-            return SerializeObject(ShellUtilities.GetForegroundWindowProcessId());
-        }
+        private static string GetForegroundWindowProcessId() => SerializeObject(ShellUtilities.GetForegroundWindowProcessId());
 
         /// <summary>
         /// Refreshes the desktop environment and updates system environment variables.

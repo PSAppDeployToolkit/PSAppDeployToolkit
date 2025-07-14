@@ -70,19 +70,13 @@ namespace PSADT.Types
         /// Validates whether the product code is a valid GUID.
         /// </summary>
         /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
-        public bool IsValidProductCode()
-        {
-            return (null != ProductCode);
-        }
+        public bool IsValidProductCode() => (null != ProductCode);
 
         /// <summary>
         /// Returns a string representation of the installed application.
         /// </summary>
         /// <returns>A string that contains key details about the installed application.</returns>
-        public override string ToString()
-        {
-            return $"Installed Application: {DisplayName} (Version: {DisplayVersion}, Publisher: {Publisher})";
-        }
+        public override string ToString() => $"Installed Application: {DisplayName} (Version: {DisplayVersion}, Publisher: {Publisher})";
 
         /// <summary>
         /// Gets the registry key that contains the uninstall entry.

@@ -21,20 +21,14 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal string? ToStringUni(int offset = 0)
-        {
-            return Marshal.PtrToStringUni(handle + offset);
-        }   
+        internal string? ToStringUni(int offset = 0) => Marshal.PtrToStringUni(handle + offset);
 
         /// <summary>
         /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        internal T ToStructure<T>(int offset = 0) where T : struct
-        {
-            return Marshal.PtrToStructure<T>(handle + offset);
-        }
+        internal T ToStructure<T>(int offset = 0) where T : struct => Marshal.PtrToStructure<T>(handle + offset);
 
         /// <summary>
         /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
@@ -54,57 +48,39 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal long ReadInt64(int offset = 0)
-        {
-            return Marshal.ReadInt64(handle + offset);
-        }
+        internal long ReadInt64(int offset = 0) => Marshal.ReadInt64(handle + offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal int ReadInt32(int offset = 0)
-        {
-            return Marshal.ReadInt32(handle + offset);
-        }
+        internal int ReadInt32(int offset = 0) => Marshal.ReadInt32(handle + offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal short ReadInt16(int offset = 0)
-        {
-            return Marshal.ReadInt16(handle + offset);
-        }
+        internal short ReadInt16(int offset = 0) => Marshal.ReadInt16(handle + offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal byte ReadByte(int offset = 0)
-        {
-            return Marshal.ReadByte(handle + offset);
-        }   
+        internal byte ReadByte(int offset = 0) => Marshal.ReadByte(handle + offset);
 
         /// <summary>
         /// Clears the memory block by setting all bytes to zero.
         /// </summary>
-        internal unsafe void Clear()
-        {
-            new Span<byte>(handle.ToPointer(), Length).Clear();
-        }
+        internal unsafe void Clear() => new Span<byte>(handle.ToPointer(), Length).Clear();
 
         /// <summary>
         /// Converts the handle to a <see cref="PWSTR"/> structure.
         /// </summary>
         /// <returns></returns>
-        internal PWSTR ToPWSTR()
-        {
-            return new(handle);
-        }
+        internal PWSTR ToPWSTR() => new(handle);
 
         /// <summary>
         /// Releases the handle and frees the allocated memory.

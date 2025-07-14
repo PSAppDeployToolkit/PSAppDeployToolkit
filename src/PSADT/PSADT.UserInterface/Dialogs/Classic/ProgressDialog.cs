@@ -65,10 +65,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="progressMessageDetail"></param>
         /// <param name="progressPercentage"></param>
         /// <param name="messageAlignment"></param>
-        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
-        {
-            this.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
-        }
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null) => this.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
 
         /// <summary>
         /// Updates the progress dialog with the specified messages and percentage complete.

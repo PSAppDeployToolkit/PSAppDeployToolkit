@@ -126,20 +126,14 @@ namespace PSADT.Security
         /// <param name="token"></param>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
-        {
-            return GetPrivileges(token).Contains(privilege);
-        }
+        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege) => GetPrivileges(token).Contains(privilege);
 
         /// <summary>
         /// Determines whether a privilege is enabled in the current process token.
         /// </summary>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        internal static bool HasPrivilege(SE_PRIVILEGE privilege)
-        {
-            return AccountUtilities.CallerPrivileges.Contains(privilege);
-        }
+        internal static bool HasPrivilege(SE_PRIVILEGE privilege) => AccountUtilities.CallerPrivileges.Contains(privilege);
 
         /// <summary>
         /// Determines whether a privilege is enabled in the specified token.
@@ -147,10 +141,7 @@ namespace PSADT.Security
         /// <param name="token"></param>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
-        {
-            return GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
-        }
+        private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege) => GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
 
         /// <summary>
         /// Determines whether a privilege is enabled in the current process token.

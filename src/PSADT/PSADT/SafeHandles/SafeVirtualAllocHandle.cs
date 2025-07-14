@@ -34,9 +34,6 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle()
-        {
-            return Kernel32.VirtualFree(handle, UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
-        }
+        protected override bool ReleaseHandle() => Kernel32.VirtualFree(handle, UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
     }
 }

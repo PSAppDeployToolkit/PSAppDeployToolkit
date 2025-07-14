@@ -38,10 +38,7 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static PSObject Get()
-        {
-            return _database ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
-        }
+        internal static PSObject Get() => _database ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
 
         /// <summary>
         /// Determines whether the database has been initialized.
@@ -49,40 +46,28 @@ namespace PSADT.Module
         /// <remarks>This method checks the "Initialized" property of the database to determine its state.
         /// Ensure the database object is properly configured before calling this method.</remarks>
         /// <returns><see langword="true"/> if the database is initialized; otherwise, <see langword="false"/>.</returns>
-        public static bool IsInitialized()
-        {
-            return (bool)_database?.Properties["Initialized"].Value!;
-        }
+        public static bool IsInitialized() => (bool)_database?.Properties["Initialized"].Value!;
 
         /// <summary>
         /// Gets the environment table from the internal database.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static IReadOnlyDictionary<string, object> GetEnvironment()
-        {
-            return (IReadOnlyDictionary<string, object>)_database?.Properties["Environment"].Value! ?? throw new InvalidOperationException(errorMessage);
-        }
+        public static IReadOnlyDictionary<string, object> GetEnvironment() => (IReadOnlyDictionary<string, object>)_database?.Properties["Environment"].Value! ?? throw new InvalidOperationException(errorMessage);
 
         /// <summary>
         /// Gets the config table from the internal database.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static Hashtable GetConfig()
-        {
-            return (Hashtable)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject! ?? throw new InvalidOperationException(errorMessage);
-        }
+        public static Hashtable GetConfig() => (Hashtable)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject! ?? throw new InvalidOperationException(errorMessage);
 
         /// <summary>
         /// Gets the active string table from the internal database.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static Hashtable GetStrings()
-        {
-            return (Hashtable)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject! ?? throw new InvalidOperationException(errorMessage);
-        }
+        public static Hashtable GetStrings() => (Hashtable)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject! ?? throw new InvalidOperationException(errorMessage);
 
         /// <summary>
         /// Determines whether there is at least one active deployment session.
@@ -91,10 +76,7 @@ namespace PSADT.Module
         /// If the database or session data is unavailable, the method will return <see langword="false"/>.</remarks>
         /// <returns><see langword="true"/> if there is at least one active deployment session; otherwise, <see
         /// langword="false"/>.</returns>
-        public static bool IsDeploymentSessionActive()
-        {
-            return ((List<DeploymentSession>)_database?.Properties["Sessions"].Value!).Count > 0;
-        }
+        public static bool IsDeploymentSessionActive() => ((List<DeploymentSession>)_database?.Properties["Sessions"].Value!).Count > 0;
 
         /// <summary>
         /// Gets the active deployment session from the internal database.
@@ -116,20 +98,14 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static SessionState GetSessionState()
-        {
-            return _sessionState ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
-        }
+        internal static SessionState GetSessionState() => _sessionState ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
 
         /// <summary>
         /// Retrieves the default PowerShell runspace associated with the current context.
         /// </summary>
         /// <returns>The default <see cref="Runspace"/> instance.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the default runspace is not initialized. This typically occurs if the assembly is not loaded via the PSAppDeployToolkit PowerShell module.</exception>
-        internal static Runspace GetRunspace()
-        {
-            return _defaultRunspace ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
-        }
+        internal static Runspace GetRunspace() => _defaultRunspace ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
 
         /// <summary>
         /// Utility method to invoke a scriptblock using the module's internal SessionState.
@@ -137,9 +113,6 @@ namespace PSADT.Module
         /// <param name="scriptBlock"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        internal static Collection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
-        {
-            return _sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args);
-        }
+        internal static Collection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args) => _sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args);
     }
 }

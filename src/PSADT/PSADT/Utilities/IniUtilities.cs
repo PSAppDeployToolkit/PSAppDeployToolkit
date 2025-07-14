@@ -35,10 +35,7 @@ namespace PSADT.Utilities
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="filepath"></param>
-        public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
-        {
-            Kernel32.WritePrivateProfileString(section, key, value, filepath);
-        }
+        public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value) => Kernel32.WritePrivateProfileString(section, key, value, filepath);
 
         /// <summary>
         /// Gets all key/value pairs in a section of an INI file.

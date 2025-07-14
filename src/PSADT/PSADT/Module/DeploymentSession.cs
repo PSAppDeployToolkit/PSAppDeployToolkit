@@ -1068,39 +1068,27 @@ namespace PSADT.Module
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        public void WriteLogEntry(IReadOnlyList<string> message)
-        {
-            WriteLogEntry(message, false, null, null, null, null, null, null, null);
-        }
+        public void WriteLogEntry(IReadOnlyList<string> message) => WriteLogEntry(message, false, null, null, null, null, null, null, null);
 
         /// <summary>
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
-        public void WriteLogEntry(string message)
-        {
-            WriteLogEntry([message], false, null, null, null, null, null, null, null);
-        }
+        public void WriteLogEntry(string message) => WriteLogEntry([message], false, null, null, null, null, null, null, null);
 
         /// <summary>
         /// Writes a log entry with a single message and severity.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public void WriteLogEntry(string message, LogSeverity severity)
-        {
-            WriteLogEntry([message], false, severity, null, null, null, null, null, null);
-        }
+        public void WriteLogEntry(string message, LogSeverity severity) => WriteLogEntry([message], false, severity, null, null, null, null, null, null);
 
         /// <summary>
         /// Writes a log entry with a single message and source.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="source">The source of the message.</param>
-        public void WriteLogEntry(string message, string source)
-        {
-            WriteLogEntry([message], false, null, source, null, null, null, null, null);
-        }
+        public void WriteLogEntry(string message, string source) => WriteLogEntry([message], false, null, source, null, null, null, null, null);
 
         /// <summary>
         /// Writes a log entry with a single message, severity, and source.
@@ -1108,28 +1096,19 @@ namespace PSADT.Module
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        public void WriteLogEntry(string message, LogSeverity severity, string source)
-        {
-            WriteLogEntry([message], false, severity, source, null, null, null, null, null);
-        }
+        public void WriteLogEntry(string message, LogSeverity severity, string source) => WriteLogEntry([message], false, severity, source, null, null, null, null, null);
 
         /// <summary>
         /// Writes a log entry with a single message and host write option.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        public void WriteLogEntry(string message, bool writeHost)
-        {
-            WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
-        }
+        public void WriteLogEntry(string message, bool writeHost) => WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
 
         /// <summary>
         /// Writes a log divider.
         /// </summary>
-        private void WriteLogDivider()
-        {
-            WriteLogEntry(LogUtilities.LogDivider);
-        }
+        private void WriteLogDivider() => WriteLogEntry(LogUtilities.LogDivider);
 
         /// <summary>
         /// Writes a divider if one hasn't been written already.
@@ -1148,10 +1127,7 @@ namespace PSADT.Module
         /// Gets the log buffer as a read-only list.
         /// </summary>
         /// <returns></returns>
-        public IReadOnlyList<LogEntry> GetLogBuffer()
-        {
-            return LogBuffer.AsReadOnly();
-        }
+        public IReadOnlyList<LogEntry> GetLogBuffer() => LogBuffer.AsReadOnly();
 
         /// <summary>
         /// Gets the value of a property.
@@ -1187,18 +1163,12 @@ namespace PSADT.Module
         /// Tests the deferral history path.
         /// </summary>
         /// <returns>True if the deferral history path exists; otherwise, false.</returns>
-        private bool TestDeferHistoryPath()
-        {
-            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
-        }
+        private bool TestDeferHistoryPath() => ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
 
         /// <summary>
         /// Creates the deferral history path.
         /// </summary>
-        private void CreateDeferHistoryPath()
-        {
-            ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
-        }
+        private void CreateDeferHistoryPath() => ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
 
         /// <summary>
         /// Gets the deferral history.
@@ -1327,81 +1297,54 @@ namespace PSADT.Module
         /// Add the mounted WIM files.
         /// </summary>
         /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
-        public void AddMountedWimFile(FileInfo wimFile)
-        {
-            MountedWimFiles.Add(wimFile);
-        }
+        public void AddMountedWimFile(FileInfo wimFile) => MountedWimFiles.Add(wimFile);
 
         /// <summary>
         /// Gets the default MSI executables list.
         /// </summary>
         /// <returns>An array of default MSI executables.</returns>
-        public IReadOnlyList<ProcessDefinition> GetDefaultMsiExecutablesList()
-        {
-            return DefaultMsiExecutablesList;
-        }
+        public IReadOnlyList<ProcessDefinition> GetDefaultMsiExecutablesList() => DefaultMsiExecutablesList;
 
         /// <summary>
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
-        public bool CanExitOnClose()
-        {
-            return !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
-        }
+        public bool CanExitOnClose() => !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
 
         /// <summary>
         /// Returns the pre-calculated log file path during session instantiation.
         /// </summary>
         /// <returns>The log path as a DirectoryInfo object.</returns>
-        public DirectoryInfo GetLogPath()
-        {
-            return new(LogPath);
-        }
+        public DirectoryInfo GetLogPath() => new(LogPath);
 
         /// <summary>
         /// Determines whether the mode is non-interactive.
         /// </summary>
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
-        public bool IsNonInteractive()
-        {
-            return Settings.HasFlag(DeploymentSettings.NonInteractive);
-        }
+        public bool IsNonInteractive() => Settings.HasFlag(DeploymentSettings.NonInteractive);
 
         /// <summary>
         /// Determines whether the mode is silent.
         /// </summary>
         /// <returns>True if the mode is silent; otherwise, false.</returns>
-        public bool IsSilent()
-        {
-            return Settings.HasFlag(DeploymentSettings.Silent);
-        }
+        public bool IsSilent() => Settings.HasFlag(DeploymentSettings.Silent);
 
         /// <summary>
         /// Gets the exit code.
         /// </summary>
-        public int GetExitCode()
-        {
-            return ExitCode;
-        }
+        public int GetExitCode() => ExitCode;
 
         /// <summary>
         /// Sets the exit code.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
-        public void SetExitCode(int exitCode)
-        {
-            ExitCode = exitCode;
-        }
+        public void SetExitCode(int exitCode) => ExitCode = exitCode;
 
         /// <summary>
         /// Returns whether this session has been closed out.
         /// </summary>
         /// <returns>True if so; otherwise, false.</returns>
-        public bool IsClosed()
-        {
-            return Settings.HasFlag(DeploymentSettings.Disposed);
-        }
+        public bool IsClosed() => Settings.HasFlag(DeploymentSettings.Disposed);
 
 
         #endregion

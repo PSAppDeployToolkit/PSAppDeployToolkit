@@ -12,146 +12,98 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static sbyte ToSByte(long val)
-        {
-            unchecked
-            {
-                return (sbyte)val;
-            }
-        }
+        public static sbyte ToSByte(long val) => unchecked((sbyte)val);
 
         /// <summary>
         /// Converts the given value to an unsigned byte.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static byte ToByte(long val)
-        {
-            unchecked
-            {
-                return (byte)val;
-            }
-        }
+        public static byte ToByte(long val) => unchecked((byte)val);
 
         /// <summary>
         /// Converts the given value to a signed short.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static short ToShort(long val)
-        {
-            unchecked
-            {
-                return (short)val;
-            }
-        }
+        public static short ToShort(long val) => unchecked((short)val);
 
         /// <summary>
         /// Converts the given value to an unsigned short.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static ushort ToUShort(long val)
-        {
-            unchecked
-            {
-                return (ushort)val;
-            }
-        }
+        public static ushort ToUShort(long val) => unchecked((ushort)val);
 
         /// <summary>
         /// Converts the given value to a signed integer.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static int ToInt(long val)
-        {
-            unchecked
-            {
-                return (int)val;
-            }
-        }
+        public static int ToInt(long val) => unchecked((int)val);
 
         /// <summary>
         /// Converts the given value to an unsigned integer.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static uint ToUInt(long val)
-        {
-            unchecked
-            {
-                return (uint)val;
-            }
-        }
+        public static uint ToUInt(long val) => unchecked((uint)val);
 
         /// <summary>
         /// Converts the given value to a signed long.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static long ToLong(long val)
-        {
-            unchecked
-            {
-                return val;
-            }
-        }
+        public static long ToLong(long val) => unchecked((long)val);
 
         /// <summary>
         /// Converts the given value to an unsigned long.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static ulong ToULong(long val)
-        {
-            unchecked
-            {
-                return (ulong)val;
-            }
-        }
+        public static ulong ToULong(long val) => unchecked((ulong)val);
 
         /// <summary>
         /// Converts the given value to a signed short.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static short ToInt16(long val) { return ToShort(val); }
+        public static short ToInt16(long val) => ToShort(val);
 
         /// <summary>
         /// Converts the given value to an unsigned short.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static ushort ToUInt16(long val) { return ToUShort(val); }
+        public static ushort ToUInt16(long val) => ToUShort(val);
 
         /// <summary>
         /// Converts the given value to a signed integer.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static int ToInt32(long val) { return ToInt(val); }
+        public static int ToInt32(long val) => ToInt(val);
 
         /// <summary>
         /// Converts the given value to an unsigned integer.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static uint ToUInt32(long val) { return ToUInt(val); }
+        public static uint ToUInt32(long val) => ToUInt(val);
 
         /// <summary>
         /// Converts the given value to a signed long.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static long ToInt64(long val) { return ToLong(val); }
+        public static long ToInt64(long val) => ToLong(val);
 
         /// <summary>
         /// Converts the given value to an unsigned long.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static ulong ToUInt64(long val) { return ToULong(val); }
+        public static ulong ToUInt64(long val) => ToULong(val);
 
         /// <summary>
         /// Valid value types for ValueTypeConverter.

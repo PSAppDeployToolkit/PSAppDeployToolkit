@@ -81,10 +81,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        public new void ShowDialog()
-        {
-            base.ShowDialog();
-        }
+        public new void ShowDialog() => base.ShowDialog();
 
         /// <summary>
         /// Closes the dialog.
@@ -120,30 +117,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonLeft_Click(object sender, EventArgs e)
-        {
-            CloseDialog();
-        }
+        protected virtual void ButtonLeft_Click(object sender, EventArgs e) => CloseDialog();
 
         /// <summary>
         /// Handles the click event of the middle button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
-        {
-            CloseDialog();
-        }
+        protected virtual void ButtonMiddle_Click(object sender, EventArgs e) => CloseDialog();
 
         /// <summary>
         /// Handles the click event of the right button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonRight_Click(object sender, EventArgs e)
-        {
-            CloseDialog();
-        }
+        protected virtual void ButtonRight_Click(object sender, EventArgs e) => CloseDialog();
 
         /// <summary>
         /// Handles the form's load event.
@@ -367,11 +355,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void PersistTimer_Tick(object? sender, EventArgs e)
-        {
-            // Reset the window and restore its location.
-            RestoreWindow();
-        }
+        private void PersistTimer_Tick(object? sender, EventArgs e) => RestoreWindow();
 
         /// <summary>
         /// The result of the dialog.

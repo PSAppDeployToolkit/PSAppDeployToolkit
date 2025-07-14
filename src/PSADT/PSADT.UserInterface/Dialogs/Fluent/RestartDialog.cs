@@ -62,11 +62,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
-        {
-            // Just minimize the window.
-            WindowState = WindowState.Minimized;
-        }
+        protected override void ButtonRight_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
         /// <summary>
         /// Handles the countdown timer tick event.

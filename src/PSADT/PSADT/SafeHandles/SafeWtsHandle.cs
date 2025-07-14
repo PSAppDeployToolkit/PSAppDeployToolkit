@@ -13,10 +13,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="length"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal override void ReAlloc(int length)
-        {
-            throw new NotImplementedException();
-        }
+        internal override void ReAlloc(int length) => throw new NotImplementedException();
 
         /// <summary>
         /// Releases the handle.

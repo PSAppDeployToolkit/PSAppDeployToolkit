@@ -19,10 +19,7 @@ namespace PSADT.Utilities
         /// <param name="value">The collection of strings to process. Each string represents a line.</param>
         /// <returns>An <see cref="IEnumerable{T}"/> of strings with leading and trailing white-space lines removed. The order of
         /// the remaining lines is preserved.</returns>
-        public static IEnumerable<string> TrimLeadingTrailingLines(IEnumerable<string> value)
-        {
-            return value.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse();
-        }
+        public static IEnumerable<string> TrimLeadingTrailingLines(IEnumerable<string> value) => value.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse();
 
         /// <summary>
         /// Trims leading and trailing empty lines from the specified string.
@@ -30,9 +27,6 @@ namespace PSADT.Utilities
         /// <param name="value">The string from which to trim leading and trailing empty lines.</param>
         /// <returns>A string with leading and trailing empty lines removed. If the input string is empty or consists only of
         /// whitespace, returns an empty string.</returns>
-        public static string TrimLeadingTrailingLines(string value)
-        {
-            return string.Join("\n", TrimLeadingTrailingLines(value.Split('\n').Select(static s => s.TrimEnd())));
-        }
+        public static string TrimLeadingTrailingLines(string value) => string.Join("\n", TrimLeadingTrailingLines(value.Split('\n').Select(static s => s.TrimEnd())));
     }
 }

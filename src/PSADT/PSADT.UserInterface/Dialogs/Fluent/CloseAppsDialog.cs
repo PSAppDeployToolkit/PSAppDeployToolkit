@@ -118,10 +118,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Determines whether deferrals are currently available.
         /// </summary>
         /// <returns><see langword="true"/> if there are remaining deferrals or a deferral deadline is set; otherwise, <see langword="false"/>.</returns>
-        private bool DeferralsAvailable()
-        {
-            return _deferralsRemaining.HasValue || _deferralDeadline.HasValue;
-        }
+        private bool DeferralsAvailable() => _deferralsRemaining.HasValue || _deferralDeadline.HasValue;
 
         /// <summary>
         /// Updates the deferral values displayed in the dialog.
@@ -193,10 +190,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
-        {
-            Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(p => new AppToClose(p))));
-        }
+        private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e) => Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(p => new AppToClose(p))));
 
         /// <summary>
         /// Handles the event when the collection of apps to close changes.
@@ -252,10 +246,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            UpdateRunningProcesses();
-        }
+        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateRunningProcesses();
 
         /// <summary>
         /// Handles the loading event of the dialog.

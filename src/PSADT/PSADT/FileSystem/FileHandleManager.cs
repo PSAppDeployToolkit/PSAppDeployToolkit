@@ -172,10 +172,7 @@ namespace PSADT.FileSystem
         /// Retrieves a list of open handles for the system.
         /// </summary>
         /// <returns></returns>
-        public static IReadOnlyList<FileHandleInfo> GetOpenHandles()
-        {
-            return GetOpenHandles(null);
-        }
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles() => GetOpenHandles(null);
 
         /// <summary>
         /// Closes the specified handles.

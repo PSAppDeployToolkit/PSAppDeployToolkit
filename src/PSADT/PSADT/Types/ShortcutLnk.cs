@@ -39,16 +39,18 @@ namespace PSADT.Types
         {
             // Validate the hotkey format based on Windows shortcut criteria.
             if (string.IsNullOrWhiteSpace(Hotkey))
+            {
                 return false;
-
+            }
             string[] parts = Hotkey!.Split('+');
             if (parts.Length < 2)
+            {
                 return false;
-
-            string[] validModifiers = { "Ctrl", "Alt", "Shift" };
-            string[] validKeys = { "A-Z", "0-9", "F1-F12", "Insert", "Delete", "Home", "End" };
+            }
 
             // Check if it contains a valid modifier
+            string[] validModifiers = { "Ctrl", "Alt", "Shift" };
+            string[] validKeys = { "A-Z", "0-9", "F1-F12", "Insert", "Delete", "Home", "End" };
             bool containsModifier = false;
             foreach (var part in parts)
             {
@@ -69,7 +71,6 @@ namespace PSADT.Types
                     break;
                 }
             }
-
             return containsModifier && containsValidKey;
         }
 
@@ -120,7 +121,6 @@ namespace PSADT.Types
                     return index;
                 }
             }
-
             return -1;
         }
     }

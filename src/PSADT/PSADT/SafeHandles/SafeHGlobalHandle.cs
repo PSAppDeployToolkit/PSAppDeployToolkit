@@ -31,10 +31,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        internal static SafeHGlobalHandle StringToUni(string input)
-        {
-            return new(Marshal.StringToHGlobalUni(input), (input.Length + 1) * 2, true);
-        }
+        internal static SafeHGlobalHandle StringToUni(string input) => new(Marshal.StringToHGlobalUni(input), (input.Length + 1) * 2, true);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SafeHGlobalHandle"/> class with the specified handle and size.

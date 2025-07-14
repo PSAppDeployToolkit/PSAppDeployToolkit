@@ -83,9 +83,6 @@ namespace PSADT.Types
         /// </summary>
         /// <param name="targetPath">The target path to validate.</param>
         /// <returns>True if the target path is valid, otherwise false.</returns>
-        private static bool IsValidTargetPath(string targetPath)
-        {
-            return Uri.TryCreate(targetPath, UriKind.Absolute, out _);
-        }
+        private static bool IsValidTargetPath(string targetPath) => Uri.TryCreate(targetPath, UriKind.Absolute, out _);
     }
 }

@@ -12,10 +12,7 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle()
-        {
-            return UserEnv.DestroyEnvironmentBlock(ref handle);
-        }
+        protected override bool ReleaseHandle() => UserEnv.DestroyEnvironmentBlock(ref handle);
 
         /// <summary>
         /// Represents a null safe handle for an environment block.

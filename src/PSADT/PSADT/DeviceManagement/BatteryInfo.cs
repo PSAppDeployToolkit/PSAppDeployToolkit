@@ -18,10 +18,7 @@ namespace PSADT.DeviceManagement
         /// Retrieves the current battery information.
         /// </summary>
         /// <returns>A <see cref="BatteryInfo"/> object containing details about the battery's state.</returns>
-        public static BatteryInfo Get()
-        {
-            return new();
-        }
+        public static BatteryInfo Get() => new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BatteryInfo"/> class.
@@ -62,14 +59,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Represents the current battery life percentage of a device.
         /// </summary>
-        public byte? BatteryLifePercent
-        {
-            get
-            {
-                // IsBatteryInvalid() will call UpdateSystemPowerStatus() internally for us.
-                return !IsBatteryInvalid() && systemPowerStatus.BatteryLifePercent != byte.MaxValue ? systemPowerStatus.BatteryLifePercent : null;
-            }
-        }
+        public byte? BatteryLifePercent => !IsBatteryInvalid() && systemPowerStatus.BatteryLifePercent != byte.MaxValue ? systemPowerStatus.BatteryLifePercent : null;
 
         /// <summary>
         /// Represents the current battery life percentage of a device.
@@ -111,14 +101,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets a value indicating whether the system is currently using AC power.
         /// </summary>
-        public bool IsUsingACPower
-        {
-            get
-            {
-                // IsBatteryInvalid() will call UpdateSystemPowerStatus() internally for us.
-                return (IsBatteryInvalid() && systemPowerStatus.ACLineStatus == (byte)PowerLineStatus.Unknown) || systemPowerStatus.ACLineStatus == (byte)PowerLineStatus.Online;
-            }
-        }
+        public bool IsUsingACPower => (IsBatteryInvalid() && systemPowerStatus.ACLineStatus == (byte)PowerLineStatus.Unknown) || systemPowerStatus.ACLineStatus == (byte)PowerLineStatus.Online;
 
         /// <summary>
         /// Indicates whether the device is a laptop.
@@ -140,10 +123,7 @@ namespace PSADT.DeviceManagement
         /// <remarks>This method uses the <see cref="Kernel32.GetSystemPowerStatus"/> function to update
         /// the power status. The retrieved information includes details such as battery charge level, AC power status,
         /// and battery life.</remarks>
-        private static void UpdateSystemPowerStatus()
-        {
-            Kernel32.GetSystemPowerStatus(out systemPowerStatus);
-        }
+        private static void UpdateSystemPowerStatus() => Kernel32.GetSystemPowerStatus(out systemPowerStatus);
 
         /// <summary>
         /// Represents the current power status of the system.

@@ -31,10 +31,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        internal static SafeCoTaskMemHandle StringToUni(string input)
-        {
-            return new(Marshal.StringToCoTaskMemUni(input), (input.Length + 1) * 2, true);
-        }
+        internal static SafeCoTaskMemHandle StringToUni(string input) => new(Marshal.StringToCoTaskMemUni(input), (input.Length + 1) * 2, true);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SafeCoTaskMemHandle"/> class with the specified handle and size.
