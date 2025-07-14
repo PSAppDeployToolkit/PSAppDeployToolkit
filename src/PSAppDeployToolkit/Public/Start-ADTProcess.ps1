@@ -36,9 +36,6 @@ function Start-ADTProcess
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
-    .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
-
     .PARAMETER UseUnelevatedToken
         If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
 
@@ -53,6 +50,9 @@ function Start-ADTProcess
 
     .PARAMETER Verb
         The verb to use when doing a ShellExecute invocation. Common usages are "runas" to trigger a UAC elevation of the process.
+
+    .PARAMETER ExpandEnvironmentVariables
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
@@ -234,17 +234,6 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
-        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
-
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
@@ -279,6 +268,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Verb = [System.Management.Automation.Language.NullString]::Value,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]

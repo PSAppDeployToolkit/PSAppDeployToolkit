@@ -58,11 +58,11 @@ function Start-ADTMsiProcess
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
-    .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
-
     .PARAMETER UseUnelevatedToken
         If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
+
+    .PARAMETER ExpandEnvironmentVariables
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the config.psd1 file.
@@ -227,15 +227,13 @@ function Start-ADTMsiProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_InstalledApplication')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_FilePath')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_ProductCode')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_InstalledApplication')]
-        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
-
         [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_FilePath')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_ProductCode')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken_InstalledApplication')]
         [System.Management.Automation.SwitchParameter]$UseUnelevatedToken,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
