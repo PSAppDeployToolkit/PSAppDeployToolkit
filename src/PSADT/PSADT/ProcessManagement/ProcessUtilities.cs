@@ -283,7 +283,15 @@ namespace PSADT.ProcessManagement
             }
 
             // Return the built command line string.
-            return stringBuilder.ToString().Trim() is string arguments && !string.IsNullOrWhiteSpace(arguments) ? arguments : null;
+            return stringBuilder.ToString().Trim() is string arguments && !string.IsNullOrWhiteSpace(arguments) ? arguments + '\0' : null;
         }
+
+        /// <summary>
+        /// Parses a command line string into an array of arguments.
+        /// </summary>
+        /// <param name="commandLine">The command line string to be parsed into arguments. Cannot be null or empty.</param>
+        /// <returns>A read-only list of strings, each representing an individual argument parsed from the command line.</returns>
+        /// <exception cref="ArgumentException">Thrown if the command line string cannot be parsed into arguments.</exception>
+        public static IReadOnlyList<string> CommandLineToArgv(string commandLine) => Shell32.CommandLineToArgv(commandLine).ToList().AsReadOnly() ?? throw new ArgumentException("Failed to parse command line arguments.", nameof(commandLine));
     }
 }

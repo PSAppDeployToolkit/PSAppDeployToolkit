@@ -568,19 +568,15 @@ function Start-ADTProcess
                 {
                     Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
                 }
-                if ($startInfo.Arguments)
+                if ($ArgumentList)
                 {
                     if ($SecureArgumentList)
                     {
                         Write-ADTLogEntry -Message "Executing [$FilePath (Parameters Hidden)]$(if ($Username) {" for user [$Username]"})..."
                     }
-                    elseif ($startInfo.Arguments -match '-Command \&')
-                    {
-                        Write-ADTLogEntry -Message "Executing [$FilePath [PowerShell ScriptBlock]]$(if ($Username) {" for user [$Username]"})..."
-                    }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$FilePath $($startInfo.Arguments)]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [$FilePath $($ArgumentList)]$(if ($Username) {" for user [$Username]"})..."
                     }
                 }
                 else
@@ -589,7 +585,7 @@ function Start-ADTProcess
                 }
 
                 # Start the process.
-                $execution = [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($startInfo)
+                ($execution = [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($startInfo)) | Out-String | Out-Null
 
                 # Handle if the returned value is null.
                 if (!$execution)
@@ -626,7 +622,22 @@ function Start-ADTProcess
                     }
                     return
                 }
-                $execution | Out-Null; $result = $execution.Task.GetAwaiter().GetResult()
+                if ($ArgumentList)
+                {
+                    if ($SecureArgumentList)
+                    {
+                        Write-ADTLogEntry -Message "Executed [$(if (($command = [PSADT.ProcessManagement.ProcessUtilities]::CommandLineToArgv($execution.CommandLine)[0]).Contains(' ')) { [System.String]::Format('"{0}"', $command) } else { $command }) (Parameters Hidden)], awaiting completion..."
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Executed [$($execution.CommandLine)], awaiting completion..."
+                    }
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Executed [$($execution.CommandLine)], awaiting completion..."
+                }
+                $result = $execution.Task.GetAwaiter().GetResult()
 
                 # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
                 if (!$result)

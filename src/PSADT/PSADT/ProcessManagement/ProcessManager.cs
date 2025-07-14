@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
@@ -77,6 +78,7 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
+            string commandLine;
             if (cliApp && launchInfo.CreateNoWindow || !launchInfo.UseShellExecute || null != launchInfo.Username)
             {
                 var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
@@ -195,17 +197,7 @@ namespace PSADT.ProcessManagement
                             using (lpEnvironment)
                             {
                                 startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                string? workingDirectory = launchInfo.WorkingDirectory;
-                                string commandLine = launchInfo.CommandLine;
-                                if (launchInfo.ExpandEnvironmentVariables)
-                                {
-                                    var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
-                                    commandLine = ExpandEnvironmentVariables(session.NTAccount, launchInfo.CommandLine, environmentDictionary);
-                                    if (null != workingDirectory)
-                                    {
-                                        workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
-                                    }
-                                }
+                                OutLaunchArguments(launchInfo, session.NTAccount, EnvironmentBlockToDictionary(lpEnvironment), out commandLine, out string? workingDirectory);
                                 CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                             }
                         }
@@ -215,13 +207,15 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            CreateProcessUsingToken(hPrimaryToken, launchInfo.CommandLine, launchInfo.UsingAnonymousHandles, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(de => de.Key.ToString()!, de => de.Value!.ToString()!), out commandLine, out string? workingDirectory);
+                            CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                         }
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(de => de.Key.ToString()!, de => de.Value!.ToString()!), out commandLine, out string? workingDirectory);
+                        Kernel32.CreateProcess(null, commandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                     }
 
                     // Start tracking the process and allow it to resume execution.
@@ -250,15 +244,19 @@ namespace PSADT.ProcessManagement
             }
             else
             {
+                // Build the command line for the process.
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(de => de.Key.ToString()!, de => de.Value!.ToString()!), out commandLine, out string? workingDirectory);
+                var argv = ProcessUtilities.CommandLineToArgv(commandLine);
+
                 // Set up the shell execute info structure.
                 var startupInfo = new Shell32.SHELLEXECUTEINFO
                 {
                     cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                     fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
                     lpVerb = launchInfo.Verb,
-                    lpFile = launchInfo.FilePath,
-                    lpParameters = launchInfo.Arguments,
-                    lpDirectory = launchInfo.WorkingDirectory,
+                    lpFile = argv[0],
+                    lpParameters = ProcessUtilities.ArgvToCommandLine(argv.Skip(1)),
+                    lpDirectory = workingDirectory,
                 };
                 if (null != launchInfo.WindowStyle)
                 {
@@ -320,7 +318,7 @@ namespace PSADT.ProcessManagement
                                     {
                                         await Task.WhenAll(stdOutTask, stdErrTask);
                                         Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                        tcs.SetResult(new(process, mainModule, launchInfo, ValueTypeConverter<int>.Convert(lpExitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly()));
+                                        tcs.SetResult(new(process, mainModule, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly()));
                                         break;
                                     }
                                 }
@@ -362,7 +360,7 @@ namespace PSADT.ProcessManagement
             });
 
             // Return a ProcessHandle object with this process and its running task.
-            return new(process, mainModule, launchInfo, tcs.Task);
+            return new(process, mainModule, launchInfo, commandLine, tcs.Task);
         }
 
         /// <summary>
@@ -555,7 +553,7 @@ namespace PSADT.ProcessManagement
         /// Placeholders that cannot be resolved are left unchanged.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
         /// if <paramref name="environment"/> is invalid.</exception>
-        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
+        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, IReadOnlyDictionary<string, string> environment)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -566,6 +564,39 @@ namespace PSADT.ProcessManagement
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
             return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
+        }
+
+        /// <summary>
+        /// Constructs the command line and working directory for launching a process based on the provided launch
+        /// information.
+        /// </summary>
+        /// <remarks>If <paramref name="launchInfo"/> specifies that environment variables should be
+        /// expanded, the method will replace any environment variable placeholders in the file path, arguments, and
+        /// working directory with their corresponding values from <paramref name="environmentDictionary"/>.</remarks>
+        /// <param name="launchInfo">The information required to launch the process, including file path and arguments.</param>
+        /// <param name="username">The user account under which the process will be launched, used for expanding environment variables.</param>
+        /// <param name="environmentDictionary">A dictionary of environment variables to be used for expanding variables in the command line and working
+        /// directory.</param>
+        /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
+        /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
+        /// if not specified.</param>
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, IReadOnlyDictionary<string, string> environmentDictionary, out string commandLine, out string? workingDirectory)
+        {
+            string[] argv = (new[] { launchInfo.FilePath }).Concat(launchInfo.ArgumentList ?? []).ToArray();
+            if (launchInfo.ExpandEnvironmentVariables)
+            {
+                for (int i = 0; i < argv.Length; i++)
+                {
+                    argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
+                }
+                commandLine = ProcessUtilities.ArgvToCommandLine(argv)!;
+                workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
+            }
+            else
+            {
+                commandLine = ProcessUtilities.ArgvToCommandLine(argv)!;
+                workingDirectory = launchInfo.WorkingDirectory;
+            }
         }
 
         /// <summary>

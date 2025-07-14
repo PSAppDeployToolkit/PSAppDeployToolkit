@@ -17,14 +17,16 @@ namespace PSADT.ProcessManagement
         /// <param name="process">The process that was executed.</param>
         /// <param name="moduleInfo">The module information of the process.</param>
         /// <param name="launchInfo">The launch information of the process.</param>
+        /// <param name="commandLine">The command line used to launch the process.</param>
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(Process process, ProcessModule moduleInfo, ProcessLaunchInfo launchInfo, int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
+        public ProcessResult(Process process, ProcessModule moduleInfo, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
         {
             Process = process;
             ModuleInfo = moduleInfo;
             LaunchInfo = launchInfo;
+            CommandLine = commandLine;
             ExitCode = exitCode;
             StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut).ToList().AsReadOnly();
             StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr).ToList().AsReadOnly();
@@ -55,6 +57,11 @@ namespace PSADT.ProcessManagement
         /// Gets the information required to launch a process.
         /// </summary>
         public readonly ProcessLaunchInfo? LaunchInfo;
+
+        /// <summary>
+        /// Gets the command line string associated with the current process.
+        /// </summary>
+        public readonly string? CommandLine;
 
         /// <summary>
         /// Gets the exit code of the process, if the process had exited.

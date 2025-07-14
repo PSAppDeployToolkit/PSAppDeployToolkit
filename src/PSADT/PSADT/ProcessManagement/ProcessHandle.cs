@@ -13,6 +13,7 @@ namespace PSADT.ProcessManagement
     /// <param name="Process"></param>
     /// <param name="ModuleInfo"></param>
     /// <param name="LaunchInfo"></param>
+    /// <param name="CommandLine"></param>
     /// <param name="Task"></param>
-    public sealed record ProcessHandle(Process Process, ProcessModule ModuleInfo, ProcessLaunchInfo LaunchInfo, Task<ProcessResult> Task);
+    public sealed record ProcessHandle(Process Process, ProcessModule ModuleInfo, ProcessLaunchInfo LaunchInfo, string CommandLine, Task<ProcessResult> Task);
 }

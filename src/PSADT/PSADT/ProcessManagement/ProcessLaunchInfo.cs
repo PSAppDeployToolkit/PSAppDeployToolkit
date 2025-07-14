@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Security.Principal;
@@ -65,7 +65,7 @@ namespace PSADT.ProcessManagement
             }
             if (null != argumentList && argumentList.Length > 0)
             {
-                Arguments = ProcessUtilities.ArgvToCommandLine(argumentList.Length == 1 ? Shell32.CommandLineToArgv(argumentList[0].Trim()) : argumentList);
+                ArgumentList = argumentList.Length == 1 ? ProcessUtilities.CommandLineToArgv(argumentList[0].Trim()) : argumentList.ToList().AsReadOnly();
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
@@ -107,7 +107,6 @@ namespace PSADT.ProcessManagement
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
-            CommandLine = $"\"{FilePath}\"{(null != Arguments ? $" {Arguments}" : null)}\0";
         }
 
         /// <summary>
@@ -129,12 +128,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        public readonly string? Arguments;
-
-        /// <summary>
-        /// Gets the command line to use when starting the process.
-        /// </summary>
-        public readonly string CommandLine;
+        public readonly IReadOnlyList<string>? ArgumentList;
 
         /// <summary>
         /// Gets the working directory of the process.
