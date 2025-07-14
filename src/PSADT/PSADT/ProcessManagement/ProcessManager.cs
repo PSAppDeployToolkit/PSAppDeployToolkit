@@ -565,7 +565,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
-            return Regex.Replace(input, "%([^%]+)%", m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
+            return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
 
         /// <summary>
@@ -603,15 +603,14 @@ namespace PSADT.ProcessManagement
             {
                 Kernel32.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
                 var jobFlags = lpJobObjectInformation.ToStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>().BasicLimitInformation.LimitFlags;
-                if (jobFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK))
+                if (!(jobFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
                 {
-                    // The job allows breakaway, so we can use CreateProcessAsUser.
-                    return CreateProcessUsingTokenStatus.OK;
+                    return CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
                 }
             }
 
-            // If we're here, we're part of a job object that does not allow breakaway, so we cannot use CreateProcessAsUser.
-            return CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
+            // If we're here, everything we need to be able to use CreateProcessAsUser() is available.
+            return CreateProcessUsingTokenStatus.OK;
         }
 
         /// <summary>
@@ -638,13 +637,15 @@ namespace PSADT.ProcessManagement
                     {
                         return CreateProcessUsingTokenStatus.SecLogonServiceNotRunning;
                     }
-                    return CreateProcessUsingTokenStatus.OK;
                 }
                 catch (InvalidOperationException)
                 {
                     return CreateProcessUsingTokenStatus.SecLogonServiceNotFound;
                 }
             }
+
+            // If we're here, everything we need to be able to use CreateProcessWithToken() is available.
+            return CreateProcessUsingTokenStatus.OK;
         }
 
         /// <summary>
@@ -727,6 +728,14 @@ namespace PSADT.ProcessManagement
             { CreateProcessUsingTokenStatus.SecLogonServiceNotRunning, "The system's Secondary Log-on service is not running." },
             { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service could not be found." },
         });
+
+        /// <summary>
+        /// Represents a compiled, culture-invariant regular expression used to match environment variable patterns.
+        /// </summary>
+        /// <remarks>The pattern matches strings enclosed in percent signs, such as "%VARIABLE%". This
+        /// regex is compiled for performance and is culture-invariant to ensure consistent behavior across different
+        /// cultures.</remarks>
+        private static readonly Regex EnvironmentVariableRegex = new(@"%([^%]+)%", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.
