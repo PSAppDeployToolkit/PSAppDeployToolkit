@@ -721,5 +721,64 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Determines whether a specified process is running within a specified job.
+        /// </summary>
+        /// <param name="ProcessHandle">A handle to the process to be checked. This handle must have the PROCESS_QUERY_INFORMATION or
+        /// PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="JobHandle">A handle to the job. If this parameter is <see langword="null"/>, the function checks if the process is
+        /// running in any job.</param>
+        /// <param name="Result">When this method returns, contains a <see langword="true"/> if the process is in the specified job;
+        /// otherwise, <see langword="false"/>.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL IsProcessInJob(SafeHandle ProcessHandle, SafeHandle? JobHandle, out BOOL Result)
+        {
+            var res = PInvoke.IsProcessInJob(ProcessHandle, JobHandle, out Result);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Queries information about the specified job object.
+        /// </summary>
+        /// <remarks>This method is a wrapper around the native Windows API function
+        /// <c>QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
+        /// such as accounting information, limits, and process information.</remarks>
+        /// <param name="hJob">A handle to the job object. This handle must have the <see cref="JobObjectAccessRights.Query"/> access
+        /// right.</param>
+        /// <param name="JobObjectInformationClass">The information class for the job object. This parameter specifies the type of information to be queried.</param>
+        /// <param name="lpJobObjectInformation">A buffer that receives the information. The format of this data depends on the value of the <paramref
+        /// name="JobObjectInformationClass"/> parameter.</param>
+        /// <param name="lpReturnLength">When this method returns, contains the size of the data returned in the <paramref
+        /// name="lpJobObjectInformation"/> buffer, in bytes.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static unsafe BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, SafeHGlobalHandle lpJobObjectInformation, out uint lpReturnLength)
+        {
+            bool lpJobObjectInformationAddRef = false;
+            try
+            {
+                lpJobObjectInformation.DangerousAddRef(ref lpJobObjectInformationAddRef);
+                fixed (uint* pReturnLength = &lpReturnLength)
+                {
+                    var res = PInvoke.QueryInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation.DangerousGetHandle().ToPointer(), (uint)lpJobObjectInformation.Length, pReturnLength);
+                    if (!res)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
+                    return res;
+                }
+            }
+            finally
+            {
+                if (lpJobObjectInformationAddRef)
+                {
+                    lpJobObjectInformation.DangerousRelease();
+                }
+            }
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
@@ -11,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Security.Principal;
+using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Execution;
@@ -117,29 +117,22 @@ namespace PSADT.ProcessManagement
                     }
 
                     // If we're to read the output, we create pipes for stdout and stderr.
-                    void SetupStreamPipes()
+                    if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                     {
-                        if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
-                        {
-                            CreatePipe(out var hStdOutRead, out hStdOutWrite);
-                            CreatePipe(out var hStdErrRead, out hStdErrWrite);
-                            stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
-                            stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
-                            hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
-                            hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
-                            startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
-                            startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
-                        }
+                        CreatePipe(out var hStdOutRead, out hStdOutWrite);
+                        CreatePipe(out var hStdErrRead, out hStdErrWrite);
+                        stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
+                        stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
+                        hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
+                        hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
+                        startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
+                        startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
                     if (null != launchInfo.Username && launchInfo.Username != AccountUtilities.CallerUsername && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
-                        // Enable the required privileges.
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-
                         // Get the user's token.
                         SafeFileHandle hUserToken = null!;
                         if (!AccountUtilities.CallerIsLocalSystem)
@@ -213,11 +206,7 @@ namespace PSADT.ProcessManagement
                                         workingDirectory = ExpandEnvironmentVariables(session.NTAccount, workingDirectory, environmentDictionary);
                                     }
                                 }
-
-                                // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
-                                // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
-                                // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-                                SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, startupInfo, out pi);
+                                CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                             }
                         }
                     }
@@ -226,30 +215,13 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
-                            {
-                                // Throw if the caller is expecting to be able to capture stdout/stderr but doesn't have the privileges for CreateProcessAsUser().
-                                try
-                                {
-                                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw new UnauthorizedAccessException("Failed to enable one or more privileges needed to create a process with an unelevated token and stream capture.", ex);
-                                }
-                                SetupStreamPipes(); AdvApi32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
-                            }
-                            else
-                            {
-                                AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, launchInfo.CommandLine, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
-                            }
+                            CreateProcessUsingToken(hPrimaryToken, launchInfo.CommandLine, launchInfo.UsingAnonymousHandles, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        SetupStreamPipes(); Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                        Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                     }
 
                     // Start tracking the process and allow it to resume execution.
@@ -595,6 +567,166 @@ namespace PSADT.ProcessManagement
             }
             return Regex.Replace(input, "%([^%]+)%", m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
+
+        /// <summary>
+        /// Determines whether the current process can use the CreateProcessAsUser function.
+        /// </summary>
+        /// <remarks>This method checks if the current process has the necessary privileges and conditions
+        /// to use the CreateProcessAsUser function. It verifies the presence of specific privileges and evaluates
+        /// whether the process is part of a job object that allows breakaway.</remarks>
+        /// <returns><see langword="true"/> if the process can use CreateProcessAsUser; otherwise, <see langword="false"/>.</returns>
+        private static CreateProcessUsingTokenStatus CanUseCreateProcessAsUser()
+        {
+            // Test whether the caller has the required privileges to use CreateProcessAsUser.
+            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeIncreaseQuotaPrivilege))
+            {
+                return CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege;
+            }
+            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege))
+            {
+                return CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege;
+            }
+
+            // Test whether the process is part of an existing job object.
+            using (var cProcess = Process.GetCurrentProcess())
+            using (cProcess.SafeHandle)
+            {
+                Kernel32.IsProcessInJob(cProcess.SafeHandle, null, out var inJob);
+                if (!inJob)
+                {
+                    return CreateProcessUsingTokenStatus.OK;
+                }
+            }
+
+            // Since we're part of a job object, we need to check if the job has the JOB_OBJECT_LIMIT_BREAKAWAY_OK flag set.
+            using (var lpJobObjectInformation = SafeHGlobalHandle.Alloc(Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()))
+            {
+                Kernel32.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
+                var jobFlags = lpJobObjectInformation.ToStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>().BasicLimitInformation.LimitFlags;
+                if (jobFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK))
+                {
+                    // The job allows breakaway, so we can use CreateProcessAsUser.
+                    return CreateProcessUsingTokenStatus.OK;
+                }
+            }
+
+            // If we're here, we're part of a job object that does not allow breakaway, so we cannot use CreateProcessAsUser.
+            return CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
+        }
+
+        /// <summary>
+        /// Determines whether the current process has the necessary privileges to use the CreateProcessWithToken
+        /// function.
+        /// </summary>
+        /// <returns><see langword="true"/> if the current process has the SeImpersonatePrivilege; otherwise, <see
+        /// langword="false"/>.</returns>
+        private static CreateProcessUsingTokenStatus CanUseCreateProcessWithToken()
+        {
+            // Test whether the caller has the required privileges to use CreateProcessWithToken.
+            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeImpersonatePrivilege))
+            {
+                return CreateProcessUsingTokenStatus.SeImpersonatePrivilege;
+            }
+
+            // Test whether the "Secondary Log-on" service is running, which is required for CreateProcessWithToken.
+            using (ServiceController serviceController = new("seclogon"))
+            {
+                // If the service does not exist or cannot be queried, we cannot use CreateProcessWithToken.
+                try
+                {
+                    if (serviceController.Status != ServiceControllerStatus.Running)
+                    {
+                        return CreateProcessUsingTokenStatus.SecLogonServiceNotRunning;
+                    }
+                    return CreateProcessUsingTokenStatus.OK;
+                }
+                catch (InvalidOperationException)
+                {
+                    return CreateProcessUsingTokenStatus.SecLogonServiceNotFound;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a new process using the specified primary token and command line.
+        /// </summary>
+        /// <remarks>This method attempts to create a process using <c>CreateProcessAsUser</c> if
+        /// possible, falling back to <c>CreateProcessWithToken</c> if necessary. It requires specific privileges to be
+        /// enabled, such as <c>SeIncreaseQuotaPrivilege</c> and <c>SeAssignPrimaryTokenPrivilege</c>.</remarks>
+        /// <param name="hPrimaryToken">The primary token representing the user context under which the process will be created.</param>
+        /// <param name="commandLine">The command line to be executed by the new process.</param>
+        /// <param name="creationFlags">Flags that control the priority class and the creation of the process.</param>
+        /// <param name="lpEnvironment">A handle to the environment block for the new process. Can be <see langword="null"/> to use the environment
+        /// of the calling process.</param>
+        /// <param name="workingDirectory">The full path to the current directory for the process. Can be <see langword="null"/> to use the current
+        /// directory of the calling process.</param>
+        /// <param name="startupInfo">A reference to a <see cref="STARTUPINFOW"/> structure that specifies the window station, desktop, standard
+        /// handles, and appearance of the main window for the new process.</param>
+        /// <param name="pi">When this method returns, contains a <see cref="PROCESS_INFORMATION"/> structure with information about the
+        /// newly created process and its primary thread.</param>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
+        /// specified token.</exception>
+        private static void CreateProcessUsingToken(SafeHandle hPrimaryToken, string commandLine, bool usingAnonymousHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        {
+            // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
+            // When the caller provides anonymous handles, we need to use CreateProcessAsUser() since it has bInheritHandles.
+            if (CanUseCreateProcessAsUser() is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || usingAnonymousHandles))
+            {
+                // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
+                // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
+                // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+                if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK)
+                {
+                    throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
+                }
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, startupInfo, out pi);
+            }
+            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK)
+            {
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
+                AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unable to create a new process via token. CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}");
+            }
+        }
+
+        /// <summary>
+        /// Represents the status codes returned by the process creation operation using a token.
+        /// </summary>
+        /// <remarks>This enumeration provides specific status codes that indicate the result of
+        /// attempting to create a process using a token. Each value corresponds to a particular condition or
+        /// requirement related to privilege or service availability necessary for the operation.</remarks>
+        private enum CreateProcessUsingTokenStatus
+        {
+            OK,
+            SeIncreaseQuotaPrivilege,
+            SeAssignPrimaryTokenPrivilege,
+            JobBreakawayNotPermitted,
+            SeImpersonatePrivilege,
+            SecLogonServiceNotRunning,
+            SecLogonServiceNotFound,
+        }
+
+        /// <summary>
+        /// Provides a read-only dictionary mapping <see cref="CreateProcessUsingTokenStatus"/> values to their
+        /// corresponding error messages.
+        /// </summary>
+        /// <remarks>This dictionary contains predefined error messages for various statuses encountered
+        /// when attempting to create a process using a token. It is used to provide descriptive error messages based on
+        /// the status code returned by the operation.</remarks>
+        private static readonly ReadOnlyDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = new(new Dictionary<CreateProcessUsingTokenStatus, string>
+        {
+            { CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege, "The calling process does not have the SeIncreaseQuotaPrivilege privilege." },
+            { CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the SeAssignPrimaryTokenPrivilege privilege." },
+            { CreateProcessUsingTokenStatus.JobBreakawayNotPermitted, "The calling process is part of a job that does not allow breakaway." },
+            { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the SeImpersonatePrivilege privilege." },
+            { CreateProcessUsingTokenStatus.SecLogonServiceNotRunning, "The system's Secondary Log-on service is not running." },
+            { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service could not be found." },
+        });
 
         /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.

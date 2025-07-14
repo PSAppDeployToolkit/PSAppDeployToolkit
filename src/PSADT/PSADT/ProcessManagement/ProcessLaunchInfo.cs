@@ -45,6 +45,7 @@ namespace PSADT.ProcessManagement
             bool useLinkedAdminToken = false,
             bool inheritEnvironmentVariables = false,
             bool expandEnvironmentVariables = false,
+            bool usingAnonymousHandles = false,
             bool useUnelevatedToken = false,
             bool useShellExecute = false,
             string? verb = null,
@@ -100,6 +101,7 @@ namespace PSADT.ProcessManagement
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             ExpandEnvironmentVariables = expandEnvironmentVariables;
+            UsingAnonymousHandles = usingAnonymousHandles;
             UseUnelevatedToken = useUnelevatedToken;
             UseShellExecute = useShellExecute;
             WaitForChildProcesses = waitForChildProcesses;
@@ -158,6 +160,11 @@ namespace PSADT.ProcessManagement
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
         public readonly bool ExpandEnvironmentVariables;
+
+        /// <summary>
+        /// Gets a value indicating whether anonymous handles are being used.
+        /// </summary>
+        public readonly bool UsingAnonymousHandles;
 
         /// <summary>
         /// Indicates whether an unelevated token should be used for operations.
