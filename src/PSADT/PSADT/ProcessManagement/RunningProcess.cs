@@ -22,7 +22,7 @@ namespace PSADT.ProcessManagement
             FileName = fileName;
             if (null != arguments)
             {
-                Arguments = ProcessTools.ArgvToCommandLine(arguments);
+                Arguments = ProcessUtilities.ArgvToCommandLine(arguments);
             }
         }
 

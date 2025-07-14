@@ -65,7 +65,7 @@ namespace PSADT.ProcessManagement
             }
             if (null != argumentList && argumentList.Length > 0)
             {
-                Arguments = ProcessTools.ArgvToCommandLine(argumentList.Length == 1 ? Shell32.CommandLineToArgv(argumentList[0].Trim()) : argumentList);
+                Arguments = ProcessUtilities.ArgvToCommandLine(argumentList.Length == 1 ? Shell32.CommandLineToArgv(argumentList[0].Trim()) : argumentList);
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {

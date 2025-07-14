@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Runspaces;
+using System.Text;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
@@ -185,6 +186,104 @@ namespace PSADT.ProcessManagement
                 }
             }
             return procs.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Converts a list of command-line arguments into a single command-line string.
+        /// </summary>
+        /// <remarks>This method handles quoting and escaping according to standard command-line parsing
+        /// rules: - Arguments containing whitespace or quotes are enclosed in quotes. - Backslashes preceding a quote
+        /// are doubled to ensure correct parsing. - A closing quote followed by another quote is treated as a literal
+        /// quote.</remarks>
+        /// <param name="argv">A read-only list of command-line arguments to be converted.</param>
+        /// <returns>A command-line string that represents the concatenated arguments, with necessary quoting and escaping
+        /// applied. Returns <see langword="null"/> if the resulting command-line string is empty or consists only of
+        /// whitespace.</returns>
+        internal static string? ArgvToCommandLine(IEnumerable<string> argv)
+        {
+            // Internal worker to test the argument for whitespace or quotes.
+            const char Backslash = '\\'; const char Quote = '\"'; const char Space = ' ';
+            static bool ContainsNoWhitespaceOrQuotes(string s)
+            {
+                for (int i = 0; i < s.Length; i++)
+                {
+                    char c = s[i];
+                    if (char.IsWhiteSpace(c) || c == Quote)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // Build out the command line string.
+            StringBuilder stringBuilder = new();
+            foreach (string argument in argv.Select(static a => a.Trim()))
+            {
+                // Continue if the argument is null or empty.
+                if (string.IsNullOrWhiteSpace(argument))
+                {
+                    continue;
+                }
+
+                // Quote the argument and escape and quotes/backslashes.
+                if (!ContainsNoWhitespaceOrQuotes(argument))
+                {
+                    stringBuilder.Append(Quote); int idx = 0;
+                    while (idx < argument.Length)
+                    {
+                        char c = argument[idx++];
+                        if (c == Backslash)
+                        {
+                            int numBackSlash = 1;
+                            while (idx < argument.Length && argument[idx] == Backslash)
+                            {
+                                idx++;
+                                numBackSlash++;
+                            }
+
+                            if (idx == argument.Length)
+                            {
+                                // We'll emit an end quote after this so must double the number of backslashes.
+                                stringBuilder.Append(Backslash, numBackSlash * 2);
+                            }
+                            else if (argument[idx] == Quote)
+                            {
+                                // Backslashes will be followed by a quote. Must double the number of backslashes.
+                                stringBuilder.Append(Backslash, numBackSlash * 2 + 1);
+                                stringBuilder.Append(Quote);
+                                idx++;
+                            }
+                            else
+                            {
+                                // Backslash will not be followed by a quote, so emit as normal characters.
+                                stringBuilder.Append(Backslash, numBackSlash);
+                            }
+                            continue;
+                        }
+
+                        if (c == Quote)
+                        {
+                            // Escape the quote so it appears as a literal. This also guarantees that we won't end up generating a closing quote followed
+                            // by another quote (which parses differently pre-2008 vs. post-2008.)
+                            stringBuilder.Append(Backslash);
+                            stringBuilder.Append(Quote);
+                            continue;
+                        }
+                        stringBuilder.Append(c);
+                    }
+                    stringBuilder.Append(Quote);
+                }
+                else
+                {
+                    // Argument can just be added.
+                    stringBuilder.Append(argument);
+                }
+                stringBuilder.Append(Space);
+            }
+
+            // Return the built command line string.
+            return stringBuilder.ToString().Trim() is string arguments && !string.IsNullOrWhiteSpace(arguments) ? arguments : null;
         }
     }
 }
