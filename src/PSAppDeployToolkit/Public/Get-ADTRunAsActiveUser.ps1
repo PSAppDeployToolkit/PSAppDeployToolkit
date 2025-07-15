@@ -64,14 +64,10 @@ function Get-ADTRunAsActiveUser
     }
 
     # The caller SID isn't the active user session, try to find the best available match.
-    $sessionInfoMember = ('IsActiveUserSession', 'IsCurrentSession')[(Get-ADTOperatingSystemInfo).IsWorkstationEnterpriseMultiSessionOS]
-    foreach ($session in $userSessions)
+    if ($session = $userSessions | & { process { if ($_.NTAccount -and $_.IsActiveUserSession) { return $_ } } } | Sort-Object -Property LogonTime -Descending | Select-Object -First 1)
     {
-        if ($session.NTAccount -and $session.$sessionInfoMember)
-        {
-            Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-            return [PSADT.Module.RunAsActiveUser]::new($session.NTAccount, $session.SID)
-        }
+        Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
+        return [PSADT.Module.RunAsActiveUser]::new($session.NTAccount, $session.SID)
     }
     Write-ADTLogEntry -Message 'There was no active user session found on this device.'
 }
