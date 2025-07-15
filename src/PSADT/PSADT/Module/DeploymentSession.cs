@@ -54,6 +54,7 @@ namespace PSADT.Module
                 var moduleSessionState = ModuleDatabase.GetSessionState();
                 object? paramValue = null;
                 bool writtenDivider = false;
+                _ = _installPhase;
 
                 // Extrapolate the Toolkit options from the config hashtable.
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
@@ -1432,12 +1433,9 @@ namespace PSADT.Module
         private readonly ReadOnlyCollection<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
         private readonly string _logPath;
         private readonly string _logName;
+        private string _installPhase = "Initialization";
         private string? _dirFiles;
         private string? _dirSupportFiles;
-
-        #pragma warning disable 0414
-        private string _installPhase = "Initialization";
-        #pragma warning restore 0414
 
 
         #endregion

@@ -79,7 +79,7 @@ namespace PSADT.ProcessManagement
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
             string commandLine;
-            if (cliApp && launchInfo.CreateNoWindow || !launchInfo.UseShellExecute || null != launchInfo.Username)
+            if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (null != launchInfo.Username))
             {
                 var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
                 if (null != launchInfo.WindowStyle)

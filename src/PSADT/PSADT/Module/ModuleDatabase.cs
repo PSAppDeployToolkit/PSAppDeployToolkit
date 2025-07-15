@@ -13,11 +13,6 @@ namespace PSADT.Module
     /// </summary>
     public static class ModuleDatabase
     {
-        private const string errorMessage = "Please ensure that [Initialize-ADTModule] is called before using any PSAppDeployToolkit functions or methods.";
-        private static Runspace _defaultRunspace = Runspace.DefaultRunspace ?? throw new InvalidOperationException("The default runspace is not available. This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
-        private static PSObject? _database = null;
-        private static SessionState? _sessionState = null;
-
         /// <summary>
         /// Initialises the internal database with the database from PSAppDeployToolkit.psm1.
         /// </summary>
@@ -29,8 +24,7 @@ namespace PSADT.Module
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
-            _database = database;
-            _sessionState = (SessionState)_database!.Properties["SessionState"].Value;
+            _database = database; _sessionState = (SessionState)_database.Properties["SessionState"].Value;
         }
 
         /// <summary>
@@ -114,5 +108,28 @@ namespace PSADT.Module
         /// <param name="args"></param>
         /// <returns></returns>
         internal static Collection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args) => _sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args);
+
+        /// <summary>
+        /// Represents the PSAppDeployToolkit module's internal database.
+        /// </summary>
+        private static PSObject? _database = null;
+
+        /// <summary>
+        /// Represents the PSAppDeployToolkit module's SessionState object.
+        /// </summary>
+        private static SessionState? _sessionState = null;
+
+        /// <summary>
+        /// Represents the default runspace for executing PowerShell commands.
+        /// </summary>
+        /// <remarks>This field is initialized with the default runspace provided by the PowerShell
+        /// environment. If the default runspace is not available, an <see cref="InvalidOperationException"/> is thrown.
+        /// This field is intended for use within the context of the PSAppDeployToolkit PowerShell module.</remarks>
+        private static readonly Runspace _defaultRunspace = Runspace.DefaultRunspace ?? throw new InvalidOperationException("The default runspace is not available. This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
+
+        /// <summary>
+        /// Represents the error message displayed when PSAppDeployToolkit functions or methods are used without prior initialization.
+        /// </summary>
+        private const string errorMessage = "Please ensure that [Initialize-ADTModule] is called before using any PSAppDeployToolkit functions or methods.";
     }
 }
