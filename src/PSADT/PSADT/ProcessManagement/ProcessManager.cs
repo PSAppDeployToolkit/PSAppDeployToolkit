@@ -290,7 +290,6 @@ namespace PSADT.ProcessManagement
 
             // Get a Process object for the launched process and read its handle so System.Diagnostics gets a lock on it.
             Process process = Process.GetProcessById((int)processId); _ = process; _ = process.Handle;
-            ProcessModule mainModule = process.MainModule!;
 
             // These tasks read all outputs and wait for the process to complete.
             TaskCompletionSource<ProcessResult> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -318,7 +317,7 @@ namespace PSADT.ProcessManagement
                                     {
                                         await Task.WhenAll(stdOutTask, stdErrTask);
                                         Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                        tcs.SetResult(new(process, mainModule, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
+                                        tcs.SetResult(new(process, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
                                         break;
                                     }
                                 }
@@ -360,7 +359,7 @@ namespace PSADT.ProcessManagement
             });
 
             // Return a ProcessHandle object with this process and its running task.
-            return new(process, mainModule, launchInfo, commandLine, tcs.Task);
+            return new(process, launchInfo, commandLine, tcs.Task);
         }
 
         /// <summary>

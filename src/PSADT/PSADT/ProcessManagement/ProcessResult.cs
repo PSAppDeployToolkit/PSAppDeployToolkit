@@ -14,17 +14,15 @@ namespace PSADT.ProcessManagement
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
         /// </summary>
         /// <param name="process">The process that was executed.</param>
-        /// <param name="moduleInfo">The module information of the process.</param>
         /// <param name="launchInfo">The launch information of the process.</param>
         /// <param name="commandLine">The command line used to launch the process.</param>
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(Process process, ProcessModule moduleInfo, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
+        public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
-            ModuleInfo = moduleInfo ?? throw new ArgumentNullException("ModuleInfo cannot be null.", (Exception?)null);
             LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
             CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException("CommandLine cannot be null.", (Exception?)null);
         }
@@ -57,11 +55,6 @@ namespace PSADT.ProcessManagement
         /// Represents the process associated with the current operation.
         /// </summary>
         public readonly Process? Process;
-
-        /// <summary>
-        /// Gets the module information associated with the process.
-        /// </summary>
-        public readonly ProcessModule? ModuleInfo;
 
         /// <summary>
         /// Gets the information required to launch a process.
