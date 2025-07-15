@@ -37,9 +37,9 @@ namespace PSADT.Types
             DirectoryInfo? oneDrivePath = null,
             DirectoryInfo? oneDriveCommercialPath = null)
         {
-            NTAccount = ntAccount;
-            SID = sid;
-            ProfilePath = profilePath;
+            NTAccount = ntAccount ?? throw new ArgumentNullException("NTAccount cannot be null.", (Exception?)null);
+            SID = sid ?? throw new ArgumentNullException("SID cannot be null.", (Exception?)null);
+            ProfilePath = profilePath ?? throw new ArgumentNullException("ProfilePath cannot be null.", (Exception?)null);
             AppDataPath = appDataPath;
             LocalAppDataPath = localAppDataPath;
             DesktopPath = desktopPath;

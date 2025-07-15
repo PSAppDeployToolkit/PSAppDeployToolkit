@@ -15,11 +15,7 @@ namespace PSADT.ProcessManagement
         /// <param name="name">The name of the process.</param>
         public ProcessDefinition(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("Name value is null or invalid.", (Exception?)null);
-            }
-            Name = name;
+            Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException("Name value is null or invalid.", (Exception?)null);
         }
 
         /// <summary>
@@ -30,16 +26,8 @@ namespace PSADT.ProcessManagement
         [JsonConstructor]
         public ProcessDefinition(string name, string description)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("Name value is null or invalid.", (Exception?)null);
-            }
-            Name = name;
-
-            if (!string.IsNullOrWhiteSpace(description))
-            {
-                Description = description;
-            }
+            Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException("Name value is null or invalid.", (Exception?)null);
+            Description = !string.IsNullOrWhiteSpace(description) ? description : null;
         }
 
         /// <summary>

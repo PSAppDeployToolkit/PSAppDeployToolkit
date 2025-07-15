@@ -28,19 +28,32 @@ namespace PSADT.Types
         /// <param name="creatingApplication">The application used to create the MSI package.</param>
         /// <param name="security">The security descriptor for the MSI package.</param>
         public MsiSummaryInfo(
-            int codePage, string title, string subject, string author, string keywords,
-            string comments, string template, string lastSavedBy, Guid revisionNumber,
-            DateTime? lastPrinted, DateTime createTimeDate, DateTime lastSaveTimeDate,
-            int pageCount, int wordCount, int? characterCount, string creatingApplication, int security)
+            int codePage,
+            string title,
+            string subject,
+            string author,
+            string keywords,
+            string comments,
+            string template,
+            string lastSavedBy,
+            Guid revisionNumber,
+            DateTime? lastPrinted,
+            DateTime createTimeDate,
+            DateTime lastSaveTimeDate,
+            int pageCount,
+            int wordCount,
+            int? characterCount,
+            string creatingApplication,
+            int security)
         {
             CodePage = codePage;
-            Title = title ?? string.Empty;
-            Subject = subject ?? string.Empty;
-            Author = author ?? string.Empty;
-            Keywords = keywords ?? string.Empty;
-            Comments = comments ?? string.Empty;
-            Template = template ?? string.Empty;
-            LastSavedBy = lastSavedBy ?? string.Empty;
+            Title = !string.IsNullOrWhiteSpace(title) ? title : throw new ArgumentNullException("Title cannot be null or empty.", (Exception?)null);
+            Subject = !string.IsNullOrWhiteSpace(subject) ? subject : throw new ArgumentNullException("Subject cannot be null or empty.", (Exception?)null);
+            Author = !string.IsNullOrWhiteSpace(author) ? author : throw new ArgumentNullException("Author cannot be null or empty.", (Exception?)null);
+            Keywords = !string.IsNullOrWhiteSpace(keywords) ? keywords : throw new ArgumentNullException("Keywords cannot be null or empty.", (Exception?)null);
+            Comments = !string.IsNullOrWhiteSpace(comments) ? comments : throw new ArgumentNullException("Comments cannot be null or empty.", (Exception?)null);
+            Template = !string.IsNullOrWhiteSpace(template) ? template : throw new ArgumentNullException("Template cannot be null or empty.", (Exception?)null);
+            LastSavedBy = !string.IsNullOrWhiteSpace(lastSavedBy) ? lastSavedBy : throw new ArgumentNullException("LastSavedBy cannot be null or empty.", (Exception?)null);
             RevisionNumber = revisionNumber;
             LastPrinted = lastPrinted;
             CreateTimeDate = createTimeDate;
@@ -48,7 +61,7 @@ namespace PSADT.Types
             PageCount = pageCount;
             WordCount = wordCount;
             CharacterCount = characterCount;
-            CreatingApplication = creatingApplication ?? string.Empty;
+            CreatingApplication = !string.IsNullOrWhiteSpace(creatingApplication) ? creatingApplication : throw new ArgumentNullException("CreatingApplication cannot be null or empty.", (Exception?)null);
             Security = security;
         }
 

@@ -42,7 +42,7 @@ namespace PSADT.ClientServer
         public ServerInstance(NTAccount user)
         {
             // Initialize the anonymous pipe streams for inter-process communication.
-            Username = user ?? throw new ArgumentNullException(nameof(user), "User cannot be null.");
+            Username = user ?? throw new ArgumentNullException("User cannot be null.", (Exception?)null);
             _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);

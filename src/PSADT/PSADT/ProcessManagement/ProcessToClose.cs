@@ -1,4 +1,6 @@
-﻿namespace PSADT.ProcessManagement
+﻿using System;
+
+namespace PSADT.ProcessManagement
 {
     /// <summary>
     /// Represents a process that needs to be closed.
@@ -11,9 +13,9 @@
         /// <param name="runningProcess"></param>
         internal ProcessToClose(RunningProcess runningProcess)
         {
-            Name = runningProcess.Process.ProcessName;
-            Path = runningProcess.FileName;
-            Description = runningProcess.Description;
+            Name = !string.IsNullOrWhiteSpace(runningProcess.Process.ProcessName) ? runningProcess.Process.ProcessName : throw new ArgumentNullException("RunningProcess Name cannot be null or empty.", (Exception?)null);
+            Path = !string.IsNullOrWhiteSpace(runningProcess.FileName) ? runningProcess.FileName : throw new ArgumentNullException("RunningProcess Path cannot be null or empty.", (Exception?)null);
+            Description = !string.IsNullOrWhiteSpace(runningProcess.Description) ? runningProcess.Description : throw new ArgumentNullException("RunningProcess Description cannot be null or empty.", (Exception?)null);
         }
 
         /// <summary>

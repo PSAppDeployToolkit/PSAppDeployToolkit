@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace PSADT.Execution
 {
@@ -16,15 +17,15 @@ namespace PSADT.Execution
         /// <param name="subsystem"></param>
         /// <param name="entryPoint"></param>
         /// <param name="imageBase"></param>
-        public ExecutableInfo(
+        internal ExecutableInfo(
             string filePath,
             LibraryInterfaces.IMAGE_FILE_MACHINE machine,
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem,
             bool isDotNetExecutable,
-            uint? entryPoint,
-            ulong? imageBase)
+            uint entryPoint,
+            ulong imageBase)
         {
-            FileInfo = new FileInfo(filePath);
+            FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new FileInfo(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
             Machine = machine;
             Subsystem = subsystem;
             IsDotNetExecutable = isDotNetExecutable;
@@ -55,11 +56,11 @@ namespace PSADT.Execution
         /// <summary>
         /// The entry point of the executable.
         /// </summary>
-        public readonly uint? EntryPoint;
+        public readonly uint EntryPoint;
 
         /// <summary>
         /// The image base of the executable.
         /// </summary>
-        public readonly ulong? ImageBase;
+        public readonly ulong ImageBase;
     }
 }

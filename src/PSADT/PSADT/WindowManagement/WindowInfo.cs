@@ -17,13 +17,13 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandle">The handle to the main window of the parent process.</param>
         /// <param name="parentProcessId">The ID of the parent process.</param>
         [JsonConstructor]
-        public WindowInfo(string windowTitle, IntPtr windowHandle, string? parentProcess, IntPtr parentProcessMainWindowHandle, int parentProcessId)
+        internal WindowInfo(string windowTitle, IntPtr windowHandle, string? parentProcess, IntPtr parentProcessMainWindowHandle, int parentProcessId)
         {
-            WindowTitle = windowTitle ?? throw new ArgumentNullException(nameof(windowTitle));
+            WindowTitle = !string.IsNullOrWhiteSpace(windowTitle) ? windowTitle : throw new ArgumentNullException("Window title cannot be null or empty.", (Exception?)null);
             WindowHandle = windowHandle;
             ParentProcess = parentProcess;
             ParentProcessMainWindowHandle = parentProcessMainWindowHandle;
-            ParentProcessId = parentProcessId >= 0 ? parentProcessId : throw new ArgumentOutOfRangeException(nameof(parentProcessId), "Process ID must be a non-negative number.");
+            ParentProcessId = parentProcessId >= 0 ? parentProcessId : throw new ArgumentOutOfRangeException("Process ID must be a non-negative number.", (Exception?)null);
         }
 
         /// <summary>

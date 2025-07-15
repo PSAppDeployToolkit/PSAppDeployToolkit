@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace PSADT.Types
 {
@@ -23,7 +24,7 @@ namespace PSADT.Types
         public SendKeysOptions(nint windowHandle, string keys)
         {
             WindowHandle = windowHandle;
-            Keys = keys;
+            Keys = !string.IsNullOrWhiteSpace(keys) ? keys : throw new ArgumentNullException("Keys cannot be null or empty.", (Exception?)null);
         }
 
         /// <summary>

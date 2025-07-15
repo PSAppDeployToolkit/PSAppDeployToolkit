@@ -31,7 +31,7 @@ namespace PSADT.TerminalServices
         /// <param name="clientProtocolType"></param>
         /// <param name="clientDirectory"></param>
         /// <param name="clientBuildNumber"></param>
-        public SessionInfo(
+        internal SessionInfo(
             NTAccount ntAccount,
             SecurityIdentifier sid,
             string userName,
@@ -54,12 +54,12 @@ namespace PSADT.TerminalServices
             string? clientDirectory,
             uint? clientBuildNumber)
         {
-            NTAccount = ntAccount;
-            SID = sid;
-            UserName = userName;
-            DomainName = domainName;
-            SessionId = sessionId;
-            SessionName = sessionName;
+            NTAccount = ntAccount ?? throw new ArgumentNullException("NTAccount cannot be null.", (Exception?)null);
+            SID = sid ?? throw new ArgumentNullException("SID cannot be null.", (Exception?)null);
+            UserName = !string.IsNullOrWhiteSpace(userName) ? userName : throw new ArgumentNullException("UserName cannot be null or empty.", (Exception?)null);
+            DomainName = !string.IsNullOrWhiteSpace(domainName) ? domainName : throw new ArgumentNullException("DomainName cannot be null or empty.", (Exception?)null);
+            SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException("SessionId must be greater than zero.", (Exception?)null);
+            SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : throw new ArgumentNullException("SessionName cannot be null or empty.", (Exception?)null);
             ConnectState = connectState;
             IsCurrentSession = isCurrentSession;
             IsConsoleSession = isConsoleSession;

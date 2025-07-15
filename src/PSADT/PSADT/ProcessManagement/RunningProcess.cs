@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace PSADT.ProcessManagement
@@ -17,9 +18,9 @@ namespace PSADT.ProcessManagement
         /// <param name="arguments"></param>
         internal RunningProcess(Process process, string description, string fileName, IEnumerable<string>? arguments)
         {
-            Process = process;
-            Description = description;
-            FileName = fileName;
+            Process = process ?? throw new System.ArgumentNullException("Process cannot be null.", (Exception?)null);
+            Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
+            FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
             if (null != arguments)
             {
                 Arguments = ProcessUtilities.ArgvToCommandLine(arguments);

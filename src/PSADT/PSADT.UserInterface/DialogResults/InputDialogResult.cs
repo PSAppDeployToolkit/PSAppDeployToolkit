@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -15,7 +16,7 @@ namespace PSADT.UserInterface.DialogResults
         [JsonConstructor]
         internal InputDialogResult(string result, string? text = null)
         {
-            Result = result;
+            Result = !string.IsNullOrWhiteSpace(result) ? result : throw new ArgumentNullException("Result cannot be null or empty.", (Exception?)null);
             Text = !string.IsNullOrWhiteSpace(text) ? text : null;
         }
 

@@ -45,8 +45,8 @@ namespace PSADT.Execution
             using BinaryReader reader = new(fs);
 
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem = LibraryInterfaces.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_UNKNOWN;
-            uint? entryPoint = null;
-            ulong? imageBase = null;
+            uint entryPoint;
+            ulong imageBase;
             bool isDotNet = false;
 
             var dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader);

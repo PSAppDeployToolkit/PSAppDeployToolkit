@@ -21,7 +21,7 @@ namespace PSADT.Module
         /// <param name="debugMessage">Indicates whether the log entry is a debug message.</param>
         /// <param name="callerFileName">The log entry's caller file name.</param>
         /// <param name="callerSource">The log entry's caller source.</param>
-        public LogEntry(DateTime timeStamp, string message, LogSeverity severity, string source, string? scriptSection, bool debugMessage, string callerFileName, string callerSource)
+        internal LogEntry(DateTime timeStamp, string message, LogSeverity severity, string source, string? scriptSection, bool debugMessage, string callerFileName, string callerSource)
         {
             // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
             // When splitting the message, we want to trim all lines but not replace genuine
@@ -29,13 +29,13 @@ namespace PSADT.Module
             // C# identifies this character as whitespace but OneTrace does not so it works.
             // The empty line feed at the end is required by OneTrace to format correctly.
             Timestamp = timeStamp;
-            Message = message.Replace("\0", string.Empty).TrimEnd();
+            Message = !string.IsNullOrWhiteSpace(message) ? message.Replace("\0", string.Empty).TrimEnd() : throw new ArgumentNullException("Message cannot be null or empty.", (Exception?)null);
             Severity = severity;
-            Source = source;
+            Source = !string.IsNullOrWhiteSpace(source) ? source : throw new ArgumentNullException("Source cannot be null or empty.", (Exception?)null);
             ScriptSection = scriptSection;
             DebugMessage = debugMessage;
-            CallerFileName = callerFileName;
-            CallerSource = callerSource;
+            CallerFileName = !string.IsNullOrWhiteSpace(callerFileName) ? callerFileName : throw new ArgumentNullException("Caller file name cannot be null or empty.", (Exception?)null);
+            CallerSource = !string.IsNullOrWhiteSpace(callerSource) ? callerSource : throw new ArgumentNullException("Caller source cannot be null or empty.", (Exception?)null);
             LegacyLogLine = $"[{timeStamp.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
             CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new string(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
         }

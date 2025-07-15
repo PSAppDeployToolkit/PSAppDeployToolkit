@@ -40,7 +40,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 Name = Path.GetFileName(processToClose.Path).ToLower();
                 Description = processToClose.Description;
-                Icon = GetAppIcon(processToClose.Path);
+                Icon = GetAppIcon(processToClose.Path) ?? throw new ArgumentNullException("Could not retrieve an icon for the given application.", (Exception?)null);
+                if (string.IsNullOrWhiteSpace(Name))
+                {
+                    throw new ArgumentNullException("Process name cannot be null or empty.", (Exception?)null);
+                }
+                if (string.IsNullOrWhiteSpace(Description))
+                {
+                    throw new ArgumentNullException("Process description cannot be null or empty.", (Exception?)null);
+                }
             }
 
             /// <summary>

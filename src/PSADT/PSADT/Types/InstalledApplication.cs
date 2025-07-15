@@ -47,11 +47,11 @@ namespace PSADT.Types
             bool windowsInstaller,
             bool is64BitApplication)
         {
-            PSPath = psPath;
-            PSParentPath = psParentPath;
-            PSChildName = psChildName;
+            PSPath = !string.IsNullOrWhiteSpace(psPath) ? psPath : throw new ArgumentNullException("PSPath cannot be null or empty.", (Exception?)null);
+            PSParentPath = !string.IsNullOrWhiteSpace(psParentPath) ? psParentPath : throw new ArgumentNullException("PSParentPath cannot be null or empty.", (Exception?)null);
+            PSChildName = !string.IsNullOrWhiteSpace(psChildName) ? psChildName : throw new ArgumentNullException("PSChildName cannot be null or empty.", (Exception?)null);
             ProductCode = productCode;
-            DisplayName = displayName;
+            DisplayName = !string.IsNullOrWhiteSpace(displayName) ? displayName : throw new ArgumentNullException("DisplayName cannot be null or empty.", (Exception?)null);
             DisplayVersion = displayVersion;
             UninstallString = uninstallString;
             QuietUninstallString = quietUninstallString;

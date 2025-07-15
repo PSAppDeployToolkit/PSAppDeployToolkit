@@ -36,7 +36,7 @@ namespace PSADT.Types
             string[]? pendingFileRenameOperations,
             IReadOnlyList<string> errorMsg)
         {
-            ComputerName = computerName;
+            ComputerName = !string.IsNullOrWhiteSpace(computerName) ? computerName : throw new ArgumentNullException("Computer name cannot be null or empty.", (Exception?)null);
             LastBootUpTime = lastBootUpTime;
             IsSystemRebootPending = isSystemRebootPending;
             IsCBServicingRebootPending = isCBServicingRebootPending;
