@@ -1,6 +1,5 @@
-﻿using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using PSADT.Utilities;
 
@@ -21,23 +20,24 @@ namespace PSADT.ProcessManagement
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(Process process, ProcessModule moduleInfo, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
+        /// <param name="interleaved">The interleaved output of the process.</param>
+        public ProcessResult(Process process, ProcessModule moduleInfo, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved)
         {
-            Process = process;
-            ModuleInfo = moduleInfo;
-            LaunchInfo = launchInfo;
-            CommandLine = commandLine;
+            Process = process ?? throw new ArgumentNullException(nameof(process));
+            ModuleInfo = moduleInfo ?? throw new ArgumentNullException(nameof(moduleInfo));
+            LaunchInfo = launchInfo ?? throw new ArgumentNullException(nameof(launchInfo));
+            CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException(nameof(commandLine));
             ExitCode = exitCode;
-            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut).ToList().AsReadOnly();
-            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr).ToList().AsReadOnly();
-            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved).ToList().AsReadOnly();
+            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
+            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
+            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
         /// This is only here as sometimes we need to falsify a result in the module.
         /// </summary>
-        /// <param name="exitCode"></param>
+        /// <param name="exitCode">The exit code of the process.</param>
         public ProcessResult(int exitCode)
         {
             ExitCode = exitCode;

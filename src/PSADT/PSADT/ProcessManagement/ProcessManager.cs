@@ -318,7 +318,7 @@ namespace PSADT.ProcessManagement
                                     {
                                         await Task.WhenAll(stdOutTask, stdErrTask);
                                         Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                        tcs.SetResult(new(process, mainModule, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly()));
+                                        tcs.SetResult(new(process, mainModule, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
                                         break;
                                     }
                                 }
