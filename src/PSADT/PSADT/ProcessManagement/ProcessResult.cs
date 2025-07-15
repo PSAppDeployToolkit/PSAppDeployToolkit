@@ -35,6 +35,21 @@ namespace PSADT.ProcessManagement
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
+        /// </summary>
+        /// <param name="exitCode">The exit code of the process.</param>
+        /// <param name="stdOut">The standard output of the process.</param>
+        /// <param name="stdErr">The standard error output of the process.</param>
+        /// <param name="interleaved">The interleaved output of the process.</param>
+        public ProcessResult(int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved)
+        {
+            ExitCode = exitCode;
+            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
+            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
+            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
         /// This is only here as sometimes we need to falsify a result in the module.
         /// </summary>
         /// <param name="exitCode">The exit code of the process.</param>
