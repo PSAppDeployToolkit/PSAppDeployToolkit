@@ -23,10 +23,10 @@ namespace PSADT.ProcessManagement
         /// <param name="interleaved">The interleaved output of the process.</param>
         public ProcessResult(Process process, ProcessModule moduleInfo, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
         {
-            Process = process ?? throw new ArgumentNullException(nameof(process));
-            ModuleInfo = moduleInfo ?? throw new ArgumentNullException(nameof(moduleInfo));
-            LaunchInfo = launchInfo ?? throw new ArgumentNullException(nameof(launchInfo));
-            CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException(nameof(commandLine));
+            Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
+            ModuleInfo = moduleInfo ?? throw new ArgumentNullException("ModuleInfo cannot be null.", (Exception?)null);
+            LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
+            CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException("CommandLine cannot be null.", (Exception?)null);
         }
 
         /// <summary>
@@ -36,9 +36,8 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved)
+        public ProcessResult(int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode)
         {
-            ExitCode = exitCode;
             StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
             StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
             Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
