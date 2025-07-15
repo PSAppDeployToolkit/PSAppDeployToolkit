@@ -157,7 +157,7 @@ function Install-ADTDeployment
         $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
         if ($adtSession.DefaultMspFiles)
@@ -222,7 +222,7 @@ function Uninstall-ADTDeployment
         $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
@@ -274,7 +274,7 @@ function Repair-ADTDeployment
         $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
-            $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
+            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
         }
         Start-ADTMsiProcess @ExecuteDefaultMSISplat
     }
