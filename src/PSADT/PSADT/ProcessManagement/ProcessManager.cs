@@ -207,14 +207,14 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(de => de.Key.ToString()!, de => de.Value!.ToString()!), out commandLine, out string? workingDirectory);
+                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandLine, out string? workingDirectory);
                             CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                         }
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(de => de.Key.ToString()!, de => de.Value!.ToString()!), out commandLine, out string? workingDirectory);
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandLine, out string? workingDirectory);
                         Kernel32.CreateProcess(null, commandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                     }
 
@@ -245,7 +245,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(de => de.Key.ToString()!, de => de.Value!.ToString()!), out commandLine, out string? workingDirectory);
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandLine, out string? workingDirectory);
                 var argv = ProcessUtilities.CommandLineToArgv(commandLine);
 
                 // Set up the shell execute info structure.
@@ -481,6 +481,15 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves a read-only dictionary containing the current environment variables.
+        /// </summary>
+        /// <remarks>The method returns a snapshot of the environment variables at the time of the call.
+        /// Subsequent changes to the environment variables will not be reflected in the returned dictionary.</remarks>
+        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are the names of the environment variables
+        /// and the values are their corresponding values as strings.</returns>
+        private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary() => new(Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
+
+        /// <summary>
         /// Converts a native environment block into a read-only dictionary of environment variables.
         /// </summary>
         /// <remarks>This method processes a native environment block, which is a contiguous block of
@@ -553,7 +562,7 @@ namespace PSADT.ProcessManagement
         /// Placeholders that cannot be resolved are left unchanged.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
         /// if <paramref name="environment"/> is invalid.</exception>
-        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, IReadOnlyDictionary<string, string> environment)
+        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -580,7 +589,7 @@ namespace PSADT.ProcessManagement
         /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, IReadOnlyDictionary<string, string> environmentDictionary, out string commandLine, out string? workingDirectory)
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string> environmentDictionary, out string commandLine, out string? workingDirectory)
         {
             string[] argv = (new[] { launchInfo.FilePath }).Concat(launchInfo.ArgumentList ?? []).ToArray();
             if (launchInfo.ExpandEnvironmentVariables)
