@@ -109,7 +109,7 @@ namespace PSADT.ProcessManagement
                     {
                         if (launchInfo.CreateNoWindow)
                         {
-                            startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                            startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
                             creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                         }
                         else
