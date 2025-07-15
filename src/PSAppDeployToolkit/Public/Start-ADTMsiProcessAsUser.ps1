@@ -160,7 +160,6 @@ function Start-ADTMsiProcessAsUser
         [System.String]$Action = 'Install',
 
         [Parameter(Mandatory = $true, ParameterSetName = 'FilePath', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_FilePath', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
         [ValidateScript({
                 if ([System.IO.Path]::GetExtension($_) -notmatch '^\.ms[ip]$')
                 {
@@ -171,12 +170,10 @@ function Start-ADTMsiProcessAsUser
         [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [ValidateNotNullOrEmpty()]
         [System.Guid]$ProductCode,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
@@ -237,7 +234,7 @@ function Start-ADTMsiProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Repair', 'Reinstall')]
-        [System.String]$RepairMode = 'Reinstall',
+        [System.String]$RepairMode,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RepairFromSource,
