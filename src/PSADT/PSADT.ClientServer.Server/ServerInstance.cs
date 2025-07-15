@@ -30,7 +30,7 @@ namespace PSADT.ClientServer
     /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to initialize the client-server communication, and
     /// using <see cref="Invoke(ClientServerCommandType)"/> to send commands to the client. Once the communication is
     /// complete, the <see cref="Dispose"/> method should be called to release resources. </para></remarks>
-    public class ServerInstance : IDisposable
+    public sealed class ServerInstance : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication
@@ -463,7 +463,7 @@ namespace PSADT.ClientServer
         /// addition to unmanaged resources. Once disposed, the instance should not be used further.</remarks>
         /// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release
         /// only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             // Check we're not already done.
             if (_disposed)
