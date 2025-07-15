@@ -47,13 +47,13 @@ namespace PSADT.Types
             int security)
         {
             CodePage = codePage;
-            Title = !string.IsNullOrWhiteSpace(title) ? title : throw new ArgumentNullException("Title cannot be null or empty.", (Exception?)null);
-            Subject = !string.IsNullOrWhiteSpace(subject) ? subject : throw new ArgumentNullException("Subject cannot be null or empty.", (Exception?)null);
-            Author = !string.IsNullOrWhiteSpace(author) ? author : throw new ArgumentNullException("Author cannot be null or empty.", (Exception?)null);
-            Keywords = !string.IsNullOrWhiteSpace(keywords) ? keywords : throw new ArgumentNullException("Keywords cannot be null or empty.", (Exception?)null);
-            Comments = !string.IsNullOrWhiteSpace(comments) ? comments : throw new ArgumentNullException("Comments cannot be null or empty.", (Exception?)null);
-            Template = !string.IsNullOrWhiteSpace(template) ? template : throw new ArgumentNullException("Template cannot be null or empty.", (Exception?)null);
-            LastSavedBy = !string.IsNullOrWhiteSpace(lastSavedBy) ? lastSavedBy : throw new ArgumentNullException("LastSavedBy cannot be null or empty.", (Exception?)null);
+            Title = !string.IsNullOrWhiteSpace(title) ? title : string.Empty;
+            Subject = !string.IsNullOrWhiteSpace(subject) ? subject : string.Empty;
+            Author = !string.IsNullOrWhiteSpace(author) ? author : string.Empty;
+            Keywords = !string.IsNullOrWhiteSpace(keywords) ? keywords : string.Empty;
+            Comments = !string.IsNullOrWhiteSpace(comments) ? comments : string.Empty;
+            Template = !string.IsNullOrWhiteSpace(template) ? template : string.Empty;
+            LastSavedBy = !string.IsNullOrWhiteSpace(lastSavedBy) ? lastSavedBy : string.Empty;
             RevisionNumber = revisionNumber;
             LastPrinted = lastPrinted;
             CreateTimeDate = createTimeDate;
@@ -61,7 +61,7 @@ namespace PSADT.Types
             PageCount = pageCount;
             WordCount = wordCount;
             CharacterCount = characterCount;
-            CreatingApplication = !string.IsNullOrWhiteSpace(creatingApplication) ? creatingApplication : throw new ArgumentNullException("CreatingApplication cannot be null or empty.", (Exception?)null);
+            CreatingApplication = !string.IsNullOrWhiteSpace(creatingApplication) ? creatingApplication : string.Empty;
             Security = security;
         }
 
