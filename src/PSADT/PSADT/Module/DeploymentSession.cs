@@ -260,7 +260,7 @@ namespace PSADT.Module
                         if (!string.IsNullOrWhiteSpace(_dirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            string[] msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
+                            var msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
@@ -268,9 +268,9 @@ namespace PSADT.Module
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
-                            else if (msiFiles.Length > 0)
+                            else if (msiFiles.Any())
                             {
-                                _defaultMsiFile = new FileInfo(msiFiles[0]).FullName;
+                                _defaultMsiFile = new FileInfo(msiFiles.First()).FullName;
                             }
                         }
                     }
@@ -824,7 +824,7 @@ namespace PSADT.Module
                     }
                     else if ((bool)configToolkit["ProcessDetection"]!)
                     {
-                        if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose.ToArray()) is var runningProcs && (runningProcs.Count == 0))
+                        if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose) is var runningProcs && (runningProcs.Count == 0))
                         {
                             deployModeChanged = true;
                             _deployMode = DeployMode.Silent;
