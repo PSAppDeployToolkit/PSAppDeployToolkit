@@ -130,65 +130,6 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the parent process of the specified process.
-        /// </summary>
-        /// <remarks>This method uses system-level information to identify the parent process. The caller
-        /// must ensure that the provided process is valid and accessible.</remarks>
-        /// <param name="proc">The process for which to retrieve the parent process. Must not be null.</param>
-        /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
-        public static Process GetParentProcess(Process proc)
-        {
-            NtDll.NtQueryInformationProcess(proc.Handle, out PROCESS_BASIC_INFORMATION pbi);
-            return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
-        }
-
-        /// <summary>
-        /// Retrieves the parent process of the current process.
-        /// </summary>
-        /// <remarks>The returned <see cref="Process"/> object should be disposed of by the caller when it
-        /// is no longer needed.</remarks>
-        /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
-        public static Process GetParentProcess()
-        {
-            using (var proc = Process.GetCurrentProcess())
-            {
-                return GetParentProcess(proc);
-            }
-        }
-
-        /// <summary>
-        /// Retrieves a list of parent processes for the current process, starting from the immediate parent and
-        /// continuing up the hierarchy until no further parent processes are found.
-        /// </summary>
-        /// <remarks>This method iteratively determines the parent process of the current process and
-        /// continues up the hierarchy until no further parent processes can be identified or a circular reference is
-        /// detected.</remarks>
-        /// <returns>A list of <see cref="Process"/> objects representing the parent processes of the current process. The list
-        /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the list
-        /// will be empty.</returns>
-        public static IReadOnlyList<Process> GetParentProcesses()
-        {
-            var proc = Process.GetCurrentProcess();
-            List<Process> procs = [];
-            while (true)
-            {
-                try
-                {
-                    if (procs.Contains(proc = GetParentProcess(proc)))
-                    {
-                        break;
-                    }
-                    procs.Add(proc);
-                }
-                catch
-                {
-                    break;
-                }
-            }
-            return procs.AsReadOnly();
-        }
-
-        /// <summary>
         /// Converts a list of command-line arguments into a single command-line string.
         /// </summary>
         /// <remarks>This method handles quoting and escaping according to standard command-line parsing

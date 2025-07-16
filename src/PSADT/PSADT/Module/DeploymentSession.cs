@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
+using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
@@ -573,9 +574,9 @@ namespace PSADT.Module
                 }
 
                 // Test and warn if this toolkit was started with ServiceUI anywhere as a parent process.
-                if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
+                if (AccountUtilities.CallerIsSystemInteractive)
                 {
-                    WriteLogEntry($"[{appDeployToolkitName}] was started with ServiceUI as a parent process. This is no longer required as of [4.1.0] and will not be supported in a later release.", LogSeverity.Warning);
+                    WriteLogEntry($"[{appDeployToolkitName}] was started with ServiceUI as a parent process, or ConfigMgr's 'Allow users to view and interact with the program installation' option. This is no longer required and will not be supported in a later release.", LogSeverity.Warning);
                 }
 
 

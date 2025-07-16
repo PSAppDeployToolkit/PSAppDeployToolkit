@@ -52,6 +52,7 @@ namespace PSADT.AccountManagement
 
             // Determine if the caller is the local system account.
             CallerIsLocalSystem = CallerSid == GetWellKnownSid(WellKnownSidType.LocalSystemSid);
+            CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
         }
 
         /// <summary>
@@ -168,6 +169,11 @@ namespace PSADT.AccountManagement
         /// Indicates whether the caller is the local system account.
         /// </summary>
         public static readonly bool CallerIsLocalSystem;
+
+        /// <summary>
+        /// Indicates whether the current caller is running in an interactive system environment.
+        /// </summary>
+        public static readonly bool CallerIsSystemInteractive;
 
         /// <summary>
         /// Gets a read-only list of privileges associated with the caller.

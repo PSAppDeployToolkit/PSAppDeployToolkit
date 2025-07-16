@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using PSADT.AccountManagement;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using Windows.Win32;
@@ -334,9 +335,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
         {
             // Throw if our process was started with ServiceUI anywhere as a parent process.
-            if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
+            if (AccountUtilities.CallerIsSystemInteractive)
             {
-                throw new InvalidOperationException("Hyperlinks are only permitted when ServiceUI is not used to start the toolkit.");
+                throw new InvalidOperationException("Hyperlinks are only permitted when ServiceUI or ConfigMgr's 'Allow users to view and interact with the program installation' option is not used to start the toolkit.");
             }
 
             // Don't waste time on an empty string.

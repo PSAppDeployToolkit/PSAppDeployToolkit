@@ -188,7 +188,7 @@ function Show-ADTInstallationPrompt
     begin
     {
         # Throw if the parent is ServiceUI and we're trying to use an input dialog.
-        if ($PSCmdlet.ParameterSetName.Equals('ShowInputDialog') -and (Test-ADTParentProcessHasServiceUI))
+        if ($PSCmdlet.ParameterSetName.Equals('ShowInputDialog') -and (Test-ADTCallerIsInteractiveSystemProcess))
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new('The input dialog is only permitted when ServiceUI is not used to start the toolkit.')
