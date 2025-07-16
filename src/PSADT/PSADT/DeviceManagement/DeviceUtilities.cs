@@ -136,5 +136,26 @@ namespace PSADT.DeviceManagement
             // No chassis information found.
             return SystemChassisType.Unknown;
         }
+
+        /// <summary>
+        /// Retrieves the system uptime.
+        /// </summary>
+        /// <remarks>The system uptime is calculated based on the number of milliseconds elapsed since the
+        /// system was started.</remarks>
+        /// <returns>A <see cref="TimeSpan"/> representing the duration for which the system has been running since the last
+        /// restart.</returns>
+        public static TimeSpan GetSystemUptime()
+        {
+            return TimeSpan.FromMilliseconds(PInvoke.GetTickCount64());
+        }
+
+        /// <summary>
+        /// Retrieves the system boot time by calculating the difference between the current time and the system uptime.
+        /// </summary>
+        /// <returns>A <see cref="DateTime"/> representing the date and time when the system was last booted.</returns>
+        public static DateTime GetSystemBootTime()
+        {
+            return DateTime.Now - GetSystemUptime();
+        }
     }
 }

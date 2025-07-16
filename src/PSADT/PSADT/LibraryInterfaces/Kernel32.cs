@@ -496,15 +496,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Gets the elapsed amount of milliseconds since system boot as a 64-bit unsigned integer.
-        /// </summary>
-        /// <returns></returns>
-        public static ulong GetTickCount64()
-        {
-            return PInvoke.GetTickCount64();
-        }
-
-        /// <summary>
         /// Wrapper around DuplicateHandle to manage error handling.
         /// </summary>
         /// <param name="hSourceProcessHandle"></param>
