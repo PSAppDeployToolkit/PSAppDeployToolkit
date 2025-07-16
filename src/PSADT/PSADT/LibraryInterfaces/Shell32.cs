@@ -228,16 +228,16 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwFileAttributes"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static SHFILEINFO SHGetFileInfo(string pszPath, SHGFI_FLAGS uFlags, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes = 0)
+        internal static IntPtr SHGetFileInfo(string pszPath, out SHFILEINFO psfi, SHGFI_FLAGS uFlags, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes = 0)
         {
             [DllImport("shell32.dll", CharSet = CharSet.Auto)]
             static extern IntPtr SHGetFileInfo(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            SHFILEINFO shinfo = new(); IntPtr hImg = SHGetFileInfo(pszPath, dwFileAttributes, ref shinfo, (uint)Marshal.SizeOf(shinfo), uFlags);
-            if (hImg == IntPtr.Zero)
+            psfi = new(); var res = SHGetFileInfo(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
+            if (res == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to retrieve file information.");
             }
-            return shinfo;
+            return res;
         }
 
         /// <summary>

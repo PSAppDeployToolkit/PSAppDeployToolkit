@@ -13,7 +13,6 @@ CreateProcessW
 CreateProcessWithTokenW
 DeleteObject
 DestroyEnvironmentBlock
-DestroyIcon
 DestroyMenu
 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE
 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2

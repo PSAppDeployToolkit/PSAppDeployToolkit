@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 using PSADT.LibraryInterfaces;
+using Windows.Win32;
 using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Utilities
@@ -107,10 +108,30 @@ namespace PSADT.UserInterface.Utilities
             }
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
-            var shinfo = Shell32.SHGetFileInfo(path, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
-            Icon icon = (Icon)Icon.FromHandle(shinfo.hIcon).Clone();
-            User32.DestroyIcon(shinfo.hIcon);
-            return icon;
+            Shell32.SHGetFileInfo(path, out var psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
+            using (var hIcon = new DestroyIconSafeHandle(psfi.hIcon, true))
+            {
+                if (hIcon.IsInvalid)
+                {
+                    throw new ArgumentException("Invalid icon handle.", nameof(path));
+                }
+                bool hIconAddRef = false;
+                try
+                {
+                    hIcon.DangerousAddRef(ref hIconAddRef);
+                    using (var icon = Icon.FromHandle(hIcon.DangerousGetHandle()))
+                    {
+                        return (Icon)icon.Clone();
+                    }
+                }
+                finally
+                {
+                    if (hIconAddRef)
+                    {
+                        hIcon.DangerousRelease();
+                    }
+                }
+            }
         }
 
         /// <summary>

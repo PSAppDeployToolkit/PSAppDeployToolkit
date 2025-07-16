@@ -263,21 +263,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Destroys an icon.
-        /// </summary>
-        /// <param name="hIcon"></param>
-        /// <returns></returns>
-        internal static BOOL DestroyIcon(HICON hIcon)
-        {
-            var res = PInvoke.DestroyIcon(hIcon);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
-
-        /// <summary>
         /// Retrieves the display monitor that is nearest to the specified rectangle.
         /// </summary>
         /// <param name="hWnd"></param>
