@@ -4,7 +4,6 @@
     <OutputType>Library</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>$(NoWarn)</NoWarn>
-    <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

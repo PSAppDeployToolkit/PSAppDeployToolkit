@@ -3,7 +3,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <UseWPF>true</UseWPF>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
@@ -23,7 +22,6 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-    <UseWindowsForms>True</UseWindowsForms>
     <WarningLevel>9999</WarningLevel>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
