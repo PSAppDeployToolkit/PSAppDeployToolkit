@@ -466,7 +466,7 @@ namespace PSADT.ProcessManagement
                 {
                     try
                     {
-                        Kernel32.ReadFile(handle, buffer, out bytesRead, IntPtr.Zero);
+                        Kernel32.ReadFile(handle, buffer, out bytesRead);
                     }
                     catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
                     {

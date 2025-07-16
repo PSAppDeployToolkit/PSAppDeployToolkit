@@ -427,14 +427,13 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hFile"></param>
         /// <param name="lpBuffer"></param>
         /// <param name="lpNumberOfBytesRead"></param>
-        /// <param name="lpOverlapped"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL ReadFile(SafeHandle hFile, Span<byte> lpBuffer, out uint lpNumberOfBytesRead, IntPtr lpOverlapped)
+        internal static unsafe BOOL ReadFile(SafeHandle hFile, Span<byte> lpBuffer, out uint lpNumberOfBytesRead)
         {
             fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
             {
-                var res = PInvoke.ReadFile(hFile, lpBuffer, pNumberOfBytesRead, (NativeOverlapped*)lpOverlapped);
+                var res = PInvoke.ReadFile(hFile, lpBuffer, pNumberOfBytesRead, null);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
