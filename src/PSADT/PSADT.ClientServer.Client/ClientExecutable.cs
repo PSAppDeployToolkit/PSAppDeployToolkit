@@ -279,7 +279,7 @@ namespace PSADT.ClientServer
                                 if (parts[0] == "InitCloseAppsDialog")
                                 {
                                     // Deserialize the process definitions if we have them, then right back that we were successful.
-                                    closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
+                                    closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ReadOnlyCollection<ProcessDefinition>>(parts[1]) : null, logWriter);
                                     WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "PromptToCloseApps")

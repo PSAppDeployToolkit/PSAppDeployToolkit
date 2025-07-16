@@ -39,7 +39,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentException"></exception>
         public ProcessLaunchInfo(
             string filePath,
-            string[]? argumentList = null,
+            ReadOnlyCollection<string>? argumentList = null,
             string? workingDirectory = null,
             NTAccount? username = null,
             bool useLinkedAdminToken = false,
@@ -63,9 +63,9 @@ namespace PSADT.ProcessManagement
             {
                 WorkingDirectory = workingDirectory!.Trim();
             }
-            if (null != argumentList && argumentList.Length > 0)
+            if (null != argumentList && argumentList.Count > 0)
             {
-                ArgumentList = argumentList.Length == 1 ? ProcessUtilities.CommandLineToArgv(argumentList[0].Trim()) : argumentList.ToList().AsReadOnly();
+                ArgumentList = argumentList.Count == 1 ? ProcessUtilities.CommandLineToArgv(argumentList[0].Trim()) : argumentList.ToList().AsReadOnly();
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {

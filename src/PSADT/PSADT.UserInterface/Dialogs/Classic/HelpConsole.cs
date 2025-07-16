@@ -45,7 +45,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set up a PowerShell initial session state.
                 var iss = InitialSessionState.CreateDefault2();
                 iss.ExecutionPolicy = options.ExecutionPolicy;
-                iss.ImportPSModule(options.ModulePaths);
+                iss.ImportPSModule(options.ModulePaths.ToArray());
 
                 // Set up a runspace and open it for usage.
                 this.runspace = RunspaceFactory.CreateRunspace(iss);

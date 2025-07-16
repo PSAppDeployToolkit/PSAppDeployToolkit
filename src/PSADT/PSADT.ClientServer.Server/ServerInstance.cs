@@ -66,7 +66,7 @@ namespace PSADT.ClientServer
             {
                 _clientProcess = ProcessManager.LaunchAsync(new(
                     _assemblyLocation,
-                    ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
+                    new(["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()]),
                     null,
                     Username,
                     false,
@@ -188,7 +188,7 @@ namespace PSADT.ClientServer
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be closed. If <paramref
         /// name="closeProcesses"/> is <see langword="null"/>, no specific processes will be targeted.</param>
         /// <returns><see langword="true"/> if the dialog was successfully initialized; otherwise, <see langword="false"/>.</returns>
-        public bool InitCloseAppsDialog(ProcessDefinition[]? closeProcesses)
+        public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
             return Invoke<bool>($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(closeProcesses)}" : null)}");

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.PowerShell;
 using Newtonsoft.Json;
@@ -23,7 +25,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("ExecutionPolicy value is null or invalid.", (Exception?)null);
             }
-            if (options["ModulePaths"] is not string[] modulePaths || modulePaths.Length == 0 || modulePaths.Any(string.IsNullOrWhiteSpace))
+            if (options["ModulePaths"] is not ReadOnlyCollection<string> modulePaths || modulePaths.Count == 0 || modulePaths.Any(string.IsNullOrWhiteSpace))
             {
                 throw new ArgumentNullException("ModulePaths value is null or invalid.", (Exception?)null);
             }
@@ -43,7 +45,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="modulePaths">An array of module paths to be used. Cannot be <see langword="null"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="executionPolicy"/> or <paramref name="modulePaths"/> is <see langword="null"/>.</exception>
         [JsonConstructor]
-        private HelpConsoleOptions(ExecutionPolicy executionPolicy, string[] modulePaths)
+        private HelpConsoleOptions(ExecutionPolicy executionPolicy, ReadOnlyCollection<string> modulePaths)
         {
             ExecutionPolicy = executionPolicy;
             ModulePaths = modulePaths ?? throw new ArgumentNullException(nameof(modulePaths));
@@ -59,6 +61,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the collection of file paths to the modules associated with the current instance.
         /// </summary>
         [JsonProperty]
-        public readonly string[] ModulePaths;
+        public readonly IReadOnlyList<string> ModulePaths;
     }
 }

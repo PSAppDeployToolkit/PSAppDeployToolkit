@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using PSADT.ProcessManagement;
 
@@ -17,10 +18,10 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
-        internal CloseAppsDialogState(ProcessDefinition[]? closeProcesses, BinaryWriter? logWriter)
+        internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, BinaryWriter? logWriter)
         {
             // Only initialise these variables if they're not null.
-            if (closeProcesses?.Length > 0)
+            if (closeProcesses?.Count > 0)
             {
                 RunningProcessService = new(closeProcesses);
             }

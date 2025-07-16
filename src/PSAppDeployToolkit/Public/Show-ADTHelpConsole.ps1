@@ -47,5 +47,5 @@ function Show-ADTHelpConsole
     }
 
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
-    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser) -DialogType HelpConsole -DialogStyle Classic -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{ ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy](Get-ExecutionPolicy); ModulePaths = [System.String[]](Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*").ModuleBase }) -NoWait
+    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser) -DialogType HelpConsole -DialogStyle Classic -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{ ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy](Get-ExecutionPolicy); ModulePaths = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]](Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*").ModuleBase }) -NoWait
 }
