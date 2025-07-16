@@ -26,11 +26,7 @@ namespace PSADT.DeviceManagement
         /// <remarks>This constructor retrieves initial battery and power-related information from the
         /// system. It uses system utilities to populate properties such as battery life, charge status, and power line
         /// status. This class is designed to provide information about the device's power and battery state.</remarks>
-        private BatteryInfo()
-        {
-            var chassisType = DeviceUtilities.GetSystemChassisType();
-            IsLaptop = chassisType == SystemChassisType.Laptop || chassisType == SystemChassisType.Notebook || chassisType == SystemChassisType.SubNotebook;
-        }
+        private BatteryInfo() => UpdateSystemPowerStatus();
 
         /// <summary>
         /// Gets the current status of the AC power line.
@@ -106,16 +102,12 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Indicates whether the device is a laptop.
         /// </summary>
-        public readonly bool IsLaptop;
+        public readonly bool IsLaptop = DeviceUtilities.GetSystemChassisType() is SystemChassisType chassisType && chassisType == SystemChassisType.Laptop || chassisType == SystemChassisType.Notebook || chassisType == SystemChassisType.SubNotebook;
 
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.
         /// </summary>
-        private bool IsBatteryInvalid()
-        {
-            // Store off BatteryChargeStatus to prevent repeated UpdateSystemPowerStatus() calls.
-            var batteryChargeStatus = BatteryChargeStatus; return batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown;
-        }
+        private bool IsBatteryInvalid() => BatteryChargeStatus is BatteryChargeStatus batteryChargeStatus && (batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown);
 
         /// <summary>
         /// Updates the current system power status by retrieving information about the system's power state.
