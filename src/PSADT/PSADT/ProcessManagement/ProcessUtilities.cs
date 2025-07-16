@@ -9,7 +9,6 @@ using System.Text;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
 {

@@ -46,8 +46,7 @@ namespace PSADT.WindowManagement
                 }
 
                 // Continue if the window doesn't have any text.
-                string? windowText = WindowTools.GetWindowText(window);
-                if (string.IsNullOrWhiteSpace(windowText))
+                if (WindowTools.GetWindowText(window) is not string windowText || string.IsNullOrWhiteSpace(windowText))
                 {
                     continue;
                 }

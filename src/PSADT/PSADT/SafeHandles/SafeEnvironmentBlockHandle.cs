@@ -17,6 +17,6 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Represents a null safe handle for an environment block.
         /// </summary>
-        internal static readonly SafeEnvironmentBlockHandle Null = new SafeEnvironmentBlockHandle(IntPtr.Zero, false);
+        internal static readonly SafeEnvironmentBlockHandle Null = new(IntPtr.Zero, false);
     }
 }

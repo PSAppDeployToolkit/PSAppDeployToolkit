@@ -97,6 +97,6 @@ namespace PSADT.SafeHandles
         /// Represents a null safe handle for memory.
         /// This is a bit cheeky, but it works.
         /// </summary>
-        internal static readonly SafeMemoryHandle Null = (SafeMemoryHandle)new SafeWtsHandle(IntPtr.Zero, 0, false);
+        internal static readonly SafeMemoryHandle Null = new SafeWtsHandle(IntPtr.Zero, 0, false);
     }
 }

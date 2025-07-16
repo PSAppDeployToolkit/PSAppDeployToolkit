@@ -35,6 +35,7 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
         /// <summary>
         /// Retrieves information about the specified registry key.
         /// </summary>

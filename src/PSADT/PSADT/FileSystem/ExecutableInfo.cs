@@ -45,7 +45,7 @@ namespace PSADT.FileSystem
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem = LibraryInterfaces.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_UNKNOWN;
             uint entryPoint;
             ulong imageBase;
-            bool isDotNet = false;
+            bool isDotNet;
 
             using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
             using BinaryReader reader = new(fs);
