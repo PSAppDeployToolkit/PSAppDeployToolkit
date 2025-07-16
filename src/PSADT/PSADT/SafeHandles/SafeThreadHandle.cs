@@ -1,5 +1,7 @@
 ﻿using System;
-using PSADT.LibraryInterfaces;
+using PSADT.Utilities;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace PSADT.SafeHandles
 {
@@ -12,6 +14,19 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle() => Kernel32.CloseHandle(ref handle);
+        protected override bool ReleaseHandle()
+        {
+            if (handle == default || IntPtr.Zero != handle)
+            {
+                return true;
+            }
+            var res = PInvoke.CloseHandle((HANDLE)handle);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            handle = default;
+            return res;
+        }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
-using PSADT.LibraryInterfaces;
+using PSADT.Utilities;
+using Windows.Win32;
 using Windows.Win32.System.RemoteDesktop;
 
 namespace PSADT.SafeHandles
@@ -22,7 +23,20 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle() => WtsApi32.WTSFreeMemoryEx(type, ref handle, (uint)(Length / WtsTypeClassSizes[(int)type]));
+        protected override unsafe bool ReleaseHandle()
+        {
+            if (handle == default || IntPtr.Zero == handle)
+            {
+                return true;
+            }
+            var res = PInvoke.WTSFreeMemoryEx(type, handle.ToPointer(), (uint)(Length / WtsTypeClassSizes[(int)type]));
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            handle = IntPtr.Zero;
+            return res;
+        }
 
         /// <summary>
         /// Represents a collection of sizes for various WTS (Windows Terminal Services) type classes.

@@ -1,5 +1,5 @@
 ﻿using System;
-using PSADT.LibraryInterfaces;
+using Windows.Win32;
 
 namespace PSADT.SafeHandles
 {
@@ -19,9 +19,13 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle()
+        protected override unsafe bool ReleaseHandle()
         {
-            WtsApi32.WTSFreeMemory(ref handle);
+            if (handle != default && IntPtr.Zero != handle)
+            {
+                PInvoke.WTSFreeMemory(handle.ToPointer());
+                handle = default;
+            }
             return true;
         }
     }

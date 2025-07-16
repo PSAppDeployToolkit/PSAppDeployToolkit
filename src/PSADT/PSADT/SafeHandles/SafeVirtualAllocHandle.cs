@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using PSADT.LibraryInterfaces;
+using PSADT.Utilities;
+using Windows.Win32;
 using Windows.Win32.System.Memory;
 
 namespace PSADT.SafeHandles
@@ -34,6 +35,18 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override bool ReleaseHandle() => Kernel32.VirtualFree(handle, UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+        protected override unsafe bool ReleaseHandle()
+        {
+            if (handle == default || IntPtr.Zero == handle)
+            {
+                return true;
+            }
+            var res = PInvoke.VirtualFree(handle.ToPointer(), UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
     }
 }

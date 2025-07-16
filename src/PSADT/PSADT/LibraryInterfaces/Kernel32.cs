@@ -325,27 +325,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around CloseHandle to manage error handling.
-        /// </summary>
-        /// <param name="hObject"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static BOOL CloseHandle(ref IntPtr hObject)
-        {
-            if (hObject == default || IntPtr.Zero != hObject)
-            {
-                return true;
-            }
-            var res = PInvoke.CloseHandle((HANDLE)hObject);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            hObject = default;
-            return res;
-        }
-
-        /// <summary>
         /// Wrapper around GetQueuedCompletionStatus to manage error handling.
         /// </summary>
         /// <param name="CompletionPort"></param>
@@ -611,27 +590,6 @@ namespace PSADT.LibraryInterfaces
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return new((IntPtr)res, true);
-        }
-
-        /// <summary>
-        /// Wrapper around VirtualFree to manage error handling.
-        /// </summary>
-        /// <param name="lpAddress"></param>
-        /// <param name="dwSize"></param>
-        /// <param name="dwFreeType"></param>
-        /// <returns></returns>
-        internal static unsafe BOOL VirtualFree(IntPtr lpAddress, nuint dwSize, VIRTUAL_FREE_TYPE dwFreeType)
-        {
-            if (IntPtr.Zero == lpAddress)
-            {
-                return true;
-            }
-            var res = PInvoke.VirtualFree(lpAddress.ToPointer(), dwSize, dwFreeType);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
         }
 
         /// <summary>

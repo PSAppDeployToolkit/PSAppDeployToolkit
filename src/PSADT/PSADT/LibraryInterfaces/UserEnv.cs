@@ -31,26 +31,5 @@ namespace PSADT.LibraryInterfaces
             lpEnvironment = new SafeEnvironmentBlockHandle((IntPtr)lpEnvironmentPtr, true);
             return res;
         }
-
-        /// <summary>
-        /// Destroys an environment block created by the CreateEnvironmentBlock function.
-        /// </summary>
-        /// <param name="lpEnvironment"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL DestroyEnvironmentBlock(ref IntPtr lpEnvironment)
-        {
-            if (lpEnvironment == default || IntPtr.Zero == lpEnvironment)
-            {
-                return true;
-            }
-            var res = PInvoke.DestroyEnvironmentBlock(lpEnvironment.ToPointer());
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            lpEnvironment = default;
-            return res;
-        }
     }
 }

@@ -108,46 +108,6 @@ namespace PSADT.LibraryInterfaces
             phToken = new SafeFileHandle(phTokenLocal, true);
             return res;
         }
-
-        /// <summary>
-        /// Wrapper around WTSFreeMemory to manage error handling.
-        /// </summary>
-        /// <param name="pMemory"></param>
-        internal static unsafe void WTSFreeMemory(ref IntPtr pMemory)
-        {
-            if (pMemory != default && IntPtr.Zero != pMemory)
-            {
-                PInvoke.WTSFreeMemory(pMemory.ToPointer());
-                pMemory = default;
-            }
-        }
-
-        /// <summary>
-        /// Releases memory allocated by the specified WTS API function.
-        /// </summary>
-        /// <remarks>This method wraps the native <c>WTSFreeMemoryEx</c> function and ensures proper
-        /// cleanup of memory allocated by WTS API calls. It is the caller's responsibility to ensure that the memory
-        /// being freed was allocated by a compatible WTS API function.</remarks>
-        /// <param name="WTSTypeClass">The type class of the memory to be freed, indicating the structure or data type of the allocated memory.</param>
-        /// <param name="pMemory">A reference to the pointer to the memory block to be freed. After the method is called successfully, the
-        /// pointer is set to <see cref="IntPtr.Zero"/>.</param>
-        /// <param name="NumberOfEntries">The number of entries in the memory block, if applicable. This value is used to determine the scope of the
-        /// memory to be freed.</param>
-        /// <returns><see langword="true"/> if the memory was successfully freed; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL WTSFreeMemoryEx(WTS_TYPE_CLASS WTSTypeClass, ref IntPtr pMemory, uint NumberOfEntries)
-        {
-            if (pMemory == default || IntPtr.Zero == pMemory)
-            {
-                return true;
-            }
-            var res = PInvoke.WTSFreeMemoryEx(WTSTypeClass, pMemory.ToPointer(), NumberOfEntries);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            pMemory = IntPtr.Zero;
-            return res;
-        }
     }
 
     /// <summary>
