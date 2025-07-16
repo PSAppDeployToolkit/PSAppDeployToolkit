@@ -233,7 +233,7 @@ namespace PSADT.UserInterface
         /// <returns></returns>
         private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options, BaseState? state = null)
         {
-            return InvokeDialogAction<TResult>(() =>
+            return InvokeDialogAction(() =>
             {
                 using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state))
                 {
