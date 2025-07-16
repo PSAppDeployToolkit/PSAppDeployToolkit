@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Security.Principal;
 using Microsoft.Win32;
 
@@ -29,43 +28,38 @@ namespace PSADT.AccountManagement
             // Open the Group Policy Data Store registry key.
             using (var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath))
             {
-                // Return early if null.
-                if (null == datastore)
-                {
-                    return new ReadOnlyCollection<GroupPolicyAccountInfo>([]);
-                }
-
-                // Create list to hold the account information.
+                // Create list to hold the account information and process each found SID.
                 List<GroupPolicyAccountInfo> accountInfoList = [];
-
-                // Process each found SID.
-                foreach (var sid in datastore.GetSubKeyNames())
+                if (null != datastore)
                 {
-                    // Skip over anything that's not a proper SID.
-                    if (!sid.StartsWith("S-1-"))
+                    foreach (var sid in datastore.GetSubKeyNames())
                     {
-                        continue;
-                    }
-
-                    // Process each SID's subfolder. Usually this will just be 0, but there could be others.
-                    using (var indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}"))
-                    {
-                        // Skip over the entry if there's no indices.
-                        if (null == indices)
+                        // Skip over anything that's not a proper SID.
+                        if (!sid.StartsWith("S-1-"))
                         {
                             continue;
                         }
 
-                        // Process each found index.
-                        foreach (var index in indices.GetSubKeyNames())
+                        // Process each SID's subfolder. Usually this will just be 0, but there could be others.
+                        using (var indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}"))
                         {
-                            // Open each index's subkey so we can extrapolate the user information within.
-                            using (var info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}"))
+                            // Skip over the entry if there's no indices.
+                            if (null == indices)
                             {
-                                // If the username is available, add it to the list and skip to the next SID.
-                                if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
+                                continue;
+                            }
+
+                            // Process each found index.
+                            foreach (var index in indices.GetSubKeyNames())
+                            {
+                                // Open each index's subkey so we can extrapolate the user information within.
+                                using (var info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}"))
                                 {
-                                    accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
+                                    // If the username is available, add it to the list and skip to the next SID.
+                                    if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
+                                    {
+                                        accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
+                                    }
                                 }
                             }
                         }
