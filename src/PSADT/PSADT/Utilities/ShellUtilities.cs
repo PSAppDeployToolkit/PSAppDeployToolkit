@@ -42,13 +42,13 @@ namespace PSADT.Utilities
         /// Minimizes all open windows on the desktop.
         /// </summary>
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
-        internal static void MinimizeAllWindows() => User32.SendMessage(User32.FindWindow("Shell_TrayWnd", null), PInvoke.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+        internal static void MinimizeAllWindows() => User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), PInvoke.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
 
         /// <summary>
         /// Restores all minimized windows on the desktop to their previous state.
         /// </summary>
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no  windows are currently minimized.</remarks>
-        internal static void RestoreAllWindows() => User32.SendMessage(User32.FindWindow("Shell_TrayWnd", null), PInvoke.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+        internal static void RestoreAllWindows() => User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), PInvoke.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
 
         /// <summary>
         /// Retrieves the process ID of the Windows Explorer shell process.
@@ -75,5 +75,12 @@ namespace PSADT.Utilities
             User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out var pid);
             return pid;
         }
+
+        /// <summary>
+        /// Represents the class name of the Windows taskbar.
+        /// </summary>
+        /// <remarks>This constant is used to identify the taskbar window in Windows operating
+        /// systems.</remarks>
+        private const string Shell_TrayWnd = "Shell_TrayWnd";
     }
 }
