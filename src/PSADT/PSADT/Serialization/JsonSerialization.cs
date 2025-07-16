@@ -67,7 +67,7 @@ namespace PSADT.Serialization
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
         public static T DeserializeFromString<T>(string base64Json)
         {
-            if (string.IsNullOrEmpty(base64Json))
+            if (string.IsNullOrWhiteSpace(base64Json))
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
@@ -86,7 +86,7 @@ namespace PSADT.Serialization
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
         public static dynamic DeserializeFromString(string base64Json)
         {
-            if (string.IsNullOrEmpty(base64Json))
+            if (string.IsNullOrWhiteSpace(base64Json))
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
