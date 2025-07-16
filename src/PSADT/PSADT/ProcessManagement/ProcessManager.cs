@@ -14,8 +14,8 @@ using System.Security.Principal;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.Execution;
 using PSADT.Extensions;
+using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Security;
@@ -54,7 +54,7 @@ namespace PSADT.ProcessManagement
             bool cliApp;
             try
             {
-                cliApp = ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).Subsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+                cliApp = ExecutableInfo.Get(launchInfo.FilePath).Subsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
             }
             catch
             {

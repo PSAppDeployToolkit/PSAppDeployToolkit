@@ -1,24 +1,25 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.System.SystemServices;
 using Windows.Win32.System.Diagnostics.Debug;
 
-namespace PSADT.Execution
+namespace PSADT.FileSystem
 {
     /// <summary>
-    /// Provides utility methods for working with executables.
+    /// Provides information about a PE file.
     /// </summary>
-    public static class ExecutableUtilities
+    public sealed record ExecutableInfo
     {
         /// <summary>
         /// Parses the specified PE file and returns information about it.
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static ExecutableInfo GetExecutableInfo(string filePath)
+        public static ExecutableInfo Get(string filePath)
         {
-            bool HasCLRHeader(__IMAGE_DATA_DIRECTORY_16 dataDirectory)
+            static bool HasCLRHeader(__IMAGE_DATA_DIRECTORY_16 dataDirectory)
             {
                 if (dataDirectory.Length > 14)
                 {
@@ -28,7 +29,7 @@ namespace PSADT.Execution
                 return false;
             }
 
-            T ReadStruct<T>(BinaryReader reader) where T : struct
+            static T ReadStruct<T>(BinaryReader reader) where T : struct
             {
                 var handle = GCHandle.Alloc(reader.ReadBytes(Marshal.SizeOf<T>()), GCHandleType.Pinned);
                 try
@@ -41,14 +42,13 @@ namespace PSADT.Execution
                 }
             }
 
-            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
-            using BinaryReader reader = new(fs);
-
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem = LibraryInterfaces.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_UNKNOWN;
             uint entryPoint;
             ulong imageBase;
             bool isDotNet = false;
 
+            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
+            using BinaryReader reader = new(fs);
             var dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader);
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
@@ -64,7 +64,6 @@ namespace PSADT.Execution
             var machine = (LibraryInterfaces.IMAGE_FILE_MACHINE)ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
             var magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16();
             fs.Seek(-2, SeekOrigin.Current);
-
             if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
             {
                 var opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
@@ -85,15 +84,56 @@ namespace PSADT.Execution
             {
                 throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
             }
-
-            return new(
-                filePath,
-                machine,
-                subsystem,
-                isDotNet,
-                entryPoint,
-                imageBase
-            );
+            return new(filePath, machine, subsystem, isDotNet, entryPoint, imageBase);
         }
+
+        /// <summary>
+        /// Creates a new instance of the ExecutableInfo class.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="isDotNetExecutable"></param>
+        /// <param name="machine"></param>
+        /// <param name="subsystem"></param>
+        /// <param name="entryPoint"></param>
+        /// <param name="imageBase"></param>
+        private ExecutableInfo(string filePath, LibraryInterfaces.IMAGE_FILE_MACHINE machine, LibraryInterfaces.IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
+        {
+            FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new FileInfo(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
+            Machine = machine;
+            Subsystem = subsystem;
+            IsDotNetExecutable = isDotNetExecutable;
+            EntryPoint = entryPoint;
+            ImageBase = imageBase;
+        }
+
+        /// <summary>
+        /// The FileInfo object for the executable.
+        /// </summary>
+        public readonly FileInfo FileInfo;
+
+        /// <summary>
+        /// The machine type of the executable.
+        /// </summary>
+        public readonly LibraryInterfaces.IMAGE_FILE_MACHINE Machine;
+
+        /// <summary>
+        /// The subsystem of the executable.
+        /// </summary>
+        public readonly LibraryInterfaces.IMAGE_SUBSYSTEM Subsystem;
+
+        /// <summary>
+        /// Whether the file is a .NET executable.
+        /// </summary>
+        public readonly bool IsDotNetExecutable;
+
+        /// <summary>
+        /// The entry point of the executable.
+        /// </summary>
+        public readonly uint EntryPoint;
+
+        /// <summary>
+        /// The image base of the executable.
+        /// </summary>
+        public readonly ulong ImageBase;
     }
 }

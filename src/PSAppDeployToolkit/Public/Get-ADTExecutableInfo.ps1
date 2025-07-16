@@ -28,7 +28,7 @@ function Get-ADTExecutableInfo
         This function accepts FileInfo objects via the pipeline for processing, such as output from Get-ChildItem.
 
     .OUTPUTS
-        PSADT.Execution.ExecutableInfo
+        PSADT.FileSystem.ExecutableInfo
 
         This function returns an ExecutableInfo object for the given FilePath.
 
@@ -52,7 +52,7 @@ function Get-ADTExecutableInfo
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
-    [OutputType([PSADT.Execution.ExecutableInfo])]
+    [OutputType([PSADT.FileSystem.ExecutableInfo])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -95,7 +95,7 @@ function Get-ADTExecutableInfo
             {
                 try
                 {
-                    [PSADT.Execution.ExecutableUtilities]::GetExecutableInfo($file.FullName)
+                    [PSADT.FileSystem.ExecutableInfo]::Get($file.FullName)
                 }
                 catch
                 {
