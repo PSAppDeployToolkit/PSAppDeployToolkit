@@ -83,57 +83,52 @@ namespace PSADT.AccountManagement
         /// <returns></returns>
         internal static bool IsSidMemberOfWellKnownGroup(SecurityIdentifier targetSid, WellKnownSidType wellKnownGroupSid)
         {
-            using (DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
+            // Internal method to recursively check group membership.
+            static bool CheckMemberRecursive(DirectoryEntry groupEntry, SecurityIdentifier targetSid, HashSet<string> visited)
             {
-                HashSet<string> visited = [];
-                return CheckMemberRecursive(groupEntry, targetSid, visited);
-            }
-        }
-
-        /// <summary>
-        /// Internal helper method for IsSidMemberOfGroup() to scan all group members recurvsively via System.DirectoryServices.
-        /// </summary>
-        /// <param name="groupEntry"></param>
-        /// <param name="targetSid"></param>
-        /// <param name="visited"></param>
-        /// <returns></returns>
-        private static bool CheckMemberRecursive(DirectoryEntry groupEntry, SecurityIdentifier targetSid, HashSet<string> visited)
-        {
-            // Recursively test all member SIDs against our target SID, returning false if we have no match.
-            if (groupEntry.Invoke("Members") is IEnumerable members)
-            {
-                foreach (object member in members)
+                // Recursively test all member SIDs against our target SID, returning false if we have no match.
+                if (groupEntry.Invoke("Members") is IEnumerable members)
                 {
-                    using (DirectoryEntry memberEntry = new(member))
+                    foreach (object member in members)
                     {
-                        // Skip over already parsed groups (group membership loops).
-                        if (!visited.Add(memberEntry.Path))
+                        using (DirectoryEntry memberEntry = new(member))
                         {
-                            continue;
-                        }
+                            // Skip over already parsed groups (group membership loops).
+                            if (!visited.Add(memberEntry.Path))
+                            {
+                                continue;
+                            }
 
-                        // Skip over the SID if it's malformed.
-                        var sid = memberEntry.Properties["ObjectSID"].Value;
-                        if (null == sid)
-                        {
-                            continue;
-                        }
+                            // Skip over the SID if it's malformed.
+                            var sid = memberEntry.Properties["ObjectSID"].Value;
+                            if (null == sid)
+                            {
+                                continue;
+                            }
 
-                        // Return true if the current SID is the one we're testing for.
-                        if (new SecurityIdentifier((byte[])sid, 0) == targetSid)
-                        {
-                            return true;
-                        }
+                            // Return true if the current SID is the one we're testing for.
+                            if (new SecurityIdentifier((byte[])sid, 0) == targetSid)
+                            {
+                                return true;
+                            }
 
-                        // If this member is a group, scan through its members recursively.
-                        if (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited))
-                        {
-                            return true;
+                            // If this member is a group, scan through its members recursively.
+                            if (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
+                return false;
             }
-            return false;
+
+            // Recursively check the members of the well-known group SID for the target SID.
+            HashSet<string> visited = [];
+            using (DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
+            {
+                return CheckMemberRecursive(groupEntry, targetSid, visited);
+            }
         }
 
         /// <summary>
