@@ -116,5 +116,22 @@ namespace PSADT.Security
                 return new((IntPtr)buffer.ToStructure<TOKEN_USER>().User.Sid);
             }
         }
+
+        /// <summary>
+        /// Retrieves the session ID associated with a specified token handle.
+        /// </summary>
+        /// <remarks>This method uses the Windows API to obtain the session ID for the provided token
+        /// handle. The caller must ensure that the token handle is valid and has the necessary permissions.</remarks>
+        /// <param name="tokenHandle">The handle to the token from which to retrieve the session ID. This handle must have appropriate access
+        /// rights.</param>
+        /// <returns>The session ID as an unsigned integer.</returns>
+        internal static uint GetTokenSessionId(SafeHandle tokenHandle)
+        {
+            using (var buffer = SafeHGlobalHandle.Alloc(sizeof(uint)))
+            {
+                AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
+                return buffer.ToStructure<uint>();
+            }
+        }
     }
 }

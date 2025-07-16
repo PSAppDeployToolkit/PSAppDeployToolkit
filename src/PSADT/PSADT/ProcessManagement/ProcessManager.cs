@@ -618,7 +618,7 @@ namespace PSADT.ProcessManagement
         /// to use the CreateProcessAsUser function. It verifies the presence of specific privileges and evaluates
         /// whether the process is part of a job object that allows breakaway.</remarks>
         /// <returns><see langword="true"/> if the process can use CreateProcessAsUser; otherwise, <see langword="false"/>.</returns>
-        private static CreateProcessUsingTokenStatus CanUseCreateProcessAsUser()
+        private static CreateProcessUsingTokenStatus CanUseCreateProcessAsUser(SafeFileHandle hPrimaryToken)
         {
             // Test whether the caller has the required privileges to use CreateProcessAsUser.
             if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeIncreaseQuotaPrivilege))
@@ -628,6 +628,13 @@ namespace PSADT.ProcessManagement
             if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege))
             {
                 return CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege;
+            }
+
+            // Test whether the token's session ID is the same as the current process's session ID.
+            // If it is, the following job object checks are not necessary.
+            if (TokenManager.GetTokenSessionId(hPrimaryToken) == AccountUtilities.CallerSessionId)
+            {
+                return CreateProcessUsingTokenStatus.OK;
             }
 
             // Test whether the process is part of an existing job object.
@@ -710,11 +717,11 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static void CreateProcessUsingToken(SafeHandle hPrimaryToken, string commandLine, bool usingAnonymousHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string commandLine, bool usingAnonymousHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides anonymous handles, we need to use CreateProcessAsUser() since it has bInheritHandles.
-            if (CanUseCreateProcessAsUser() is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || usingAnonymousHandles))
+            if (CanUseCreateProcessAsUser(hPrimaryToken) is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || usingAnonymousHandles))
             {
                 // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
                 // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
