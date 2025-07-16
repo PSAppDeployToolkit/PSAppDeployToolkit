@@ -472,7 +472,7 @@ namespace PSADT.ProcessManagement
                     {
                         break;
                     }
-                    var text = encoding.GetString(buffer, (int)bytesRead).Replace("\0", string.Empty).TrimEnd();
+                    var text = encoding.GetString(buffer, (int)bytesRead).TrimEndRemoveNull();
                     interleaved.Enqueue(text);
                     output.Add(text);
                 }

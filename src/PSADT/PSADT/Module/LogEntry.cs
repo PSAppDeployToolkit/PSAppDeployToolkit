@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.AccountManagement;
+using PSADT.Extensions;
 
 namespace PSADT.Module
 {
@@ -29,7 +30,7 @@ namespace PSADT.Module
             // C# identifies this character as whitespace but OneTrace does not so it works.
             // The empty line feed at the end is required by OneTrace to format correctly.
             Timestamp = timeStamp;
-            Message = !string.IsNullOrWhiteSpace(message) ? message.Replace("\0", string.Empty).TrimEnd() : throw new ArgumentNullException("Message cannot be null or empty.", (Exception?)null);
+            Message = !string.IsNullOrWhiteSpace(message) ? message.TrimEndRemoveNull() : throw new ArgumentNullException("Message cannot be null or empty.", (Exception?)null);
             Severity = severity;
             Source = !string.IsNullOrWhiteSpace(source) ? source : throw new ArgumentNullException("Source cannot be null or empty.", (Exception?)null);
             ScriptSection = scriptSection;
