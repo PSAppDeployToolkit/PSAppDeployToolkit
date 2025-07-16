@@ -10,8 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
+using PSADT.SafeHandles;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
@@ -358,20 +358,23 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Try to get from cache first
             if (!_appIconCache.TryGetValue(appFilePath, out var bitmapSource))
             {
-                // Get the icon as a System.Drawing.Bitmap.
+                // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
                 using (var drawingBitmap = DrawingUtilities.ExtractBitmapFromExecutable(appFilePath))
+                using (SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true))
                 {
-                    // Create a BitmapSource from the System.Drawing.Bitmap and cache it before returning it.
-                    IntPtr hBitmap = drawingBitmap.GetHbitmap();
+                    bool hBitmapAddRef = false;
                     try
                     {
-                        bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                        bitmapSource.Freeze();
+                        hBitmap.DangerousAddRef(ref hBitmapAddRef);
+                        (bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap.DangerousGetHandle(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())).Freeze();
                         _appIconCache.Add(appFilePath, bitmapSource);
                     }
                     finally
                     {
-                        Gdi32.DeleteObject(hBitmap);
+                        if (hBitmapAddRef)
+                        {
+                            hBitmap.DangerousRelease();
+                        }
                     }
                 }
             }
