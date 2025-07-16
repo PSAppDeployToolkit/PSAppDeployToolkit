@@ -448,7 +448,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hProcess"></param>
         /// <param name="dwPriorityClass"></param>
         /// <returns></returns>
-        internal static BOOL SetPriorityClass(SafeHandle hProcess, PROCESS_CREATION_FLAGS dwPriorityClass)
+        private static BOOL SetPriorityClass(SafeHandle hProcess, PROCESS_CREATION_FLAGS dwPriorityClass)
         {
             var res = PInvoke.SetPriorityClass(hProcess, dwPriorityClass);
             if (!res)
