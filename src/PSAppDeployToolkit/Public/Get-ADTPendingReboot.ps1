@@ -138,7 +138,7 @@ function Get-ADTPendingReboot
                     $IsAppVRebootPending,
                     $IsFileRenameRebootPending,
                     $PendingFileRenameOperations,
-                    $PendRebootErrorMsg
+                    $PendRebootErrorMsg.AsReadOnly()
                 )
                 Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-String -Width ([System.Int32]::MaxValue))"
                 return $PendingRebootInfo

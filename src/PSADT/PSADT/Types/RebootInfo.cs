@@ -34,7 +34,7 @@ namespace PSADT.Types
             bool isAppVRebootPending,
             bool? isFileRenameRebootPending,
             string[]? pendingFileRenameOperations,
-            IReadOnlyList<string> errorMsg)
+            ReadOnlyCollection<string> errorMsg)
         {
             ComputerName = !string.IsNullOrWhiteSpace(computerName) ? computerName : throw new ArgumentNullException("Computer name cannot be null or empty.", (Exception?)null);
             LastBootUpTime = lastBootUpTime;
