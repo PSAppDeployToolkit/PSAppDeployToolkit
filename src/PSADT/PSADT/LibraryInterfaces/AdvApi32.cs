@@ -164,16 +164,13 @@ namespace PSADT.LibraryInterfaces
         /// <param name="TokenHandle"></param>
         /// <param name="DisableAllPrivileges"></param>
         /// <param name="NewState"></param>
-        /// <param name="BufferLength"></param>
-        /// <param name="PreviousState"></param>
-        /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, uint BufferLength, IntPtr PreviousState, IntPtr ReturnLength)
+        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState)
         {
             fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
             {
-                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, BufferLength, (TOKEN_PRIVILEGES*)PreviousState, (uint*)ReturnLength);
+                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, 0, null, null);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
