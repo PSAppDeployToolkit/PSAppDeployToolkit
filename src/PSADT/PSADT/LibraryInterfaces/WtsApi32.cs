@@ -32,7 +32,12 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         internal static unsafe BOOL WTSEnumerateProcessesEx(HANDLE hServer, uint pLevel, uint SessionId, out SafeWtsExHandle pProcessInfo)
         {
-            PWSTR ppProcessInfo; uint pCount; var res = PInvoke.WTSEnumerateProcessesEx(hServer, &pLevel, SessionId, &ppProcessInfo, &pCount);
+            PWSTR ppProcessInfo; uint pCount;
+            if (pLevel > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pLevel), "pLevel must be 0 or 1.");
+            }
+            var res = PInvoke.WTSEnumerateProcessesEx(hServer, &pLevel, SessionId, &ppProcessInfo, &pCount);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
