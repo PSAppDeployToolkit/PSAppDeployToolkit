@@ -575,24 +575,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around VirtualAlloc to manage error handling.
-        /// </summary>
-        /// <param name="lpAddress"></param>
-        /// <param name="dwSize"></param>
-        /// <param name="flAllocationType"></param>
-        /// <param name="flProtect"></param>
-        /// <returns></returns>
-        internal static unsafe SafeVirtualAllocHandle VirtualAlloc(IntPtr lpAddress, nuint dwSize, VIRTUAL_ALLOCATION_TYPE flAllocationType, PAGE_PROTECTION_FLAGS flProtect)
-        {
-            var res = PInvoke.VirtualAlloc(lpAddress.ToPointer(), dwSize, flAllocationType, flProtect);
-            if (null == res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return new((IntPtr)res, true);
-        }
-
-        /// <summary>
         /// Wrapper around LoadLibrary to manage error handling.
         /// </summary>
         /// <param name="lpLibFileName"></param>
