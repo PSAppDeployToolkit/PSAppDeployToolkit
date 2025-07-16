@@ -120,42 +120,41 @@ namespace PSADT.FileSystem
 
                 // Duplicate the remote handle into our process.
                 SafeFileHandle fileDupHandle;
-                try
+                using (fileProcessHandle)
                 {
-                    using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
+                    try
                     {
-                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                        using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
+                        {
+                            Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                        }
                     }
-                }
-                catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
-                {
-                    continue;
-                }
-                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                {
-                    continue;
-                }
-                finally
-                {
-                    fileProcessHandle.Dispose();
-                    fileProcessHandle = null!;
-                }
-
-                // Get the handle's name to check if it's a hard drive path.
-                string? objectName;
-                try
-                {
-                    objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBufferPtr);
-                    if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
+                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
+                    {
+                        continue;
+                    }
+                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
                     {
                         continue;
                     }
                 }
-                finally
+
+                // Get the handle's name to check if it's a hard drive path.
+                string? objectName;
+                using (fileDupHandle)
                 {
-                    objectBufferPtr.Clear();
-                    fileDupHandle.Dispose();
-                    fileDupHandle = null!;
+                    try
+                    {
+                        objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBufferPtr);
+                        if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
+                        {
+                            continue;
+                        }
+                    }
+                    finally
+                    {
+                        objectBufferPtr.Clear();
+                    }
                 }
 
                 // Add the handle information to the list if it matches the specified directory path.
@@ -188,14 +187,14 @@ namespace PSADT.FileSystem
 
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
             using (var currentProcess = Process.GetCurrentProcess())
-            using (var currentProcessHandle = currentProcess.SafeHandle)
+            using (currentProcess.SafeHandle)
             {
                 foreach (var handleEntry in handleEntries)
                 {
                     using (var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32()))
                     using (SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false))
                     {
-                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcess.SafeHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                         localHandle.Dispose();
                         localHandle = null;
                     }
