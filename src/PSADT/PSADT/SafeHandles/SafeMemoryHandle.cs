@@ -48,28 +48,28 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal long ReadInt64(int offset = 0) => Marshal.ReadInt64(handle + offset);
+        internal long ReadInt64(int offset = 0) => Marshal.ReadInt64(handle, offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal int ReadInt32(int offset = 0) => Marshal.ReadInt32(handle + offset);
+        internal int ReadInt32(int offset = 0) => Marshal.ReadInt32(handle, offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal short ReadInt16(int offset = 0) => Marshal.ReadInt16(handle + offset);
+        internal short ReadInt16(int offset = 0) => Marshal.ReadInt16(handle, offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal byte ReadByte(int offset = 0) => Marshal.ReadByte(handle + offset);
+        internal byte ReadByte(int offset = 0) => Marshal.ReadByte(handle, offset);
 
         /// <summary>
         /// Clears the memory block by setting all bytes to zero.
