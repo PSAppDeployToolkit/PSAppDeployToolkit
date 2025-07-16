@@ -41,8 +41,6 @@ namespace PSADT.SafeHandles
         /// <param name="ownsHandle"></param>
         private SafeHGlobalHandle(IntPtr handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
         {
-            SetHandle(handle);
-            Length = length;
         }
 
         /// <summary>
