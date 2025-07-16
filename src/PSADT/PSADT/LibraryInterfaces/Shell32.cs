@@ -156,7 +156,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Handle to the icon.
             /// </summary>
-            internal IntPtr hIcon;
+            internal HICON hIcon;
 
             /// <summary>
             /// Index of the icon in the system image list.
