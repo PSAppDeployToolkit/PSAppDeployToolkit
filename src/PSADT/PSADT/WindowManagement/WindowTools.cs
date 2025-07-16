@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
@@ -18,31 +17,14 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<HWND> EnumWindows()
         {
             List<HWND> windows = [];
-            GCHandle hItems = GCHandle.Alloc(windows);
-            try
+            User32.EnumWindows((hWnd, lParam) =>
             {
-                nint lItems = GCHandle.ToIntPtr(hItems);
-                User32.EnumWindows((hWnd, lParam) =>
+                if (hWnd != HWND.Null)
                 {
-                    if (hWnd != HWND.Null)
-                    {
-                        GCHandle hItems = GCHandle.FromIntPtr(lItems);
-                        if (hItems.Target is List<HWND> items)
-                        {
-                            items.Add(hWnd);
-                            return true;
-                        }
-                    }
-                    return false;
-                }, lItems);
-            }
-            finally
-            {
-                if (hItems.IsAllocated)
-                {
-                    hItems.Free();
+                    windows.Add(hWnd);
                 }
-            }
+                return true;
+            }, IntPtr.Zero);
             return windows.AsReadOnly();
         }
 
