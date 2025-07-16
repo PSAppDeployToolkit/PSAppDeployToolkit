@@ -266,7 +266,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateProcess(string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpEnvironment is not object || lpEnvironment.IsClosed)
+            if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
                 throw new ArgumentNullException(nameof(lpEnvironment));
             }

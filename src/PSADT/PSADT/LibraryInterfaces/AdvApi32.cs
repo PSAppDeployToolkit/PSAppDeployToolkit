@@ -223,7 +223,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
         internal static unsafe BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, string lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpEnvironment is not object || lpEnvironment.IsClosed)
+            if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
                 throw new ArgumentNullException(nameof(lpEnvironment));
             }
@@ -267,7 +267,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpEnvironment is not object || lpEnvironment.IsClosed)
+            if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
                 throw new ArgumentNullException(nameof(lpEnvironment));
             }

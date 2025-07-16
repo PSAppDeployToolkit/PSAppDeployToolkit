@@ -234,7 +234,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
-            if (lParam is not object || lParam.IsClosed)
+            if (lParam is null || lParam.IsClosed)
             {
                 throw new ArgumentNullException(nameof(lParam));
             }
