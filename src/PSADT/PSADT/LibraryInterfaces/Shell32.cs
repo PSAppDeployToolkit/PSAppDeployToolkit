@@ -27,19 +27,6 @@ namespace PSADT.LibraryInterfaces
         internal struct SHELLEXECUTEINFO
         {
             /// <summary>
-            /// Union member for the icon or monitor handle.
-            /// </summary>
-            [StructLayout(LayoutKind.Explicit)]
-            internal struct HICON_HMONITOR_UNION
-            {
-                [FieldOffset(0)]
-                internal HICON hIcon;
-
-                [FieldOffset(0)]
-                internal HMONITOR hMonitor;
-            }
-
-            /// <summary>
             /// Size of the structure.
             /// </summary>
             internal int cbSize;
@@ -110,9 +97,10 @@ namespace PSADT.LibraryInterfaces
             internal uint dwHotKey;
 
             /// <summary>
-            /// Union member for the icon or monitor handle.
+            /// Member to the monitor handle when SEE_MASK_HMONITOR is used. This is
+            /// normally a HICON union, but the HICON is only used in Windows XP or less.
             /// </summary>
-            internal HICON_HMONITOR_UNION Anonymous;
+            internal HMONITOR hMonitor;
 
             /// <summary>
             /// Handle to the newly started application.
