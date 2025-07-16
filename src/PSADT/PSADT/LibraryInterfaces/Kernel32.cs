@@ -215,9 +215,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="cbJobObjectInformationLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
+        private static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, void* lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
-            var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation.ToPointer(), cbJobObjectInformationLength);
+            var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -234,7 +234,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
-            return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+            return SetInformationJobObject(hJob, JobObjectInformationClass, &lpJobObjectInformation, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
         }
 
         /// <summary>
@@ -246,7 +246,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
         {
-            return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+            return SetInformationJobObject(hJob, JobObjectInformationClass, &lpJobObjectInformation, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
         }
 
         /// <summary>
