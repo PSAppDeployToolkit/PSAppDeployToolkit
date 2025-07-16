@@ -287,23 +287,31 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static unsafe string[] CommandLineToArgv(string lpCmdLine)
         {
-            var res = PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs);
-            if (null == res)
+            using (LocalFreeSafeHandle safeHandle = new((IntPtr)PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs), true))
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            try
-            {
-                var args = new string[pNumArgs];
-                for (var i = 0; i < pNumArgs; i++)
+                if (safeHandle.IsInvalid)
                 {
-                    args[i] = res[i].ToString().TrimRemoveNull();
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
-            }
-            finally
-            {
-                Kernel32.LocalFree((HLOCAL)res);
+                bool safeHandleAddRef = false;
+                try
+                {
+                    safeHandle.DangerousAddRef(ref safeHandleAddRef);
+                    var handle = (PWSTR*)safeHandle.DangerousGetHandle();
+                    var args = new string[pNumArgs];
+                    for (var i = 0; i < pNumArgs; i++)
+                    {
+                        args[i] = handle[i].ToString().TrimRemoveNull();
+                    }
+                    return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
+                }
+                finally
+                {
+                    if (safeHandleAddRef)
+                    {
+                        safeHandle.DangerousRelease();
+                    }
+                }
             }
         }
     }

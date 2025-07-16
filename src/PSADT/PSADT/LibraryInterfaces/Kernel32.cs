@@ -590,21 +590,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Allocates a specified number of bytes in the local heap.
-        /// </summary>
-        /// <param name="hMem"></param>
-        /// <returns></returns>
-        internal static HLOCAL LocalFree(HLOCAL hMem)
-        {
-            var res = PInvoke.LocalFree(hMem);
-            if (!res.IsNull)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
-
-        /// <summary>
         /// Determines whether the system is currently in Terminal Services application installation mode.
         /// </summary>
         /// <remarks>Terminal Services application installation mode is used to install applications in a
