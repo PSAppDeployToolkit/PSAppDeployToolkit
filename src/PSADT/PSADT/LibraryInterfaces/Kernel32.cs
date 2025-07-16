@@ -363,7 +363,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            lpOverlapped = new IntPtr(pOverlapped);
+            lpOverlapped = (IntPtr)pOverlapped;
             return res;
         }
 

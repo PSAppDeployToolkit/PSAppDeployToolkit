@@ -28,7 +28,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            lpEnvironment = new SafeEnvironmentBlockHandle(new IntPtr(lpEnvironmentPtr), true);
+            lpEnvironment = new SafeEnvironmentBlockHandle((IntPtr)lpEnvironmentPtr, true);
             return res;
         }
 
