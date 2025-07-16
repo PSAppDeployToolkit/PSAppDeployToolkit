@@ -7,8 +7,22 @@ namespace PSADT.SafeHandles
     /// <summary>
     /// Represents a wrapper for a handle to a block of memory allocated from the Marshal class.
     /// </summary>
-    internal abstract class SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : SafeBaseHandle(handle, ownsHandle)
+    internal abstract class SafeMemoryHandle : SafeBaseHandle
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SafeMemoryHandle"/> class with a specified handle, length, and
+        /// ownership flag.
+        /// </summary>
+        /// <param name="handle">The memory handle to be managed.</param>
+        /// <param name="length">The length of the memory block. Must be greater than zero.</param>
+        /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle"/> should reliably release the handle during the
+        /// finalization phase.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
+        protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(handle, ownsHandle)
+        {
+            Length = length >= 0 ? length : throw new ArgumentOutOfRangeException(nameof(length));
+        }
+
         /// <summary>
         /// Reallocates the memory block to the specified size.
         /// </summary>
@@ -91,7 +105,7 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Gets the size of the allocated memory block.
         /// </summary>
-        internal int Length { get; private protected set; } = length;
+        internal int Length { get; private protected set; }
 
         /// <summary>
         /// Represents a null safe handle for memory.
