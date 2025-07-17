@@ -39,7 +39,7 @@ namespace PSADT.UserInterface.Dialogs
             int x = (int)(48.0 * (dpiX / 96.0)); int y = (int)(48.0 * (dpiY / 96.0));
 
             // Internal worker method to retrieve a stock icon as a Bitmap.
-            static Bitmap GetSystemStockIcon(SHSTOCKICONID siid, SHIL_SIZE iImageList)
+            static Bitmap GetSystemStockIconAsBitmap(SHSTOCKICONID siid, SHIL_SIZE iImageList)
             {
                 // Get a handle to specified stock icon.
                 Shell32.SHGetImageList(iImageList, out var imageList);
@@ -70,7 +70,7 @@ namespace PSADT.UserInterface.Dialogs
             Dictionary<SHSTOCKICONID, Bitmap> icons = [];
             foreach(var iconId in lookupList)
             {
-                using (var icon = GetSystemStockIcon(iconId, SHIL_SIZE.SHIL_JUMBO))
+                using (var icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO))
                 {
                     icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x, y));
                 }
