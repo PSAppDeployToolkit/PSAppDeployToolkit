@@ -15,13 +15,13 @@ namespace PSADT.UserInterface.Utilities
     internal static class DrawingUtilities
     {
         /// <summary>
-        /// Resize the image to the specified width and height.
+        /// Resize the bitmap to the specified width and height.
         /// </summary>
         /// <param name="img">The image to resize.</param>
         /// <param name="width">The width to resize to.</param>
         /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        internal static Bitmap ResizeImage(Bitmap img, int width, int height)
+        internal static Bitmap ResizeBitmap(Bitmap img, int width, int height)
         {
             Bitmap destImage = new(width, height);
             destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
@@ -80,7 +80,7 @@ namespace PSADT.UserInterface.Utilities
             // Ensure the incoming image is < 128px in width/height.
             if ((img.Width > 128) || (img.Height > 128))
             {
-                using (var resizedImg = ResizeImage(img, 128, 128))
+                using (var resizedImg = ResizeBitmap(img, 128, 128))
                 {
                     return ConvertBitmapToIconImpl(resizedImg);
                 }
@@ -112,7 +112,7 @@ namespace PSADT.UserInterface.Utilities
             // Check if the process is null or if the main module's file name is not a string.
             if (!Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException(nameof(path));
+                throw new ArgumentException("Invalid file path.", nameof(path));
             }
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.

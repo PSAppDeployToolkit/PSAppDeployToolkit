@@ -72,7 +72,7 @@ namespace PSADT.UserInterface.Dialogs
             {
                 using (var icon = GetSystemStockIcon(iconId, SHIL_SIZE.SHIL_JUMBO))
                 {
-                    icons.Add(iconId, DrawingUtilities.ResizeImage(icon, x, y));
+                    icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x, y));
                 }
             }
 
