@@ -4300,6 +4300,13 @@ function Execute-ProcessAsUser
             }
         })
 
+    # Translate Wait parameter, which is now NoWait in 4.1
+    if ($PSBoundParameters.ContainsKey('Wait'))
+    {
+        $PSBoundParameters.Add('NoWait', !$PSBoundParameters.Wait)
+        $null = $PSBoundParameters.Remove('Wait')
+    }
+
     # Translate the ContinueOnError state.
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
