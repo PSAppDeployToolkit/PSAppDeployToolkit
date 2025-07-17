@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using Windows.Win32;
@@ -11,7 +14,7 @@ namespace PSADT.Utilities
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    internal static class ShellUtilities
+    public static class ShellUtilities
     {
         /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
@@ -74,6 +77,61 @@ namespace PSADT.Utilities
         {
             User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out var pid);
             return pid;
+        }
+
+        /// <summary>
+        /// Retrieves the Application User Model ID (AUMID) for a specified process.
+        /// </summary>
+        /// <remarks>The Application User Model ID is used to uniquely identify an application in the
+        /// Windows operating system.</remarks>
+        /// <param name="hProcess">A handle to the process for which the Application User Model ID is retrieved. The handle must be valid and
+        /// not closed.</param>
+        /// <returns>The Application User Model ID of the specified process as a string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="hProcess"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="hProcess"/> is closed or invalid.</exception>
+        public static string GetApplicationUserModelId(SafeHandle hProcess)
+        {
+            if (hProcess == null)
+            {
+                throw new ArgumentNullException(nameof(hProcess), "Process handle cannot be null.");
+            }
+            if (hProcess.IsClosed)
+            {
+                throw new InvalidOperationException("Process handle is closed.");
+            }
+            if (hProcess.IsInvalid)
+            {
+                throw new InvalidOperationException("Process handle is invalid.");
+            }
+            Span<char> appUserModelId = stackalloc char[(int)PInvoke.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; var length = (uint)appUserModelId.Length;
+            Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
+            return appUserModelId.Slice(0, (int)length).ToString().TrimRemoveNull();
+        }
+
+        /// <summary>
+        /// Retrieves the Application User Model ID (AUMID) for the specified process.
+        /// </summary>
+        /// <param name="process">The process for which to obtain the AUMID. Must not be null.</param>
+        /// <returns>The Application User Model ID associated with the specified process.</returns>
+        public static string GetApplicationUserModelId(Process process)
+        {
+            using (process.SafeHandle)
+            {
+                return GetApplicationUserModelId(process.SafeHandle);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the Application User Model ID (AUMID) for a specified process.
+        /// </summary>
+        /// <param name="processId">The ID of the process for which to retrieve the AUMID.</param>
+        /// <returns>The Application User Model ID associated with the specified process.</returns>
+        public static string GetApplicationUserModelId(uint processId)
+        {
+            using (var process = Process.GetProcessById((int)processId))
+            {
+                return GetApplicationUserModelId(process);
+            }
         }
 
         /// <summary>

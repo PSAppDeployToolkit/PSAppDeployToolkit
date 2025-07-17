@@ -694,5 +694,27 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
+
+        /// <summary>
+        /// Retrieves the Application User Model ID (AUMID) for a specified process.
+        /// </summary>
+        /// <remarks>This method wraps a PInvoke call to retrieve the AUMID, and throws an exception if
+        /// the operation is unsuccessful.</remarks>
+        /// <param name="hProcess">A handle to the process for which the AUMID is being retrieved. This handle must have the necessary access
+        /// rights.</param>
+        /// <param name="applicationUserModelIdLength">On input, specifies the size of the <paramref name="applicationUserModelId"/> buffer. On output, receives
+        /// the length of the AUMID, including the null terminator.</param>
+        /// <param name="applicationUserModelId">A buffer that receives the AUMID as a null-terminated string.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> code indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.NO_ERROR"/> if successful.</returns>
+        internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, ref uint applicationUserModelIdLength, Span<char> applicationUserModelId)
+        {
+            var res = PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+            }
+            return res;
+        }
     }
 }

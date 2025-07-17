@@ -1,4 +1,5 @@
 ﻿AdjustTokenPrivileges
+APPLICATION_USER_MODEL_ID_MAX_LENGTH
 AssignProcessToJobObject
 AttachThreadInput
 BringWindowToTop
@@ -26,6 +27,7 @@ EnumWindows
 FILE_FLAGS_AND_ATTRIBUTES
 FindWindow
 GENERIC_MAPPING
+GetApplicationUserModelId
 GetCurrentThreadId
 GetDpiForMonitor
 GetDpiForWindow
