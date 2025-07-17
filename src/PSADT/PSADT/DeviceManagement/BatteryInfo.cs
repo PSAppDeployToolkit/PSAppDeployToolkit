@@ -102,7 +102,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Indicates whether the device is a laptop.
         /// </summary>
-        public readonly bool IsLaptop = DeviceUtilities.GetSystemChassisType() is SystemChassisType chassisType && chassisType == SystemChassisType.Laptop || chassisType == SystemChassisType.Notebook || chassisType == SystemChassisType.SubNotebook;
+        public readonly bool IsLaptop = DeviceUtilities.GetSystemChassisType() is SystemChassisType chassisType && (chassisType == SystemChassisType.Laptop || chassisType == SystemChassisType.Notebook || chassisType == SystemChassisType.SubNotebook);
 
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.
