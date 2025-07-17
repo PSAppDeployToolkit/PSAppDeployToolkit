@@ -39,13 +39,6 @@ namespace PSADT.SafeHandles
         }
 
         /// <summary>
-        /// Reallocates the memory block to the specified size.
-        /// </summary>
-        /// <param name="length"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        internal override void ReAlloc(int length) => throw new NotImplementedException();
-
-        /// <summary>
         /// Writes the provided data to the allocated memory.
         /// </summary>
         /// <param name="data"></param>

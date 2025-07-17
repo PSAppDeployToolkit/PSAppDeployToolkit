@@ -13,13 +13,6 @@ namespace PSADT.SafeHandles
     internal sealed class SafeWtsExHandle(IntPtr handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle(handle, length, ownsHandle)
     {
         /// <summary>
-        /// Reallocates the memory block to the specified size.
-        /// </summary>
-        /// <param name="length"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        internal override void ReAlloc(int length) => throw new NotImplementedException();
-
-        /// <summary>
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>

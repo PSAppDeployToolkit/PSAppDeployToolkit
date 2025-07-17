@@ -28,7 +28,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="length"></param>
         /// <exception cref="OutOfMemoryException"></exception>
-        internal abstract void ReAlloc(int length);
+        internal virtual void ReAlloc(int length) => throw new NotImplementedException();
 
         /// <summary>
         /// Converts the handle to a string using the ANSI character set.
