@@ -163,15 +163,14 @@ namespace PSADT.LibraryInterfaces
         /// Enables or disables privileges in the specified access token.
         /// </summary>
         /// <param name="TokenHandle"></param>
-        /// <param name="DisableAllPrivileges"></param>
         /// <param name="NewState"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState)
+        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
         {
             fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
             {
-                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, 0, null, null);
+                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, false, newStatePtr, 0, null, null);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();

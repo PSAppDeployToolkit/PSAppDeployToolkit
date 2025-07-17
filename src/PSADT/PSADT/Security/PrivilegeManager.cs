@@ -182,7 +182,7 @@ namespace PSADT.Security
                 Luid = luid,
                 Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED
             };
-            AdvApi32.AdjustTokenPrivileges(token, false, tp);
+            AdvApi32.AdjustTokenPrivileges(token, tp);
         }
 
         /// <summary>
