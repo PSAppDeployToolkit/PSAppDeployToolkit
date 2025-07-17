@@ -200,8 +200,10 @@ namespace PSADT.ProcessManagement
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
                             {
-                                startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                OutLaunchArguments(launchInfo, session.NTAccount, EnvironmentBlockToDictionary(lpEnvironment), out commandLine, out string? workingDirectory);
+                                // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
+                                // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
+                                // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+                                OutLaunchArguments(launchInfo, session.NTAccount, EnvironmentBlockToDictionary(lpEnvironment), out commandLine, out string? workingDirectory); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
                                 CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, startupInfo, out pi);
                             }
                         }
@@ -723,9 +725,6 @@ namespace PSADT.ProcessManagement
             // When the caller provides anonymous handles, we need to use CreateProcessAsUser() since it has bInheritHandles.
             if (CanUseCreateProcessAsUser(hPrimaryToken) is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || usingAnonymousHandles))
             {
-                // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
-                // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
-                // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
                 if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK)
                 {
                     throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
