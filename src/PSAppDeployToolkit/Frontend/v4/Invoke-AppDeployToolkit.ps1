@@ -101,7 +101,7 @@ $adtSession = @{
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
-    AppProcessesToClose = @('regedit', @{ Name = 'msconfig'; Description = 'System Configuration (msconfig)' })
+    AppProcessesToClose = @() # Example: @('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2000-12-31'
     AppScriptAuthor = '<author name>'
