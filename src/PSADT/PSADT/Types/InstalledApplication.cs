@@ -70,7 +70,7 @@ namespace PSADT.Types
         /// Validates whether the product code is a valid GUID.
         /// </summary>
         /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
-        public bool IsValidProductCode() => (null != ProductCode);
+        public bool IsValidProductCode() => null != ProductCode;
 
         /// <summary>
         /// Returns a string representation of the installed application.
