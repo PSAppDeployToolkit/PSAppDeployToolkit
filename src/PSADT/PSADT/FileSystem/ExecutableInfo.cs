@@ -2,8 +2,9 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Windows.Win32;
-using Windows.Win32.System.SystemServices;
 using Windows.Win32.System.Diagnostics.Debug;
+using Windows.Win32.System.SystemInformation;
+using Windows.Win32.System.SystemServices;
 
 namespace PSADT.FileSystem
 {
@@ -19,6 +20,7 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         public static ExecutableInfo Get(string filePath)
         {
+            // Internal helper methods to read structures and check for CLR header.
             static bool HasCLRHeader(__IMAGE_DATA_DIRECTORY_16 dataDirectory)
             {
                 if (dataDirectory.Length > 14)
@@ -28,7 +30,6 @@ namespace PSADT.FileSystem
                 }
                 return false;
             }
-
             static T ReadStruct<T>(BinaryReader reader) where T : struct
             {
                 var handle = GCHandle.Alloc(reader.ReadBytes(Marshal.SizeOf<T>()), GCHandleType.Pinned);
@@ -42,49 +43,39 @@ namespace PSADT.FileSystem
                 }
             }
 
-            LibraryInterfaces.IMAGE_SUBSYSTEM subsystem = LibraryInterfaces.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_UNKNOWN;
-            uint entryPoint;
-            ulong imageBase;
-            bool isDotNet;
+            // Open the file and read the DOS header.
+            using (FileStream fs = new(filePath, FileMode.Open, FileAccess.Read))
+            using (BinaryReader reader = new(fs))
+            {
+                // Read the DOS header and check for the PE signature.
+                var dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader); fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
+                if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
+                {
+                    throw new InvalidDataException("The specified file does not have a valid PE header.");
+                }
+                if (reader.ReadUInt32() != PInvoke.IMAGE_NT_SIGNATURE)
+                {
+                    throw new InvalidDataException("The specified file does not have a valid PE signature.");
+                }
 
-            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
-            using BinaryReader reader = new(fs);
-            var dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader);
-            if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
-            {
-                throw new InvalidDataException("The specified file does not have a valid PE header.");
+                // Read the file header and optional header, returning the ExecutableInfo.
+                var machine = ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
+                var magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16(); fs.Seek(-2, SeekOrigin.Current);
+                if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+                {
+                    var opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
+                    return new(filePath, machine, opt32.Subsystem, HasCLRHeader(opt32.DataDirectory), opt32.AddressOfEntryPoint, opt32.ImageBase);
+                }
+                else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                {
+                    var opt64 = ReadStruct<IMAGE_OPTIONAL_HEADER64>(reader);
+                    return new(filePath, machine, opt64.Subsystem, HasCLRHeader(opt64.DataDirectory), opt64.AddressOfEntryPoint, opt64.ImageBase);
+                }
+                else
+                {
+                    throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
+                }
             }
-
-            fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
-            if (reader.ReadUInt32() != PInvoke.IMAGE_NT_SIGNATURE)
-            {
-                throw new InvalidDataException("The specified file does not have a valid PE signature.");
-            }
-
-            var machine = (LibraryInterfaces.IMAGE_FILE_MACHINE)ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
-            var magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16();
-            fs.Seek(-2, SeekOrigin.Current);
-            if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
-            {
-                var opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
-                subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)opt32.Subsystem;
-                entryPoint = opt32.AddressOfEntryPoint;
-                imageBase = opt32.ImageBase;
-                isDotNet = HasCLRHeader(opt32.DataDirectory);
-            }
-            else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
-            {
-                var opt64 = ReadStruct<IMAGE_OPTIONAL_HEADER64>(reader);
-                subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)opt64.Subsystem;
-                entryPoint = opt64.AddressOfEntryPoint;
-                imageBase = opt64.ImageBase;
-                isDotNet = HasCLRHeader(opt64.DataDirectory);
-            }
-            else
-            {
-                throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
-            }
-            return new(filePath, machine, subsystem, isDotNet, entryPoint, imageBase);
         }
 
         /// <summary>
@@ -96,11 +87,11 @@ namespace PSADT.FileSystem
         /// <param name="subsystem"></param>
         /// <param name="entryPoint"></param>
         /// <param name="imageBase"></param>
-        private ExecutableInfo(string filePath, LibraryInterfaces.IMAGE_FILE_MACHINE machine, LibraryInterfaces.IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
+        private ExecutableInfo(string filePath, IMAGE_FILE_MACHINE machine, IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
         {
             FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new FileInfo(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
-            Machine = machine;
-            Subsystem = subsystem;
+            Machine = (LibraryInterfaces.IMAGE_FILE_MACHINE)machine;
+            Subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)subsystem;
             IsDotNetExecutable = isDotNetExecutable;
             EntryPoint = entryPoint;
             ImageBase = imageBase;
