@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="PSADT.UserInterface.Dialogs.Fluent.FluentDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,6 +14,7 @@
     ui:TitleBar.CloseButtonAvailability="Collapsed"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
     ui:TitleBar.Height="24"
+    ui:TitleBar.MinimizeButtonAvailability="Collapsed"
     ui:WindowHelper.CornerStyle="Round"
     ui:WindowHelper.SystemBackdropType="Acrylic"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -208,9 +209,8 @@
                 AutomationProperties.Name="Application Icon"
                 />
             <StackPanel
-                Margin="12,0,0,0"
                 Width="Auto"
-                
+                Margin="12,0,0,0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 >
@@ -218,26 +218,25 @@
                 <TextBlock
                     x:Name="AppTitleTextBlock"
                     Width="426"
-                    TextAlignment="Left"
                     AutomationProperties.Name="Application Title"
                     FontSize="24"
                     FontWeight="Bold"
-                    
+                    LineStackingStrategy="BlockLineHeight"
                     Text="Excessively Long Application Title 1.1 x64 EN"
+                    TextAlignment="Left"
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="WrapWithOverflow"
-                    LineStackingStrategy="BlockLineHeight"
                     />
                 <TextBlock
                     x:Name="SubtitleTextBlock"
                     Width="426"
-                    TextAlignment="Left"
                     AutomationProperties.Name="Subtitle"
                     FontSize="12"
+                    LineStackingStrategy="BlockLineHeight"
                     Text="PSAppDeployToolkit - Installation Type"
+                    TextAlignment="Left"
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="WrapWithOverflow"
-                    LineStackingStrategy="BlockLineHeight"
                     />
 
             </StackPanel>
@@ -440,7 +439,10 @@
                         />
                 </ikw:SimpleStackPanel>
 
-                <Separator x:Name="CountdownDeferPanelSeparator" Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
+                <Separator
+                    x:Name="CountdownDeferPanelSeparator"
+                    Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"
+                    />
 
                 <ikw:SimpleStackPanel
                     x:Name="CountdownStackPanel"
@@ -449,9 +451,7 @@
                     >
 
 
-                    <DockPanel
-                        x:Name="CountdownDockPanel"
-                        >
+                    <DockPanel x:Name="CountdownDockPanel">
 
                         <ui:FontIcon
                             FontSize="18"
@@ -488,9 +488,7 @@
 
                     <!--<Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />-->
 
-                    <DockPanel
-                        x:Name="DeferRemainingDockPanel"
-                        >
+                    <DockPanel x:Name="DeferRemainingDockPanel">
 
                         <ui:FontIcon
                             FontSize="18"
@@ -524,9 +522,7 @@
 
                     <!--<Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />-->
 
-                    <DockPanel
-                        x:Name="DeferDeadlineDockPanel"
-                        >
+                    <DockPanel x:Name="DeferDeadlineDockPanel">
 
                         <ui:FontIcon
                             FontSize="18"

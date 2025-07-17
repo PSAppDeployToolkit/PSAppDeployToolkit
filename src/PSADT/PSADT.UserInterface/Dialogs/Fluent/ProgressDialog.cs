@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using iNKORE.UI.WPF.Modern.Controls.Primitives;
 using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
@@ -20,8 +21,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="options">Mandatory options needed to construct the window.</param>
         internal ProgressDialog(ProgressDialogOptions options) : base(options)
         {
+
             UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage, options.MessageAlignment);
             ProgressStackPanel.Visibility = Visibility.Visible;
+            SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
+            
         }
 
         /// <summary>

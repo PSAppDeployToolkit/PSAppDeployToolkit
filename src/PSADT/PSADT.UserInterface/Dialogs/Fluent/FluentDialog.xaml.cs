@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -23,6 +23,7 @@ using PSADT.UserInterface.DialogOptions;
 using Windows.Win32;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -63,6 +64,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Title = options.AppTitle;
             AppTitleTextBlock.Text = options.AppTitle;
             SubtitleTextBlock.Text = options.Subtitle;
+
 
             // Set accessibility properties
             AutomationProperties.SetName(this, options.AppTitle);
@@ -643,6 +645,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Top = _startingTop;
         }
 
+
+        /// <summary>
+        /// Sets the minimize button availability based on specific conditions.
+        /// </summary>
+        /// <param name="availability">The desired button availability state.</param>
+        protected void SetMinimizeButtonAvailability(TitleBarButtonAvailability availability)
+        {
+            TitleBar.SetMinimizeButtonAvailability(this, availability);
+        }
+
         /// <summary>
         /// Updates the layout of the action buttons based on which buttons are visible.
         /// </summary>
@@ -895,5 +907,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             _disposed = true;
         }
+
     }
 }
