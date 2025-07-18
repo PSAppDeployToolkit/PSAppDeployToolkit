@@ -5,10 +5,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Runspaces;
+using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Text;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
+using Windows.Win32.System.Services;
 
 namespace PSADT.ProcessManagement
 {
@@ -233,5 +236,28 @@ namespace PSADT.ProcessManagement
         /// <returns>A read-only list of strings, each representing an individual argument parsed from the command line.</returns>
         /// <exception cref="ArgumentException">Thrown if the command line string cannot be parsed into arguments.</exception>
         public static IReadOnlyList<string> CommandLineToArgv(string commandLine) => !string.IsNullOrWhiteSpace(commandLine) ? new ReadOnlyCollection<string>(Shell32.CommandLineToArgv(commandLine)) : throw new ArgumentNullException("Specified CommandLine was null or empty.", nameof(commandLine));
+
+        /// <summary>
+        /// Retrieves the process identifier (PID) of the specified service.
+        /// </summary>
+        /// <remarks>This method queries the service control manager to obtain the process ID of the
+        /// service.  Ensure that the service is running before calling this method, as it will only return a valid
+        /// process ID for active services.</remarks>
+        /// <param name="service">The <see cref="ServiceController"/> representing the service for which to obtain the process ID.</param>
+        /// <returns>The process ID of the specified service.</returns>
+        public static uint GetServiceProcessId(ServiceController service)
+        {
+            using (var scm = AdvApi32.OpenSCManager(null, null, SC_MANAGER_ACCESS.SC_MANAGER_CONNECT))
+            using (var svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS))
+            {
+                Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
+                AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
+                if (MemoryMarshal.Read<SERVICE_STATUS_PROCESS>(buffer).dwProcessId is uint dwProcessId && dwProcessId == 0)
+                {
+                    throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.");
+                }
+                return dwProcessId;
+            }
+        }
     }
 }

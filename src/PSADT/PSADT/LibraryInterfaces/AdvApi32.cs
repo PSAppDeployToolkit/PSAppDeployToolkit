@@ -8,6 +8,7 @@ using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Registry;
+using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
@@ -346,6 +347,66 @@ namespace PSADT.LibraryInterfaces
                     lpEnvironment.DangerousRelease();
                 }
             }
+        }
+
+        /// <summary>
+        /// Opens a handle to the specified service control manager database.
+        /// </summary>
+        /// <param name="lpMachineName">The name of the target computer. If <see langword="null"/>, the local computer is used.</param>
+        /// <param name="lpDatabaseName">The name of the service control manager database. If <see langword="null"/>, the default database is used.</param>
+        /// <param name="dwDesiredAccess">The access rights to the service control manager. This parameter must be a combination of <see
+        /// cref="SC_MANAGER_ACCESS"/> values.</param>
+        /// <returns>A <see cref="CloseServiceHandleSafeHandle"/> that represents the handle to the service control manager
+        /// database.</returns>
+        internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpMachineName, string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
+        {
+            var handle = PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess);
+            if (handle.IsInvalid)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return handle;
+        }
+
+        /// <summary>
+        /// Opens an existing service in the specified service control manager database.
+        /// </summary>
+        /// <param name="hSCManager">A handle to the service control manager database. This handle is obtained from a previous call to the
+        /// OpenSCManager function.</param>
+        /// <param name="lpServiceName">The name of the service to be opened. This name is case-sensitive and must match the service name exactly.</param>
+        /// <param name="dwDesiredAccess">The access rights to the service. This parameter specifies the access level required for the service.</param>
+        /// <returns>A <see cref="CloseServiceHandleSafeHandle"/> that represents the handle to the opened service. The handle
+        /// must be closed using the appropriate method when it is no longer needed.</returns>
+        internal static CloseServiceHandleSafeHandle OpenService(SafeHandle hSCManager, string lpServiceName, SERVICE_ACCESS_RIGHTS dwDesiredAccess)
+        {
+            var handle = PInvoke.OpenService(hSCManager, lpServiceName, (uint)dwDesiredAccess);
+            if (handle.IsInvalid)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return handle;
+        }
+
+        /// <summary>
+        /// Retrieves the current status of the specified service based on the provided information level.
+        /// </summary>
+        /// <param name="hService">A handle to the service. This handle is obtained from a previous call to the OpenService or CreateService
+        /// function.</param>
+        /// <param name="InfoLevel">The information level of the service status to be queried. This parameter specifies the type of information
+        /// to retrieve.</param>
+        /// <param name="lpBuffer">A buffer that receives the status information. The format of this data depends on the value of the <paramref
+        /// name="InfoLevel"/> parameter.</param>
+        /// <param name="pcbBytesNeeded">When the method returns, contains the number of bytes needed to store all the status information, if the
+        /// buffer is too small.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL QueryServiceStatusEx(SafeHandle hService, SC_STATUS_TYPE InfoLevel, Span<byte> lpBuffer, out uint pcbBytesNeeded)
+        {
+            var res = PInvoke.QueryServiceStatusEx(hService, InfoLevel, lpBuffer, out pcbBytesNeeded);
+            if (!res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
     }
 }
