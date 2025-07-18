@@ -682,10 +682,7 @@ namespace PSADT.ProcessManagement
                 // If the service does not exist or cannot be queried, we cannot use CreateProcessWithToken.
                 try
                 {
-                    if (serviceController.Status != ServiceControllerStatus.Running)
-                    {
-                        return CreateProcessUsingTokenStatus.SecLogonServiceNotRunning;
-                    }
+                    _ = serviceController.Status;
                 }
                 catch (InvalidOperationException)
                 {
@@ -821,7 +818,6 @@ namespace PSADT.ProcessManagement
             { CreateProcessUsingTokenStatus.JobBreakawayNotPermitted, "The calling process is part of a job that does not allow breakaway." },
             { CreateProcessUsingTokenStatus.SeTcbPrivilege, "The calling process does not have the necessary SeTcbPrivilege privilege." },
             { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege." },
-            { CreateProcessUsingTokenStatus.SecLogonServiceNotRunning, "The system's Secondary Log-on service (seclogon) is not running." },
             { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
         });
 
