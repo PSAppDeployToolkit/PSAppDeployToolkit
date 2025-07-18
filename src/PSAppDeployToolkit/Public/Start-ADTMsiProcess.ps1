@@ -99,6 +99,9 @@ function Start-ADTMsiProcess
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
+    .PARAMETER NoDesktopRefresh
+        If specifies, doesn't refresh the desktop and environment after successful MSI installation.
+
     .PARAMETER NoWait
         Immediately continue after executing the process.
 
@@ -284,6 +287,9 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoDesktopRefresh,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -665,7 +671,10 @@ function Start-ADTMsiProcess
             {
                 # Commence the MSI operation, then refresh Explorer as Windows does not consistently update environment variables created by MSIs.
                 $result = Start-ADTProcess @ExecuteProcessSplat
-                Update-ADTDesktop
+                if (!$NoDesktopRefresh)
+                {
+                    Update-ADTDesktop
+                }
 
                 # Return the results if passing through.
                 if ($PassThru -and $result)
