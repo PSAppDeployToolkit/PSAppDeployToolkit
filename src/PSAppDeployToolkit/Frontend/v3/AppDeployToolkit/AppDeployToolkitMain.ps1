@@ -4306,6 +4306,10 @@ function Execute-ProcessAsUser
         $PSBoundParameters.Add('NoWait', !$PSBoundParameters.Wait)
         $null = $PSBoundParameters.Remove('Wait')
     }
+    else
+    {
+        $PSBoundParameters.Add('NoWait', $true)
+    }
 
     # Translate the ContinueOnError state.
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
