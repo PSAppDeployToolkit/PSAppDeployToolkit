@@ -86,6 +86,45 @@ namespace PSADT.SafeHandles
         internal byte ReadByte(int offset = 0) => Marshal.ReadByte(handle, offset);
 
         /// <summary>
+        /// Writes a 64-bit signed integer to the specified memory location.
+        /// </summary>
+        /// <remarks>This method uses the <see cref="System.Runtime.InteropServices.Marshal.WriteInt64"/>
+        /// function to write the integer value to unmanaged memory. Ensure that the memory location is valid and
+        /// accessible to avoid undefined behavior.</remarks>
+        /// <param name="value">The 64-bit signed integer to write.</param>
+        /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
+        internal void WriteInt64(long value, int offset = 0) => Marshal.WriteInt64(handle, offset, value);
+
+        /// <summary>
+        /// Writes a 32-bit integer value to a specific location in unmanaged memory.
+        /// </summary>
+        /// <remarks>This method writes the specified integer value to the unmanaged memory block
+        /// referenced by the handle. Ensure that the memory location is valid and that the offset does not exceed the
+        /// bounds of the allocated memory.</remarks>
+        /// <param name="value">The 32-bit integer value to write.</param>
+        /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
+        internal void WriteInt32(int value, int offset = 0) => Marshal.WriteInt32(handle, offset, value);
+
+        /// <summary>
+        /// Writes a 16-bit signed integer to the specified offset within the unmanaged memory block.
+        /// </summary>
+        /// <remarks>This method writes the specified <paramref name="value"/> to the unmanaged memory
+        /// block associated with the current instance. Ensure that the offset is within the bounds of the allocated
+        /// memory to avoid memory corruption.</remarks>
+        /// <param name="value">The 16-bit signed integer to write.</param>
+        /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
+        internal void WriteInt16(short value, int offset = 0) => Marshal.WriteInt16(handle, offset, value);
+
+        /// <summary>
+        /// Writes a byte value to a specific location in unmanaged memory.
+        /// </summary>
+        /// <remarks>This method writes directly to unmanaged memory, which can lead to memory corruption
+        /// if not used carefully.  Ensure that the offset is within the bounds of the allocated memory.</remarks>
+        /// <param name="value">The byte value to write.</param>
+        /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
+        internal void WriteByte(byte value, int offset = 0) => Marshal.WriteByte(handle, offset, value);
+
+        /// <summary>
         /// Clears the memory block by setting all bytes to zero.
         /// </summary>
         internal unsafe void Clear() => new Span<byte>(handle.ToPointer(), Length).Clear();

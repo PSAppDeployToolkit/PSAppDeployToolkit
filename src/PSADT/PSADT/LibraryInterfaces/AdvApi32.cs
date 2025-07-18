@@ -292,5 +292,60 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
+
+        /// <summary>
+        /// Wrapper around CreateProcessAsUser to manage error handling.
+        /// </summary>
+        /// <param name="hToken"></param>
+        /// <param name="lpApplicationName"></param>
+        /// <param name="lpCommandLine"></param>
+        /// <param name="lpProcessAttributes"></param>
+        /// <param name="lpThreadAttributes"></param>
+        /// <param name="bInheritHandles"></param>
+        /// <param name="dwCreationFlags"></param>
+        /// <param name="lpEnvironment"></param>
+        /// <param name="lpCurrentDirectory"></param>
+        /// <param name="lpStartupInfoEx"></param>
+        /// <param name="lpProcessInformation"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        {
+            if (lpCommandLine != null && lpCommandLine.LastIndexOf('\0') == -1)
+            {
+                throw new ArgumentException("Required null terminator missing.", "lpCommandLine");
+            }
+            bool hTokenAddRef = false;
+            bool lpEnvironmentAddRef = false;
+            try
+            {
+                fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
+                fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
+                fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
+                {
+                    SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
+                    SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
+                    lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
+                    hToken.DangerousAddRef(ref hTokenAddRef);
+                    var res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                    if (!res)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
+                    return res;
+                }
+            }
+            finally
+            {
+                if (hTokenAddRef)
+                {
+                    hToken.DangerousRelease();
+                }
+                if (lpEnvironmentAddRef)
+                {
+                    lpEnvironment.DangerousRelease();
+                }
+            }
+        }
     }
 }

@@ -715,5 +715,65 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Initializes a list of attributes for process and thread creation.
+        /// </summary>
+        /// <param name="lpAttributeList">A pointer to a buffer that receives the updated attribute list.</param>
+        /// <param name="dwAttributeCount">The number of attributes to be added to the list.</param>
+        /// <param name="lpSize">On input, specifies the size of the lpAttributeList buffer. On output, receives the required buffer size if
+        /// the function fails.</param>
+        /// <returns><see langword="true"/> if the attribute list is successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        internal static BOOL InitializeProcThreadAttributeList(LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, uint dwAttributeCount, ref nuint lpSize)
+        {
+            var res = PInvoke.InitializeProcThreadAttributeList(lpAttributeList, dwAttributeCount, ref lpSize);
+            if (!res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Updates the attributes of a specified process or thread.
+        /// </summary>
+        /// <param name="lpAttributeList">A pointer to an attribute list created by the <c>InitializeProcThreadAttributeList</c> function.</param>
+        /// <param name="Attribute">The attribute key to update. This specifies which attribute to modify in the list.</param>
+        /// <param name="lpValue">A pointer to the attribute value. The type and meaning of this value depend on the attribute key specified
+        /// by <paramref name="Attribute"/>.</param>
+        /// <param name="cbSize">The size in bytes of the attribute value specified by <paramref name="lpValue"/>.</param>
+        /// <param name="lpPreviousValue">A pointer to a buffer that receives the previous value of the attribute. This parameter can be <see
+        /// langword="null"/> if the previous value is not required.</param>
+        /// <param name="lpReturnSize">A pointer to a variable that receives the size of the attribute value. This parameter can be <see
+        /// langword="null"/> if the size is not required.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static unsafe BOOL UpdateProcThreadAttribute(SafeProcThreadAttributeListHandle lpAttributeList, PROC_THREAD_ATTRIBUTE Attribute, SafeHGlobalHandle lpValue, IntPtr? lpPreviousValue = null, nuint? lpReturnSize = null)
+        {
+            bool lpAttributeListAddRef = false;
+            bool lpValueAddRef = false;
+            try
+            {
+                lpAttributeList.DangerousAddRef(ref lpAttributeListAddRef);
+                lpValue.DangerousAddRef(ref lpValueAddRef);
+                var res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)lpAttributeList.DangerousGetHandle(), 0, (nuint)Attribute, lpValue.DangerousGetHandle().ToPointer(), (nuint)lpValue.Length, lpPreviousValue.HasValue && lpPreviousValue.Value != IntPtr.Zero ? lpPreviousValue.Value.ToPointer() : null, lpReturnSize);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+            finally
+            {
+                if (lpValueAddRef)
+                {
+                    lpValue.DangerousRelease();
+                }
+                if (lpAttributeListAddRef)
+                {
+                    lpAttributeList.DangerousRelease();
+                }
+            }
+        }
     }
 }
