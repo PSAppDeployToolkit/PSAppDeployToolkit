@@ -10,7 +10,6 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
-using Windows.Win32.System.Memory;
 using Windows.Win32.System.Power;
 using Windows.Win32.System.SystemInformation;
 using Windows.Win32.System.Threading;
