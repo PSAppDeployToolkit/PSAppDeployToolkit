@@ -1120,7 +1120,7 @@ function Show-ADTInstallationWelcome
                                 {
                                     foreach ($runningApp in $runningApps)
                                     {
-                                        Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
+                                        Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)]..."
                                         Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
                                     }
                                 }
