@@ -679,12 +679,16 @@ namespace PSADT.ProcessManagement
             // Test whether the "Secondary Log-on" service is running, which is required for CreateProcessWithToken.
             using (ServiceController serviceController = new("seclogon"))
             {
-                // If the service does not exist or cannot be queried, we cannot use CreateProcessWithToken.
+                // If the service is disabled, we cannot use CreateProcessWithToken. This
+                // property will fail if the service is not found, so catch that as well.
                 try
                 {
-                    _ = serviceController.Status;
+                    if (serviceController.StartType == ServiceStartMode.Disabled)
+                    {
+                        return CreateProcessUsingTokenStatus.SecLogonServiceDisabled;
+                    }
                 }
-                catch (InvalidOperationException)
+                catch
                 {
                     return CreateProcessUsingTokenStatus.SecLogonServiceNotFound;
                 }
@@ -800,8 +804,8 @@ namespace PSADT.ProcessManagement
             JobBreakawayNotPermitted,
             SeTcbPrivilege,
             SeImpersonatePrivilege,
-            SecLogonServiceNotRunning,
             SecLogonServiceNotFound,
+            SecLogonServiceDisabled,
         }
 
         /// <summary>
@@ -819,6 +823,7 @@ namespace PSADT.ProcessManagement
             { CreateProcessUsingTokenStatus.SeTcbPrivilege, "The calling process does not have the necessary SeTcbPrivilege privilege." },
             { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege." },
             { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
+            { CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled." },
         });
 
         /// <summary>
