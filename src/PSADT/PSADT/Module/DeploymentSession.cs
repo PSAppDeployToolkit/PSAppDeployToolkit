@@ -697,9 +697,8 @@ namespace PSADT.Module
                     }
                     else if ((bool)configToolkit["OobeDetection"]!)
                     {
+                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
                         deployModeChanged = true;
-                        _deployMode = DeployMode.Silent;
-                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{_deployMode}].");
                     }
                     else
                     {
@@ -732,9 +731,8 @@ namespace PSADT.Module
                                         }
                                         else if ((bool)configToolkit["OobeDetection"]!)
                                         {
+                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
                                             deployModeChanged = true;
-                                            _deployMode = DeployMode.Silent;
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode}].");
                                         }
                                         else
                                         {
@@ -792,9 +790,8 @@ namespace PSADT.Module
                         // If the process is not able to display a UI, enable silent mode.
                         if (null == usersLoggedOn)
                         {
+                            WriteLogEntry($"Session 0 detected, no users logged on; deployment mode set to [{_deployMode = DeployMode.Silent}].");
                             deployModeChanged = true;
-                            _deployMode = DeployMode.Silent;
-                            WriteLogEntry($"Session 0 detected, no users logged on; deployment mode set to [{_deployMode}].");
                         }
                         else
                         {
@@ -827,9 +824,8 @@ namespace PSADT.Module
                     {
                         if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose) is var runningProcs && (runningProcs.Count == 0))
                         {
+                            WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
                             deployModeChanged = true;
-                            _deployMode = DeployMode.Silent;
-                            WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{_deployMode}].");
                         }
                         else
                         {
