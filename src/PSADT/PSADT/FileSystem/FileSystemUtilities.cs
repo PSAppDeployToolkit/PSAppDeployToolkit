@@ -16,7 +16,7 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         internal static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
         {
-            Dictionary<string, string> lookupTable = [];
+            var lookupTable = new Dictionary<string, string> { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[260];
             for (char drive = 'A'; drive <= 'Z'; drive++)
             {
