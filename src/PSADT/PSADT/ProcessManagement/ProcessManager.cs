@@ -78,7 +78,7 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            string commandLine;
+            Span<char> commandSpan; string commandLine;
             if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (null != launchInfo.Username))
             {
                 var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
@@ -200,8 +200,8 @@ namespace PSADT.ProcessManagement
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
                             {
-                                OutLaunchArguments(launchInfo, session.NTAccount, EnvironmentBlockToDictionary(lpEnvironment), out commandLine, out string? workingDirectory); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                                OutLaunchArguments(launchInfo, session.NTAccount, EnvironmentBlockToDictionary(lpEnvironment), out commandSpan, out string? workingDirectory); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                CreateProcessUsingToken(hPrimaryToken, ref commandSpan, launchInfo.UsingAnonymousHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                             }
                         }
                     }
@@ -210,18 +210,19 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandLine, out string? workingDirectory);
-                            CreateProcessUsingToken(hPrimaryToken, commandLine, launchInfo.UsingAnonymousHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
+                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandSpan, out string? workingDirectory);
+                            CreateProcessUsingToken(hPrimaryToken, ref commandSpan, launchInfo.UsingAnonymousHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                         }
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandLine, out string? workingDirectory);
-                        Kernel32.CreateProcess(null, commandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandSpan, out string? workingDirectory);
+                        Kernel32.CreateProcess(null, ref commandSpan, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                     }
 
                     // Start tracking the process and allow it to resume execution.
+                    commandLine = commandSpan.ToString().TrimRemoveNull();
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
                         Kernel32.AssignProcessToJobObject(job, hProcess = new SafeProcessHandle(pi.hProcess, true));
@@ -248,8 +249,8 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandLine, out string? workingDirectory);
-                var argv = ProcessUtilities.CommandLineToArgv(commandLine);
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandSpan, out string? workingDirectory);
+                var argv = ProcessUtilities.CommandLineToArgv(commandLine = commandSpan.ToString().TrimRemoveNull());
 
                 // Set up the shell execute info structure.
                 var startupInfo = new Shell32.SHELLEXECUTEINFO
@@ -591,7 +592,7 @@ namespace PSADT.ProcessManagement
         /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string> environmentDictionary, out string commandLine, out string? workingDirectory)
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string> environmentDictionary, out Span<char> commandSpan, out string? workingDirectory)
         {
             string[] argv = (new[] { launchInfo.FilePath }).Concat(launchInfo.ArgumentList ?? []).ToArray();
             if (launchInfo.ExpandEnvironmentVariables)
@@ -600,12 +601,12 @@ namespace PSADT.ProcessManagement
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
                 }
-                commandLine = ProcessUtilities.ArgvToCommandLine(argv)!;
+                commandSpan = ProcessUtilities.ArgvToCommandLine(argv)!.ToCharArray();
                 workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
             }
             else
             {
-                commandLine = ProcessUtilities.ArgvToCommandLine(argv)!;
+                commandSpan = ProcessUtilities.ArgvToCommandLine(argv)!.ToCharArray();
                 workingDirectory = launchInfo.WorkingDirectory;
             }
         }
@@ -717,7 +718,7 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string commandLine, bool usingAnonymousHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, ref Span<char> commandLine, bool usingAnonymousHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides anonymous handles, we need to use CreateProcessAsUser() since it has bInheritHandles.
@@ -751,7 +752,7 @@ namespace PSADT.ProcessManagement
                             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
                             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-                            AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
+                            AdvApi32.CreateProcessAsUser(hPrimaryToken, null, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
                         }
                         finally
                         {
@@ -772,7 +773,7 @@ namespace PSADT.ProcessManagement
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                     }
                     PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege); PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-                    AdvApi32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                    AdvApi32.CreateProcessAsUser(hPrimaryToken, null, ref commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                 }
                 else
                 {
@@ -782,7 +783,7 @@ namespace PSADT.ProcessManagement
             else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
-                AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
             }
             else
             {
