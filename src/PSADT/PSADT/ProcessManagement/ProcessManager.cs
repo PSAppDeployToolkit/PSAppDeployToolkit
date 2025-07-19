@@ -47,6 +47,7 @@ namespace PSADT.ProcessManagement
             List<string> stdout = []; List<string> stderr = [];
             ConcurrentQueue<string> interleaved = [];
             SafeProcessHandle? hProcess = null;
+            Process process = null!;
             uint? processId = null;
 
             // Determine whether the process we're starting is a console app or not. This is important
@@ -222,12 +223,12 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Start tracking the process and allow it to resume execution.
+                    process = Process.GetProcessById((int)(processId = pi.dwProcessId)); _ = process; _ = process.Handle;
                     commandLine = commandSpan.ToString().TrimRemoveNull();
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
                         Kernel32.AssignProcessToJobObject(job, hProcess = new SafeProcessHandle(pi.hProcess, true));
                         Kernel32.ResumeThread(hThread);
-                        processId = pi.dwProcessId;
                     }
                 }
                 finally
@@ -278,6 +279,8 @@ namespace PSADT.ProcessManagement
                 {
                     hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
                     processId = Kernel32.GetProcessId(hProcess);
+                    process = Process.GetProcessById((int)processId);
+                    _ = process; _ = process.Handle;
                     Kernel32.AssignProcessToJobObject(job, hProcess);
                     if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
@@ -291,9 +294,6 @@ namespace PSADT.ProcessManagement
             {
                 return null;
             }
-
-            // Get a Process object for the launched process and read its handle so System.Diagnostics gets a lock on it.
-            Process process = Process.GetProcessById((int)processId); _ = process; _ = process.Handle;
 
             // These tasks read all outputs and wait for the process to complete.
             TaskCompletionSource<ProcessResult> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -737,8 +737,8 @@ namespace PSADT.ProcessManagement
                     {
                         throw new UnauthorizedAccessException(CreateProcessUsingTokenStatusMessages[CreateProcessUsingTokenStatus.SeTcbPrivilege]);
                     }
-                    using (var hAttributeList = SafeProcThreadAttributeListHandle.Create(1))
                     using (var hExtendedFlags = SafeHGlobalHandle.Alloc(sizeof(EXTENDED_PROCESS_CREATION_FLAG)))
+                    using (var hAttributeList = SafeProcThreadAttributeListHandle.Create(1))
                     {
                         hExtendedFlags.WriteInt32((int)EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY);
                         Kernel32.UpdateProcThreadAttribute(hAttributeList, PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, hExtendedFlags);
@@ -787,7 +787,7 @@ namespace PSADT.ProcessManagement
             }
             else
             {
-                throw new InvalidOperationException($"Unable to create a new process via token. CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}");
+                throw new InvalidOperationException($"Unable to create a new process via token. CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser].TrimEnd('.')}. CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken].TrimEnd('.')}.");
             }
         }
 
