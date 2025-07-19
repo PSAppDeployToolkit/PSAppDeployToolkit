@@ -12,11 +12,7 @@ CreatePipe
 CreateProcessAsUserW
 CreateProcessW
 CreateProcessWithTokenW
-DeleteObject
 DestroyEnvironmentBlock
-DestroyMenu
-DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE
-DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 DuplicateHandle
 DuplicateTokenEx
 DwmGetColorizationColor
@@ -34,8 +30,6 @@ GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
-GetLengthSid
-GetNativeSystemInfo
 GetPrivateProfileSection
 GetPrivateProfileSectionNames
 GetPrivateProfileString
@@ -52,7 +46,6 @@ GetTokenInformation
 GetWindowText
 GetWindowTextLength
 GetWindowThreadProcessId
-HIGHCONTRASTW
 HKEY_CLASSES_ROOT
 HKEY_CURRENT_CONFIG
 HKEY_CURRENT_USER
@@ -241,7 +234,6 @@ VirtualAlloc
 VirtualFree
 WaitForMultipleObjects
 WaitForSingleObject
-WIN32_ERROR
 Windows.Win32.UI.Controls.IImageList
 WM_COMMAND
 WM_NCLBUTTONDOWN
