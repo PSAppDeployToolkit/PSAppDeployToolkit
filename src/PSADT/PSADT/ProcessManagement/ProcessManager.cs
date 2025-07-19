@@ -256,7 +256,7 @@ namespace PSADT.ProcessManagement
                 // Set up the shell execute info structure.
                 var startupInfo = new Shell32.SHELLEXECUTEINFO
                 {
-                    cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
+                    cbSize = (uint)Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                     fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
                     lpVerb = launchInfo.Verb,
                     lpFile = argv[0],

@@ -8,6 +8,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.System.Registry;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -29,7 +30,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Size of the structure.
             /// </summary>
-            internal int cbSize;
+            internal uint cbSize;
 
             /// <summary>
             /// Flags that specify the behavior of the function.
@@ -73,7 +74,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Handle to the application that is calling the ShellExecuteEx function.
             /// </summary>
-            internal IntPtr hInstApp;
+            internal HINSTANCE hInstApp;
 
             /// <summary>
             /// Union member for the ID list.
@@ -89,7 +90,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Handle to the key that identifies the file type.
             /// </summary>
-            internal IntPtr hkeyClass;
+            internal HKEY hkeyClass;
 
             /// <summary>
             /// Flags that specify the input and output values of this structure.
@@ -105,7 +106,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Handle to the newly started application.
             /// </summary>
-            internal IntPtr hProcess;
+            internal HANDLE hProcess;
         }
 
         /// <summary>
@@ -162,6 +163,11 @@ namespace PSADT.LibraryInterfaces
             /// Index of the icon in the system image list.
             /// </summary>
             internal int iSysImageIndex;
+
+            /// <summary>
+            /// Represents the index of an icon within an internal collection.
+            /// </summary>
+            internal int iIcon;
 
             /// <summary>
             /// Index of the icon in the small image list.
