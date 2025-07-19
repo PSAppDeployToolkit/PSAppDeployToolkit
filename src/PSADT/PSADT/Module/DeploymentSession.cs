@@ -788,7 +788,7 @@ namespace PSADT.Module
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
                         // If the process is not able to display a UI, enable silent mode.
-                        if (null == usersLoggedOn)
+                        if (null == usersLoggedOn || usersLoggedOn.Count == 0)
                         {
                             WriteLogEntry($"Session 0 detected, no users logged on; deployment mode set to [{_deployMode = DeployMode.Silent}].");
                             deployModeChanged = true;
