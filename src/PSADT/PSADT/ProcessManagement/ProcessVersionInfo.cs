@@ -128,7 +128,7 @@ namespace PSADT.ProcessManagement
             using (versionResource)
             {
                 // Read the version information from the resource.
-                Version32.VerQueryValue(versionResource, @"\", out var fixedInfoPtr, out var fixedInfoLen);
+                Version32.VerQueryValue(versionResource, @"\", out var fixedInfoPtr, out _);
                 FixedFileInfo = Marshal.PtrToStructure<VS_FIXEDFILEINFO>(fixedInfoPtr);
                 FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
                 FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
@@ -149,23 +149,23 @@ namespace PSADT.ProcessManagement
                 IsSpecialBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
 
                 // Read the version resource strings.
-                const string format = "\\\\StringFileInfo\\\\{0}\\\\{1}"; bool success = false;
+                const string format = @"\StringFileInfo\{0}\{1}"; bool success = false;
                 var codepageTable = GetTranslationTableCombinations(versionResource).ToList();
                 Language = GetFileVersionLanguage(versionResource, codepageTable[0]);
                 foreach (var codepage in codepageTable)
                 {
                     // Exit loop if we successfully retrieved at least one string.
+                    Comments = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "Comments"), ref success);
                     CompanyName = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "CompanyName"), ref success);
                     FileDescription = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "FileDescription"), ref success);
                     FileVersion = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "FileVersion"), ref success);
                     InternalName = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "InternalName"), ref success);
                     LegalCopyright = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "LegalCopyright"), ref success);
+                    LegalTrademarks = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "LegalTrademarks"), ref success);
                     OriginalFilename = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "OriginalFilename"), ref success);
+                    PrivateBuild = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "PrivateBuild"), ref success);
                     ProductName = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "ProductName"), ref success);
                     ProductVersion = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "ProductVersion"), ref success);
-                    Comments = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "Comments"), ref success);
-                    LegalTrademarks = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "LegalTrademarks"), ref success);
-                    PrivateBuild = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "PrivateBuild"), ref success);
                     SpecialBuild = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "SpecialBuild"), ref success);
                     if (success)
                     {
@@ -319,7 +319,7 @@ namespace PSADT.ProcessManagement
         private static IEnumerable<string> GetTranslationTableCombinations(SafeHGlobalHandle versionResource)
         {
             // Return any translation pairs found in the version resource.
-            Version32.VerQueryValue(versionResource, "\\VarFileInfo\\Translation", out var translationPtr, out var translationLength);
+            Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out var translationPtr, out var translationLength);
             var pairCount = translationLength / 4;
             for (int i = 0; i < pairCount; i++)
             {
@@ -349,9 +349,10 @@ namespace PSADT.ProcessManagement
         {
             Span<char> szLang = stackalloc char[260];
             var len = Kernel32.VerLanguageName((uint)(long.Parse(codepage, NumberStyles.HexNumber) >> 16), szLang);
-            if (szLang.Slice(0, (int)len).ToString().TrimRemoveNull() is string lang && !string.IsNullOrWhiteSpace(lang))
+            string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
+            if (!string.IsNullOrWhiteSpace(result))
             {
-                return lang;
+                return result;
             }
             return null;
         }
@@ -372,7 +373,7 @@ namespace PSADT.ProcessManagement
             {
                 if (Version32.VerQueryValue(versionResource, name, out var lplpBuffer, out var _) && lplpBuffer != IntPtr.Zero)
                 {
-                    string? result = Marshal.PtrToStringUni(lplpBuffer);
+                    string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
                     if (!string.IsNullOrWhiteSpace(result))
                     {
                         success = true;
@@ -405,7 +406,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>The formatting of this methood 1:1 matches System.Diagnostics.ProcessVersionInfo.</remarks>
         public override string ToString()
         {
-            StringBuilder stringBuilder = new StringBuilder(128);
+            StringBuilder stringBuilder = new(128);
             string value = "\r\n";
             stringBuilder.Append("File:             ");
             stringBuilder.Append(FileName);
@@ -429,19 +430,19 @@ namespace PSADT.ProcessManagement
             stringBuilder.Append(ProductVersion);
             stringBuilder.Append(value);
             stringBuilder.Append("Debug:            ");
-            stringBuilder.Append(IsDebug.ToString());
+            stringBuilder.Append(IsDebug);
             stringBuilder.Append(value);
             stringBuilder.Append("Patched:          ");
-            stringBuilder.Append(IsPatched.ToString());
+            stringBuilder.Append(IsPatched);
             stringBuilder.Append(value);
             stringBuilder.Append("PreRelease:       ");
-            stringBuilder.Append(IsPreRelease.ToString());
+            stringBuilder.Append(IsPreRelease);
             stringBuilder.Append(value);
             stringBuilder.Append("PrivateBuild:     ");
-            stringBuilder.Append(IsPrivateBuild.ToString());
+            stringBuilder.Append(IsPrivateBuild);
             stringBuilder.Append(value);
             stringBuilder.Append("SpecialBuild:     ");
-            stringBuilder.Append(IsSpecialBuild.ToString());
+            stringBuilder.Append(IsSpecialBuild);
             stringBuilder.Append(value);
             stringBuilder.Append("Language:         ");
             stringBuilder.Append(Language);
