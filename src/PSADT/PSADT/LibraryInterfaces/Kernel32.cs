@@ -774,5 +774,67 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
+
+        /// <summary>
+        /// Reads data from an area of memory in a specified process. The process is identified by a handle.
+        /// </summary>
+        /// <remarks>This method wraps the PInvoke call to ReadProcessMemory and throws an exception if
+        /// the operation fails. Ensure that the buffer is large enough to hold the data being read to avoid an <see
+        /// cref="OverflowException"/>.</remarks>
+        /// <param name="hProcess">A handle to the process with memory that is being read. The handle must have PROCESS_VM_READ access.</param>
+        /// <param name="lpBaseAddress">A pointer to the base address in the specified process from which to read.</param>
+        /// <param name="lpBuffer">A pointer to a buffer that receives the contents from the address space of the specified process.</param>
+        /// <param name="nSize">The number of bytes to be read from the specified process.</param>
+        /// <param name="lpNumberOfBytesRead">A pointer to a variable that receives the number of bytes transferred into the specified buffer. This
+        /// parameter can be null.</param>
+        /// <returns>A <see cref="BOOL"/> indicating whether the operation succeeded.</returns>
+        /// <exception cref="OverflowException">Thrown if the buffer was too small and the value was truncated.</exception>
+        internal static unsafe BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, SafeMemoryHandle lpBuffer, out nuint lpNumberOfBytesRead)
+        {
+            bool lpBufferAddRef = false;
+            fixed (nuint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+            {
+                try
+                {
+                    lpBuffer.DangerousAddRef(ref lpBufferAddRef);
+                    var res = PInvoke.ReadProcessMemory(hProcess, lpBaseAddress.ToPointer(), lpBuffer.DangerousGetHandle().ToPointer(), (nuint)lpBuffer.Length, pNumberOfBytesRead);
+                    if (!res)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
+                    return res;
+                }
+                finally
+                {
+                    if (lpBufferAddRef)
+                    {
+                        lpBuffer.DangerousRelease();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a human-readable name for a specified language identifier.
+        /// </summary>
+        /// <remarks>This method wraps a call to a native function and throws an exception if the
+        /// operation fails. Ensure that <paramref name="szLang"/> is sufficiently large to avoid truncation.</remarks>
+        /// <param name="wLang">The language identifier for which the name is to be retrieved.</param>
+        /// <param name="szLang">A span of characters that receives the language name. The buffer must be large enough to hold the name.</param>
+        /// <returns>The number of characters written to <paramref name="szLang"/>, excluding the null terminator.</returns>
+        /// <exception cref="OverflowException">Thrown if the buffer provided by <paramref name="szLang"/> is too small to hold the language name.</exception>
+        internal static uint VerLanguageName(uint wLang, Span<char> szLang)
+        {
+            var res = PInvoke.VerLanguageName(wLang, szLang);
+            if (res == 0)
+            {
+                throw new Win32Exception("Failed to retrieve language name.");
+            }
+            if (res > szLang.Length)
+            {
+                throw new OverflowException("Buffer was too small. Value was truncated.");
+            }
+            return res;
+        }
     }
 }

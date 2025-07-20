@@ -19,6 +19,7 @@ DwmGetColorizationColor
 E_ACCESSDENIED
 E_INVALIDARG
 EnableMenuItem
+EnumProcessModules
 EnumWindows
 FILE_FLAGS_AND_ATTRIBUTES
 FindWindow
@@ -30,6 +31,7 @@ GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
+GetModuleInformation
 GetPrivateProfileSection
 GetPrivateProfileSectionNames
 GetPrivateProfileString
@@ -46,6 +48,7 @@ GetTokenInformation
 GetWindowText
 GetWindowTextLength
 GetWindowThreadProcessId
+HIWORD
 HKEY_CLASSES_ROOT
 HKEY_CURRENT_CONFIG
 HKEY_CURRENT_USER
@@ -61,6 +64,9 @@ IMAGE_LIST_DRAW_STYLE
 IMAGE_NT_HEADERS32
 IMAGE_NT_HEADERS64
 IMAGE_NT_SIGNATURE
+IMAGE_RESOURCE_DIRECTORY
+IMAGE_RESOURCE_DIRECTORY_ENTRY
+IMAGE_RESOURCE_DATA_ENTRY
 IMMDeviceEnumerator
 INFINITE
 InitializeProcThreadAttributeList
@@ -80,6 +86,7 @@ LoadString
 LocalFree
 LookupPrivilegeNameW
 LookupPrivilegeValueW
+LOWORD
 MMDeviceEnumerator
 MONITORINFOEXW
 MONITORINFOF_PRIMARY
@@ -124,12 +131,14 @@ QueryDosDevice
 QueryInformationJobObject
 QueryServiceStatusEx
 ReadFile
+ReadProcessMemory
 RECT
 RegOpenKeyEx
 RegQueryInfoKey
 ReleaseCapture
 RemoveMenu
 ResumeThread
+RT_VERSION
 RtlGetVersion
 RtlNtStatusToDosError
 SC_CLOSE
@@ -230,6 +239,9 @@ VER_SUITE_SMALLBUSINESS_RESTRICTED
 VER_SUITE_STORAGE_SERVER
 VER_SUITE_TERMINAL
 VER_SUITE_WH_SERVER
+VerLanguageName
+VerQueryValue
+VS_FIXEDFILEINFO
 VirtualAlloc
 VirtualFree
 WaitForMultipleObjects

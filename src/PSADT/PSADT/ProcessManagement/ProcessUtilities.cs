@@ -11,6 +11,7 @@ using System.Text;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
+using PSADT.Security;
 using Windows.Win32.System.Services;
 
 namespace PSADT.ProcessManagement
@@ -109,9 +110,13 @@ namespace PSADT.ProcessManagement
                     {
                         procDescription = processDefinition.Description!;
                     }
-                    else if (FileVersionInfo.GetVersionInfo(commandLine[0]) is FileVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                    else if (File.Exists(commandLine[0]) && FileVersionInfo.GetVersionInfo(commandLine[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription))
                     {
-                        procDescription = procInfo.FileDescription;
+                        procDescription = fileInfo.FileDescription;
+                    }
+                    else if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && ProcessVersionInfo.GetVersionInfo(process, commandLine[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                    {
+                        procDescription = procInfo.FileDescription!;
                     }
                     else
                     {
