@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
@@ -53,7 +54,17 @@ namespace PSADT.SafeHandles
         /// <param name="offset"></param>
         internal SafeMemoryHandle FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
         {
-            Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
+            // Pin unconditionally to be safe across both .NET Framework 4.7.2 and .NET 8.
+            // Marshal.StructureToPtr can be unsafe when structs contain reference types.
+            var gchandle = GCHandle.Alloc(structure, GCHandleType.Pinned);
+            try
+            {
+                Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
+            }
+            finally
+            {
+                gchandle.Free();
+            }
             return this;
         }
 
