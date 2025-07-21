@@ -295,13 +295,13 @@ namespace PSADT.ProcessManagement
 
             // Try to read as a directory first, regardless of the high bit. For RT_VERSION, the offset should always point to a subdirectory.
             // Get the first entry (usually there's only one for version resources), then check if it points to another directory or a data entry.
-            var level2Address = resourceDirectoryAddress + (int)(offsetToData & 0x7FFFFFFF);
+            var level2Address = resourceDirectoryAddress + (int)(offsetToData & IMAGE_RESOURCE_RVA_MASK);
             var level2EntryAddress = level2Address + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
             var level2Entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, level2EntryAddress);
-            if ((level2Entry.Anonymous2.OffsetToData & 0x80000000) != 0)
+            if ((level2Entry.Anonymous2.OffsetToData & PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY) != 0)
             {
                 // We're at level 3. Navigate to language subdirectory and get the first language entry.
-                var level3Address = resourceDirectoryAddress + (int)(level2Entry.Anonymous2.OffsetToData & 0x7FFFFFFF);
+                var level3Address = resourceDirectoryAddress + (int)(level2Entry.Anonymous2.OffsetToData & IMAGE_RESOURCE_RVA_MASK);
                 var level3EntryAddress = level3Address + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
                 var level3Entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, level3EntryAddress);
                 return ReadFromDataEntryAddress(processHandle, resourceDirectoryAddress, baseAddress, level3Entry);
@@ -348,7 +348,7 @@ namespace PSADT.ProcessManagement
         private static string? GetFileVersionLanguage(SafeHGlobalHandle versionResource, string codepage)
         {
             Span<char> szLang = stackalloc char[260];
-            var len = Kernel32.VerLanguageName((uint)(long.Parse(codepage, NumberStyles.HexNumber) >> 16), szLang);
+            var len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber)), szLang);
             string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
             if (!string.IsNullOrWhiteSpace(result))
             {
@@ -403,7 +403,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Returns a partial list of properties in the System.Diagnostics.ProcessVersionInfo and their values.
         /// </summary>
-        /// <remarks>The formatting of this methood 1:1 matches System.Diagnostics.ProcessVersionInfo.</remarks>
+        /// <remarks>The formatting of this methood 1:1 matches System.Diagnostics.FileVersionInfo.</remarks>
         public override string ToString()
         {
             StringBuilder stringBuilder = new(128);
@@ -618,5 +618,14 @@ namespace PSADT.ProcessManagement
         /// in a Windows resource file. It is typically used in conjunction with functions that manipulate resources,
         /// such as loading or enumerating resources.</remarks>
         private static readonly uint RT_VERSION;
+
+        /// <summary>
+        /// Represents a mask used to extract the relative virtual address (RVA) from an image resource.
+        /// </summary>
+        /// <remarks>This constant is used in conjunction with the <see
+        /// cref="PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY"/>  to isolate the RVA portion of an image resource entry. It
+        /// is typically used in scenarios where the directory flag needs to be cleared to obtain the actual
+        /// RVA.</remarks>
+        private const uint IMAGE_RESOURCE_RVA_MASK = ~PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY;
     }
 }
