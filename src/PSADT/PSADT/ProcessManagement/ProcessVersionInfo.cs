@@ -279,38 +279,28 @@ namespace PSADT.ProcessManagement
         /// </summary>
         private static SafeHGlobalHandle ReadVersionResourceData(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress, uint offsetToData)
         {
-            // Helper function to read data from a data entry address.
-            static SafeHGlobalHandle ReadFromDataEntryAddress(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress, IMAGE_RESOURCE_DIRECTORY_ENTRY directoryEntry)
+            // Navigate through the directory levels using a do/while loop.
+            var currentOffsetToData = offsetToData;
+            IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry;
+            do
             {
-                var dataEntryAddress = resourceDirectoryAddress + (int)directoryEntry.Anonymous2.OffsetToData;
-                var dataEntry = ReadProcessMemory<IMAGE_RESOURCE_DATA_ENTRY>(processHandle, dataEntryAddress);
-                if (dataEntry.Size > 0)
-                {
-                    var buffer = SafeHGlobalHandle.Alloc((int)dataEntry.Size);
-                    Kernel32.ReadProcessMemory(processHandle, baseAddress + (int)dataEntry.OffsetToData, buffer, out _);
-                    return buffer;
-                }
-                throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{dataEntryAddress.ToInt64():X}");
+                var currentAddress = resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK);
+                var currentEntryAddress = currentAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
+                currentEntry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, currentEntryAddress);
+                currentOffsetToData = currentEntry.Anonymous2.OffsetToData;
             }
+            while ((currentOffsetToData & PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY) != 0);
 
-            // Try to read as a directory first, regardless of the high bit. For RT_VERSION, the offset should always point to a subdirectory.
-            // Get the first entry (usually there's only one for version resources), then check if it points to another directory or a data entry.
-            var level2Address = resourceDirectoryAddress + (int)(offsetToData & IMAGE_RESOURCE_RVA_MASK);
-            var level2EntryAddress = level2Address + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
-            var level2Entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, level2EntryAddress);
-            if ((level2Entry.Anonymous2.OffsetToData & PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY) != 0)
+            // At this point, currentEntry points to a data entry, not a directory.
+            var dataEntryAddress = resourceDirectoryAddress + (int)currentEntry.Anonymous2.OffsetToData;
+            var dataEntry = ReadProcessMemory<IMAGE_RESOURCE_DATA_ENTRY>(processHandle, dataEntryAddress);
+            if (dataEntry.Size > 0)
             {
-                // We're at level 3. Navigate to language subdirectory and get the first language entry.
-                var level3Address = resourceDirectoryAddress + (int)(level2Entry.Anonymous2.OffsetToData & IMAGE_RESOURCE_RVA_MASK);
-                var level3EntryAddress = level3Address + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
-                var level3Entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, level3EntryAddress);
-                return ReadFromDataEntryAddress(processHandle, resourceDirectoryAddress, baseAddress, level3Entry);
+                var buffer = SafeHGlobalHandle.Alloc((int)dataEntry.Size);
+                Kernel32.ReadProcessMemory(processHandle, baseAddress + (int)dataEntry.OffsetToData, buffer, out _);
+                return buffer;
             }
-            else
-            {
-                // Direct data entry from level 2. Validate the data entry looks reasonable and read it.
-                return ReadFromDataEntryAddress(processHandle, resourceDirectoryAddress, baseAddress, level2Entry);
-            }
+            throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{dataEntryAddress.ToInt64():X}");
         }
 
         /// <summary>
