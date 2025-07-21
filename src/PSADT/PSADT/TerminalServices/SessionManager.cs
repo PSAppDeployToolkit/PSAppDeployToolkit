@@ -198,7 +198,7 @@ namespace PSADT.TerminalServices
         /// local administrator.
         /// </summary>
         /// <remarks>This method checks the user's administrative status by attempting to query the user's
-        /// token and  evaluating their group membership. If the required privileges are not enabled, it falls back to 
+        /// token and evaluating their group membership. If the required privileges are not enabled, it falls back to 
         /// checking the user's SID against the well-known local administrators group.</remarks>
         /// <param name="sessionid">The ID of the WTS session for which the user's administrative status is being checked.</param>
         /// <param name="sid">The security identifier (SID) of the user associated with the session.</param>

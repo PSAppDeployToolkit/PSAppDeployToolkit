@@ -207,7 +207,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Restores the window to its normal state and repositions it to its starting location.
         /// </summary>
-        /// <remarks>This method resets the window's state to <see cref="FormWindowState.Normal"/>, moves it to the  predefined starting location, and brings it to the front of the z-order.</remarks>
+        /// <remarks>This method resets the window's state to <see cref="FormWindowState.Normal"/>, moves it to the predefined starting location, and brings it to the front of the z-order.</remarks>
         protected void RestoreWindow()
         {
             // Reset the window and restore its location.
@@ -276,7 +276,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Positions the form on the screen based on the specified dialog position.
         /// </summary>
-        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="_dialogPosition"/> field, which specifies  predefined locations such as top-left, center, or bottom-right. If the calculated position  exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
+        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="_dialogPosition"/> field, which specifies predefined locations such as top-left, center, or bottom-right. If the calculated position exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
         private void PositionForm()
         {
             // Get the working area (pixels not DIPs)

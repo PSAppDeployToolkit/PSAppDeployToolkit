@@ -108,8 +108,8 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method shows a dialog box containing the application's version, copyright
         /// information,  and a message indicating that the application is intended to be used with the
-        /// PSAppDeployToolkit  PowerShell module. It also advises end-users to contact their helpdesk for assistance. 
-        /// After displaying the dialog, the method throws a <see cref="ClientException"/> to indicate  that no
+        /// PSAppDeployToolkit PowerShell module. It also advises end-users to contact their helpdesk for assistance. 
+        /// After displaying the dialog, the method throws a <see cref="ClientException"/> to indicate that no
         /// arguments were provided to the application.</remarks>
         /// <exception cref="ClientException">Thrown to indicate that no arguments were provided to the application.</exception>
         private static void ShowHelpDialog()
@@ -136,7 +136,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>Each key in the input must start with a hyphen ('-'), and its value must immediately
         /// follow as a separate argument.  If a key is not followed by a valid value (e.g., null, empty, or another
-        /// key-like argument), the method writes an  error message to the standard error stream and terminates the
+        /// key-like argument), the method writes an error message to the standard error stream and terminates the
         /// application with an exit code indicating invalid arguments.</remarks>
         /// <param name="args">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-')  and
         /// followed by its corresponding value as a separate argument.</param>
@@ -194,7 +194,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method initializes anonymous pipe clients for input and output communication 
         /// using the provided pipe handles. If the required pipe handles are missing, invalid, or cannot be opened,
-        /// the method writes an error message to the standard error stream  and terminates the process with an
+        /// the method writes an error message to the standard error stream and terminates the process with an
         /// appropriate exit code.</remarks>
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
         /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
@@ -558,7 +558,7 @@ namespace PSADT.ClientServer
         /// Sends a sequence of keystrokes to the specified window.
         /// </summary>
         /// <remarks>This method brings the specified window to the foreground and ensures it is enabled 
-        /// before sending the keystrokes. If the window is disabled, such as when a modal dialog  is displayed, an <see
+        /// before sending the keystrokes. If the window is disabled, such as when a modal dialog is displayed, an <see
         /// cref="InvalidOperationException"/> is thrown.</remarks>
         /// <param name="arguments">A read-only dictionary containing the arguments required for the operation.  The dictionary must include a
         /// serialized representation of the options,  which specify the target window handle and the keys to send.</param>
@@ -588,7 +588,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method pauses execution for the specified delay duration before initiating the
         /// restart. Ensure that the <c>"Delay"</c> argument is provided and valid to avoid exceptions.</remarks>
         /// <param name="arguments">A read-only dictionary containing the arguments for the restart operation.  The dictionary must include a
-        /// key named <c>"Delay"</c> with a non-empty, valid integer value  representing the delay in seconds before the
+        /// key named <c>"Delay"</c> with a non-empty, valid integer value representing the delay in seconds before the
         /// restart.</param>
         /// <returns><see langword="true"/> if the restart operation was successfully initiated.</returns>
         /// <exception cref="ClientException">Thrown if the <c>"Delay"</c> argument is missing, empty, or invalid.</exception>

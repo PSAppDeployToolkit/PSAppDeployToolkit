@@ -232,7 +232,7 @@ namespace PSADT.LibraryInterfaces
         /// Represents a trusted application attribute for process and thread creation.
         /// </summary>
         /// <remarks>This field is used to specify that a process or thread is a trusted application.  It
-        /// is a constant value derived from the <see cref="ProcThreadAttributeValue"/> method  with specific parameters
+        /// is a constant value derived from the <see cref="ProcThreadAttributeValue"/> method with specific parameters
         /// indicating its trusted status. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2756</remarks>
         PROC_THREAD_ATTRIBUTE_TRUSTED_APP = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeTrustedApp | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 

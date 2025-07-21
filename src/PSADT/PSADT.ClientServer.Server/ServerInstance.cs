@@ -175,7 +175,7 @@ namespace PSADT.ClientServer
         /// Closes the current connection and releases associated resources.
         /// </summary>
         /// <remarks>This method closes the connection and optionally performs additional cleanup
-        /// operations  depending on the internal implementation. Once closed, the connection cannot be reused  and must
+        /// operations depending on the internal implementation. Once closed, the connection cannot be reused and must
         /// be reopened if needed.</remarks>
         public void Close() => Close(false);
 
@@ -283,7 +283,7 @@ namespace PSADT.ClientServer
         /// Determines whether the progress dialog is currently open.
         /// </summary>
         /// <remarks>This method checks the state of the progress dialog and returns a boolean value
-        /// indicating  whether it is currently displayed to the user.</remarks>
+        /// indicating whether it is currently displayed to the user.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
         public bool ProgressDialogOpen() => Invoke<bool>("ProgressDialogOpen");
 
@@ -342,7 +342,7 @@ namespace PSADT.ClientServer
         /// Minimizes all open windows on the desktop.
         /// </summary>
         /// <remarks>This method attempts to minimize all currently open windows. The return value
-        /// indicates  whether the operation was successful. Note that the success of this operation may depend  on
+        /// indicates whether the operation was successful. Note that the success of this operation may depend on
         /// system permissions or the current state of the desktop environment.</remarks>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         public bool MinimizeAllWindows() => Invoke<bool>("MinimizeAllWindows");
@@ -391,7 +391,7 @@ namespace PSADT.ClientServer
         /// Refreshes the desktop and environment variables.
         /// </summary>
         /// <remarks>This method invokes the "RefreshDesktopAndEnvironmentVariables" operation to update
-        /// the desktop and  environment variables. The return value indicates whether the operation was
+        /// the desktop and environment variables. The return value indicates whether the operation was
         /// successful.</remarks>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         public bool RefreshDesktopAndEnvironmentVariables()
@@ -711,7 +711,7 @@ namespace PSADT.ClientServer
         /// application domain.
         /// </summary>
         /// <remarks>This field retrieves the location of the first loaded assembly in the current
-        /// application domain  whose file name ends with "PSADT.ClientServer.Client.exe". It is intended for internal use
+        /// application domain whose file name ends with "PSADT.ClientServer.Client.exe". It is intended for internal use
         /// only.</remarks>
         private static readonly string _assemblyLocation = typeof(ServerInstance).Assembly.Location.Replace("Server.dll", "Client.exe");
     }

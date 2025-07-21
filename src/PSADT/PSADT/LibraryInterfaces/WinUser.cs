@@ -5,7 +5,7 @@
     /// </summary>
     /// <remarks>This enumeration provides a set of constants that define how a window should be shown.  These
     /// commands are typically used with functions that manipulate window visibility and state,  such as showing,
-    /// hiding, minimizing, or maximizing a window. Each command corresponds to a  specific action or state change for a
+    /// hiding, minimizing, or maximizing a window. Each command corresponds to a specific action or state change for a
     /// window.</remarks>
     public enum SHOW_WINDOW_CMD
     {

@@ -50,7 +50,7 @@ namespace PSADT.Utilities
         /// <summary>
         /// Restores all minimized windows on the desktop to their previous state.
         /// </summary>
-        /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no  windows are currently minimized.</remarks>
+        /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
         internal static void RestoreAllWindows() => User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), PInvoke.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
 
         /// <summary>

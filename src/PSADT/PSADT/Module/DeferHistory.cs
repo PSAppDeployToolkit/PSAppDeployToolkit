@@ -8,7 +8,7 @@ namespace PSADT.Module
     /// </summary>
     /// <remarks>This record is used to track the state of deferred operations, such as how many deferrals
     /// remain, the deadline for completing the deferrals,  and the last time the operation was executed within the
-    /// defined interval. It is immutable and designed for scenarios where deferred execution  needs to be monitored or
+    /// defined interval. It is immutable and designed for scenarios where deferred execution needs to be monitored or
     /// managed.</remarks>
     /// <param name="DeferTimesRemaining">The number of deferrals remaining. A value of <see langword="null"/> indicates that the deferral count is not
     /// applicable or unlimited.</param>

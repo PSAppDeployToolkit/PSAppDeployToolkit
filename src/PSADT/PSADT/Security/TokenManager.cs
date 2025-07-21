@@ -32,8 +32,8 @@ namespace PSADT.Security
         /// Retrieves the linked token associated with the specified token handle.
         /// </summary>
         /// <remarks>This method retrieves the linked token, which is typically used in scenarios
-        /// involving user impersonation or  elevated privileges. The caller must ensure that the provided token handle
-        /// is valid and has the necessary  permissions to query linked token information.</remarks>
+        /// involving user impersonation or elevated privileges. The caller must ensure that the provided token handle
+        /// is valid and has the necessary permissions to query linked token information.</remarks>
         /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked token is to be retrieved.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the linked token associated with the specified token
         /// handle.</returns>
