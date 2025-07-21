@@ -148,15 +148,17 @@ namespace PSADT.FileSystem
                             try
                             {
                                 objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBufferPtr);
-                                if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
-                                {
-                                    continue;
-                                }
                             }
                             finally
                             {
                                 objectBufferPtr.Clear();
                             }
+                        }
+
+                        // Skip to next iteration if the handle doesn't meet our criteria
+                        if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
+                        {
+                            continue;
                         }
 
                         // Add the handle information to the list if it matches the specified directory path.
