@@ -21,7 +21,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="bInherit"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, SafeFileHandle hToken, BOOL bInherit)
+        internal unsafe static BOOL CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, SafeFileHandle hToken, BOOL bInherit)
         {
             var res = PInvoke.CreateEnvironmentBlock(out var lpEnvironmentPtr, hToken, bInherit);
             if (!res)

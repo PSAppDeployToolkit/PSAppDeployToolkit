@@ -53,7 +53,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpftLastWriteTime"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, IntPtr lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out global::System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
+        internal unsafe static WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, IntPtr lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out global::System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
         {
             fixed (uint* lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
             fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
@@ -133,7 +133,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeMemoryHandle TokenInformation, out uint ReturnLength)
+        internal unsafe static BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeMemoryHandle TokenInformation, out uint ReturnLength)
         {
             if (TokenInformation is null || TokenInformation.IsClosed)
             {
@@ -167,7 +167,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="NewState"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
+        internal unsafe static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
         {
             fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
             {
@@ -222,7 +222,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation">When the method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns><see langword="true"/> if the process is successfully created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
-        internal static unsafe BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
@@ -265,7 +265,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
@@ -308,7 +308,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpCommandLine != null && lpCommandLine.LastIndexOf('\0') == -1)
             {

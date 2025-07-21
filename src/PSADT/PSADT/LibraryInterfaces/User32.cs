@@ -137,7 +137,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpdwProcessId"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe uint GetWindowThreadProcessId(HWND hWnd, out uint lpdwProcessId)
+        internal unsafe static uint GetWindowThreadProcessId(HWND hWnd, out uint lpdwProcessId)
         {
             fixed (uint* lpdwProcessIdPointer = &lpdwProcessId)
             {
@@ -228,7 +228,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpdwResult"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal unsafe static LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
             if (lParam is null || lParam.IsClosed)
             {
@@ -315,7 +315,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uPosition">The position of the menu item to be removed. The interpretation of this value depends on the <paramref name="uFlags"/> parameter.</param>
         /// <param name="uFlags">Specifies how the <paramref name="uPosition"/> parameter is interpreted. This can be a combination of <see cref="MENU_ITEM_FLAGS"/> values.</param>
         /// <returns><see langword="true"/> if the menu item was successfully removed; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL RemoveMenu(SafeHandle hMenu, uint uPosition, MENU_ITEM_FLAGS uFlags)
+        internal static BOOL RemoveMenu(SafeHandle hMenu, uint uPosition, MENU_ITEM_FLAGS uFlags)
         {
             var res = PInvoke.RemoveMenu(hMenu, uPosition, uFlags);
             if (!res)

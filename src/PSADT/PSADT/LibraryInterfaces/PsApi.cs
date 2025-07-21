@@ -25,7 +25,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpcbNeeded">When this method returns, contains the number of bytes required to store all module handles in the lphModule
         /// buffer.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL EnumProcessModules(SafeHandle hProcess, SafeMemoryHandle lphModule, out uint lpcbNeeded)
+        internal unsafe static BOOL EnumProcessModules(SafeHandle hProcess, SafeMemoryHandle lphModule, out uint lpcbNeeded)
         {
             fixed (uint* pcbNeeded = &lpcbNeeded)
             {
@@ -66,7 +66,7 @@ namespace PSADT.LibraryInterfaces
         /// information.</param>
         /// <param name="cb">The size of the <see cref="MODULEINFO"/> structure, in bytes.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL GetModuleInformation(SafeHandle hProcess, HMODULE hModule, out MODULEINFO lpmodinfo)
+        internal unsafe static BOOL GetModuleInformation(SafeHandle hProcess, HMODULE hModule, out MODULEINFO lpmodinfo)
         {
             fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
             {

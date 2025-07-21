@@ -191,7 +191,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="pquns"></param>
         /// <returns></returns>
-        internal static unsafe HRESULT SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE pquns)
+        internal static HRESULT SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE pquns)
         {
             return PInvoke.SHQueryUserNotificationState(out pquns).ThrowOnFailure();
         }
@@ -203,7 +203,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uFlags"></param>
         /// <param name="dwItem1"></param>
         /// <param name="dwItem2"></param>
-        internal static unsafe void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] IntPtr dwItem1, [Optional] IntPtr dwItem2)
+        internal unsafe static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] IntPtr dwItem1, [Optional] IntPtr dwItem2)
         {
             PInvoke.SHChangeNotify(wEventId, uFlags, dwItem1.ToPointer(), dwItem2.ToPointer());
         }
@@ -279,7 +279,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="lpCmdLine"></param>
         /// <returns></returns>
-        internal static unsafe string[] CommandLineToArgv(string lpCmdLine)
+        internal unsafe static string[] CommandLineToArgv(string lpCmdLine)
         {
             using (LocalFreeSafeHandle safeHandle = new((IntPtr)PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs), true))
             {

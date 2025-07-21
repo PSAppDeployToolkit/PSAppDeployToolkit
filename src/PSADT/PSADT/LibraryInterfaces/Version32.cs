@@ -24,7 +24,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the specified version-information value is successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the version-information value cannot be queried.</exception>
-        internal static unsafe BOOL VerQueryValue(SafeHGlobalHandle pBlock, string lpSubBlock, out IntPtr lplpBuffer, out uint puLen)
+        internal unsafe static BOOL VerQueryValue(SafeHGlobalHandle pBlock, string lpSubBlock, out IntPtr lplpBuffer, out uint puLen)
         {
             bool pBlockAddRef = false;
             try

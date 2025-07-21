@@ -26,7 +26,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="isOOBEComplete"></param>
         /// <returns></returns>
-        internal static unsafe BOOL OOBEComplete(out BOOL isOOBEComplete)
+        internal static BOOL OOBEComplete(out BOOL isOOBEComplete)
         {
             var res = PInvoke.OOBEComplete(out isOOBEComplete);
             if (!res)
@@ -158,7 +158,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpFileName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
+        internal static BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
             var res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
             if (!res)
@@ -213,7 +213,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="cbJobObjectInformationLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        private static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, void* lpJobObjectInformation, uint cbJobObjectInformationLength)
+        private unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, void* lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength);
             if (!res)
@@ -230,7 +230,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="JobObjectInformationClass"></param>
         /// <param name="lpJobObjectInformation"></param>
         /// <returns></returns>
-        internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
+        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
             return SetInformationJobObject(hJob, JobObjectInformationClass, &lpJobObjectInformation, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
         }
@@ -242,7 +242,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="JobObjectInformationClass"></param>
         /// <param name="lpJobObjectInformation"></param>
         /// <returns></returns>
-        internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
+        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
         {
             return SetInformationJobObject(hJob, JobObjectInformationClass, &lpJobObjectInformation, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
         }
@@ -262,7 +262,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
@@ -332,7 +332,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwMilliseconds"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out IntPtr lpOverlapped, uint dwMilliseconds)
+        internal unsafe static BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out IntPtr lpOverlapped, uint dwMilliseconds)
         {
             var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out var pOverlapped, dwMilliseconds);
             if (!res)
@@ -405,7 +405,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpNumberOfBytesRead"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL ReadFile(SafeHandle hFile, Span<byte> lpBuffer, out uint lpNumberOfBytesRead)
+        internal unsafe static BOOL ReadFile(SafeHandle hFile, Span<byte> lpBuffer, out uint lpNumberOfBytesRead)
         {
             fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
             {
@@ -668,7 +668,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpReturnLength">When this method returns, contains the size of the data returned in the <paramref
         /// name="lpJobObjectInformation"/> buffer, in bytes.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, SafeHGlobalHandle lpJobObjectInformation, out uint lpReturnLength)
+        internal unsafe static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, SafeHGlobalHandle lpJobObjectInformation, out uint lpReturnLength)
         {
             bool lpJobObjectInformationAddRef = false;
             try
@@ -747,7 +747,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpReturnSize">A pointer to a variable that receives the size of the attribute value. This parameter can be <see
         /// langword="null"/> if the size is not required.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL UpdateProcThreadAttribute(SafeProcThreadAttributeListHandle lpAttributeList, PROC_THREAD_ATTRIBUTE Attribute, SafeHGlobalHandle lpValue, IntPtr? lpPreviousValue = null, nuint? lpReturnSize = null)
+        internal unsafe static BOOL UpdateProcThreadAttribute(SafeProcThreadAttributeListHandle lpAttributeList, PROC_THREAD_ATTRIBUTE Attribute, SafeHGlobalHandle lpValue, IntPtr? lpPreviousValue = null, nuint? lpReturnSize = null)
         {
             bool lpAttributeListAddRef = false;
             bool lpValueAddRef = false;
@@ -789,7 +789,7 @@ namespace PSADT.LibraryInterfaces
         /// parameter can be null.</param>
         /// <returns>A <see cref="BOOL"/> indicating whether the operation succeeded.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer was too small and the value was truncated.</exception>
-        internal static unsafe BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, SafeMemoryHandle lpBuffer, out nuint lpNumberOfBytesRead)
+        internal unsafe static BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, SafeMemoryHandle lpBuffer, out nuint lpNumberOfBytesRead)
         {
             bool lpBufferAddRef = false;
             fixed (nuint* pNumberOfBytesRead = &lpNumberOfBytesRead)

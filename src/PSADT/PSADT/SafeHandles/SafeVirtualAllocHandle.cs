@@ -18,7 +18,7 @@ namespace PSADT.SafeHandles
         /// <param name="length"></param>
         /// <returns></returns>
         /// <exception cref="OutOfMemoryException"></exception>
-        internal static unsafe SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
+        internal unsafe static SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
         {
             var handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
             if (null == handle)

@@ -243,7 +243,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
+        internal unsafe static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
             lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
             NTSTATUS res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref lpVersionInformation));
@@ -435,7 +435,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ProcessInformation"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, SafeMemoryHandle ProcessInformation, out uint ReturnLength)
+        internal unsafe static NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, SafeMemoryHandle ProcessInformation, out uint ReturnLength)
         {
             if (ProcessHandle is null || ProcessHandle.IsClosed || ProcessHandle.IsInvalid)
             {

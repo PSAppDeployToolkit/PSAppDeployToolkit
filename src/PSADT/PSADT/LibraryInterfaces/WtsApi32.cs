@@ -30,7 +30,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pProcessInfo">When the method returns, contains a <see cref="SafeWtsExHandle"/> object that holds the enumerated process
         /// information. The caller is responsible for disposing of this handle to release the allocated resources.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static unsafe BOOL WTSEnumerateProcessesEx(HANDLE hServer, uint pLevel, uint SessionId, out SafeWtsExHandle pProcessInfo)
+        internal unsafe static BOOL WTSEnumerateProcessesEx(HANDLE hServer, uint pLevel, uint SessionId, out SafeWtsExHandle pProcessInfo)
         {
             PWSTR ppProcessInfo; uint pCount;
             if (pLevel > 1)
@@ -59,7 +59,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hServer"></param>
         /// <param name="pSessionInfo"></param>
         /// <returns></returns>
-        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
+        internal unsafe static BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
         {
             var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
             if (!res)
@@ -79,7 +79,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pBuffer"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
+        internal unsafe static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
             var res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out var ppBuffer, out uint bytesReturned);
             if (!res)
@@ -97,7 +97,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="phToken"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
+        internal unsafe static BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
         {
             HANDLE phTokenLocal;
             var res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
