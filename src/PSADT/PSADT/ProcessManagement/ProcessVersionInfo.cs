@@ -42,7 +42,7 @@ namespace PSADT.ProcessManagement
         {
             unsafe
             {
-                RT_VERSION = (uint)(nuint)PInvoke.RT_VERSION.Value;
+                RT_VERSION = (uint)PInvoke.RT_VERSION.Value;
             }
         }
 

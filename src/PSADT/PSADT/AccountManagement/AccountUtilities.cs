@@ -35,7 +35,7 @@ namespace PSADT.AccountManagement
                 CallerProcessId = (uint)currentProcess.Id;
             }
 
-            // Initialize the lookup table for well-known SIDs.
+            // Initialize the lookup table for well-known SIDs. Continue on any errors.
             Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
             foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>())
             {
@@ -45,7 +45,7 @@ namespace PSADT.AccountManagement
                 }
                 catch
                 {
-                    // Just fall through here. Some SIDs can't be created without a domain, etc.
+                    continue;
                 }
             }
             WellKnownSidLookupTable = new(wellKnownSids);
