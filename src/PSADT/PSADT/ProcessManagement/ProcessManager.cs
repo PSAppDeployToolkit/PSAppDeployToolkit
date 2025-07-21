@@ -223,7 +223,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Start tracking the process and allow it to resume execution.
-                    process = Process.GetProcessById((int)(processId = pi.dwProcessId)); _ = process; _ = process.Handle;
+                    process = GetProcessFromId((processId = pi.dwProcessId).Value);
                     commandLine = commandSpan.ToString().TrimRemoveNull();
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
@@ -279,8 +279,7 @@ namespace PSADT.ProcessManagement
                 {
                     hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
                     processId = Kernel32.GetProcessId(hProcess);
-                    process = Process.GetProcessById((int)processId);
-                    _ = process; _ = process.Handle;
+                    process = GetProcessFromId(processId.Value);
                     Kernel32.AssignProcessToJobObject(job, hProcess);
                     if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
@@ -789,6 +788,18 @@ namespace PSADT.ProcessManagement
             {
                 throw new InvalidOperationException($"Unable to create a new process via token. CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser].TrimEnd('.')}. CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken].TrimEnd('.')}.");
             }
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="Process"/> object that is associated with the specified process identifier.
+        /// </summary>
+        /// <param name="processId">The unique identifier of the process to retrieve.</param>
+        /// <returns>A <see cref="Process"/> object that represents the process with the specified identifier.</returns>
+        private static Process GetProcessFromId(uint processId)
+        {
+            var process = Process.GetProcessById((int)processId);
+            _ = process; _ = process.Handle;
+            return process;
         }
 
         /// <summary>
