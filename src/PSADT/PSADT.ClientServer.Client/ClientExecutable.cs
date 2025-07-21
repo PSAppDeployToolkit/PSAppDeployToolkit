@@ -654,7 +654,7 @@ namespace PSADT.ClientServer
                             logWriter.Flush();
                             try
                             {
-                                WindowTools.BringWindowToFront(window.WindowHandle);
+                                WindowTools.BringWindowToFront((HWND)window.WindowHandle);
                             }
                             catch (Exception ex)
                             {

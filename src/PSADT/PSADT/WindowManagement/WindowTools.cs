@@ -33,18 +33,17 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <param name="hWnd">A handle to the window.</param>
         /// <returns>The window text.</returns>
-        internal static string? GetWindowText(nint hWnd)
+        internal static string? GetWindowText(HWND hWnd)
         {
-            if (hWnd == IntPtr.Zero)
+            if (hWnd.IsNull)
             {
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
-            var hwnd = (HWND)hWnd;
-            int textLength = User32.GetWindowTextLength(hwnd);
+            int textLength = User32.GetWindowTextLength(hWnd);
             if (textLength > 0)
             {
                 Span<char> buffer = stackalloc char[textLength + 1];
-                int len = User32.GetWindowText(hwnd, buffer);
+                int len = User32.GetWindowText(hWnd, buffer);
                 var text = buffer.Slice(0, len).ToString().TrimRemoveNull();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
@@ -59,31 +58,30 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <param name="hWnd">A handle to the window.</param>
         /// <returns>True if the window was brought to the foreground; otherwise, false.</returns>
-        internal static void BringWindowToFront(nint hWnd)
+        internal static void BringWindowToFront(HWND hWnd)
         {
             // Throw if we have a null or zero handle.
-            if (hWnd == IntPtr.Zero)
+            if (hWnd.IsNull)
             {
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
-            var hwnd = (HWND)hWnd;
 
             // Restore the window if it's minimized.
-            if (PInvoke.IsIconic(hwnd))
+            if (PInvoke.IsIconic(hWnd))
             {
-                PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE);
+                PInvoke.ShowWindow(hWnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE);
             }
 
             // Bring the window to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
-            uint windowThreadId = User32.GetWindowThreadProcessId(hwnd, out _);
+            uint windowThreadId = User32.GetWindowThreadProcessId(hWnd, out _);
             User32.AttachThreadInput(currentThreadId, windowThreadId, true);
             try
             {
-                User32.BringWindowToTop(hwnd);
-                User32.SetForegroundWindow(hwnd);
-                User32.SetActiveWindow(hwnd);
-                User32.SetFocus(hwnd);
+                User32.BringWindowToTop(hWnd);
+                User32.SetForegroundWindow(hWnd);
+                User32.SetActiveWindow(hWnd);
+                User32.SetFocus(hWnd);
             }
             finally
             {
@@ -96,13 +94,13 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <param name="hWnd">A handle to the window.</param>
         /// <returns>The process ID.</returns>
-        internal static uint GetWindowThreadProcessId(nint hWnd)
+        internal static uint GetWindowThreadProcessId(HWND hWnd)
         {
-            if (hWnd == IntPtr.Zero)
+            if (hWnd.IsNull)
             {
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
-            User32.GetWindowThreadProcessId((HWND)hWnd, out uint processId);
+            User32.GetWindowThreadProcessId(hWnd, out uint processId);
             return processId;
         }
     }
