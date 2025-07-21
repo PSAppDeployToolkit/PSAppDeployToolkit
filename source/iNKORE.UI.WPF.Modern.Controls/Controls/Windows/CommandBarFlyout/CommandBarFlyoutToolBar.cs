@@ -693,6 +693,17 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
             }
         }
 
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if (e.Key is Key.Up && m_moreButton.IsFocused && PrimaryCommands.Count > 0 && PrimaryCommands[PrimaryCommands.Count - 1] is
+                    Control toFocusCommand)
+            {
+                e.Handled = FocusControl(toFocusCommand, m_moreButton, true);
+            }
+
+            base.OnPreviewKeyDown(e);
+        }
+
         protected override void OnKeyDown(KeyEventArgs args)
         {
             if (args.Handled)

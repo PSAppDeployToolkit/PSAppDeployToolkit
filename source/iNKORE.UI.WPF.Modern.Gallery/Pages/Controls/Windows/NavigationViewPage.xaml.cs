@@ -435,7 +435,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
     <ui:NavigationView.MenuItems>
         <ui:NavigationViewItem
             Content=""Menu Item1""
-            Tag=""SamplePage1""
+            Tag=""SamplePage1"">
             <ui:NavigationViewItem.Icon>
                 <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Play}}""/>
             </ui:NavigationViewItem.Icon>

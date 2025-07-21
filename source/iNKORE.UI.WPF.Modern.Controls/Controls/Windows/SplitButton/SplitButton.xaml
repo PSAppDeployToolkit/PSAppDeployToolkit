@@ -102,9 +102,12 @@
 
                         <Border
                             x:Name="PrimaryBackgroundGrid"
+                            Grid.ColumnSpan="2"
                             Background="{TemplateBinding Background}"
                             CornerRadius="{TemplateBinding CornerRadius,
                                                            Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+
+                        <Border x:Name="DividerBackgroundGrid" Width="1" Background="{DynamicResource SplitButtonBorderBrushDivider}" Grid.Column="1" />
 
                         <Border
                             x:Name="SecondaryBackgroundGrid"

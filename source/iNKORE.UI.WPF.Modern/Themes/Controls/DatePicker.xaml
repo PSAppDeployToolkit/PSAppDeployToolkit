@@ -191,6 +191,7 @@
                             Grid.Row="1"
                             Grid.Column="2"
                             AllowsTransparency="True"
+                            CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                             Placement="Bottom"
                             StaysOpen="False">
                             <Popup.PlacementRectangle>

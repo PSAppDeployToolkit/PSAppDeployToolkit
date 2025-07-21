@@ -103,7 +103,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Community
     </ui:SettingsCard>
 
     <ui:SettingsCard Header=""This is a card with a Header only"" 
-        IsEnabled=""{EnableToggle1.IsOn}"">
+        IsEnabled=""{EnableToggle1.IsOn}"" />
 </ikw:SimpleStackPanel>
 ";
 

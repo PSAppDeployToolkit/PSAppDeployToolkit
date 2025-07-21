@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +21,7 @@ using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 using iNKORE.UI.WPF.Modern.Gallery.Helpers;
 using System.Reflection;
 using iNKORE.UI.WPF.Modern.Helpers;
+using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Helpers;
 using iNKORE.UI.WPF.Modern.Gallery.DataModel;
 
@@ -37,6 +38,10 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
         {
             this.InitializeComponent();
             Loaded += OnSettingsPageLoaded;
+            navigationLocation.Loaded += NavigationLocation_Loaded;
+
+            gitCloneTextBox.Text = $"git clone {ThemeManager.Link_GithubRepo}";
+
 
             //if (ElementSoundPlayer.State == ElementSoundPlayerState.On)
             //    soundToggle.IsOn = true;
@@ -60,46 +65,55 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
         private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
         {
             var currentTheme = ThemeHelper.RootTheme.ToString();
-            (ThemePanel.Children.Cast<RadioButton>().FirstOrDefault(c => c?.Tag?.ToString() == currentTheme)).IsChecked = true;
-
-            //NavigationRootPage navigationRootPage = NavigationRootPage.GetForElement(this);
-            //if (navigationRootPage != null)
-            //{
-            //    if (navigationRootPage.NavigationView.PaneDisplayMode == NavigationViewPaneDisplayMode.Auto)
-            //    {
-            //        navigationLocation.SelectedIndex = 0;
-            //    }
-            //    else
-            //    {
-            //        navigationLocation.SelectedIndex = 1;
-            //    }
-            //}
+            foreach (ComboBoxItem item in themeMode.Items)
+            {
+                if (item.Tag?.ToString() == currentTheme)
+                {
+                    themeMode.SelectedItem = item;
+                    return;
+                }
+            }
+            themeMode.SelectedIndex = 2;
         }
 
-        private void OnThemeRadioButtonChecked(object sender, RoutedEventArgs e)
+        private void themeMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectTheme = ((RadioButton)sender)?.Tag?.ToString();
-
-            if(selectTheme != null)
+            if (themeMode.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string tag)
             {
-                ThemeHelper.RootTheme = App.GetEnum<ElementTheme>(selectTheme);
+                ThemeHelper.RootTheme = App.GetEnum<ElementTheme>(tag);
             }
         }
 
-        private void OnThemeRadioButtonKeyDown(object sender, KeyEventArgs e)
+        // private void OnThemeRadioButtonKeyDown(object sender, KeyEventArgs e)
+        // {
+        //     if (e.Key == Key.Up)
+        //     {
+        //         NavigationRootPage.GetForElement(this).PageHeader.Focus();
+        //     }
+        // }
+
+        // private void soundToggle_Toggled(object sender, RoutedEventArgs e)
+        // {
+            
+        // }
+
+        // private void spatialSoundBox_Toggled(object sender, RoutedEventArgs e)
+        // {
+            
+        // }
+
+        private void toCloneRepoCard_Click(object sender, RoutedEventArgs e)
         {
-            if (e.Key == Key.Up)
-            {
-                NavigationRootPage.GetForElement(this).PageHeader.Focus();
-            }
+            // pulls in exactly "git clone https://…"
+            Clipboard.SetText(gitCloneTextBox.Text);
         }
-        //private void spatialSoundBox_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    if (soundToggle.IsOn == true)
-        //    {
-        //        //ElementSoundPlayer.SpatialAudioMode = ElementSpatialAudioMode.On;
-        //    }
-        //}
+
+
+        private void bugRequestCard_Click(object sender, RoutedEventArgs e)
+        {
+            var url = "https://github.com/iNKORE-NET/UI.WPF.Modern/issues/new/choose";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+        }
 
         //private void soundToggle_Toggled(object sender, RoutedEventArgs e)
         //{
@@ -131,9 +145,33 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
         //    }
         //}
 
+        private void NavigationLocation_Loaded(object sender, RoutedEventArgs e)
+        {
+            var navView = NavigationRootPage.Current.NavigationView;
+
+            navigationLocation.SelectedIndex =
+                (navView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top) ? 1 : 0;
+        }
+
         private void navigationLocation_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //NavigationOrientationHelper.IsLeftModeForElement(navigationLocation.SelectedIndex == 0, this);
+            var root = NavigationRootPage.Current;
+            var navView = root.NavigationView;
+            bool isLeft = navigationLocation.SelectedIndex == 0;
+
+            navView.PaneDisplayMode = isLeft 
+                ? NavigationViewPaneDisplayMode.Left 
+                : NavigationViewPaneDisplayMode.Top;
+
+            if (!isLeft)
+            {
+                double offset = root.AppTitleBar.ActualHeight + 49;
+                navView.Margin = new Thickness(0, offset, 0, 0);
+            }
+            else
+            {
+                navView.Margin = new Thickness(0);
+            }
         }
 
         private async void FolderButton_Click(object sender, RoutedEventArgs e)
@@ -163,6 +201,12 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
         private async void soundPageHyperlink_Click(object sender, RoutedEventArgs args)
         {
             this.Frame.Navigate(ItemPage.Create(await ControlInfoDataSource.Instance.GetItemAsync(await ControlInfoDataSource.Instance.GetRealmAsync("Windows"), "Sound")));
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
     }
 }

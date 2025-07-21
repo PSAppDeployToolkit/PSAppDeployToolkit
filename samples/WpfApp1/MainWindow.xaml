@@ -6,18 +6,31 @@
         xmlns:local="clr-namespace:WpfApp1" xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern" 
         xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="MainWindow" Height="540" Width="800"
         ui:ThemeManager.IsThemeAware="True"
         ui:WindowHelper.UseModernWindowStyle="True"
         Loaded="Window_Loaded" Background="{DynamicResource {x:Static ui:ThemeKeys.AcrylicBackgroundFillColorDefaultBrushKey}}">
     <Canvas>
-        <Button x:Name="Button_MessageBox" Click="Button_MessageBox_Click" Canvas.Left="152" Canvas.Top="145" VerticalAlignment="Top">
-            <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
-        </Button>
 
-        <ikw:SimpleStackPanel Canvas.Left="306" Canvas.Top="49" VerticalAlignment="Top" Spacing="20">
-            <ui:ProjectBadge />
-            <ui:ProjectBadge Style="{DynamicResource {x:Static ui:ThemeKeys.ProjectBadgeShieldStyleKey}}"/>
-        </ikw:SimpleStackPanel>
+        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="50" Canvas.Top="34" VerticalScrollBarVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Button x:Name="Button_MessageBox" Click="Button_MessageBox_Click" Height="1000">
+                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
+            </Button>
+        </ui:ScrollViewerEx>
+        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="367" Canvas.Top="34" VerticalScrollBarVisibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Button x:Name="Button_MessageBox1" Click="Button_MessageBox_Click" Height="1000">
+                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
+            </Button>
+        </ui:ScrollViewerEx>
+        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="51" Canvas.Top="253" VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Button x:Name="Button_MessageBox2" Click="Button_MessageBox_Click" Height="1000">
+                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
+            </Button>
+        </ui:ScrollViewerEx>
+        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="368" Canvas.Top="256" VerticalScrollBarVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Button x:Name="Button_MessageBox3" Click="Button_MessageBox_Click" Height="40">
+                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
+            </Button>
+        </ui:ScrollViewerEx>
     </Canvas>
 </Window>

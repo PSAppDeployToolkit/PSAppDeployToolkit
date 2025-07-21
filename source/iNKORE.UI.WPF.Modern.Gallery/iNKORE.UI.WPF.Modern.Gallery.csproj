@@ -80,6 +80,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\iNKORE.UI.WPF.Modern\Properties\AssemblyInfoCommon.cs" Link="Properties\AssemblyInfoCommon.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="..\..\assets\icons\WpfLibrary_256w.png" Link="Assets\WpfLibrary_256w.png" />
     <Content Include="Assets\AppIcon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

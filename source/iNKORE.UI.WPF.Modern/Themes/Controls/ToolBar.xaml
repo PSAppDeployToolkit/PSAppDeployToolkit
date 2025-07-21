@@ -536,6 +536,7 @@
                                 <Popup
                                     x:Name="OverflowPopup"
                                     AllowsTransparency="True"
+                                    CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                                     Focusable="False"
                                     IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}"
                                     Placement="Bottom"

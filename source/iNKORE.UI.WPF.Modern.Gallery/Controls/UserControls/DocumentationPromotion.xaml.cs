@@ -35,7 +35,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Controls.UserControls
             App.BrowseWeb(ThemeManager.Link_NugetPackage);
         }
 
-        private void Hyperlink_DoucmentationRepo_Click(object sender, RoutedEventArgs e)
+        private void Hyperlink_DocumentationRepo_Click(object sender, RoutedEventArgs e)
         {
             App.BrowseWeb("https://github.com/iNKORE-NET/Documentation/tree/main/data/docs/ui.wpf.modern");
         }

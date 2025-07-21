@@ -79,22 +79,19 @@
                         <!--  main  -->
                         <ikw:ClippedContent CornerRadius="{TemplateBinding CornerRadius}">
                             <Canvas>
-                                <ContentControl chelper:ControlHelper.CornerRadius="{TemplateBinding CornerRadius}">
+                                <ContentControl chelper:ControlHelper.CornerRadius="{TemplateBinding CornerRadius}" CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}">
                                     <ContentControl.Template>
                                         <ControlTemplate TargetType="ContentControl">
                                             <Border Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Padding="{TemplateBinding Padding}">
-                                                <AdornerDecorator>
+                                                <AdornerDecorator CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}">
                                                     <ContentPresenter/>
                                                 </AdornerDecorator>
                                             </Border>
                                         </ControlTemplate>
                                     </ContentControl.Template>
-                                    <ContentControl.CacheMode>
-                                        <BitmapCache RenderAtScale="0.2" />
-                                    </ContentControl.CacheMode>
                                     <Border
                                     x:Name="Rect"
                                     Width="{Binding Target.ActualWidth, RelativeSource={RelativeSource Mode=TemplatedParent}}"

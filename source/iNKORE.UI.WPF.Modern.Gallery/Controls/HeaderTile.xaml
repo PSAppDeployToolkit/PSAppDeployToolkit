@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Controls.HeaderTile"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,15 +6,17 @@
     xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Width="230"
+    Height="230"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
-    <Grid Margin="0,0,12,12">
-        <Grid.Resources>
+    <Border CornerRadius="8" Margin="0,0,12,12"
+        Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+        BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}">
+        <FrameworkElement.Resources>
             <ResourceDictionary>
-                <ResourceDictionary.MergedDictionaries>
+                <!--<ResourceDictionary.MergedDictionaries>
                     <ui:ThemeResources CanBeAccessedAcrossThreads="{x:Static local:App.IsMultiThreaded}">
                         <ui:ThemeResources.ThemeDictionaries>
                             <ResourceDictionary x:Key="Light" ui:ThemeDictionary.Key="Light">
@@ -37,46 +39,82 @@
                             </ResourceDictionary>
                         </ui:ThemeResources.ThemeDictionaries>
                     </ui:ThemeResources>
-                </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary.MergedDictionaries>-->
+
+                <SolidColorBrush x:Key="HyperlinkButtonBorderBrush" Color="{DynamicResource ControlStrokeColorDefault}" />
+                <SolidColorBrush x:Key="HyperlinkButtonBorderBrushPointerOver" Color="{DynamicResource ControlStrokeColorSecondary}" />
+                <SolidColorBrush x:Key="HyperlinkButtonBorderBrushPressed" Color="{DynamicResource ControlStrokeColorDefault}" />
+                <SolidColorBrush x:Key="HyperlinkButtonBorderBrushDisabled" Color="{DynamicResource ControlStrokeColorDefault}" />
+
+                
             </ResourceDictionary>
-        </Grid.Resources>
+        </FrameworkElement.Resources>
 
         <ui:HyperlinkButton
-            Height="150"
-            Padding="-1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
             NavigateUri="{Binding Link, Mode=OneWay}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="102" />
+                    <RowDefinition Height="75" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Image
-                    HorizontalAlignment="Center"
-                    Source="{Binding Source, Mode=OneWay}"
-                    Stretch="UniformToFill" />
 
-                <Grid
+                <ContentControl
+                    Grid.Row="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="14,20,0,0">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Setter Property="Content" Value="{Binding Icon, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Icon, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="{x:Null}">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <Viewbox Stretch="Uniform" Width="56" Height="56">
+                                                    <Image Source="{Binding Source, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                           Stretch="Uniform"/>
+                                                </Viewbox>
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Content" Value="{Binding Source, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+
+                <StackPanel
                     Grid.Row="1"
-                    Height="48"
-                    HorizontalAlignment="Stretch"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    Opacity="1">
+                    Orientation="Vertical"
+                    Margin="14,15,20,0">
                     <TextBlock
-                        Margin="16,0"
-                        VerticalAlignment="Center"
+                        x:Name="TitleText"
+                        FontSize="18"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Style="{DynamicResource BodyStrongTextBlockStyle}"
-                        Text="{Binding Title, Mode=OneWay}"
-                        TextWrapping="Wrap" />
-                    <ui:FontIcon
-                        Margin="12"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Glyph="&#xE8A7;" />
-                </Grid>
+                        Style="{DynamicResource BodyTextBlockStyle}"
+                        Text="{Binding Title, Mode=OneWay}" />
+                    <TextBlock
+                        Margin="0,5,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{DynamicResource CaptionTextBlockStyle}"
+                        Text="{Binding Description, Mode=OneWay}" />
+                </StackPanel>
+
+                <ui:FontIcon
+                    Grid.RowSpan="2"
+                    Margin="0,0,0,5"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    FontSize="16"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Glyph="&#xE8A7;" />
             </Grid>
         </ui:HyperlinkButton>
-    </Grid>
+    </Border>
 </UserControl>

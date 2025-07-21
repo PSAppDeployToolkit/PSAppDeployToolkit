@@ -70,6 +70,19 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
 
         #endregion
 
+        #region ResizeBorderThickness
+
+        public static readonly DependencyProperty ResizeBorderThicknessProperty = TitleBar.ResizeBorderThicknessProperty.AddOwner(typeof(TitleBarControl));
+
+        // See: https://github.com/iNKORE-NET/UI.WPF.Modern/issues/153
+        public Thickness ResizeBorderThickness
+        {
+            get => (Thickness)GetValue(ResizeBorderThicknessProperty);
+            set => SetValue(ResizeBorderThicknessProperty, value);
+        }
+
+        #endregion
+
         //#region MaximizeButtonTouchOptimize
 
         //public static readonly DependencyProperty MaximizeButtonTouchOptimizeProperty =

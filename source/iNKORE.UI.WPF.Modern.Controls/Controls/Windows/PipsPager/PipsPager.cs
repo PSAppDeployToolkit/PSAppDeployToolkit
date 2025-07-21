@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -262,7 +263,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
                     pipSize = m_defaultPipSize.Width;
                     changeViewFunc = (double offset) =>
                     {
-                        scrollViewer.ChangeView(offset, null, null, true);
+                        scrollViewer.ChangeView(offset, null, null, false);
                     };
                 }
                 else
@@ -270,7 +271,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
                     pipSize = m_defaultPipSize.Height;
                     changeViewFunc = (double offset) =>
                     {
-                        scrollViewer.ChangeView(null, offset, null, true);
+                        scrollViewer.ChangeView(null, offset, null, false);
                     };
                 }
                 int maxVisualIndicators = MaxVisiblePips;

@@ -38,7 +38,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 
         public string Example1Xaml => $@"
 <ui:MediaPlayerElement AreTransportControlsEnabled=""True"" AutoPlay=""False"" Tag=""Assets/SampleMedia/ladybug.wmv"" 
- Source=""{{Binding Tag, RelativeSource={{RelativeSource Self}}, Converter={{StaticResource RelativeToAbsoluteConverter}}}}"" />
+    Source=""{{Binding Tag, RelativeSource={{RelativeSource Self}}, Converter={{StaticResource RelativeToAbsoluteConverter}}}}"" />
 ";
 
         public string Example2Xaml => $@"

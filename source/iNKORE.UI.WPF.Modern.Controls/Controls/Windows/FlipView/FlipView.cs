@@ -3,15 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using iNKORE.UI.WPF.Modern.Common;
 
 namespace iNKORE.UI.WPF.Modern.Controls
@@ -725,6 +728,8 @@ namespace iNKORE.UI.WPF.Modern.Controls
         private const string PART_Presenter = "PART_Presenter";
         private const string PART_UpButton = "PART_UpButton";
         private const string PART_Index = "PART_Index";
+        private const int FLIP_VIEW_BUTTONS_SHOW_DURATION_MS = 3_000;
+
         /// <summary>
         /// To counteract the double Loaded event issue.
         /// </summary>
@@ -744,6 +749,10 @@ namespace iNKORE.UI.WPF.Modern.Controls
         private Storyboard showBannerStoryboard;
         private Storyboard showControlStoryboard;
         private object savedBannerText;
+        private DispatcherTimer m_tpButtonsFadeOutTimer;
+        private bool m_showNavigationButtons;
+        private bool m_keepNavigationButtonsVisible;
+        private bool m_ShouldShowFocusRect;
 
         static FlipView()
         {
@@ -831,6 +840,8 @@ namespace iNKORE.UI.WPF.Modern.Controls
                         SelectedIndex = Items.Count - 1;
                     }
                 }
+
+                ResetButtonsFadeOutTimer();
             }
             finally
             {
@@ -862,6 +873,8 @@ namespace iNKORE.UI.WPF.Modern.Controls
                         SelectedIndex = 0;
                     }
                 }
+
+                ResetButtonsFadeOutTimer();
             }
             finally
             {
@@ -935,21 +948,29 @@ namespace iNKORE.UI.WPF.Modern.Controls
             if (forwardButton != null)
             {
                 forwardButton.Click += NextButtonClick;
+                forwardButton.MouseEnter += NavigationButtonMouseEnter;
+                forwardButton.MouseLeave += NavigationButtonMouseLeave;
             }
 
             if (backButton != null)
             {
                 backButton.Click += PrevButtonClick;
+                backButton.MouseEnter += NavigationButtonMouseEnter;
+                backButton.MouseLeave += NavigationButtonMouseLeave;
             }
 
             if (upButton != null)
             {
                 upButton.Click += PrevButtonClick;
+                upButton.MouseEnter += NavigationButtonMouseEnter;
+                upButton.MouseLeave += NavigationButtonMouseLeave;
             }
 
             if (downButton != null)
             {
                 downButton.Click += NextButtonClick;
+                downButton.MouseEnter += NavigationButtonMouseEnter;
+                downButton.MouseLeave += NavigationButtonMouseLeave;
             }
 
             if (bannerLabel != null)
@@ -964,6 +985,20 @@ namespace iNKORE.UI.WPF.Modern.Controls
                     indexListBox.SelectionChanged += OnIndexListBoxSelectionChanged;
                 }
             });
+        }
+
+        private void NavigationButtonMouseEnter(object sender, MouseEventArgs e)
+        {
+            m_showNavigationButtons = true;
+            m_keepNavigationButtonsVisible = true;
+
+            UpdateVisualState();
+        }
+
+        private void NavigationButtonMouseLeave(object sender, MouseEventArgs e)
+        {
+            m_keepNavigationButtonsVisible = false;
+            ResetButtonsFadeOutTimer();
         }
 
         private void OnIndexListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -996,10 +1031,10 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
             var isHorizontal = Orientation == Orientation.Horizontal;
             var isVertical = Orientation == Orientation.Vertical;
-            var canGoPrev = (e.Key == Key.Left && isHorizontal && backButton != null && backButton.Visibility == Visibility.Visible && backButton.IsEnabled)
-                            || (e.Key == Key.Up && isVertical && upButton != null && upButton.Visibility == Visibility.Visible && upButton.IsEnabled);
-            var canGoNext = (e.Key == Key.Right && isHorizontal && forwardButton != null && forwardButton.Visibility == Visibility.Visible && forwardButton.IsEnabled)
-                            || (e.Key == Key.Down && isVertical && downButton != null && downButton.Visibility == Visibility.Visible && downButton.IsEnabled);
+            var canGoPrev = (e.Key == Key.Left && isHorizontal && backButton != null && backButton.IsEnabled)
+                            || (e.Key == Key.Up && isVertical && upButton != null && upButton.IsEnabled);
+            var canGoNext = (e.Key == Key.Right && isHorizontal && forwardButton != null && forwardButton.IsEnabled)
+                            || (e.Key == Key.Down && isVertical && downButton != null && downButton.IsEnabled);
 
             if (canGoPrev)
             {
@@ -1204,7 +1239,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 SelectedIndex = 0;
             }
 
-            DetectControlButtonsStatus();
+            UpdateVisualState(false);
 
             ShowBanner();
 
@@ -1222,6 +1257,46 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
             loaded = false;
         }
+
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            HandleVisibilityChanged(e);
+            HandleIsEnabledChanged(e);
+        }
+
+        private void HandleVisibilityChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property != VisibilityProperty)
+            {
+                return;
+            }
+
+            if (e.NewValue is not Visibility.Visible)
+            {
+                m_ShouldShowFocusRect = false;
+                HideButtonsImmediately();
+            }
+
+            UpdateVisualState();
+        }
+
+        private void HandleIsEnabledChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property != IsEnabledProperty)
+            {
+                return;
+            }
+
+            if (e.NewValue is not true)
+            {
+                m_ShouldShowFocusRect = false;
+                HideButtonsImmediately();
+            }
+
+            UpdateVisualState();
+        }
+
 
         /// <summary>
         /// Gets the navigation buttons.
@@ -1279,5 +1354,209 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 bannerGrid?.BeginStoryboard(showBannerStoryboard);
             }
         }
+
+        private void EnsureButtonsFadeOutTimer()
+        {
+            if (m_tpButtonsFadeOutTimer is null)
+            {
+                var spNewDispatcherTimer = new DispatcherTimer()
+                {
+                    Interval = TimeSpan.FromMilliseconds(FLIP_VIEW_BUTTONS_SHOW_DURATION_MS),
+                };
+
+                spNewDispatcherTimer.Tick += ButtonsFadeOutTimerTickHandler;
+                m_tpButtonsFadeOutTimer = spNewDispatcherTimer;
+            }
+        }
+
+        private void ResetButtonsFadeOutTimer()
+        {
+            if (!m_showNavigationButtons)
+            {
+                EnsureButtonsFadeOutTimer();
+                m_showNavigationButtons = true;
+                UpdateVisualState();
+            }
+
+            if (m_tpButtonsFadeOutTimer is not null)
+            {
+                m_tpButtonsFadeOutTimer.Stop();
+                m_tpButtonsFadeOutTimer.Start();
+            }
+        }
+
+        private void HideButtonsImmediately()
+        {
+            if (m_showNavigationButtons)
+            {
+                if (m_tpButtonsFadeOutTimer is not null)
+                {
+                    m_tpButtonsFadeOutTimer.Stop();
+                }
+
+                if (!m_keepNavigationButtonsVisible)
+                {
+                    m_showNavigationButtons = false;
+                    UpdateVisualState();
+                }
+            }
+        }
+
+        private void UpdateVisualState(bool useTransitions = false)
+        {
+            // Apply the new visibilities
+
+            bool isVertical = Orientation is Orientation.Vertical;
+            var nothingPrevious = !(CircularNavigation || (Items.Count > 0 && SelectedIndex > 0));
+            var nothingNext = !(CircularNavigation || (Items.Count > 0 && SelectedIndex < Items.Count - 1));
+
+            if (backButton != null)
+            {
+                backButton.Visibility = (!m_showNavigationButtons || nothingPrevious || isVertical)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+
+            if (upButton != null)
+            {
+                upButton.Visibility = (!m_showNavigationButtons || nothingPrevious || !isVertical)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+
+            if (forwardButton != null)
+            {
+                forwardButton.Visibility = (!m_showNavigationButtons || nothingNext || isVertical)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+
+            if (downButton != null)
+            {
+                downButton.Visibility = (!m_showNavigationButtons || nothingNext || !isVertical)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+        }
+
+        private void ButtonsFadeOutTimerTickHandler(object sender, EventArgs e)
+        {
+            HideButtonsImmediately();
+        }
+
+        protected override void OnMouseEnter(MouseEventArgs e)
+        {
+            base.OnMouseEnter(e);
+
+            if (e.Device is TouchDevice)
+            {
+                HideButtonsImmediately();
+            }
+            else
+            {
+                ResetButtonsFadeOutTimer();
+            }
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+
+            if (e.Device is not TouchDevice)
+            {
+                ResetButtonsFadeOutTimer();
+            }
+        }
+
+        protected override void OnLostMouseCapture(MouseEventArgs e)
+        {
+            base.OnLostMouseCapture(e);
+
+            if (e.Device is TouchDevice)
+            {
+                m_ShouldShowFocusRect = false;
+                UpdateVisualState(true);
+            }
+        }
+
+        protected override void OnGotFocus(RoutedEventArgs e)
+        {
+            base.OnGotFocus(e);
+            m_ShouldShowFocusRect = false;
+        }
+
+        protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
+        {
+            base.OnGotKeyboardFocus(e);
+
+            m_ShouldShowFocusRect = true;
+            ResetButtonsFadeOutTimer();
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            m_ShouldShowFocusRect = false;
+            UpdateVisualState(true);
+        }
     }
+    
+    public class DoubleValueHolder : DependencyObject
+    {
+        public static readonly DependencyProperty XProperty =
+        DependencyProperty.Register("X", typeof(double), typeof(DoubleValueHolder), new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty YProperty =
+            DependencyProperty.Register("Y", typeof(double), typeof(DoubleValueHolder), new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty ZProperty =
+            DependencyProperty.Register("Z", typeof(double), typeof(DoubleValueHolder), new PropertyMetadata(0.0));
+
+        public double X
+        {
+            get { return (double)GetValue(XProperty); }
+            set { SetValue(XProperty, value); }
+        }
+
+        public double Y
+        {
+            get { return (double)GetValue(YProperty); }
+            set { SetValue(YProperty, value); }
+        }
+
+        public double Z
+        {
+            get { return (double)GetValue(ZProperty); }
+            set { SetValue(ZProperty, value); }
+        }
+    }
+
+    public class MultiplyConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var first = values[0];
+
+            if (first is not double result)
+            {
+                return values;
+            }
+
+            for (int index = 1; index < values.Length; index++)
+            {
+                if (values[index] is double current)
+                {
+                    result *= current;
+                }
+            }
+
+            return result;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
 }

@@ -1212,9 +1212,9 @@
     <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
     <m:StaticResource x:Key="FlipViewBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
-    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
 
     <m:StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
     <m:StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
@@ -1615,7 +1615,7 @@
     <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,0</Thickness>
     <!--<Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>-->
     <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
-    <Thickness x:Key="MenuFlyoutSeparatorThemePadding">12,4,12,4</Thickness>
+    <!--<Thickness x:Key="MenuFlyoutSeparatorThemePadding">12,4,12,4</Thickness>-->
     <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
     <Thickness x:Key="MenuFlyoutItemThemePadding">11,6,11,7</Thickness>
 
@@ -1926,7 +1926,7 @@
     <m:StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <m:StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="SystemControlHighlightAccentBrush" />
     <SolidColorBrush x:Key="RatingControlDisabledSelectedForeground" Color="{m:ThemeResource SystemColorGrayTextColor}" />
-    <m:StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <m:StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush" />
     <common:RatingItemFontInfo
         x:Key="RatingControlDefaultFontInfo"
         Glyph="&#xE735;"
@@ -2309,6 +2309,8 @@
     <m:StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="SystemColorWindowTextColorBrush" />
     <m:StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="SystemColorHighlightColorBrush" />
     <Color x:Key="TimePickerFlyoutPresenterHighlightForegroundColor">Transparent</Color>
+    <SolidColorBrush x:Key="TimePickerFlyoutPresenterHighlightForegroundBrush" Color="{m:ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}" />
+
     <!--  This is a custom brush with opacity so not pointing directly to a system brush  -->
     <m:StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     <!--  Legacy brushes  -->
@@ -2427,6 +2429,35 @@
     <m:StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
     <m:StaticResource x:Key="ToggleSwitchKnobStrokeOn" ResourceKey="SystemControlTransparentBrush" />
 
+    <!--  Resources for Datetime Picker  -->
+    <m:StaticResource x:Key="DatePickerSpacerFill" ResourceKey="SystemColorButtonTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemColorHighlightColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="SystemColorWindowColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SystemColorHighlightTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="SystemColorButtonTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="SystemColorHighlightColorBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemColorWindowColorBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="SystemColorWindowTextColorBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="SystemColorHighlightColorBrush" />
+    <Color x:Key="DatePickerFlyoutPresenterHighlightForegroundColor">Transparent</Color>
+    <m:StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    <SolidColorBrush x:Key="DatePickerHeaderForegroundThemeBrush" Color="{m:ThemeResource SystemColorButtonTextColor}" />
+    <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="{m:ThemeResource SystemColorButtonTextColor}" />
+    
     <!--  Legacy Brushes  -->
     <SolidColorBrush x:Key="ToggleSwitchCurtainBackgroundThemeBrush" Color="{m:ThemeResource SystemColorHighlightColor}" />
     <SolidColorBrush x:Key="ToggleSwitchCurtainDisabledBackgroundThemeBrush" Color="{m:ThemeResource SystemColorButtonFaceColor}" />

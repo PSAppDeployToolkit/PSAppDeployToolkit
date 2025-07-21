@@ -284,7 +284,6 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
         #endregion
 
-
         private ContentPresenter HeaderContentPresenter { get; set; }
 
         private FrameworkElement SwitchKnobBounds { get; set; }
@@ -305,7 +304,10 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 SwitchThumb.DragStarted -= OnSwitchThumbDragStarted;
                 SwitchThumb.DragDelta -= OnSwitchThumbDragDelta;
                 SwitchThumb.DragCompleted -= OnSwitchThumbDragCompleted;
-                SwitchThumb.ClearValue(CacheModeProperty);
+                if (ShadowAssist.UseBitmapCache)
+                {
+                    SwitchThumb.ClearValue(CacheModeProperty);
+                }
             }
 
             base.OnApplyTemplate();
@@ -325,16 +327,19 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 SwitchThumb.DragDelta += OnSwitchThumbDragDelta;
                 SwitchThumb.DragCompleted += OnSwitchThumbDragCompleted;
 
-                if (_bitmapCache == null)
+                if (ShadowAssist.UseBitmapCache)
                 {
+                    if (_bitmapCache == null)
+                    {
 #if NET462_OR_NEWER
-                    _bitmapCache = new BitmapCache(VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                        _bitmapCache = new BitmapCache(VisualTreeHelper.GetDpi(this).PixelsPerDip);
 #else
-                    _bitmapCache = new BitmapCache(2);
+                        _bitmapCache = new BitmapCache(2);
 #endif
-                }
+                    }
 
-                SwitchThumb.CacheMode = _bitmapCache;
+                    SwitchThumb.CacheMode = _bitmapCache;
+                }
             }
 
             UpdateHeaderContentPresenterVisibility();
@@ -383,7 +388,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
         {
             base.OnDpiChanged(oldDpi, newDpi);
 
-            if (_bitmapCache != null)
+            if (ShadowAssist.UseBitmapCache && _bitmapCache != null)
             {
                 _bitmapCache.RenderAtScale = newDpi.PixelsPerDip;
             }

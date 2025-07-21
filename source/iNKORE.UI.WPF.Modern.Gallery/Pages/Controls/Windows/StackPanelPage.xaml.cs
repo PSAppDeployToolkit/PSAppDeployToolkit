@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using iNKORE.UI.WPF.Modern.Controls;
 
@@ -16,8 +16,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             UpdateExampleCode();
         }
 
-
-        private void NumberBox_Spacing_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        private void Slider_Spacing_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             UpdateExampleCode();
         }
@@ -26,7 +25,6 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         {
             UpdateExampleCode();
         }
-
 
         #region Example Code
 
@@ -37,10 +35,9 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             Example1.Xaml = Example1Xaml;
         }
 
-
         public string Example1Xaml => $@"
 <ikw:SimpleStackPanel x:Name=""Control1""
-    Orientation=""{RadioButtons_Orientation.SelectedItem}"" Spacing=""{NumberBox_Spacing.Value}"">
+    Orientation=""{RadioButtons_Orientation.SelectedItem}"" Spacing=""{Slider_Spacing.Value}"">
     <ikw:SimpleStackPanel.Resources>
         <Style TargetType=""Rectangle"">
             <Setter Property=""Height"" Value=""40"" />

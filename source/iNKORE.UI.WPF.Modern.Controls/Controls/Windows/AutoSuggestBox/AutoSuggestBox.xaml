@@ -5,7 +5,8 @@
     xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
     xmlns:primitives="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Primitives"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common;assembly=iNKORE.UI.WPF.Modern">
 
     <Style x:Key="DefaultAutoSuggestBoxStyle" TargetType="local:AutoSuggestBox">
         <Setter Property="VerticalAlignment" Value="Top" />
@@ -64,6 +65,7 @@
                         <Popup
                             x:Name="SuggestionsPopup"
                             AllowsTransparency="True"
+                            CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                             IsOpen="{Binding IsSuggestionListOpen, RelativeSource={RelativeSource TemplatedParent}}"
                             Placement="Bottom">
                             <ui:ThemeShadowChrome

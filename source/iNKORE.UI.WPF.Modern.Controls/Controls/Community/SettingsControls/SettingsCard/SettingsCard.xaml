@@ -91,99 +91,21 @@
                                CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
+                                    <ui:VisualStateGroupListener.Listener>
+                                        <ui:VisualStateGroupListener x:Name="CommonStatesListener" />
+                                    </ui:VisualStateGroupListener.Listener>
                                     <VisualState x:Name="Normal" />
                                     <VisualState x:Name="PointerOver">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder"
-                                                   Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardBackgroundPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder"
-                                                   Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardBorderBrushPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderPresenter"
-                                                Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                    Value="{DynamicResource SettingsCardForegroundPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderIconPresenter"
-                                                   Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
                                         <!--<VisualState.Setters>
                                                 <Setter Target="PART_RootGrid.(muxc:AnimatedIcon.State)" Value="PointerOver" />
                                             </VisualState.Setters>-->
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder"
-                                                   Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardBackgroundPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder"
-                                                   Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardBorderBrushPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderIconPresenter"
-                                                   Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderPresenter"
-                                                   Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_DescriptionPresenter"
-                                                   Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
                                         <!--<VisualState.Setters>
                                                 <Setter Target="PART_RootGrid.(muxc:AnimatedIcon.State)" Value="Pressed" />
                                             </VisualState.Setters>-->
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ActionIconPresenter"
-                                                   Storyboard.TargetProperty="(ui:ContentPresenterEx.Foreground)">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderIconPresenter"
-                                                   Storyboard.TargetProperty="(ui:ContentPresenterEx.Foreground)">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderPresenter"
-                                                   Storyboard.TargetProperty="(ui:ContentPresenterEx.Foreground)">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_DescriptionPresenter"
-                                                   Storyboard.TargetProperty="(ui:ContentPresenterEx.Foreground)">
-                                                <DiscreteObjectKeyFrame KeyTime="0"
-                                                Value="{DynamicResource SettingsCardForegroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
                                         <!--<VisualState.Setters>
                                              https://stackoverflow.com/questions/25566944/wpf-theme-error-cannot-resolve-all-property-references-in-the-property-path   -->
                                         <!--  DisabledVisual Should be handled by the control, not the animated icon.  -->
@@ -238,7 +160,15 @@
                                     <VisualState x:Name="RightWrappedNoIcon">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HeaderIconPresenterHolder" Storyboard.TargetProperty="Visibility">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed" />
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                                            </ObjectAnimationUsingKeyFrames>
+
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="(Grid.Row)">
+                                                <DiscreteObjectKeyFrame KeyTime="0">
+                                                    <DiscreteObjectKeyFrame.Value>
+                                                        <sys:Int32>1</sys:Int32>
+                                                    </DiscreteObjectKeyFrame.Value>
+                                                </DiscreteObjectKeyFrame>
                                             </ObjectAnimationUsingKeyFrames>
 
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="(Grid.Column)">
@@ -453,6 +383,38 @@
                                 </Viewbox>
                             </Grid>
                         </ui:ElevationBorder>
+
+
+                        <ControlTemplate.Triggers>
+                            <!-- MouseOver State -->
+                            <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="PointerOver">
+                                <Trigger.Setters>
+                                    <Setter TargetName="PART_RootBorder" Property="Background" Value="{DynamicResource SettingsCardBackgroundPointerOver}" />
+                                    <Setter TargetName="PART_RootBorder" Property="BorderBrush" Value="{DynamicResource SettingsCardBorderBrushPointerOver}" />
+                                    <Setter TargetName="PART_HeaderPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundPointerOver}" />
+                                    <Setter TargetName="PART_HeaderIconPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundPointerOver}" />
+                                </Trigger.Setters>
+                            </Trigger>
+
+                            <!-- Pressed State -->
+                            <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="Pressed">
+                                <Setter TargetName="PART_RootBorder" Property="Background" Value="{DynamicResource SettingsCardBackgroundPressed}" />
+                                <Setter TargetName="PART_RootBorder" Property="BorderBrush" Value="{DynamicResource SettingsCardBorderBrushPressed}" />
+                                <Setter TargetName="PART_HeaderIconPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundPressed}" />
+                                <Setter TargetName="PART_HeaderPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundPressed}" />
+                                <Setter TargetName="PART_DescriptionPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundPressed}" />
+                            </Trigger>
+
+                            <!-- Disabled State -->
+                            <Trigger  SourceName="CommonStatesListener" Property="CurrentStateName" Value="Disabled">
+                                <Setter TargetName="PART_ActionIconPresenter" Property="TextElement.Foreground" Value="{DynamicResource SettingsCardForegroundDisabled}" />
+                                <Setter TargetName="PART_HeaderIconPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundDisabled}" />
+                                <Setter TargetName="PART_HeaderPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundDisabled}" />
+                                <Setter TargetName="PART_DescriptionPresenter" Property="Foreground" Value="{DynamicResource SettingsCardForegroundDisabled}" />
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>

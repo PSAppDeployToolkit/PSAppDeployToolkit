@@ -518,10 +518,41 @@
     <sys:Double x:Key="TimePickerThemeMinWidth">242</sys:Double>
     <sys:Double x:Key="TimePickerThemeMaxWidth">456</sys:Double>
     <sys:Double x:Key="TimePickerFlyoutPresenterItemHeight">40</sys:Double>
+    <sys:Double x:Key="TimePickerFlyoutPresenterHeight">398</sys:Double>
     <Thickness x:Key="TimePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
 
     <Thickness x:Key="TimePickerHostPadding">0,3,0,6</Thickness>
 
+    <!--  Resources for DateTimePicker  -->
+    <sys:Double x:Key="DatePickerSelectorThemeMinWidth">80</sys:Double>
+    <sys:Double x:Key="DatePickerSpacerThemeWidth">1</sys:Double>
+    <sys:Double x:Key="DatePickerSpacingThemeWidth">20</sys:Double>
+    <sys:Double x:Key="DatePickerSpacingThemeHeight">20</sys:Double>
+    <sys:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</sys:Double>
+    <sys:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</sys:Double>
+    <sys:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</sys:Double>
+    <sys:Double x:Key="DatePickerThemeMinWidth">296</sys:Double>
+    <sys:Double x:Key="DatePickerThemeMaxWidth">456</sys:Double>
+    
+    <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="DatePickerBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
+    <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,3,0,6</Thickness>
+    <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
+    <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
+    <Thickness x:Key="DatePickerFlyoutPresenterAcceptMargin">4,4,2,4</Thickness>
+    <Thickness x:Key="DatePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
+    
+    <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
+
+    <!--  Resources for LoopingSelector  -->
+    <sys:Double x:Key="LoopingSelectorUpDownButtonHeight">34</sys:Double>
+    <sys:Double x:Key="LoopingSelectorUpDownButtonScalePressed">0.875</sys:Double>
+
+    <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
+    <Thickness x:Key="LoopingSelectorUpDownButtonMargin">0</Thickness>
+    
     <!--  Resources for ToolBar  -->
     <sys:Double x:Key="ToolBarThemeCompactHeight">48</sys:Double>
     <sys:Double x:Key="ToolBarExpandButtonThemeWidth">48</sys:Double>

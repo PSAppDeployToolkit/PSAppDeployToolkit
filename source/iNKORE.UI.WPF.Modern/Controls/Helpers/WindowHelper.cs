@@ -592,6 +592,13 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
                 if (chrome.ResizeBorderThickness != resizeBorderThickness)
                     chrome.ResizeBorderThickness = resizeBorderThickness;
 
+                if (TitleBar.GetResizeBorderThickness(window) != resizeBorderThickness)
+                    TitleBar.SetResizeBorderThickness(window, new Thickness(
+                        resizeBorderThickness.Left - 1,
+                        resizeBorderThickness.Top - 1,
+                        resizeBorderThickness.Right - 1,
+                        0));
+
                 // -----------------------------
                 // Caption height
                 // -----------------------------

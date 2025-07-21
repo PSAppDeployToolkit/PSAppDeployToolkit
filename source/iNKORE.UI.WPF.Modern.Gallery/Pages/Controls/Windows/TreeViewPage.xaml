@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.TreeViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -21,7 +21,7 @@
 
         <DataTemplate x:Key="FileTemplate">
             <StackPanel Orientation="Horizontal">
-                <Image Width="20" Source="/Assets/file.png" />
+                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Document}" FontSize="20"/>
                 <TextBlock Margin="0,0,10,0" />
                 <TextBlock Text="{Binding Name}" />
             </StackPanel>
@@ -34,9 +34,9 @@
 
         <Style x:Key="TreeContainerBorderStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Height" Value="400"/>
+            <Setter Property="Height" Value="280"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
         </Style>
     </FrameworkElement.Resources>
@@ -53,15 +53,11 @@
                     <TreeViewItem Header="Work Documents" IsExpanded="True">
                         <TreeViewItem Header="XYZ Functional Spec" />
                         <TreeViewItem Header="Feature Schedule" />
-                        <TreeViewItem Header="Overall Project Plan" />
-                        <TreeViewItem Header="Feature Resources Allocation" />
                     </TreeViewItem>
                     <TreeViewItem Header="Personal Documents" IsExpanded="True">
                         <TreeViewItem Header="Home Remodel" IsExpanded="True">
                             <TreeViewItem Header="Contractor Contact Info" />
                             <TreeViewItem Header="Paint Color Scheme" />
-                            <TreeViewItem Header="Flooring woodgrain type" />
-                            <TreeViewItem Header="Kitchen cabinet style" />
                         </TreeViewItem>
                     </TreeViewItem>
                 </TreeView>

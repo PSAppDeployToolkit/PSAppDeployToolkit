@@ -479,7 +479,25 @@ software without specific prior written permission.
 
 5. You may not sell, rent, lease, or sublicense the software.
 
-6. Exceptions to these rules may be granted on a case-by-case basis. Please
+6. Credits and attribution must be given to this software in any
+product that uses it. A valid attribution must contain the following:
+
+ - The name of the project: iNKORE.UI.WPF.Modern
+ - The name of the authors: iNKORE Studios
+ - A link to the project website or repository: https://github.com/iNKORE-NET/UI.WPF.Modern
+
+The attribution must be included in the README or the 'About' section of 
+the product, and must be clearly visible to the end user.
+
+7. Under no circumstances may you use this software in any product that is
+    
+ - designed to be used for illegal activities, including but not limited to
+   hacking, cracking, or any other form of unauthorized access to computer
+   systems or networks.
+ - designed to be used for malicious purposes, including but not limited to
+   creating viruses, worms, or any other form of malware.
+ - designed to violate the copyright or intellectual property rights of others,
+   including iNKORE Studios, its affiliates, or any third party. 
+
+8. Exceptions to these rules may be granted on a case-by-case basis. Please
 contact studios@inkore.net for more information.
-
-

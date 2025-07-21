@@ -260,10 +260,13 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
             m_navigationViewItemsFactory = new NavigationViewItemsFactory();
 
-            m_bitmapCache = new BitmapCache();
+            if (ShadowAssist.UseBitmapCache)
+            {
+                m_bitmapCache = new BitmapCache();
 #if NET462_OR_NEWER
-            m_bitmapCache.RenderAtScale = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+                m_bitmapCache.RenderAtScale = VisualTreeHelper.GetDpi(this).PixelsPerDip;
 #endif
+            }
         }
 
         void OnSelectionModelChildrenRequested(SelectionModel selectionModel, SelectionModelChildrenRequestedEventArgs e)
@@ -2419,7 +2422,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 scaleTransform.CenterY = centerPoint.Value.Y;
             }
 
-            if (indicator.CacheMode == null)
+            if (ShadowAssist.UseBitmapCache && indicator.CacheMode == null)
             {
                 indicator.CacheMode = m_bitmapCache;
             }
@@ -5824,7 +5827,10 @@ namespace iNKORE.UI.WPF.Modern.Controls
         {
             base.OnDpiChanged(oldDpi, newDpi);
 
-            m_bitmapCache.RenderAtScale = newDpi.PixelsPerDip;
+            if (ShadowAssist.UseBitmapCache)
+            {
+                m_bitmapCache.RenderAtScale = newDpi.PixelsPerDip;
+            }
         }
 #endif
 

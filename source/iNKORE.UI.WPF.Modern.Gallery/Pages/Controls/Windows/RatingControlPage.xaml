@@ -17,23 +17,21 @@
                     HorizontalAlignment="Left"
                     AutomationProperties.Name="Simple RatingControl"
                     IsClearEnabled="{Binding IsChecked, ElementName=clearEnabledCheck}"
-                    IsReadOnly="{Binding IsChecked, ElementName=readOnlyCheck}" />
-
-                <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
-                    <TextBlock Text="Your Rating:" />
-                    <TextBlock
-                        Margin="5,0,0,0"
-                        FontWeight="Bold"
-                        Text="{Binding Value, ElementName=RatingControl1}" />
-                </StackPanel>
+                    IsReadOnly="{Binding IsChecked, ElementName=readOnlyCheck}" 
+                    Caption="312 ratings"
+                    ValueChanged="RatingControl1_ValueChanged" />
             </StackPanel>
+
+            <local:ControlExample.Output>
+                    <TextBlock FontWeight="Bold" Text="{Binding Value, ElementName=RatingControl1}" />
+            </local:ControlExample.Output>
 
             <local:ControlExample.Options>
                 <StackPanel Width="220">
                     <CheckBox x:Name="clearEnabledCheck" 
                         Content="IsClearEnabled" 
                         Click="clearEnabledCheck_Click"/>
-                    <!--<TextBlock Text="Swipe left to clear your rating." TextWrapping="Wrap"/>-->
+                     <TextBlock Text="Swipe left or click again to clear your rating." TextWrapping="Wrap" />
                     <CheckBox
                         x:Name="readOnlyCheck"
                         Margin="0,12,0,0"

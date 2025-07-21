@@ -10,6 +10,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
         <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
         <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
         <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />

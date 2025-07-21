@@ -1,4 +1,5 @@
-﻿using iNKORE.UI.WPF.Modern.Controls.Helpers;
+﻿using iNKORE.UI.WPF.Modern.Common;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using iNKORE.UI.WPF.Modern.Helpers;
 using System;
 using System.Diagnostics;
@@ -28,18 +29,31 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
 
         public ThemeShadowChrome()
         {
-#if NET462_OR_NEWER
-            _bitmapCache = new BitmapCache(VisualTreeHelper.GetDpi(this).PixelsPerDip);
-#else
-            _bitmapCache = new BitmapCache();
-#endif
-            _background = new Grid
+            if (ShadowAssist.UseBitmapCache)
             {
-                CacheMode = _bitmapCache,
-                Focusable = false,
-                IsHitTestVisible = false,
-                SnapsToDevicePixels = false
-            };
+#if NET462_OR_NEWER
+                _bitmapCache = new BitmapCache(VisualTreeHelper.GetDpi(this).PixelsPerDip);
+#else
+                _bitmapCache = new BitmapCache();
+#endif
+
+                _background = new Grid
+                {
+                    CacheMode = _bitmapCache,
+                    Focusable = false,
+                    IsHitTestVisible = false,
+                    SnapsToDevicePixels = false
+                };
+            }
+            else
+            {
+                _background = new Grid
+                {
+                    Focusable = false,
+                    IsHitTestVisible = false,
+                    SnapsToDevicePixels = false
+                };
+            }
             AddVisualChild(_background);
 
             SizeChanged += OnSizeChanged;
@@ -288,7 +302,10 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
         {
             base.OnDpiChanged(oldDpi, newDpi);
 
-            _bitmapCache.RenderAtScale = newDpi.PixelsPerDip;
+            if (ShadowAssist.UseBitmapCache)
+            {
+                _bitmapCache.RenderAtScale = newDpi.PixelsPerDip;
+            }
         }
 #endif
 

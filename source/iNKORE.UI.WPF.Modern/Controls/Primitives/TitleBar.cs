@@ -469,7 +469,6 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
 
         #endregion
 
-
         #region BackRequested
 
         /// <summary>
@@ -495,6 +494,33 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
         internal static void RaiseBackRequested(Window window)
         {
             window.RaiseEvent(new BackRequestedEventArgs(window));
+        }
+
+        #endregion
+
+        #region ResizeBorderThickness
+
+        /// <summary>
+        /// Identifies the ResizeBorderThickness attached property.
+        /// This is internal, because the user value will be overridden by the WindowHelper.
+        /// So you should better NOT use this property directly, but you can if you want to.
+        /// </summary>
+        public static readonly DependencyProperty ResizeBorderThicknessProperty =
+            DependencyProperty.RegisterAttached(
+                "ResizeBorderThickness",
+                typeof(Thickness),
+                typeof(TitleBar),
+                new PropertyMetadata(new Thickness(0)));
+
+        // See: https://github.com/iNKORE-NET/UI.WPF.Modern/issues/153
+        public static Thickness GetResizeBorderThickness(Window window)
+        {
+            return (Thickness)window.GetValue(ResizeBorderThicknessProperty);
+        }
+
+        internal static void SetResizeBorderThickness(Window window, Thickness value)
+        {
+            window.SetValue(ResizeBorderThicknessProperty, value);
         }
 
         #endregion

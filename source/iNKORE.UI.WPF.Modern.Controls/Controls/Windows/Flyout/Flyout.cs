@@ -109,7 +109,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 presenter.RenderTransform = new TranslateTransform();
             }
 
-            if (animateFrom != AnimateFrom.None)
+            if (ShadowAssist.UseBitmapCache && animateFrom != AnimateFrom.None)
             {
 #if NET462_OR_NEWER
                 var bitmapCache = new BitmapCache(VisualTreeHelper.GetDpi(presenter).PixelsPerDip);
@@ -167,7 +167,10 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 };
                 m_openingStoryboard.Completed += delegate
                 {
-                    presenter.ClearValue(UIElement.CacheModeProperty);
+                    if (ShadowAssist.UseBitmapCache)
+                    {
+                        presenter.ClearValue(UIElement.CacheModeProperty);
+                    }
                 };
             }
         }
