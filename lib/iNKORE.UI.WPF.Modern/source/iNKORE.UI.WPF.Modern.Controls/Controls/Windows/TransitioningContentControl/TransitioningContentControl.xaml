@@ -16,6 +16,13 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}">
+
+                        <Border.Resources>
+                            <local:MultiplyConverter x:Key="MultiplyConverter"/>
+                            <local:DoubleValueHolder x:Key="DummyPreviousContentSlider"/>
+                            <local:DoubleValueHolder x:Key="DummyCurrentContentSlider"/>
+                        </Border.Resources>
+                        
                         <Grid>
                             <ContentPresenter
                                 x:Name="PreviousContentPresentationSite"
@@ -31,7 +38,28 @@
                                         <ScaleTransform />
                                         <SkewTransform />
                                         <RotateTransform />
-                                        <TranslateTransform />
+                                        <TranslateTransform >
+                                            <TranslateTransform.X>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding ElementName="PreviousContentPresentationSite"
+                                                             Path="ActualWidth"
+                                                             Mode="OneWay"/>
+                                                    <Binding Source="{StaticResource DummyPreviousContentSlider}"
+                                                             Path="X"
+                                                             Mode="OneWay"/>
+                                                </MultiBinding>
+                                            </TranslateTransform.X>
+                                            <TranslateTransform.Y>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding ElementName="PreviousContentPresentationSite"
+                                                             Path="ActualHeight"
+                                                             Mode="OneWay"/>
+                                                    <Binding Source="{StaticResource DummyPreviousContentSlider}"
+                                                             Path="Y"
+                                                             Mode="OneWay"/>
+                                                </MultiBinding>
+                                            </TranslateTransform.Y>
+                                        </TranslateTransform>
                                     </TransformGroup>
                                 </ContentPresenter.RenderTransform>
                             </ContentPresenter>
@@ -49,7 +77,28 @@
                                         <ScaleTransform />
                                         <SkewTransform />
                                         <RotateTransform />
-                                        <TranslateTransform />
+                                        <TranslateTransform >
+                                            <TranslateTransform.X>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding ElementName="PreviousContentPresentationSite"
+                                                             Path="ActualWidth"
+                                                             Mode="OneWay"/>
+                                                    <Binding Source="{StaticResource DummyCurrentContentSlider}"
+                                                             Path="X"
+                                                             Mode="OneWay"/>
+                                                </MultiBinding>
+                                            </TranslateTransform.X>
+                                            <TranslateTransform.Y>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding ElementName="PreviousContentPresentationSite"
+                                                             Path="ActualHeight"
+                                                             Mode="OneWay"/>
+                                                    <Binding Source="{StaticResource DummyCurrentContentSlider}"
+                                                             Path="Y"
+                                                             Mode="OneWay"/>
+                                                </MultiBinding>
+                                            </TranslateTransform.Y>
+                                        </TranslateTransform>
                                     </TransformGroup>
                                 </ContentPresenter.RenderTransform>
                             </ContentPresenter>
@@ -107,73 +156,61 @@
 
                                 <VisualState x:Name="UpTransition">
                                     <Storyboard>
+
                                         <DoubleAnimationUsingKeyFrames
                                             BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
+                                            Storyboard.Target="{StaticResource DummyCurrentContentSlider}"
+                                            Storyboard.TargetProperty="Y">
+                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="-1" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="0">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+
+                                        <DoubleAnimationUsingKeyFrames
+                                            BeginTime="00:00:00"
+                                            Storyboard.Target="{StaticResource DummyPreviousContentSlider}"
+                                            Storyboard.TargetProperty="Y">
                                             <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="1" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="1">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
                                         </DoubleAnimationUsingKeyFrames>
 
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="30" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="PreviousContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="1" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="PreviousContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="-30" />
-                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="DownTransition">
                                     <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="1" />
-                                        </DoubleAnimationUsingKeyFrames>
 
                                         <DoubleAnimationUsingKeyFrames
                                             BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="-40" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="PreviousContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
+                                            Storyboard.Target="{StaticResource DummyCurrentContentSlider}"
+                                            Storyboard.TargetProperty="Y">
                                             <SplineDoubleKeyFrame KeyTime="00:00:00" Value="1" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="0">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
                                         </DoubleAnimationUsingKeyFrames>
 
                                         <DoubleAnimationUsingKeyFrames
                                             BeginTime="00:00:00"
-                                            Storyboard.TargetName="PreviousContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
+                                            Storyboard.Target="{StaticResource DummyPreviousContentSlider}"
+                                            Storyboard.TargetProperty="Y">
                                             <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="40" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="-1">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
                                         </DoubleAnimationUsingKeyFrames>
+
                                     </Storyboard>
                                 </VisualState>
 
@@ -269,57 +306,61 @@
 
                                 <VisualState x:Name="RightReplaceTransition">
                                     <Storyboard>
+
                                         <DoubleAnimationUsingKeyFrames
                                             BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
+                                            Storyboard.Target="{StaticResource DummyCurrentContentSlider}"
+                                            Storyboard.TargetProperty="X">
+                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="-1" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="0">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+
+                                        <DoubleAnimationUsingKeyFrames
+                                            BeginTime="00:00:00"
+                                            Storyboard.Target="{StaticResource DummyPreviousContentSlider}"
+                                            Storyboard.TargetProperty="X">
                                             <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="1" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="1">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
                                         </DoubleAnimationUsingKeyFrames>
 
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="-40" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="PreviousContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="1" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="LeftReplaceTransition">
                                     <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="1" />
-                                        </DoubleAnimationUsingKeyFrames>
 
                                         <DoubleAnimationUsingKeyFrames
                                             BeginTime="00:00:00"
-                                            Storyboard.TargetName="CurrentContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)">
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="40" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
-                                        </DoubleAnimationUsingKeyFrames>
-
-                                        <DoubleAnimationUsingKeyFrames
-                                            BeginTime="00:00:00"
-                                            Storyboard.TargetName="PreviousContentPresentationSite"
-                                            Storyboard.TargetProperty="(UIElement.Opacity)">
+                                            Storyboard.Target="{StaticResource DummyCurrentContentSlider}"
+                                            Storyboard.TargetProperty="X">
                                             <SplineDoubleKeyFrame KeyTime="00:00:00" Value="1" />
-                                            <SplineDoubleKeyFrame KeyTime="00:00:00.300" Value="0" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="0">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
                                         </DoubleAnimationUsingKeyFrames>
+
+                                        <DoubleAnimationUsingKeyFrames
+                                            BeginTime="00:00:00"
+                                            Storyboard.Target="{StaticResource DummyPreviousContentSlider}"
+                                            Storyboard.TargetProperty="X">
+                                            <SplineDoubleKeyFrame KeyTime="00:00:00" Value="0" />
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.333" Value="-1">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>

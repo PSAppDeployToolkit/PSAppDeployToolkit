@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -32,74 +32,33 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             var list = new ObservableCollection<ExplorerItem>();
             ExplorerItem folder1 = new ExplorerItem()
             {
-                Name = "Work Documents",
+                Name = "Documents",
                 Type = ExplorerItem.ExplorerItemType.Folder,
                 Children =
                 {
                     new ExplorerItem()
                     {
-                        Name = "Functional Specifications",
-                        Type = ExplorerItem.ExplorerItemType.Folder,
-                        Children =
-                        {
-                            new ExplorerItem()
-                            {
-                                Name = "TreeView spec",
-                                Type = ExplorerItem.ExplorerItemType.File,
-                              }
-                        }
-                    },
-                    new ExplorerItem()
-                    {
-                        Name = "Feature Schedule",
+                        Name = "ProjectProposal",
                         Type = ExplorerItem.ExplorerItemType.File,
                     },
-                    new ExplorerItem()
+                    new ExplorerItem
                     {
-                        Name = "Overall Project Plan",
+                        Name = "BudgetReport",
                         Type = ExplorerItem.ExplorerItemType.File,
                     },
-                    new ExplorerItem()
-                    {
-                        Name = "Feature Resources Allocation",
-                        Type = ExplorerItem.ExplorerItemType.File,
-                    }
                 }
             };
             ExplorerItem folder2 = new ExplorerItem()
             {
-                Name = "Personal Folder",
+                Name = "Projects",
                 Type = ExplorerItem.ExplorerItemType.Folder,
                 Children =
                         {
                             new ExplorerItem()
                             {
-                                Name = "Home Remodel Folder",
-                                Type = ExplorerItem.ExplorerItemType.Folder,
-                                Children =
-                                {
-                                    new ExplorerItem()
-                                    {
-                                        Name = "Contractor Contact Info",
-                                        Type = ExplorerItem.ExplorerItemType.File,
-                                    },
-                                    new ExplorerItem()
-                                    {
-                                        Name = "Paint Color Scheme",
-                                        Type = ExplorerItem.ExplorerItemType.File,
-                                    },
-                                    new ExplorerItem()
-                                    {
-                                        Name = "Flooring Woodgrain type",
-                                        Type = ExplorerItem.ExplorerItemType.File,
-                                    },
-                                    new ExplorerItem()
-                                    {
-                                        Name = "Kitchen Cabinet Style",
-                                        Type = ExplorerItem.ExplorerItemType.File,
-                                    }
-                                }
-                            }
+                                Name = "Project Plan",
+                                Type = ExplorerItem.ExplorerItemType.File,
+                            },
                         }
             };
 
@@ -150,74 +109,33 @@ private ObservableCollection<ExplorerItem> GetData()
     var list = new ObservableCollection<ExplorerItem>();
     ExplorerItem folder1 = new ExplorerItem()
     {{
-        Name = ""Work Documents"",
+        Name = ""Documents"",
         Type = ExplorerItem.ExplorerItemType.Folder,
         Children =
         {{
             new ExplorerItem()
             {{
-                Name = ""Functional Specifications"",
-                Type = ExplorerItem.ExplorerItemType.Folder,
-                Children =
-                {{
-                    new ExplorerItem()
-                    {{
-                        Name = ""TreeView spec"",
-                        Type = ExplorerItem.ExplorerItemType.File,
-                        }}
-                }}
-            }},
-            new ExplorerItem()
-            {{
-                Name = ""Feature Schedule"",
+                Name = ""ProjectProposal"",
                 Type = ExplorerItem.ExplorerItemType.File,
             }},
             new ExplorerItem()
             {{
-                Name = ""Overall Project Plan"",
-                Type = ExplorerItem.ExplorerItemType.File,
-            }},
-            new ExplorerItem()
-            {{
-                Name = ""Feature Resources Allocation"",
+                Name = ""BudgetReport"",
                 Type = ExplorerItem.ExplorerItemType.File,
             }}
         }}
     }};
     ExplorerItem folder2 = new ExplorerItem()
     {{
-        Name = ""Personal Folder"",
+        Name = ""Projects"",
         Type = ExplorerItem.ExplorerItemType.Folder,
         Children =
                 {{
                     new ExplorerItem()
                     {{
-                        Name = ""Home Remodel Folder"",
-                        Type = ExplorerItem.ExplorerItemType.Folder,
-                        Children =
-                        {{
-                            new ExplorerItem()
-                            {{
-                                Name = ""Contractor Contact Info"",
-                                Type = ExplorerItem.ExplorerItemType.File,
-                            }},
-                            new ExplorerItem()
-                            {{
-                                Name = ""Paint Color Scheme"",
-                                Type = ExplorerItem.ExplorerItemType.File,
-                            }},
-                            new ExplorerItem()
-                            {{
-                                Name = ""Flooring Woodgrain type"",
-                                Type = ExplorerItem.ExplorerItemType.File,
-                            }},
-                            new ExplorerItem()
-                            {{
-                                Name = ""Kitchen Cabinet Style"",
-                                Type = ExplorerItem.ExplorerItemType.File,
-                            }}
-                        }}
-                    }}
+                        Name = ""Project Plan"",
+                        Type = ExplorerItem.ExplorerItemType.File,
+                    }},
                 }}
     }};
 
@@ -303,15 +221,11 @@ public class ExplorerItem : INotifyPropertyChanged
     <TreeViewItem Header=""Work Documents"" IsExpanded=""True"">
         <TreeViewItem Header=""XYZ Functional Spec"" />
         <TreeViewItem Header=""Feature Schedule"" />
-        <TreeViewItem Header=""Overall Project Plan"" />
-        <TreeViewItem Header=""Feature Resources Allocation"" />
     </TreeViewItem>
     <TreeViewItem Header=""Personal Documents"" IsExpanded=""True"">
         <TreeViewItem Header=""Home Remodel"" IsExpanded=""True"">
             <TreeViewItem Header=""Contractor Contact Info"" />
             <TreeViewItem Header=""Paint Color Scheme"" />
-            <TreeViewItem Header=""Flooring woodgrain type"" />
-            <TreeViewItem Header=""Kitchen cabinet style"" />
         </TreeViewItem>
     </TreeViewItem>
 </TreeView>
@@ -348,21 +262,21 @@ public class ExplorerItem : INotifyPropertyChanged
 
     <DataTemplate x:Key=""FileTemplate"">
         <StackPanel Orientation=""Horizontal"">
-            <Image Width=""20"" Source=""/Assets/file.png"" />
+            <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Document}}"" FontSize=""20""/>
             <TextBlock Margin=""0,0,10,0"" />
             <TextBlock Text=""{{Binding Name}}"" />
         </StackPanel>
     </DataTemplate>
 
-    <pcw:ExplorerItemTemplateSelector
+    <local:ExplorerItemTemplateSelector
         x:Key=""ExplorerItemTemplateSelector""
         FileTemplate=""{{StaticResource FileTemplate}}""
         FolderTemplate=""{{StaticResource FolderTemplate}}"" />
 </FrameworkElement.Resources>
 
 <TreeView x:Name=""FileTree""
-        ItemTemplateSelector=""{{StaticResource ExplorerItemTemplateSelector}}""
-        ItemsSource=""{{Binding}}"">
+    ItemTemplateSelector=""{{StaticResource ExplorerItemTemplateSelector}}""
+    ItemsSource=""{{Binding}}"">
     <TreeView.ItemContainerStyle>
         <Style BasedOn=""{{StaticResource DefaultTreeViewItemStyle}}"" TargetType=""TreeViewItem"">
             <Setter Property=""IsExpanded"" Value=""True"" />

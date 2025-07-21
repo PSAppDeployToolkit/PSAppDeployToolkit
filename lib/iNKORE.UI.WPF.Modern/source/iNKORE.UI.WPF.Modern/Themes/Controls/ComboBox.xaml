@@ -462,6 +462,10 @@
                             Padding="{DynamicResource ComboBoxEditableTextPadding}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
+                            Foreground="{TemplateBinding Foreground}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             chelper:ControlHelper.CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius}"
@@ -511,6 +515,7 @@
                         <Popup
                             x:Name="PART_Popup"
                             AllowsTransparency="True"
+                            CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                             IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
                             Placement="Bottom"
                             PlacementTarget="{Binding ElementName=Background}"

@@ -28,12 +28,11 @@
                         SnapsToDevicePixels="True">
                         <!--  Background is used here so that it overrides the severity status color if set.  -->
                         <Border
-                            MinHeight="{DynamicResource InfoBarMinHeight}"
                             Padding="{DynamicResource InfoBarContentRootPadding}"
                             HorizontalAlignment="Stretch"
                             Background="{TemplateBinding Background}"
                             CornerRadius="{TemplateBinding CornerRadius}">
-                            <Grid>
+                            <Grid MinHeight="{DynamicResource InfoBarMinHeight}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <!--  Icon  -->
@@ -249,10 +248,6 @@
                         <Trigger SourceName="ForegroundListener" Property="CurrentStateName" Value="ForegroundSet">
                             <Setter TargetName="Title" Property="Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}" />
                             <Setter TargetName="Message" Property="Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}" />
-                        </Trigger>
-
-                        <Trigger SourceName="Message" Property="ui:TextBlockHelper.IsTextTrimmed" Value="True">
-                            <Setter TargetName="InfoPanel" Property="ForceVertical" Value="true" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

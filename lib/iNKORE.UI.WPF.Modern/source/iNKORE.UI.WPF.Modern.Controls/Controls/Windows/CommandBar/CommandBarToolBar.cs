@@ -4,11 +4,9 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Threading;
 using iNKORE.UI.WPF.Helpers;
 using iNKORE.UI.WPF.Modern.Common;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
-using iNKORE.UI.WPF.Modern.Helpers;
 using ControlHelper = iNKORE.UI.WPF.Modern.Controls.Helpers.ControlHelper;
 
 namespace iNKORE.UI.WPF.Modern.Controls.Primitives
@@ -300,6 +298,49 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
             }
         }
 
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            HandleUpDownForOverflow(e);
+            base.OnPreviewKeyDown(e);
+        }
+
+        private void HandleUpDownForOverflow(KeyEventArgs e)
+        {
+            var focusedControl = Keyboard.FocusedElement;
+            if (e.Key is Key.Down)
+            {
+                if (m_toolBarOverflowPanel.Children.Count > 0 && focusedControl == m_toolBarOverflowPanel.Children[m_toolBarOverflowPanel.Children.Count - 1])
+                {
+                    m_moreButton.Focus();
+                }
+                else if (!IsOverflowOpen || focusedControl == m_moreButton || focusedControl == m_toolBarOverflowPanel)
+                {
+                    IsOverflowOpen = true;
+                    if (m_toolBarOverflowPanel.Children.Count > 0)
+                    {
+                        m_toolBarOverflowPanel.Children[0]?.Focus();
+                        e.Handled = true;
+                    }
+                }
+            }
+            else if (e.Key is Key.Up)
+            {
+                if (focusedControl == m_moreButton)
+                {
+                    IsOverflowOpen = true;
+                    if (m_toolBarOverflowPanel.Children.Count > 0)
+                    {
+                        m_toolBarOverflowPanel.Children[m_toolBarOverflowPanel.Children.Count - 1]?.Focus();
+                        e.Handled = true;
+                    }
+                }
+                else if (m_toolBarOverflowPanel?.Children?.Contains(focusedControl as UIElement) ?? false)
+                {
+                    m_moreButton.Focus();
+                }
+            }
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             switch (e.Key)
@@ -321,9 +362,53 @@ namespace iNKORE.UI.WPF.Modern.Controls.Primitives
                         SetCurrentValue(IsOverflowOpenProperty, false);
                     }
                     break;
+                case Key.Tab:
+                { 
+                    var focusedControl = Keyboard.FocusedElement;
+                    if (IsOverflowOpen)
+                    {
+                        e.Handled = CheckIfSpecialNextTabFocus(focusedControl,
+                            e.KeyboardDevice.Modifiers is ModifierKeys.Shift);
+                    }
+                }
+                    break;
             }
 
             base.OnKeyDown(e);
+        }
+
+        private bool CheckIfSpecialNextTabFocus(IInputElement focusedControl,bool isBackward)
+        {
+            if (isBackward)
+            {
+                if (m_toolBarOverflowPanel.Children.Contains(focusedControl as UIElement))
+                {
+                    m_moreButton.Focus();
+                    return true;
+                }
+
+                if (focusedControl == m_toolBarPanel.Children[0])
+                {
+                    var toFocusInOverflowIndex = KeyboardNavigation.GetTabNavigation(m_toolBarOverflowPanel) is KeyboardNavigationMode.Once ? 0 : m_toolBarOverflowPanel.Children.Count - 1;
+                    m_toolBarOverflowPanel.Children[toFocusInOverflowIndex].Focus();
+                    return true;
+                }
+            }
+            else
+            {
+                if (m_toolBarOverflowPanel.Children.Contains(focusedControl as UIElement))
+                {
+                    m_toolBarPanel.Children[0].Focus();
+                    return true;
+                }
+
+                if (focusedControl == m_moreButton)
+                {
+                    m_toolBarOverflowPanel.Children[0].Focus();
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static void OnIsOverflowOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

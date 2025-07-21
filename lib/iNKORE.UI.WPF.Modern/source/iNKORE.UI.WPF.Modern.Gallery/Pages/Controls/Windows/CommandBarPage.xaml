@@ -41,8 +41,12 @@
                         </ui:AppBarButton>
                         <ui:CommandBar.SecondaryCommands>
                             <ui:AppBarButton x:Name="SettingsButton"
-                                Icon="Setting" Label="Settings"
-                                Click="OnElementClicked"/>
+                                Label="Settings" Click="OnElementClicked">
+                                <ui:AppBarButton.Icon>
+                                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}"/>
+                                </ui:AppBarButton.Icon>
+                            </ui:AppBarButton>
+
                         </ui:CommandBar.SecondaryCommands>
                     </ui:CommandBar>
                     <TextBlock x:Name="SelectedOptionText" Padding="0,8,0,0" />

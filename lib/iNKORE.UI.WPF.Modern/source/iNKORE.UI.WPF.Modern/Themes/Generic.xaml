@@ -40,7 +40,7 @@
                         </Border>
 
                         <Border BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
-                            <AdornerDecorator>
+                            <AdornerDecorator CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}">
                                 <ContentPresenter/>
                             </AdornerDecorator>
                         </Border>

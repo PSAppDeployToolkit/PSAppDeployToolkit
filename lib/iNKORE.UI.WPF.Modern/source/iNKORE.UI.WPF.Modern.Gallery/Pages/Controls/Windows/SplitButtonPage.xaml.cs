@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +92,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             <ui:GridView IsItemClickEnabled=""True"" ItemClick=""GridView_ItemClick"">
                 <ui:GridView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation=""Horizontal"" />
+                        <primitives:UniformGrid Columns=""3"" />
                     </ItemsPanelTemplate>
                 </ui:GridView.ItemsPanel>
                 <ui:GridView.Resources>
@@ -177,22 +177,22 @@ private void MyRichEditBox_TextChanged(object sender, RoutedEventArgs e)
     Choose color
     <ui:SplitButton.Flyout>
         <ui:Flyout Placement=""Bottom"">
-            <WrapPanel Orientation=""Horizontal"">
-                <WrapPanel.Resources>
-                    <Style TargetType=""Rectangle"">
-                        <Setter Property=""Width"" Value=""{{StaticResource SwatchSize}}"" />
-                        <Setter Property=""Height"" Value=""{{StaticResource SwatchSize}}"" />
-                        <Setter Property=""RadiusX"" Value=""4"" />
-                        <Setter Property=""RadiusY"" Value=""4"" />
-                    </Style>
-                    <Style BasedOn=""{{StaticResource DefaultButtonStyle}}"" TargetType=""Button"">
-                        <Setter Property=""Padding"" Value=""0"" />
-                        <Setter Property=""MinWidth"" Value=""0"" />
-                        <Setter Property=""MinHeight"" Value=""0"" />
-                        <Setter Property=""Margin"" Value=""6"" />
-                        <Setter Property=""ui:ControlHelper.CornerRadius"" Value=""{{DynamicResource ControlCornerRadius}}"" />
-                    </Style>
-                </WrapPanel.Resources>
+            <primitives:UniformGrid Columns=""3"">
+                <primitives:UniformGrid.Resources>
+                        <Style TargetType=""Rectangle"">
+                            <Setter Property=""Width"" Value=""{{StaticResource SwatchSize}}"" />
+                            <Setter Property=""Height"" Value=""{{StaticResource SwatchSize}}"" />
+                            <Setter Property=""RadiusX"" Value=""4"" />
+                            <Setter Property=""RadiusY"" Value=""4"" />
+                        </Style>
+                        <Style BasedOn=""{{StaticResource DefaultButtonStyle}}"" TargetType=""Button"">
+                            <Setter Property=""Padding"" Value=""0"" />
+                            <Setter Property=""MinWidth"" Value=""0"" />
+                            <Setter Property=""MinHeight"" Value=""0"" />
+                            <Setter Property=""Margin"" Value=""6"" />
+                            <Setter Property=""ui:ControlHelper.CornerRadius"" Value=""{{DynamicResource ControlCornerRadius}}"" />
+                        </Style>
+                </primitives:UniformGrid.Resources>
                 <Button AutomationProperties.Name=""Red"" Click=""RevealColorButton_Click"">
                     <Button.Content>
                         <Rectangle Fill=""Red"" />
@@ -238,7 +238,7 @@ private void MyRichEditBox_TextChanged(object sender, RoutedEventArgs e)
                         <Rectangle Fill=""Black"" />
                     </Button.Content>
                 </Button>
-            </WrapPanel>
+            </primitives:UniformGrid>
         </ui:Flyout>
     </ui:SplitButton.Flyout>
 </ui:SplitButton>

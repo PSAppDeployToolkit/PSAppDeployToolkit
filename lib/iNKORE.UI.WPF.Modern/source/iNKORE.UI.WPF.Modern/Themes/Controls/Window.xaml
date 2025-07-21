@@ -114,43 +114,44 @@
                                     </Grid.RowDefinitions>
 
                                     <primitives:TitleBarControl
-                                    Title="{TemplateBinding Title}"
-                                    Panel.ZIndex="1"
-                                    Height="{TemplateBinding primitives:TitleBar.Height}"
-                                    BackButtonCommand="{TemplateBinding primitives:TitleBar.BackButtonCommand}"
-                                    BackButtonCommandParameter="{TemplateBinding primitives:TitleBar.BackButtonCommandParameter}"
-                                    BackButtonCommandTarget="{TemplateBinding primitives:TitleBar.BackButtonCommandTarget}"
-                                    BackButtonStyle="{TemplateBinding primitives:TitleBar.BackButtonStyle}"
-                                    Background="{TemplateBinding primitives:TitleBar.Background}"
-                                    ButtonStyle="{TemplateBinding primitives:TitleBar.ButtonStyle}"
-                                    ExtendViewIntoTitleBar="{TemplateBinding primitives:TitleBar.ExtendViewIntoTitleBar}"
-                                    Foreground="{TemplateBinding primitives:TitleBar.Foreground}"
-                                    Icon="{TemplateBinding Icon}"
-                                    InactiveBackground="{TemplateBinding primitives:TitleBar.InactiveBackground}"
-                                    InactiveForeground="{TemplateBinding primitives:TitleBar.InactiveForeground}"
-                                    IsActive="{TemplateBinding IsActive}"
-                                    IsBackButtonVisible="{TemplateBinding primitives:TitleBar.IsBackButtonVisible}"
-                                    IsBackEnabled="{TemplateBinding primitives:TitleBar.IsBackEnabled}"
-                                    IsIconVisible="{TemplateBinding primitives:TitleBar.IsIconVisible}"
-                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                    MaximizeButtonAvailability="{TemplateBinding primitives:TitleBar.MaximizeButtonAvailability}"
-                                    MinimizeButtonAvailability="{TemplateBinding primitives:TitleBar.MinimizeButtonAvailability}"
-                                    CloseButtonAvailability="{TemplateBinding primitives:TitleBar.CloseButtonAvailability}"
-                                    ButtonGlyphStyle="{TemplateBinding primitives:TitleBar.ButtonGlyphStyle}"
-                                    Style="{TemplateBinding primitives:TitleBar.Style}" />
+                                        Title="{TemplateBinding Title}"
+                                        Panel.ZIndex="1"
+                                        Height="{TemplateBinding primitives:TitleBar.Height}"
+                                        BackButtonCommand="{TemplateBinding primitives:TitleBar.BackButtonCommand}"
+                                        BackButtonCommandParameter="{TemplateBinding primitives:TitleBar.BackButtonCommandParameter}"
+                                        BackButtonCommandTarget="{TemplateBinding primitives:TitleBar.BackButtonCommandTarget}"
+                                        BackButtonStyle="{TemplateBinding primitives:TitleBar.BackButtonStyle}"
+                                        Background="{TemplateBinding primitives:TitleBar.Background}"
+                                        ButtonStyle="{TemplateBinding primitives:TitleBar.ButtonStyle}"
+                                        ExtendViewIntoTitleBar="{TemplateBinding primitives:TitleBar.ExtendViewIntoTitleBar}"
+                                        Foreground="{TemplateBinding primitives:TitleBar.Foreground}"
+                                        Icon="{TemplateBinding Icon}"
+                                        InactiveBackground="{TemplateBinding primitives:TitleBar.InactiveBackground}"
+                                        InactiveForeground="{TemplateBinding primitives:TitleBar.InactiveForeground}"
+                                        IsActive="{TemplateBinding IsActive}"
+                                        IsBackButtonVisible="{TemplateBinding primitives:TitleBar.IsBackButtonVisible}"
+                                        IsBackEnabled="{TemplateBinding primitives:TitleBar.IsBackEnabled}"
+                                        IsIconVisible="{TemplateBinding primitives:TitleBar.IsIconVisible}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                        MaximizeButtonAvailability="{TemplateBinding primitives:TitleBar.MaximizeButtonAvailability}"
+                                        MinimizeButtonAvailability="{TemplateBinding primitives:TitleBar.MinimizeButtonAvailability}"
+                                        CloseButtonAvailability="{TemplateBinding primitives:TitleBar.CloseButtonAvailability}"
+                                        ButtonGlyphStyle="{TemplateBinding primitives:TitleBar.ButtonGlyphStyle}"
+                                        ResizeBorderThickness="{TemplateBinding primitives:TitleBar.ResizeBorderThickness}"
+                                        Style="{TemplateBinding primitives:TitleBar.Style}" />
 
-                                    <AdornerDecorator x:Name="AdornerDecorator" Grid.Row="1">
+                                    <AdornerDecorator x:Name="AdornerDecorator" Grid.Row="1" CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}">
                                         <local:ContentPresenterEx Foreground="{TemplateBinding Foreground}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                     </AdornerDecorator>
 
                                     <ResizeGrip
-                                    x:Name="WindowResizeGrip"
-                                    Grid.Row="1"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Bottom"
-                                    IsTabStop="false"
-                                    Visibility="Collapsed"
-                                    WindowChrome.ResizeGripDirection="BottomRight" />
+                                        x:Name="WindowResizeGrip"
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Bottom"
+                                        IsTabStop="false"
+                                        Visibility="Collapsed"
+                                        WindowChrome.ResizeGripDirection="BottomRight" />
                                 </Grid>
 
                             </Border>

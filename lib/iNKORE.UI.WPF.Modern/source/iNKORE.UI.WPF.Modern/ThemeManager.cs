@@ -25,9 +25,10 @@ namespace iNKORE.UI.WPF.Modern
 
         public const string Link_GithubRepo = "https://github.com/iNKORE-NET/UI.WPF.Modern";
         public const string Link_NugetPackage = "https://www.nuget.org/packages/iNKORE.UI.WPF.Modern";
-        public const string Link_DiscordServer = "https://discord.gg/m6NPNVk4bs";
-        public const string Link_TelegramGroup = "http://t.me/iNKORE";
-        public const string Link_FacebookPage = "https://facebook.com/iNKORE.NET";
+
+        public const string Link_DiscordServer = "https://www.inkore.net/invito/discord";
+        public const string Link_TelegramGroup = "https://www.inkore.net/invito/telegram-en";
+        public const string Link_FacebookPage = "https://www.inkore.net/social/facebook";
 
         public static readonly Uri BannerUri_1280w = new Uri("/iNKORE.UI.WPF.Modern;component/Resources/Images/UI.WPF.Modern_Main_1280w.png", UriKind.Relative);
 

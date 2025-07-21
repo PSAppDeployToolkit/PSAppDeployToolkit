@@ -11,7 +11,7 @@
     <Grid>
         <Border Background="{DynamicResource {x:Static ui:ThemeKeys.LayerFillColorDefaultBrushKey}}"
                                 BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"
-                                CornerRadius="8" BorderThickness="1" Padding="12, 10" TextElement.FontSize="14">
+                                CornerRadius="4" BorderThickness="1" Padding="12, 10" TextElement.FontSize="14">
 
             <Grid>
                 <Grid.RowDefinitions>
@@ -44,7 +44,7 @@
 
                     <TextBlock>
                                         <Run>It's very easy to join us! You can create a PR in our</Run>
-                                        <Hyperlink x:Name="Hyperlink_DoucmentationRepo" Click="Hyperlink_DoucmentationRepo_Click">Doucmentation repository</Hyperlink>
+                                        <Hyperlink x:Name="Hyperlink_DocumentationRepo" Click="Hyperlink_DocumentationRepo_Click">Documentation repository</Hyperlink>
                                         <Run>when you're free. You can also join our</Run>
                                         <Hyperlink x:Name="Hyperlink_Discord" Click="Hyperlink_Discord_Click">Discord server</Hyperlink>
                                         <Run>and</Run>
@@ -59,7 +59,7 @@
                     <ui:HyperlinkButton x:Name="HyperlinkButton_Repository" Content="Repository" Click="HyperlinkButton_Repository_Click"/>
                     <ui:HyperlinkButton x:Name="HyperlinkButton_Package" Content="Package" Click="HyperlinkButton_Package_Click"/>
 
-                    <ui:HyperlinkButton x:Name="HyperlinkButton_DocRepository" Content="Docs Repository" Click="Hyperlink_DoucmentationRepo_Click"/>
+                    <ui:HyperlinkButton x:Name="HyperlinkButton_DocRepository" Content="Docs Repository" Click="Hyperlink_DocumentationRepo_Click"/>
                     <ui:HyperlinkButton x:Name="HyperlinkButton_Facebook" Content="Follow us on Facebook!" Click="HyperlinkButton_Facebook_Click"/>
 
                 </ikw:SimpleStackPanel>

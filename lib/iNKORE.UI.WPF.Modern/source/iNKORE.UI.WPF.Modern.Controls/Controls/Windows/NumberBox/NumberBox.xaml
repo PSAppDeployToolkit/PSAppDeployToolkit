@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
-    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common;assembly=iNKORE.UI.WPF.Modern">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/iNKORE.UI.WPF.Modern;component/Themes/Controls/RepeatButton.xaml" />
@@ -354,6 +355,7 @@
                             Grid.Column="1"
                             HorizontalAlignment="Left"
                             AllowsTransparency="True"
+                            CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                             HorizontalOffset="{DynamicResource NumberBoxPopupHorizonalOffset}"
                             Placement="Right"
                             VerticalOffset="{DynamicResource NumberBoxPopupVerticalOffset}">

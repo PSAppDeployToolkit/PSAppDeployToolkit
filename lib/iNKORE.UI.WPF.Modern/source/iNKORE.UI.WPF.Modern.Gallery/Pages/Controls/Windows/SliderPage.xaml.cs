@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using System.Windows;
 
 namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
@@ -25,6 +25,24 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             UpdateExampleCode();
         }
 
+        private void NumberBox_ValueChanged(iNKORE.UI.WPF.Modern.Controls.NumberBox sender, iNKORE.UI.WPF.Modern.Controls.NumberBoxValueChangedEventArgs e)
+        {
+            UpdateExampleCode();
+        }
+
+        private void SnapsToRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = (SnapsToRadioButtons.SelectedItem as RadioButton)?.Content?.ToString();
+
+            if (selected == "Ticks")
+                    Slider3.IsSnapToTickEnabled = true;
+            else
+                    Slider3.IsSnapToTickEnabled = false;
+
+            UpdateExampleCode();
+        }
+
+        private string SnapsToValue => (SnapsToRadioButtons.SelectedItem as RadioButton)?.Content?.ToString() ?? "StepValues";
 
         #region Example Code
 
@@ -40,41 +58,34 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         }
 
         public string Example1Xaml => $@"
-<Slider x:Name=""Slider1"" AutomationProperties.Name=""simple slider"" />
-<TextBlock Style=""{{StaticResource OutputTextBlockStyle}}"" Text=""{{Binding Value, ElementName=Slider1}}"" />
+<Slider x:Name=""Slider1"" AutomationProperties.Name=""simple slider"" Width=""{200}"" />
 ";
 
         public string Example2Xaml => $@"
-<Slider x:Name=""Slider2""
-        ui:ControlHelper.Header=""Control header""
-        LargeChange=""100"" SmallChange=""10""
-        Maximum=""1000"" Minimum=""500""
-        TickFrequency=""10"" Value=""800"" />
-<TextBlock Text=""{{Binding Value, ElementName=Slider2, Mode=OneWay}}"" />
+<Slider x:Name=""Slider2"" ui:ControlHelper.Header=""Control header"" Maximum=""{MaximumValue?.Value ?? 1000}"" 
+    TickFrequency=""{StepFrequencyValue?.Value ?? 10}"" SmallChange=""{SmallChangeValue?.Value ?? 10}"" Value=""{Slider2?.Value ?? 800}"" Width=""{200}"" Minimum=""{MinimumValue?.Value ?? 500}"" />
 ";
 
         public string Example3Xaml => $@"
 <Slider x:Name=""Slider3""
-        AutomationProperties.Name=""Slider with ticks""
-        TickFrequency=""10"" TickPlacement=""Both"" />
-<TextBlock Text=""{{Binding Value, ElementName=Slider3, Mode=OneWay}}"" />
+    AutomationProperties.Name=""Slider with ticks""
+    TickFrequency=""20"" 
+    TickPlacement=""Both"" 
+    SnapsTo=""{SnapsToValue}"" />
 ";
 
         public string Example4Xaml => $@"
-<Slider x:Name=""Slider4"" Orientation=""Vertical""
-        AutomationProperties.Name=""vertical slider""
-        Maximum=""50"" Minimum=""-50""
-        TickFrequency=""10"" TickPlacement=""Both"" />
-<TextBlock Text=""{{Binding Value, ElementName=Slider4, Mode=OneWay}}"" />
+<Slider x:Name=""Slider4"" AutomationProperties.Name=""vertical slider"" Width=""{100}"" Orientation=""Vertical"" 
+    TickFrequency=""10"" TickPlacement=""Both"" Maximum=""50"" Minimum=""-50"" />
 ";
 
         public string Example5Xaml => $@"
 <Slider x:Name=""slider"" Orientation=""{slider.Orientation}""
-        ui:ControlHelper.Header=""Control header""
-        AutoToolTipPlacement=""{slider.AutoToolTipPlacement}"" TickPlacement=""{slider.TickPlacement}""
-        IsSelectionRangeEnabled=""{slider.IsSelectionRangeEnabled}"" IsDirectionReversed=""{slider.IsDirectionReversed}""
-        IsMoveToPointEnabled=""{slider.IsMoveToPointEnabled}"" IsSnapToTickEnabled=""{slider.IsSnapToTickEnabled}""
-        Maximum=""100"" TickFrequency=""10"" TickPlacement=""Both"">
+    ui:ControlHelper.Header=""Control header""
+    AutoToolTipPlacement=""{slider.AutoToolTipPlacement}"" TickPlacement=""{slider.TickPlacement}""
+    IsSelectionRangeEnabled=""{slider.IsSelectionRangeEnabled}"" IsDirectionReversed=""{slider.IsDirectionReversed}""
+    IsMoveToPointEnabled=""{slider.IsMoveToPointEnabled}"" IsSnapToTickEnabled=""{slider.IsSnapToTickEnabled}""
+    Maximum=""100"" TickFrequency=""10"" TickPlacement=""Both"">
 </Slider>
 ";
 

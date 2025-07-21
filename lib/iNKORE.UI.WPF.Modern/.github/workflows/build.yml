@@ -1,40 +1,49 @@
-name: Build
+name: Build Controls & Gallery
+
+# This workflow builds the iNKORE.UI.WPF.Modern.Controls and iNKORE.UI.WPF.Modern.Gallery projects and uploads the artifacts for use in other workflows or releases.
 
 on:
   push:
+    branches: [  ]
   pull_request:
+    branches: [  ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
-
+    
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 6.0.x
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.1
 
-      - name: Install dependencies
-        run: dotnet restore
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
 
-      - name: Build and pack
-        continue-on-error: true
-        run: |
-          dotnet build .\source\iNKORE.UI.WPF.Modern
-          dotnet publish .\source\iNKORE.UI.WPF.Modern.Gallery -r win-x64 -f net6.0-windows10.0.18362.0 --no-self-contained -p:PublishSingleFile=true -p:IncludeContentInSingleFile=true
-        # dotnet pack .\source\iNKORE.UI.WPF.Modern.Controls --configuration Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+    - name: Restore NuGet packages
+      run: |
+        nuget restore iNKORE.UI.WPF.Modern.sln
 
-      - name: Upload binary libraries of iNKORE.UI.WPF.Modern.Controls
-        uses: actions/upload-artifact@v3
-        with:
-          name: iNKORE.UI.WPF.Modern.Controls dlls
-          path: .\source\iNKORE.UI.WPF.Modern.Controls\bin\Debug
+    - name: Build solution
+      run: |
+        msbuild iNKORE.UI.WPF.Modern.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Upload Gallery apps
-        uses: actions/upload-artifact@v3
-        with:
-          name: iNKORE.UI.WPF.Modern.Gallery
-          path: .\source\iNKORE.UI.WPF.Modern.Gallery\bin\Debug\net6.0-windows10.0.18362.0\win-x64\publish
+    - name: Upload Controls artifact (.NET 6.0)
+      uses: actions/upload-artifact@v4
+      with:
+        name: iNKORE.UI.WPF.Modern.Controls  
+        path: source\iNKORE.UI.WPF.Modern.Controls\bin\Release\net6.0-windows10.0.18362.0
+
+    - name: Upload Gallery artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: iNKORE.UI.WPF.Modern.Gallery
+        path: source\iNKORE.UI.WPF.Modern.Gallery\bin\Release\net6.0-windows10.0.18362.0

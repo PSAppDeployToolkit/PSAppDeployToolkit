@@ -1290,13 +1290,13 @@
     <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
     <m:StaticResource x:Key="FlipViewBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
-    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
 
-    <m:StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
-    <m:StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
-    <m:StaticResource x:Key="FlipViewNextPreviousArrowForegroundPressed" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+    <m:StaticResource x:Key="FlipViewNextPreviousArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
 
     <m:StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
     <m:StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
@@ -1693,7 +1693,7 @@
     <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,0</Thickness>
     <!--<Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>-->
     <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
-    <Thickness x:Key="MenuFlyoutSeparatorThemePadding">12,4,12,4</Thickness>
+    <!--<Thickness x:Key="MenuFlyoutSeparatorThemePadding">12,4,12,4</Thickness>-->
     <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
     <Thickness x:Key="MenuFlyoutItemThemePadding">11,6,11,7</Thickness>
 
@@ -1997,16 +1997,16 @@
     <m:StaticResource x:Key="RadioButtonsHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
 
     <!--  Resources for RatingControl  -->
-    <m:StaticResource x:Key="RatingControlUnselectedForeground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-    <m:StaticResource x:Key="RatingControlSelectedForeground" ResourceKey="SystemAccentColorLight2Brush" />
-    <m:StaticResource x:Key="RatingControlPlaceholderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <m:StaticResource x:Key="RatingControlPointerOverPlaceholderForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <m:StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <m:StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="SystemControlForegroundAccentBrush" />
-    <m:StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <m:StaticResource x:Key="RatingControlUnselectedForeground" ResourceKey="TextFillColorSecondaryBrush" />
+    <m:StaticResource x:Key="RatingControlSelectedForeground" ResourceKey="AccentFillColorDefaultBrush" />
+    <m:StaticResource x:Key="RatingControlPlaceholderForeground" ResourceKey="TextFillColorPrimaryBrush" />
+    <m:StaticResource x:Key="RatingControlPointerOverPlaceholderForeground" ResourceKey="ControlAltFillColorTertiaryBrush" />
+    <m:StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="ControlAltFillColorTertiaryBrush" />
+    <m:StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentFillColorDefaultBrush" />
+    <m:StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="TextFillColorDisabledBrush" />
+    <m:StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush" />
     <!--  If this Foreground property is removed/renamed, please update ThemeResourcesTests::VerifyOverrides:  -->
-    <m:StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <common:RatingItemFontInfo x:Key="RatingControlDefaultFontInfo" Glyph="&#xE735;" />
+    <common:RatingItemFontInfo x:Key="RatingControlDefaultFontInfo" Glyph="&#xE735;" UnsetGlyph="&#xE734;" />
     <common:RatingItemPathInfo x:Key="RatingControlDefaultPathInfo" Data="F1 M 4.21875 19.53125 C 4.049479 19.53125 3.902995 19.467773 3.779297 19.34082 C 3.655599 19.213867 3.59375 19.065756 3.59375 18.896484 C 3.59375 18.850912 3.597005 18.815104 3.603516 18.789062 L 4.648438 12.675781 L 0.205078 8.349609 C 0.08138 8.225912 0.019531 8.079428 0.019531 7.910156 C 0.019531 7.760417 0.071615 7.623698 0.175781 7.5 C 0.279948 7.376303 0.406901 7.301434 0.556641 7.275391 L 6.689453 6.386719 L 9.443359 0.820312 C 9.495442 0.716146 9.571939 0.633139 9.672852 0.571289 C 9.773763 0.509441 9.879557 0.478516 9.990234 0.478516 C 10.107422 0.478516 10.218099 0.507812 10.322266 0.566406 C 10.426432 0.625 10.504557 0.709637 10.556641 0.820312 L 13.310547 6.386719 L 19.443359 7.275391 C 19.599609 7.301434 19.728189 7.373048 19.829102 7.490234 C 19.930012 7.607423 19.980469 7.744142 19.980469 7.900391 C 19.980469 8.082683 19.918619 8.232422 19.794922 8.349609 L 15.351562 12.675781 L 16.396484 18.789062 C 16.402994 18.815104 16.40625 18.850912 16.40625 18.896484 C 16.40625 19.065756 16.3444 19.21224 16.220703 19.335938 C 16.097004 19.459635 15.950521 19.521484 15.78125 19.521484 C 15.670572 19.521484 15.572916 19.498697 15.488281 19.453125 L 10 16.5625 L 4.511719 19.453125 C 4.420573 19.505209 4.322917 19.53125 4.21875 19.53125 Z " />
 
     <!--  Resources for RepeatButton  -->
@@ -2413,6 +2413,7 @@
     <m:StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
     <m:StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
     <m:StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
+    <SolidColorBrush x:Key="TimePickerFlyoutPresenterHighlightForegroundBrush" Color="{m:ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}" />
     <m:StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     <!--  Legacy brushes  -->
     <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
@@ -2426,6 +2427,35 @@
     <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
     <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
 
+    <!--  Resources for Datetime Picker  -->
+    <m:StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
+    <m:StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+    <m:StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="TextFillColorSecondaryBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+    <m:StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
+    <m:StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
+    <m:StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    <SolidColorBrush x:Key="DatePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="#FF000000" />
+    
     <!--  Resources for ToggleButton  -->
     <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
     <m:StaticResource x:Key="ToggleButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />

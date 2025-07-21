@@ -1,4 +1,5 @@
-﻿using System;
+﻿using iNKORE.UI.WPF.Modern.Common;
+using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -25,7 +26,7 @@ namespace iNKORE.UI.WPF.Modern.Media.Animation
 
         public void Begin()
         {
-            if (!(_element.CacheMode is BitmapCache))
+            if (ShadowAssist.UseBitmapCache && _element.CacheMode is not BitmapCache)
             {
                 _element.SetCurrentValue(UIElement.CacheModeProperty, GetBitmapCache());
             }
@@ -38,7 +39,10 @@ namespace iNKORE.UI.WPF.Modern.Media.Animation
             {
                 _storyboard.Stop(_element);
             }
-            _element.InvalidateProperty(UIElement.CacheModeProperty);
+            if (ShadowAssist.UseBitmapCache)
+            {
+                _element.InvalidateProperty(UIElement.CacheModeProperty);
+            }
             _element.InvalidateProperty(UIElement.RenderTransformProperty);
             _element.InvalidateProperty(UIElement.RenderTransformOriginProperty);
         }

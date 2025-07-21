@@ -310,6 +310,7 @@
                 <Popup
                     x:Name="PART_Popup"
                     AllowsTransparency="true"
+                    CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                     Focusable="false"
                     IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
                     Placement="Right"

@@ -16,5 +16,15 @@ namespace iNKORE.UI.WPF.Modern.Common.IconKeys
         {
             return new FontIconData(glyph, forceFluent ? FontFamily : new FontFamily(FontIcon.SegoeIconsFontFamilyName));
         }
+
+        public static FontIconData CreateIcon(int chara, bool forceFluent = false)
+        {
+            return CreateIcon(ToGlyph(chara), forceFluent);
+        }
+
+        public static string ToGlyph(int chara)
+        {
+            return char.ConvertFromUtf32(chara);
+        }
     }
 }

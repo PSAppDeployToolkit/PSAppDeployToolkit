@@ -7,6 +7,7 @@
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common;assembly=iNKORE.UI.WPF.Modern"
     mc:Ignorable="d" Loaded="Page_Loaded">
     <ikw:SimpleStackPanel>
         <local:ControlExample x:Name="Example1" HeaderText="Popup placement">
@@ -19,6 +20,7 @@
                 <Popup
                     x:Name="Popup1"
                     AllowsTransparency="True"
+                    CacheMode="{Binding RelativeSource={RelativeSource Self}, Path=(common:ShadowAssist.CacheMode)}"
                     IsOpen="{Binding ElementName=Control1, Path=IsChecked}"
                     Placement="Absolute"
                     PlacementTarget="{Binding ElementName=Control1}">

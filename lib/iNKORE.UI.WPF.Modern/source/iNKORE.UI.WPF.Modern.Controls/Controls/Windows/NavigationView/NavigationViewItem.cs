@@ -766,8 +766,9 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
         void OnPresenterPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            Debug.Assert(!m_isPressed);
-            Debug.Assert(!m_isMouseCaptured);
+            // Inherited code, removed Debug.Asserts
+            // Debug.Assert(!m_isPressed);
+            // Debug.Assert(!m_isMouseCaptured);
 
             // TODO: Update to look at presenter instead
             m_isPressed = args.LeftButton == MouseButtonState.Pressed || args.RightButton == MouseButtonState.Pressed;

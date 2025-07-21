@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.AcrylicPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -24,10 +24,21 @@
         </ResourceDictionary>
     </Page.Resources>
     <StackPanel>
-        <TextBlock>
-            Acrylic Brush might fall back to SolidColorbrush in certain scenarios.
-            If you can't see the Acrylic effect, please refer to<Hyperlink NavigateUri="https://docs.microsoft.com/windows/apps/design/style/acrylic#usability-and-adaptability">Acrylic brush adaptability documentation</Hyperlink>
-            .</TextBlock>
+        <TextBlock TextWrapping="Wrap" FontSize="{DynamicResource {x:Static ui:ThemeKeys.BodyTextBlockFontSizeKey}}">
+            <!--FontSize is a workaround to force Hyperlinks to use the correct font size.-->
+            
+            Acrylic Brush might fall back to SolidColorBrush in certain scenarios.
+            If you can't see the Acrylic effect, please refer to
+            <Hyperlink NavigateUri="https://learn.microsoft.com/windows/apps/design/style/acrylic#usability-and-adaptability"
+                    RequestNavigate="Hyperlink_RequestNavigate">
+                Acrylic brush adaptability documentation
+            </Hyperlink>.
+            Acrylic Brush uses in-app acrylic. See
+            <Hyperlink Click="SystemBackdropLink_Click">
+                SystemBackdrops (Mica/Acrylic)
+            </Hyperlink>
+            for background acrylic.
+        </TextBlock>
         <local:ControlExample x:Name="Example1" HeaderText="Default in-app acrylic brush.">
             <local:ControlExample.Example>
                 <Grid
@@ -101,9 +112,9 @@
             </local:ControlExample.Example>
             <local:ControlExample.Options>
                 <StackPanel>
-                    <TextBlock Margin="0,0,0,12" Text="Tint Opacity :" />
                     <Slider
                         x:Name="OpacitySliderInApp"
+                        ui:ControlHelper.Header="Tint Opacity"
                         Width="200"
                         HorizontalAlignment="Left"
                         AutomationProperties.Name="tint opacity"
@@ -159,14 +170,15 @@
                         Margin="12"
                         Target="{Binding ElementName=Acrylic4Grid}"
                         TintColor="SkyBlue"
-                        TintOpacity="0.8" />
+                        TintOpacity="0.8" 
+                        Amount="80" />
                 </Grid>
             </local:ControlExample.Example>
             <local:ControlExample.Options>
                 <StackPanel>
-                    <TextBlock Margin="0,0,0,12" Text="Tint Opacity :" />
                     <Slider
                         x:Name="OpacitySliderLumin"
+                        ui:ControlHelper.Header="Tint Opacity"
                         Width="200"
                         HorizontalAlignment="Left"
                         AutomationProperties.Name="tint opacity"
@@ -174,16 +186,20 @@
                         Minimum="0"
                         SmallChange="0.001"
                         TickFrequency="0.001"
-                        Value="{Binding TintOpacity, ElementName=CustomAcrylicShapeLumin, Mode=TwoWay}" />
-                    <TextBlock Margin="0,0,0,12" Text="Tint Luminosity Opacity :" />
-                    <ui:NumberBox
+                        Value="{Binding TintOpacity, ElementName=CustomAcrylicShapeLumin, Mode=TwoWay}" 
+                        ValueChanged="OpacitySliderLumin_ValueChanged" />
+                    <Slider
                         x:Name="LuminositySlider"
+                        ui:ControlHelper.Header="Tint Luminosity Opacity"
                         Width="200"
                         HorizontalAlignment="Left"
                         AutomationProperties.Name="tint luminosity"
+                        Maximum="100"
                         Minimum="0"
-                        SpinButtonPlacementMode="Inline"
-                        Value="{Binding Amount, ElementName=CustomAcrylicShapeLumin, Mode=TwoWay}" />
+                        SmallChange="0.001"
+                        TickFrequency="0.001"
+                        Value="{Binding Amount, ElementName=CustomAcrylicShapeLumin, Mode=TwoWay}"
+                        ValueChanged="LuminositySlider_ValueChanged" />
                 </StackPanel>
             </local:ControlExample.Options>
         </local:ControlExample>

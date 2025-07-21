@@ -13,7 +13,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutItemRevealBorderBrush}" />
         <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutItemRevealBorderThickness}" />
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
-        <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
+        <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePadding}" />
         <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -21,6 +21,7 @@
         <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
         <Setter Property="ScrollViewer.PanningMode" Value="Both" />
         <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="Margin" Value="2,1.3,1.5,1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:RadioMenuItem">
@@ -29,10 +30,12 @@
                     </ControlTemplate.Resources>
                     <Border
                         x:Name="LayoutRoot"
+                        Margin="{TemplateBinding Margin}"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}"
                         SnapsToDevicePixels="true">
                         <Grid x:Name="AnimationRoot">
                             <Grid.ColumnDefinitions>
@@ -43,11 +46,11 @@
                             </Grid.ColumnDefinitions>
                             <ui:FontIconFallback
                                 x:Name="CheckGlyph"
-                                Width="16"
+                                Width="13"
                                 Margin="0,0,12,0"
                                 Data="{StaticResource RadioBullet}"
                                 FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                FontSize="16"
+                                FontSize="13"
                                 Foreground="{DynamicResource ToggleMenuFlyoutItemCheckGlyphForeground}"
                                 Opacity="0" />
                             <Viewbox
@@ -75,7 +78,7 @@
                             <TextBlock
                                 x:Name="KeyboardAcceleratorTextBlock"
                                 Grid.Column="3"
-                                Margin="24,0,0,0"
+                                Margin="24,0,2,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"

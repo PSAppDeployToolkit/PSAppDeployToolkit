@@ -10,6 +10,8 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Button.xaml" />
     </ResourceDictionary.MergedDictionaries>
+    
+    <sys:Double x:Key="PipsPagerNavigationButtonScalePressed">0.875</sys:Double>
 
     <Style
         x:Key="PipsPagerNavigationButtonBaseStyle"
@@ -55,24 +57,7 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver" />
-                                <VisualState x:Name="Pressed">
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames
-                                            RepeatBehavior="Forever"
-                                            Storyboard.TargetName="ScaleTransform"
-                                            Storyboard.TargetProperty="ScaleX">
-                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{DynamicResource PipsPagerNavigationButtonScalePressed}" />
-                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{DynamicResource PipsPagerNavigationButtonScalePressed}" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames
-                                            RepeatBehavior="Forever"
-                                            Storyboard.TargetName="ScaleTransform"
-                                            Storyboard.TargetProperty="ScaleY">
-                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{DynamicResource PipsPagerNavigationButtonScalePressed}" />
-                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{DynamicResource PipsPagerNavigationButtonScalePressed}" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Pressed"/>
                                 <VisualState x:Name="Disabled" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
@@ -80,10 +65,35 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackgroundPointerOver}" />
-                            <Setter TargetName="RootGrid" Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrushPressed}" />
+                            <Setter TargetName="RootGrid" Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrushPointerOver}" />
                             <Setter TargetName="Content" Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="PipsPagerButtonPressedBeginStoryboard">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames 
+            RepeatBehavior="Forever"
+            Storyboard.TargetName="ScaleTransform" 
+            Storyboard.TargetProperty="ScaleX">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{StaticResource PipsPagerNavigationButtonScalePressed}" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{StaticResource PipsPagerNavigationButtonScalePressed}" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames 
+        RepeatBehavior="Forever"
+        Storyboard.TargetName="ScaleTransform"
+        Storyboard.TargetProperty="ScaleY">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{StaticResource PipsPagerNavigationButtonScalePressed}" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{StaticResource PipsPagerNavigationButtonScalePressed}" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="PipsPagerButtonPressedBeginStoryboard"/>
+                            </Trigger.ExitActions>
+
                             <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackgroundPressed}" />
                             <Setter TargetName="RootGrid" Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrushPressed}" />
                             <Setter TargetName="Content" Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />

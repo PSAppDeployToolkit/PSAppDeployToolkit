@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.StackPanelPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -13,7 +13,7 @@
         <ikw:SimpleStackPanel Style="{StaticResource ControlPageContentPanelStyle}">
             <local:ControlExample x:Name="Example1" HeaderText="A SimpleStackPanel control.">
 
-                <ikw:SimpleStackPanel x:Name="Control1" Spacing="0"
+                <ikw:SimpleStackPanel x:Name="Control1" Spacing="8"
                     VerticalAlignment="Top" Orientation="Vertical" HorizontalAlignment="Left">
                     <ikw:SimpleStackPanel.Resources>
                         <Style TargetType="Rectangle">
@@ -33,11 +33,17 @@
                             ItemsSource="{Binding Source={x:Type Orientation}, Converter={StaticResource EnumValuesConverter}}" 
                             SelectedItem="{Binding ElementName=Control1, Path=Orientation}" 
                             SelectionChanged="RadioButtons_Orientation_SelectionChanged"/>
-                        <ui:NumberBox x:Name="NumberBox_Spacing"
-                            Header="Spacing" Minimum="0"
-                            SpinButtonPlacementMode="Inline"
-                            Value="{Binding ElementName=Control1, Path=Spacing}" 
-                            ValueChanged="NumberBox_Spacing_ValueChanged"/>
+                        <StackPanel Orientation="Vertical">
+                            <Slider x:Name="Slider_Spacing"
+                                ui:ControlHelper.Header="Spacing"
+                                Maximum="16"
+                                Minimum="0"
+                                IsSnapToTickEnabled="True"
+                                TickFrequency="1"
+                                Value="{Binding ElementName=Control1, Path=Spacing, Mode=TwoWay}"
+                                ValueChanged="Slider_Spacing_ValueChanged"
+                                Width="120"/>
+                        </StackPanel>
                     </ikw:SimpleStackPanel>
                 </local:ControlExample.Options>
 

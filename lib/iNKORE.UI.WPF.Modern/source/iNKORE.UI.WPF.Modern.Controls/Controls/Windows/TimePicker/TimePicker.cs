@@ -12,6 +12,7 @@ using iNKORE.UI.WPF.Modern.Controls.Primitives;
 using static iNKORE.UI.WPF.Modern.Common.ResourceAccessor;
 using iNKORE.UI.WPF.Modern.Common;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
+using System.Windows.Input;
 
 namespace iNKORE.UI.WPF.Modern.Controls
 {
@@ -53,6 +54,65 @@ namespace iNKORE.UI.WPF.Modern.Controls
         public TimePicker()
         {
             IsDatePickerVisible = false;
+        }
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if (e.Key is Key.Left or Key.Right)
+            {
+                HandleLeftRightFocusNaivgation(e);
+            }
+            base.OnPreviewKeyDown(e);
+        }
+
+        private void HandleLeftRightFocusNaivgation(KeyEventArgs e)
+        {
+            if (e.KeyboardDevice.Modifiers is ModifierKeys.Alt || Keyboard.FocusedElement is not DateTimeComponentSelector currentSelector)
+            {
+                return;
+            }
+
+            var toNext = e.Key is Key.Right;
+            if (FlowDirection is FlowDirection.RightToLeft)
+            {
+                toNext = !toNext;
+            }
+
+            var toFocusSelector = GetNextSelector(currentSelector, toNext);
+
+            while (toFocusSelector?.IsEnabled is not true || toFocusSelector?.Visibility is not Visibility.Visible)
+            {
+                toFocusSelector = GetNextSelector(toFocusSelector, toNext);
+
+                if (toFocusSelector is null)
+                {
+                    break;
+                }
+            }
+
+            toFocusSelector?.Focus();
+            e.Handled = true;
+        }
+
+        private DateTimeComponentSelector GetNextSelector(DateTimeComponentSelector current, bool next)
+        {
+            if (current == _hourInput)
+            {
+                return next ? _minuteInput : null;
+            }
+            else if (current == _minuteInput)
+            {
+                return next ? _secondInput : _hourInput;
+            }
+            else if (current == _secondInput)
+            {
+                return next ? _ampmSwitcher : _minuteInput;
+            }
+            else if (current == _ampmSwitcher)
+            {
+                return next ? null : _secondInput;
+            }
+            return null;
         }
 
         #region UseSystemFocusVisuals

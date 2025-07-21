@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using iNKORE.UI.WPF.Modern.Common;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
@@ -68,7 +69,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
         {
             base.OnDpiChanged(oldDpi, newDpi);
 
-            if (CacheMode is BitmapCache bitmapCache)
+            if (ShadowAssist.UseBitmapCache && CacheMode is BitmapCache bitmapCache)
             {
                 bitmapCache.RenderAtScale = newDpi.PixelsPerDip;
             }

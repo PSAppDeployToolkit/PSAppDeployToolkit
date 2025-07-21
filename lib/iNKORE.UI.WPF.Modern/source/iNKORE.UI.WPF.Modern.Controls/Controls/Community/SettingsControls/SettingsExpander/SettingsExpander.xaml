@@ -145,8 +145,12 @@
     <ikw:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="Bottom" />
     <ikw:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="Left" />
 
-    <Style x:Key="SettingsExpanderExpanderStyle"
-           TargetType="Expander">
+    <ikw:SizeToRectConverter x:Key="SizeToRectConverter" />
+
+    <sys:TimeSpan x:Key="ExpandAnimationDuration">0:0:0.333</sys:TimeSpan>
+    <sys:TimeSpan x:Key="CollapseAnimationDuration">0:0:0.167</sys:TimeSpan>
+
+    <Style x:Key="SettingsExpanderExpanderStyle" TargetType="Expander">
         <Setter Property="Background" Value="{DynamicResource ExpanderContentBackground}" />
         <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
@@ -156,39 +160,63 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="ui:ControlHelper.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.CollapseAnimationDuration" Value="{DynamicResource CollapseAnimationDuration}" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.ExpandAnimationDuration" Value="{DynamicResource ExpandAnimationDuration}" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.ToAnimateControlName" Value="ExpanderContent" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.IsEnabled" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Expander">
-                    <Grid MinWidth="{TemplateBinding MinWidth}"
-                          MaxWidth="{TemplateBinding MaxWidth}">
+                    <Grid MinWidth="{TemplateBinding MinWidth}" MaxWidth="{TemplateBinding MaxWidth}">
                         <Grid.RowDefinitions>
-                            <RowDefinition x:Name="Row0"
-                                           Height="Auto" />
-                            <RowDefinition x:Name="Row1"
-                                           Height="*" />
+                            <RowDefinition x:Name="Row0" Height="Auto" />
+                            <RowDefinition x:Name="Row1" Height="*" />
                         </Grid.RowDefinitions>
 
                         <!--  The clip is a composition clip applied in code  -->
-                        <Border x:Name="ExpanderContentClip"
-                                Grid.Row="1">
-                            <ikw:ClippedContent x:Name="ExpanderContent"
-                                    MinHeight="{DynamicResource SettingsExpanderContentMinHeight}"
-                                    Padding="{TemplateBinding Padding}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
-                                    CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                                    Visibility="Collapsed">
+                        <Border x:Name="ExpanderContentClip" Grid.Row="1">
+
+                            <Border.Clip>
+                                <RectangleGeometry>
+                                    <RectangleGeometry.Rect>
+                                        <MultiBinding Converter="{StaticResource SizeToRectConverter}">
+                                            <Binding Source="0" />
+                                            <Binding Source="0" />
+                                            <Binding
+                                                Mode="OneWay"
+                                                Path="ActualWidth"
+                                                RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                            <Binding
+                                                ElementName="ContentPresenter"
+                                                Mode="OneWay"
+                                                Path="ActualHeight" />
+                                        </MultiBinding>
+                                    </RectangleGeometry.Rect>
+                                </RectangleGeometry>
+                            </Border.Clip>
+
+                            <ikw:ClippedContent
+                                x:Name="ExpanderContent"
+                                MinHeight="{DynamicResource SettingsExpanderContentMinHeight}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
+                                CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius,
+                                                               Converter={StaticResource BottomCornerRadiusFilterConverter}}"
+                                Visibility="Collapsed">
                                 <FrameworkElement.RenderTransform>
-                                    <TranslateTransform x:Name="ExpanderContentTranslation"/>
+                                    <TranslateTransform x:Name="ExpanderContentTranslation" />
                                 </FrameworkElement.RenderTransform>
-                                <ui:ContentPresenterEx Margin="0,-2,0,0"
-                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  Content="{TemplateBinding Content}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+                                <ui:ContentPresenterEx
+                                    x:Name="ContentPresenter"
+                                    Margin="0,-2,0,0"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
                             </ikw:ClippedContent>
                         </Border>
 
@@ -213,14 +241,6 @@
                                       Tag="{TemplateBinding chelper:ControlHelper.CornerRadius}" />
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsExpanded" Value="true">
-                            <Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible" />
-                        </Trigger>
-
-                        <Trigger Property="ExpandDirection" Value="Up">
-                            <!--I'm just way to lazy. Don't wanna do this. If you see this and you're interested in this, please PR it.-->
-                        </Trigger>
-                        
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsExpanded" Value="true" />

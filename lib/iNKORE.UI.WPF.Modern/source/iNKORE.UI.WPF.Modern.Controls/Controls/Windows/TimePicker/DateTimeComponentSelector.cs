@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace iNKORE.UI.WPF.Modern.Controls
@@ -215,15 +216,6 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
                 case Key.Down:
                     _scrollViewer?.LineDown();
-                    break;
-
-                case Key.Left:
-                case Key.Right:
-                    if (IsKeyboardFocusWithin)
-                    {
-                        var direction = key == Key.Left ? FocusNavigationDirection.Left : FocusNavigationDirection.Right;
-                        MoveFocus(new TraversalRequest(direction));
-                    }
                     break;
 
                 case Key.Home:

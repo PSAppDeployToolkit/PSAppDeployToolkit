@@ -136,6 +136,10 @@
                                 Availability="{TemplateBinding CloseButtonActualAvailability}"
                                 Style="{TemplateBinding ButtonStyle}" />
                         </StackPanel>
+
+                        <!--Resize Border Preserver-->
+                        <Border x:Name="ResizeBorder" Background="{x:Null}" WindowChrome.IsHitTestVisibleInChrome="False"
+                            BorderThickness="{TemplateBinding ResizeBorderThickness}" BorderBrush="Transparent" Grid.ColumnSpan="3"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsActive" Value="False">

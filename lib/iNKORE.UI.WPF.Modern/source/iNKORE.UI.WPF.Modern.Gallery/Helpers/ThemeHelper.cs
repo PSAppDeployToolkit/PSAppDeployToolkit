@@ -47,7 +47,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Helpers
             {
                 foreach (Window window in WindowHelper.ActiveWindows)
                 {
-                    return ThemeManager.GetActualTheme(window);
+                    return ThemeManager.GetRequestedTheme(window);
                 }
 
                 return ElementTheme.Default;
@@ -93,7 +93,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Helpers
         {
             if (RootTheme == ElementTheme.Default)
             {
-                return ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark;
+                return ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark;
             }
             return RootTheme == ElementTheme.Dark;
         }

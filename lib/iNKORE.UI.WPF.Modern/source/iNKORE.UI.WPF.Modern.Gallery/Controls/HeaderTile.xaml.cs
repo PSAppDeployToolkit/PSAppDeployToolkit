@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace iNKORE.UI.WPF.Modern.Gallery.Controls
 {
@@ -22,30 +10,48 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Controls
     {
         public string Title
         {
-            get { return (string)GetValue(TitleProperty); }
-            set { SetValue(TitleProperty, value); }
+            get => (string)GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
         }
 
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register("Title", typeof(string), typeof(HeaderTile), new PropertyMetadata(null));
 
-        public string Source
+        public string Description
         {
-            get { return (string)GetValue(SourceProperty); }
-            set { SetValue(SourceProperty, value); }
+            get => (string)GetValue(DescriptionProperty);
+            set => SetValue(DescriptionProperty, value);
+        }
+
+        public static readonly DependencyProperty DescriptionProperty =
+            DependencyProperty.Register("Description", typeof(string), typeof(HeaderTile), new PropertyMetadata(null));
+
+        public object Source
+        {
+            get => GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
         }
 
         public static readonly DependencyProperty SourceProperty =
-            DependencyProperty.Register("Source", typeof(string), typeof(HeaderTile), new PropertyMetadata("/Assets/blank.png"));
+            DependencyProperty.Register("Source", typeof(object), typeof(HeaderTile), new PropertyMetadata(null));
 
         public string Link
         {
-            get { return (string)GetValue(LinkProperty); }
-            set { SetValue(LinkProperty, value); }
+            get => (string)GetValue(LinkProperty);
+            set => SetValue(LinkProperty, value);
         }
 
         public static readonly DependencyProperty LinkProperty =
-            DependencyProperty.Register("Link", typeof(string), typeof(HeaderTile), new PropertyMetadata("http://www.bing.com"));
+            DependencyProperty.Register("Link", typeof(string), typeof(HeaderTile), new PropertyMetadata(null));
+
+        public object Icon
+        {
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
+        }
+
+        public static readonly DependencyProperty IconProperty =
+            DependencyProperty.Register(nameof(Icon), typeof(object), typeof(HeaderTile), new PropertyMetadata(null));
 
         public HeaderTile()
         {
