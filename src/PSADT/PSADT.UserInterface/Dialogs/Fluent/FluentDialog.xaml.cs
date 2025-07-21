@@ -457,7 +457,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
         }
 
-
         /// <summary>
         /// Sets the button to be styled with an accent color.
         /// </summary>

@@ -40,7 +40,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
-
             // Configure right button
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
             AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
