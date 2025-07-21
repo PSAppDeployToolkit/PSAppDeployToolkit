@@ -101,8 +101,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
             AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
             ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
-            ButtonRight.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
             ButtonLeft.Visibility = Visibility.Visible;
+            SetDefaultButton(ButtonLeft);
+            SetAccentButton(ButtonLeft);
 
             // Set up/process optional values.
             if (null != state.RunningProcessService)

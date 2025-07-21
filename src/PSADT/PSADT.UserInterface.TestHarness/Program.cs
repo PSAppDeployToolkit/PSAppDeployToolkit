@@ -74,10 +74,10 @@ namespace PSADT.UserInterface.TestHarness
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            string customMessageText = "Oh yeah. You can do [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And [accent]accent colored text strings![/accent] This is a custom message that can be added using the [bold]-CustomText[/bold] parameter on [bold]Show-ADTInstallationWelcome[/bold] and [bold]Show-ADTInstallationRestartPrompt[/bold].";
+            //string customMessageText = "Oh yeah. You can do [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And [accent]accent colored text strings![/accent] This is a custom message that can be added using the [bold]-CustomText[/bold] parameter on [bold]Show-ADTInstallationWelcome[/bold] and [bold]Show-ADTInstallationRestartPrompt[/bold].";
 
             uint deferralsRemaining = 3;
-            DateTime deferralDeadline = DateTime.Parse("2025-07-20T13:00:00");
+            DateTime deferralDeadline = DateTime.Parse("2025-09-20T13:00:00");
 
             // DateTime? deferralDeadline = null;
             string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";
@@ -114,7 +114,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
-                { "CustomMessageText", customMessageText },
+                //{ "CustomMessageText", customMessageText },
                 { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
             };
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable

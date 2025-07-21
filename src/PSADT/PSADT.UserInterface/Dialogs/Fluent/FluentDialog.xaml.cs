@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -457,6 +457,34 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
         }
 
+
+        /// <summary>
+        /// Sets the button to be styled with an accent color.
+        /// </summary>
+        /// <param name="button"></param>
+        protected void SetAccentButton(Button button)
+        {
+            button.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
+        }
+
+        /// <summary>
+        /// Sets the button to be the form cancel button.
+        /// </summary>
+        /// <param name="button"></param>
+        protected void SetCancelButton(Button button)
+        {
+            button.IsCancel = true;
+        }
+
+        /// <summary>
+        /// Sets the button to be the form default button.
+        /// </summary>
+        /// <param name="button"></param>
+        protected void SetDefaultButton(Button button)
+        {
+            button.IsDefault = true;
+        }
+
         /// <summary>
         /// Sets the button content with an accelerator key (underscore) for accessibility.
         /// </summary>
@@ -721,8 +749,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 Button button = (Button)visibleButtons[0];
                 button.Margin = new Thickness(0, 0, 0, 0);
 
-                // Set to Primary appearance for single button
-                button.Style = (Style)FindResource(ThemeKeys.AccentButtonStyleKey);
+                // Set this to be the default button with accent
+                SetDefaultButton(button);
+                SetAccentButton(button);
             }
         }
 

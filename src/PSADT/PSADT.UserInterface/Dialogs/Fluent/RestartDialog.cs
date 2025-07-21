@@ -37,12 +37,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);
             AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartNow);
             ButtonLeft.Visibility = Visibility.Visible;
+            SetDefaultButton(ButtonLeft);
+            SetAccentButton(ButtonLeft);
+
 
             // Configure right button
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
             AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
             ButtonRight.Visibility = Visibility.Visible;
-            ButtonRight.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
+            SetCancelButton(ButtonRight);
         }
 
         /// <summary>

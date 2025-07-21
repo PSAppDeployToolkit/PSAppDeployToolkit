@@ -20,6 +20,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Enable input box within the dialog
             InputBoxStackPanel.Visibility = Visibility.Visible;
             InputBoxText.Text = options.InitialInputText;
+            SetDefaultButton(ButtonLeft);
+            SetAccentButton(ButtonLeft);
+            SetCancelButton(ButtonRight);
 
             // Focus the input box initially
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
