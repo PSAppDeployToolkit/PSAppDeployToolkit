@@ -28,9 +28,9 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 |---------------------|-----------------|
 | ![CustomLightMode](https://github.com/user-attachments/assets/c092999f-46a2-43f6-bd28-bc2bdcd03b76) | ![CustomDarkMode](https://github.com/user-attachments/assets/26be16d2-f13e-491d-af86-72a169200f27) |
 
-## 🖥️ What's New in v4.1 (Release Candidate 2) - 2025-07-22
+## 🖥️ Whats  v4.1 (RC2) - 2025-07-22
 
-### 🛠️ Changes since RC1 - 2025-07-22
+### 🛠️ Changes since RC1
 
 - Added [Test-ADTEspActive](https://psappdeploytoolkit.com/docs/next/reference/functions/Test-ADTEspActive) to test for an active Enrollment Status Page (ESP).
 - Fixed launching processes in the users' session when using certain MDMs, e.g. VMware Workspace ONE.
