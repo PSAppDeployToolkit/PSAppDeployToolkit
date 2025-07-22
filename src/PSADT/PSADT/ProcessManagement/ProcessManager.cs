@@ -227,7 +227,7 @@ namespace PSADT.ProcessManagement
                     commandLine = commandSpan.ToString().TrimRemoveNull();
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
-                        Kernel32.AssignProcessToJobObject(job, hProcess = new SafeProcessHandle(pi.hProcess, true));
+                        Kernel32.AssignProcessToJobObject(job, hProcess = new(pi.hProcess, true));
                         Kernel32.ResumeThread(hThread);
                     }
                 }
@@ -277,7 +277,7 @@ namespace PSADT.ProcessManagement
                 Shell32.ShellExecuteEx(ref startupInfo);
                 if (startupInfo.hProcess != IntPtr.Zero)
                 {
-                    hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
+                    hProcess = new(startupInfo.hProcess, true);
                     processId = Kernel32.GetProcessId(hProcess);
                     process = GetProcessFromId(processId.Value);
                     Kernel32.AssignProcessToJobObject(job, hProcess);
