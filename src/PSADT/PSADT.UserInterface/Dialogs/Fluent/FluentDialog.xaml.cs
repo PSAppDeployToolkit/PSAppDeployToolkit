@@ -18,7 +18,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using PSADT.AccountManagement;
-using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using Windows.Win32;
 using iNKORE.UI.WPF.Modern;
@@ -64,7 +63,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Title = options.AppTitle;
             AppTitleTextBlock.Text = options.AppTitle;
             SubtitleTextBlock.Text = options.Subtitle;
-
 
             // Set accessibility properties
             AutomationProperties.SetName(this, options.AppTitle);
@@ -672,7 +670,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Top = _startingTop;
         }
 
-
         /// <summary>
         /// Sets the minimize button availability based on specific conditions.
         /// </summary>
@@ -940,6 +937,5 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             _disposed = true;
         }
-
     }
 }
