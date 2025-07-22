@@ -77,6 +77,12 @@ function Show-ADTInstallationPrompt
     .EXAMPLE
         Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -ButtonLeftText 'OK' -Icon Information -NoWait
 
+    .EXAMPLE
+        Show-ADTInstallationPrompt -RequestInput -Message 'Tell us why you think PSADT is the best thing since sliced bread.' -ButtonRightText 'Submit'
+
+    .EXAMPLE
+        Show-ADTInstallationPrompt -RequestInput -DefaultValue 'XXXX' -Message 'Please type in your favourite beer.' -ButtonRightText 'Submit'
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
