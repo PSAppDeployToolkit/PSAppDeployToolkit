@@ -33,6 +33,7 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 ### 🛠️ Changes since RC1
 
 - Added [Test-ADTEspActive](https://psappdeploytoolkit.com/docs/next/reference/functions/Test-ADTEspActive) to test for an active Enrollment Status Page (ESP).
+- Added support for running processes from network drives.
 - Fixed launching processes in the users' session when using certain MDMs, e.g. VMware Workspace ONE.
 - Fixed setting the Accent Color using the ADMX templates.
 - Fixed minimize button not being shown on Fluent Progress and Restart Dialogs.
