@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using PSADT.ProcessManagement;
 
 namespace PSADT.ClientServer
 {
@@ -24,7 +25,7 @@ namespace PSADT.ClientServer
                 // Set the process start information.
                 process.StartInfo.FileName = typeof(ClientLauncher).Assembly.Location.Replace(".Launcher.exe", ".exe");
                 process.StartInfo.WorkingDirectory = Environment.SystemDirectory;
-                process.StartInfo.Arguments = string.Join(" ", args);
+                process.StartInfo.Arguments = ProcessUtilities.ArgvToCommandLine(args);
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
                 try
