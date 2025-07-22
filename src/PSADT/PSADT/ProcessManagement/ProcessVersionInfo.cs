@@ -149,24 +149,23 @@ namespace PSADT.ProcessManagement
                 IsSpecialBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
 
                 // Read the version resource strings.
-                const string format = @"\StringFileInfo\{0}\{1}"; bool success = false;
                 var codepageTable = GetTranslationTableCombinations(versionResource).ToList();
-                Language = GetFileVersionLanguage(versionResource, codepageTable[0]);
+                Language = GetFileVersionLanguage(versionResource, codepageTable[0]); bool success = false;
                 foreach (var codepage in codepageTable)
                 {
                     // Exit loop if we successfully retrieved at least one string.
-                    Comments = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "Comments"), ref success);
-                    CompanyName = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "CompanyName"), ref success);
-                    FileDescription = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "FileDescription"), ref success);
-                    FileVersion = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "FileVersion"), ref success);
-                    InternalName = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "InternalName"), ref success);
-                    LegalCopyright = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "LegalCopyright"), ref success);
-                    LegalTrademarks = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "LegalTrademarks"), ref success);
-                    OriginalFilename = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "OriginalFilename"), ref success);
-                    PrivateBuild = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "PrivateBuild"), ref success);
-                    ProductName = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "ProductName"), ref success);
-                    ProductVersion = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "ProductVersion"), ref success);
-                    SpecialBuild = GetFileVersionString(versionResource, string.Format(CultureInfo.InvariantCulture, format, codepage, "SpecialBuild"), ref success);
+                    Comments = GetFileVersionString(versionResource, codepage, "Comments", ref success);
+                    CompanyName = GetFileVersionString(versionResource, codepage, "CompanyName", ref success);
+                    FileDescription = GetFileVersionString(versionResource, codepage, "FileDescription", ref success);
+                    FileVersion = GetFileVersionString(versionResource, codepage, "FileVersion", ref success);
+                    InternalName = GetFileVersionString(versionResource, codepage, "InternalName", ref success);
+                    LegalCopyright = GetFileVersionString(versionResource, codepage, "LegalCopyright", ref success);
+                    LegalTrademarks = GetFileVersionString(versionResource, codepage, "LegalTrademarks", ref success);
+                    OriginalFilename = GetFileVersionString(versionResource, codepage, "OriginalFilename", ref success);
+                    PrivateBuild = GetFileVersionString(versionResource, codepage, "PrivateBuild", ref success);
+                    ProductName = GetFileVersionString(versionResource, codepage, "ProductName", ref success);
+                    ProductVersion = GetFileVersionString(versionResource, codepage, "ProductVersion", ref success);
+                    SpecialBuild = GetFileVersionString(versionResource, codepage, "SpecialBuild", ref success);
                     if (success)
                     {
                         break;
@@ -356,12 +355,12 @@ namespace PSADT.ProcessManagement
         /// <param name="versionResource">A handle to the version resource from which to retrieve the version string.</param>
         /// <param name="name">The name of the version information to query.</param>
         /// <returns>A string containing the version information if found and not empty; otherwise, <see langword="null"/>.</returns>
-        private static string? GetFileVersionString(SafeHGlobalHandle versionResource, string name, ref bool success)
+        private static string? GetFileVersionString(SafeHGlobalHandle versionResource, string codepage, string name, ref bool success)
         {
             // Attempt to query the version resource for the specified name.
             try
             {
-                if (Version32.VerQueryValue(versionResource, name, out var lplpBuffer, out var _) && lplpBuffer != IntPtr.Zero)
+                if (Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out var lplpBuffer, out var _) && lplpBuffer != IntPtr.Zero)
                 {
                     string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
                     if (!string.IsNullOrWhiteSpace(result))
