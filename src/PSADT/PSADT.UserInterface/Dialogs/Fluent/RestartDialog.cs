@@ -3,7 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Threading;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
-using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -43,6 +43,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Configure right button
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
             AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
+            SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
             ButtonRight.Visibility = Visibility.Visible;
             SetCancelButton(ButtonRight);
         }
@@ -78,10 +79,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 DeviceUtilities.RestartComputer();
             }
-            else if (null != _countdownWarningDuration && _countdownStopwatch.Elapsed >= _countdownWarningDuration)
+            else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
                 Dispatcher.Invoke(() =>
                 {
+                    SetMinimizeButtonAvailability(TitleBarButtonAvailability.Disabled);
                     ButtonRight.IsEnabled = false;
                     RestoreWindow();
                 });

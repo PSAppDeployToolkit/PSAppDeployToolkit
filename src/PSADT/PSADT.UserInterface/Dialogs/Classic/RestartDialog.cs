@@ -171,7 +171,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 this.Invoke(() => buttonRestartNow.PerformClick());
             }
-            else if ((null != minimizeDuration) && (countdownStopwatch.Elapsed >= minimizeDuration))
+            else if ((null != minimizeDuration) && (remaining <= minimizeDuration))
             {
                 this.Invoke(() =>
                 {

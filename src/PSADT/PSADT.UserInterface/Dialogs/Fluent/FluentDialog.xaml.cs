@@ -782,22 +782,22 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            var countdownRemainingTime = _countdownDuration.Value - _countdownStopwatch.Elapsed;
-            if (countdownRemainingTime < TimeSpan.Zero)
+            _countdownRemainingTime = _countdownDuration.Value - _countdownStopwatch.Elapsed;
+            if (_countdownRemainingTime < TimeSpan.Zero)
             {
-                countdownRemainingTime = TimeSpan.Zero;
+                _countdownRemainingTime = TimeSpan.Zero;
             }
 
             // Format the remaining time as hh:mm:ss
-            CountdownValueTextBlock.Text = $"{countdownRemainingTime.Hours}h {countdownRemainingTime.Minutes}m {countdownRemainingTime.Seconds}s";
-            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {countdownRemainingTime.Hours} hours, {countdownRemainingTime.Minutes} minutes, {countdownRemainingTime.Seconds} seconds");
+            CountdownValueTextBlock.Text = $"{_countdownRemainingTime.Hours}h {_countdownRemainingTime.Minutes}m {_countdownRemainingTime.Seconds}s";
+            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {_countdownRemainingTime.Hours} hours, {_countdownRemainingTime.Minutes} minutes, {_countdownRemainingTime.Seconds} seconds");
 
             // Update text color based on remaining time using style application
-            if (countdownRemainingTime.TotalSeconds <= 60)
+            if (_countdownRemainingTime.TotalSeconds <= 60)
             {
                 CountdownValueTextBlock.Style = (Style)FindResource("CriticalTextBlockStyle");
             }
-            else if (_countdownWarningDuration.HasValue && _countdownStopwatch.Elapsed >= _countdownWarningDuration.Value)
+            else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
                 CountdownValueTextBlock.Style = (Style)FindResource("CautionTextBlockStyle");
             }
@@ -871,6 +871,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// The end date/time for the countdown duration, as determined during form load.
         /// </summary>
         protected readonly Stopwatch _countdownStopwatch;
+
+        /// <summary>
+        /// Represents the remaining time in a countdown.
+        /// </summary>
+        protected TimeSpan _countdownRemainingTime;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.

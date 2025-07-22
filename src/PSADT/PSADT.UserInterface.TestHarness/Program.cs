@@ -188,8 +188,8 @@ namespace PSADT.UserInterface.TestHarness
                 { "AppIconImage", appIconImage },
                 { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
-                // { "CountdownDuration", restartCountdownDuration },
-                // { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
+                { "CountdownDuration", restartCountdownDuration },
+                { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
                 // { "CustomMessageText", customMessageText },
                 { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };

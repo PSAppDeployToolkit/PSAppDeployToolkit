@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ClassicDialog";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "ClassicDialog";
             this.TopMost = true;
             this.ResumeLayout(false);

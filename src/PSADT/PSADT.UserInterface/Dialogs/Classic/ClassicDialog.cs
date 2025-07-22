@@ -45,7 +45,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.TopMost = options.DialogTopMost;
                 this.ActiveControl = this.buttonDefault;
-                this.SizeChanged += (s, e) => PositionForm();
                 this.FormClosing += Form_FormClosing;
                 this.Load += Form_Load;
                 this.ResumeLayout();
