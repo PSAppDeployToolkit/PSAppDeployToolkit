@@ -103,7 +103,7 @@
             ExpiryMessage = @{
                 Install = 'Můžete se rozhodnout odložit instalaci až do vypršení odkladu:'
                 Repair = 'Můžete se rozhodnout odložit opravu až do vypršení odkladu:'
-                Odinstalovat = 'Můžete se rozhodnout odložit odinstalaci až do vypršení odkladu:'
+                Uninstall = 'Můžete se rozhodnout odložit odinstalaci až do vypršení odkladu:'
             }
             DeferralsRemaining = 'Zbývající odklady:'
             DeferralDeadline = 'Termín:'

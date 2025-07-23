@@ -132,7 +132,7 @@
             DialogMessageNoProcesses = @{
                 Install = 'A telepítés folytatásához válassza a Telepítés lehetőséget. Ha van még halasztása, akkor a telepítés elhalasztását is választhatja.'
                 Repair = 'A javítás folytatásához válassza a Repair (Javítás) lehetőséget. Ha van még halasztása, akkor a javítás elhalasztását is választhatja.'
-                Eltávolítás = 'Kérjük, válassza az Eltávolítás lehetőséget az eltávolítás folytatásához. Ha van még halasztása, akkor az eltávolítás elhalasztását is választhatja.'
+                Uninstall = 'Kérjük, válassza az Eltávolítás lehetőséget az eltávolítás folytatásához. Ha van még halasztása, akkor az eltávolítás elhalasztását is választhatja.'
             }
             AutomaticStartCountdown = 'Automatikus indítási visszaszámlálás'
             DeferralsRemaining = 'Fennmaradó halasztások'

@@ -41,7 +41,7 @@
     DiskSpaceText = @{
         Message = @{
             Install = "Nemáte dostatok miesta na disku na dokončenie inštalácie:`n{0}`n`nPotrebné miesto: {1}MB`nDostupné miesto: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v inštalácii."
-            Oprava = "Nemáte dostatok miesta na disku na dokončenie opravy:`n{0}`n`Potrebné miesto: {1}MB`nPriestor je k dispozícii: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v oprave."
+            Repair = "Nemáte dostatok miesta na disku na dokončenie opravy:`n{0}`n`Potrebné miesto: {1}MB`nPriestor je k dispozícii: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v oprave."
             Uninstall = "You do not have enough disk space to complete the uninstallation of:`n{0}`n`nSpace required: {1}MB`nPriestor je k dispozícii: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v odinštalácii."
         }
     }

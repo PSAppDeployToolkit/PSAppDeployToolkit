@@ -41,7 +41,7 @@
     DiskSpaceText = @{
         Message = @{
             Install = "Sinulla ei ole tarpeeksi levytilaa asennuksen loppuunsaattamiseen:`n{0}`n`nTilaa tarvitaan: {1}MB`nTilaa käytettävissä: {2}MB`n`nVapauta riittävästi levytilaa, jotta voit jatkaa asennusta."
-            Korjaus = "Sinulla ei ole tarpeeksi levytilaa korjauksen suorittamiseen:`n{0}`n`nTilaa tarvitaan: {1}MB`nTilaa käytettävissä: {2}MB`n`nVapauta riittävästi levytilaa, jotta voit jatkaa korjausta."
+            Repair = "Sinulla ei ole tarpeeksi levytilaa korjauksen suorittamiseen:`n{0}`n`nTilaa tarvitaan: {1}MB`nTilaa käytettävissä: {2}MB`n`nVapauta riittävästi levytilaa, jotta voit jatkaa korjausta."
             Uninstall = "Sinulla ei ole tarpeeksi levytilaa, jotta voit suorittaa asennuksen poistamisen loppuun:`n{0}`n`nTilaa tarvitaan: {1}MB`nTilaa käytettävissä: {2}MB`n`nVapauta riittävästi levytilaa, jotta voit jatkaa asennuksen poistamista."
         }
     }

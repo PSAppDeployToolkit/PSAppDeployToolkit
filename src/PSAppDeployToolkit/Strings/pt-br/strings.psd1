@@ -41,7 +41,7 @@
     DiskSpaceText = @{
         Message = @{
             Install = "Não há espaço em disco suficiente para concluir a instalação de:`n{0}`n`nEspaço necessário: {1}MB`nEspaço disponível: {2}MB`n`nPor favor, libere espaço suficiente em disco para prosseguir com a instalação."
-            Reparo = "Não há espaço em disco suficiente para concluir o reparo de:`n{0}`n`nEspaço necessário: {1}MB`nEspaço disponível: {2}MB`n`nPor favor, libere espaço suficiente em disco para prosseguir com a reparação."
+            Repair = "Não há espaço em disco suficiente para concluir o reparo de:`n{0}`n`nEspaço necessário: {1}MB`nEspaço disponível: {2}MB`n`nPor favor, libere espaço suficiente em disco para prosseguir com a reparação."
             Uninstall = "Não há espaço em disco suficiente para concluir a desinstalação de:`n{0}`n`nEspaço necessário: {1}MB`nEspaço disponível: {2}MB`n`nPor favor, libere espaço suficiente em disco para prosseguir com a desinstalação."
         }
     }

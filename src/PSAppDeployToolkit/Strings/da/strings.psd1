@@ -97,7 +97,7 @@
             }
             CloseAppsMessage = @{
                 Install = 'Følgende programmer skal lukkes, før installationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
-                Reparation = 'Følgende programmer skal lukkes, før reparationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
+                Repair = 'Følgende programmer skal lukkes, før reparationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
                 Uninstall = 'Følgende programmer skal lukkes, før afinstallationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
             }
             ExpiryMessage = @{

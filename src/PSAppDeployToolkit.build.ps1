@@ -63,7 +63,7 @@ function Confirm-HashtableStructuresAreEqual
     )
 
     # Throw if there's any missing/extra keys.
-    $refKeys = $Reference.Keys; $cmpKeys = $Comparison.Keys
+    $refKeys = $($Reference.Keys); $cmpKeys = $($Comparison.Keys)
     if ($missing = $refKeys | & { process { if (!$cmpKeys.Contains($_)) { return $_ } } })
     {
         throw "The following hashtable keys are missing: ['$([System.String]::Join("', '", $missing))']."
