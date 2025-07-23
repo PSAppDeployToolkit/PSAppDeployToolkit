@@ -107,7 +107,7 @@
             }
             DeferralsRemaining = 'Resterende udsættelser:'
             DeferralDeadline = 'Tidsfrist:'
-            WarningMessage = 'Når udsættelsen er udløbet, har du ikke længere mulighed for at udskyde.'
+            ExpiryWarning = 'Når udsættelsen er udløbet, har du ikke længere mulighed for at udskyde.'
             CountdownDefer = @{
                 Install = 'Installationen fortsætter automatisk om:'
                 Repair = 'Reparationen fortsætter automatisk i:'
