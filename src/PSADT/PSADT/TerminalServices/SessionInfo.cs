@@ -37,7 +37,7 @@ namespace PSADT.TerminalServices
             string userName,
             string domainName,
             uint sessionId,
-            string sessionName,
+            string? sessionName,
             LibraryInterfaces.WTS_CONNECTSTATE_CLASS connectState,
             bool isCurrentSession,
             bool isConsoleSession,
@@ -105,7 +105,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The session name for the session.
         /// </summary>
-        public readonly string SessionName;
+        public readonly string? SessionName;
 
         /// <summary>
         /// The connection state of the session.
