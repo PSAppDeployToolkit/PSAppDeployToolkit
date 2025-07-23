@@ -201,7 +201,7 @@ namespace PSADT.ProcessManagement
                         }
 
                         // Start the process with the user's token.
-                        using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
+                        using (var lpDesktop = SafeHGlobalHandle.StringToUni(@"winsta0\default"))
                         using (hPrimaryToken)
                         {
                             // Without creating an environment block, the process will take on the environment of the SYSTEM account.
