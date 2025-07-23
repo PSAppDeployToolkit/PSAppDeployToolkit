@@ -28,7 +28,9 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 |---------------------|-----------------|
 | ![CustomLightMode](https://github.com/user-attachments/assets/c092999f-46a2-43f6-bd28-bc2bdcd03b76) | ![CustomDarkMode](https://github.com/user-attachments/assets/26be16d2-f13e-491d-af86-72a169200f27) |
 
-## 🖥️ Whats  v4.1 (RC2) - 2025-07-22
+## 🖥️ Whats New in v4.1 (RC2) - 2025-07-22
+
+**NOTE**: This is currently a release candidate (RC2) for PSADT 4.1. which has not yet reached final status. While we are confident that it is rock solid, we are still testing it and may make changes before final release. As such, it is not recommended for production use at this time.
 
 ### 🛠️ Changes since RC1
 
@@ -40,8 +42,6 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 - Fixed the "Restart Later" button in the Fluent Restart Dialog not being disabled during the warning period.
 
 ## 🖥️ What's New in v4.1 (RC1) - 2025-07-08
-
-**NOTE**: This is currently a release candidate (RC2) for PSADT 4.1. which has not yet reached final status. While we are confident that it is rock solid, we are still testing it and may make changes before final release. As such, it is not recommended for production use at this time.
 
 ### 🎯 Major Improvements
 
