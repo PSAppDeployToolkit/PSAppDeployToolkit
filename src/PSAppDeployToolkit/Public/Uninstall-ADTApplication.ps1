@@ -151,11 +151,11 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
@@ -306,7 +306,7 @@ function Uninstall-ADTApplication
                         $sapParams.FilePath = $commandPath.Source
                     }
 
-                    if (![System.String]::IsNullOrWhiteSpace($ArgumentList))
+                    if ($PSBoundParameters.ContainsKey('ArgumentList'))
                     {
                         $sapParams.ArgumentList = $ArgumentList
                     }
@@ -322,7 +322,7 @@ function Uninstall-ADTApplication
                     {
                         if ($sapParams.ContainsKey('ArgumentList'))
                         {
-                            $sapParams.ArgumentList += " $([System.String]::Join(' ', $AdditionalArgumentList))"
+                            $sapParams.ArgumentList += $AdditionalArgumentList
                         }
                         else
                         {
