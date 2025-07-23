@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Windows.Win32;
+﻿using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -30,21 +28,9 @@ namespace PSADT.LibraryInterfaces
             fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
             {
                 int pnButtonLocal = 0;
-                PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, TaskDialogIconLookupTable[pszIcon], &pnButtonLocal).ThrowOnFailure();
+                PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, (PCWSTR)pszIcon, &pnButtonLocal).ThrowOnFailure();
                 return (MESSAGEBOX_RESULT)pnButtonLocal;
             }
         }
-
-        /// <summary>
-        /// Provides a lookup table that maps <see cref="TASKDIALOG_ICON"/> values to their corresponding <see cref="PCWSTR"/> representations for use in task dialog configurations.
-        /// </summary>
-        /// <remarks>This read-only dictionary is pre-populated with mappings between standard task dialog icons (e.g., error, information, shield, and warning) and their associated native pointers (<see cref="PCWSTR"/>). It is intended to simplify the process of retrieving the appropriate icon resource for task dialogs.</remarks>
-        private static readonly ReadOnlyDictionary<TASKDIALOG_ICON, PCWSTR> TaskDialogIconLookupTable = new(new Dictionary<TASKDIALOG_ICON, PCWSTR>
-        {
-            { TASKDIALOG_ICON.TD_ERROR_ICON, PInvoke.TD_ERROR_ICON },
-            { TASKDIALOG_ICON.TD_INFORMATION_ICON, PInvoke.TD_INFORMATION_ICON },
-            { TASKDIALOG_ICON.TD_SHIELD_ICON, PInvoke.TD_SHIELD_ICON },
-            { TASKDIALOG_ICON.TD_WARNING_ICON, PInvoke.TD_WARNING_ICON },
-        });
     }
 }
