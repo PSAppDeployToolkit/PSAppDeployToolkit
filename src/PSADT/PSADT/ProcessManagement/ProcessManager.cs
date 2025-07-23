@@ -703,7 +703,7 @@ namespace PSADT.ProcessManagement
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides anonymous handles, we need to use CreateProcessAsUser() since it has bInheritHandles.
-            if (CanUseCreateProcessAsUser(hPrimaryToken) is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted || callerUsingHandles))
+            if (CanUseCreateProcessAsUser(hPrimaryToken) is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted))
             {
                 if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted && TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid)
                 {
@@ -761,14 +761,23 @@ namespace PSADT.ProcessManagement
                     throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
                 }
             }
-            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK)
+            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK && !callerUsingHandles)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
                 AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, null, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
             }
             else
             {
-                throw new InvalidOperationException($"Unable to create a new process via token. CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser].TrimEnd('.')}. CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken].TrimEnd('.')}.");
+                StringBuilder exceptionMessage = new("Unable to create a new process via token.");
+                if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK)
+                {
+                    exceptionMessage.Append($" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
+                }
+                if (canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK)
+                {
+                    exceptionMessage.Append($" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}");
+                }
+                throw new InvalidOperationException(exceptionMessage.ToString());
             }
         }
 
