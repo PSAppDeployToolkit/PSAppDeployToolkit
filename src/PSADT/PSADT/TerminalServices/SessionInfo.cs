@@ -59,7 +59,7 @@ namespace PSADT.TerminalServices
             UserName = !string.IsNullOrWhiteSpace(userName) ? userName : throw new ArgumentNullException("UserName cannot be null or empty.", (Exception?)null);
             DomainName = !string.IsNullOrWhiteSpace(domainName) ? domainName : throw new ArgumentNullException("DomainName cannot be null or empty.", (Exception?)null);
             SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException("SessionId must be greater than zero.", (Exception?)null);
-            SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : throw new ArgumentNullException("SessionName cannot be null or empty.", (Exception?)null);
+            SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : null;
             ConnectState = connectState;
             IsCurrentSession = isCurrentSession;
             IsConsoleSession = isConsoleSession;
