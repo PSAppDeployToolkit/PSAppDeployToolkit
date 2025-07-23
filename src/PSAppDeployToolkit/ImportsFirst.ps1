@@ -78,6 +78,7 @@ try
     New-Variable -Name ErrorActionPreference -Value ([System.Management.Automation.ActionPreference]::Stop) -Option Constant -Force
     New-Variable -Name InformationPreference -Value ([System.Management.Automation.ActionPreference]::Continue) -Option Constant -Force
     New-Variable -Name ProgressPreference -Value ([System.Management.Automation.ActionPreference]::SilentlyContinue) -Option Constant -Force
+    New-Variable -Name ImportedModules -Value $ImportedModules -Option Constant -Force
     New-Variable -Name MinimumStartup -Value $MinimumStartup -Option Constant -Force
 
     # Ensure module operates under the strictest of conditions.
