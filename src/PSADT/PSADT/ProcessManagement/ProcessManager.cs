@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -44,7 +45,7 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
-            Task stdOutTask = Task.CompletedTask; Task stdErrTask = Task.CompletedTask;
+            Task hStdOutTask = Task.CompletedTask; Task hStdErrTask = Task.CompletedTask;
             List<string> stdout = []; List<string> stderr = [];
             ConcurrentQueue<string> interleaved = [];
             SafeProcessHandle? hProcess = null;
@@ -89,8 +90,10 @@ namespace PSADT.ProcessManagement
                     startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
                     startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
                 }
-                SafeFileHandle? hStdOutWrite = default;
-                SafeFileHandle? hStdErrWrite = default;
+                AnonymousPipeServerStream? hStdOutRead = null;
+                AnonymousPipeServerStream? hStdErrRead = null;
+                SafePipeHandle? hStdOutWrite = null;
+                SafePipeHandle? hStdErrWrite = null;
                 bool hStdOutWriteAddRef = false;
                 bool hStdErrWriteAddRef = false;
                 try
@@ -127,10 +130,12 @@ namespace PSADT.ProcessManagement
                     // If we're to read the output, we create pipes for stdout and stderr.
                     if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                     {
-                        CreatePipe(out var hStdOutRead, out hStdOutWrite);
-                        CreatePipe(out var hStdErrRead, out hStdErrWrite);
-                        stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
-                        stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
+                        hStdOutRead = new(PipeDirection.In, HandleInheritability.Inheritable);
+                        hStdErrRead = new(PipeDirection.In, HandleInheritability.Inheritable);
+                        hStdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
+                        hStdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
+                        hStdOutWrite = hStdOutRead.ClientSafePipeHandle;
+                        hStdErrWrite = hStdErrRead.ClientSafePipeHandle;
                         hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
                         hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
@@ -242,10 +247,10 @@ namespace PSADT.ProcessManagement
                     {
                         hStdErrWrite!.DangerousRelease();
                     }
-                    hStdOutWrite?.Dispose();
-                    hStdErrWrite?.Dispose();
-                    hStdOutWrite = null;
-                    hStdErrWrite = null;
+                    hStdOutWrite?.Dispose(); hStdOutWrite = null;
+                    hStdErrWrite?.Dispose(); hStdErrWrite = null;
+                    hStdOutRead?.DisposeLocalCopyOfClientHandle();
+                    hStdErrRead?.DisposeLocalCopyOfClientHandle();
                 }
             }
             else
@@ -319,7 +324,7 @@ namespace PSADT.ProcessManagement
                                     Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
                                     if (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && lpOverlapped.ToInt32() == processId || lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
                                     {
-                                        await Task.WhenAll(stdOutTask, stdErrTask);
+                                        await Task.WhenAll(hStdOutTask, hStdErrTask);
                                         Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
                                         tcs.SetResult(new(process, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
                                         break;
@@ -438,34 +443,20 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Creates a pipe for reading or writing.
-        /// </summary>
-        /// <param name="readPipe"></param>
-        /// <param name="writePipe"></param>
-        /// <exception cref="Win32Exception"></exception>
-        private static void CreatePipe(out SafeFileHandle readPipe, out SafeFileHandle writePipe)
-        {
-            Kernel32.CreatePipe(out readPipe, out writePipe, new SECURITY_ATTRIBUTES { nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>(), bInheritHandle = true });
-            Kernel32.SetHandleInformation(readPipe, HANDLE_FLAGS.HANDLE_FLAG_INHERIT, 0);
-        }
-
-        /// <summary>
         /// Reads from a pipe until the pipe is closed.
         /// </summary>
         /// <param name="handle"></param>
         /// <param name="output"></param>
         /// <param name="interleaved"></param>
         /// <param name="encoding"></param>
-        private static void ReadPipe(SafeFileHandle handle, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
+        private static void ReadPipe(AnonymousPipeServerStream pipeStream, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
         {
-            using (handle) using (FileStream fileStream = new(handle, FileAccess.Read))
-            using (StreamReader streamReader = new(fileStream, encoding))
+            using (pipeStream) using (StreamReader streamReader = new(pipeStream, encoding))
             {
-                string? line; while ((line = streamReader.ReadLine()) != null)
+                while (streamReader.ReadLine()?.TrimEndRemoveNull() is string line)
                 {
-                    var text = line.TrimEndRemoveNull();
-                    interleaved.Enqueue(text);
-                    output.Add(text);
+                    interleaved.Enqueue(line);
+                    output.Add(line);
                 }
             }
         }

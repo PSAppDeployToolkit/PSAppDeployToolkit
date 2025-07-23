@@ -361,43 +361,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around CreatePipe to manage error handling.
-        /// </summary>
-        /// <param name="hReadPipe"></param>
-        /// <param name="hWritePipe"></param>
-        /// <param name="lpPipeAttributes"></param>
-        /// <param name="nSize"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static BOOL CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe, SECURITY_ATTRIBUTES? lpPipeAttributes, uint nSize = 0)
-        {
-            var res = PInvoke.CreatePipe(out hReadPipe, out hWritePipe, lpPipeAttributes, nSize);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Wrapper around SetHandleInformation to manage error handling.
-        /// </summary>
-        /// <param name="hObject"></param>
-        /// <param name="dwMask"></param>
-        /// <param name="dwFlags"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static BOOL SetHandleInformation(SafeHandle hObject, HANDLE_FLAGS dwMask, HANDLE_FLAGS dwFlags)
-        {
-            var res = PInvoke.SetHandleInformation(hObject, (uint)dwMask, dwFlags);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
-
-        /// <summary>
         /// Wrapper around SetPriorityClass to manage error handling.
         /// </summary>
         /// <param name="hProcess"></param>

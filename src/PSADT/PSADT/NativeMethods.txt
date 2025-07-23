@@ -27,7 +27,6 @@ CommandLineToArgv
 CreateEnvironmentBlock
 CreateIoCompletionPort
 CreateJobObjectW
-CreatePipe
 CreateProcessAsUserW
 CreateProcessW
 CreateProcessWithTokenW
@@ -277,7 +276,6 @@ SetActiveWindow
 SetCurrentProcessExplicitAppUserModelID
 SetFocus
 SetForegroundWindow
-SetHandleInformation
 SetInformationJobObject
 SetLastError
 SetPriorityClass
