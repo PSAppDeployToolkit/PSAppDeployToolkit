@@ -47,10 +47,10 @@ namespace PSADT.OperatingSystem
             string? productName = null;
             int ubr = 0;
 
-            var windowsOS = (((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16);
+            var windowsOS = (((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16); var operatingSystem = WindowsOS.Unknown;
             if (Enum.IsDefined(typeof(WindowsOS), windowsOS))
             {
-                OperatingSystem = (WindowsOS)windowsOS;
+                operatingSystem = (WindowsOS)windowsOS;
             }
 
             using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion")!)
@@ -78,7 +78,7 @@ namespace PSADT.OperatingSystem
             }
 
             PInvoke.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
-            Name = string.Format(((DescriptionAttribute[])typeof(WindowsOS).GetField(OperatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description, editionId);
+            Name = string.Format(((DescriptionAttribute[])typeof(WindowsOS).GetField(operatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description, editionId);
             Version = new Version((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
             Architecture = RuntimeInformation.OSArchitecture;
@@ -89,11 +89,6 @@ namespace PSADT.OperatingSystem
             IsServer = !IsWorkstation;
             IsDomainController = productType == PRODUCT_TYPE.VER_NT_DOMAIN_CONTROLLER;
         }
-
-        /// <summary>
-        /// Enum representing the operating system version as a packed unsigned long.
-        /// </summary>
-        public readonly WindowsOS OperatingSystem = WindowsOS.Unknown;
 
         /// <summary>
         /// Display name of the operating system.
