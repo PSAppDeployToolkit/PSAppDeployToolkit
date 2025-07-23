@@ -34,19 +34,6 @@ namespace PSADT.ProcessManagement
     public sealed record ProcessVersionInfo
     {
         /// <summary>
-        /// Initializes static members of the <see cref="ProcessVersionInfo"/> class.
-        /// </summary>
-        /// <remarks>This static constructor sets up the <see cref="RT_VERSION"/> field by retrieving the
-        /// version resource type value from the underlying platform.</remarks>
-        static ProcessVersionInfo()
-        {
-            unsafe
-            {
-                RT_VERSION = (uint)PInvoke.RT_VERSION.Value;
-            }
-        }
-
-        /// <summary>
         /// Retrieves version information for the specified process.
         /// </summary>
         /// <param name="process">The process for which to obtain version information. Cannot be null.</param>
@@ -194,14 +181,8 @@ namespace PSADT.ProcessManagement
         /// </summary>
         private static SafeHGlobalHandle ReadVersionResource(SafeFileHandle processHandle, in MODULEINFO moduleInfo)
         {
-            // Read the required info out of the MODULEINFO structure.
-            IntPtr baseAddress; uint moduleSize = moduleInfo.SizeOfImage;
-            unsafe
-            {
-                baseAddress = (IntPtr)moduleInfo.lpBaseOfDll;
-            }
-
             // Read the DOS header to make sure we have a valid PE header.
+            IntPtr baseAddress; unsafe { baseAddress = (IntPtr)moduleInfo.lpBaseOfDll; }
             var dosHeader = ReadProcessMemory<IMAGE_DOS_HEADER>(processHandle, baseAddress);
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
@@ -265,7 +246,7 @@ namespace PSADT.ProcessManagement
             {
                 var entryAddress = entriesAddress + (i * Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>());
                 var entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, entryAddress);
-                if (entry.Anonymous1.Name == RT_VERSION)
+                if (entry.Anonymous1.Name == LibraryInterfaces.RESOURCE_TYPE.RT_VERSION)
                 {
                     return ReadVersionResourceData(processHandle, resourceDirectoryAddress, baseAddress, entry.Anonymous2.OffsetToData);
                 }
@@ -599,14 +580,6 @@ namespace PSADT.ProcessManagement
         /// the file version number, product version number, and other attributes. It is typically used in version
         /// management and file identification.</remarks>
         private readonly VS_FIXEDFILEINFO FixedFileInfo;
-
-        /// <summary>
-        /// Represents the resource type identifier for version information in a Windows resource file.
-        /// </summary>
-        /// <remarks>This field is used to specify the type of resource when accessing version information
-        /// in a Windows resource file. It is typically used in conjunction with functions that manipulate resources,
-        /// such as loading or enumerating resources.</remarks>
-        private static readonly uint RT_VERSION;
 
         /// <summary>
         /// Represents a mask used to extract the relative virtual address (RVA) from an image resource.
