@@ -86,7 +86,7 @@ namespace PSADT.ProcessManagement
                 var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
                 if (null != launchInfo.WindowStyle)
                 {
-                    startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                    startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
                     startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
                 }
                 bool inheritHandles = launchInfo.InheritHandles;
@@ -114,11 +114,11 @@ namespace PSADT.ProcessManagement
                     {
                         if (launchInfo.CreateNoWindow)
                         {
-                            // Deliberately reassign dwFlags so that STARTF_USESHOWWINDOW isn't set.
                             // If STARTF_USESHOWWINDOW is set, a console app showing UI elements
                             // won't appear. Because we have CREATE_NO_WINDOW, the console window
                             // (aka. the window we actually want hidden) will be hidden as expected.
-                            startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                            startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                            startupInfo.dwFlags &= ~STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
                             creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                         }
                         else
