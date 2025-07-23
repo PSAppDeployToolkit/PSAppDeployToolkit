@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -457,25 +458,12 @@ namespace PSADT.ProcessManagement
         /// <param name="encoding"></param>
         private static void ReadPipe(SafeFileHandle handle, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
         {
-            Span<byte> buffer = stackalloc byte[4096];
-            uint bytesRead = 0;
-            using (handle)
+            using (handle) using (FileStream fileStream = new(handle, FileAccess.Read))
+            using (StreamReader streamReader = new(fileStream, encoding))
             {
-                while (true)
+                string? line; while ((line = streamReader.ReadLine()) != null)
                 {
-                    try
-                    {
-                        Kernel32.ReadFile(handle, buffer, out bytesRead);
-                    }
-                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
-                    {
-                        break;
-                    }
-                    if (bytesRead == 0)
-                    {
-                        break;
-                    }
-                    var text = encoding.GetString(buffer, (int)bytesRead).TrimEndRemoveNull();
+                    var text = line.TrimEndRemoveNull();
                     interleaved.Enqueue(text);
                     output.Add(text);
                 }

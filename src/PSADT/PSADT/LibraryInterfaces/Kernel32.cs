@@ -398,28 +398,7 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around ReadFile to manage error handling.
-        /// </summary>
-        /// <param name="hFile"></param>
-        /// <param name="lpBuffer"></param>
-        /// <param name="lpNumberOfBytesRead"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static BOOL ReadFile(SafeHandle hFile, Span<byte> lpBuffer, out uint lpNumberOfBytesRead)
-        {
-            fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
-            {
-                var res = PInvoke.ReadFile(hFile, lpBuffer, pNumberOfBytesRead, null);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
-        /// Wrapper around WriteFile to manage error handling.
+        /// Wrapper around SetPriorityClass to manage error handling.
         /// </summary>
         /// <param name="hProcess"></param>
         /// <param name="dwPriorityClass"></param>
@@ -435,7 +414,7 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around WriteFile to manage error handling.
+        /// Wrapper around SetPriorityClass to manage error handling.
         /// </summary>
         /// <param name="hProcess"></param>
         /// <param name="dwPriorityClass"></param>

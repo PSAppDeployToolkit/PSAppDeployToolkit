@@ -183,7 +183,6 @@ PROCESS_INFORMATION
 QueryDosDevice
 QueryInformationJobObject
 QueryServiceStatusEx
-ReadFile
 ReadProcessMemory
 RECT
 RegOpenKeyEx
