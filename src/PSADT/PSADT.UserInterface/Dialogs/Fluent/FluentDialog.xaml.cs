@@ -18,8 +18,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using PSADT.AccountManagement;
+using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
-using Windows.Win32;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
@@ -184,13 +184,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="handled"></param>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            if (msg == PInvoke.WM_SYSCOMMAND)
+            if (msg == (uint)WINDOW_MESSAGE.WM_SYSCOMMAND && (wParam.ToInt32() & 0xFFF0) == (uint)WM_SYSCOMMAND.SC_MOVE && !_dialogAllowMove)
             {
-                int command = wParam.ToInt32() & 0xfff0;
-                if (command == PInvoke.SC_MOVE && !_dialogAllowMove)
-                {
-                    handled = true;
-                }
+                handled = true;
             }
             return IntPtr.Zero;
         }

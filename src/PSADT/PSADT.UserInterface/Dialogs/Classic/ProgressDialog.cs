@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 
 namespace PSADT.UserInterface.Dialogs.Classic
@@ -136,7 +135,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             if (e.Button == MouseButtons.Left)
             {
                 User32.ReleaseCapture();
-                User32.SendMessage((HWND)this.Handle, PInvoke.WM_NCLBUTTONDOWN, PInvoke.HTCAPTION, IntPtr.Zero);
+                User32.SendMessage((HWND)this.Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, IntPtr.Zero);
             }
         }
     }

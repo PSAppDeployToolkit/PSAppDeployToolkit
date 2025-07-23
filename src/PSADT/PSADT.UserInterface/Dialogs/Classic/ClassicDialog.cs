@@ -145,7 +145,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Disable the close button on the form. Failing that, disable the ControlBox.
                 try
                 {
-                    User32.EnableMenuItem(menuHandle, PInvoke.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
+                    User32.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
                 }
                 catch
                 {
@@ -155,7 +155,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Disable the move command on the system menu if we can't move the dialog.
                 if (!dialogAllowMove)
                 {
-                    User32.RemoveMenu(menuHandle, PInvoke.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
+                    User32.RemoveMenu(menuHandle, WM_SYSCOMMAND.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
                 }
             }
 
@@ -265,7 +265,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void WndProc(ref Message m)
         {
             // Ignore any attempt to move the window.
-            if (m.Msg == PInvoke.WM_SYSCOMMAND && (m.WParam.ToInt32() & 0xFFF0) == PInvoke.SC_MOVE && !dialogAllowMove)
+            if (m.Msg == (uint)WINDOW_MESSAGE.WM_SYSCOMMAND && (m.WParam.ToInt32() & 0xFFF0) == (uint)WM_SYSCOMMAND.SC_MOVE && !dialogAllowMove)
             {
                 return;
             }

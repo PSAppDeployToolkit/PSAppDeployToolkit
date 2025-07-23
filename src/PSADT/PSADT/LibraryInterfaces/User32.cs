@@ -23,9 +23,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uIDEnableItem"></param>
         /// <param name="uEnable"></param>
         /// <returns></returns>
-        internal static BOOL EnableMenuItem(SafeHandle hMenu, uint uIDEnableItem, MENU_ITEM_FLAGS uEnable)
+        internal static BOOL EnableMenuItem(SafeHandle hMenu, WM_SYSCOMMAND uIDEnableItem, MENU_ITEM_FLAGS uEnable)
         {
-            return PInvoke.EnableMenuItem(hMenu, uIDEnableItem, uEnable);
+            return PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpdwResult"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal unsafe static LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal unsafe static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
             if (lParam is null || lParam.IsClosed)
             {
@@ -241,7 +241,7 @@ namespace PSADT.LibraryInterfaces
                 lParam.DangerousAddRef(ref lParamAddRef);
                 fixed (nuint* lpdwResultPointer = &lpdwResult)
                 {
-                    var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
+                    var res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
                     if (res == default)
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -283,9 +283,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="wParam"></param>
         /// <param name="lParam"></param>
         /// <returns></returns>
-        internal static LRESULT SendMessage(HWND hWnd, uint Msg, WPARAM wParam, LPARAM lParam)
+        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam)
         {
-            PInvoke.SetLastError(0); var res = PInvoke.SendMessage(hWnd, Msg, wParam, lParam);
+            PInvoke.SetLastError(0); var res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
             if ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
@@ -315,9 +315,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uPosition">The position of the menu item to be removed. The interpretation of this value depends on the <paramref name="uFlags"/> parameter.</param>
         /// <param name="uFlags">Specifies how the <paramref name="uPosition"/> parameter is interpreted. This can be a combination of <see cref="MENU_ITEM_FLAGS"/> values.</param>
         /// <returns><see langword="true"/> if the menu item was successfully removed; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL RemoveMenu(SafeHandle hMenu, uint uPosition, MENU_ITEM_FLAGS uFlags)
+        internal static BOOL RemoveMenu(SafeHandle hMenu, WM_SYSCOMMAND uPosition, MENU_ITEM_FLAGS uFlags)
         {
-            var res = PInvoke.RemoveMenu(hMenu, uPosition, uFlags);
+            var res = PInvoke.RemoveMenu(hMenu, (uint)uPosition, uFlags);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
