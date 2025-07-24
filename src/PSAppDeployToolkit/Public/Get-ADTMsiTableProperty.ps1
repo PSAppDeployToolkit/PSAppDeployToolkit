@@ -13,7 +13,7 @@ function Get-ADTMsiTableProperty
     .DESCRIPTION
         Use the Windows Installer object to read all of the properties from a Windows Installer database table or the Summary Information stream.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         The fully qualified path to an database file. Supports .msi and .msp files.
 
     .PARAMETER TransformPath
@@ -44,17 +44,17 @@ function Get-ADTMsiTableProperty
         Returns a readonly dictionary with the properties as key/value pairs.
 
     .EXAMPLE
-        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
+        Get-ADTMsiTableProperty -LiteralPath 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
 
         Retrieve all of the properties from the default 'Property' table.
 
     .EXAMPLE
-        (Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property').ProductCode
+        (Get-ADTMsiTableProperty -LiteralPath 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property').ProductCode
 
         Retrieve all of the properties from the 'Property' table, then retrieves just the 'ProductCode' member.
 
     .EXAMPLE
-        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -GetSummaryInformation
+        Get-ADTMsiTableProperty -LiteralPath 'C:\Package\AppDeploy.msi' -GetSummaryInformation
 
         Retrieve the Summary Information for the Windows Installer database.
 
@@ -83,7 +83,8 @@ function Get-ADTMsiTableProperty
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$Path,
+        [Alias('Path', 'PSPath')]
+        [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -120,15 +121,15 @@ function Get-ADTMsiTableProperty
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
-            $Table = ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($Path) -eq '.msi']
+            $Table = ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($LiteralPath) -eq '.msi']
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyNameColumnNum'))
         {
-            $TablePropertyNameColumnNum = 2 - ([System.IO.Path]::GetExtension($Path) -eq '.msi')
+            $TablePropertyNameColumnNum = 2 - ([System.IO.Path]::GetExtension($LiteralPath) -eq '.msi')
         }
         if (!$PSBoundParameters.ContainsKey('TablePropertyValueColumnNum'))
         {
-            $TablePropertyValueColumnNum = 3 - ([System.IO.Path]::GetExtension($Path) -eq '.msi')
+            $TablePropertyValueColumnNum = 3 - ([System.IO.Path]::GetExtension($LiteralPath) -eq '.msi')
         }
     }
 
@@ -136,11 +137,11 @@ function Get-ADTMsiTableProperty
     {
         if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
         {
-            Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$Path] in table [$Table]."
+            Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$LiteralPath] in table [$Table]."
         }
         else
         {
-            Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$Path]."
+            Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$LiteralPath]."
         }
         try
         {
@@ -151,7 +152,7 @@ function Get-ADTMsiTableProperty
                 $msiOpenDatabaseModeReadOnly = 0
                 $msiSuppressApplyTransformErrors = 63
                 $msiOpenDatabaseModePatchFile = 32
-                $msiOpenDatabaseMode = if (($IsMspFile = [IO.Path]::GetExtension($Path) -eq '.msp'))
+                $msiOpenDatabaseMode = if (($IsMspFile = [System.IO.Path]::GetExtension($LiteralPath) -eq '.msp'))
                 {
                     $msiOpenDatabaseModePatchFile
                 }
@@ -161,7 +162,7 @@ function Get-ADTMsiTableProperty
                 }
 
                 # Open database in read only mode and apply a list of transform(s).
-                $Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($Path, $msiOpenDatabaseMode)
+                $Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @((Get-Item -LiteralPath $LiteralPath).FullName, $msiOpenDatabaseMode)
                 if ($TransformPath -and !$IsMspFile)
                 {
                     $null = foreach ($Transform in $TransformPath)

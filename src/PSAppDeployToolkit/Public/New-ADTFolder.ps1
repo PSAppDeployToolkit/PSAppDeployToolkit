@@ -13,7 +13,7 @@ function New-ADTFolder
     .DESCRIPTION
         Create a new folder if it does not exist. This function checks if the specified path already exists and creates the folder if it does not. It logs the creation process and handles any errors that may occur during the folder creation.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         Path to the new folder to create.
 
     .INPUTS
@@ -27,7 +27,7 @@ function New-ADTFolder
         This function does not generate any output.
 
     .EXAMPLE
-        New-ADTFolder -Path "$env:WinDir\System32"
+        New-ADTFolder -LiteralPath "$env:WinDir\System32"
 
         Creates a new folder at the specified path if it does not already exist.
 
@@ -48,7 +48,8 @@ function New-ADTFolder
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path
+        [Alias('Path', 'PSPath')]
+        [System.String]$LiteralPath
     )
 
     begin
@@ -58,9 +59,9 @@ function New-ADTFolder
 
     process
     {
-        if (Test-Path -LiteralPath $Path -PathType Container)
+        if (Test-Path -LiteralPath $LiteralPath -PathType Container)
         {
-            Write-ADTLogEntry -Message "Folder [$Path] already exists."
+            Write-ADTLogEntry -Message "Folder [$LiteralPath] already exists."
             return
         }
 
@@ -68,8 +69,8 @@ function New-ADTFolder
         {
             try
             {
-                Write-ADTLogEntry -Message "Creating folder [$Path]."
-                $null = New-Item -Path $Path -ItemType Directory -Force
+                Write-ADTLogEntry -Message "Creating folder [$LiteralPath]."
+                $null = New-Item -Path $LiteralPath -ItemType Directory -Force
             }
             catch
             {
@@ -78,7 +79,7 @@ function New-ADTFolder
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create folder [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create folder [$LiteralPath]."
         }
     }
 

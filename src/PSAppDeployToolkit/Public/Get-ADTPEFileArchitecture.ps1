@@ -60,6 +60,7 @@ function Get-ADTPEFileArchitecture
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]

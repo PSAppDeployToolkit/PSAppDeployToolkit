@@ -64,10 +64,12 @@ function New-ADTZipFile
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
         [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]

@@ -17,7 +17,7 @@ function Copy-ADTContentToCache
 
         It is important to clean up the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         The path to the software cache folder.
 
     .INPUTS
@@ -31,7 +31,7 @@ function Copy-ADTContentToCache
         This function does not generate any output.
 
     .EXAMPLE
-        Copy-ADTContentToCache -Path "$envWinDir\Temp\PSAppDeployToolkit"
+        Copy-ADTContentToCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit"
 
         This example copies the toolkit content to the specified cache folder.
 
@@ -42,7 +42,7 @@ function Copy-ADTContentToCache
 
         Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
-        This can be done using `Remove-ADTFile -Path "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
+        This can be done using `Remove-ADTFile -LiteralPath "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
@@ -58,7 +58,8 @@ function Copy-ADTContentToCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
+        [Alias('Path', 'PSPath')]
+        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
     )
 
     begin
@@ -78,14 +79,14 @@ function Copy-ADTContentToCache
     process
     {
         # Create the cache folder if it does not exist.
-        if (!(Test-Path -LiteralPath $Path -PathType Container))
+        if (!(Test-Path -LiteralPath $LiteralPath -PathType Container))
         {
-            Write-ADTLogEntry -Message "Creating cache folder [$Path]."
+            Write-ADTLogEntry -Message "Creating cache folder [$LiteralPath]."
             try
             {
                 try
                 {
-                    $null = New-Item -Path $Path -ItemType Directory
+                    $null = New-Item -Path $LiteralPath -ItemType Directory
                 }
                 catch
                 {
@@ -94,24 +95,24 @@ function Copy-ADTContentToCache
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create cache folder [$Path]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create cache folder [$LiteralPath]."
                 return
             }
         }
         else
         {
-            Write-ADTLogEntry -Message "Cache folder [$Path] already exists."
+            Write-ADTLogEntry -Message "Cache folder [$LiteralPath] already exists."
         }
 
         # Copy the toolkit content to the cache folder.
-        Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
+        Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$LiteralPath]."
         try
         {
             try
             {
-                Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $Path -Recurse
-                $adtSession.DirFiles = Join-Path -Path $Path -ChildPath Files
-                $adtSession.DirSupportFiles = Join-Path -Path $Path -ChildPath SupportFiles
+                Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $LiteralPath -Recurse
+                $adtSession.DirFiles = Join-Path -Path $LiteralPath -ChildPath Files
+                $adtSession.DirSupportFiles = Join-Path -Path $LiteralPath -ChildPath SupportFiles
             }
             catch
             {
@@ -120,7 +121,7 @@ function Copy-ADTContentToCache
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy toolkit content to cache folder [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy toolkit content to cache folder [$LiteralPath]."
         }
     }
 

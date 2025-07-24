@@ -13,7 +13,7 @@ function Get-ADTShortcut
     .DESCRIPTION
         Get information from a .lnk or .url type shortcut. Returns a hashtable with details about the shortcut such as TargetPath, Arguments, Description, and more.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         Path to the shortcut to get information from.
 
     .INPUTS
@@ -36,7 +36,7 @@ function Get-ADTShortcut
         - RunAsAdmin
 
     .EXAMPLE
-        Get-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
+        Get-ADTShortcut -LiteralPath "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
 
         Retrieves information from the specified .lnk shortcut.
 
@@ -67,7 +67,8 @@ function Get-ADTShortcut
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$Path
+        [Alias('Path', 'PSPath')]
+        [System.String]$LiteralPath
     )
 
     begin
@@ -84,7 +85,7 @@ function Get-ADTShortcut
             try
             {
                 [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                $Output = @{ Path = [System.IO.Path]::GetFullPath($Path); TargetPath = $null; IconIndex = $null; IconLocation = $null }
+                $Output = @{ Path = (Get-Item -LiteralPath $LiteralPath).FullName; TargetPath = $null; IconIndex = $null; IconLocation = $null }
             }
             catch
             {
@@ -93,7 +94,7 @@ function Get-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$Path] is not valid."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
             return
         }
 

@@ -13,7 +13,7 @@ function New-ADTShortcut
     .DESCRIPTION
         Creates a new shortcut .lnk or .url file, with configurable options. This function allows you to specify various parameters such as the target path, arguments, icon location, description, working directory, window style, run as administrator, and hotkey.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         Path to save the shortcut.
 
     .PARAMETER TargetPath
@@ -54,7 +54,7 @@ function New-ADTShortcut
         This function does not return any output.
 
     .EXAMPLE
-        New-ADTShortcut -Path "$envCommonStartMenuPrograms\My Shortcut.lnk" -TargetPath "$envWinDir\notepad.exe" -IconLocation "$envWinDir\notepad.exe" -Description 'Notepad' -WorkingDirectory '%HOMEDRIVE%\%HOMEPATH%'
+        New-ADTShortcut -LiteralPath "$envCommonStartMenuPrograms\My Shortcut.lnk" -TargetPath "$envWinDir\notepad.exe" -IconLocation "$envWinDir\notepad.exe" -Description 'Notepad' -WorkingDirectory '%HOMEDRIVE%\%HOMEPATH%'
 
         Creates a new shortcut for Notepad with the specified parameters.
 
@@ -83,7 +83,8 @@ function New-ADTShortcut
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$Path,
+        [Alias('Path', 'PSPath')]
+        [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -134,7 +135,7 @@ function New-ADTShortcut
             try
             {
                 [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                $FullPath = [System.IO.Path]::GetFullPath($Path)
+                $FullPath = (Get-Item -LiteralPath $LiteralPath).FullName
             }
             catch
             {
@@ -143,7 +144,7 @@ function New-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$Path] is not valid."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
             return
         }
 
@@ -191,7 +192,7 @@ function New-ADTShortcut
 
                 # Build out the shortcut.
                 Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
-                if ([System.IO.Path]::GetExtension($Path) -eq '.url')
+                if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
                 {
                     [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"
                     if ($PSBoundParameters.ContainsKey('IconIndex'))
@@ -255,7 +256,7 @@ function New-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create shortcut [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create shortcut [$LiteralPath]."
         }
     }
 

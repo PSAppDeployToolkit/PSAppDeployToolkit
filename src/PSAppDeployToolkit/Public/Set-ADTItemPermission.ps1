@@ -13,7 +13,7 @@ function Set-ADTItemPermission
     .DESCRIPTION
         Allows you to easily change permissions on files or folders for a given user or group. You can add, remove or replace permissions, set inheritance and propagation.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         Path to the folder or file you want to modify (ex: C:\Temp)
 
     .PARAMETER AccessControlList
@@ -66,17 +66,17 @@ function Set-ADTItemPermission
         This function does not return any output.
 
     .EXAMPLE
-        Set-ADTItemPermission -Path 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Users' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
+        Set-ADTItemPermission -LiteralPath 'C:\Temp' -User 'DOMAIN\John', 'BUILTIN\Users' -Permission FullControl -Inheritance ObjectInherit,ContainerInherit
 
         Will grant FullControl permissions to 'John' and 'Users' on 'C:\Temp' and its files and folders children.
 
     .EXAMPLE
-        Set-ADTItemPermission -Path 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
+        Set-ADTItemPermission -LiteralPath 'C:\Temp\pic.png' -User 'DOMAIN\John' -Permission 'Read'
 
         Will grant Read permissions to 'John' on 'C:\Temp\pic.png'.
 
     .EXAMPLE
-        Set-ADTItemPermission -Path 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
+        Set-ADTItemPermission -LiteralPath 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
 
         Will remove all permissions to 'John' on 'C:\Temp\Private'.
 
@@ -107,8 +107,8 @@ function Set-ADTItemPermission
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [Alias('File', 'Folder')]
-        [System.String]$Path,
+        [Alias('Path', 'PSPath', 'File', 'Folder')]
+        [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $true, HelpMessage = 'The ACL object to apply to the given path.', ParameterSetName = 'AccessControlList')]
         [ValidateNotNullOrEmpty()]
@@ -160,22 +160,22 @@ function Set-ADTItemPermission
                 # Directly apply the permissions if an ACL object has been provided.
                 if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
                 {
-                    Write-ADTLogEntry -Message "Setting specifieds ACL on path [$Path]."
-                    $null = Set-Acl -LiteralPath $Path -AclObject $AccessControlList
+                    Write-ADTLogEntry -Message "Setting specifieds ACL on path [$LiteralPath]."
+                    $null = Set-Acl -LiteralPath $LiteralPath -AclObject $AccessControlList
                     return
                 }
 
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
-                    ($Acl = Get-Acl -LiteralPath $Path).SetAccessRuleProtection($false, $true)
-                    Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
-                    $null = Set-Acl -LiteralPath $Path -AclObject $Acl
+                    ($Acl = Get-Acl -LiteralPath $LiteralPath).SetAccessRuleProtection($false, $true)
+                    Write-ADTLogEntry -Message "Enabling Inheritance on path [$LiteralPath]."
+                    $null = Set-Acl -LiteralPath $LiteralPath -AclObject $Acl
                     return
                 }
 
                 # Modify variables to remove file incompatible flags if this is a file.
-                if (Test-Path -LiteralPath $Path -PathType Leaf)
+                if (Test-Path -LiteralPath $LiteralPath -PathType Leaf)
                 {
                     $Permission = $Permission -band (-bnot [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles)
                     $Inheritance = [System.Security.AccessControl.InheritanceFlags]::None
@@ -183,7 +183,7 @@ function Set-ADTItemPermission
                 }
 
                 # Get object ACLs for the given path.
-                $Acl = Get-Acl -LiteralPath $Path
+                $Acl = Get-Acl -LiteralPath $LiteralPath
 
                 # Apply permissions on each user.
                 foreach ($Username in $User.Trim())
@@ -201,12 +201,12 @@ function Set-ADTItemPermission
                     }
 
                     # Set/Add/Remove/Replace permissions and log the changes.
-                    Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
+                    Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$LiteralPath] for user [$Username]."
                     $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
                 }
 
                 # Use the prepared ACL.
-                $null = Set-Acl -LiteralPath $Path -AclObject $Acl
+                $null = Set-Acl -LiteralPath $LiteralPath -AclObject $Acl
             }
             catch
             {

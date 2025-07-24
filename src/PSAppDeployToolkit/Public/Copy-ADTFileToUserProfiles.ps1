@@ -101,6 +101,7 @@ function Copy-ADTFileToUserProfiles
     param (
         [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $false, Position = 2)]

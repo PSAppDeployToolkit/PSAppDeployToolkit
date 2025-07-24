@@ -13,7 +13,7 @@ function Remove-ADTContentFromCache
     .DESCRIPTION
         This function removes the toolkit content from the cache folder on the local machine. It also reverts the $adtSession.DirFiles and $adtSession.SupportFiles directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         The path to the software cache folder.
 
     .INPUTS
@@ -27,7 +27,7 @@ function Remove-ADTContentFromCache
         This function does not return objects.
 
     .EXAMPLE
-        Remove-ADTContentFromCache -Path "$envWinDir\Temp\PSAppDeployToolkit"
+        Remove-ADTContentFromCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit"
 
         Removes the toolkit content from the specified cache folder.
 
@@ -48,7 +48,8 @@ function Remove-ADTContentFromCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
+        [Alias('Path', 'PSPath')]
+        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
     )
 
     begin
@@ -67,18 +68,18 @@ function Remove-ADTContentFromCache
 
     process
     {
-        if (!(Test-Path -LiteralPath $Path -PathType Container))
+        if (!(Test-Path -LiteralPath $LiteralPath -PathType Container))
         {
-            Write-ADTLogEntry -Message "Cache folder [$Path] does not exist."
+            Write-ADTLogEntry -Message "Cache folder [$LiteralPath] does not exist."
             return
         }
 
-        Write-ADTLogEntry -Message "Removing cache folder [$Path]."
+        Write-ADTLogEntry -Message "Removing cache folder [$LiteralPath]."
         try
         {
             try
             {
-                Remove-Item -LiteralPath $Path -Recurse -Force
+                Remove-Item -LiteralPath $LiteralPath -Recurse -Force
                 $adtSession.DirFiles = Join-Path -Path $scriptDir -ChildPath Files
                 $adtSession.DirSupportFiles = Join-Path -Path $scriptDir -ChildPath SupportFiles
             }
@@ -89,7 +90,7 @@ function Remove-ADTContentFromCache
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$LiteralPath]."
         }
     }
 

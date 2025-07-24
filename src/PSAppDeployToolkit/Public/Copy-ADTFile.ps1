@@ -84,6 +84,7 @@ function Copy-ADTFile
     (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 1)]

@@ -73,10 +73,12 @@ function Remove-ADTFileFromUserProfiles
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
         [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false)]

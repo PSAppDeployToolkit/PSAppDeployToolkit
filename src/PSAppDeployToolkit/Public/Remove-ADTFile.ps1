@@ -14,10 +14,10 @@ function Remove-ADTFile
         This function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the Recurse parameter is specified.
 
     .PARAMETER Path
-        Specifies the path on the filesystem to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+        Specifies the file on the filesystem to be removed. The value of Path will accept wildcards. Will accept an array of values.
 
     .PARAMETER LiteralPath
-        Specifies the path on the filesystem to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+        Specifies the file on the filesystem to be removed. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 
     .PARAMETER Recurse
         Deletes the files in the specified location(s) and in all child items of the location(s).
@@ -33,7 +33,7 @@ function Remove-ADTFile
         This function does not generate any output.
 
     .EXAMPLE
-        Remove-ADTFile -Path 'C:\Windows\Downloaded Program Files\Temp.inf'
+        Remove-ADTFile -LiteralPath 'C:\Windows\Downloaded Program Files\Temp.inf'
 
         Removes the specified file.
 
@@ -63,10 +63,12 @@ function Remove-ADTFile
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
         [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false)]

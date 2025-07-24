@@ -13,7 +13,7 @@ function Set-ADTShortcut
     .DESCRIPTION
         Modifies a shortcut - .lnk or .url file, with configurable options. Only specify the parameters that you want to change.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         Path to the shortcut to be changed.
 
     .PARAMETER TargetPath
@@ -54,7 +54,7 @@ function Set-ADTShortcut
         This function does not generate any output.
 
     .EXAMPLE
-        Set-ADTShortcut -Path "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
+        Set-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
 
         Creates a shortcut on the All Users desktop named 'Application', targeted to '$envProgramFiles\Application\application.exe'.
 
@@ -81,7 +81,8 @@ function Set-ADTShortcut
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$Path,
+        [Alias('Path')]
+        [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -126,16 +127,16 @@ function Set-ADTShortcut
 
     process
     {
-        Write-ADTLogEntry -Message "Changing shortcut [$Path]."
+        Write-ADTLogEntry -Message "Changing shortcut [$LiteralPath]."
         try
         {
             try
             {
                 # Make sure .NET's current directory is synced with PowerShell's.
                 [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                if ([System.IO.Path]::GetExtension($Path) -eq '.url')
+                if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
                 {
-                    $URLFile = [System.IO.File]::ReadAllLines($Path) | & {
+                    $URLFile = [System.IO.File]::ReadAllLines($LiteralPath) | & {
                         process
                         {
                             switch ($_)
@@ -147,12 +148,12 @@ function Set-ADTShortcut
                             }
                         }
                     }
-                    [System.IO.File]::WriteAllLines($Path, $URLFile, [System.Text.UTF8Encoding]::new($false))
+                    [System.IO.File]::WriteAllLines($LiteralPath, $URLFile, [System.Text.UTF8Encoding]::new($false))
                 }
                 else
                 {
                     # Open shortcut and set initial properties.
-                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Path)
+                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($LiteralPath)
                     if ($TargetPath)
                     {
                         $shortcut.TargetPath = $TargetPath
@@ -218,7 +219,7 @@ function Set-ADTShortcut
                     # Set shortcut to run program as administrator.
                     if ($PSBoundParameters.ContainsKey('RunAsAdmin'))
                     {
-                        $fileBytes = [System.IO.FIle]::ReadAllBytes($Path)
+                        $fileBytes = [System.IO.FIle]::ReadAllBytes($LiteralPath)
                         $fileBytes[21] = if ($PSBoundParameters.RunAsAdmin)
                         {
                             Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
@@ -229,7 +230,7 @@ function Set-ADTShortcut
                             Write-ADTLogEntry -Message 'Setting shortcut to not run program as administrator.'
                             $fileBytes[21] -band (-bnot 32)
                         }
-                        [System.IO.FIle]::WriteAllBytes($Path, $fileBytes)
+                        [System.IO.FIle]::WriteAllBytes($LiteralPath, $fileBytes)
                     }
                 }
             }
@@ -240,7 +241,7 @@ function Set-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to change the shortcut [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to change the shortcut [$LiteralPath]."
         }
     }
 
