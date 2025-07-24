@@ -389,7 +389,7 @@ function Set-ADTActiveSetup
                 # Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there).
                 if ($adtSession -and $adtSession.DirFiles)
                 {
-                    $StubExeFile = Join-Path -Path $adtSession.DirFiles -ChildPath $ActiveSetupFileName
+                    $StubExeFile = (Join-Path -Path $adtSession.DirFiles -ChildPath $ActiveSetupFileName).Trim()
                     if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.

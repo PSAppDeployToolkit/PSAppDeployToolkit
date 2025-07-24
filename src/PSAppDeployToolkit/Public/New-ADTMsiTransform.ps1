@@ -111,18 +111,18 @@ function New-ADTMsiTransform
 
         # Establish initial paths.
         $MsiParentFolder = (Get-Item -LiteralPath $MsiPath).DirectoryName
-        $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())
+        $TempMsiPath = (Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())).Trim()
 
         # Determine the path for the new transform file that will be generated.
         if (!$NewTransformPath)
         {
             $NewTransformPath = if ($ApplyTransformPath)
             {
-                Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [System.IO.Path]::GetExtension($ApplyTransformPath))
+                (Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [System.IO.Path]::GetExtension($ApplyTransformPath))).Trim()
             }
             else
             {
-                Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst')
+                (Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst')).Trim()
             }
         }
     }

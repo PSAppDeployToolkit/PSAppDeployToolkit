@@ -104,14 +104,14 @@ function New-ADTTemplate
 
         # Set up remaining variables.
         $moduleName = $MyInvocation.MyCommand.Module.Name
-        $templatePath = Join-Path -Path $Destination -ChildPath $Name
+        $templatePath = (Join-Path -Path $Destination -ChildPath $Name).Trim()
         $templateModulePath = if ($Version.Equals(3))
         {
-            Join-Path -Path $templatePath -ChildPath "AppDeployToolkit\$moduleName"
+            (Join-Path -Path $templatePath -ChildPath "AppDeployToolkit\$moduleName").Trim()
         }
         else
         {
-            Join-Path -Path $templatePath -ChildPath $moduleName
+            (Join-Path -Path $templatePath -ChildPath $moduleName).Trim()
         }
     }
 

@@ -216,7 +216,7 @@ function Copy-ADTFileToUserProfiles
                 Write-ADTLogEntry -Message "Skipping user profile [$($UserProfile.NTAccount)] as path [$BasePath`Path] is not available."
                 continue
             }
-            $dest = Join-Path $UserProfile."$BasePath`Path" $Destination
+            $dest = (Join-Path -Path $UserProfile."$BasePath`Path" -ChildPath $Destination).Trim()
             Write-ADTLogEntry -Message "Copying path [$Path] to $($dest):"
             Copy-ADTFile -Path $sourcePaths -Destination $dest @CopyFileSplat
         }

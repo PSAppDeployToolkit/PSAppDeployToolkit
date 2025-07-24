@@ -215,7 +215,7 @@ function Copy-ADTFile
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
                         $robocopySource = (Get-Item -Path $srcPath.TrimEnd('\') -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyDestination = Join-Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
+                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath (Split-Path -Path $srcPath -Leaf)).Trim()
                         $robocopyFile = '*'
                     }
                     else

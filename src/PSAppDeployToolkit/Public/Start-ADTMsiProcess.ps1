@@ -335,7 +335,7 @@ function Start-ADTMsiProcess
                         {
                             (Get-Item -LiteralPath $FilePath).FullName
                         }
-                        elseif ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = Join-Path -Path $adtSession.DirFiles -ChildPath $FilePath) -PathType Leaf))
+                        elseif ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = (Join-Path -Path $adtSession.DirFiles -ChildPath $FilePath).Trim()) -PathType Leaf))
                         {
                             $dirFilesPath
                         }
@@ -375,7 +375,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Transforms.Length; $i++)
                         {
-                            if (Test-Path -LiteralPath ($fullPath = Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', '')) -PathType Leaf)
+                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', '')).Trim()) -PathType Leaf)
                             {
                                 $Transforms[$i] = $fullPath
                             }
@@ -387,7 +387,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Patches.Length; $i++)
                         {
-                            if (Test-Path -LiteralPath ($fullPath = Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', '')) -PathType Leaf)
+                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', '')).Trim()) -PathType Leaf)
                             {
                                 $Patches[$i] = $fullPath
                             }
@@ -469,13 +469,13 @@ function Start-ADTMsiProcess
                         }
 
                         # Build the log file path.
-                        Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $logFile
+                        (Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $logFile).Trim()
                     }
                     elseif ($adtSession)
                     {
                         # Get the log directory from the session. This will factor in
                         # whether we're compressing logs, or logging to a subfolder.
-                        Join-Path -Path $adtSession.LogPath -ChildPath $logFile
+                        (Join-Path -Path $adtSession.LogPath -ChildPath $logFile).Trim()
                     }
                     else
                     {
@@ -486,7 +486,7 @@ function Start-ADTMsiProcess
                         }
 
                         # Build the log file path.
-                        Join-Path -Path $adtConfig.Toolkit.LogPath -ChildPath $logFile
+                        (Join-Path -Path $adtConfig.Toolkit.LogPath -ChildPath $logFile).Trim()
                     }
                 }
 

@@ -113,7 +113,7 @@ function Initialize-ADTModule
                         {
                             if (Test-Path -LiteralPath (Join-Path -Path $directory -ChildPath "$_\$($_.ToLower()).psd1") -PathType Leaf)
                             {
-                                Join-Path -Path $directory -ChildPath $_
+                                (Join-Path -Path $directory -ChildPath $_).Trim()
                             }
                         }
                         if ($null -eq $Script:ADT.Directories.$_)
