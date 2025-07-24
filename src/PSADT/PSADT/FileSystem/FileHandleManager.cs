@@ -2,9 +2,11 @@
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
@@ -89,20 +91,19 @@ namespace PSADT.FileSystem
                 // Set up required handles for GetObjectName().
                 using (var currentProcess = Process.GetCurrentProcess())
                 using (var currentProcessHandle = currentProcess.SafeHandle)
-                using (var objectBufferPtr = SafeHGlobalHandle.Alloc(1024))
                 {
                     // Loop through all handles and return list of open file handles.
                     var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
                     var handleCount = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>().NumberOfHandles.ToUInt32();
                     var entryOffset = handleInfoExSize;
-                    List<FileHandleInfo> openHandles = [];
-                    for (int i = 0; i < handleCount; i++)
+                    ConcurrentBag<FileHandleInfo> openHandles = [];
+                    Parallel.For(0, (int)handleCount, i =>
                     {
                         // Read the handle information into a structure, skipping over if it's not a file or directory handle.
                         var sysHandle = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(entryOffset + (handleEntryExSize * i));
                         if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                         {
-                            continue;
+                            return;
                         }
 
                         // Open the owning process with rights to duplicate handles.
@@ -113,11 +114,11 @@ namespace PSADT.FileSystem
                         }
                         catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
                         {
-                            continue;
+                            return;
                         }
                         catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
                         {
-                            continue;
+                            return;
                         }
 
                         // Duplicate the remote handle into our process.
@@ -133,11 +134,11 @@ namespace PSADT.FileSystem
                             }
                             catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                             {
-                                continue;
+                                return;
                             }
                             catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
                             {
-                                continue;
+                                return;
                             }
                         }
 
@@ -145,20 +146,13 @@ namespace PSADT.FileSystem
                         string? objectName;
                         using (fileDupHandle)
                         {
-                            try
-                            {
-                                objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBufferPtr);
-                            }
-                            finally
-                            {
-                                objectBufferPtr.Clear();
-                            }
+                            objectName = GetObjectName(currentProcessHandle, fileDupHandle);
                         }
 
                         // Skip to next iteration if the handle doesn't meet our criteria
                         if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
                         {
-                            continue;
+                            return;
                         }
 
                         // Add the handle information to the list if it matches the specified directory path.
@@ -167,8 +161,8 @@ namespace PSADT.FileSystem
                         {
                             openHandles.Add(new FileHandleInfo(sysHandle, dosPath, objectName, objectType));
                         }
-                    }
-                    return openHandles.AsReadOnly();
+                    });
+                    return openHandles.ToList().AsReadOnly();
                 }
             }
         }
@@ -213,24 +207,21 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="currentProcessHandle"></param>
         /// <param name="fileHandle"></param>
-        /// <param name="objectBuffer"></param>
         /// <returns></returns>
-        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafeHGlobalHandle objectBuffer)
+        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle)
         {
             if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(fileHandle));
             }
-            if (objectBuffer is null || objectBuffer.IsClosed || objectBuffer.IsInvalid)
-            {
-                throw new ArgumentNullException(nameof(objectBuffer));
-            }
 
-            bool fileHandleAddRef = false;
+            using var objectBuffer = SafeHGlobalHandle.Alloc(1024);
             bool objectBufferAddRef = false;
+            bool fileHandleAddRef = false;
             try
             {
                 // Start the thread to retrieve the object name and wait for the outcome.
+                fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                 using (var shellcode = GetObjectTypeShellcode(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr))
                 {
                     NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
