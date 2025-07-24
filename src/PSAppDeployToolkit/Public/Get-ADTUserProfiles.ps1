@@ -74,24 +74,28 @@ function Get-ADTUserProfiles
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ExcludeNTAccount', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([PSADT.Types.UserProfile])]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilterScript')]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ScriptBlock]$FilterScript,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [ValidateNotNullOrEmpty()]
         [System.Security.Principal.NTAccount[]]$ExcludeNTAccount,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [System.Management.Automation.SwitchParameter]$IncludeIISAppPoolProfiles,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
 
         [Parameter(Mandatory = $false)]
@@ -188,7 +192,7 @@ function Get-ADTUserProfiles
                         }
 
                         # Write out the object to the pipeline.
-                        if ($userProfile)
+                        if ($userProfile -and (!$FilterScript -or (ForEach-Object -InputObject $userProfile -Process $FilterScript -ErrorAction Ignore)))
                         {
                             return $userProfile
                         }
@@ -202,10 +206,17 @@ function Get-ADTUserProfiles
                     # The path to the default profile is stored in the default string value for the key.
                     $defaultUserProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
 
+                    # Establish base profile.
+                    $userProfile = [PSADT.Types.UserProfile]::new(
+                        'Default',
+                        [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::NullSid),
+                        $defaultUserProfilePath
+                    )
+
                     # Retrieve additional information if requested.
                     if ($LoadProfilePaths)
                     {
-                        return [PSADT.Types.UserProfile]::new(
+                        $userProfile = [PSADT.Types.UserProfile]::new(
                             'Default',
                             [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::NullSid),
                             $defaultUserProfilePath,
@@ -219,11 +230,12 @@ function Get-ADTUserProfiles
                             $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'OneDriveCommercial' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath)
                         )
                     }
-                    return [PSADT.Types.UserProfile]::new(
-                        'Default',
-                        'S-1-0-0',
-                        $defaultUserProfilePath
-                    )
+
+                    # Write out the object to the pipeline.
+                    if ($userProfile -and (!$FilterScript -or (ForEach-Object -InputObject $userProfile -Process $FilterScript -ErrorAction Ignore)))
+                    {
+                        return $userProfile
+                    }
                 }
             }
             catch
