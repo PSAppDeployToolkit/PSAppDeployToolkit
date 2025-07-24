@@ -46,6 +46,21 @@ function Show-ADTHelpConsole
         [Microsoft.Win32.Registry]::SetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell', 'DisablePromptToUpdateHelp', 1, [Microsoft.Win32.RegistryValueKind]::DWord)
     }
 
+    # Set up all the options needed for the HelpConsole dialog.
+    [PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$options = @{
+        ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy](Get-ExecutionPolicy)
+        Modules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]][Microsoft.PowerShell.Commands.ModuleSpecification[]]$(Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
+                process
+                {
+                    return @{
+                        ModuleName = $_.Path.Replace('.psm1', '.psd1')
+                        ModuleVersion = $_.Version
+                        Guid = $_.Guid
+                    }
+                }
+            })
+    }
+
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
-    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser) -DialogType HelpConsole -DialogStyle Classic -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{ ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy](Get-ExecutionPolicy); ModulePaths = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]](Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*").ModuleBase }) -NoWait
+    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser) -DialogType HelpConsole -DialogStyle Classic -Options $options -NoWait
 }

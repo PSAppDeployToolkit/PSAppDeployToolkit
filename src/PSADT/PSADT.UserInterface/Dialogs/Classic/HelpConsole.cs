@@ -45,7 +45,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set up a PowerShell initial session state.
                 var iss = InitialSessionState.CreateDefault2();
                 iss.ExecutionPolicy = options.ExecutionPolicy;
-                iss.ImportPSModule(options.ModulePaths.ToArray());
+                iss.ImportPSModule(options.Modules);
 
                 // Set up a runspace and open it for usage.
                 this.runspace = RunspaceFactory.CreateRunspace(iss);
@@ -56,7 +56,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     ps.Runspace = this.runspace;
                     this.comboBox.Items.Clear();
-                    this.comboBox.Items.AddRange(ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(m => options.ModulePaths.Contains(m.ModuleBase)).ToArray());
+                    this.comboBox.Items.AddRange(ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1") == om.Name && im.Guid == om.Guid && im.Version == om.Version)).ToArray());
                 }
 
                 // Set up the ComboBox event handler.
