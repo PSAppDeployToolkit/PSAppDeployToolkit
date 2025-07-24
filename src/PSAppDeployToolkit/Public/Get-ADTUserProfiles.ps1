@@ -15,6 +15,9 @@ function Get-ADTUserProfiles
 
         Please note that the NTAccount property may be empty for some user profiles but the SID and ProfilePath properties will always be populated.
 
+    .PARAMETER FilterScript
+        Allows filtration of the returned result by any property in a UserProfile object.
+
     .PARAMETER ExcludeNTAccount
         Specify NT account names in DOMAIN\username format to exclude from the list of user profiles.
 
