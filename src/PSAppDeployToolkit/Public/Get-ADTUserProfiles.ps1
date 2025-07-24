@@ -78,7 +78,7 @@ function Get-ADTUserProfiles
     [OutputType([PSADT.Types.UserProfile])]
     param
     (
-        [Parameter(Mandatory = $true, ParameterSetName = 'FilterScript')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilterScript', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
