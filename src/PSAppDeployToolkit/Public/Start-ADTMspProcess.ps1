@@ -116,9 +116,9 @@ function Start-ADTMspProcess
                 $AllTargetedProductCodes = Get-ADTApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
 
                 # Free our COM objects.
-                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
-                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Database)
-                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Installer)
+                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
+                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Database)
+                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Installer)
 
                 # If the application is installed, patch it.
                 if ($AllTargetedProductCodes)
