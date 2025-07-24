@@ -61,7 +61,7 @@
             ButtonDeferRemaining = 'zostať'
             ButtonLeftText = 'Odloženie'
             ButtonRightText = 'Zatvoriť aplikácie a nainštalovať'
-            ButtonRightTextNoProcesses = 'Inštalácia stránky'
+            ButtonRightTextNoProcesses = 'Inštalácia'
         }
     }
 }
