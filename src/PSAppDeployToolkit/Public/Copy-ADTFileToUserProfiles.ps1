@@ -94,7 +94,7 @@ function Copy-ADTFileToUserProfiles
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFileToUserProfiles
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'CalculatedProfiles')]
     param (
         [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
@@ -124,19 +124,23 @@ function Copy-ADTFileToUserProfiles
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::Value,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SpecifiedProfiles')]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Types.UserProfile[]]$UserProfiles,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
 
@@ -201,9 +205,9 @@ function Copy-ADTFileToUserProfiles
     end
     {
         # Copy all paths to the specified destination.
-        foreach ($UserProfile in (Get-ADTUserProfiles @GetUserProfileSplat))
+        foreach ($UserProfile in $(if (!$UserProfiles) { Get-ADTUserProfiles @GetUserProfileSplat } else { $UserProfiles }))
         {
-            if ([string]::IsNullOrWhiteSpace($UserProfile."$BasePath`Path"))
+            if ([System.String]::IsNullOrWhiteSpace($UserProfile."$BasePath`Path"))
             {
                 Write-ADTLogEntry -Message "Skipping user profile [$($UserProfile.NTAccount)] as path [$BasePath`Path] is not available."
                 continue
