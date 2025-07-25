@@ -556,7 +556,7 @@ namespace PSADT.ClientServer
             }
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
             {
-                throw new ServerException("The client process returned an exception.", JsonSerialization.DeserializeFromString(response.Substring(6)));
+                throw new ServerException("The client process returned an exception.", JsonSerialization.DeserializeFromString<Exception>(response.Substring(6)));
             }
             return JsonSerialization.DeserializeFromString<T>(response);
         }

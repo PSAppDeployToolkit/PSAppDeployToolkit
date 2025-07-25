@@ -13,8 +13,8 @@ namespace PSADT.Serialization
     /// strings, encode them as Base64, and deserialize Base64-encoded JSON strings back into objects. It also provides
     /// default settings for JSON serialization using Newtonsoft.Json, which can be used across the application. <para>
     /// Key features include: <list type="bullet"> <item><description>Serialization of objects to Base64-encoded JSON
-    /// strings.</description></item> <item><description>Deserialization of Base64-encoded JSON strings into objects or
-    /// dynamic types.</description></item> <item><description>Default JSON serializer settings for consistent
+    /// strings.</description></item> <item><description>Deserialization of Base64-encoded JSON strings into objects.
+    /// </description></item> <item><description>Default JSON serializer settings for consistent
     /// behavior.</description></item> </list> </para></remarks>
     public static class JsonSerialization
     {
@@ -75,16 +75,16 @@ namespace PSADT.Serialization
         }
 
         /// <summary>
-        /// Deserializes a Base64-encoded JSON string into a dynamic object.
+        /// Deserializes a Base64-encoded JSON string into an object.
         /// </summary>
         /// <remarks>This method first decodes the Base64 string into its original JSON format and then
         /// deserializes it using the default JSON serializer settings. Ensure that the input string is a valid
         /// Base64-encoded representation of JSON data.</remarks>
         /// <param name="base64Json">The Base64-encoded JSON string to deserialize. This parameter cannot be null or empty.</param>
-        /// <returns>A dynamic object representing the deserialized JSON data.</returns>
+        /// <returns>An object representing the deserialized JSON data.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
-        public static dynamic DeserializeFromString(string base64Json)
+        public static object DeserializeFromString(string base64Json)
         {
             if (string.IsNullOrWhiteSpace(base64Json))
             {
