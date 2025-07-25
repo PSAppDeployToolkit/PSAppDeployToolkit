@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace PSADT.OperatingSystem
+namespace PSADT.DeviceManagement
 {
     /// <summary>
     /// Windows operating systems in order of OS family and then chronological release date starting with Windows 2000.

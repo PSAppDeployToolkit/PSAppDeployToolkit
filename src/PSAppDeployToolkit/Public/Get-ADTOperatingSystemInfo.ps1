@@ -19,14 +19,14 @@ function Get-ADTOperatingSystemInfo
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.OperatingSystem.OSVersionInfo
+        PSADT.DeviceManagement.OperatingSystemInfo
 
-        Returns an PSADT.OperatingSystem.OSVersionInfo object containing the current computer's operating system information.
+        Returns an PSADT.DeviceManagement.OperatingSystemInfo object containing the current computer's operating system information.
 
     .EXAMPLE
         Get-ADTOperatingSystemInfo
 
-        Gets an PSADT.OperatingSystem.OSVersionInfo object containing the current computer's operating system information.
+        Gets an PSADT.DeviceManagement.OperatingSystemInfo object containing the current computer's operating system information.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -40,5 +40,5 @@ function Get-ADTOperatingSystemInfo
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTOperatingSystemInfo
     #>
 
-    return [PSADT.OperatingSystem.OSVersionInfo]::Current
+    return [PSADT.DeviceManagement.OperatingSystemInfo]::Current
 }

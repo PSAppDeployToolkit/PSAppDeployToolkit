@@ -7,22 +7,22 @@ using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.System.SystemInformation;
 
-namespace PSADT.OperatingSystem
+namespace PSADT.DeviceManagement
 {
     /// <summary>
     /// Utility singleton class for getting OS version info.
     /// </summary>
-    public sealed record OSVersionInfo
+    public sealed record OperatingSystemInfo
     {
         /// <summary>
         /// This operating system's version information.
         /// </summary>
-        public static readonly OSVersionInfo Current = new();
+        public static readonly OperatingSystemInfo Current = new();
 
         /// <summary>
         /// Constructor for the singleton.
         /// </summary>
-        private OSVersionInfo()
+        private OperatingSystemInfo()
         {
             static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
             {
