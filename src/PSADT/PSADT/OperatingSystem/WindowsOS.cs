@@ -6,7 +6,7 @@ namespace PSADT.OperatingSystem
     /// Windows operating systems in order of OS family and then chronological release date starting with Windows 2000.
     /// Note: There were a few XP family releases that came out after Windows Vista was released. However, the XP family releases are logically grouped together.
     /// </summary>
-    public enum WindowsOS : ulong
+    internal enum WindowsOS : ulong
     {
         /// <summary>
         /// Windows 2000, relased December 15, 1999.

@@ -446,7 +446,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads from a pipe until the pipe is closed.
         /// </summary>
-        /// <param name="handle"></param>
+        /// <param name="pipeStream"></param>
         /// <param name="output"></param>
         /// <param name="interleaved"></param>
         /// <param name="encoding"></param>
