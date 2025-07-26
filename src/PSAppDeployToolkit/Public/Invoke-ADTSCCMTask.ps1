@@ -69,7 +69,7 @@ function Invoke-ADTSCCMTask
             {
                 # Trigger SCCM task.
                 Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
-                if (!($result = Invoke-CimMethod -Namespace ROOT\CCM -ClassName SMS_Client -MethodName TriggerSchedule -Arguments @{ sScheduleID = [System.Guid]::new([System.Byte[]](0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ([System.Int32]$ScheduleId -band 0xFF00) -shr 8, [System.Int32]$ScheduleId -band 0xFF)).ToString('b') }))
+                if (!($result = Invoke-CimMethod -Namespace ROOT\CCM -ClassName SMS_Client -MethodName TriggerSchedule -Arguments @{ sScheduleID = [System.Guid]::new([System.Byte[]](0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (([System.Int32]$ScheduleId -band 0xFF00) -shr 8), ([System.Int32]$ScheduleId -band 0xFF))).ToString('b') }))
                 {
                     $naerParams = @{
                         Exception = [System.InvalidProgramException]::new("The TriggerSchedule method invocation returned no result.")
