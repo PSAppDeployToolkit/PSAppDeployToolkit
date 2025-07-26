@@ -208,7 +208,7 @@ namespace PSADT.ProcessManagement
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
                             {
-                                OutLaunchArguments(launchInfo, session.NTAccount, EnvironmentBlockToDictionary(lpEnvironment), out commandSpan, out string? workingDirectory); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                OutLaunchArguments(launchInfo, session.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out commandSpan, out string? workingDirectory); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
                                 CreateProcessUsingToken(hPrimaryToken, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                             }
                         }
@@ -218,14 +218,14 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandSpan, out string? workingDirectory);
+                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out commandSpan, out string? workingDirectory);
                             CreateProcessUsingToken(hPrimaryToken, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                         }
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandSpan, out string? workingDirectory);
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out commandSpan, out string? workingDirectory);
                         Kernel32.CreateProcess(null, ref commandSpan, null, null, inheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
                     }
 
@@ -257,7 +257,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, GetCallerEnvironmentDictionary(), out commandSpan, out string? workingDirectory);
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out commandSpan, out string? workingDirectory);
                 var argv = ProcessUtilities.CommandLineToArgv(commandLine = commandSpan.ToString().TrimRemoveNull());
 
                 // Set up the shell execute info structure.
@@ -571,10 +571,10 @@ namespace PSADT.ProcessManagement
         /// <param name="commandSpan">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string> environmentDictionary, out Span<char> commandSpan, out string? workingDirectory)
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out Span<char> commandSpan, out string? workingDirectory)
         {
             string[] argv = (new[] { launchInfo.FilePath }).Concat(launchInfo.ArgumentList ?? []).ToArray();
-            if (launchInfo.ExpandEnvironmentVariables)
+            if (null != environmentDictionary)
             {
                 for (int i = 0; i < argv.Length; i++)
                 {
