@@ -11,6 +11,9 @@
 		<AssemblyOriginatorKeyFile>..\..\assets\misc\iNKORE.Pulic.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
 		<TargetFrameworks>net8.0-windows;net472</TargetFrameworks>
+        <WarningLevel>0</WarningLevel>
+        <DebugSymbols>false</DebugSymbols>
+        <DebugType>none</DebugType>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>

@@ -2,6 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-windows10.0.18362.0;net472</TargetFrameworks>
+        <WarningLevel>0</WarningLevel>
+        <DebugSymbols>false</DebugSymbols>
+        <DebugType>none</DebugType>
 		<UseWPF>true</UseWPF>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);GetDocumentationFile</TargetsForTfmSpecificBuildOutput>
