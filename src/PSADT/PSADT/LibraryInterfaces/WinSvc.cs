@@ -1,4 +1,6 @@
-﻿namespace PSADT.LibraryInterfaces
+﻿using System;
+
+namespace PSADT.LibraryInterfaces
 {
     /// <summary>
     /// Specifies access rights for a service control manager (SCM) object.
@@ -7,6 +9,7 @@
     /// control manager. These rights determine the operations that can be performed on the SCM, such as connecting to
     /// it, creating services, enumerating services, and modifying boot configurations. The values are based on the
     /// Windows API constants.</remarks>
+    [Flags]
     internal enum SC_MANAGER_ACCESS : uint
     {
         /// <summary>
@@ -54,6 +57,7 @@
     /// corresponds to specific functions that require that level of access. For example, <see
     /// cref="SERVICE_QUERY_STATUS"/> is needed to query the status of a service, while <see cref="SERVICE_START"/> is
     /// required to start a service.</remarks>
+    [Flags]
     internal enum SERVICE_ACCESS_RIGHTS : uint
     {
         /// <summary>

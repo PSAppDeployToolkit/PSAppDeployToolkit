@@ -45,7 +45,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The type of access granted to the handle.
             /// </summary>
-            public uint GrantedAccess;
+            public FILE_ACCESS_RIGHTS GrantedAccess;
 
             /// <summary>
             /// The number of references to the object.
@@ -60,7 +60,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The handle attributes.
             /// </summary>
-            public uint HandleAttributes;
+            public OBJECT_ATTRIBUTES HandleAttributes;
 
             /// <summary>
             /// Reserved for future use.
@@ -159,7 +159,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The type's invalid attributes.
             /// </summary>
-            internal uint InvalidAttributes;
+            internal OBJECT_ATTRIBUTES InvalidAttributes;
 
             /// <summary>
             /// The type's generic mapping.
@@ -169,7 +169,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The type's valid access mask.
             /// </summary>
-            internal uint ValidAccessMask;
+            internal FILE_ACCESS_RIGHTS ValidAccessMask;
 
             /// <summary>
             /// The type's security required flag.
