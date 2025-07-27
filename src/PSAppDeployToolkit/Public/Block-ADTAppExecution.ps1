@@ -121,14 +121,14 @@ function Block-ADTAppExecution
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{
                     AppTitle = $adtSession.InstallTitle
-                    Subtitle = $adtStrings.BlockExecutionText.Subtitle.($DeploymentType.ToString())
+                    Subtitle = $adtStrings.BlockExecutionText.Subtitle.($adtSession.DeploymentType.ToString())
                     AppIconImage = $adtConfig.Assets.Logo
                     AppIconDarkImage = $adtConfig.Assets.LogoDark
                     AppBannerImage = $adtConfig.Assets.Banner
                     DialogTopMost = $true
                     MinimizeWindows = $false
                     DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
-                    MessageText = $adtStrings.BlockExecutionText.Message.($DeploymentType.ToString())
+                    MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
                     Icon = [PSADT.UserInterface.Dialogs.DialogSystemIcon]::Warning
                     ButtonRightText = 'OK'
                 }
