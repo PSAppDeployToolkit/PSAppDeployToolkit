@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.Registry;
 
@@ -45,8 +46,8 @@ namespace PSADT.RegistryManagement
             AdvApi32.RegOpenKeyEx(hKeyRoot, subKeyPath, 0, REG_SAM_FLAGS.KEY_READ, out var hKey);
             using (hKey)
             {
-                AdvApi32.RegQueryInfoKey(hKey, null, IntPtr.Zero, out _, out _, out _, out _, out _, out _, out _, out var lastWriteTime);
-                return DateTime.FromFileTime((long)lastWriteTime.dwHighDateTime << 32 | lastWriteTime.dwLowDateTime & 0xFFFFFFFFL);
+                AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out var lastWriteTime);
+                return lastWriteTime.ToDateTime();
             }
         }
 
