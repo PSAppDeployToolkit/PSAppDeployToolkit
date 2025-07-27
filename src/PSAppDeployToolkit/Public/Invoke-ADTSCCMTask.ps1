@@ -80,7 +80,7 @@ function Invoke-ADTSCCMTask
                     }
                     throw (New-ADTErrorRecord @naerParams)
                 }
-                if ($result.ReturnValue -ne 0)
+                if (($null -ne $result.ReturnValue) -and ($result.ReturnValue -ne 0))
                 {
                     $naerParams = @{
                         Exception = [System.InvalidOperationException]::new("The TriggerSchedule method invocation returned an error code of [$($result.ReturnValue)].")
