@@ -51,7 +51,7 @@ namespace PSADT.Utilities
                 throw new ArgumentException($"Section [{section}] was not found in the INI file. Sections found: {string.Join(", ", sections)}", nameof(section));
             }
 
-            Span<char> buffer = stackalloc char[65536];
+            Span<char> buffer = new char[65536];
             uint res;
             try
             {
@@ -97,7 +97,7 @@ namespace PSADT.Utilities
         /// <returns>Array of section names</returns>
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
-            Span<char> buffer = stackalloc char[65536];
+            Span<char> buffer = new char[65536];
             var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
             return buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToList().AsReadOnly();
         }
