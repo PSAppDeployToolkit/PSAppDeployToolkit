@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Text;
 using PSADT.Extensions;
@@ -59,7 +60,7 @@ namespace PSADT.Utilities
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to get section [{section}] from the INI file.", ex);
+                throw new InvalidDataException($"Failed to get section [{section}] from the INI file.", ex);
             }
 
             OrderedDictionary dictionary = new();
