@@ -50,6 +50,7 @@ namespace PSADT.ProcessManagement
             SafeProcessHandle? hProcess = null;
             Process process = null!;
             uint? processId = null;
+            string commandLine;
 
             // Determine whether the process we're starting is a console app or not. This is important
             // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
@@ -66,10 +67,7 @@ namespace PSADT.ProcessManagement
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1);
-            var job = Kernel32.CreateJobObject(null, default);
-
-            // Set up the job object to use the I/O completion port.
-            bool iocpAddRefOuter = false; iocp.DangerousAddRef(ref iocpAddRefOuter);
+            var job = Kernel32.CreateJobObject(null, default); bool iocpAddRefOuter = false; iocp.DangerousAddRef(ref iocpAddRefOuter);
             Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
 
             // Set up the required job limit if child processes must be killed with the parent.
@@ -80,16 +78,8 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            Span<char> commandSpan; string commandLine;
             if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (null != launchInfo.Username))
             {
-                var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
-                if (null != launchInfo.WindowStyle)
-                {
-                    startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                    startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
-                }
-                bool inheritHandles = launchInfo.InheritHandles;
                 AnonymousPipeServerStream? hStdOutRead = null;
                 AnonymousPipeServerStream? hStdErrRead = null;
                 SafePipeHandle? hStdOutWrite = null;
@@ -98,6 +88,14 @@ namespace PSADT.ProcessManagement
                 bool hStdErrWriteAddRef = false;
                 try
                 {
+                    // Set up the startup information for the process.
+                    var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
+                    if (null != launchInfo.WindowStyle)
+                    {
+                        startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                        startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
+                    }
+
                     // The process is created suspended so it can be assigned to the job object.
                     var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                         PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
@@ -128,6 +126,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // If we're to read the output, we create pipes for stdout and stderr.
+                    bool inheritHandles = launchInfo.InheritHandles;
                     if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                     {
                         hStdOutRead = new(PipeDirection.In, HandleInheritability.Inheritable);
@@ -144,7 +143,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
-                    PROCESS_INFORMATION pi = new();
+                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan;
                     if (null != launchInfo.Username && launchInfo.Username != AccountUtilities.CallerUsername && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
                         // Get the user's token.
@@ -257,7 +256,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out commandSpan, out string? workingDirectory);
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var commandSpan, out string? workingDirectory);
                 var argv = ProcessUtilities.CommandLineToArgv(commandLine = commandSpan.ToString().TrimRemoveNull());
 
                 // Set up the shell execute info structure.
