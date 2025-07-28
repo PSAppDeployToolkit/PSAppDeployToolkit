@@ -72,4 +72,8 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.7" />
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+  </ItemGroup>
 </Project>

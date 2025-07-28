@@ -33,4 +33,8 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+  </ItemGroup>
 </Project>

@@ -53,4 +53,8 @@
     <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+  </ItemGroup>
 </Project>

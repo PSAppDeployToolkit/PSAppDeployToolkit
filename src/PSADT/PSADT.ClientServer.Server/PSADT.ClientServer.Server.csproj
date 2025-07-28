@@ -55,4 +55,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+  </ItemGroup>
 </Project>
