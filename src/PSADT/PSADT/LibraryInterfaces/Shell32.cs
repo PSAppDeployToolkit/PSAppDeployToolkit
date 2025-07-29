@@ -281,30 +281,24 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal unsafe static string[] CommandLineToArgv(string lpCmdLine)
         {
-            using (LocalFreeSafeHandle safeHandle = new((IntPtr)PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs), true))
+            using LocalFreeSafeHandle safeHandle = new((IntPtr)PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs), true);
+            bool safeHandleAddRef = false;
+            try
             {
-                if (safeHandle.IsInvalid)
+                safeHandle.DangerousAddRef(ref safeHandleAddRef);
+                var handle = (PWSTR*)safeHandle.DangerousGetHandle();
+                var args = new string[pNumArgs];
+                for (var i = 0; i < pNumArgs; i++)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    args[i] = handle[i].ToString().TrimRemoveNull();
                 }
-                bool safeHandleAddRef = false;
-                try
+                return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
+            }
+            finally
+            {
+                if (safeHandleAddRef)
                 {
-                    safeHandle.DangerousAddRef(ref safeHandleAddRef);
-                    var handle = (PWSTR*)safeHandle.DangerousGetHandle();
-                    var args = new string[pNumArgs];
-                    for (var i = 0; i < pNumArgs; i++)
-                    {
-                        args[i] = handle[i].ToString().TrimRemoveNull();
-                    }
-                    return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
-                }
-                finally
-                {
-                    if (safeHandleAddRef)
-                    {
-                        safeHandle.DangerousRelease();
-                    }
+                    safeHandle.DangerousRelease();
                 }
             }
         }

@@ -168,12 +168,10 @@ namespace PSADT.ProcessManagement
         {
             // Get all process modules, then return the first one (main module).
             PsApi.EnumProcessModules(processHandle, SafeMemoryHandle.Null, out var bytesNeeded);
-            using (var moduleBuffer = SafeHGlobalHandle.Alloc((int)bytesNeeded))
-            {
-                PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
-                PsApi.GetModuleInformation(processHandle, moduleBuffer.ToStructure<HMODULE>(), out var moduleInfo);
-                return moduleInfo;
-            }
+            using var moduleBuffer = SafeHGlobalHandle.Alloc((int)bytesNeeded);
+            PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
+            PsApi.GetModuleInformation(processHandle, moduleBuffer.ToStructure<HMODULE>(), out var moduleInfo);
+            return moduleInfo;
         }
 
         /// <summary>
@@ -363,11 +361,9 @@ namespace PSADT.ProcessManagement
         /// </summary>
         private static T ReadProcessMemory<T>(SafeFileHandle processHandle, IntPtr address) where T : struct
         {
-            using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<T>()))
-            {
-                Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);
-                return buffer.ToStructure<T>();
-            }
+            using var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<T>());
+            Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);
+            return buffer.ToStructure<T>();
         }
 
         /// <summary>

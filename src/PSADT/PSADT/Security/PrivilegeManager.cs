@@ -54,22 +54,22 @@ namespace PSADT.Security
         /// value.</exception>
         private static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(SafeFileHandle token, TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
+            // Internal worker function to retrieve the privilege name from the token attributes.
+            static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
+            {
+                AdvApi32.LookupPrivilegeName(null, attr.Luid, buffer, out var retLength);
+                string privilegeName = buffer.Slice(0, (int)retLength).ToString().TrimRemoveNull();
+                if (!Enum.TryParse<SE_PRIVILEGE>(privilegeName, true, out var privilege))
+                {
+                    throw new ArgumentException($"Unknown privilege: {privilegeName}");
+                }
+                return privilege;
+            }
+
             // Get the size of the buffer required to hold the token privileges.
             AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, SafeMemoryHandle.Null, out var returnLength);
             using (var buffer = SafeHGlobalHandle.Alloc((int)returnLength))
             {
-                // Internal worker function to retrieve the privilege name from the token attributes.
-                static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
-                {
-                    AdvApi32.LookupPrivilegeName(null, attr.Luid, buffer, out var retLength);
-                    string privilegeName = buffer.Slice(0, (int)retLength).ToString().TrimRemoveNull();
-                    if (!Enum.TryParse<SE_PRIVILEGE>(privilegeName, true, out var privilege))
-                    {
-                        throw new ArgumentException($"Unknown privilege: {privilegeName}");
-                    }
-                    return privilege;
-                }
-
                 // Retrieve the token privileges and filter them based on the specified attributes before returning them.
                 AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
                 var privilegeCount = buffer.ReadInt32();

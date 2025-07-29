@@ -713,29 +713,27 @@ namespace PSADT.ProcessManagement
                     {
                         throw new UnauthorizedAccessException(CreateProcessUsingTokenStatusMessages[CreateProcessUsingTokenStatus.SeTcbPrivilege]);
                     }
-                    using (var hExtendedFlags = SafeHGlobalHandle.Alloc(sizeof(EXTENDED_PROCESS_CREATION_FLAG)))
-                    using (var hAttributeList = SafeProcThreadAttributeListHandle.Create(1))
+                    using var hExtendedFlags = SafeHGlobalHandle.Alloc(sizeof(EXTENDED_PROCESS_CREATION_FLAG));
+                    using var hAttributeList = SafeProcThreadAttributeListHandle.Create(1);
+                    hExtendedFlags.WriteInt32((int)EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY);
+                    Kernel32.UpdateProcThreadAttribute(hAttributeList, PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, hExtendedFlags);
+                    bool hAttributeListAddRef = false;
+                    try
                     {
-                        hExtendedFlags.WriteInt32((int)EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY);
-                        Kernel32.UpdateProcThreadAttribute(hAttributeList, PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, hExtendedFlags);
-                        bool hAttributeListAddRef = false;
-                        try
+                        hAttributeList.DangerousAddRef(ref hAttributeListAddRef);
+                        var startupInfoEx = new STARTUPINFOEXW { StartupInfo = startupInfo };
+                        startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
+                        startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                        AdvApi32.CreateProcessAsUser(hPrimaryToken, null, ref commandLine, null, null, inheritHandles || callerUsingHandles, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
+                    }
+                    finally
+                    {
+                        if (hAttributeListAddRef)
                         {
-                            hAttributeList.DangerousAddRef(ref hAttributeListAddRef);
-                            var startupInfoEx = new STARTUPINFOEXW { StartupInfo = startupInfo };
-                            startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
-                            startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-                            AdvApi32.CreateProcessAsUser(hPrimaryToken, null, ref commandLine, null, null, inheritHandles || callerUsingHandles, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
-                        }
-                        finally
-                        {
-                            if (hAttributeListAddRef)
-                            {
-                                hAttributeList.DangerousRelease();
-                            }
+                            hAttributeList.DangerousRelease();
                         }
                     }
                 }

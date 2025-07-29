@@ -24,20 +24,22 @@ namespace PSADT.DeviceManagement
         /// </summary>
         private OperatingSystemInfo()
         {
+            // Helper function to determine if the OS is an Enterprise Multi-Session OS.
             static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
             {
-                // If the ProductType is 3 (Server), perform additional checks.
-                if (productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
+                if (productType != OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
                 {
-                    if ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!string.IsNullOrWhiteSpace(productName) && (productName!.IndexOf("Virtual Desktops", StringComparison.OrdinalIgnoreCase) >= 0 || productName!.IndexOf("Multi-Session", StringComparison.OrdinalIgnoreCase) >= 0))
-                        {
-                            return true;
-                        }
-                    }
+                    return false;
                 }
-                return false;
+                if (!"EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) && !"ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(productName) || (productName!.IndexOf("Virtual Desktops", StringComparison.OrdinalIgnoreCase) < 0 && productName!.IndexOf("Multi-Session", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    return false;
+                }
+                return true;
             }
 
             NtDll.RtlGetVersion(out var osVersion);

@@ -23,22 +23,23 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>The resized image.</returns>
         internal static Bitmap ResizeBitmap(Bitmap img, int width, int height)
         {
+            // Create a new bitmap and set the resolution.
             Bitmap destImage = new(width, height);
             destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                using (ImageAttributes wrapMode = new())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(img, new(0, 0, width, height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-                return destImage;
-            }
+
+            // Create a new graphic that we can resize.
+            using var graphics = Graphics.FromImage(destImage);
+            graphics.CompositingMode = CompositingMode.SourceCopy;
+            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.SmoothingMode = SmoothingMode.HighQuality;
+            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            // Draw the resized graphic and return it.
+            using ImageAttributes wrapMode = new();
+            wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+            graphics.DrawImage(img, new(0, 0, width, height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
+            return destImage;
         }
 
         /// <summary>
@@ -52,38 +53,32 @@ namespace PSADT.UserInterface.Utilities
             static Icon ConvertBitmapToIconImpl(Bitmap img)
             {
                 // Place the image into an icon object and return it.
-                using (MemoryStream msImg = new())
-                {
-                    img.Save(msImg, ImageFormat.Png);
-                    using (MemoryStream msIco = new())
-                    using (BinaryWriter bw = new(msIco))
-                    {
-                        bw.Write((short)0);           //0-1 reserved
-                        bw.Write((short)1);           //2-3 image type, 1 = icon, 2 = cursor
-                        bw.Write((short)1);           //4-5 number of images
-                        bw.Write((byte)img.Width);    //6 image width
-                        bw.Write((byte)img.Height);   //7 image height
-                        bw.Write((byte)0);            //8 number of colors
-                        bw.Write((byte)0);            //9 reserved
-                        bw.Write((short)0);           //10-11 color planes
-                        bw.Write((short)32);          //12-13 bits per pixel
-                        bw.Write((int)msImg.Length);  //14-17 size of image data
-                        bw.Write(22);                 //18-21 offset of image data
-                        bw.Write(msImg.ToArray());    // write image data
-                        bw.Flush();
-                        bw.Seek(0, SeekOrigin.Begin);
-                        return new(msIco);
-                    }
-                }
+                using MemoryStream msImg = new();
+                img.Save(msImg, ImageFormat.Png);
+                using MemoryStream msIco = new();
+                using BinaryWriter bw = new(msIco);
+                bw.Write((short)0);           //0-1 reserved
+                bw.Write((short)1);           //2-3 image type, 1 = icon, 2 = cursor
+                bw.Write((short)1);           //4-5 number of images
+                bw.Write((byte)img.Width);    //6 image width
+                bw.Write((byte)img.Height);   //7 image height
+                bw.Write((byte)0);            //8 number of colors
+                bw.Write((byte)0);            //9 reserved
+                bw.Write((short)0);           //10-11 color planes
+                bw.Write((short)32);          //12-13 bits per pixel
+                bw.Write((int)msImg.Length);  //14-17 size of image data
+                bw.Write(22);                 //18-21 offset of image data
+                bw.Write(msImg.ToArray());    // write image data
+                bw.Flush();
+                bw.Seek(0, SeekOrigin.Begin);
+                return new(msIco);
             }
 
             // Ensure the incoming image is < 128px in width/height.
             if ((img.Width > 128) || (img.Height > 128))
             {
-                using (var resizedImg = ResizeBitmap(img, 128, 128))
-                {
-                    return ConvertBitmapToIconImpl(resizedImg);
-                }
+                using var resizedImg = ResizeBitmap(img, 128, 128);
+                return ConvertBitmapToIconImpl(resizedImg);
             }
             return ConvertBitmapToIconImpl(img);
         }
@@ -95,10 +90,8 @@ namespace PSADT.UserInterface.Utilities
         /// <returns></returns>
         internal static Icon ConvertBitmapToIcon(string imagePath)
         {
-            using (var img = (Bitmap)Bitmap.FromFile(imagePath))
-            {
-                return ConvertBitmapToIcon(img);
-            }
+            using var img = (Bitmap)Bitmap.FromFile(imagePath);
+            return ConvertBitmapToIcon(img);
         }
 
         /// <summary>
@@ -117,27 +110,19 @@ namespace PSADT.UserInterface.Utilities
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
             Shell32.SHGetFileInfo(path, out var psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
-            using (var hIcon = new DestroyIconSafeHandle(psfi.hIcon, true))
+            using var hIcon = new DestroyIconSafeHandle(psfi.hIcon, true);
+            bool hIconAddRef = false;
+            try
             {
-                if (hIcon.IsInvalid)
+                hIcon.DangerousAddRef(ref hIconAddRef);
+                using var icon = Icon.FromHandle(hIcon.DangerousGetHandle());
+                return (Icon)icon.Clone();
+            }
+            finally
+            {
+                if (hIconAddRef)
                 {
-                    throw new ArgumentException("Invalid icon handle.", nameof(path));
-                }
-                bool hIconAddRef = false;
-                try
-                {
-                    hIcon.DangerousAddRef(ref hIconAddRef);
-                    using (var icon = Icon.FromHandle(hIcon.DangerousGetHandle()))
-                    {
-                        return (Icon)icon.Clone();
-                    }
-                }
-                finally
-                {
-                    if (hIconAddRef)
-                    {
-                        hIcon.DangerousRelease();
-                    }
+                    hIcon.DangerousRelease();
                 }
             }
         }
@@ -151,10 +136,8 @@ namespace PSADT.UserInterface.Utilities
         internal static Bitmap ExtractBitmapFromExecutable(string path)
         {
             // Convert the icon to a bitmap and return it.
-            using (var icon = ExtractIconFromExecutable(path))
-            {
-                return icon.ToBitmap();
-            }
+            using var icon = ExtractIconFromExecutable(path);
+            return icon.ToBitmap();
         }
     }
 }

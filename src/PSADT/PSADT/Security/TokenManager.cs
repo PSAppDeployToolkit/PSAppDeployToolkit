@@ -21,11 +21,9 @@ namespace PSADT.Security
         /// typically indicate that the process is running with administrative privileges.</returns>
         internal static bool IsTokenElevated(SafeHandle tokenHandle)
         {
-            using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_ELEVATION>()))
-            {
-                AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
-                return buffer.ToStructure<TOKEN_ELEVATION>().TokenIsElevated != 0;
-            }
+            using var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_ELEVATION>());
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
+            return buffer.ToStructure<TOKEN_ELEVATION>().TokenIsElevated != 0;
         }
 
         /// <summary>
@@ -39,11 +37,9 @@ namespace PSADT.Security
         /// handle.</returns>
         internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
         {
-            using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
-            {
-                AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                return new(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken, true);
-            }
+            using var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>());
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+            return new(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken, true);
         }
 
         /// <summary>
@@ -71,10 +67,8 @@ namespace PSADT.Security
         /// <returns>A <see cref="SafeFileHandle"/> representing the linked primary token.</returns>
         internal static SafeFileHandle GetLinkedPrimaryToken(SafeHandle tokenHandle)
         {
-            using (var linkedToken = GetLinkedToken(tokenHandle))
-            {
-                return GetPrimaryToken(linkedToken);
-            }
+            using var linkedToken = GetLinkedToken(tokenHandle);
+            return GetPrimaryToken(linkedToken);
         }
 
         /// <summary>
@@ -127,11 +121,9 @@ namespace PSADT.Security
         /// <returns>The session ID as an unsigned integer.</returns>
         internal static uint GetTokenSessionId(SafeHandle tokenHandle)
         {
-            using (var buffer = SafeHGlobalHandle.Alloc(sizeof(uint)))
-            {
-                AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
-                return buffer.ToStructure<uint>();
-            }
+            using var buffer = SafeHGlobalHandle.Alloc(sizeof(uint));
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
+            return buffer.ToStructure<uint>();
         }
     }
 }

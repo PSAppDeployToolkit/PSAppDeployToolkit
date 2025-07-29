@@ -51,10 +51,8 @@ namespace PSADT.UserInterface.Dialogs
                     try
                     {
                         iconHandle.DangerousAddRef(ref iconHandleAddRef);
-                        using (var icon = Icon.FromHandle(iconHandle.DangerousGetHandle()))
-                        {
-                            return icon.ToBitmap();
-                        }
+                        using var icon = Icon.FromHandle(iconHandle.DangerousGetHandle());
+                        return icon.ToBitmap();
                     }
                     finally
                     {
@@ -68,12 +66,10 @@ namespace PSADT.UserInterface.Dialogs
 
             // Build an icon out for each stock icon.
             Dictionary<SHSTOCKICONID, Bitmap> icons = [];
-            foreach(var iconId in lookupList)
+            foreach (var iconId in lookupList)
             {
-                using (var icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO))
-                {
-                    icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x, y));
-                }
+                using var icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO);
+                icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x, y));
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.

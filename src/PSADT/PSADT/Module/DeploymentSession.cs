@@ -510,14 +510,12 @@ namespace PSADT.Module
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding))
+                    if (!Enum.TryParse<LogStyle>((string)configToolkit["LogStyle"]!, out var configStyle))
                     {
-                        if (!Enum.TryParse<LogStyle>((string)configToolkit["LogStyle"]!, out var configStyle))
-                        {
-                            throw new InvalidOperationException("Unable to retrieve the LogStyle from the config for an unknown reason.");
-                        }
-                        logFileWriter.WriteLine(string.Join(Environment.NewLine, configStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
+                        throw new InvalidOperationException("Unable to retrieve the LogStyle from the config for an unknown reason.");
                     }
+                    using StreamWriter logFileWriter = new(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding);
+                    logFileWriter.WriteLine(string.Join(Environment.NewLine, configStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
                 }
 
                 // Open log file with commencement message.

@@ -20,17 +20,14 @@ namespace PSADT.ProcessManagement
         /// <returns></returns>
         internal static string GetProcessCommandLine(int processId)
         {
-            // Open the process's handle with the relevant access rights.
-            using (var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId))
-            {
-                // Get the required length we need for the buffer, then retrieve the actual command line string.
-                NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, SafeMemoryHandle.Null, out var requiredLength);
-                using (var buffer = SafeHGlobalHandle.Alloc((int)requiredLength))
-                {
-                    NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
-                    return buffer.ToStructure<UNICODE_STRING>().Buffer.ToString().TrimRemoveNull();
-                }
-            }
+            // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
+            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, SafeMemoryHandle.Null, out var requiredLength);
+
+            // Fill the buffer, then retrieve the actual command line string.
+            var buffer = SafeHGlobalHandle.Alloc((int)requiredLength);
+            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
+            return buffer.ToStructure<UNICODE_STRING>().Buffer.ToString().TrimRemoveNull();
         }
 
         /// <summary>
@@ -81,11 +78,9 @@ namespace PSADT.ProcessManagement
             // If we fail to open the process because of invalid input, we assume it is not running.
             try
             {
-                using (var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, false, (uint)processId))
-                {
-                    Kernel32.GetExitCodeProcess(hProc, out var exitCode);
-                    return exitCode == NTSTATUS.STILL_ACTIVE;
-                }
+                using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, false, (uint)processId);
+                Kernel32.GetExitCodeProcess(hProc, out var exitCode);
+                return exitCode == NTSTATUS.STILL_ACTIVE;
             }
             catch (ArgumentException)
             {

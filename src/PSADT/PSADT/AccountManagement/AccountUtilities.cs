@@ -86,49 +86,41 @@ namespace PSADT.AccountManagement
             // Internal method to recursively check group membership.
             static bool CheckMemberRecursive(DirectoryEntry groupEntry, SecurityIdentifier targetSid, HashSet<string> visited)
             {
-                // Recursively test all member SIDs against our target SID, returning false if we have no match.
-                if (groupEntry.Invoke("Members") is IEnumerable members)
+                // Return early if we have no members to check.
+                if (groupEntry.Invoke("Members") is not IEnumerable members)
                 {
-                    foreach (object member in members)
+                    return false;
+                }
+
+                // Recursively test all member SIDs against our target SID, returning false if we have no match.
+                foreach (object member in members)
+                {
+                    // Skip over already parsed groups (group membership loops).
+                    using DirectoryEntry memberEntry = new(member);
+                    if (!visited.Add(memberEntry.Path))
                     {
-                        using (DirectoryEntry memberEntry = new(member))
-                        {
-                            // Skip over already parsed groups (group membership loops).
-                            if (!visited.Add(memberEntry.Path))
-                            {
-                                continue;
-                            }
+                        continue;
+                    }
 
-                            // Skip over the SID if it's malformed.
-                            var sid = memberEntry.Properties["ObjectSID"].Value;
-                            if (null == sid)
-                            {
-                                continue;
-                            }
+                    // Skip over the SID if it's malformed.
+                    var sid = memberEntry.Properties["ObjectSID"].Value;
+                    if (null == sid)
+                    {
+                        continue;
+                    }
 
-                            // Return true if the current SID is the one we're testing for.
-                            if (new SecurityIdentifier((byte[])sid, 0) == targetSid)
-                            {
-                                return true;
-                            }
-
-                            // If this member is a group, scan through its members recursively.
-                            if (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited))
-                            {
-                                return true;
-                            }
-                        }
+                    // Return true if the current SID is the one we're testing for or if the member is a group that contains the target SID.
+                    if (new SecurityIdentifier((byte[])sid, 0) == targetSid || (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited)))
+                    {
+                        return true;
                     }
                 }
                 return false;
             }
 
             // Recursively check the members of the well-known group SID for the target SID.
-            HashSet<string> visited = [];
-            using (DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
-            {
-                return CheckMemberRecursive(groupEntry, targetSid, visited);
-            }
+            HashSet<string> visited = []; using DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group");
+            return CheckMemberRecursive(groupEntry, targetSid, visited);
         }
 
         /// <summary>

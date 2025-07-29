@@ -123,14 +123,12 @@ namespace PSADT.FileSystem
 
                         // Duplicate the remote handle into our process.
                         SafeFileHandle fileDupHandle;
+                        using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
                         using (fileProcessHandle)
                         {
                             try
                             {
-                                using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
-                                {
-                                    Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
-                                }
+                                Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
                             }
                             catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                             {
@@ -191,13 +189,11 @@ namespace PSADT.FileSystem
             {
                 foreach (var handleEntry in handleEntries)
                 {
-                    using (var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32()))
-                    using (SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false))
-                    {
-                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcess.SafeHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
-                        localHandle.Dispose();
-                        localHandle = null;
-                    }
+                    using var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
+                    using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
+                    Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcess.SafeHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                    localHandle.Dispose();
+                    localHandle = null;
                 }
             }
         }
@@ -222,36 +218,34 @@ namespace PSADT.FileSystem
             {
                 // Start the thread to retrieve the object name and wait for the outcome.
                 fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
-                using (var shellcode = GetObjectTypeShellcode(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr))
+                using var shellcode = GetObjectTypeShellcode(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr);
+                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                using (hThread)
                 {
-                    NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
-                    using (hThread)
+                    // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
+                    if (PInvoke.WaitForSingleObject(hThread, GetObjectNameThreadTimeout) == WAIT_EVENT.WAIT_TIMEOUT)
                     {
-                        // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
-                        if (PInvoke.WaitForSingleObject(hThread, GetObjectNameThreadTimeout) == WAIT_EVENT.WAIT_TIMEOUT)
-                        {
-                            NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
-                        }
-
-                        // Get the exit code of the thread and throw an exception if it failed.
-                        Kernel32.GetExitCodeThread(hThread, out var exitCode);
-                        try
-                        {
-                            if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
-                            {
-                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
-                            }
-                        }
-                        catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
-                        {
-                            return null;
-                        }
-                        catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                        {
-                            return null;
-                        }
-                        return objectBuffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.TrimRemoveNull();
+                        NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                     }
+
+                    // Get the exit code of the thread and throw an exception if it failed.
+                    Kernel32.GetExitCodeThread(hThread, out var exitCode);
+                    try
+                    {
+                        if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
+                        {
+                            throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                        }
+                    }
+                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
+                    {
+                        return null;
+                    }
+                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                    {
+                        return null;
+                    }
+                    return objectBuffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.TrimRemoveNull();
                 }
             }
             finally

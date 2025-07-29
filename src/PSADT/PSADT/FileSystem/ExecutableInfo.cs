@@ -43,38 +43,35 @@ namespace PSADT.FileSystem
                 }
             }
 
-            // Open the file and read the DOS header.
-            using (FileStream fs = new(filePath, FileMode.Open, FileAccess.Read))
-            using (BinaryReader reader = new(fs))
+            // Read the DOS header and check for the PE signature.
+            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
+            using BinaryReader reader = new(fs);
+            var dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader); fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
+            if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
-                // Read the DOS header and check for the PE signature.
-                var dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader); fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
-                if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
-                {
-                    throw new InvalidDataException("The specified file does not have a valid PE header.");
-                }
-                if (reader.ReadUInt32() != PInvoke.IMAGE_NT_SIGNATURE)
-                {
-                    throw new InvalidDataException("The specified file does not have a valid PE signature.");
-                }
+                throw new InvalidDataException("The specified file does not have a valid PE header.");
+            }
+            if (reader.ReadUInt32() != PInvoke.IMAGE_NT_SIGNATURE)
+            {
+                throw new InvalidDataException("The specified file does not have a valid PE signature.");
+            }
 
-                // Read the file header and optional header, returning the ExecutableInfo.
-                var machine = ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
-                var magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16(); fs.Seek(-2, SeekOrigin.Current);
-                if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
-                {
-                    var opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
-                    return new(filePath, machine, opt32.Subsystem, HasCLRHeader(opt32.DataDirectory), opt32.AddressOfEntryPoint, opt32.ImageBase);
-                }
-                else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
-                {
-                    var opt64 = ReadStruct<IMAGE_OPTIONAL_HEADER64>(reader);
-                    return new(filePath, machine, opt64.Subsystem, HasCLRHeader(opt64.DataDirectory), opt64.AddressOfEntryPoint, opt64.ImageBase);
-                }
-                else
-                {
-                    throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
-                }
+            // Read the file header and optional header, returning the ExecutableInfo.
+            var machine = ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
+            var magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16(); fs.Seek(-2, SeekOrigin.Current);
+            if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+            {
+                var opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
+                return new(filePath, machine, opt32.Subsystem, HasCLRHeader(opt32.DataDirectory), opt32.AddressOfEntryPoint, opt32.ImageBase);
+            }
+            else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+            {
+                var opt64 = ReadStruct<IMAGE_OPTIONAL_HEADER64>(reader);
+                return new(filePath, machine, opt64.Subsystem, HasCLRHeader(opt64.DataDirectory), opt64.AddressOfEntryPoint, opt64.ImageBase);
+            }
+            else
+            {
+                throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
             }
         }
 

@@ -18,11 +18,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached icon if available, otherwise load and cache it before returning it.
             if (!iconCache.TryGetValue(path, out Icon? icon))
             {
-                using (var source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new Icon(path))
-                {
-                    icon = (Icon)source.Clone();
-                    iconCache.Add(path, icon);
-                }
+                using var source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new Icon(path);
+                icon = (Icon)source.Clone();
+                iconCache.Add(path, icon);
             }
             return icon;
         }
@@ -37,11 +35,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached image if available, otherwise load and cache it before returning it.
             if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                using (var source = Bitmap.FromFile(path))
-                {
-                    image = (Bitmap)source.Clone();
-                    imageCache.Add(path, image);
-                }
+                using var source = Bitmap.FromFile(path);
+                image = (Bitmap)source.Clone();
+                imageCache.Add(path, image);
             }
             return image;
         }

@@ -22,12 +22,10 @@ namespace PSADT.Utilities
         internal static void RefreshDesktopAndEnvironmentVariables()
         {
             // Update desktop icons using SHChangeNotify, then notify all top-level windows that the environment variables have changed.
+            using var lpString = SafeHGlobalHandle.StringToUni("Environment");
             Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);
             User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, SafeMemoryHandle.Null, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
-            using (var lpString = SafeHGlobalHandle.StringToUni("Environment"))
-            {
-                User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, lpString, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
-            }
+            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, lpString, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
         }
 
         /// <summary>
@@ -127,10 +125,8 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID associated with the specified process.</returns>
         public static string GetApplicationUserModelId(uint processId)
         {
-            using (var process = Process.GetProcessById((int)processId))
-            {
-                return GetApplicationUserModelId(process);
-            }
+            using var process = Process.GetProcessById((int)processId);
+            return GetApplicationUserModelId(process);
         }
 
         /// <summary>

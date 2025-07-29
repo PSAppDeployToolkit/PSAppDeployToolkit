@@ -25,50 +25,42 @@ namespace PSADT.AccountManagement
         /// in Group Policy. The list will be empty if no valid entries are found.</returns>
         public static IReadOnlyList<GroupPolicyAccountInfo> Get()
         {
-            // Open the Group Policy Data Store registry key.
-            using (var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath))
+            // Confirm we have a Group Policy Data Store to work with.
+            using var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
+            List<GroupPolicyAccountInfo> accountInfoList = [];
+            if (null == datastore)
             {
-                // Create list to hold the account information and process each found SID.
-                List<GroupPolicyAccountInfo> accountInfoList = [];
-                if (null != datastore)
-                {
-                    foreach (var sid in datastore.GetSubKeyNames())
-                    {
-                        // Skip over anything that's not a proper SID.
-                        if (!sid.StartsWith("S-1-"))
-                        {
-                            continue;
-                        }
-
-                        // Process each SID's subfolder. Usually this will just be 0, but there could be others.
-                        using (var indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}"))
-                        {
-                            // Skip over the entry if there's no indices.
-                            if (null == indices)
-                            {
-                                continue;
-                            }
-
-                            // Process each found index.
-                            foreach (var index in indices.GetSubKeyNames())
-                            {
-                                // Open each index's subkey so we can extrapolate the user information within.
-                                using (var info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}"))
-                                {
-                                    // If the username is available, add it to the list and skip to the next SID.
-                                    if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
-                                    {
-                                        accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Return the accumulated results as a readonly list to the caller.
                 return accountInfoList.AsReadOnly();
             }
+
+            // Create list to hold the account information and process each found SID, returning the accumulated results.
+            foreach (var sid in datastore.GetSubKeyNames())
+            {
+                // Skip over anything that's not a proper SID.
+                if (!sid.StartsWith("S-1-"))
+                {
+                    continue;
+                }
+
+                // Skip over the entry if there's no indices.
+                using var indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}");
+                if (null == indices)
+                {
+                    continue;
+                }
+
+                // Process each found index.
+                foreach (var index in indices.GetSubKeyNames())
+                {
+                    // If the username is available, add it to the list and skip to the next SID.
+                    using var info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}");
+                    if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
+                    {
+                        accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
+                    }
+                }
+            }
+            return accountInfoList.AsReadOnly();
         }
 
         /// <summary>

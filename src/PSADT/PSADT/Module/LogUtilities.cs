@@ -106,10 +106,8 @@ namespace PSADT.Module
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
-                using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding))
-                {
-                    logFileWriter.WriteLine(string.Join(Environment.NewLine, logType!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
-                }
+                using StreamWriter logFileWriter = new(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding);
+                logFileWriter.WriteLine(string.Join(Environment.NewLine, logType!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
             }
 
             // Write out all messages to host if configured/permitted to do so.

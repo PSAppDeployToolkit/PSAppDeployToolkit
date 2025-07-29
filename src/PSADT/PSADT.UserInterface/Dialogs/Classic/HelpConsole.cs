@@ -69,13 +69,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set up the ListBox event handler.
                 this.listBox.SelectedIndexChanged += (sender, e) =>
                 {
-                    // Clear the text box.
-                    using (var ps = PowerShell.Create())
-                    {
-                        ps.Runspace = this.runspace;
-                        this.richTextBox.Clear();
-                        this.richTextBox.Text = string.Join("\n", ps.AddCommand("Get-Help").AddParameter("Name", (string)this.listBox.SelectedItem!).AddParameter("Full", true).AddCommand("Out-String").AddParameter("Width", int.MaxValue).AddParameter("Stream", true).Invoke<string>().Select(static s => !string.IsNullOrWhiteSpace(s) ? s.TrimEnd() : null)).Trim().Replace("<br />", null) + "\n";
-                    }
+                    using var ps = PowerShell.Create();
+                    ps.Runspace = this.runspace;
+                    this.richTextBox.Clear();
+                    this.richTextBox.Text = string.Join("\n", ps.AddCommand("Get-Help").AddParameter("Name", (string)this.listBox.SelectedItem!).AddParameter("Full", true).AddCommand("Out-String").AddParameter("Width", int.MaxValue).AddParameter("Stream", true).Invoke<string>().Select(static s => !string.IsNullOrWhiteSpace(s) ? s.TrimEnd() : null)).Trim().Replace("<br />", null) + "\n";
                 };
 
                 // Ensure the runspace is closed when the form is closed.
