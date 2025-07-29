@@ -243,26 +243,6 @@
 				<delete />
 			</disabledValue>
 		</policy>
-		<policy name="OobeDetection" class="Machine" displayName="$(string.OobeDetection_Display)" explainText="$(string.OobeDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="OobeDetection">
-			<parentCategory ref="Toolkit" />
-			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<enabledValue>
-				<string>True</string>
-			</enabledValue>
-			<disabledValue>
-				<delete />
-			</disabledValue>
-		</policy>
-		<policy name="ProcessDetection" class="Machine" displayName="$(string.ProcessDetection_Display)" explainText="$(string.ProcessDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="ProcessDetection">
-			<parentCategory ref="Toolkit" />
-			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<enabledValue>
-				<string>True</string>
-			</enabledValue>
-			<disabledValue>
-				<delete />
-			</disabledValue>
-		</policy>
 		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
@@ -276,16 +256,6 @@
 			<elements>
 				<text id="RegPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="RegPathNoAdminRights" required="true" />
 			</elements>
-		</policy>
-		<policy name="SessionDetection" class="Machine" displayName="$(string.SessionDetection_Display)" explainText="$(string.SessionDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="SessionDetection">
-			<parentCategory ref="Toolkit" />
-			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<enabledValue>
-				<string>True</string>
-			</enabledValue>
-			<disabledValue>
-				<delete />
-			</disabledValue>
 		</policy>
 		<policy name="TempPath" class="Machine" displayName="$(string.TempPath_Display)" explainText="$(string.TempPath_Explain)" presentation="$(presentation.TempPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
 			<parentCategory ref="Toolkit" />

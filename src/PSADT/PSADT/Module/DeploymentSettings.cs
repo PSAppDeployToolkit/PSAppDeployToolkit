@@ -6,7 +6,7 @@ namespace PSADT.Module
     /// A bitfield representing the possible settings used within an active DeploymentSession object.
     /// </summary>
     [Flags]
-    public enum DeploymentSettings
+    public enum DeploymentSettings : uint
     {
         None = 0,
         Disposed = 1,
@@ -18,5 +18,11 @@ namespace PSADT.Module
         NonInteractive = 64,
         Silent = 128,
         RequireAdmin = 256,
+        DisableDefaultMsiProcessList = 512,
+        ForceMsiDetection = 1024,
+        ForceWimDetection = 2048,
+        NoSessionDetection = 4096,
+        NoOobeDetection = 8192,
+        NoProcessDetection = 16384,
     }
 }

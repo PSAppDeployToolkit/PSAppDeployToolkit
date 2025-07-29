@@ -80,20 +80,11 @@
         # This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).
         LogHostOutputToStdStreams = $false
 
-        # Automatically changes DeployMode to Silent during the OOBE.
-        OobeDetection = $true
-
-        # Automatically changes DeployMode when one or more processes are specified to Open-ADTSession for closure.
-        ProcessDetection = $true
-
         # Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.
         RegPath = 'HKLM:\SOFTWARE'
 
         # Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.
         RegPathNoAdminRights = 'HKCU:\SOFTWARE'
-
-        # Automatically changes DeployMode for session zero (SYSTEM) operations.
-        SessionDetection = $true
 
         # Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\Temp.
         TempPath = '$envTemp'

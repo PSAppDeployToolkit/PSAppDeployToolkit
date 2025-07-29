@@ -21,7 +21,7 @@ for more details. You should have received a copy of the GNU Lesser General Publ
 The type of deployment to perform.
 
 .PARAMETER DeployMode
-Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), or NonInteractive (dialogs without prompts) mode.
+Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), NonInteractive (dialogs without prompts) mode, or Auto (shows dialogs if a user is logged on, device is not in the OOBE, and there's no running apps to close).
 
 Silent mode is automatically set if it is detected that the process is not user interactive, no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
 
@@ -66,12 +66,14 @@ https://psappdeploytoolkit.com
 [CmdletBinding()]
 param
 (
+    # Default is 'Install'.
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
     [System.String]$DeploymentType,
 
+    # Default is 'Auto'. Don't hard-code this unless required.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
+    [ValidateSet('Auto', 'Interactive', 'Silent', 'NonInteractive')]
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]

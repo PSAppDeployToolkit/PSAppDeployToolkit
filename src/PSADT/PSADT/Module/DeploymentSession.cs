@@ -52,13 +52,9 @@ namespace PSADT.Module
                 var adtData = ModuleDatabase.Get();
                 var adtEnv = ModuleDatabase.GetEnvironment();
                 var adtConfig = ModuleDatabase.GetConfig();
-                var moduleSessionState = ModuleDatabase.GetSessionState();
-                object? paramValue = null;
-                bool writtenDivider = false;
-                _ = _installPhase;
-
-                // Extrapolate the Toolkit options from the config hashtable.
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
+                var moduleSessionState = ModuleDatabase.GetSessionState();
+                bool writtenDivider = false; _ = _installPhase;
 
                 // Pre-cache reused environment variables.
                 var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
@@ -73,7 +69,7 @@ namespace PSADT.Module
                 // Set up other variable values based on incoming dictionary.
                 if (null != parameters && parameters.Count > 0)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("DeploymentType", out var paramValue) && (null != paramValue))
                     {
                         _deploymentType = (DeploymentType)paramValue;
                     }
@@ -189,6 +185,30 @@ namespace PSADT.Module
                     {
                         _defaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
                     }
+                    if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.DisableDefaultMsiProcessList;
+                    }
+                    if (parameters.TryGetValue("ForceMsiDetection", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.ForceMsiDetection;
+                    }
+                    if (parameters.TryGetValue("ForceWimDetection", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.ForceWimDetection;
+                    }
+                    if (parameters.TryGetValue("NoSessionDetection", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.NoSessionDetection;
+                    }
+                    if (parameters.TryGetValue("NoOobeDetection", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.NoOobeDetection;
+                    }
+                    if (parameters.TryGetValue("NoProcessDetection", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.NoProcessDetection;
+                    }
                     if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _logName = (string)paramValue;
@@ -221,7 +241,7 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.TryGetValue("ForceWimDetection", out paramValue)! && (SwitchParameter)paramValue!))
+                if (string.IsNullOrWhiteSpace(_appName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
@@ -252,7 +272,7 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.TryGetValue("ForceMsiDetection", out paramValue)! && (SwitchParameter)paramValue!))
+                if (string.IsNullOrWhiteSpace(_appName) || Settings.HasFlag(DeploymentSettings.ForceMsiDetection))
                 {
                     // Find the first MSI file in the Files folder and use that as our install.
                     if (string.IsNullOrWhiteSpace(_defaultMsiFile))
@@ -322,7 +342,7 @@ namespace PSADT.Module
                         }
 
                         // Read the MSI and get the installation details.
-                        if (((bool)parameters?.TryGetValue("DisableDefaultMsiProcessList", out paramValue)! && (SwitchParameter)paramValue!))
+                        if (Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
                             var exeProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                             List<ProcessDefinition> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
@@ -689,11 +709,11 @@ namespace PSADT.Module
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{_deployMode}]");
                     }
-                    if (_deployMode != DeployMode.Interactive)
+                    if (_deployMode != DeployMode.Auto)
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment mode was manually set to [{_deployMode}].");
                     }
-                    else if ((bool)configToolkit["OobeDetection"]!)
+                    else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                     {
                         WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
                         deployModeChanged = true;
@@ -723,7 +743,7 @@ namespace PSADT.Module
                                         {
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
                                         }
-                                        else if (_deployMode != DeployMode.Interactive)
+                                        else if (_deployMode != DeployMode.Auto)
                                         {
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was manually set to [{_deployMode}].");
                                         }
@@ -779,11 +799,11 @@ namespace PSADT.Module
                     {
                         WriteLogEntry($"Session 0 detected but deployment has already been changed to [{_deployMode}]");
                     }
-                    else if (_deployMode != DeployMode.Interactive)
+                    else if (_deployMode != DeployMode.Auto)
                     {
                         WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
                     }
-                    else if ((bool)configToolkit["SessionDetection"]!)
+                    else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
                         // If the process is not able to display a UI, enable silent mode.
                         if (null == usersLoggedOn || usersLoggedOn.Count == 0)
@@ -814,11 +834,11 @@ namespace PSADT.Module
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
                     }
-                    if ((null != parameters) && parameters.ContainsKey("DeployMode"))
+                    if (_deployMode != DeployMode.Auto)
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
                     }
-                    else if ((bool)configToolkit["ProcessDetection"]!)
+                    else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
                         if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose) is var runningProcs && (runningProcs.Count == 0))
                         {
@@ -839,6 +859,12 @@ namespace PSADT.Module
                 {
                     WriteLogEntry($"No processes were specified as requiring closure.");
                 }
+
+                // If we're still in Auto mode, then set the deployment mode to Interactive.
+                if (_deployMode == DeployMode.Auto)
+                {
+                    _deployMode = DeployMode.Interactive;
+            }
 
                 // Set Deploy Mode switches.
                 WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
@@ -1402,7 +1428,7 @@ namespace PSADT.Module
 
 
         private readonly DeploymentType _deploymentType = DeploymentType.Install;
-        private readonly DeployMode _deployMode = DeployMode.Interactive;
+        private readonly DeployMode _deployMode = DeployMode.Auto;
         private readonly string? _appVendor;
         private readonly string? _appName;
         private readonly string? _appVersion;

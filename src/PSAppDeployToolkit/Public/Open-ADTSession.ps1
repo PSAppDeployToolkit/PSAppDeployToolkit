@@ -49,15 +49,6 @@ function Open-ADTSession
     .PARAMETER AppRevision
         Specifies the application revision.
 
-    .PARAMETER AppSuccessExitCodes
-        Specifies the application exit codes.
-
-    .PARAMETER AppRebootExitCodes
-        Specifies the application reboot codes.
-
-    .PARAMETER AppProcessesToClose
-        Specifies one or more processes that require closing to ensure a successful deployment.
-
     .PARAMETER AppScriptVersion
         Specifies the application script version.
 
@@ -66,9 +57,6 @@ function Open-ADTSession
 
     .PARAMETER AppScriptAuthor
         Specifies the application script author.
-
-    .PARAMETER RequireAdmin
-        Specifies that this deployment requires administrative permissions.
 
     .PARAMETER InstallName
         Specifies the install name.
@@ -84,6 +72,18 @@ function Open-ADTSession
 
     .PARAMETER DeployAppScriptParameters
         Specifies the parameters for the deploy application script.
+
+    .PARAMETER AppSuccessExitCodes
+        Specifies the application exit codes.
+
+    .PARAMETER AppRebootExitCodes
+        Specifies the application reboot codes.
+
+    .PARAMETER AppProcessesToClose
+        Specifies one or more processes that require closing to ensure a successful deployment.
+
+    .PARAMETER RequireAdmin
+        Specifies that this deployment requires administrative permissions.
 
     .PARAMETER ScriptDirectory
         Specifies the base path for Files and SupportFiles.
@@ -106,20 +106,29 @@ function Open-ADTSession
     .PARAMETER DisableDefaultMsiProcessList
         Specifies that the zero-config MSI code should not gather process names from the MSI file.
 
+    .PARAMETER ForceMsiDetection
+        Specifies that MSI files should be detected and parsed during session initialization, irrespective of whether any App values are provided.
+
+    .PARAMETER ForceWimDetection
+        Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
+
+    .PARAMETER NoSessionDetection
+        When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no logged on user session available.
+
+    .PARAMETER NoOobeDetection
+        When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when the device hasn't completed the OOBE or a user ESP is active.
+
+    .PARAMETER NoProcessDetection
+        When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no processes to close in the specified AppProcessesToClose list.
+
+    .PARAMETER PassThru
+        Passes the session object through the pipeline.
+
     .PARAMETER LogName
         Specifies an override for the default-generated log file name.
 
     .PARAMETER SessionClass
         Specifies an override for PSADT.Module.DeploymentSession class. Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
-
-    .PARAMETER ForceWimDetection
-        Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
-
-    .PARAMETER ForceMsiDetection
-        Specifies that MSI files should be detected and parsed during session initialization, irrespective of whether any App values are provided.
-
-    .PARAMETER PassThru
-        Passes the session object through the pipeline.
 
     .PARAMETER UnboundArguments
         Captures any additional arguments passed to the function.
@@ -211,9 +220,6 @@ function Open-ADTSession
         [ValidateNotNullOrEmpty()]
         [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::Value,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$RequireAdmin,
-
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.String]$InstallName = [System.Management.Automation.Language.NullString]::Value,
@@ -245,6 +251,9 @@ function Open-ADTSession
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$AppProcessesToClose,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$RequireAdmin,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -304,6 +313,24 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$DisableDefaultMsiProcessList,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ForceMsiDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ForceWimDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoSessionDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoOobeDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoProcessDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
@@ -330,15 +357,6 @@ function Open-ADTSession
                 return $_
             })]
         [System.Type]$SessionClass = [PSADT.Module.DeploymentSession],
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ForceWimDetection,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ForceMsiDetection,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [AllowNull()][AllowEmptyCollection()]

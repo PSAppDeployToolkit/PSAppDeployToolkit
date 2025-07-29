@@ -14,7 +14,7 @@ The script imports the PSAppDeployToolkit module which contains the logic and fu
 The type of deployment to perform.
 
 .PARAMETER DeployMode
-Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), or NonInteractive (dialogs without prompts) mode.
+Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), NonInteractive (dialogs without prompts) mode, or Auto (shows dialogs if a user is logged on, device is not in the OOBE, and there's no running apps to close).
 
 Silent mode is automatically set if it is detected that the process is not user interactive, no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
 
@@ -59,12 +59,14 @@ https://psappdeploytoolkit.com
 [CmdletBinding()]
 param
 (
+    # Default is 'Install'.
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
     [System.String]$DeploymentType,
 
+    # Default is 'Auto'. Don't hard-code this unless required.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
+    [ValidateSet('Auto', 'Interactive', 'Silent', 'NonInteractive')]
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
@@ -94,7 +96,7 @@ $adtSession = @{
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
-    AppProcessesToClose = @() # Example: @('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })
+    AppProcessesToClose = @()  # Example: @('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2000-12-31'
     AppScriptAuthor = '<author name>'

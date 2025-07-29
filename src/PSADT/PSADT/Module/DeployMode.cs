@@ -5,6 +5,7 @@
     /// </summary>
     public enum DeployMode
     {
+        Auto,
         Interactive,
         NonInteractive,
         Silent
