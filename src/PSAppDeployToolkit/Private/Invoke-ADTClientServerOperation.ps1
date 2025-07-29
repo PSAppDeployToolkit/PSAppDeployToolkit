@@ -157,7 +157,7 @@ function Private:Invoke-ADTClientServerOperation
                 $naerParams = @{
                     Exception = if ($clientResult.StdErr.Count)
                     {
-                        [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.Serialization.JsonSerialization]::DeserializeFromString($return.StdErr))
+                        [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr))
                     }
                     else
                     {
@@ -239,7 +239,7 @@ function Private:Invoke-ADTClientServerOperation
             $naerParams = @{
                 Exception = if ($clientResult.StdErr.Count)
                 {
-                    [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.Serialization.JsonSerialization]::DeserializeFromString($return.StdErr))
+                    [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr))
                 }
                 else
                 {
@@ -271,7 +271,7 @@ function Private:Invoke-ADTClientServerOperation
         $null = $PSBoundParameters.Remove('User')
         if ($PSBoundParameters.ContainsKey('Options'))
         {
-            $PSBoundParameters.Options = [PSADT.Serialization.JsonSerialization]::SerializeToString($Options)
+            $PSBoundParameters.Options = [PSADT.ClientServer.DataSerialization]::SerializeToString($Options)
         }
 
         # Set up the parameters for Start-ADTProcessAsUser.
@@ -316,7 +316,7 @@ function Private:Invoke-ADTClientServerOperation
         if ($return.StdErr.Count -ne 0)
         {
             $naerParams = @{
-                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.Serialization.JsonSerialization]::DeserializeFromString($return.StdErr))
+                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr))
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = 'ClientServerResultError'
                 TargetObject = $return
@@ -348,7 +348,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Deserialise the result for returning to the caller.
-        $result = [PSADT.Serialization.JsonSerialization]::DeserializeFromString($return.StdOut)
+        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut)
     }
 
     # Test that the received result is valid and expected.

@@ -4,28 +4,28 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace PSADT.Serialization
+namespace PSADT.ClientServer
 {
     /// <summary>
     /// Provides utility methods for JSON serialization and deserialization, including Base64 encoding and decoding.
     /// </summary>
-    /// <remarks>The <see cref="JsonSerialization"/> class offers methods to serialize objects to JSON
+    /// <remarks>The <see cref="DataSerialization"/> class offers methods to serialize objects to JSON
     /// strings, encode them as Base64, and deserialize Base64-encoded JSON strings back into objects. It also provides
     /// default settings for JSON serialization using Newtonsoft.Json, which can be used across the application. <para>
     /// Key features include: <list type="bullet"> <item><description>Serialization of objects to Base64-encoded JSON
     /// strings.</description></item> <item><description>Deserialization of Base64-encoded JSON strings into objects.
     /// </description></item> <item><description>Default JSON serializer settings for consistent
     /// behavior.</description></item> </list> </para></remarks>
-    public static class JsonSerialization
+    public static class DataSerialization
     {
         /// <summary>
-        /// Initializes the <see cref="JsonSerialization"/> class and configures default settings to ensure
+        /// Initializes the <see cref="DataSerialization"/> class and configures default settings to ensure
         /// compatibility between .NET Core and .NET Framework.
         /// </summary>
         /// <remarks>This static constructor sets the default serialization binder to a compatibility
         /// binder when running on the .NET Framework. This ensures that serialized objects can be properly deserialized
         /// across different .NET runtime environments.</remarks>
-        static JsonSerialization()
+        static DataSerialization()
         {
             // Set the default serialization binder to ensure compatibility between .NET Core and .NET Framework.
             if (null == AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(static a => null != a.FullName && a.FullName.StartsWith("System.Private.CoreLib")))

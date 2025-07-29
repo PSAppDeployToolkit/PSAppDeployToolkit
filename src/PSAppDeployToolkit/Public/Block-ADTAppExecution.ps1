@@ -139,14 +139,14 @@ function Block-ADTAppExecution
 
                 # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.
                 $blockExecArgs = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
-                $blockExecArgs.Add('Options', [PSADT.Serialization.JsonSerialization]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))
+                $blockExecArgs.Add('Options', [PSADT.ClientServer.DataSerialization]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))
                 $blockExecArgs.Add('DialogType', [PSADT.UserInterface.Dialogs.DialogType]::CustomDialog.ToString())
                 $blockExecArgs.Add('DialogStyle', $adtConfig.UI.DialogStyle)
 
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = Convert-ADTRegistryPath -Key (Join-Path -Path $adtConfig.Toolkit.RegPath -ChildPath $adtEnv.appDeployToolkitName)
                 $blockExecDbgPath = "`"$($Script:PSScriptRoot)\lib\PSADT.ClientServer.Client.Launcher.exe`" /ShowModalDialog -ArgumentsDictionary $($blockExecRegPath.Split('::', [System.StringSplitOptions]::RemoveEmptyEntries)[1])\BlockExecutionCommand"
-                Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value ([PSADT.Serialization.JsonSerialization]::SerializeToString($blockExecArgs)) -InformationAction SilentlyContinue
+                Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString($blockExecArgs)) -InformationAction SilentlyContinue
 
                 # Enumerate each process and set the debugger value to block application execution.
                 foreach ($process in $ProcessName)

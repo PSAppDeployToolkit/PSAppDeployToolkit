@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
-using PSADT.Serialization;
 using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -191,7 +190,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke<bool>($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke<bool>($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(closeProcesses)}" : null)}");
         }
 
         /// <summary>
@@ -276,7 +275,7 @@ namespace PSADT.ClientServer
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke<bool>($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
+            return Invoke<bool>($"ShowProgressDialog{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -335,7 +334,7 @@ namespace PSADT.ClientServer
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
             _logSource = "Show-ADTBalloonTip";
-            return Invoke<bool>($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
+            return Invoke<bool>($"ShowBalloonTip{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -384,7 +383,7 @@ namespace PSADT.ClientServer
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            return Invoke<ReadOnlyCollection<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
+            return Invoke<ReadOnlyCollection<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -525,7 +524,7 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
                 _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
             };
-            return Invoke<TResult>($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(options)}");
+            return Invoke<TResult>($"ShowModalDialog{CommonUtilities.ArgumentSeparator}{dialogType}{CommonUtilities.ArgumentSeparator}{dialogStyle}{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -556,9 +555,9 @@ namespace PSADT.ClientServer
             }
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
             {
-                throw new ServerException("The client process returned an exception.", JsonSerialization.DeserializeFromString<Exception>(response.Substring(6)));
+                throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response.Substring(6)));
             }
-            return JsonSerialization.DeserializeFromString<T>(response);
+            return DataSerialization.DeserializeFromString<T>(response);
         }
 
         /// <summary>

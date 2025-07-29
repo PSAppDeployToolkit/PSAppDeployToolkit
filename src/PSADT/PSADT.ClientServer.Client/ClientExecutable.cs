@@ -11,7 +11,6 @@ using Microsoft.Win32;
 using PSADT.DeviceManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
-using PSADT.Serialization;
 using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
@@ -92,13 +91,13 @@ namespace PSADT.ClientServer
             catch (ClientException ex)
             {
                 // We've caught our own error. Write it out and exit with its code.
-                Console.Error.WriteLine(JsonSerialization.SerializeToString(ex));
+                Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
                 return ex.HResult;
             }
             catch (Exception ex)
             {
                 // This block is here as a fail-safe and should never be reached.
-                Console.Error.WriteLine(JsonSerialization.SerializeToString(ex));
+                Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
                 return (int)ClientExitCode.Unknown;
             }
         }
@@ -425,7 +424,7 @@ namespace PSADT.ClientServer
                             catch (Exception ex)
                             {
                                 // Something we weren't expecting occurred. We should never get here.
-                                WriteResult($"Error{CommonUtilities.ArgumentSeparator}{JsonSerialization.SerializeToString(ex)}");
+                                WriteResult($"Error{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(ex)}");
                             }
                         }
                         catch (EndOfStreamException)
@@ -724,7 +723,7 @@ namespace PSADT.ClientServer
         {
             try
             {
-                return JsonSerialization.DeserializeFromString<T>(input);
+                return DataSerialization.DeserializeFromString<T>(input);
             }
             catch (Exception ex)
             {
@@ -743,7 +742,7 @@ namespace PSADT.ClientServer
         {
             try
             {
-                return JsonSerialization.SerializeToString(result);
+                return DataSerialization.SerializeToString(result);
             }
             catch (Exception ex)
             {
