@@ -10,13 +10,6 @@ PSAppDeployToolkit - This script performs the installation or uninstallation of 
 
 The script imports the PSAppDeployToolkit module which contains the logic and functions required to install or uninstall an application.
 
-PSAppDeployToolkit is licensed under the GNU LGPLv3 License - © 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-for more details. You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 .PARAMETER DeploymentType
 The type of deployment to perform.
 
@@ -97,7 +90,7 @@ $adtSession = @{
     # App variables.
     AppVendor = 'Martin Prikryl'
     AppName = 'WinSCP'
-    AppVersion = '6.3.5'
+    AppVersion = '6.5.3'
     AppArch = 'x64'
     AppLang = 'EN'
     AppRevision = '01'
@@ -105,8 +98,9 @@ $adtSession = @{
     AppRebootExitCodes = @(1641, 3010)
     AppProcessesToClose = @(@{ Name = 'WinSCP'; Description = 'WinSCP' })
     AppScriptVersion = '1.0.0'
-    AppScriptDate = '2024-10-21'
+    AppScriptDate = '2025-07-29'
     AppScriptAuthor = 'PSAppDeployToolkit'
+    RequireAdmin = $true
 
     # Install Titles (Only set here to override defaults set by the toolkit).
     InstallName = ''
@@ -319,7 +313,7 @@ Set-StrictMode -Version 1
 try
 {
     # Import the module locally if available, otherwise try to find it from PSModulePath.
-    if ([System.IO.File]::Exists("$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
+    if (Test-Path -LiteralPath "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -PathType Leaf)
     {
         Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
         Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
