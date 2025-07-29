@@ -217,48 +217,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Sends the specified message to a window or windows.
-        /// </summary>
-        /// <param name="hWnd"></param>
-        /// <param name="Msg"></param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
-        /// <param name="fuFlags"></param>
-        /// <param name="uTimeout"></param>
-        /// <param name="lpdwResult"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
-        {
-            if (lParam is null || lParam.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(lParam));
-            }
-
-            bool lParamAddRef = false;
-            try
-            {
-                lParam.DangerousAddRef(ref lParamAddRef);
-                fixed (nuint* lpdwResultPointer = &lpdwResult)
-                {
-                    var res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
-                    if (res == default)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                    }
-                    return res;
-                }
-            }
-            finally
-            {
-                if (lParamAddRef)
-                {
-                    lParam.DangerousRelease();
-                }
-            }
-        }
-
-        /// <summary>
         /// Retrieves the display monitor that is nearest to the specified rectangle.
         /// </summary>
         /// <param name="hWnd"></param>
@@ -291,6 +249,37 @@ namespace PSADT.LibraryInterfaces
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
             }
             return res;
+        }
+
+        /// <summary>
+        /// Sends a message to the specified window handle.
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="Msg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, SafeMemoryHandle lParam)
+        {
+            if (lParam is null || lParam.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(lParam));
+            }
+
+            bool lParamAddRef = false;
+            try
+            {
+                lParam.DangerousAddRef(ref lParamAddRef);
+                return SendMessage(hWnd, Msg, wParam, lParam.DangerousGetHandle());
+            }
+            finally
+            {
+                if (lParamAddRef)
+                {
+                    lParam.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
