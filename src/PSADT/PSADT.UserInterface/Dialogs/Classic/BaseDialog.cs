@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -14,6 +16,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         static BaseDialog()
         {
+            if ("Server Core".Equals(Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion", "InstallationType", null)))
+            {
+                throw new NotSupportedException("The dialog style [Classic] is not supported on Windows Server Core.");
+            }
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
                 Application.EnableVisualStyles();
