@@ -595,7 +595,7 @@ function Remove-MSIApplications
         }
     )
 
-    $filterScript = $filterArray -join ' -and '
+    $filterScript = [System.String]::Join(' -and ', $filterArray)
 
     if ($filterScript)
     {

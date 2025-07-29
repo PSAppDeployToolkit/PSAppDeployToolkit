@@ -574,13 +574,13 @@ function Start-ADTMsiProcess
                 # Enumerate all transforms specified, qualify the full path if possible and enclose in quotes.
                 $mstFile = if ($Transforms)
                 {
-                    "`"$($Transforms -join ';')`""
+                    "`"$([System.String]::Join(';', $Transforms))`""
                 }
 
                 # Enumerate all patches specified, qualify the full path if possible and enclose in quotes.
                 $mspFile = if ($Patches)
                 {
-                    "`"$($Patches -join ';')`""
+                    "`"$([System.String]::Join(';', $Patches))`""
                 }
 
                 # Start building the MsiExec command line starting with the base action and file.

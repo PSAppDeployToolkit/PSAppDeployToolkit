@@ -85,7 +85,7 @@ function Test-ADTPowerPoint
                     return ($presenting = $true)
                 }
                 Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
-                Write-ADTLogEntry -Message "PowerPoint process [$procName] has process ID(s) [$(($PowerPointProcessIDs = $PowerPointProcess.Id) -join ', ')]."
+                Write-ADTLogEntry -Message "PowerPoint process [$procName] has process ID(s) [$([System.String]::Join(', ', ($PowerPointProcessIDs = $PowerPointProcess.Id)))]."
 
                 # If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher).
                 # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.

@@ -53,7 +53,7 @@ function Private:Unblock-ADTAppExecutionInternal
         }
         Tasks
         {
-            Write-Verbose -Message "Deleting Scheduled Tasks ['$($Tasks.TaskName -join "', '")']."
+            Write-Verbose -Message "Deleting Scheduled Tasks ['$([System.String]::Join("', '", $Tasks.TaskName))']."
             $Tasks | Unregister-ScheduledTask -Confirm:$false -Verbose:$false
             break
         }
