@@ -138,7 +138,7 @@ namespace PSADT.ClientServer
             bool? closed = null;
             try
             {
-                if (!force && !(closed = Invoke<bool>("Close")).Value)
+                if (!force && IsRunning && !(closed = Invoke<bool>("Close")).Value)
                 {
                     throw new ApplicationException("The opened client process did not properly respond to the close command.");
                 }
@@ -616,7 +616,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning => null != _clientProcess && _clientProcess.Task.Status == TaskStatus.Running;
+        public bool IsRunning => null != _clientProcess && !_clientProcess.Process.HasExited;
 
         /// <summary>
         /// Indicates whether the object has been disposed.

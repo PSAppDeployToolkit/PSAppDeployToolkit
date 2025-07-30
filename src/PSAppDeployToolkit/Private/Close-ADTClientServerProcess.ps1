@@ -17,7 +17,14 @@ function Private:Close-ADTClientServerProcess
         }
         throw (New-ADTErrorRecord @naerParams)
     }
-    Write-ADTLogEntry -Message 'Closing user client/server process.'
+    if (!$Script:ADT.ClientServerProcess.IsRunning)
+    {
+        Write-ADTLogEntry -Message 'Closing and disposing of tombstoned client/server instance.'
+    }
+    else
+    {
+        Write-ADTLogEntry -Message 'Closing user client/server process.'
+    }
     try
     {
         $Script:ADT.ClientServerProcess.Close()

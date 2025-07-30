@@ -119,6 +119,13 @@ function Private:Invoke-ADTClientServerOperation
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
+    # If the client/server process is instantiated but no longer running, clean up before continuing.
+    if ($Script:ADT.ClientServerProcess -and !$Script:ADT.ClientServerProcess.IsRunning)
+    {
+        Write-ADTLogEntry -Message 'Existing client/server process closed outside of our control.'
+        Close-ADTClientServerProcess
+    }
+
     # Ensure the permissions are correct on all files before proceeding.
     Set-ADTClientServerProcessPermissions -User $User
 
