@@ -39,6 +39,7 @@ namespace PSADT.Module
         /// <param name="callerSessionState">The caller session state.</param>
         public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, SessionState? callerSessionState = null)
         {
+            int deferExitCode = 1602;
             try
             {
                 #region Initialization
@@ -52,13 +53,16 @@ namespace PSADT.Module
                 var adtData = ModuleDatabase.Get();
                 var adtEnv = ModuleDatabase.GetEnvironment();
                 var adtConfig = ModuleDatabase.GetConfig();
+                var configUI = (Hashtable)adtConfig["UI"]!;
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
                 var moduleSessionState = ModuleDatabase.GetSessionState();
                 bool writtenDivider = false; _ = _installPhase;
+                deferExitCode = (int)configUI["DeferExitCode"]!;
 
                 // Pre-cache reused environment variables.
                 var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
                 var appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
+                var IsProcessUserInteractive = (bool)adtEnv["IsProcessUserInteractive"]!;
                 var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
                 var RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
                 var currentLanguage = (string)adtEnv["currentLanguage"]!;
@@ -599,17 +603,6 @@ namespace PSADT.Module
 
 
                 #endregion
-                #region TestAdminRequired
-
-
-                // Check current permissions and exit if not running with Administrator rights.
-                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
-                {
-                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
-                }
-
-
-                #endregion
                 #region LogSystemInfo
 
 
@@ -671,11 +664,33 @@ namespace PSADT.Module
                     WriteLogEntry("No users are logged on to the system.");
                 }
 
+
+                #endregion
+                #region TestSessionViability
+
+
+                // Check current permissions and exit if not running with Administrator rights.
+                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
+                {
+                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
+                }
+
+                // Check if the caller explicitly wants interactivity but we can't do it.
+                if (_deployMode == DeployMode.Interactive && null == RunAsActiveUser && !IsProcessUserInteractive)
+                {
+                    throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
+                }
+
+
+                #endregion
+                #region LogLanguageInfo
+
+
                 // Log which language's UI messages are loaded from the config file
                 WriteLogEntry($"The current execution context has a primary UI language of [{adtEnv["uiculture"]}].");
 
                 // Advise whether the UI language was overridden.
-                if (((Hashtable)adtConfig["UI"]!)["LanguageOverride"] is string languageOverride)
+                if (configUI["LanguageOverride"] is string languageOverride)
                 {
                     WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
                 }
@@ -808,7 +823,7 @@ namespace PSADT.Module
                         if (null == RunAsActiveUser)
                         {
                             // If there's no users logged on but we're interactive anyway, don't change the DeployMode.
-                            if (!(bool)adtEnv["IsProcessUserInteractive"]!)
+                            if (!IsProcessUserInteractive)
                             {
                                 WriteLogEntry($"Session 0 detected, no users logged on and process not running in user interactive mode; deployment mode set to [{_deployMode = DeployMode.Silent}].");
                                 deployModeChanged = true;
@@ -921,6 +936,13 @@ namespace PSADT.Module
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
                 SetExitCode(60008); Close();
+                ExceptionDispatchInfo.Capture(ex).Throw();
+                throw;
+            }
+            catch (NotSupportedException ex)
+            {
+                WriteLogEntry(ex.Message, LogSeverity.Error);
+                SetExitCode(deferExitCode); Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }

@@ -503,11 +503,11 @@ function Open-ADTSession
             {
                 if (!$adtSession)
                 {
-                    Exit-ADTInvocation -ExitCode 60008 -NoShellExit:$noExitOnClose
+                    Exit-ADTInvocation -ExitCode $Script:ADT.LastExitCode -NoShellExit:$noExitOnClose
                 }
                 else
                 {
-                    Close-ADTSession -ExitCode 60008
+                    Close-ADTSession -ExitCode $Script:ADT.LastExitCode
                 }
             }
         }
