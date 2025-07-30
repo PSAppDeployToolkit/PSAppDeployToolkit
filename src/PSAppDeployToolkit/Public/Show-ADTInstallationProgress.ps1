@@ -176,6 +176,13 @@ function Show-ADTInstallationProgress
 
     process
     {
+        # Return early in silent mode.
+        if ($adtSession -and $adtSession.IsSilent())
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Status message: $($PSBoundParameters.StatusMessage)"
+            return
+        }
+
         # Bypass if no one's logged on to answer the dialog.
         if (!($runAsActiveUser = Get-ADTClientServerUser))
         {
@@ -186,26 +193,16 @@ function Show-ADTInstallationProgress
         # Determine if progress window is open before proceeding.
         $progressOpen = Invoke-ADTClientServerOperation -ProgressDialogOpen -User $runAsActiveUser
 
-        # Return early in silent mode.
-        if ($adtSession)
+        # Notify user that the software installation has started.
+        if ($adtSession -and !$progressOpen)
         {
-            if ($adtSession.IsSilent())
+            try
             {
-                Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Status message: $($PSBoundParameters.StatusMessage)"
-                return
+                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.$deploymentType -NoWait
             }
-
-            # Notify user that the software installation has started.
-            if (!$progressOpen)
+            catch
             {
-                try
-                {
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.$deploymentType -NoWait
-                }
-                catch
-                {
-                    $PSCmdlet.ThrowTerminatingError($_)
-                }
+                $PSCmdlet.ThrowTerminatingError($_)
             }
         }
 
