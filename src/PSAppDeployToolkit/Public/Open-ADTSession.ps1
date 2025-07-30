@@ -458,6 +458,7 @@ function Open-ADTSession
             try
             {
                 $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
+                $Script:ADT.Sessions.Add($adtSession)
             }
             catch
             {
@@ -481,9 +482,6 @@ function Open-ADTSession
         {
             try
             {
-                # Add the instantiated session to the module's buffer.
-                $Script:ADT.Sessions.Add($adtSession)
-
                 # Add any unbound arguments into the $adtSession object as PSNoteProperty objects.
                 if ($PSBoundParameters.ContainsKey('UnboundArguments') -and $SessionClass.Equals([PSADT.Module.DeploymentSession]))
                 {
