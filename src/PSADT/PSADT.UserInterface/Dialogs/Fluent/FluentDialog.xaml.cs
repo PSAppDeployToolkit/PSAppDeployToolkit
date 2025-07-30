@@ -330,12 +330,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="message"></param>
         protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
         {
-            // Throw if our process was started with ServiceUI anywhere as a parent process.
-            if (AccountUtilities.CallerIsSystemInteractive)
-            {
-                throw new InvalidOperationException("Hyperlinks are only permitted when ServiceUI or ConfigMgr's 'Allow users to view and interact with the program installation' option is not used to start the toolkit.");
-            }
-
             // Don't waste time on an empty string.
             textBlock.Inlines.Clear();
             if (string.IsNullOrWhiteSpace(message))
@@ -434,7 +428,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             // Add the URL as a proper hyperlink
-            if (Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
+            if (!AccountUtilities.CallerIsSystemInteractive && Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
             {
                 Hyperlink link = new(new Run(url))
                 {
