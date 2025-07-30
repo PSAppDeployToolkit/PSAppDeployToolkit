@@ -805,7 +805,7 @@ namespace PSADT.Module
                     else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
                         // If the process is not able to display a UI, enable silent mode.
-                        if (null == usersLoggedOn || usersLoggedOn.Count == 0)
+                        if (null == RunAsActiveUser)
                         {
                             // If there's no users logged on but we're interactive anyway, don't change the DeployMode.
                             if (!(bool)adtEnv["IsProcessUserInteractive"]!)
