@@ -66,7 +66,7 @@ param
 
     # Default is 'Auto'. Don't hard-code this unless required.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('Auto', 'Interactive', 'Silent', 'NonInteractive')]
+    [ValidateSet('Auto', 'Interactive', 'NonInteractive', 'Silent')]
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
