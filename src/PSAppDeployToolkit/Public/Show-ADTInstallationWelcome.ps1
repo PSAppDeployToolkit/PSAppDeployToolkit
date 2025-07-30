@@ -823,7 +823,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Bypass if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = Get-ADTClientServerUser))
+                if (!$Silent -and !($runAsActiveUser = Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Running $($MyInvocation.MyCommand.Name) silently as there is no active user logged onto the system."
                     $Silent = $true
