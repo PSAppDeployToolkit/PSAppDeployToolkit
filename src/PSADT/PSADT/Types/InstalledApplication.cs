@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using PSADT.ProcessManagement;
 
 namespace PSADT.Types
 {
@@ -64,6 +66,14 @@ namespace PSADT.Types
             SystemComponent = systemComponent;
             WindowsInstaller = windowsInstaller;
             Is64BitApplication = is64BitApplication;
+            if (null != UninstallString)
+            {
+                UninstallStringArray = ProcessUtilities.CommandLineToArgv(UninstallString);
+            }
+            if (null != QuietUninstallString)
+            {
+                QuietUninstallStringArray = ProcessUtilities.CommandLineToArgv(QuietUninstallString);
+            }
         }
 
         /// <summary>
@@ -114,9 +124,19 @@ namespace PSADT.Types
         public readonly string? UninstallString;
 
         /// <summary>
+        /// Gets the uninstall string used to remove the application as a list.
+        /// </summary>
+        public readonly IReadOnlyList<string>? UninstallStringArray;
+
+        /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
         /// </summary>
         public readonly string? QuietUninstallString;
+
+        /// <summary>
+        /// Gets the quiet uninstall string used to remove the application as a list.
+        /// </summary>
+        public readonly IReadOnlyList<string>? QuietUninstallStringArray;
 
         /// <summary>
         /// Gets the source from which the application was installed.
