@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.IO;
 using System.Text;
 using System.Diagnostics;
 using System.Security.Principal;
@@ -58,6 +58,16 @@ namespace PSADT.ProcessManagement
             CancellationToken? cancellationToken = null,
             bool noTerminateOnTimeout = false)
         {
+            // Handle file paths that may be wrapped in quotes.
+            if (filePath.StartsWith("\"") && filePath.EndsWith("\"") && filePath.TrimStart('"').TrimEnd('"') is string trimmedFilePath && File.Exists(trimmedFilePath))
+            {
+                FilePath = trimmedFilePath;
+            }
+            else
+            {
+                FilePath = filePath;
+            }
+
             // Validate all nullable parameters.
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
@@ -96,7 +106,6 @@ namespace PSADT.ProcessManagement
             }
 
             // Set remaining parameters.
-            FilePath = filePath;
             Username = username;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
