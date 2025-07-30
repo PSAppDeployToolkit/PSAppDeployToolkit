@@ -425,38 +425,64 @@ function Open-ADTSession
         }
         $firstSession = !$Script:ADT.Sessions.Count
 
-        # Commence the opening process.
+        # Perform pre-opening tasks.
+        try
+        {
+            # Initialize the module before opening the first session.
+            if ($firstSession)
+            {
+                if (!$Script:ADT.Initialized)
+                {
+                    Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
+                }
+                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnStart)))
+                {
+                    & $callback
+                }
+            }
+
+            # Invoke pre-open callbacks.
+            foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PreOpen)))
+            {
+                & $callback
+            }
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+
+        # Instantiate the new session.
         try
         {
             try
             {
-                # Initialize the module before opening the first session.
-                if ($firstSession)
-                {
-                    if (!$Script:ADT.Initialized)
-                    {
-                        Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
-                    }
-                    foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnStart)))
-                    {
-                        & $callback
-                    }
-                }
+                $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
+            }
+            catch
+            {
+                Write-Error -Exception $_.Exception.InnerException -Category OpenError -CategoryTargetName $Script:ADT.LastExitCode -CategoryTargetType $Script:ADT.LastExitCode.GetType().Name
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while instantiating a new deployment session."
+        }
+        finally
+        {
+            if ($errRecord)
+            {
+                Exit-ADTInvocation -ExitCode $Script:ADT.LastExitCode -NoShellExit:$noExitOnClose
+            }
+        }
 
-                # Invoke pre-open callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PreOpen)))
-                {
-                    & $callback
-                }
-
-                # Instantiate the new session. The constructor will handle adding the session to the module's list.
-                $Script:ADT.Sessions.Add(($adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))))
-
-                # Invoke post-open callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PostOpen)))
-                {
-                    & $callback
-                }
+        # Perform post-opening tasks.
+        try
+        {
+            try
+            {
+                # Add the instantiated session to the module's buffer.
+                $Script:ADT.Sessions.Add($adtSession)
 
                 # Add any unbound arguments into the $adtSession object as PSNoteProperty objects.
                 if ($PSBoundParameters.ContainsKey('UnboundArguments') -and $SessionClass.Equals([PSADT.Module.DeploymentSession]))
@@ -474,6 +500,12 @@ function Open-ADTSession
                     }
                 }
 
+                # Invoke post-open callbacks.
+                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PostOpen)))
+                {
+                    & $callback
+                }
+
                 # Export the environment table to variables within the caller's scope.
                 if ($firstSession)
                 {
@@ -487,33 +519,21 @@ function Open-ADTSession
                     return $adtSession
                 }
             }
-            catch [System.Management.Automation.MethodInvocationException]
-            {
-                Write-Error -Exception $_.Exception.InnerException
-            }
             catch
             {
-                Write-Error -ErrorRecord $_
+                Write-Error -ErrorRecord $_ -CategoryTargetName 60008 -CategoryTargetType ([System.Int32].Name)
             }
         }
         catch
         {
-            # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new deployment session."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred following new deployment session instantiation."
         }
         finally
         {
-            # Terminate early if we have an active session that failed to open properly.
+            # If we failed here, ensure we close out the instantiated DeploymentSession object.
             if ($errRecord)
             {
-                if (!$adtSession)
-                {
-                    Exit-ADTInvocation -ExitCode $Script:ADT.LastExitCode -NoShellExit:$noExitOnClose
-                }
-                else
-                {
-                    Close-ADTSession -ExitCode $Script:ADT.LastExitCode
-                }
+                Close-ADTSession -ExitCode $Script:ADT.LastExitCode
             }
         }
     }
