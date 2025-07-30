@@ -365,7 +365,8 @@ function Open-ADTSession
 
     begin
     {
-        # Initialize function.
+        # Make this function stop on any error and ensure the caller doesn't override ErrorAction.
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtSession = $null
         $errRecord = $null
@@ -479,8 +480,12 @@ function Open-ADTSession
                     Export-ADTEnvironmentTableToSessionState -SessionState $SessionState
                 }
 
-                # Change the install phase since we've finished initialising. This should get overwritten shortly.
+                # Change the install phase and return the most recent session if passing through.
                 $adtSession.InstallPhase = 'Execution'
+                if ($PassThru)
+                {
+                    return $adtSession
+                }
             }
             catch [System.Management.Automation.MethodInvocationException]
             {
@@ -510,12 +515,6 @@ function Open-ADTSession
                     Close-ADTSession -ExitCode $Script:ADT.LastExitCode
                 }
             }
-        }
-
-        # Return the most recent session if passing through.
-        if ($PassThru)
-        {
-            return $adtSession
         }
     }
 
