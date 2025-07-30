@@ -592,7 +592,7 @@ namespace PSADT.Module
                 }
 
                 // Test and warn if this toolkit was started with ServiceUI anywhere as a parent process.
-                if (AccountUtilities.CallerIsSystemInteractive)
+                if (AccountUtilities.CallerIsSystemInteractive && usersLoggedOn?.Count > 0)
                 {
                     WriteLogEntry($"[{appDeployToolkitName}] was started with ServiceUI as a parent process, or ConfigMgr's 'Allow users to view and interact with the program installation' option. This is no longer required and will not be supported in a later release.", LogSeverity.Warning);
                 }
@@ -711,7 +711,7 @@ namespace PSADT.Module
                     }
                     if (_deployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"Detected OOBE in progress but deployment mode was manually set to [{_deployMode}].");
+                        WriteLogEntry($"Detected OOBE in progress but deployment mode was explicitly set to [{_deployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                     {
@@ -745,7 +745,7 @@ namespace PSADT.Module
                                         }
                                         else if (_deployMode != DeployMode.Auto)
                                         {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was manually set to [{_deployMode}].");
+                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
                                         }
                                         else if ((bool)configToolkit["OobeDetection"]!)
                                         {
@@ -794,14 +794,13 @@ namespace PSADT.Module
                 // Perform session 0 evaluation.
                 if ((bool)adtEnv["SessionZero"]!)
                 {
-                    // If the script was launched with deployment mode manually set, then continue.
                     if (deployModeChanged)
                     {
                         WriteLogEntry($"Session 0 detected but deployment has already been changed to [{_deployMode}]");
                     }
                     else if (_deployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
+                        WriteLogEntry($"Session 0 detected but deployment mode was explicitly set to [{_deployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
@@ -829,14 +828,13 @@ namespace PSADT.Module
                 // Evaluate processes to close if they're specified.
                 if (_appProcessesToClose.Count > 0)
                 {
-                    // If the script was launched with deployment mode manually set, then continue.
                     if (deployModeChanged)
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
                     }
                     if (_deployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
+                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was explicitly set to [{_deployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
