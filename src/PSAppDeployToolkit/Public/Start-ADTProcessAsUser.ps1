@@ -47,6 +47,12 @@ function Start-ADTProcessAsUser
     .PARAMETER CreateNoWindow
         Specifies whether the process should be started with a new window to contain it.
 
+    .PARAMETER StreamEncoding
+        Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
+
+    .PARAMETER NoStreamLogging
+        Don't log any available stdout/stderr data to the log file.
+
     .PARAMETER WaitForMsiExec
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
 
@@ -76,9 +82,6 @@ function Start-ADTProcessAsUser
 
     .PARAMETER IgnoreExitCodes
         List the exit codes to ignore or * to ignore all exit codes.
-
-    .PARAMETER StreamEncoding
-        Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
 
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
@@ -189,6 +192,17 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [ValidateNotNullOrEmpty()]
+        [System.Text.Encoding]$StreamEncoding,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$NoStreamLogging,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
@@ -246,10 +260,6 @@ function Start-ADTProcessAsUser
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
         [System.String[]]$IgnoreExitCodes,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Text.Encoding]$StreamEncoding,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
