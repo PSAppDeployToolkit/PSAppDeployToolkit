@@ -51,7 +51,7 @@ namespace PSADT.AccountManagement
             WellKnownSidLookupTable = new(wellKnownSids);
 
             // Determine if the caller is the local system account.
-            CallerIsLocalSystem = CallerSid == GetWellKnownSid(WellKnownSidType.LocalSystemSid);
+            CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
         }
 
