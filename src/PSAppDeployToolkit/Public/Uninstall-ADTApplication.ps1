@@ -318,11 +318,28 @@ function Uninstall-ADTApplication
                     {
                         $null = $sapParams.Remove('ArgumentList')
                     }
+
                     if ($AdditionalArgumentList)
                     {
                         if ($sapParams.ContainsKey('ArgumentList'))
                         {
-                            $sapParams.ArgumentList += $AdditionalArgumentList
+                            $existing = if ($sapParams.ArgumentList -is [System.String] -or ($sapParams.ArgumentList -is [System.String[]] -and $sapParams.ArgumentList.Count -eq 1))
+                            {
+                                [PSADT.ProcessManagement.ProcessUtilities]::CommandLineToArgv($sapParams.ArgumentList)
+                            }
+                            else
+                            {
+                                $sapParams.ArgumentList
+                            }
+                            $additional = if ($AdditionalArgumentList -is [System.String] -or ($AdditionalArgumentList -is [System.String[]] -and $AdditionalArgumentList.Count -eq 1))
+                            {
+                                [PSADT.ProcessManagement.ProcessUtilities]::CommandLineToArgv($AdditionalArgumentList)
+                            }
+                            else
+                            {
+                                $AdditionalArgumentList
+                            }
+                            $sapParams.ArgumentList = @($existing) + @($additional)
                         }
                         else
                         {
