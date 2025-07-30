@@ -368,8 +368,6 @@ function Open-ADTSession
         # Make this function stop on any error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtSession = $null
-        $errRecord = $null
 
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller
@@ -426,12 +424,14 @@ function Open-ADTSession
         $firstSession = !$Script:ADT.Sessions.Count
 
         # Perform pre-opening tasks.
+        $initialized = $false
+        $errRecord = $null
         try
         {
             # Initialize the module before opening the first session.
             if ($firstSession)
             {
-                if (!$Script:ADT.Initialized)
+                if (($initialized = !$Script:ADT.Initialized))
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
@@ -449,7 +449,15 @@ function Open-ADTSession
         }
         catch
         {
-            $PSCmdlet.ThrowTerminatingError($_)
+            $PSCmdlet.ThrowTerminatingError(($errRecord = $_))
+        }
+        finally
+        {
+            # If we failed here, de-init the module so we can start fresh again next time.
+            if ($errRecord -and $initialized)
+            {
+                $Script:ADT.Initialized = $false
+            }
         }
 
         # Instantiate the new session.
@@ -471,8 +479,13 @@ function Open-ADTSession
         }
         finally
         {
+            # If we failed here, exit out with the DeploymentSession's set exit code as we can't continue.
             if ($errRecord)
             {
+                if ($initialized)
+                {
+                    $Script:ADT.Initialized = $false
+                }
                 Exit-ADTInvocation -ExitCode $Script:ADT.LastExitCode -NoShellExit:$noExitOnClose
             }
         }
@@ -531,6 +544,10 @@ function Open-ADTSession
             # If we failed here, ensure we close out the instantiated DeploymentSession object.
             if ($errRecord)
             {
+                if ($initialized)
+                {
+                    $Script:ADT.Initialized = $false
+                }
                 Close-ADTSession -ExitCode $Script:ADT.LastExitCode
             }
         }
