@@ -4245,7 +4245,7 @@ function Execute-ProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$UserName = (Get-ADTRunAsActiveUser).NTAccount,
+        [System.String]$UserName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

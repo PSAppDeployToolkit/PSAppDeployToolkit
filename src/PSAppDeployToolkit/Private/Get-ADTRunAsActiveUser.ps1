@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTRunAsActiveUser
+function Private:Get-ADTRunAsActiveUser
 {
     <#
     .SYNOPSIS
