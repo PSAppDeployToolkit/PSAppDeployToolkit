@@ -57,7 +57,6 @@ function Remove-ADTFolder
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTFolder
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
     param
@@ -88,26 +87,37 @@ function Remove-ADTFolder
     process
     {
         # Grab and cache all directories.
-        $directories = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
+        $directories = if ($PSCmdlet.ParameterSetName.Equals('LiteralPath') -or ($PSCmdlet.ParameterSetName.Equals('Path') -and $Path -notmatch '[*?]'))
         {
-            $gciParams = @{$PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
-            Get-ChildItem @gciParams -Directory
+            if (!(Test-Path -LiteralPath (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly) -PathType Container))
+            {
+                Write-ADTLogEntry -Message "Folder [$(Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly)] does not exist."
+                return
+            }
+            Get-Item -LiteralPath (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly) -Force
+        }
+        elseif ($PSCmdlet.ParameterSetName.Equals('Path'))
+        {
+            if (!($items = Get-ChildItem -Path $Path -Directory -Force))
+            {
+                Write-ADTLogEntry -Message "Folder [$Path] does not exist."
+                return
+            }
+            $items
         }
         else
         {
+            if (!$InputObject.Exists)
+            {
+                Write-ADTLogEntry -Message "Folder [$InputObject] does not exist."
+                return
+            }
             $InputObject
         }
 
         # Loop through each specified path.
         foreach ($item in $directories)
         {
-            # Return early if the folder doesn't exist.
-            if (!(Test-Path -LiteralPath $item -PathType Container))
-            {
-                Write-ADTLogEntry -Message "Folder [$item] does not exist."
-                continue
-            }
-
             try
             {
                 try
@@ -129,33 +139,33 @@ function Remove-ADTFolder
                     }
 
                     # We must have some subfolders, let's see what we can do.
-                    $SubfoldersSkipped = foreach ($item in $ListOfChildItems)
+                    $SubfoldersSkipped = foreach ($childItem in $ListOfChildItems)
                     {
                         # Check whether this item is a folder
-                        if ($item -is [System.IO.DirectoryInfo])
+                        if ($childItem -is [System.IO.DirectoryInfo])
                         {
                             # Item is a folder. Check if its empty.
-                            if (($item | Get-ChildItem -Force | Measure-Object).Count -eq 0)
+                            if (($childItem | Get-ChildItem -Force | Measure-Object).Count -eq 0)
                             {
                                 # The folder is empty, delete it
-                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item.FullName -Force
+                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.FullName -Force
                             }
                             else
                             {
                                 # Folder is not empty, skip it.
-                                $item
+                                $childItem
                             }
                         }
                         else
                         {
                             # Item is a file. Delete it.
-                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item.FullName -Force
+                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.FullName -Force
                         }
                     }
                     if ($SubfoldersSkipped)
                     {
                         $naerParams = @{
-                            Exception = [System.IO.IOException]::new("The following folders are not empty ['$([System.String]::Join("'; '", $SubfoldersSkipped.FullName.Replace($item.FullName, $null)))'].")
+                            Exception = [System.IO.IOException]::new("The following subfolders are not empty ['$([System.String]::Join("'; '", $SubfoldersSkipped.FullName.Replace("$($item.FullName)\", $null)))'].")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                             ErrorId = 'NonEmptySubfolderError'
                             TargetObject = $SubfoldersSkipped
@@ -163,6 +173,8 @@ function Remove-ADTFolder
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
+                    # Try to delete the folder again now that it should be empty.
+                    Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force
                 }
                 catch
                 {
