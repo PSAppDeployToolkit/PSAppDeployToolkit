@@ -273,34 +273,5 @@ namespace PSADT.LibraryInterfaces
             ppvObj = (IImageList)ppvObjLocal;
             return res;
         }
-
-        /// <summary>
-        /// Converts a command line string into an array of arguments.
-        /// </summary>
-        /// <param name="lpCmdLine"></param>
-        /// <returns></returns>
-        internal unsafe static string[] CommandLineToArgv(string lpCmdLine)
-        {
-            using LocalFreeSafeHandle safeHandle = new((IntPtr)PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs), true);
-            bool safeHandleAddRef = false;
-            try
-            {
-                safeHandle.DangerousAddRef(ref safeHandleAddRef);
-                var handle = (PWSTR*)safeHandle.DangerousGetHandle();
-                var args = new string[pNumArgs];
-                for (var i = 0; i < pNumArgs; i++)
-                {
-                    args[i] = handle[i].ToString().TrimRemoveNull();
-                }
-                return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
-            }
-            finally
-            {
-                if (safeHandleAddRef)
-                {
-                    safeHandle.DangerousRelease();
-                }
-            }
-        }
     }
 }

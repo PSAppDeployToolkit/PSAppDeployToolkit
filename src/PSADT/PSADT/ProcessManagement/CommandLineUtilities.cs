@@ -218,13 +218,7 @@ namespace PSADT.ProcessManagement
                     sb.Append(arg);
                 }
             }
-
-            // If the StringBuilder contains any content, return it as a null-terminated string.
-            if (sb.ToString().TrimRemoveNull() is string commandLine && commandLine.Length > 0)
-            {
-                return commandLine + '\0';
-            }
-            return null;
+            return sb.ToString().TrimRemoveNull() is string commandLine && commandLine.Length > 0 ? commandLine + '\0' : null;
         }
 
         /// <summary>
