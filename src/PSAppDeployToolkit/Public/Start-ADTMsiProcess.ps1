@@ -571,72 +571,76 @@ function Start-ADTMsiProcess
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiProduct)
                 }
 
-                # Enumerate all transforms specified, qualify the full path if possible and enclose in quotes.
-                $mstFile = if ($Transforms)
-                {
-                    "`"$([System.String]::Join(';', $Transforms))`""
-                }
-
-                # Enumerate all patches specified, qualify the full path if possible and enclose in quotes.
-                $mspFile = if ($Patches)
-                {
-                    "`"$([System.String]::Join(';', $Patches))`""
-                }
-
                 # Start building the MsiExec command line starting with the base action and file.
-                $argsMSI = "$option `"$msiProduct`""
+                $msiArgs = [System.Collections.Generic.List[System.String]]@($option, $msiProduct)
 
                 # Add MST.
-                if ($mstFile)
+                if ($Transforms)
                 {
-                    $argsMSI = "$argsMSI TRANSFORMS=$mstFile TRANSFORMSSECURE=1"
+                    $msiArgs.Add("TRANSFORMS=`"$([System.String]::Join(';', $Transforms))`"")
+                    $msiArgs.Add("TRANSFORMSSECURE=1")
                 }
 
                 # Add MSP.
-                if ($mspFile)
+                if ($Patches)
                 {
-                    $argsMSI = "$argsMSI PATCH=$mspFile"
+                    $msiArgs.Add("PATCH=`"$([System.String]::Join(';', $Patches))`"")
                 }
 
                 # Replace default parameters if specified.
-                $argsMSI = if ($ArgumentList)
+                if ($ArgumentList)
                 {
-                    "$argsMSI $([System.String]::Join(' ', $ArgumentList))"
+                    if ($ArgumentList.Length -eq 1)
+                    {
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($ArgumentList[0]))
+                    }
+                    else
+                    {
+                        $msiArgs.AddRange($ArgumentList)
+                    }
                 }
                 else
                 {
-                    "$argsMSI $msiDefaultParams"
+                    $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($msiDefaultParams))
                 }
 
                 # Add reinstallmode and reinstall variable for Patch.
                 if ($action -eq 'Patch')
                 {
-                    $argsMSI = "$argsMSI REINSTALLMODE=ecmus REINSTALL=ALL"
+                    $msiArgs.Add('REINSTALLMODE=ecmus')
+                    $msiArgs.Add('REINSTALL=ALL')
                 }
 
                 # Append parameters to default parameters if specified.
                 if ($AdditionalArgumentList)
                 {
-                    $argsMSI = "$argsMSI $([System.String]::Join(' ', $AdditionalArgumentList))"
+                    if ($AdditionalArgumentList.Length -eq 1)
+                    {
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($AdditionalArgumentList[0]))
+                    }
+                    else
+                    {
+                        $msiArgs.AddRange($AdditionalArgumentList)
+                    }
                 }
 
                 # Add custom Logging Options if specified, otherwise, add default Logging Options from Config file.
                 if ($msiLogFile)
                 {
-                    $argsMSI = if ($LoggingOptions)
+                    if ($LoggingOptions)
                     {
-                        "$argsMSI $LoggingOptions $msiLogFile"
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$LoggingOptions $msiLogFile"))
                     }
                     else
                     {
-                        "$argsMSI $($adtConfig.MSI.LoggingOptions) $msiLogFile"
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$($adtConfig.MSI.LoggingOptions) $msiLogFile"))
                     }
                 }
 
                 # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
                 $ExecuteProcessSplat = @{
                     FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
-                    ArgumentList = $argsMSI
+                    ArgumentList = $msiArgs
                 }
                 $PSBoundParameters.GetEnumerator() | & {
                     begin
