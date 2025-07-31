@@ -130,7 +130,7 @@
                 Uninstall = 'Följande program måste stängas. Var vänlig spara ditt arbete och stäng sedan de öppna programmen.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Välj Installera för att fortsätta med installationen eller välj "Skjut upp" för att installationen skall utföras vid ett senare tillfälle.'
+                Install = 'Välj Installera för att fortsätta med installationen.'
                 Repair = 'Välj Reparera för att fortsätta med reparationen.'
                 Uninstall = 'Välj Avinstallera för att fortsätta med avinstallationen.'
             }

@@ -131,8 +131,8 @@
             }
             DialogMessageNoProcesses = @{
                 Install = '请选择安装以继续安装。如果您还有任何延迟，也可以选择延迟安装。'
-                Repair = '请选择修复以继续修复。如果您还有任何延迟，也可以选择延迟修复。'
-                Uninstall = '请选择卸载以继续卸载。如果您还有任何延迟，也可以选择延迟卸载。'
+                Repair = '请选择修复以继续修复。'
+                Uninstall = '请选择卸载以继续卸载。'
             }
             AutomaticStartCountdown = '自动启动倒计时'
             DeferralsRemaining = '剩余延期'

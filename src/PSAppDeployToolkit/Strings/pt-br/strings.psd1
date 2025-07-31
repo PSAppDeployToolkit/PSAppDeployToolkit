@@ -130,9 +130,9 @@
                 Uninstall = 'Por favor, salve seu trabalho antes de continuar, pois os seguintes aplicativos serão fechados automaticamente.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Selecione Instalar para continuar com a instalação. Se você tiver algum adiamento restante, também poderá optar por adiar a instalação.'
-                Repair = 'Selecione Reparar para continuar com o reparo. Se ainda houver adiamentos, o senhor também pode optar por adiar o reparo.'
-                Uninstall = 'Selecione Desinstalar para continuar com a desinstalação. Se houver algum adiamento restante, você também pode optar por adiar a desinstalação.'
+                Install = 'Selecione Instalar para continuar com a instalação.'
+                Repair = 'Selecione Reparar para continuar com o reparo.'
+                Uninstall = 'Selecione Desinstalar para continuar com a desinstalação.'
             }
             AutomaticStartCountdown = 'Contagem regressiva para início automático'
             DeferralsRemaining = 'Adiamentos restantes'

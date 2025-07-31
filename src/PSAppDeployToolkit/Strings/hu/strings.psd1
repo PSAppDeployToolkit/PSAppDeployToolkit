@@ -130,9 +130,9 @@
                 Uninstall = 'Kérjük, mentse el munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan bezárásra kerülnek.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'A telepítés folytatásához válassza a Telepítés lehetőséget. Ha van még halasztása, akkor a telepítés elhalasztását is választhatja.'
-                Repair = 'A javítás folytatásához válassza a Repair (Javítás) lehetőséget. Ha van még halasztása, akkor a javítás elhalasztását is választhatja.'
-                Uninstall = 'Kérjük, válassza az Eltávolítás lehetőséget az eltávolítás folytatásához. Ha van még halasztása, akkor az eltávolítás elhalasztását is választhatja.'
+                Install = 'A telepítés folytatásához válassza a Telepítés lehetőséget.'
+                Repair = 'A javítás folytatásához válassza a Repair (Javítás) lehetőséget.'
+                Uninstall = 'Kérjük, válassza az Eltávolítás lehetőséget az eltávolítás folytatásához.'
             }
             AutomaticStartCountdown = 'Automatikus indítási visszaszámlálás'
             DeferralsRemaining = 'Fennmaradó halasztások'

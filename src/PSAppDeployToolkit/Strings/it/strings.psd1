@@ -130,9 +130,9 @@
                 Uninstall = 'Salvi il suo lavoro prima di continuare, perché le applicazioni seguenti verranno chiuse automaticamente.'
             }
             DialogMessageNoProcesses = @{
-                Install = "Selezioni Install per continuare l'installazione. Se sono rimasti dei rinvii, può anche scegliere di ritardare l'installazione."
-                Repair = "Selezioni Repair per continuare con la riparazione. Se sono rimasti dei rinvii, può anche scegliere di ritardare la riparazione."
-                Uninstall = "Selezioni Disinstallazione per proseguire con la disinstallazione. Se sono rimasti dei rinvii, può anche scegliere di ritardare la disinstallazione."
+                Install = "Selezioni Install per continuare l'installazione."
+                Repair = "Selezioni Repair per continuare con la riparazione."
+                Uninstall = "Selezioni Disinstallazione per proseguire con la disinstallazione."
             }
             AutomaticStartCountdown = "Conto alla rovescia per l'avvio automatico"
             DeferralsRemaining = 'Rimanenti differimenti'

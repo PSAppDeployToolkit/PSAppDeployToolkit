@@ -130,9 +130,9 @@
                 Uninstall = 'Lagre arbeidet ditt før du fortsetter, da følgende programmer vil bli lukket automatisk.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Velg Install for å fortsette med installasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette installasjonen.'
-                Repair = 'Velg Repair for å fortsette med reparasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette reparasjonen.'
-                Uninstall = 'Velg Avinstaller for å fortsette med avinstallasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette avinstalleringen.'
+                Install = 'Velg Install for å fortsette med installasjonen.'
+                Repair = 'Velg Repair for å fortsette med reparasjonen.'
+                Uninstall = 'Velg Avinstaller for å fortsette med avinstallasjonen.'
             }
             AutomaticStartCountdown = 'Automatisk nedtelling til start'
             DeferralsRemaining = 'Gjenværende utsettelser'

@@ -130,9 +130,9 @@
                 Uninstall = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Wählen Sie Installieren aus, um mit der Installation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie die Installation auch verschieben.'
-                Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur verschieben.'
-                Uninstall = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Deinstallation verschieben.'
+                Install = 'Wählen Sie Installieren aus, um mit der Installation fortzufahren.'
+                Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren.'
+                Uninstall = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren.'
             }
             AutomaticStartCountdown = 'Automatischer Start-Countdown'
             DeferralsRemaining = 'Verbleibende Aufschiebungen'

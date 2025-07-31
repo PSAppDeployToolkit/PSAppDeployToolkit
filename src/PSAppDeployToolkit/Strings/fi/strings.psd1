@@ -130,9 +130,9 @@
                 Uninstall = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Jatka asennusta valitsemalla Install. Jos sinulla on lykkäyksiä jäljellä, voit myös lykätä asennusta.'
-                Repair = 'Jatka korjausta valitsemalla Repair. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä korjausta.'
-                Uninstall = 'Jatka asennuksen poistamista valitsemalla Poista. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä asennuksen poistamista.'
+                Install = 'Jatka asennusta valitsemalla Install.'
+                Repair = 'Jatka korjausta valitsemalla Repair.'
+                Uninstall = 'Jatka asennuksen poistamista valitsemalla Poista.'
             }
             AutomaticStartCountdown = 'Automaattinen käynnistyslaskenta'
             DeferralsRemaining = 'Jäljellä olevat lykkäykset'
