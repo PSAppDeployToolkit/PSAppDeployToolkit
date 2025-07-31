@@ -282,6 +282,7 @@ SERVICE_START
 SERVICE_STOP
 SERVICE_USER_DEFINED_CONTROL
 SendMessage
+SendMessageTimeout
 SetActiveWindow
 SetCurrentProcessExplicitAppUserModelID
 SetFocus
