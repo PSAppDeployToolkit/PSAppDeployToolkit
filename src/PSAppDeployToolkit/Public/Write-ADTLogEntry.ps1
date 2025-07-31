@@ -18,7 +18,6 @@ function Write-ADTLogEntry
 
     .PARAMETER Severity
         Defines message type. When writing to console or CMTrace.exe log format, it allows highlighting of message type.
-        Options: 0 = Success (highlighted in green), 1 = Information (default), 2 = Warning (highlighted in yellow), 3 = Error (highlighted in red)
 
     .PARAMETER Source
         The source of the message being logged.
