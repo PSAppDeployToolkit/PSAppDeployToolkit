@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using PSADT.ProcessManagement;
 
 namespace PSADT.Types
@@ -68,11 +69,15 @@ namespace PSADT.Types
             Is64BitApplication = is64BitApplication;
             if (null != UninstallString)
             {
-                UninstallStringArray = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
+                var argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
+                UninstallStringFilePath = argumentList[0];
+                UninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
             if (null != QuietUninstallString)
             {
-                QuietUninstallStringArray = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
+                var argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
+                QuietUninstallStringFilePath = argumentList[0];
+                QuietUninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
         }
 
@@ -124,9 +129,14 @@ namespace PSADT.Types
         public readonly string? UninstallString;
 
         /// <summary>
-        /// Gets the uninstall string used to remove the application as a list.
+        /// Gets the file path to the uninstall string, if available.
         /// </summary>
-        public readonly IReadOnlyList<string>? UninstallStringArray;
+        public readonly string? UninstallStringFilePath;
+
+        /// <summary>
+        /// Gets the uninstall arguments used to remove the application as a list.
+        /// </summary>
+        public readonly IReadOnlyList<string>? UninstallStringArgumentList;
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
@@ -134,9 +144,14 @@ namespace PSADT.Types
         public readonly string? QuietUninstallString;
 
         /// <summary>
-        /// Gets the quiet uninstall string used to remove the application as a list.
+        /// Gets the file path to the quiet uninstall string, if available.
         /// </summary>
-        public readonly IReadOnlyList<string>? QuietUninstallStringArray;
+        public readonly string? QuietUninstallStringFilePath;
+
+        /// <summary>
+        /// Gets the quiet uninstall arguments used to remove the application as a list.
+        /// </summary>
+        public readonly IReadOnlyList<string>? QuietUninstallStringArgumentList;
 
         /// <summary>
         /// Gets the source from which the application was installed.
