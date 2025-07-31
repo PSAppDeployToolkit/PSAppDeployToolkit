@@ -176,8 +176,20 @@ function New-ADTMsiTransform
                 # Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database.
                 Write-ADTLogEntry -Message "Generating new transform file [$NewTransformPath]."
                 $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName GenerateTransform -ArgumentList @($MsiPathDatabase, $NewTransformPath)
-                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName CreateTransformSummaryInfo -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiOpenDatabaseTypes.TransformErrorNone, $msiOpenDatabaseTypes.TransformValidationNone)
-
+                try
+                {
+                    $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName CreateTransformSummaryInfo -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiOpenDatabaseTypes.TransformErrorNone, $msiOpenDatabaseTypes.TransformValidationNone)
+                }
+                catch
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("Failed to generate transform information. This could be because the specified TransformProperties did not result in a transformation.", $_.Exception.InnerException)
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'MsiTransformCreateFailure'
+                        TargetObject = [pscustomobject]$TransformProperties
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
                 if (!(Test-Path -LiteralPath $NewTransformPath -PathType Leaf))
                 {
                     $naerParams = @{

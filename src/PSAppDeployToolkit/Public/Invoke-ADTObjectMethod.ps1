@@ -88,30 +88,35 @@ function Invoke-ADTObjectMethod
     {
         try
         {
-            try
+            switch ($PSCmdlet.ParameterSetName)
             {
-                switch ($PSCmdlet.ParameterSetName)
+                Named
                 {
-                    Named
-                    {
-                        # Invoke method by using parameter names.
-                        return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([System.Object[]]$Parameter.Values), $null, $null, ([System.String[]]$Parameter.Keys))
-                    }
-                    Positional
-                    {
-                        # Invoke method without using parameter names.
-                        return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
-                    }
+                    # Invoke method by using parameter names.
+                    return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([System.Object[]]$Parameter.Values), $null, $null, ([System.String[]]$Parameter.Keys))
                 }
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
+                Positional
+                {
+                    # Invoke method without using parameter names.
+                    return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, $ArgumentList, $null, $null, $null)
+                }
+                default
+                {
+                    # We should never reach here.
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("Failed to determine the mode of operation for this function.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'InvokeObjectMethodInvalidParameterSet'
+                        TargetObject = $PSBoundParameters
+                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team for further review."
+                    }
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+                }
             }
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 
