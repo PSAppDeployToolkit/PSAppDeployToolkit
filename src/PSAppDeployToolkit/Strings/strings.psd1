@@ -200,8 +200,8 @@
             # This is a message to when there are no running processes available.
             DialogMessageNoProcesses = @{
                 Install = 'Please select Install to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.'
-                Repair = 'Please select Repair to continue with the repair. If you have any deferrals remaining, you may also choose to delay the repair.'
-                Uninstall = 'Please select Uninstall to continue with the uninstallation. If you have any deferrals remaining, you may also choose to delay the uninstallation.'
+                Repair = 'Please select Repair to continue with the repair.'
+                Uninstall = 'Please select Uninstall to continue with the uninstallation.'
             }
 
             # A string to describe the automatic start countdown.
