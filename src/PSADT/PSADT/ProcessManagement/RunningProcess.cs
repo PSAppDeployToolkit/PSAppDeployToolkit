@@ -23,7 +23,7 @@ namespace PSADT.ProcessManagement
             FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
             if (null != arguments)
             {
-                Arguments = ProcessUtilities.ArgvToCommandLine(arguments);
+                Arguments = CommandLineUtilities.ArgumentListToCommandLine(arguments);
             }
         }
 

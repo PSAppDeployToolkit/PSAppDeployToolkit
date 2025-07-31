@@ -257,7 +257,7 @@ namespace PSADT.ProcessManagement
             {
                 // Build the command line for the process.
                 OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var commandSpan, out string? workingDirectory);
-                var argv = ProcessUtilities.CommandLineToArgv(commandLine = commandSpan.ToString().TrimRemoveNull());
+                var argv = CommandLineUtilities.CommandLineToArgumentList(commandLine = commandSpan.ToString().TrimRemoveNull());
 
                 // Set up the shell execute info structure.
                 var startupInfo = new Shell32.SHELLEXECUTEINFO
@@ -266,7 +266,7 @@ namespace PSADT.ProcessManagement
                     fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
                     lpVerb = launchInfo.Verb,
                     lpFile = argv[0],
-                    lpParameters = ProcessUtilities.ArgvToCommandLine(argv.Skip(1)),
+                    lpParameters = CommandLineUtilities.ArgumentListToCommandLine(argv.Skip(1)),
                     lpDirectory = workingDirectory,
                 };
                 if (null != launchInfo.WindowStyle)
@@ -575,12 +575,12 @@ namespace PSADT.ProcessManagement
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
                 }
-                commandSpan = ProcessUtilities.ArgvToCommandLine(argv)!.ToCharArray();
+                commandSpan = CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
                 workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
             }
             else
             {
-                commandSpan = ProcessUtilities.ArgvToCommandLine(argv)!.ToCharArray();
+                commandSpan = CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
                 workingDirectory = launchInfo.WorkingDirectory;
             }
         }

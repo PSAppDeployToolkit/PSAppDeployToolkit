@@ -325,7 +325,7 @@ function Uninstall-ADTApplication
                         {
                             $existing = if ($sapParams.ArgumentList -is [System.String] -or ($sapParams.ArgumentList -is [System.String[]] -and $sapParams.ArgumentList.Count -eq 1))
                             {
-                                [PSADT.ProcessManagement.ProcessUtilities]::CommandLineToArgv($sapParams.ArgumentList)
+                                [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($sapParams.ArgumentList)
                             }
                             else
                             {
@@ -333,7 +333,7 @@ function Uninstall-ADTApplication
                             }
                             $additional = if ($AdditionalArgumentList -is [System.String] -or ($AdditionalArgumentList -is [System.String[]] -and $AdditionalArgumentList.Count -eq 1))
                             {
-                                [PSADT.ProcessManagement.ProcessUtilities]::CommandLineToArgv($AdditionalArgumentList)
+                                [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($AdditionalArgumentList)
                             }
                             else
                             {

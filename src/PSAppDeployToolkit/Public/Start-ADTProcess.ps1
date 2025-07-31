@@ -634,7 +634,7 @@ function Start-ADTProcess
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executed [$(if (($command = [PSADT.ProcessManagement.ProcessUtilities]::CommandLineToArgv($execution.CommandLine)[0]).Contains(' ')) { [System.String]::Format('"{0}"', $command) } else { $command }) (Parameters Hidden)], awaiting completion..."
+                        Write-ADTLogEntry -Message "Executed [$(if (($command = [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($execution.CommandLine)[0]).Contains(' ')) { [System.String]::Format('"{0}"', $command) } else { $command }) (Parameters Hidden)], awaiting completion..."
                     }
                     else
                     {
