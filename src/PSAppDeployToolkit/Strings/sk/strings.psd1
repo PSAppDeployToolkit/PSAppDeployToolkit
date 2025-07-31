@@ -130,9 +130,9 @@
                 Uninstall = 'Pred pokračovaním uložte svoju prácu, pretože nasledujúce aplikácie budú automaticky ukončené.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Prosím, vyberte Install, aby ste mohli pokračovať v inštalácii. Ak máte ešte nejaké odklady, môžete tiež zvoliť odloženie inštalácie.'
-                Repair = 'Prosím, vyberte Repair (Opraviť), ak chcete pokračovať v oprave. Ak máte ešte nejaké odklady, môžete opravu odložiť.'
-                Uninstall = 'Vyberte Uninstall (Odinštalovať), ak chcete pokračovať v odinštalovaní. Ak máte ešte nejaké odklady, môžete tiež odložiť odinštalovanie.'
+                Install = 'Prosím, vyberte Install, aby ste mohli pokračovať v inštalácii.'
+                Repair = 'Prosím, vyberte Repair (Opraviť), ak chcete pokračovať v oprave.'
+                Uninstall = 'Vyberte Uninstall (Odinštalovať), ak chcete pokračovať v odinštalovaní.'
             }
             AutomaticStartCountdown = 'Automatické odpočítavanie začiatku'
             DeferralsRemaining = 'Zostávajúce odklady'

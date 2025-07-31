@@ -130,9 +130,9 @@
                 Uninstall = '請先保存您的工作再繼續，因為下列應用程式會自動關閉。'
             }
             DialogMessageNoProcesses = @{
-                Install = '請選擇「安裝」繼續安裝。 如果您有任何剩餘的延遲，您也可以選擇延遲安裝。'
-                Repair = '請選擇「維修」繼續進行維修。 如果您有任何剩餘的延遲，您也可以選擇延遲修復。'
-                Uninstall = '請選擇「卸載」繼續進行卸載。 如果您有任何剩餘的延遲，您也可以選擇延遲解除安裝。'
+                Install = '請選擇「安裝」繼續安裝。'
+                Repair = '請選擇「維修」繼續進行維修。'
+                Uninstall = '請選擇「卸載」繼續進行卸載。'
             }
             AutomaticStartCountdown = '自動啟動倒數計時'
             DeferralsRemaining = '剩餘延期'

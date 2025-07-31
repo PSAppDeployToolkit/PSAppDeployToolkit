@@ -130,9 +130,9 @@
                 Uninstall = 'Veuillez sauvegarder votre travail avant de continuer car les applications suivantes seront fermées automatiquement.'
             }
             DialogMessageNoProcesses = @{
-                Install = "Veuillez sélectionner Installer pour poursuivre l'installation. S'il vous reste des reports, vous pouvez également choisir de retarder l'installation."
-                Repair = "Veuillez sélectionner Réparer pour poursuivre la réparation. S'il vous reste des reports, vous pouvez également choisir de retarder la réparation."
-                Uninstall = "Veuillez sélectionner Désinstaller pour poursuivre la désinstallation. S'il vous reste des reports, vous pouvez également choisir de retarder la désinstallation."
+                Install = "Veuillez sélectionner Installer pour poursuivre l'installation."
+                Repair = "Veuillez sélectionner Réparer pour poursuivre la réparation."
+                Uninstall = "Veuillez sélectionner Désinstaller pour poursuivre la désinstallation."
             }
             AutomaticStartCountdown = 'Compte à rebours de démarrage automatique'
             DeferralsRemaining = 'Reports restants'

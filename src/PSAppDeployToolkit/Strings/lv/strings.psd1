@@ -130,9 +130,9 @@
                 Uninstall = 'Lūdzu, saglabājiet savu darbu pirms turpināšanas, jo šādas lietojumprogrammas tiks automātiski aizvērtas.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Lūdzu, izvēlieties Instalēt, lai turpinātu instalēšanu. Ja jums ir pieejama iespēja atlikt, varat arī izvēlēties atlikt instalēšanu.'
-                Repair = 'Lūdzu, izvēlieties Labot, lai turpinātu labošanu. Ja jums ir pieejama iespēja atlikt, varat arī izvēlēties atlikt labošanu.'
-                Uninstall = 'Lūdzu, izvēlieties Atinstalēt, lai turpinātu atinstalēšanu. Ja jums ir pieejama iespēja atlikt, varat arī izvēlēties atlikt atinstalēšanu.'
+                Install = 'Lūdzu, izvēlieties Instalēt, lai turpinātu instalēšanu.'
+                Repair = 'Lūdzu, izvēlieties Labot, lai turpinātu labošanu.'
+                Uninstall = 'Lūdzu, izvēlieties Atinstalēt, lai turpinātu atinstalēšanu.'
             }
             AutomaticStartCountdown = 'Automātiska sākuma atpakaļskaitīšana'
             DeferralsRemaining = 'Atlikušie atlikumi'

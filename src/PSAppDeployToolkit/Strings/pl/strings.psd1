@@ -130,9 +130,9 @@
                 Uninstall = 'Proszę zapisać pracę przed kontynuowaniem, ponieważ następujące aplikacje zostaną automatycznie zamknięte.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Proszę wybrać Install, aby kontynuować instalację. Jeśli pozostały jakieś odroczenia, możesz również opóźnić instalację.'
-                Repair = 'Proszę wybrać Repair, aby kontynuować naprawę. Jeśli pozostały jakieś odroczenia, możesz również opóźnić naprawę.'
-                Uninstall = 'Proszę wybrać Uninstall, aby kontynuować dezinstalację. Jeśli pozostały jakieś odroczenia, możesz również opóźnić dezinstalację.'
+                Install = 'Proszę wybrać Install, aby kontynuować instalację.'
+                Repair = 'Proszę wybrać Repair, aby kontynuować naprawę.'
+                Uninstall = 'Proszę wybrać Uninstall, aby kontynuować dezinstalację.'
             }
             AutomaticStartCountdown = 'Automatyczne odliczanie do rozpoczęcia'
             DeferralsRemaining = 'Pozostałe odroczenia'

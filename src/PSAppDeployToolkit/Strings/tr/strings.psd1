@@ -130,9 +130,9 @@
                 Uninstall = 'Aşağıdaki uygulamalar otomatik olarak kapatılacağı için devam etmeden önce lütfen çalışmanızı kaydedin.'
             }
             DialogMessageNoProcesses = @{
-                Install = "Lütfen yüklemeye devam etmek için Yükle'yi seçin. Kalan ertelemeleriniz varsa, kurulumu ertelemeyi de seçebilirsiniz."
-                Repair = "Onarıma devam etmek için lütfen Onar'ı seçin. Kalan ertelemeleriniz varsa onarımı geciktirmeyi de seçebilirsiniz."
-                Uninstall = "Kaldırma işlemine devam etmek için lütfen Kaldır'ı seçin. Kalan ertelemeleriniz varsa, kaldırma işlemini ertelemeyi de seçebilirsiniz."
+                Install = "Lütfen yüklemeye devam etmek için Yükle'yi seçin."
+                Repair = "Onarıma devam etmek için lütfen Onar'ı seçin."
+                Uninstall = "Kaldırma işlemine devam etmek için lütfen Kaldır'ı seçin."
             }
             AutomaticStartCountdown = 'Otomatik Başlatma Geri Sayımı'
             DeferralsRemaining = 'Kalan Ertelemeler'

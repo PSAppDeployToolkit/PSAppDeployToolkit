@@ -130,9 +130,9 @@
                 Uninstall = 'Sla uw werk op voordat u verder gaat, omdat de volgende applicaties automatisch worden gesloten. Als u nog uitstel heeft, kunt u de de-installatie ook uitstellen.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Selecteer Installeren om door te gaan met de installatie. Als u nog uitstel heeft, kunt u er ook voor kiezen om de installatie uit te stellen.'
-                Repair = 'Selecteer Repareren om door te gaan met de reparatie. Als u nog uitstel heeft, kunt u er ook voor kiezen om de reparatie uit te stellen.'
-                Uninstall = 'Selecteer De-installeren om door te gaan met de de-installatie. Als u nog uitstel heeft, kunt u de de-installatie ook uitstellen.'
+                Install = 'Selecteer Installeren om door te gaan met de installatie.'
+                Repair = 'Selecteer Repareren om door te gaan met de reparatie.'
+                Uninstall = 'Selecteer De-installeren om door te gaan met de de-installatie.'
             }
             AutomaticStartCountdown = 'Automatische start aftellen'
             DeferralsRemaining = 'Resterende uitstel'
