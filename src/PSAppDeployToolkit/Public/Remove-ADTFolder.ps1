@@ -87,31 +87,31 @@ function Remove-ADTFolder
     process
     {
         # Grab and cache all directories.
-        $directories = if ($PSCmdlet.ParameterSetName.Equals('LiteralPath') -or ($PSCmdlet.ParameterSetName.Equals('Path') -and $Path -notmatch '[*?]'))
+        $directories = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            if (!(Test-Path -LiteralPath (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly) -PathType Container))
+            foreach ($value in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
             {
-                Write-ADTLogEntry -Message "Folder [$(Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly)] does not exist."
-                return
+                $giParams = @{ $PSCmdlet.ParameterSetName = $value }
+                try
+                {
+                    Get-Item @giParams -Force | & {
+                        process
+                        {
+                            if ($_ -is [System.IO.DirectoryInfo])
+                            {
+                                return $_
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Folder [$value] does not exist."
+                }
             }
-            Get-Item -LiteralPath (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly) -Force
-        }
-        elseif ($PSCmdlet.ParameterSetName.Equals('Path'))
-        {
-            if (!($items = Get-ChildItem -Path $Path -Directory -Force))
-            {
-                Write-ADTLogEntry -Message "Folder [$Path] does not exist."
-                return
-            }
-            $items
         }
         else
         {
-            if (!$InputObject.Exists)
-            {
-                Write-ADTLogEntry -Message "Folder [$InputObject] does not exist."
-                return
-            }
             $InputObject
         }
 
