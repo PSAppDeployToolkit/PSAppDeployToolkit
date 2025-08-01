@@ -7,8 +7,6 @@ using System.Linq;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
-using System.Text;
-using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;

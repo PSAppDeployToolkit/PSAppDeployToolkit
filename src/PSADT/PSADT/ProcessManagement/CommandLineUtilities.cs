@@ -49,8 +49,16 @@ namespace PSADT.ProcessManagement
             int len = commandLine.Length;
             for (int i = 0; i < len; i++)
             {
-                // Handle special cases for quotes and whitespace.
+                // Handle escaped quotes inside quoted segments.
                 char c = commandLine[i];
+                if (inQuotes && (c == '\\' || c == '\"') && i + 1 < len && commandLine[i + 1] == '"')
+                {
+                    // Append a literal " and skip the backslash+quote.
+                    current.Append('"'); i++;
+                    continue;
+                }
+
+                // Handle special cases for quotes and whitespace.
                 if (c == '"')
                 {
                     // If we're *not* already in a quoted segment, have no accumulated text, and the next
@@ -202,15 +210,16 @@ namespace PSADT.ProcessManagement
                     }
                 }
 
-                // If it contains a '"' (but isn’t case #1), just escape the quotes.
-                if (arg.IndexOf('"') >= 0)
+                // Perform remaining checks for whitespace and paths.
+                if (arg.IndexOf(' ') >= 0 || arg.IndexOf('\t') >= 0 || IsPath(arg))
                 {
-                    sb.Append(EscapeQuotes(arg));
-                }
-                else if (arg.IndexOf(' ') >= 0 || arg.IndexOf('\t') >= 0 || IsPath(arg))
-                {
-                    // Else if it's a path or has whitespace, fully quote+escape.
+                    // This is a path or has whitespace, fully quote+escape.
                     sb.Append(QuoteArgument(arg));
+                }
+                else if (arg.IndexOf('"') >= 0)
+                {
+                    // This contains a '"' (but isn't case #1), just escape the quotes.
+                    sb.Append(EscapeQuotes(arg));
                 }
                 else
                 {
