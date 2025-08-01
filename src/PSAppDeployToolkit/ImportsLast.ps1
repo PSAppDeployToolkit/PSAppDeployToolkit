@@ -10,14 +10,7 @@ try
     # Set all functions as read-only, export all public definitions and finalise the CommandTable.
     Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
     New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
-    if (!$MinimumStartup)
-    {
-        Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
-    }
-    else
-    {
-        Export-ModuleMember -Function New-ADTTemplate
-    }
+    Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
 
     # Define object for holding all PSADT variables.
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
@@ -48,7 +41,7 @@ try
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ClientServerProcess = $null
-            Sessions = $null
+            Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
             Environment = $null
             Language = $null
             Config = $null
@@ -56,16 +49,6 @@ try
             LastExitCode = 0
             Initialized = $false
         })
-
-    # Create empty list for sessions.
-    if (!$MinimumStartup)
-    {
-        $ADT.Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
-    }
-    else
-    {
-        $ADT.Sessions = @()
-    }
 
     # Registry path transformation constants used within Convert-ADTRegistryPath.
     New-Variable -Name Registry -Option Constant -Value ([ordered]@{
@@ -105,10 +88,7 @@ try
         }).AsReadOnly()
 
     # Send the module's database into the C# code for internal access.
-    if (!$MinimumStartup)
-    {
-        [PSADT.Module.ModuleDatabase]::Init($ADT)
-    }
+    [PSADT.Module.ModuleDatabase]::Init($ADT)
 }
 catch
 {
