@@ -41,6 +41,7 @@ namespace PSADT.ProcessManagement
             // Set up the state for parsing.
             List<string> args = [];
             StringBuilder current = new();
+            char groupingOpener = '\0';
             bool inQuotes = false;
             bool keepThisQuote = false;
             bool pathMode = false;
@@ -51,19 +52,13 @@ namespace PSADT.ProcessManagement
             {
                 // Handle escaped quotes inside quoted segments.
                 char c = commandLine[i];
-                if (inQuotes && (c == '\\' || c == '\"') && i + 1 < len && commandLine[i + 1] == '"')
-                {
-                    // Append a literal " and skip the backslash+quote.
-                    current.Append('"'); i++;
-                    continue;
-                }
-
-                // Handle special cases for quotes and whitespace.
-                if (c == '"')
+                bool isSlashQuote = (c == '\\' && i + 1 < len && commandLine[i + 1] == '"');
+                bool isPlainQuote = (c == '"'  && !isSlashQuote);
+                if (isSlashQuote || isPlainQuote)
                 {
                     // If we're *not* already in a quoted segment, have no accumulated text, and the next
                     // char is either whitespace or end-of-line, treat this as a standalone quote-arg.
-                    if (!inQuotes && current.Length == 0 && (i + 1 >= len || char.IsWhiteSpace(commandLine[i + 1])))
+                    if (isPlainQuote && !inQuotes && current.Length == 0 && (i + 1 >= len || char.IsWhiteSpace(commandLine[i + 1])))
                     {
                         args.Add("\"");
                         continue;
@@ -72,21 +67,33 @@ namespace PSADT.ProcessManagement
                     // Otherwise, this is the start/end of a grouping quote.
                     if (!inQuotes)
                     {
-                        keepThisQuote = current.Length > 0;
+                        groupingOpener = isSlashQuote ? '\\' : '"';
+                        keepThisQuote = (current.Length > 0);
                         inQuotes = true;
                         if (keepThisQuote)
                         {
-                            current.Append(c);
+                            current.Append('"');
                         }
                     }
-                    else
+                    else if ((groupingOpener == '\\' && isSlashQuote) || (groupingOpener == '"'  && isPlainQuote))
                     {
                         if (keepThisQuote)
                         {
-                            current.Append(c);
+                            current.Append('"');
                         }
                         inQuotes = false;
-                        keepThisQuote = false;
+                        groupingOpener = '\0';
+                    }
+                    else
+                    {
+                        // Mismatched quote (e.g. \" inside a "…"), treat as literal.
+                        current.Append('"');
+                    }
+
+                    // If we consumed a slash+quote, skip both.
+                    if (isSlashQuote)
+                    {
+                        i++;
                     }
                 }
                 else if (char.IsWhiteSpace(c) && !inQuotes)
@@ -172,8 +179,8 @@ namespace PSADT.ProcessManagement
         /// Converts an array of command-line arguments into a single command-line string.
         /// </summary>
         /// <remarks>This method ensures that each argument is properly escaped and quoted as needed to
-        /// handle special  characters, whitespace, or paths. Arguments containing quotes are processed to escape them
-        /// correctly,  and paths are handled verbatim if they are enclosed in quotes. The resulting string is suitable
+        /// handle special characters, whitespace, or paths. Arguments containing quotes are processed to escape them
+        /// correctly, and paths are handled verbatim if they are enclosed in quotes. The resulting string is suitable
         /// for  use in command-line execution scenarios.</remarks>
         /// <param name="args">An array of strings representing the individual command-line arguments.  Each argument will be processed and
         /// formatted appropriately for inclusion in a command-line string.</param>
@@ -198,16 +205,27 @@ namespace PSADT.ProcessManagement
                 }
                 first = false;
 
-                // If there's a quoted substring and that substring is a path, verbatim.
+                // Ensure there's no whitespace before that first quote.
                 int firstQ = arg.IndexOf('"'); int lastQ = arg.LastIndexOf('"');
-                if (firstQ >= 0 && lastQ > firstQ)
+                bool noPreWhitespace = true;
+                for (int x = 0; x < firstQ; x++)
                 {
-                    string inner = arg.Substring(firstQ + 1, lastQ - firstQ - 1);
-                    if (IsPath(inner))
+                    if (char.IsWhiteSpace(arg[x]))
                     {
-                        sb.Append(arg);
-                        continue;
+                        noPreWhitespace = false;
+                        break;
                     }
+                }
+
+                // Handle special case of quotes within quoted arguments.
+                if (firstQ > 0 && lastQ == arg.Length - 1 && noPreWhitespace)
+                {
+                    // Re-escape any literal " inside inner and continue.
+                    string prefix = arg.Substring(0, firstQ + 1);
+                    string inner = arg.Substring(firstQ + 1, lastQ - firstQ - 1);
+                    string suffix = "\"";
+                    sb.Append(prefix).Append(EscapeQuotes(inner)).Append(suffix);
+                    continue;
                 }
 
                 // Perform remaining checks for whitespace and paths.
@@ -300,8 +318,8 @@ namespace PSADT.ProcessManagement
         /// Quotes a string for use as a command-line argument, ensuring proper escaping of special characters.
         /// </summary>
         /// <remarks>This method ensures that the returned string is properly formatted for scenarios
-        /// where  command-line arguments require quoting and escaping, such as when passing arguments to  external
-        /// processes. Double quotes within the input string are escaped, and trailing  backslashes are handled
+        /// where command-line arguments require quoting and escaping, such as when passing arguments to  external
+        /// processes. Double quotes within the input string are escaped, and trailing backslashes are handled
         /// correctly to prevent misinterpretation.</remarks>
         /// <param name="s">The string to be quoted and escaped.</param>
         /// <returns>A quoted string that is safe to use as a command-line argument.  Special characters, such as double quotes

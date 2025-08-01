@@ -319,8 +319,8 @@ namespace PSADT.LibraryInterfaces
     /// Represents system command values used in Windows messages to perform various window operations.
     /// </summary>
     /// <remarks>The <see cref="WM_SYSCOMMAND"/> enumeration defines constants that specify system commands 
-    /// sent to a window when the user selects a command from the window menu or when the user presses  a key that is
-    /// mapped to a system command. These commands can be used to control window behavior  such as closing, minimizing,
+    /// sent to a window when the user selects a command from the window menu or when the user presses a key that is
+    /// mapped to a system command. These commands can be used to control window behavior such as closing, minimizing,
     /// maximizing, and more.</remarks>
     internal enum WM_SYSCOMMAND : uint
     {
