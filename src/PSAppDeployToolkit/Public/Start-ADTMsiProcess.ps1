@@ -558,7 +558,7 @@ function Start-ADTMsiProcess
                     }
 
                     # Append ".log" to the MSI logfile path and enclose in quotes.
-                    if ([IO.Path]::GetExtension($msiLogFile) -ne '.log')
+                    if ([System.IO.Path]::GetExtension($msiLogFile) -ne '.log')
                     {
                         $msiLogFile = "`"$($msiLogFile + '.log')`""
                     }

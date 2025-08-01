@@ -100,7 +100,7 @@ function Start-ADTMspProcess
         [System.Management.Automation.SwitchParameter]$UseUnelevatedToken,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables
     )
 
     begin

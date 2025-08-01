@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Start-ADTMspProcess
+# MARK: Start-ADTMspProcessAsUser
 #
 #-----------------------------------------------------------------------------
 
-function Start-ADTMspProcess
+function Start-ADTMspProcessAsUser
 {
     <#
     .SYNOPSIS
@@ -44,12 +44,12 @@ function Start-ADTMspProcess
         This function does not generate any output.
 
     .EXAMPLE
-        Start-ADTMspProcess -FilePath 'Adobe_Reader_11.0.3_EN.msp'
+        Start-ADTMspProcessAsUser -FilePath 'Adobe_Reader_11.0.3_EN.msp'
 
         Executes the specified MSP file for Adobe Reader 11.0.3.
 
     .EXAMPLE
-        Start-ADTMspProcess -FilePath 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
+        Start-ADTMspProcessAsUser -FilePath 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
 
         Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
 
@@ -62,7 +62,7 @@ function Start-ADTMspProcess
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMspProcess
+        https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMspProcessAsUser
     #>
 
     [CmdletBinding()]
@@ -85,7 +85,7 @@ function Start-ADTMspProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),,
+        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
@@ -94,7 +94,7 @@ function Start-ADTMspProcess
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables
     )
 
     begin
@@ -117,10 +117,10 @@ function Start-ADTMspProcess
 
     process
     {
-        # Just farm it out to Start-ADTMspProcess as it can do it all.
+        # Just farm it out to Start-ADTMspProcessAsUser as it can do it all.
         try
         {
-            return Start-ADTMspProcess @PSBoundParameters
+            return Start-ADTMspProcessAsUser @PSBoundParameters
         }
         catch
         {
