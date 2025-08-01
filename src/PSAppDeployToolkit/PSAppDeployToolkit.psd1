@@ -173,6 +173,7 @@
         'Start-ADTMsiProcess'
         'Start-ADTMsiProcessAsUser'
         'Start-ADTMspProcess'
+        'Start-ADTMspProcessAsUser'
         'Start-ADTProcess'
         'Start-ADTProcessAsUser'
         'Start-ADTServiceAndDependencies'

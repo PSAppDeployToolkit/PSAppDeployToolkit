@@ -213,7 +213,6 @@ function Start-ADTMsiProcess
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Patches,
 
-        # Identity: Username (only present in sets where identity is "Username")
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_FilePath')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_ProductCode')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_InstalledApplication')]

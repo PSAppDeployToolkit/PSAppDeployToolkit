@@ -30,9 +30,6 @@ function Start-ADTMspProcess
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
-    .PARAMETER UseUnelevatedToken
-        If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
-
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
@@ -86,18 +83,15 @@ function Start-ADTMspProcess
         [ValidateNotNullOrEmpty()]
         [System.String[]]$AdditionalArgumentList,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username,
+        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseUnelevatedToken')]
-        [System.Management.Automation.SwitchParameter]$UseUnelevatedToken,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
@@ -105,66 +99,32 @@ function Start-ADTMspProcess
 
     begin
     {
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        # Test whether there's a proper username to proceed with.
+        if (!$Username)
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentNullException]::new('Username', "There is no logged on user to run a new process as.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'NoActiveUserError'
+                TargetObject = $Username
+                RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        $PSBoundParameters.Username = $Username
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
+        # Just farm it out to Start-ADTMspProcess as it can do it all.
         try
         {
-            try
-            {
-                # If the MSP is in the Files directory, set the full path to the MSP.
-                $mspFile = if ($adtSession -and (Test-Path -LiteralPath ($dirFilesPath = (Join-Path -Path $adtSession.DirFiles -ChildPath $FilePath).Trim()) -PathType Leaf))
-                {
-                    $dirFilesPath
-                }
-                elseif (Test-Path -LiteralPath $FilePath)
-                {
-                    (Get-Item -LiteralPath $FilePath).FullName
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Failed to find MSP file [$FilePath]." -Severity 3
-                    $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$FilePath].")
-                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        ErrorId = 'MsiFileNotFound'
-                        TargetObject = $FilePath
-                        RecommendedAction = "Please confirm the path of the MSP file and try again."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
-
-                # Create a Windows Installer object and open the database in read-only mode.
-                Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
-                [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
-                [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
-
-                # Get the SummaryInformation from the Windows Installer database and store all product codes found.
-                [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                $AllTargetedProductCodes = Get-ADTApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
-
-                # Free our COM objects.
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Database)
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Installer)
-
-                # If the application is installed, patch it.
-                if ($AllTargetedProductCodes)
-                {
-                    Start-ADTMsiProcess -Action Patch @PSBoundParameters
-                }
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
-            }
+            return Start-ADTMspProcess @PSBoundParameters
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            $PSCmdlet.ThrowTerminatingError($_)
         }
     }
 
