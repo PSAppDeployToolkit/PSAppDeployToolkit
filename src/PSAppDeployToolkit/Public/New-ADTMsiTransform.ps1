@@ -186,7 +186,7 @@ function New-ADTMsiTransform
                         Exception = [System.InvalidOperationException]::new("Failed to generate transform information. This could be because the specified TransformProperties did not result in a transformation.", $_.Exception.InnerException)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                         ErrorId = 'MsiTransformCreateFailure'
-                        TargetObject = [pscustomobject]$TransformProperties
+                        TargetObject = $TransformProperties
                     }
                     throw (New-ADTErrorRecord @naerParams)
                 }
