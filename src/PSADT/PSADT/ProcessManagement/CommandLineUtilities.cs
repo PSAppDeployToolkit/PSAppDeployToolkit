@@ -67,7 +67,16 @@ namespace PSADT.ProcessManagement
                         // Look at the characters immediately before the \\ in the original string.
                         // Check for patterns like ="\\, :"\\, \"\\, etc.
                         char prevChar1 = commandLine[i - 1]; char prevChar2 = i >= 2 ? commandLine[i - 2] : '\0';
-                        if (prevChar1 == '=' || prevChar1 == ':' || prevChar1 == ' ' || prevChar1 == '\t' || (prevChar2 == '\\' && prevChar1 == '"'))  // This catches the \" pattern
+                        if (prevChar1 == '=' || prevChar1 == ':' || char.IsWhiteSpace(prevChar1) || prevChar1 == '"' || (prevChar2 == '\\' && prevChar1 == '"'))  // This catches UNC after = or : or space or quote
+                        {
+                            looksLikeUncPath = true;
+                        }
+                    }
+                    else if (current.Length >= 1)
+                    {
+                        // Check the last character we added to the buffer.
+                        char lastChar = current[current.Length - 1];
+                        if (lastChar == '=' || lastChar == ':' || char.IsWhiteSpace(lastChar) || lastChar == '"')
                         {
                             looksLikeUncPath = true;
                         }
@@ -84,9 +93,10 @@ namespace PSADT.ProcessManagement
                 // Handle all the special cases we require.
                 bool isSlashQuote = c == '\\' && i + 1 < len && commandLine[i + 1] == '"';
                 bool isPlainQuote = c == '"'  && !isSlashQuote;
-                if (!inQuotes && current.Length == 0 && isSlashQuote)
+                if (!inQuotes && current.Length == 0 && isSlashQuote && (i + 2 >= len || char.IsWhiteSpace(commandLine[i + 2])))
                 {
-                    // Handle stand-alone slash-quote (e.g., /Delimiter \") as literal quote.
+                    // Handle stand-alone slash-quote (e.g., /Delimiter \") as literal quote, but only if
+                    // it's truly standalone - check if there's whitespace or end-of-string after the quote.
                     args.Add("\""); i++;
                 }
                 else if (isSlashQuote || isPlainQuote)
@@ -105,14 +115,22 @@ namespace PSADT.ProcessManagement
                         groupingOpener = isSlashQuote ? '\\' : '"';
                         keepThisQuote = current.Length > 0;
                         inQuotes = true;
-                        if (keepThisQuote)
+                        if (keepThisQuote && !isSlashQuote)
+                        {
+                            current.Append('"');
+                        }
+                        if (isSlashQuote)
                         {
                             current.Append('"');
                         }
                     }
                     else if ((groupingOpener == '\\' && isSlashQuote) || (groupingOpener == '"'  && isPlainQuote))
                     {
-                        if (keepThisQuote)
+                        if (keepThisQuote && !isSlashQuote)
+                        {
+                            current.Append('"');
+                        }
+                        if (isSlashQuote)
                         {
                             current.Append('"');
                         }
@@ -148,12 +166,18 @@ namespace PSADT.ProcessManagement
                             char nc = commandLine[j];
                             if (nc != '/' && nc != '-' && nc != '"')
                             {
+                                // Keep reading forward to determine the position of the next argument.
                                 int k = j; while (k < len && !char.IsWhiteSpace(commandLine[k]))
                                 {
                                     k++;
                                 }
+
+                                // Check if this looks like a new argument (starts with a path) or if it contains
+                                // backslashes/path separators that suggest it's a path continuation, etc.
                                 string tok = commandLine.Substring(j, k - j);
-                                nextIsNewArg = GetFirstPathIndex(tok, 0) >= 0;
+                                bool hasPathSeparators = tok.IndexOf('\\') >= 0 || tok.IndexOf('/') >= 0;
+                                bool startsWithPath = GetFirstPathIndex(tok, 0) >= 0;
+                                nextIsNewArg = startsWithPath && !hasPathSeparators;
                             }
                             else
                             {
@@ -167,7 +191,7 @@ namespace PSADT.ProcessManagement
 
                         if (nextIsNewArg)
                         {
-                            FlushArg(args, current);
+                            FlushArg(args, current, pathMode);
                             pathMode = false;
                         }
                         else
@@ -203,7 +227,7 @@ namespace PSADT.ProcessManagement
             // Final flush before returning.
             if (current.Length > 0)
             {
-                FlushArg(args, current);
+                FlushArg(args, current, pathMode);
             }
             return args.AsReadOnly();
         }
@@ -347,9 +371,15 @@ namespace PSADT.ProcessManagement
         /// is added to the list in its raw form.</description> </item> </list></remarks>
         /// <param name="args">The list of arguments to which the processed token will be added.</param>
         /// <param name="buf">The buffer containing the current token to process.</param>
-        private static void FlushArg(List<string> args, StringBuilder buf)
+        private static void FlushArg(List<string> args, StringBuilder buf, bool isPathMode = false)
         {
-            args.Add(buf.ToString());
+            // Normalize trailing double backslashes in paths to single backslashes.
+            string arg = buf.ToString();
+            if (isPathMode && arg.Length > 1 && arg.EndsWith("\\\\"))
+            {
+                arg = arg.Substring(0, arg.Length - 1);
+            }
+            args.Add(arg);
             buf.Clear();
         }
 
