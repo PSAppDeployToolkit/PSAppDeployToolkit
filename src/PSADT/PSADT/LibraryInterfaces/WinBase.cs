@@ -231,13 +231,13 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Represents a trusted application attribute for process and thread creation.
         /// </summary>
-        /// <remarks>This field is used to specify that a process or thread is a trusted application.  It
+        /// <remarks>This field is used to specify that a process or thread is a trusted application. It
         /// is a constant value derived from the <see cref="ProcThreadAttributeValue"/> method with specific parameters
         /// indicating its trusted status. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2756</remarks>
         PROC_THREAD_ATTRIBUTE_TRUSTED_APP = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeTrustedApp | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-ums_create_thread_attributes">UMS_CREATE_THREAD_ATTRIBUTES</a> structure that specifies a user-mode scheduling (UMS) thread context and a UMS completion list to associate with the thread. After the UMS thread is created, the system queues it to the specified completion list. The UMS thread runs only when an application's UMS scheduler retrieves the UMS thread from the completion list and selects it to run.  For more information, see <a href="https://docs.microsoft.com/windows/desktop/ProcThread/user-mode-scheduling">User-Mode Scheduling</a>. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer. Not supported in Windows 11 and newer (see [User-Mode Scheduling](/windows/win32/procthread/user-mode-scheduling)).</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-ums_create_thread_attributes">UMS_CREATE_THREAD_ATTRIBUTES</a> structure that specifies a user-mode scheduling (UMS) thread context and a UMS completion list to associate with the thread. After the UMS thread is created, the system queues it to the specified completion list. The UMS thread runs only when an application's UMS scheduler retrieves the UMS thread from the completion list and selects it to run. For more information, see <a href="https://docs.microsoft.com/windows/desktop/ProcThread/user-mode-scheduling">User-Mode Scheduling</a>. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer. Not supported in Windows 11 and newer (see [User-Mode Scheduling](/windows/win32/procthread/user-mode-scheduling)).</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>

@@ -46,7 +46,7 @@ namespace PSADT.WindowManagement
         /// Represents a filter for window handles used to determine which windows are included in certain operations.
         /// </summary>
         /// <remarks>This array contains the native integer (nint) values of window handles to be
-        /// filtered.  If the array is <see langword="null"/>, no filtering is applied.</remarks>
+        /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
         [JsonProperty]
         public readonly IReadOnlyList<nint>? WindowHandleFilter;
 

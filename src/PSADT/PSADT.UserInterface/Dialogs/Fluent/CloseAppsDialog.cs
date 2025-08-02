@@ -434,7 +434,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Indicates whether the close button should be hidden.
         /// </summary>
-        /// <remarks>This field determines if the close button is visible or not.  It is intended for
+        /// <remarks>This field determines if the close button is visible or not. It is intended for
         /// internal use and should not be modified directly.</remarks>
         private readonly bool _hideCloseButton;
 

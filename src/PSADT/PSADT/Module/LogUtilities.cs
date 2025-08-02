@@ -183,7 +183,7 @@ namespace PSADT.Module
         /// Represents a compiled regular expression used to match caller script locations.
         /// </summary>
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
-        /// "<example>").  This is typically used to identify script locations in a specific format.</remarks>
+        /// "<example>"). This is typically used to identify script locations in a specific format.</remarks>
         private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
 
         /// <summary>

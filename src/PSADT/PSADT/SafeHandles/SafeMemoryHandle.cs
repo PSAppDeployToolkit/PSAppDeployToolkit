@@ -130,7 +130,7 @@ namespace PSADT.SafeHandles
         /// Writes a byte value to a specific location in unmanaged memory.
         /// </summary>
         /// <remarks>This method writes directly to unmanaged memory, which can lead to memory corruption
-        /// if not used carefully.  Ensure that the offset is within the bounds of the allocated memory.</remarks>
+        /// if not used carefully. Ensure that the offset is within the bounds of the allocated memory.</remarks>
         /// <param name="value">The byte value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal void WriteByte(byte value, int offset = 0) => Marshal.WriteByte(handle, offset, value);

@@ -194,7 +194,7 @@ namespace PSADT.ProcessManagement
         /// handle special characters, whitespace, or paths. Arguments containing quotes are processed to escape them
         /// correctly, and paths are handled verbatim if they are enclosed in quotes. The resulting string is suitable
         /// for  use in command-line execution scenarios.</remarks>
-        /// <param name="args">An array of strings representing the individual command-line arguments.  Each argument will be processed and
+        /// <param name="args">An array of strings representing the individual command-line arguments. Each argument will be processed and
         /// formatted appropriately for inclusion in a command-line string.</param>
         /// <returns>A single string representing the command-line arguments, formatted and escaped as necessary.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="args"/> is <see langword="null"/> or empty.</exception>
@@ -358,7 +358,7 @@ namespace PSADT.ProcessManagement
         /// processes. Double quotes within the input string are escaped, and trailing backslashes are handled
         /// correctly to prevent misinterpretation.</remarks>
         /// <param name="s">The string to be quoted and escaped.</param>
-        /// <returns>A quoted string that is safe to use as a command-line argument.  Special characters, such as double quotes
+        /// <returns>A quoted string that is safe to use as a command-line argument. Special characters, such as double quotes
         /// and backslashes, are properly escaped.</returns>
         private static string QuoteArgument(string s)
         {

@@ -512,7 +512,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Retrieves a bitmap representation of the icon specified by the given file path.
         /// </summary>
         /// <remarks>The method caches the retrieved icons to improve performance on subsequent calls with
-        /// the same file path.  If the icon or image can be frozen, it is made shareable across threads.</remarks>
+        /// the same file path. If the icon or image can be frozen, it is made shareable across threads.</remarks>
         /// <param name="dialogIconPath">The absolute file path to the icon. This can be a path to an .ico file or another image format.</param>
         /// <returns>A <see cref="BitmapSource"/> representing the icon. If the icon is an .ico file, the highest resolution
         /// frame is returned.</returns>

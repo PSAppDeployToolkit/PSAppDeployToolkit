@@ -156,7 +156,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Displays a progress dialog with the specified style and options.
         /// </summary>
-        /// <remarks>This method initializes and displays a progress dialog based on the provided style and options.  Only one progress dialog can be displayed at a time. Attempting to open a new dialog while another is active will result in an exception.</remarks>
+        /// <remarks>This method initializes and displays a progress dialog based on the provided style and options. Only one progress dialog can be displayed at a time. Attempting to open a new dialog while another is active will result in an exception.</remarks>
         /// <param name="dialogStyle">The style of the dialog to display. This determines the visual appearance and behavior of the progress dialog.</param>
         /// <param name="options">The configuration options for the progress dialog, such as title, message, and progress settings.</param>
         /// <exception cref="InvalidOperationException">Thrown if a progress dialog is already open. Ensure the current progress dialog is closed before attempting to open a new one.</exception>

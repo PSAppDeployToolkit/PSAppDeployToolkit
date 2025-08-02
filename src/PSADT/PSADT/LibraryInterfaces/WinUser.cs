@@ -6,7 +6,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Specifies the different commands that can be used to show a window in a Windows environment.
     /// </summary>
-    /// <remarks>This enumeration provides a set of constants that define how a window should be shown.  These
+    /// <remarks>This enumeration provides a set of constants that define how a window should be shown. These
     /// commands are typically used with functions that manipulate window visibility and state,  such as showing,
     /// hiding, minimizing, or maximizing a window. Each command corresponds to a specific action or state change for a
     /// window.</remarks>
@@ -91,7 +91,7 @@ namespace PSADT.LibraryInterfaces
     /// This enumeration is primarily used in the context of Windows message loops, where applications process incoming
     /// messages to perform appropriate actions. The messages are categorized into several groups, such as core window
     /// messages, non-client area messages, keyboard and input method editor (IME) messages, dialog and command
-    /// messages, mouse messages, and more.  Developers typically handle these messages in a window procedure function,
+    /// messages, mouse messages, and more. Developers typically handle these messages in a window procedure function,
     /// which processes each message and executes the corresponding application logic. Understanding and correctly
     /// handling these messages is crucial for developing responsive and well-behaved Windows applications.</remarks>
     internal enum WINDOW_MESSAGE : uint

@@ -134,7 +134,7 @@ namespace PSADT.ClientServer
         /// Converts an array of command-line arguments into a read-only dictionary of key-value pairs.
         /// </summary>
         /// <remarks>Each key in the input must start with a hyphen ('-'), and its value must immediately
-        /// follow as a separate argument.  If a key is not followed by a valid value (e.g., null, empty, or another
+        /// follow as a separate argument. If a key is not followed by a valid value (e.g., null, empty, or another
         /// key-like argument), the method writes an error message to the standard error stream and terminates the
         /// application with an exit code indicating invalid arguments.</remarks>
         /// <param name="args">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-')  and
@@ -528,7 +528,7 @@ namespace PSADT.ClientServer
         /// Retrieves the current user notification state as a serialized string.
         /// </summary>
         /// <remarks>The user notification state indicates the current state of user notifications, such
-        /// as whether the user is available, busy, or away.  The returned string is a serialized representation of the
+        /// as whether the user is available, busy, or away. The returned string is a serialized representation of the
         /// state, which can be deserialized for further processing.</remarks>
         /// <returns>A serialized string representing the current user notification state.</returns>
         private static string GetUserNotificationState() => SerializeObject(ShellUtilities.GetUserNotificationState());
@@ -559,7 +559,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method brings the specified window to the foreground and ensures it is enabled 
         /// before sending the keystrokes. If the window is disabled, such as when a modal dialog is displayed, an <see
         /// cref="InvalidOperationException"/> is thrown.</remarks>
-        /// <param name="arguments">A read-only dictionary containing the arguments required for the operation.  The dictionary must include a
+        /// <param name="arguments">A read-only dictionary containing the arguments required for the operation. The dictionary must include a
         /// serialized representation of the options,  which specify the target window handle and the keys to send.</param>
         /// <returns><see langword="true"/> if the operation completes successfully.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the target window is disabled, preventing the keystrokes from being sent.</exception>
@@ -586,7 +586,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method pauses execution for the specified delay duration before initiating the
         /// restart. Ensure that the <c>"Delay"</c> argument is provided and valid to avoid exceptions.</remarks>
-        /// <param name="arguments">A read-only dictionary containing the arguments for the restart operation.  The dictionary must include a
+        /// <param name="arguments">A read-only dictionary containing the arguments for the restart operation. The dictionary must include a
         /// key named <c>"Delay"</c> with a non-empty, valid integer value representing the delay in seconds before the
         /// restart.</param>
         /// <returns><see langword="true"/> if the restart operation was successfully initiated.</returns>

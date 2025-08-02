@@ -49,7 +49,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>This method provides a convenient way to access version information for a process, 
         /// utilizing a lookup table to resolve NT paths.</remarks>
         /// <param name="process">The process for which to obtain version information. This parameter cannot be null.</param>
-        /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths.  This is used to
+        /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
         /// resolve paths within the process's version information.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
         internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)

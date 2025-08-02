@@ -687,7 +687,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Represents the task responsible for writing log entries asynchronously.
         /// </summary>
-        /// <remarks>This field holds a reference to the current logging task, if one is active.  It may
+        /// <remarks>This field holds a reference to the current logging task, if one is active. It may
         /// be null if no logging operation is in progress.</remarks>
         private Task? _logWriterTask;
 

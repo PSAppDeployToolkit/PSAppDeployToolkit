@@ -139,7 +139,7 @@ namespace PSADT.ProcessManagement
         /// Retrieves the process identifier (PID) of the specified service.
         /// </summary>
         /// <remarks>This method queries the service control manager to obtain the process ID of the
-        /// service.  Ensure that the service is running before calling this method, as it will only return a valid
+        /// service. Ensure that the service is running before calling this method, as it will only return a valid
         /// process ID for active services.</remarks>
         /// <param name="service">The <see cref="ServiceController"/> representing the service for which to obtain the process ID.</param>
         /// <returns>The process ID of the specified service.</returns>
