@@ -261,6 +261,30 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Determines whether the specified string represents a valid file or network path.
+        /// </summary>
+        /// <remarks>A valid file path must start with a drive letter followed by a colon and a backslash
+        /// or forward slash (e.g., "C:\"). A valid network path must start with two backslashes (e.g.,
+        /// "\\server").</remarks>
+        /// <param name="s">The string to evaluate as a potential path.</param>
+        /// <returns><see langword="true"/> if the string represents a valid file path (e.g., "C:\path") or network path (e.g.,
+        /// "\\server\share"); otherwise, <see langword="false"/>.</returns>
+        private static bool IsPath(string s)
+        {
+            if (s.Length >= 3 && char.IsLetter(s[0]) && s[1] == ':' && (s[2] == '\\' || s[2] == '/'))
+            {
+                // We've got a drive letter path.
+                return true;
+            }
+            if (s.Length >= 2 && s[0] == '\\' && s[1] == '\\')
+            {
+                // We've got a UNC path.
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Determines the starting index of the first valid path segment in the specified string.
         /// </summary>
         /// <remarks>A valid path segment is defined as either: <list type="bullet"> <item>A drive letter
@@ -371,30 +395,6 @@ namespace PSADT.ProcessManagement
             // Close the quote and return the result.
             sb.Append('"');
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Determines whether the specified string represents a valid file or network path.
-        /// </summary>
-        /// <remarks>A valid file path must start with a drive letter followed by a colon and a backslash
-        /// or forward slash (e.g., "C:\"). A valid network path must start with two backslashes (e.g.,
-        /// "\\server").</remarks>
-        /// <param name="s">The string to evaluate as a potential path.</param>
-        /// <returns><see langword="true"/> if the string represents a valid file path (e.g., "C:\path") or network path (e.g.,
-        /// "\\server\share"); otherwise, <see langword="false"/>.</returns>
-        private static bool IsPath(string s)
-        {
-            if (s.Length >= 3 && char.IsLetter(s[0]) && s[1] == ':' && (s[2] == '\\' || s[2] == '/'))
-            {
-                // We've got a drive letter path.
-                return true;
-            }
-            if (s.Length >= 2 && s[0] == '\\' && s[1] == '\\')
-            {
-                // We've got a UNC path.
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
