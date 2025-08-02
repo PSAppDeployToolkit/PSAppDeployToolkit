@@ -50,8 +50,17 @@ namespace PSADT.ProcessManagement
             int len = commandLine.Length;
             for (int i = 0; i < len; i++)
             {
-                // Handle escaped quotes inside quoted segments.
+                // Store off the current character as we can't use a foreach loop here.
                 char c = commandLine[i];
+
+                // Handle escaped slashes inside quoted segments.
+                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\')
+                {
+                    current.Append('\\'); i++;
+                    continue;
+                }
+
+                // Handle escaped quotes inside quoted segments.
                 bool isSlashQuote = (c == '\\' && i + 1 < len && commandLine[i + 1] == '"');
                 bool isPlainQuote = (c == '"'  && !isSlashQuote);
                 if (isSlashQuote || isPlainQuote)
@@ -68,7 +77,7 @@ namespace PSADT.ProcessManagement
                     if (!inQuotes)
                     {
                         groupingOpener = isSlashQuote ? '\\' : '"';
-                        keepThisQuote = (current.Length > 0);
+                        keepThisQuote = current.Length > 0;
                         inQuotes = true;
                         if (keepThisQuote)
                         {
@@ -339,8 +348,7 @@ namespace PSADT.ProcessManagement
                 else if (c == '"')
                 {
                     // Escape any run of backslashes before a quote.
-                    sb.Append(new string('\\', backslashes));
-                    backslashes = 0;
+                    sb.Append(new string('\\', backslashes)); backslashes = 0;
                     sb.Append("\\\"");
                 }
                 else
@@ -407,8 +415,7 @@ namespace PSADT.ProcessManagement
                 else if (c == '"')
                 {
                     // Escape any run of backslashes before a quote.
-                    sb.Append(new string('\\', backslashes));
-                    backslashes = 0;
+                    sb.Append(new string('\\', backslashes)); backslashes = 0;
                     sb.Append("\\\"");
                 }
                 else
