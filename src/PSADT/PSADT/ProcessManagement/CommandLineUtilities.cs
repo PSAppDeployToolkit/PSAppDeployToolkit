@@ -35,9 +35,6 @@ namespace PSADT.ProcessManagement
                 throw new ArgumentNullException(nameof(commandLine));
             }
 
-            // Trim the command line to remove leading and trailing whitespace.
-            commandLine = commandLine.TrimRemoveNull();
-
             // Set up the state for parsing.
             List<string> args = [];
             StringBuilder current = new();
@@ -47,24 +44,28 @@ namespace PSADT.ProcessManagement
             bool pathMode = false;
 
             // Parse the command line character by character.
+            commandLine = commandLine.TrimRemoveNull();
             int len = commandLine.Length;
             for (int i = 0; i < len; i++)
             {
                 // Store off the current character as we can't use a foreach loop here.
                 char c = commandLine[i];
 
-                // Handle all the special cases we require.
-                bool isSlashQuote = c == '\\' && i + 1 < len && commandLine[i + 1] == '"';
-                bool isPlainQuote = c == '"'  && !isSlashQuote;
+                // Specifically handle escaped backslashes.
                 if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\' && current.Length > 0 && current[current.Length - 1] != '"')
                 {
+                    // Handle escaped backslash inside quotes (don't remove valid trailing slashes).
                     current.Append('\\'); i++;
                     continue;
                 }
-                else if (!inQuotes && current.Length == 0 && isSlashQuote)
+
+                // Handle all the special cases we require.
+                bool isSlashQuote = c == '\\' && i + 1 < len && commandLine[i + 1] == '"';
+                bool isPlainQuote = c == '"'  && !isSlashQuote;
+                if (!inQuotes && current.Length == 0 && isSlashQuote)
                 {
+                    // Handle stand-alone slash-quote (e.g., /Delimiter \") as literal quote.
                     args.Add("\""); i++;
-                    continue;
                 }
                 else if (isSlashQuote || isPlainQuote)
                 {
