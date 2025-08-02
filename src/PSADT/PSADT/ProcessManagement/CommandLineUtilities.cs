@@ -53,17 +53,20 @@ namespace PSADT.ProcessManagement
                 // Store off the current character as we can't use a foreach loop here.
                 char c = commandLine[i];
 
-                // Handle escaped slashes inside quoted segments.
-                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\' && GetFirstPathIndex(commandLine, i) != i)
+                // Handle all the special cases we require.
+                bool isSlashQuote = c == '\\' && i + 1 < len && commandLine[i + 1] == '"';
+                bool isPlainQuote = c == '"'  && !isSlashQuote;
+                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\' && current.Length > 0 && current[current.Length - 1] != '"')
                 {
                     current.Append('\\'); i++;
                     continue;
                 }
-
-                // Handle escaped quotes inside quoted segments.
-                bool isSlashQuote = (c == '\\' && i + 1 < len && commandLine[i + 1] == '"');
-                bool isPlainQuote = (c == '"'  && !isSlashQuote);
-                if (isSlashQuote || isPlainQuote)
+                else if (!inQuotes && current.Length == 0 && isSlashQuote)
+                {
+                    args.Add("\""); i++;
+                    continue;
+                }
+                else if (isSlashQuote || isPlainQuote)
                 {
                     // If we're *not* already in a quoted segment, have no accumulated text, and the next
                     // char is either whitespace or end-of-line, treat this as a standalone quote-arg.
