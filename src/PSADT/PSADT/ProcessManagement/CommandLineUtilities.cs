@@ -54,7 +54,7 @@ namespace PSADT.ProcessManagement
                 char c = commandLine[i];
 
                 // Handle escaped slashes inside quoted segments.
-                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\')
+                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\' && GetFirstPathIndex(commandLine, i) != i)
                 {
                     current.Append('\\'); i++;
                     continue;
