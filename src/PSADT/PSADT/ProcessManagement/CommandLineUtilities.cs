@@ -52,11 +52,33 @@ namespace PSADT.ProcessManagement
                 char c = commandLine[i];
 
                 // Specifically handle escaped backslashes.
-                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\' && current.Length > 0 && current[current.Length - 1] != '"')
+                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\')
                 {
-                    // Handle escaped backslash inside quotes (don't remove valid trailing slashes).
-                    current.Append('\\'); i++;
-                    continue;
+                    // This is a double backslash inside quotes - need to determine if it's UNC or escaped.
+                    // Check if this looks like the start of a UNC path by examining the original command line context.
+                    bool looksLikeUncPath = false;
+                    if (current.Length == 0)
+                    {
+                        // At the very start of quoted content - likely a UNC path.
+                        looksLikeUncPath = true;
+                    }
+                    else if (i >= 2)
+                    {
+                        // Look at the characters immediately before the \\ in the original string.
+                        // Check for patterns like ="\\, :"\\, \"\\, etc.
+                        char prevChar1 = commandLine[i - 1]; char prevChar2 = i >= 2 ? commandLine[i - 2] : '\0';
+                        if (prevChar1 == '=' || prevChar1 == ':' || prevChar1 == ' ' || prevChar1 == '\t' || (prevChar2 == '\\' && prevChar1 == '"'))  // This catches the \" pattern
+                        {
+                            looksLikeUncPath = true;
+                        }
+                    }
+
+                    // If it's not a UNC path, treat as escaped backslash by appending one \ and skip the next.
+                    if (!looksLikeUncPath)
+                    {
+                        current.Append('\\'); i++;
+                        continue;
+                    }
                 }
 
                 // Handle all the special cases we require.
