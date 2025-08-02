@@ -275,10 +275,14 @@ namespace PSADT.Invoke
             }
 
             // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
-            string pwshArguments = pwshDefaultArgs + $" -Command & '{adtFrontendPath}'";
+            string pwshArguments = pwshDefaultArgs;
             if (cliArguments.Count > 0)
             {
-                pwshArguments += $" {string.Join(" ", cliArguments)}";
+                pwshArguments += $" -Command try {{ & '{adtFrontendPath}' {string.Join(" ", cliArguments)} }} catch {{ throw }}";
+            }
+            else
+            {
+                pwshArguments += $" -Command try {{ & '{adtFrontendPath}' }} catch {{ throw }}";
             }
             return pwshArguments + "; exit $Global:LASTEXITCODE";
         }
