@@ -274,17 +274,8 @@ namespace PSADT.Invoke
                 throw new FileNotFoundException($"Unable to find the deployment script file at [{adtFrontendPath}].");
             }
 
-            // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
-            string pwshArguments = pwshDefaultArgs;
-            if (cliArguments.Count > 0)
-            {
-                pwshArguments += $" -Command try {{ & '{adtFrontendPath}' {string.Join(" ", cliArguments)} }} catch {{ throw }}";
-            }
-            else
-            {
-                pwshArguments += $" -Command try {{ & '{adtFrontendPath}' }} catch {{ throw }}";
-            }
-            return pwshArguments + "; exit $Global:LASTEXITCODE";
+            // Return the full arguments we give to PowerShell.exe (Note that we use -Command resolve issues with WDAC and Constrained Language Mode).
+            return $"{pwshDefaultArgs} -Command try {{ & '{adtFrontendPath}'{(cliArguments.Count > 0 ? $" {string.Join(" ", cliArguments)}" : null)} }} catch {{ throw }}; exit $Global:LASTEXITCODE";
         }
 
         /// <summary>
