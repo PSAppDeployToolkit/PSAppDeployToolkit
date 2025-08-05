@@ -5,6 +5,7 @@
   <Project Path="PSADT.ClientServer.Client.Launcher/PSADT.ClientServer.Client.Launcher.csproj" />
   <Project Path="PSADT.ClientServer.Client/PSADT.ClientServer.Client.csproj" Id="5bf57848-1127-47f5-a64b-a82bc3389245" />
   <Project Path="PSADT.ClientServer.Server/PSADT.ClientServer.Server.csproj" Id="e6c50d7a-561d-4e51-8f05-f9ecdd0f53aa" />
+  <Project Path="PSADT.Tests/PSADT.Tests.csproj" Id="1cc82c62-79c1-42b2-88d9-d257cba18348" />
   <Project Path="PSADT.UserInterface.TestHarness/PSADT.UserInterface.TestHarness.csproj" />
   <Project Path="PSADT.UserInterface/PSADT.UserInterface.csproj" />
   <Project Path="PSADT/PSADT.csproj" />

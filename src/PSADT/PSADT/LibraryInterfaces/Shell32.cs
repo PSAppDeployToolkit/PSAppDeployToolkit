@@ -1,8 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.InteropServices;
-using PSADT.Extensions;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -12,7 +10,6 @@ using Windows.Win32.System.Registry;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
-
 
 namespace PSADT.LibraryInterfaces
 {

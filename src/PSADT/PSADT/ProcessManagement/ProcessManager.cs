@@ -575,12 +575,12 @@ namespace PSADT.ProcessManagement
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
                 }
-                commandSpan = CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
+                commandSpan = (CommandLineUtilities.ArgumentListToCommandLine(argv)! + '\0').ToCharArray();
                 workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
             }
             else
             {
-                commandSpan = CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
+                commandSpan = (CommandLineUtilities.ArgumentListToCommandLine(argv)! + '\0').ToCharArray();
                 workingDirectory = launchInfo.WorkingDirectory;
             }
         }
