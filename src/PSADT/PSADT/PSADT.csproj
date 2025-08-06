@@ -61,8 +61,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="System.Security.Permissions" Version="9.0.7" />
-    <PackageReference Include="System.DirectoryServices" Version="9.0.7" />
+    <PackageReference Include="System.Security.Permissions" Version="9.0.8" />
+    <PackageReference Include="System.DirectoryServices" Version="9.0.8" />
     <Reference Include="System.Management.Automation">
       <HintPath>$(SystemRoot)\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
       <Private>False</Private>
@@ -70,7 +70,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.7" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.8" />
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
   </ItemGroup>
 
