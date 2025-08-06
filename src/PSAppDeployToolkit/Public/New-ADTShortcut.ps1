@@ -135,7 +135,7 @@ function New-ADTShortcut
             try
             {
                 [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                $FullPath = (Get-Item -LiteralPath $LiteralPath).FullName
+                $FullPath = [System.IO.Path]::GetFullPath($Path)
             }
             catch
             {
