@@ -968,7 +968,7 @@ namespace PSADT.Tests.ProcessManagement
         [Theory]
         [InlineData("copy \"C:\\Local Folder\\\\\" \"\\\\server\\remote\\\\\" /E /Y",
                    new[] { "copy", "C:\\Local Folder\\", "\\\\server\\remote\\", "/E", "/Y" })]
-        [InlineData("robocopy \"D:\\Backup Source\\\\\" \\\\backup-server\\daily-backups\\$(date)\\\\\" /MIR",
+        [InlineData("robocopy \"D:\\Backup Source\\\\\" \"\\\\backup-server\\daily-backups\\$(date)\\\\\" /MIR",
                    new[] { "robocopy", "D:\\Backup Source\\", "\\\\backup-server\\daily-backups\\$(date)\\", "/MIR" })]
         [InlineData("move \"\\\\temp-server\\uploads\\file.txt\" \"C:\\Processing Queue\\incoming\\\\\"",
                    new[] { "move", "\\\\temp-server\\uploads\\file.txt", "C:\\Processing Queue\\incoming\\" })]

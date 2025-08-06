@@ -586,25 +586,12 @@ namespace PSADT.ProcessManagement
                         if (backslashCount % 2 == 1)
                         {
                             argument.Append('"'); // Escaped quote.
-                            position++;
                         }
                         else
                         {
-                            // Even number of backslashes followed by quote - quote is a delimiter.
-                            // However, check if we're in an unquoted context at the end of an argument.
-                            if (!inQuote && position + 1 < commandLine.Length && IsWhitespace(commandLine[position + 1]))
-                            {
-                                // This quote is at the end of an unquoted argument followed by whitespace.
-                                // The quote acts as an argument delimiter, consume it but don't add to output.
-                                position++;
-                                break;
-                            }
-                            else
-                            {
-                                inQuote = !inQuote; // Delimiter quote.
-                                position++;
-                            }
+                            inQuote = !inQuote; // Delimiter quote.
                         }
+                        position++; // Consume the quote.
                     }
                     else
                     {
