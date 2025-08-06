@@ -707,7 +707,18 @@ namespace PSADT.ClientServer
                 {
                     logWriter.Write($"Stopping process {runningApp.Process.ProcessName}...");
                     logWriter.Flush();
-                    runningApp.Process.Kill();
+                    try
+                    {
+                        if (!runningApp.Process.HasExited)
+                        {
+                            runningApp.Process.Kill();
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // The process has already exited, so we can skip this.
+                        continue;
+                    }
                 }
             }
         }
