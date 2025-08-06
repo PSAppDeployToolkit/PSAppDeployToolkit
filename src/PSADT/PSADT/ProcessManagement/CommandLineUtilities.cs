@@ -24,49 +24,21 @@ namespace PSADT.ProcessManagement
     public static class CommandLineUtilities
     {
         /// <summary>
-        /// Parses a Windows command line string into an array of arguments using unified Windows parsing rules.
-        /// </summary>
-        /// <param name="commandLine">The command line string to parse.</param>
-        /// <returns>An array of argument strings.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="commandLine"/> is null.</exception>
-        /// <remarks>
-        /// This method implements a unified parser that combines the behaviors of CommandLineToArgv(),
-        /// msvcrt pre-2008, msvcrt post-2008, and other Windows standards into a single, comprehensive parser.
-        /// The parser uses multiple passes with tokenization to ensure complete accuracy.
-        /// </remarks>
-        public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine)
-        {
-            // Use the unified parser that combines all Windows parsing rules.
-            if (commandLine is null)
-            {
-                throw new ArgumentNullException(nameof(commandLine));
-            }
-            if (string.IsNullOrWhiteSpace(commandLine))
-            {
-                return Array.Empty<string>();
-            }
-            return CommandLineToArgumentListInternal(commandLine.AsSpan());
-        }
-
-        /// <summary>
         /// Parses a Windows command line string into an array of arguments using unified Windows parsing rules
         /// with optional path detection for unquoted file paths containing spaces.
         /// </summary>
         /// <param name="commandLine">The command line string to parse.</param>
-        /// <param name="detectUnquotedPaths">
-        /// If true, attempts to detect unquoted file paths (DOS drive paths and UNC paths) that contain spaces
-        /// and treats them as single arguments even when not quoted.
-        /// </param>
+        /// <param name="strict">If true, use strict escaping rules. If false, use compatible escaping rules.</param>
         /// <returns>An array of argument strings.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="commandLine"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="commandLine"/> is null or whitespace.</exception>
         /// <remarks>
         /// This method implements a unified parser that combines the behaviors of CommandLineToArgv(),
         /// msvcrt pre-2008, msvcrt post-2008, and other Windows standards into a single, comprehensive parser.
-        /// When <paramref name="detectUnquotedPaths"/> is true, the parser will attempt to detect unquoted
+        /// When <paramref name="strict"/> is false, the parser will attempt to detect unquoted
         /// DOS drive paths (like C:\Program Files\app.exe) and UNC paths (like \\server\share\file.exe)
         /// that contain spaces and group them as single arguments.
         /// </remarks>
-        public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool detectUnquotedPaths)
+        public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool strict = false)
         {
             if (commandLine is null)
             {
@@ -76,11 +48,11 @@ namespace PSADT.ProcessManagement
             {
                 return Array.Empty<string>();
             }
-            if (!detectUnquotedPaths)
+            if (strict)
             {
-                return CommandLineToArgumentListInternal(commandLine.AsSpan());
+                return CommandLineToArgumentListStrict(commandLine.AsSpan());
             }
-            return CommandLineToArgumentListWithPathDetection(commandLine.AsSpan());
+            return CommandLineToArgumentListEnhanced(commandLine.AsSpan());
         }
 
         /// <summary>
@@ -88,7 +60,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="commandLine">The command line span to parse.</param>
         /// <returns>A list of parsed arguments.</returns>
-        private static IReadOnlyList<string> CommandLineToArgumentListInternal(ReadOnlySpan<char> commandLine)
+        private static IReadOnlyList<string> CommandLineToArgumentListStrict(ReadOnlySpan<char> commandLine)
         {
             // Build the argument list from the command line span and return it.
             List<string> arguments = []; int position = 0;
@@ -109,7 +81,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="commandLine">The command line span to parse.</param>
         /// <returns>A list of parsed arguments.</returns>
-        private static IReadOnlyList<string> CommandLineToArgumentListWithPathDetection(ReadOnlySpan<char> commandLine)
+        private static IReadOnlyList<string> CommandLineToArgumentListEnhanced(ReadOnlySpan<char> commandLine)
         {
             // Build the argument list from the command line span and return it.
             List<string> arguments = []; int position = 0;

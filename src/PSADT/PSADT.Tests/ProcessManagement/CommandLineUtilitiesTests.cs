@@ -1107,7 +1107,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_UnquotedPathDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1124,7 +1124,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_PathDetectionDisabled_UsesStandardParsing(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: false);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1143,7 +1143,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_QuotedPathsWithDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1160,7 +1160,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_MixedQuotedUnquotedPaths_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1177,7 +1177,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_PathDetectionEdgeCases_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1193,7 +1193,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_NonPathArguments_NotDetectedAsPaths(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1212,7 +1212,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_UncPathDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1231,7 +1231,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_ExecutableExtensions_DetectedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1249,7 +1249,7 @@ namespace PSADT.Tests.ProcessManagement
         {
             // Act
             IReadOnlyList<string> originalResult = CommandLineUtilities.CommandLineToArgumentList(commandLine);
-            IReadOnlyList<string> newResult = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: false);
+            IReadOnlyList<string> newResult = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(originalResult, newResult);
@@ -1268,7 +1268,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_RealWorldInstallerScenarios_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
             Assert.Equal(expected, result);
