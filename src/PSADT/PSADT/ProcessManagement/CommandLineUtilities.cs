@@ -45,7 +45,42 @@ namespace PSADT.ProcessManagement
             {
                 return Array.Empty<string>();
             }
-            return CommandLineToArgumentList(commandLine.AsSpan());
+            return CommandLineToArgumentListInternal(commandLine.AsSpan());
+        }
+
+        /// <summary>
+        /// Parses a Windows command line string into an array of arguments using unified Windows parsing rules
+        /// with optional path detection for unquoted file paths containing spaces.
+        /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="detectUnquotedPaths">
+        /// If true, attempts to detect unquoted file paths (DOS drive paths and UNC paths) that contain spaces
+        /// and treats them as single arguments even when not quoted.
+        /// </param>
+        /// <returns>An array of argument strings.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="commandLine"/> is null.</exception>
+        /// <remarks>
+        /// This method implements a unified parser that combines the behaviors of CommandLineToArgv(),
+        /// msvcrt pre-2008, msvcrt post-2008, and other Windows standards into a single, comprehensive parser.
+        /// When <paramref name="detectUnquotedPaths"/> is true, the parser will attempt to detect unquoted
+        /// DOS drive paths (like C:\Program Files\app.exe) and UNC paths (like \\server\share\file.exe)
+        /// that contain spaces and group them as single arguments.
+        /// </remarks>
+        public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool detectUnquotedPaths)
+        {
+            if (commandLine is null)
+            {
+                throw new ArgumentNullException(nameof(commandLine));
+            }
+            if (string.IsNullOrWhiteSpace(commandLine))
+            {
+                return Array.Empty<string>();
+            }
+            if (!detectUnquotedPaths)
+            {
+                return CommandLineToArgumentListInternal(commandLine.AsSpan());
+            }
+            return CommandLineToArgumentListWithPathDetection(commandLine.AsSpan());
         }
 
         /// <summary>
@@ -53,7 +88,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="commandLine">The command line span to parse.</param>
         /// <returns>A list of parsed arguments.</returns>
-        public static IReadOnlyList<string> CommandLineToArgumentList(ReadOnlySpan<char> commandLine)
+        private static IReadOnlyList<string> CommandLineToArgumentListInternal(ReadOnlySpan<char> commandLine)
         {
             // Build the argument list from the command line span and return it.
             List<string> arguments = []; int position = 0;
@@ -67,6 +102,422 @@ namespace PSADT.ProcessManagement
                 arguments.Add(ParseSingleArgument(commandLine, ref position));
             }
             return arguments.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Internal unified command line parser that implements all Windows parsing rules with path detection.
+        /// </summary>
+        /// <param name="commandLine">The command line span to parse.</param>
+        /// <returns>A list of parsed arguments.</returns>
+        private static IReadOnlyList<string> CommandLineToArgumentListWithPathDetection(ReadOnlySpan<char> commandLine)
+        {
+            // Build the argument list from the command line span and return it.
+            List<string> arguments = []; int position = 0;
+            while (position < commandLine.Length)
+            {
+                // Check for key=value patterns first - these should be parsed with special handling.
+                // Following that, check for unquoted paths, otherwise just parse the argument.
+                SkipWhitespace(commandLine, ref position);
+                if (position >= commandLine.Length)
+                {
+                    break;
+                }
+                if (IsKeyValueArgument(commandLine, position))
+                {
+                    arguments.Add(ParseKeyValueArgument(commandLine, ref position));
+                }
+                else if (IsAtStartOfUnquotedPath(commandLine, position))
+                {
+                    arguments.Add(ParseUnquotedPath(commandLine, ref position));
+                }
+                else
+                {
+                    arguments.Add(ParseSingleArgument(commandLine, ref position));
+                }
+            }
+            return arguments.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Determines if the current position starts a key=value argument pattern.
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position.</param>
+        /// <returns>True if this looks like a key=value argument.</returns>
+        private static bool IsKeyValueArgument(ReadOnlySpan<char> commandLine, int position)
+        {
+            // Look for a pattern like: word=value where word doesn't contain spaces.
+            int equalPos = position;
+            bool foundKey = false;
+
+            // Look for the key part (no spaces allowed).
+            while (equalPos < commandLine.Length && !IsWhitespace(commandLine[equalPos]))
+            {
+                if (commandLine[equalPos] == '=')
+                {
+                    // We need at least one character for the key.
+                    foundKey = equalPos > position;
+                    break;
+                }
+                equalPos++;
+            }
+            return foundKey;
+        }
+
+        /// <summary>
+        /// Parses a key=value argument that may have an unquoted path as the value.
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position (updated as parsing progresses).</param>
+        /// <returns>The parsed key=value argument.</returns>
+        private static string ParseKeyValueArgument(ReadOnlySpan<char> commandLine, ref int position)
+        {
+            // Parse the key part (up to the =).
+            StringBuilder result = new();
+            while (position < commandLine.Length && commandLine[position] != '=')
+            {
+                result.Append(commandLine[position]);
+                position++;
+            }
+
+            // Add the = sign.
+            if (position < commandLine.Length)
+            {
+                result.Append(commandLine[position]);
+                position++;
+            }
+
+            // Now parse the value part - this might be a path with spaces.
+            if (position < commandLine.Length)
+            {
+                // Check if the value starts with a quote - if so, use standard parsing.
+                if (commandLine[position] == '"')
+                {
+                    // Use standard argument parsing for quoted values.
+                    string quotedValue = ParseSingleArgument(commandLine, ref position);
+                    result.Append(quotedValue);
+                }
+                else
+                {
+                    // Parse unquoted value - might be a path with spaces.
+                    string value = ParseUnquotedValueForKeyValue(commandLine, ref position);
+                    result.Append(value);
+                }
+            }
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Parses the value part of a key=value argument, handling paths with spaces.
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position (updated as parsing progresses).</param>
+        /// <returns>The parsed value.</returns>
+        private static string ParseUnquotedValueForKeyValue(ReadOnlySpan<char> commandLine, ref int position)
+        {
+            // Check if the value looks like a path.
+            if (!IsAtStartOfUnquotedPath(commandLine, position))
+            {
+                // Parse as a regular value (stops at whitespace).
+                StringBuilder value = new();
+                while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
+                {
+                    value.Append(commandLine[position]);
+                    position++;
+                }
+                return value.ToString();
+            }
+            else
+            {
+                // Parse as a path that might have spaces.
+                return ParseUnquotedPath(commandLine, ref position);
+            }
+        }
+
+        /// <summary>
+        /// Determines if the current position is at the start of an unquoted file path.
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position.</param>
+        /// <returns>True if at the start of a unquoted DOS drive path or UNC path.</returns>
+        private static bool IsAtStartOfUnquotedPath(ReadOnlySpan<char> commandLine, int position)
+        {
+            // We're at the start of nothing if we're at the end of the command line.
+            if (position >= commandLine.Length)
+            {
+                return false;
+            }
+
+            // Check for UNC path (starts with \\).
+            if (position + 1 < commandLine.Length && commandLine[position] == '\\' && commandLine[position + 1] == '\\')
+            {
+                return true;
+            }
+
+            // Check for DOS drive path (starts with letter:\ or letter:/).
+            if (position + 2 < commandLine.Length && char.IsLetter(commandLine[position]) && commandLine[position + 1] == ':' && (commandLine[position + 2] == '\\' || commandLine[position + 2] == '/'))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Parses an unquoted file path that may contain spaces.
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position (updated as parsing progresses).</param>
+        /// <returns>The parsed path argument.</returns>
+        private static string ParseUnquotedPath(ReadOnlySpan<char> commandLine, ref int position)
+        {
+            // Parse tokens until we hit the end or find something that looks like a new argument.
+            List<string> tokens = []; List<int> tokenPositions = [];
+            while (position < commandLine.Length)
+            {
+                // Skip any leading whitespace.
+                int beforeWhitespace = position;
+                SkipWhitespace(commandLine, ref position);
+                if (position >= commandLine.Length)
+                {
+                    break;
+                }
+                
+                // Check if this position starts a new argument (but not for the first token).
+                if (tokens.Count > 0 && IsStartOfNewArgument(commandLine, position))
+                {
+                    // Reset position to before the whitespace so the next parser can handle it.
+                    position = beforeWhitespace;
+                    break;
+                }
+                
+                // Record the start position of this token.
+                tokenPositions.Add(position);
+                
+                // Parse the current token (non-whitespace characters).
+                StringBuilder tokenBuilder = new();
+                while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
+                {
+                    // Check for characters that should break path parsing AFTER being included
+                    // in the current token. This way "C:\Windows;" becomes one token, not two.
+                    char ch = commandLine[position];
+                    bool shouldBreakAfterChar = (ch == ';' || ch == '|' || ch == '&' || ch == '<' || ch == '>' || ch == '^');
+                    tokenBuilder.Append(ch);
+                    position++;
+                    
+                    // If this character should break path parsing, do so after including it.
+                    if (shouldBreakAfterChar)
+                    {
+                        break;
+                    }
+                }
+                
+                if (tokenBuilder.Length > 0)
+                {
+                    // If the last character we added was a special character, break out of path parsing.
+                    tokens.Add(tokenBuilder.ToString()); string currentToken = tokenBuilder.ToString();
+                    if (currentToken.Length > 0)
+                    {
+                        char lastChar = currentToken[currentToken.Length - 1];
+                        if (lastChar == ';' || lastChar == '|' || lastChar == '&' || lastChar == '<' || lastChar == '>' || lastChar == '^')
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Find the optimal breakpoint for the path. If we found a breakpoint, adjust the position to point to the start of the next argument.
+            var pathInfo = FindOptimalPathFromTokens(tokens);
+            if (pathInfo.TokenCount < tokens.Count)
+            {
+                position = tokenPositions[pathInfo.TokenCount];
+            }
+            return pathInfo.Path;
+        }
+
+        /// <summary>
+        /// Determines the optimal path from a list of tokens by looking for executable extensions
+        /// and argument patterns.
+        /// </summary>
+        /// <param name="tokens">The list of tokens to analyze.</param>
+        /// <returns>Information about the optimal path and how many tokens it consumes.</returns>
+        private static (string Path, int TokenCount) FindOptimalPathFromTokens(List<string> tokens)
+        {
+            // Verify the supplied tokens before proceeding.
+            if (tokens.Count == 0)
+            {
+                return (string.Empty, 0);
+            }
+            if (tokens.Count == 1)
+            {
+                return (tokens[0], 1);
+            }
+
+            // Try to find where the executable path ends by looking for executable extensions.
+            string[] executableExtensions = { ".exe", ".msi", ".bat", ".cmd", ".com", ".scr" };
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                // Check if this part ends with an executable extension.
+                string currentPath = string.Join(" ", tokens.Take(i + 1));
+                foreach (string ext in executableExtensions)
+                {
+                    if (currentPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (currentPath, i + 1);
+                    }
+                }
+            }
+
+            // PRIORITY 1: Look for argument-like patterns to stop at. This should take precedence over any path-specific logic.
+            for (int i = 1; i < tokens.Count; i++)
+            {
+                if (IsArgumentLike(tokens[i]))
+                {
+                    return (string.Join(" ", tokens.Take(i)), i);
+                }
+            }
+
+            // PRIORITY 2: Check for tokens that end with special characters that indicate command separation.
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                string token = tokens[i];
+                if (token.Length > 0)
+                {
+                    char lastChar = token[token.Length - 1];
+                    if (lastChar == ';' || lastChar == '|' || lastChar == '&' || 
+                        lastChar == '<' || lastChar == '>' || lastChar == '^')
+                    {
+                        // This token contains a command separator, so the path ends here.
+                        return (string.Join(" ", tokens.Take(i + 1)), i + 1);
+                    }
+                }
+            }
+
+            // PRIORITY 3: For UNC paths without executable extensions, apply conservative rules.
+            string combinedPath = string.Join(" ", tokens);
+            if (combinedPath.StartsWith("\\\\"))
+            {
+                // For UNC paths, if we have more than 4 tokens, be conservative but don't override argument detection.
+                if (tokens.Count > 4)
+                {
+                    // Look for patterns that suggest we've gone too far (Tokens containing special shell characters).
+                    // Allow \\server\share\folder before being strict.
+                    for (int i = 3; i < tokens.Count; i++)
+                    {
+                        string token = tokens[i];
+                        
+                        if (token.Contains(';') || token.Contains('|') || token.Contains('&') ||
+                            token.Contains('<') || token.Contains('>') || token.Contains('^'))
+                        {
+                            return (string.Join(" ", tokens.Take(i)), i);
+                        }
+                    }
+                    
+                    // Only apply the "penultimate token" rule if there are no obvious arguments.
+                    // Check if the last token could reasonably be part of a path.
+                    string lastToken = tokens[tokens.Count - 1];
+                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") && 
+                        !lastToken.Contains("=") && !lastToken.StartsWith("{"))
+                    {
+                        return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
+                    }
+                }
+            }
+
+            // PRIORITY 4: For regular drive paths without extensions, be conservative too.
+            if (tokens.Count > 3 && combinedPath.Length > 2 && char.IsLetter(combinedPath[0]) && combinedPath[1] == ':')
+            {
+                // Check if the last token looks like an argument
+                string lastToken = tokens[tokens.Count - 1];
+                if (IsArgumentLike(lastToken))
+                {
+                    return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
+                }
+            }
+
+            // Default to combining all tokens as a single path.
+            return (string.Join(" ", tokens), tokens.Count);
+        }
+
+        /// <summary>
+        /// Determines if the current position starts a new argument (like a flag or option).
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position.</param>
+        /// <returns>True if this looks like the start of a new argument.</returns>
+        private static bool IsStartOfNewArgument(ReadOnlySpan<char> commandLine, int position)
+        {
+            // There's no new arguments if we're at the end of the command line.
+            if (position >= commandLine.Length)
+            {
+                return false;
+            }
+
+            // Check for common argument patterns.
+            char ch = commandLine[position];
+            if (ch == '/' || ch == '-')
+            {
+                return true;
+            }
+
+            // Check for quoted arguments.
+            if (ch == '"')
+            {
+                return true;
+            }
+
+            // Check for GUID-like patterns (often used as arguments in installers).
+            if (ch == '{')
+            {
+                return true;
+            }
+
+            // Check for key=value patterns.
+            int equalPos = position;
+            while (equalPos < commandLine.Length && !IsWhitespace(commandLine[equalPos]))
+            {
+                if (commandLine[equalPos] == '=')
+                {
+                    return true;
+                }
+                equalPos++;
+            }
+
+            // If none of the above patterns match, it might be a continuation of the path.
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if a string looks like a command line argument rather than part of a path.
+        /// </summary>
+        /// <param name="part">The string part to check.</param>
+        /// <returns>True if it looks like an argument.</returns>
+        private static bool IsArgumentLike(string part)
+        {
+            // Empty strings aren't argument-like.
+            if (string.IsNullOrWhiteSpace(part))
+            {
+                return false;
+            }
+
+            // Check for flag patterns.
+            if (part.StartsWith("/") || part.StartsWith("-"))
+            {
+                return true;
+            }
+
+            // Check for key=value patterns.
+            if (part.Contains("="))
+            {
+                return true;
+            }
+
+            // Check for GUID patterns.
+            if (part.StartsWith("{") && part.EndsWith("}"))
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

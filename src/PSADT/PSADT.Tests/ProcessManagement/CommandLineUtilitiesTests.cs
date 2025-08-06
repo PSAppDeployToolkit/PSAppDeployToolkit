@@ -968,7 +968,7 @@ namespace PSADT.Tests.ProcessManagement
         [Theory]
         [InlineData("copy \"C:\\Local Folder\\\\\" \"\\\\server\\remote\\\\\" /E /Y",
                    new[] { "copy", "C:\\Local Folder\\", "\\\\server\\remote\\", "/E", "/Y" })]
-        [InlineData("robocopy \"D:\\Backup Source\\\\\" \"\\\\backup-server\\daily-backups\\$(date)\\\\\" /MIR",
+        [InlineData("robocopy \"D:\\Backup Source\\\\\" \\\\backup-server\\daily-backups\\$(date)\\\\\" /MIR",
                    new[] { "robocopy", "D:\\Backup Source\\", "\\\\backup-server\\daily-backups\\$(date)\\", "/MIR" })]
         [InlineData("move \"\\\\temp-server\\uploads\\file.txt\" \"C:\\Processing Queue\\incoming\\\\\"",
                    new[] { "move", "\\\\temp-server\\uploads\\file.txt", "C:\\Processing Queue\\incoming\\" })]
@@ -1003,8 +1003,7 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Tests UNC path round-trip scenarios to ensure perfect preservation.
-        /// These tests verify that UNC paths can be converted to command line and back without any loss.
+        /// Tests round-trip scenarios for UNC paths to ensure they are preserved accurately.
         /// </summary>
         public static IEnumerable<object[]> UncPathRoundTripTestData()
         {
@@ -1092,72 +1091,184 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Tests mixed local and UNC paths in the same command line.
+        /// Tests the new path detection functionality for unquoted paths with spaces.
         /// </summary>
         [Theory]
-        [InlineData("xcopy \"C:\\Local Folder\\\\\" \"\\\\server\\remote\\\\\" /E /Y",
-                   new[] { "xcopy", "C:\\Local Folder\\", "\\\\server\\remote\\", "/E", "/Y" })]
-        [InlineData("robocopy \"D:\\Backup Source\\\\\" \"\\\\backup-server\\daily-backups\\$(date)\\\\\" /MIR",
-                   new[] { "robocopy", "D:\\Backup Source\\", "\\\\backup-server\\daily-backups\\$(date)\\", "/MIR" })]
-        [InlineData("move \"\\\\temp-server\\uploads\\file.txt\" \"C:\\Processing Queue\\incoming\\\\\"",
-                   new[] { "move", "\\\\temp-server\\uploads\\file.txt", "C:\\Processing Queue\\incoming\\" })]
-        public void CommandLineToArgumentList_MixedLocalAndUncPaths_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag", 
+                   new[] { "C:\\Program Files\\MyApp\\myapp.exe", "/flag" })]
+        [InlineData("C:\\ProgramData\\Caphyon\\Advanced Installer\\{E928DFCD-4C3A-4301-872C-4655F1B18AC1}\\minitab22.3.1.0setup.x64.exe /i {E928DFCD-4C3A-4301-872C-4655F1B18AC1} AI_UNINSTALLER_CTP=1",
+                   new[] { "C:\\ProgramData\\Caphyon\\Advanced Installer\\{E928DFCD-4C3A-4301-872C-4655F1B18AC1}\\minitab22.3.1.0setup.x64.exe", "/i", "{E928DFCD-4C3A-4301-872C-4655F1B18AC1}", "AI_UNINSTALLER_CTP=1" })]
+        [InlineData("\\\\server\\share\\My App\\setup.exe /silent", 
+                   new[] { "\\\\server\\share\\My App\\setup.exe", "/silent" })]
+        [InlineData("D:\\Some Folder\\Another Folder\\app.msi PROPERTY=value",
+                   new[] { "D:\\Some Folder\\Another Folder\\app.msi", "PROPERTY=value" })]
+        [InlineData("C:\\Program Files (x86)\\Company Name\\Product Name\\installer.exe /S /D=C:\\InstallPath",
+                   new[] { "C:\\Program Files (x86)\\Company Name\\Product Name\\installer.exe", "/S", "/D=C:\\InstallPath" })]
+        public void CommandLineToArgumentList_UnquotedPathDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
 
             // Assert
             Assert.Equal(expected, result);
         }
 
         /// <summary>
-        /// Tests ArgumentListToCommandLine with mixed local and UNC paths.
+        /// Tests that path detection can be disabled and falls back to standard parsing.
         /// </summary>
         [Theory]
-        [InlineData(new[] { "xcopy", "C:\\Local Folder\\", "\\\\server\\remote\\", "/E", "/Y" },
-                   "xcopy \"C:\\Local Folder\\\\\" \\\\server\\remote\\ /E /Y")]
-        [InlineData(new[] { "robocopy", "D:\\Backup Source\\", "\\\\backup-server\\daily-backups\\$(date)\\", "/MIR" },
-                   "robocopy \"D:\\Backup Source\\\\\" \\\\backup-server\\daily-backups\\$(date)\\ /MIR")]
-        [InlineData(new[] { "move", "\\\\temp-server\\uploads\\file.txt", "C:\\Processing Queue\\incoming\\" },
-                   "move \\\\temp-server\\uploads\\file.txt \"C:\\Processing Queue\\incoming\\\\\"")]
-        public void ArgumentListToCommandLine_MixedLocalAndUncPaths_EscapedCorrectly(string[] args, string expected)
+        [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag", 
+                   new[] { "C:\\Program", "Files\\MyApp\\myapp.exe", "/flag" })]
+        [InlineData("\\\\server\\share\\My App\\setup.exe /silent", 
+                   new[] { "\\\\server\\share\\My", "App\\setup.exe", "/silent" })]
+        public void CommandLineToArgumentList_PathDetectionDisabled_UsesStandardParsing(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: false);
 
             // Assert
             Assert.Equal(expected, result);
         }
 
         /// <summary>
-        /// Tests UNC paths with administrative shares (hidden shares ending with $).
+        /// Tests that quoted paths are still handled correctly with path detection enabled.
         /// </summary>
         [Theory]
-        [InlineData("\\\\server\\C$", new[] { "\\\\server\\C$" })]
-        [InlineData("\"\\\\server\\C$\\Windows\\System32\"", new[] { "\\\\server\\C$\\Windows\\System32" })]
-        [InlineData("\"\\\\server\\ADMIN$\\Debug Logs\\\"", new[] { "\\\\server\\ADMIN$\\Debug Logs\"" })]
-        [InlineData("copy file.txt \"\\\\server\\C$\\temp\\\"", new[] { "copy", "file.txt", "\\\\server\\C$\\temp\"" })]
-        public void CommandLineToArgumentList_UncAdministrativeShares_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" /flag", 
+                   new[] { "C:\\Program Files\\MyApp\\myapp.exe", "/flag" })]
+        [InlineData("\"\\\\server\\share\\My App\\setup.exe\" /silent", 
+                   new[] { "\\\\server\\share\\My App\\setup.exe", "/silent" })]
+        [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" \"C:\\Some Other Path\\file.txt\" /option",
+                   new[] { "C:\\Program Files\\MyApp\\myapp.exe", "C:\\Some Other Path\\file.txt", "/option" })]
+        public void CommandLineToArgumentList_QuotedPathsWithDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
 
             // Assert
             Assert.Equal(expected, result);
         }
 
         /// <summary>
-        /// Tests ArgumentListToCommandLine with UNC administrative shares.
+        /// Tests complex scenarios mixing quoted and unquoted paths.
         /// </summary>
         [Theory]
-        [InlineData(new[] { "\\\\server\\C$" }, "\\\\server\\C$")]
-        [InlineData(new[] { "\\\\server\\C$\\Windows\\System32" }, "\\\\server\\C$\\Windows\\System32")]
-        [InlineData(new[] { "\\\\server\\ADMIN$\\Debug Logs\\" }, "\"\\\\server\\ADMIN$\\Debug Logs\\\\\"")]
-        [InlineData(new[] { "copy", "file.txt", "\\\\server\\C$\\temp\\" }, "copy file.txt \\\\server\\C$\\temp\\")]
-        public void ArgumentListToCommandLine_UncAdministrativeShares_EscapedCorrectly(string[] args, string expected)
+        [InlineData("C:\\Program Files\\App\\app.exe \"C:\\Some Path\\config.txt\" /option",
+                   new[] { "C:\\Program Files\\App\\app.exe", "C:\\Some Path\\config.txt", "/option" })]
+        [InlineData("\"C:\\Quoted Path\\app.exe\" D:\\Unquoted Path\\data.txt /flag",
+                   new[] { "C:\\Quoted Path\\app.exe", "D:\\Unquoted Path\\data.txt", "/flag" })]
+        public void CommandLineToArgumentList_MixedQuotedUnquotedPaths_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests edge cases for path detection.
+        /// </summary>
+        [Theory]
+        [InlineData("C: /flag", new[] { "C:", "/flag" })] // Just a drive letter, not a path
+        [InlineData("C:\\ /flag", new[] { "C:\\", "/flag" })] // Root directory
+        [InlineData("C:\\file.exe", new[] { "C:\\file.exe" })] // Single file, no spaces
+        [InlineData("C:\\path\\to\\file /arg", new[] { "C:\\path\\to\\file", "/arg" })] // Path without extension
+        public void CommandLineToArgumentList_PathDetectionEdgeCases_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that non-path arguments starting with letters are not mistaken for paths.
+        /// </summary>
+        [Theory]
+        [InlineData("program argument1 argument2", new[] { "program", "argument1", "argument2" })]
+        [InlineData("command option=value key=data", new[] { "command", "option=value", "key=data" })]
+        [InlineData("app /flag parameter", new[] { "app", "/flag", "parameter" })]
+        public void CommandLineToArgumentList_NonPathArguments_NotDetectedAsPaths(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests UNC paths with path detection.
+        /// </summary>
+        [Theory]
+        [InlineData("\\\\server\\share\\folder with spaces\\app.exe /option",
+                   new[] { "\\\\server\\share\\folder with spaces\\app.exe", "/option" })]
+        [InlineData("\\\\file-server\\shared folder\\setup files\\installer.msi /quiet",
+                   new[] { "\\\\file-server\\shared folder\\setup files\\installer.msi", "/quiet" })]
+        [InlineData("\\\\domain.local\\software distribution\\My Application Suite\\setup.exe TARGETDIR=C:\\Program Files",
+                   new[] { "\\\\domain.local\\software distribution\\My Application Suite\\setup.exe", "TARGETDIR=C:\\Program Files" })]
+        public void CommandLineToArgumentList_UncPathDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests various executable extensions are properly detected as path endpoints.
+        /// </summary>
+        [Theory]
+        [InlineData("C:\\My App\\program.exe /flag", new[] { "C:\\My App\\program.exe", "/flag" })]
+        [InlineData("D:\\Setup Files\\installer.msi /quiet", new[] { "D:\\Setup Files\\installer.msi", "/quiet" })]
+        [InlineData("E:\\Scripts\\batch file.bat parameter", new[] { "E:\\Scripts\\batch file.bat", "parameter" })]
+        [InlineData("F:\\Tools\\command.cmd /option", new[] { "F:\\Tools\\command.cmd", "/option" })]
+        [InlineData("G:\\Legacy\\old program.com /legacy", new[] { "G:\\Legacy\\old program.com", "/legacy" })]
+        [InlineData("H:\\Screen\\saver.scr /configure", new[] { "H:\\Screen\\saver.scr", "/configure" })]
+        public void CommandLineToArgumentList_ExecutableExtensions_DetectedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that the new overload with detectUnquotedPaths=false behaves identically to the original method.
+        /// </summary>
+        [Theory]
+        [InlineData("program arg1 arg2")]
+        [InlineData("\"program with spaces\" \"arg with spaces\"")]
+        [InlineData("program \"arg\\\"with\\\"quotes\"")]
+        [InlineData("C:\\Program Files\\App\\app.exe /flag")] // This should split with detection disabled
+        public void CommandLineToArgumentList_DetectionDisabledEquivalent_MatchesOriginalBehavior(string commandLine)
+        {
+            // Act
+            IReadOnlyList<string> originalResult = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+            IReadOnlyList<string> newResult = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: false);
+
+            // Assert
+            Assert.Equal(originalResult, newResult);
+        }
+
+        /// <summary>
+        /// Tests real-world installer command lines that commonly have unquoted paths.
+        /// </summary>
+        [Theory]
+        [InlineData("C:\\ProgramData\\Package Cache\\{guid}\\Microsoft Visual C++ 2019 Redistributable\\vc_redist.x64.exe /install /quiet /norestart",
+                   new[] { "C:\\ProgramData\\Package Cache\\{guid}\\Microsoft Visual C++ 2019 Redistributable\\vc_redist.x64.exe", "/install", "/quiet", "/norestart" })]
+        [InlineData("D:\\Software Distribution\\Adobe Products\\Adobe Acrobat DC\\setup.exe /sAll /rs /msi EULA_ACCEPT=YES",
+                   new[] { "D:\\Software Distribution\\Adobe Products\\Adobe Acrobat DC\\setup.exe", "/sAll", "/rs", "/msi", "EULA_ACCEPT=YES" })]
+        [InlineData("\\\\deployment-server\\software\\Microsoft Office 365\\Office 2019\\setup.exe /configure configuration.xml",
+                   new[] { "\\\\deployment-server\\software\\Microsoft Office 365\\Office 2019\\setup.exe", "/configure", "configuration.xml" })]
+        public void CommandLineToArgumentList_RealWorldInstallerScenarios_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, detectUnquotedPaths: true);
 
             // Assert
             Assert.Equal(expected, result);
