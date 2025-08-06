@@ -66,10 +66,7 @@ namespace PSADT.ProcessManagement
                         {
                             throw;
                         }
-                        else
-                        {
-                            return [];
-                        }
+                        return [];
                     }
                 }
 
