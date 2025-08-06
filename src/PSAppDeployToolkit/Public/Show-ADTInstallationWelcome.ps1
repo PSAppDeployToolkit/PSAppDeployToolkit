@@ -1211,7 +1211,12 @@ function Show-ADTInstallationWelcome
                 if ($BlockExecution -and $CloseProcesses)
                 {
                     Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
-                    Block-ADTAppExecution -ProcessName $CloseProcesses.Name
+                    $baaeParams = @{ ProcessName = $CloseProcesses.Name }
+                    if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                    {
+                        $baaeParams.Add('WindowLocation', $WindowLocation)
+                    }
+                    Block-ADTAppExecution @baaeParams 
                 }
             }
             catch

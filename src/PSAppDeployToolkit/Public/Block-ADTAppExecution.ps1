@@ -56,7 +56,11 @@ function Block-ADTAppExecution
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$ProcessName
+        [System.String[]]$ProcessName,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'The location of the dialog on the screen.')]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation
     )
 
     begin
@@ -131,6 +135,10 @@ function Block-ADTAppExecution
                     MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
                     Icon = [PSADT.UserInterface.Dialogs.DialogSystemIcon]::Warning
                     ButtonRightText = 'OK'
+                }
+                if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                {
+                    $dialogOptions.Add('DialogPosition', $WindowLocation)
                 }
                 if ($null -ne $adtConfig.UI.FluentAccentColor)
                 {
