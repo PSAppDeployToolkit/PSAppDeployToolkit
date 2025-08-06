@@ -22,6 +22,9 @@ function Block-ADTAppExecution
     .PARAMETER ProcessName
         Name of the process or processes separated by commas.
 
+    .PARAMETER WindowLocation
+        The location of the dialog on the screen.
+
     .INPUTS
         None
 

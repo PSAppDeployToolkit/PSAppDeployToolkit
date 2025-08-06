@@ -1216,7 +1216,7 @@ function Show-ADTInstallationWelcome
                     {
                         $baaeParams.Add('WindowLocation', $WindowLocation)
                     }
-                    Block-ADTAppExecution @baaeParams 
+                    Block-ADTAppExecution @baaeParams
                 }
             }
             catch
