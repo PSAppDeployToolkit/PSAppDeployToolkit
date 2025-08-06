@@ -1,14 +1,14 @@
 ﻿<#
 
 .SYNOPSIS
-PSAppDeployToolkit - This script performs the installation or uninstallation of an application(s).
+PSAppDeployToolkit - This script performs the installation of an application and its dependency.
 
 .DESCRIPTION
-- The script is provided as a template to perform an install, uninstall, or repair of an application(s).
-- The script either performs an "Install", "Uninstall", or "Repair" deployment type.
+- The script is provided as a template to perform a multi-session install of an application and its dependency.
+- The script performs an "Install" deployment type.
 - The install deployment type is broken down into 3 main sections/phases: Pre-Install, Install, and Post-Install.
 
-The script imports the PSAppDeployToolkit module which contains the logic and functions required to install or uninstall an application.
+The script imports the PSAppDeployToolkit module which contains the logic and functions required to install an application.
 
 .PARAMETER DeploymentType
 The type of deployment to perform.
@@ -22,7 +22,7 @@ Silent mode is automatically set if it is detected that the process is not user 
 Suppresses the 3010 return code (requires restart) from being passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
 
 .PARAMETER TerminalServerMode
-Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
+Changes to "user install mode" and back to "user execute mode" for installing applications for Remote Desktop Session Hosts/Citrix servers.
 
 .PARAMETER DisableLogging
 Disables logging to file for the script.
@@ -34,7 +34,7 @@ powershell.exe -File Invoke-AppDeployToolkit.ps1
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
 
 .EXAMPLE
-powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Install
 
 .EXAMPLE
 Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
@@ -86,7 +86,6 @@ param
 
 # The actual app we'll install.
 $adtSession = @{
-    # App variables.
     AppVendor = 'Microsoft'
     AppName = 'Offce 365'
     AppVersion = 'LTSC 2024'
@@ -96,7 +95,6 @@ $adtSession = @{
 
 # A pre-req that needs installing.
 $dependency = @{
-    # App variables.
     AppVendor = 'Microsoft'
     AppName = 'Visual C++ Runtime'
     AppVersion = '2015-2022'
@@ -137,7 +135,6 @@ function Install-ADTDeployment
     )
 
     # Show UI elements to user.
-    $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
     $saiwParams = @{
         AllowDefer = $true
         DeferTimes = 3
@@ -148,6 +145,7 @@ function Install-ADTDeployment
     {
         $saiwParams.Add('CloseProcesses', $adtSession.AppProcessesToClose)
     }
+    $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
     Show-ADTInstallationWelcome @saiwParams
     Show-ADTInstallationProgress
 
@@ -162,9 +160,6 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = $adtSession.DeploymentType
     Write-ADTLogEntry -Message 'Sleeping for 10 seconds to simulate an application install.'
     Start-Sleep -Seconds 10
-
-    # Perform any defined post-install actions.
-    $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 }
 
 
