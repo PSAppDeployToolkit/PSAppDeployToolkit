@@ -59,9 +59,9 @@ namespace PSADT.ProcessManagement
             bool noTerminateOnTimeout = false)
         {
             // Handle file paths that may be wrapped in quotes.
-            if (filePath.StartsWith("\"") && filePath.EndsWith("\"") && filePath.TrimStart('"').TrimEnd('"') is string trimmedFilePath && File.Exists(trimmedFilePath))
+            if (filePath.StartsWith("\"") && filePath.EndsWith("\""))
             {
-                FilePath = trimmedFilePath;
+                FilePath = filePath.TrimStart('"').TrimEnd('"');
             }
             else
             {
@@ -75,7 +75,7 @@ namespace PSADT.ProcessManagement
             }
             if (null != argumentList && argumentList.Count > 0)
             {
-                ArgumentList = argumentList.Count == 1 ? CommandLineUtilities.CommandLineToArgumentList(argumentList[0].Trim()) : argumentList;
+                ArgumentList = argumentList;
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {

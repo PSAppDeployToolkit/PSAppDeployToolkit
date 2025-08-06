@@ -143,7 +143,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
-                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan;
+                    PROCESS_INFORMATION pi = new();
                     if (null != launchInfo.Username && launchInfo.Username != AccountUtilities.CallerUsername && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
                         // Get the user's token.
@@ -207,8 +207,8 @@ namespace PSADT.ProcessManagement
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                             using (lpEnvironment)
                             {
-                                OutLaunchArguments(launchInfo, session.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out commandSpan, out string? workingDirectory); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                CreateProcessUsingToken(hPrimaryToken, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                                OutLaunchArguments(launchInfo, session.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out _, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray(); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                CreateProcessUsingToken(hPrimaryToken, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
                             }
                         }
                     }
@@ -217,20 +217,19 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = GetUnelevatedToken())
                         {
-                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out commandSpan, out string? workingDirectory);
-                            CreateProcessUsingToken(hPrimaryToken, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
+                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out _, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
+                            CreateProcessUsingToken(hPrimaryToken, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
                         }
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out commandSpan, out string? workingDirectory);
-                        Kernel32.CreateProcess(null, ref commandSpan, null, null, inheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi);
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out _, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
+                        Kernel32.CreateProcess(null, ref commandSpan, null, null, inheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
                     }
 
                     // Start tracking the process and allow it to resume execution.
                     process = GetProcessFromId((processId = pi.dwProcessId).Value);
-                    commandLine = commandSpan.ToString().TrimRemoveNull();
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
                         Kernel32.AssignProcessToJobObject(job, hProcess = new(pi.hProcess, true));
@@ -256,8 +255,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var commandSpan, out string? workingDirectory);
-                var argv = CommandLineUtilities.CommandLineToArgumentList(commandLine = commandSpan.ToString().TrimRemoveNull());
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out var arguments, out commandLine, out string? workingDirectory);
 
                 // Set up the shell execute info structure.
                 var startupInfo = new Shell32.SHELLEXECUTEINFO
@@ -265,8 +263,8 @@ namespace PSADT.ProcessManagement
                     cbSize = (uint)Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                     fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
                     lpVerb = launchInfo.Verb,
-                    lpFile = argv[0],
-                    lpParameters = CommandLineUtilities.ArgumentListToCommandLine(argv.Skip(1)),
+                    lpFile = filePath,
+                    lpParameters = arguments,
                     lpDirectory = workingDirectory,
                 };
                 if (null != launchInfo.WindowStyle)
@@ -563,26 +561,31 @@ namespace PSADT.ProcessManagement
         /// <param name="username">The user account under which the process will be launched, used for expanding environment variables.</param>
         /// <param name="environmentDictionary">A dictionary of environment variables to be used for expanding variables in the command line and working
         /// directory.</param>
-        /// <param name="commandSpan">When this method returns, contains the constructed command line string for the process launch.</param>
+        /// <param name="filePath">When this method returns, contains the fully qualified file path of the executable to launch.</param>
+        /// <param name="arguments">When this method returns, contains the command line arguments for the process launch, or <see langword="null"/>
+        /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out Span<char> commandSpan, out string? workingDirectory)
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string commandLine, out string? workingDirectory)
         {
-            string[] argv = (new[] { launchInfo.FilePath }).Concat(launchInfo.ArgumentList ?? []).ToArray();
             if (null != environmentDictionary)
             {
+                var argv = launchInfo.ArgumentList?.ToArray() ?? [];
                 for (int i = 0; i < argv.Length; i++)
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
                 }
-                commandSpan = (CommandLineUtilities.ArgumentListToCommandLine(argv)! + '\0').ToCharArray();
+                filePath = ExpandEnvironmentVariables(username, launchInfo.FilePath, environmentDictionary);
+                arguments = argv.Length > 1 ? CommandLineUtilities.ArgumentListToCommandLine(argv) : argv.Length > 0 ? argv[0] : null;
                 workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
             }
             else
             {
-                commandSpan = (CommandLineUtilities.ArgumentListToCommandLine(argv)! + '\0').ToCharArray();
+                filePath = launchInfo.FilePath;
+                arguments = null != launchInfo.ArgumentList ? launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null : null;
                 workingDirectory = launchInfo.WorkingDirectory;
             }
+            commandLine = $"\"{filePath}\"{(!string.IsNullOrWhiteSpace(arguments) ? $" {arguments}" : null)}\0";
         }
 
         /// <summary>
