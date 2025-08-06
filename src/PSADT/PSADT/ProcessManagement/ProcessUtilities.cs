@@ -93,6 +93,12 @@ namespace PSADT.ProcessManagement
                 // Loop through each process and check if it matches the definition.
                 foreach (var process in allProcesses)
                 {
+                    // Skip this process if it doesn't match the name.
+                    if (!Path.IsPathRooted(processDefinition.Name) && !process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     // Skip this process if it's not running anymore.
                     if (process.HasExited)
                     {
@@ -117,19 +123,9 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Continue if this isn't our process or it's ended since we cached it.
-                    if (Path.IsPathRooted(processDefinition.Name))
+                    if (Path.IsPathRooted(processDefinition.Name) && !commandLine[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!commandLine[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        if (!process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
+                        continue;
                     }
 
                     // Calculate a description for the running application.
