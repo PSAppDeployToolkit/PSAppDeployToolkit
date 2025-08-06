@@ -44,10 +44,6 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(commandLine));
             }
-            if (string.IsNullOrWhiteSpace(commandLine))
-            {
-                return Array.Empty<string>();
-            }
             if (strict)
             {
                 return CommandLineToArgumentListStrict(commandLine.AsSpan());
