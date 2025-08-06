@@ -223,6 +223,17 @@ namespace PSADT.ProcessManagement
             // Check for UNC path (starts with \\).
             if (position + 1 < commandLine.Length && commandLine[position] == '\\' && commandLine[position + 1] == '\\')
             {
+                // If the characters following the initial \\ are more backslashes followed by a quote,
+                // it's likely an escaped argument, not a UNC path. Let ParseSingleArgument handle it.
+                int p = position + 2;
+                while (p < commandLine.Length && commandLine[p] == '\\')
+                {
+                    p++;
+                }
+                if (p < commandLine.Length && commandLine[p] == '"')
+                {
+                    return false;
+                }
                 return true;
             }
 
@@ -244,6 +255,7 @@ namespace PSADT.ProcessManagement
         {
             // Parse tokens until we hit the end or find something that looks like a new argument.
             List<string> tokens = []; List<int> tokenPositions = [];
+            int initialPosition = position;
             while (position < commandLine.Length)
             {
                 // Skip any leading whitespace.
@@ -303,6 +315,19 @@ namespace PSADT.ProcessManagement
             if (pathInfo.TokenCount < tokens.Count)
             {
                 position = tokenPositions[pathInfo.TokenCount];
+            }
+            else if (pathInfo.Path.EndsWith("\\") && position < commandLine.Length)
+            {
+                // If the parsed path ends with a backslash, it's likely a directory.
+                // The original logic might have consumed a following argument.
+                // Let's check if what follows the path is a new argument.
+                int potentialNextArgPos = initialPosition + pathInfo.Path.Length;
+                SkipWhitespace(commandLine, ref potentialNextArgPos);
+                if (potentialNextArgPos < commandLine.Length && IsStartOfNewArgument(commandLine, potentialNextArgPos))
+                {
+                    // The path seems to be followed by a new argument, so don't include it.
+                    position = initialPosition + pathInfo.Path.TrimEnd().Length;
+                }
             }
             return pathInfo.Path;
         }
@@ -369,6 +394,15 @@ namespace PSADT.ProcessManagement
             string combinedPath = string.Join(" ", tokens);
             if (combinedPath.StartsWith("\\\\"))
             {
+                // If a token ends with a backslash, it's likely a directory. The path ends here.
+                for (int i = 0; i < tokens.Count - 1; i++)
+                {
+                    if (tokens[i].EndsWith("\\"))
+                    {
+                        return (string.Join(" ", tokens.Take(i + 1)), i + 1);
+                    }
+                }
+
                 // For UNC paths, if we have more than 4 tokens, be conservative but don't override argument detection.
                 if (tokens.Count > 4)
                 {
