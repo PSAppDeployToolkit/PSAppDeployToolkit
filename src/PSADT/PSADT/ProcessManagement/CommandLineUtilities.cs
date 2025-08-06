@@ -141,7 +141,7 @@ namespace PSADT.ProcessManagement
                 }
                 else
                 {
-                    arguments.Add(ParseSingleArgument(commandLine, ref position));
+                    arguments.Add(ConvertPosixPathToWindows(ParseSingleArgument(commandLine, ref position)));
                 }
             }
             return arguments.AsReadOnly();
@@ -209,10 +209,20 @@ namespace PSADT.ProcessManagement
                     
                     // Create a temporary copy of the position to be advanced by ParseSingleArgument.
                     int tempPosition = position;
-                    ParseSingleArgument(commandLine, ref tempPosition);
-                    
-                    // Append the raw slice of the command line that represents the entire quoted value.
-                    result.Append(commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString());
+
+                    // Rebuild the quoted value with proper escaping if needed.
+                    string quotedValue = ParseSingleArgument(commandLine, ref tempPosition);
+                    string convertedValue = ConvertPosixPathToWindows(quotedValue);
+                    if (convertedValue != quotedValue)
+                    {
+                        // The value was converted from POSIX, so we need to rebuild the quoted portion.
+                        result.Append('"').Append(convertedValue).Append('"');
+                    }
+                    else
+                    {
+                        // Append the raw slice of the command line that represents the entire quoted value.
+                        result.Append(commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString());
+                    }
                     
                     // Update the main position to continue parsing after this key-value pair.
                     position = tempPosition;
@@ -220,7 +230,7 @@ namespace PSADT.ProcessManagement
                 else
                 {
                     // Parse unquoted value - might be a path with spaces.
-                    string value = ParseUnquotedValueForKeyValue(commandLine, ref position);
+                    string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
                     if (value.Contains(' ') && !value.StartsWith("\""))
                     {
                         result.Append('"').Append(value).Append('"');
@@ -266,7 +276,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="commandLine">The command line span.</param>
         /// <param name="position">The current position.</param>
-        /// <returns>True if at the start of a unquoted DOS drive path or UNC path.</returns>
+        /// <returns>True if at the start of a unquoted DOS drive path, UNC path, or POSIX path.</returns>
         private static bool IsAtStartOfUnquotedPath(ReadOnlySpan<char> commandLine, int position)
         {
             // We're at the start of nothing if we're at the end of the command line.
@@ -294,6 +304,12 @@ namespace PSADT.ProcessManagement
 
             // Check for DOS drive path (starts with letter:\ or letter:/).
             if (position + 2 < commandLine.Length && char.IsLetter(commandLine[position]) && commandLine[position + 1] == ':' && (commandLine[position + 2] == '\\' || commandLine[position + 2] == '/'))
+            {
+                return true;
+            }
+
+            // Check for POSIX path (starts with /letter/ where letter is a drive letter).
+            if (position + 2 < commandLine.Length && commandLine[position] == '/' && char.IsLetter(commandLine[position + 1]) && commandLine[position + 2] == '/')
             {
                 return true;
             }
@@ -384,7 +400,7 @@ namespace PSADT.ProcessManagement
                     position = initialPosition + pathInfo.Path.TrimEnd().Length;
                 }
             }
-            return pathInfo.Path;
+            return ConvertPosixPathToWindows(pathInfo.Path);
         }
 
         /// <summary>
@@ -652,6 +668,22 @@ namespace PSADT.ProcessManagement
                 }
             }
             return argument.ToString();
+        }
+
+        /// <summary>
+        /// Converts a POSIX-like path (e.g., /C/Users/...) to a Windows path (C:\Users\...).
+        /// </summary>
+        /// <param name="path">The path to convert.</param>
+        /// <returns>The converted Windows path, or the original path if it doesn't match the pattern.</returns>
+        private static string ConvertPosixPathToWindows(string path)
+        {
+            if (path.Length >= 3 && path[0] == '/' && char.IsLetter(path[1]) && path[2] == '/')
+            {
+                // This looks like a POSIX-style path, e.g., /C/Program Files/app.exe
+                // Convert it to a Windows-style path, e.g., C:\Program Files\app.exe
+                return $"{path[1]}:\\{path.Substring(3).Replace('/', '\\')}";
+            }
+            return path;
         }
 
         /// <summary>

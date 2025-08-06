@@ -1306,5 +1306,56 @@ namespace PSADT.Tests.ProcessManagement
             // Assert
             Assert.Equal(expected, result);
         }
+
+        /// <summary>
+        /// Tests POSIX path conversion in quoted arguments.
+        /// </summary>
+        [Theory]
+        [InlineData("\"/C/Program Files/Sublime Text/plugin_host-3.3.exe\" 9112 \"/C/Program Files/Sublime Text/sublime_text.exe\" \\\\.\\pipe\\crashpad_9112_SGAHEOQJOQPLOLLL \"/C/Users/mjr40/AppData/Roaming/Sublime Text\" \"/C/Users/mjr40/AppData/Local/Sublime Text\" \"/C/Program Files/Sublime Text/Packages\"",
+                   new[] { "C:\\Program Files\\Sublime Text\\plugin_host-3.3.exe", "9112", "C:\\Program Files\\Sublime Text\\sublime_text.exe", "\\\\.\\pipe\\crashpad_9112_SGAHEOQJOQPLOLLL", "C:\\Users\\mjr40\\AppData\\Roaming\\Sublime Text", "C:\\Users\\mjr40\\AppData\\Local\\Sublime Text", "C:\\Program Files\\Sublime Text\\Packages" })]
+        [InlineData("\"/C/Windows/System32/notepad.exe\"", new[] { "C:\\Windows\\System32\\notepad.exe" })]
+        [InlineData("/C/Program Files/App/app.exe /flag", new[] { "C:\\Program Files\\App\\app.exe", "/flag" })]
+        [InlineData("program \"/C/Users/test/file.txt\" /option", new[] { "program", "C:\\Users\\test\\file.txt", "/option" })]
+        [InlineData("key=\"/C/Program Files/Value\"", new[] { "key=\"C:\\Program Files\\Value\"" })]
+        public void CommandLineToArgumentList_PosixPathConversion_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests POSIX path conversion with strict parsing (should not convert).
+        /// </summary>
+        [Theory]
+        [InlineData("\"/C/Program Files/App/app.exe\"", new[] { "/C/Program Files/App/app.exe" })]
+        [InlineData("/C/Windows/notepad.exe", new[] { "/C/Windows/notepad.exe" })]
+        public void CommandLineToArgumentList_PosixPathConversion_StrictModeNoConversion(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that non-POSIX paths starting with slash are not converted.
+        /// </summary>
+        [Theory]
+        [InlineData("/flag", new[] { "/flag" })]
+        [InlineData("/option=value", new[] { "/option=value" })]
+        [InlineData("/12/path", new[] { "/12/path" })] // Not a drive letter
+        [InlineData("/C", new[] { "/C" })] // Too short
+        public void CommandLineToArgumentList_NonPosixPaths_NotConverted(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
     }
 }
