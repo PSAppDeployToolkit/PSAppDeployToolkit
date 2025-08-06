@@ -580,16 +580,16 @@ function Start-ADTProcess
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executing [$FilePath (Parameters Hidden)]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($Username) {" for user [$Username]"})..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$FilePath $($ArgumentList)]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($Username) {" for user [$Username]"})..."
                     }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executing [$FilePath]$(if ($Username) {" for user [$Username]"})..."
+                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($Username) {" for user [$Username]"})..."
                 }
 
                 # Start the process.
