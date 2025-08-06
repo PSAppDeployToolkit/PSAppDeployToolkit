@@ -52,31 +52,35 @@ namespace PSADT.ProcessManagement
                 char c = commandLine[i];
 
                 // Specifically handle escaped backslashes.
-                if (inQuotes && c == '\\' && i + 1 < len && commandLine[i + 1] == '\\')
+                if (c == '\\' && i + 1 < len && commandLine[i + 1] == '\\')
                 {
-                    // This is a double backslash inside quotes - need to determine if it's UNC or escaped.
-                    // Check if this looks like the start of a UNC path by examining the original command line context.
+                    // This is a double backslash - need to determine if it's UNC or escaped.
+                    // Check if this looks like the start of a UNC path by examining the context.
                     bool looksLikeUncPath = false;
                     if (current.Length == 0)
                     {
-                        // At the very start of quoted content - likely a UNC path.
+                        // At the very start of content - likely a UNC path.
                         looksLikeUncPath = true;
-                    }
-                    else if (i >= 2)
-                    {
-                        // Look at the characters immediately before the \\ in the original string.
-                        // Check for patterns like ="\\, :"\\, \"\\, etc.
-                        char prevChar1 = commandLine[i - 1]; char prevChar2 = i >= 2 ? commandLine[i - 2] : '\0';
-                        if (prevChar1 == '=' || prevChar1 == ':' || char.IsWhiteSpace(prevChar1) || prevChar1 == '"' || (prevChar2 == '\\' && prevChar1 == '"'))  // This catches UNC after = or : or space or quote
-                        {
-                            looksLikeUncPath = true;
-                        }
                     }
                     else if (current.Length >= 1)
                     {
                         // Check the last character we added to the buffer.
                         char lastChar = current[current.Length - 1];
-                        if (lastChar == '=' || lastChar == ':' || char.IsWhiteSpace(lastChar) || lastChar == '"')
+                        if (lastChar == '=' || lastChar == ':' || (inQuotes && (char.IsWhiteSpace(lastChar) || lastChar == '"')))
+                        {
+                            // After = or : suggests this is the start of a UNC path value,
+                            // or we're inside quotes with whitespace or quote before UNC.
+                            looksLikeUncPath = true;
+                        }
+                    }
+                    
+                    // Additional check for quoted contexts - look at original command line.
+                    if (!looksLikeUncPath && inQuotes && i >= 2)
+                    {
+                        // Look at the characters immediately before the \\ in the original string.
+                        // Check for patterns like ="\\, :"\\, \"\\, etc.
+                        char prevChar1 = commandLine[i - 1]; char prevChar2 = i >= 2 ? commandLine[i - 2] : '\0';
+                        if (prevChar1 == '=' || prevChar1 == ':' || char.IsWhiteSpace(prevChar1) || prevChar1 == '"' || (prevChar2 == '\\' && prevChar1 == '"'))
                         {
                             looksLikeUncPath = true;
                         }
