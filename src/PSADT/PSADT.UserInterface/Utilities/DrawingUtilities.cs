@@ -105,7 +105,7 @@ namespace PSADT.UserInterface.Utilities
             // Check if the process is null or if the main module's file name is not a string.
             if (!Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Invalid file path.", nameof(path));
+                throw new ArgumentException($"The path [{path}] is invalid.", nameof(path));
             }
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.

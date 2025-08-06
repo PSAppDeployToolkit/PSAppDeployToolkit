@@ -48,21 +48,24 @@ namespace PSADT.ProcessManagement
                     return commandLine;
                 }
 
-                // Get the image path for this process. We use this instead of what we get
-                // from GetProcessCommandLine() because POSIX applications render incorrectly.
-                var imagePath = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable);
-
-                // Get the command line for the process. If this fails due to lack
-                // of privileges, we simply just return the image path and that's it.
+                // Get the command line for the process. Failing that, just get the image path.
+                string? imageName = null;
                 try
                 {
                     commandLine = CommandLineUtilities.CommandLineToArgumentList(ProcessTools.GetProcessCommandLine(process.Id)).ToArray();
-                    commandLine[0] = imagePath;
                 }
                 catch
                 {
-                    commandLine = [imagePath];
+                    commandLine = [imageName = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable)];
                 }
+
+                // If the command line process path isn't fully qualified, try to resolve it using the process image name.
+                if (!Path.IsPathRooted(commandLine[0]) && null == imageName)
+                {
+                    commandLine[0] = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable);
+                }
+
+                // Cache and return the command line.
                 processCommandLines.Add(process, commandLine);
                 return commandLine;
             }
