@@ -352,32 +352,12 @@ namespace PSADT.ProcessManagement
                 StringBuilder tokenBuilder = new();
                 while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
                 {
-                    // Check for characters that should break path parsing AFTER being included
-                    // in the current token. This way "C:\Windows;" becomes one token, not two.
-                    char ch = commandLine[position];
-                    bool shouldBreakAfterChar = (ch == ';' || ch == '|' || ch == '&' || ch == '<' || ch == '>' || ch == '^');
-                    tokenBuilder.Append(ch);
+                    tokenBuilder.Append(commandLine[position]);
                     position++;
-                    
-                    // If this character should break path parsing, do so after including it.
-                    if (shouldBreakAfterChar)
-                    {
-                        break;
-                    }
                 }
-                
                 if (tokenBuilder.Length > 0)
                 {
-                    // If the last character we added was a special character, break out of path parsing.
-                    tokens.Add(tokenBuilder.ToString()); string currentToken = tokenBuilder.ToString();
-                    if (currentToken.Length > 0)
-                    {
-                        char lastChar = currentToken[currentToken.Length - 1];
-                        if (lastChar == ';' || lastChar == '|' || lastChar == '&' || lastChar == '<' || lastChar == '>' || lastChar == '^')
-                        {
-                            break;
-                        }
-                    }
+                    tokens.Add(tokenBuilder.ToString());
                 }
             }
 
