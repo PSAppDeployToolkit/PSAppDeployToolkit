@@ -145,7 +145,6 @@ namespace PSADT.ProcessManagement
                         if (nextIsNewArg)
                         {
                             FlushArg(args, current);
-                            current.Clear();
                             pathMode = false;
                         }
                         else
@@ -158,7 +157,6 @@ namespace PSADT.ProcessManagement
                         if (current.Length > 0)
                         {
                             FlushArg(args, current);
-                            current.Clear();
                         }
                     }
                 }
@@ -328,26 +326,8 @@ namespace PSADT.ProcessManagement
         /// <param name="buf">The buffer containing the current token to process.</param>
         private static void FlushArg(List<string> args, StringBuilder buf)
         {
-            // If the token contains ANY '"' at all → leave it exactly as-is.
-            string arg = buf.ToString();
-            if (arg.IndexOf('"') >= 0)
-            {
-                args.Add(arg);
-                return;
-            }
-
-            // If we detect a pathStartIndex > 0, split + quote; otherwise just add the raw token.
-            int pathIdx = GetFirstPathIndex(arg, 0);
-            if (pathIdx > 0)
-            {
-                string prefix = arg.Substring(0, pathIdx);
-                string pathPart = arg.Substring(pathIdx);
-                args.Add(prefix + QuoteArgument(pathPart));
-            }
-            else
-            {
-                args.Add(arg);
-            }
+            args.Add(buf.ToString());
+            buf.Clear();
         }
 
         /// <summary>
