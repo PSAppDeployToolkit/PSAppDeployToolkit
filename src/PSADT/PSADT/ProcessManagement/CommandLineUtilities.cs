@@ -56,6 +56,47 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Converts an array of arguments back into a properly escaped Windows command line string.
+        /// </summary>
+        /// <param name="args">The array of arguments to convert.</param>
+        /// <param name="strict">If true, use strict escaping rules. If false, use compatible escaping rules.</param>
+        /// <returns>A properly escaped command line string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="args"/> is null.</exception>
+        /// <remarks>
+        /// This method ensures that the resulting command line, when parsed back through 
+        /// <see cref="CommandLineToArgumentList(string)"/>, will yield the original arguments.
+        /// Special characters are properly escaped according to Windows conventions.
+        /// </remarks>
+        public static string? ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
+        {
+            // Consider a null or empty argument list as an error.
+            if (null == argv || argv.Count() == 0)
+            {
+                throw new ArgumentNullException(nameof(argv));
+            }
+
+            // Construct and return the command line string.
+            StringBuilder sb = new();
+            if (!strict)
+            {
+                foreach (string arg in argv)
+                {
+                    sb.Append(EscapeArgumentCompatible(arg));
+                    sb.Append(' ');
+                }
+            }
+            else
+            {
+                foreach (string arg in argv)
+                {
+                    sb.Append(EscapeArgumentStrict(arg));
+                    sb.Append(' ');
+                }
+            }
+            return sb.ToString().TrimRemoveNull() is string commandLine && commandLine.Length > 0 ? commandLine : null;
+        }
+
+        /// <summary>
         /// Internal unified command line parser that implements all Windows parsing rules.
         /// </summary>
         /// <param name="commandLine">The command line span to parse.</param>
@@ -162,18 +203,36 @@ namespace PSADT.ProcessManagement
             // Now parse the value part - this might be a path with spaces.
             if (position < commandLine.Length)
             {
-                // Check if the value starts with a quote - if so, use standard parsing.
+                // Check if the value starts with a quote.
                 if (commandLine[position] == '"')
                 {
-                    // Use standard argument parsing for quoted values.
-                    string quotedValue = ParseSingleArgument(commandLine, ref position);
-                    result.Append(quotedValue);
+                    // This is a quoted value. We want to preserve the quotes as part of the argument.
+                    // We can use ParseSingleArgument to correctly find the end of the quoted value,
+                    // accounting for escaped quotes and other complexities.
+                    int valueStartPosition = position;
+                    
+                    // Create a temporary copy of the position to be advanced by ParseSingleArgument.
+                    int tempPosition = position;
+                    ParseSingleArgument(commandLine, ref tempPosition);
+                    
+                    // Append the raw slice of the command line that represents the entire quoted value.
+                    result.Append(commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString());
+                    
+                    // Update the main position to continue parsing after this key-value pair.
+                    position = tempPosition;
                 }
                 else
                 {
                     // Parse unquoted value - might be a path with spaces.
                     string value = ParseUnquotedValueForKeyValue(commandLine, ref position);
-                    result.Append(value);
+                    if (value.Contains(' ') && !value.StartsWith("\""))
+                    {
+                        result.Append('"').Append(value).Append('"');
+                    }
+                    else
+                    {
+                        result.Append(value);
+                    }
                 }
             }
             return result.ToString();
@@ -527,35 +586,6 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Converts an array of arguments back into a properly escaped Windows command line string.
-        /// </summary>
-        /// <param name="args">The array of arguments to convert.</param>
-        /// <returns>A properly escaped command line string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="args"/> is null.</exception>
-        /// <remarks>
-        /// This method ensures that the resulting command line, when parsed back through 
-        /// <see cref="CommandLineToArgumentList(string)"/>, will yield the original arguments.
-        /// Special characters are properly escaped according to Windows conventions.
-        /// </remarks>
-        public static string? ArgumentListToCommandLine(IEnumerable<string> argv)
-        {
-            // Consider a null or empty argument list as an error.
-            if (null == argv || argv.Count() == 0)
-            {
-                throw new ArgumentNullException(nameof(argv));
-            }
-
-            // Construct and return the command line string.
-            StringBuilder sb = new();
-            foreach (string arg in argv)
-            {
-                sb.Append(EscapeArgument(arg));
-                sb.Append(' ');
-            }
-            return sb.ToString().TrimRemoveNull() is string commandLine && commandLine.Length > 0 ? commandLine : null;
-        }
-
-        /// <summary>
         /// Parses a single argument from the command line using comprehensive Windows parsing rules.
         /// </summary>
         /// <param name="commandLine">The command line span.</param>
@@ -654,11 +684,48 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Escapes a command-line argument to ensure compatibility with a parser that supports key-value pairs and
+        /// quoted values.
+        /// </summary>
+        /// <remarks>This method ensures compatibility with parsers that handle quoted values in key-value
+        /// pairs. If the value in a key-value pair is already quoted, it is assumed to be correctly formatted and
+        /// returned as-is. For all other cases, strict escaping is applied to ensure the argument is properly
+        /// formatted.</remarks>
+        /// <param name="argument">The command-line argument to escape. Can be a key-value pair (e.g., "key=value") or a single value.</param>
+        /// <returns>A string representing the escaped argument. If the argument is <see langword="null"/>, returns an empty
+        /// quoted string (<c>""</c>). If the argument is a key-value pair with a quoted value, the original argument is
+        /// returned unchanged. Otherwise, the argument is escaped using strict escaping rules.</returns>
+        private static string EscapeArgumentCompatible(string argument)
+        {
+            // Return empty quotes for a null argument.
+            if (argument is null)
+            {
+                return "\"\"";
+            }
+
+            // Check if the argument is a key-value pair where the value is already quoted.
+            int equalsPos = argument.IndexOf('=');
+            if (equalsPos > 0 && equalsPos < argument.Length - 1)
+            {
+                string value = argument.Substring(equalsPos + 1);
+                if (value.StartsWith("\"") && value.EndsWith("\""))
+                {
+                    // The value is already quoted. We can return the argument as-is,
+                    // as our compatible parser will handle it correctly.
+                    return argument;
+                }
+            }
+
+            // For all other cases, use the standard strict escaping.
+            return EscapeArgumentStrict(argument);
+        }
+
+        /// <summary>
         /// Escapes an argument string for safe inclusion in a Windows command line.
         /// </summary>
         /// <param name="argument">The argument to escape.</param>
         /// <returns>The escaped argument string.</returns>
-        private static string EscapeArgument(string argument)
+        private static string EscapeArgumentStrict(string argument)
         {
             // Return empty quotes for a null argument.
             if (argument is null)

@@ -752,7 +752,24 @@ namespace PSADT.Tests.ProcessManagement
                    new[] { "msiexec.exe", "/i", "\\\\server\\msi-packages\\Application Suite.msi", "/qn", "TARGETDIR=\\\\server\\app-installs\\Application\\" })]
         [InlineData("powershell.exe -File \"\\\\scripts-server\\powershell\\Deploy-Application.ps1\" -ApplicationPath \"\\\\apps-server\\applications\\MyApp\\\\\"",
                    new[] { "powershell.exe", "-File", "\\\\scripts-server\\powershell\\Deploy-Application.ps1", "-ApplicationPath", "\\\\apps-server\\applications\\MyApp\\" })]
-        public void CommandLineToArgumentList_RealWorldUncScenarios_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        public void CommandLineToArgumentList_RealWorldUncScenarios_ParsedCorrectlyStrict(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests real-world UNC path scenarios that might be encountered in enterprise environments.
+        /// </summary>
+        [Theory]
+        [InlineData("\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S /D=\"C:\\Program Files\\MyApp\"",
+                   new[] { "\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe", "/S", "/D=\"C:\\Program Files\\MyApp\"" })]
+        [InlineData("msiexec.exe /i \"\\\\server\\msi-packages\\Application Suite.msi\" /qn TARGETDIR=\"\\\\server\\app-installs\\Application\\\\\"",
+                   new[] { "msiexec.exe", "/i", "\\\\server\\msi-packages\\Application Suite.msi", "/qn", "TARGETDIR=\"\\\\server\\app-installs\\Application\\\\\"" })]
+        public void CommandLineToArgumentList_RealWorldUncScenarios_ParsedCorrectlyCompatible(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
             IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
@@ -774,7 +791,23 @@ namespace PSADT.Tests.ProcessManagement
                    new[] { "arg1", "arg2 with \"quotes\"", "arg3" })]
         [InlineData("msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn TARGETDIR=\"C:\\Program Files\\My App\\\"",
                    new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=C:\\Program Files\\My App\"" })]
-        public void CommandLineToArgumentList_ComplexRealWorldScenarios_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        public void CommandLineToArgumentList_ComplexRealWorldScenarios_ParsedCorrectlyStrict(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests complex real-world scenarios that combine multiple edge cases.
+        /// These scenarios are based on actual command lines that might be encountered in Windows environments.
+        /// </summary>
+        [Theory]
+        [InlineData("msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn TARGETDIR=\"C:\\Program Files\\My App\\\"",
+                   new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=\"C:\\Program Files\\My App\\\"" })]
+        public void CommandLineToArgumentList_ComplexRealWorldScenarios_ParsedCorrectlyCompatible(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
             IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
@@ -1208,7 +1241,7 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("\\\\file-server\\shared folder\\setup files\\installer.msi /quiet",
                    new[] { "\\\\file-server\\shared folder\\setup files\\installer.msi", "/quiet" })]
         [InlineData("\\\\domain.local\\software distribution\\My Application Suite\\setup.exe TARGETDIR=C:\\Program Files",
-                   new[] { "\\\\domain.local\\software distribution\\My Application Suite\\setup.exe", "TARGETDIR=C:\\Program Files" })]
+                   new[] { "\\\\domain.local\\software distribution\\My Application Suite\\setup.exe", "TARGETDIR=\"C:\\Program Files\"" })]
         public void CommandLineToArgumentList_UncPathDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
