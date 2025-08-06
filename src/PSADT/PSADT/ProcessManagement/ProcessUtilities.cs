@@ -138,7 +138,7 @@ namespace PSADT.ProcessManagement
                     {
                         procDescription = fileInfo.FileDescription;
                     }
-                    else if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && ProcessVersionInfo.GetVersionInfo(process, commandLine[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                    else if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited && ProcessVersionInfo.GetVersionInfo(process, commandLine[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
                     {
                         procDescription = procInfo.FileDescription!;
                     }
@@ -149,7 +149,7 @@ namespace PSADT.ProcessManagement
 
                     // Store the process information.
                     RunningProcess runningProcess = new(process, procDescription, commandLine[0], commandLine.Length > 1 ? commandLine.Skip(1) : null);
-                    if ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess))
+                    if (!process.HasExited && ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess)))
                     {
                         runningProcesses.Add(runningProcess);
                     }
