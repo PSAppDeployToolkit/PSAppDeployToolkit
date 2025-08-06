@@ -56,7 +56,21 @@ namespace PSADT.ProcessManagement
                 }
                 catch
                 {
-                    commandLine = [imageName = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable)];
+                    try
+                    {
+                        commandLine = [imageName = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable)];
+                    }
+                    catch
+                    {
+                        if (!process.HasExited)
+                        {
+                            throw;
+                        }
+                        else
+                        {
+                            return [];
+                        }
+                    }
                 }
 
                 // If the command line process path isn't fully qualified, try to resolve it using the process image name.
@@ -79,6 +93,12 @@ namespace PSADT.ProcessManagement
                 // Loop through each process and check if it matches the definition.
                 foreach (var process in allProcesses)
                 {
+                    // Skip this process if it's not running anymore.
+                    if (process.HasExited)
+                    {
+                        continue;
+                    }
+
                     // Try to get the command line. If we can't, skip this process.
                     string[] commandLine;
                     try
@@ -86,6 +106,12 @@ namespace PSADT.ProcessManagement
                         commandLine = GetCommandLine(process, processCommandLines, ntPathLookupTable);
                     }
                     catch (ArgumentException)
+                    {
+                        continue;
+                    }
+
+                    // If we couldn't get the command line, skip this process.
+                    if (commandLine.Length == 0)
                     {
                         continue;
                     }
