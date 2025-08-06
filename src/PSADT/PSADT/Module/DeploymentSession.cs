@@ -58,6 +58,7 @@ namespace PSADT.Module
                 var moduleSessionState = ModuleDatabase.GetSessionState();
                 bool writtenDivider = false; _ = _installPhase;
                 deferExitCode = (int)configUI["DeferExitCode"]!;
+                bool forceProcessDetection = false;
 
                 // Pre-cache reused environment variables.
                 var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
@@ -209,13 +210,20 @@ namespace PSADT.Module
                     {
                         Settings |= DeploymentSettings.NoOobeDetection;
                     }
-                    if (parameters.TryGetValue("NoProcessDetection", out paramValue) && (SwitchParameter)paramValue)
-                    {
-                        Settings |= DeploymentSettings.NoProcessDetection;
-                    }
                     if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _logName = (string)paramValue;
+                    }
+                    if (parameters.TryGetValue("NoProcessDetection", out paramValue))
+                    {
+                        if ((SwitchParameter)paramValue)
+                        {
+                            Settings |= DeploymentSettings.NoProcessDetection;
+                        }
+                        else
+                        {
+                            forceProcessDetection = true;
+                        }
                     }
                 }
                 if (noExitOnClose.HasValue && noExitOnClose.Value)
@@ -849,7 +857,7 @@ namespace PSADT.Module
                 }
 
                 // Evaluate processes to close if they're specified.
-                if (_appProcessesToClose.Count > 0)
+                if (forceProcessDetection || _appProcessesToClose.Count > 0)
                 {
                     if (deployModeChanged)
                     {
@@ -863,7 +871,14 @@ namespace PSADT.Module
                     {
                         if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose) is var runningProcs && (runningProcs.Count == 0))
                         {
-                            WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                            if (!forceProcessDetection)
+                            {
+                                WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                            }
+                            else
+                            {
+                                WriteLogEntry($"No processes were specified as requiring closure and -NoProcessDetection was explicitly set to false, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                            }
                             deployModeChanged = true;
                         }
                         else
