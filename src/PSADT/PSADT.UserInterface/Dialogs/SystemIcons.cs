@@ -19,7 +19,7 @@ namespace PSADT.UserInterface.Dialogs
         /// </summary>
         /// <remarks>This static constructor retrieves a predefined set of system icons, resizes them
         /// based on the current system DPI, and maps them to corresponding <see cref="DialogSystemIcon"/> values. The
-        /// resulting lookup table is stored in  <see cref="SystemIconLookupTable"/> for use throughout the
+        /// resulting lookup table is stored in <see cref="SystemIconLookupTable"/> for use throughout the
         /// application.</remarks>
         static SystemIcons()
         {

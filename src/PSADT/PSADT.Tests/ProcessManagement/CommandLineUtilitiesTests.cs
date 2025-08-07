@@ -290,7 +290,7 @@ namespace PSADT.Tests.ProcessManagement
             IReadOnlyList<string> parsedArgs1 = CommandLineUtilities.CommandLineToArgumentList(commandLine1)!;
             Assert.Equal(expectedArgs1, parsedArgs1);
 
-            // Test case 2: Path arguments  
+            // Test case 2: Path arguments
             string[] originalArgs2 = { "C:\\Program Files\\My App\\", "data.csv" };
             string[] expectedArgs2 = originalArgs2.Select(a => a ?? string.Empty).ToArray();
             string commandLine2 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs2)!;

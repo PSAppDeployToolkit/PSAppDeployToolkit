@@ -32,7 +32,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_BNO_ISOLATION = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeBnoIsolation | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> value that specifies the child process policy. The policy specifies whether to allow a child process to be created. For information on the possible values for the <b>DWORD</b> to which <i>lpValue</i> points, see Remarks. Supported in Windows 10 and newer and Windows Server 2016 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> value that specifies the child process policy. The policy specifies whether to allow a child process to be created. For information on the possible values for the <b>DWORD</b> to which <i>lpValue</i> points, see Remarks. Supported in Windows 10 and newer and Windows Server 2016 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -65,7 +65,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_CREATE_STORE = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeCreateStore | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
-        /// <para>This attribute is relevant only to win32 applications that have been converted to UWP packages by using the <a href="https://developer.microsoft.com/windows/bridges/desktop">Desktop Bridge</a>. The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> value that specifies the desktop app policy. The policy specifies whether descendant processes should continue to run in the desktop environment. For information about the possible values for the <b>DWORD</b> to which <i>lpValue</i> points, see Remarks. Supported in Windows 10 Version 1703 and newer and Windows Server Version 1709 and newer.</para>
+        /// <para>This attribute is relevant only to win32 applications that have been converted to UWP packages by using the <a href="https://developer.microsoft.com/windows/bridges/desktop">Desktop Bridge</a>. The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> value that specifies the desktop app policy. The policy specifies whether descendant processes should continue to run in the desktop environment. For information about the possible values for the <b>DWORD</b> to which <i>lpValue</i> points, see Remarks. Supported in Windows 10 Version 1703 and newer and Windows Server Version 1709 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -74,7 +74,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_DESKTOP_APP_POLICY = PInvoke.PROC_THREAD_ATTRIBUTE_DESKTOP_APP_POLICY,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD64</b> value that specifies the set of optional XState features to enable for the new thread. Supported in Windows 11 and newer and Windows Server 2022 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD64</b> value that specifies the set of optional XState features to enable for the new thread. Supported in Windows 11 and newer and Windows Server 2022 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -91,7 +91,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeExtendedFlags | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT | PInvoke.PROC_THREAD_ATTRIBUTE_ADDITIVE,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-group_affinity">GROUP_AFFINITY</a> structure that specifies the processor group affinity for the new thread. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-group_affinity">GROUP_AFFINITY</a> structure that specifies the processor group affinity for the new thread. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -100,7 +100,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_GROUP_AFFINITY = PInvoke.PROC_THREAD_ATTRIBUTE_GROUP_AFFINITY,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a list of handles to be inherited by the child process. These handles must be created as inheritable handles and must not include pseudo handles such as those returned by the <a href="https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess">GetCurrentProcess</a> or <a href="https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getcurrentthread">GetCurrentThread</a> function. <div class="alert"><b>Note</b>  if you use this attribute, pass in a value of TRUE for the <i>bInheritHandles</i> parameter of the <a href="https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-createprocessa">CreateProcess</a> function.</div> <div> </div></para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a list of handles to be inherited by the child process. These handles must be created as inheritable handles and must not include pseudo handles such as those returned by the <a href="https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess">GetCurrentProcess</a> or <a href="https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getcurrentthread">GetCurrentThread</a> function. <div class="alert"><b>Note</b>  if you use this attribute, pass in a value of TRUE for the <i>bInheritHandles</i> parameter of the <a href="https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-createprocessa">CreateProcess</a> function.</div> <div> </div></para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -109,7 +109,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_HANDLE_LIST = PInvoke.PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a  <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-processor_number">PROCESSOR_NUMBER</a> structure that specifies the ideal processor for the new thread. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-processor_number">PROCESSOR_NUMBER</a> structure that specifies the ideal processor for the new thread. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -126,7 +126,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_ISOLATION_MANIFEST = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeIsolationManifest | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a list of job handles to be assigned to the child process, in the order specified. Supported in Windows 10 and newer and Windows Server 2016 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a list of job handles to be assigned to the child process, in the order specified. Supported in Windows 10 and newer and Windows Server 2016 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -135,7 +135,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_JOB_LIST = PInvoke.PROC_THREAD_ATTRIBUTE_JOB_LIST,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>WORD</b> that specifies the machine architecture of the child process. Supported in Windows 11 and newer. The  <b>WORD</b> pointed to by <i>lpValue</i> can be a value listed on <a href="https://docs.microsoft.com/windows/win32/sysinfo/image-file-machine-constants">IMAGE FILE MACHINE CONSTANTS</a>.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>WORD</b> that specifies the machine architecture of the child process. Supported in Windows11 and newer. The <b>WORD</b> pointed to by <i>lpValue</i> can be a value listed on <a href="https://docs.microsoft.com/windows/win32/sysinfo/image-file-machine-constants">IMAGE FILE MACHINE CONSTANTS</a>.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -152,7 +152,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_MITIGATION_AUDIT_POLICY = PInvoke.PROC_THREAD_ATTRIBUTE_MITIGATION_AUDIT_POLICY,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> or <b>DWORD64</b> that specifies the exploit mitigation policy for the child process. Starting in Windows 10, version 1703, this parameter can also be a pointer to a two-element <b>DWORD64</b> array. The specified policy overrides the policies set for the application and the system and cannot be changed after the child process starts running. The  <b>DWORD</b> or <b>DWORD64</b> pointed to by <i>lpValue</i> can be one or more of the values listed in the remarks. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> or <b>DWORD64</b> that specifies the exploit mitigation policy for the child process. Starting in Windows 10, version 1703, this parameter can also be a pointer to a two-element <b>DWORD64</b> array. The specified policy overrides the policies set for the application and the system and cannot be changed after the child process starts running. The <b>DWORD</b> or <b>DWORD64</b> pointed to by <i>lpValue</i> can be one or more of the values listed in the remarks. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -186,7 +186,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_PARENT_PROCESS = PInvoke.PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to the node number of the preferred NUMA node for the new process. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to the node number of the preferred NUMA node for the new process. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -195,7 +195,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_PREFERRED_NODE = PInvoke.PROC_THREAD_ATTRIBUTE_PREFERRED_NODE,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> value of <b>PROTECTION_LEVEL_SAME</b>. This specifies the protection level of the child process to be the same as the protection level of its parent process. Supported in Windows 8.1 and newer and Windows Server 2012 R2 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <b>DWORD</b> value of <b>PROTECTION_LEVEL_SAME</b>. This specifies the protection level of the child process to be the same as the protection level of its parent process. Supported in Windows 8.1 and newer and Windows Server 2012 R2 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -220,7 +220,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_SAFE_OPEN_PROMPT_ORIGIN_CLAIM = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeSafeOpenPromptOriginClaim | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-security_capabilities">SECURITY_CAPABILITIES</a> structure that defines the security capabilities of an app container. If this attribute is set the new process will be created as an AppContainer process. Supported in Windows 8 and newer and Windows Server 2012 and newer.</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-security_capabilities">SECURITY_CAPABILITIES</a> structure that defines the security capabilities of an app container. If this attribute is set the new process will be created as an AppContainer process. Supported in Windows 8 and newer and Windows Server 2012 and newer.</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>
@@ -237,7 +237,7 @@ namespace PSADT.LibraryInterfaces
         PROC_THREAD_ATTRIBUTE_TRUSTED_APP = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeTrustedApp | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
-        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-ums_create_thread_attributes">UMS_CREATE_THREAD_ATTRIBUTES</a> structure that specifies a user-mode scheduling (UMS) thread context and a UMS completion list to associate with the thread. After the UMS thread is created, the system queues it to the specified completion list. The UMS thread runs only when an application's UMS scheduler retrieves the UMS thread from the completion list and selects it to run. For more information, see <a href="https://docs.microsoft.com/windows/desktop/ProcThread/user-mode-scheduling">User-Mode Scheduling</a>. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer. Not supported in Windows 11 and newer (see [User-Mode Scheduling](/windows/win32/procthread/user-mode-scheduling)).</para>
+        /// <para>The <i>lpValue</i> parameter is a pointer to a <a href="https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-ums_create_thread_attributes">UMS_CREATE_THREAD_ATTRIBUTES</a> structure that specifies a user-mode scheduling (UMS) thread context and a UMS completion list to associate with the thread. After the UMS thread is created, the system queues it to the specified completion list. The UMS thread runs only when an application's UMS scheduler retrieves the UMS thread from the completion list and selects it to run. For more information, see <a href="https://docs.microsoft.com/windows/desktop/ProcThread/user-mode-scheduling">User-Mode Scheduling</a>. Supported in Windows 7 and newer and Windows Server 2008 R2 and newer. Not supported in Windows 11 and newer (see [User-Mode Scheduling](/windows/win32/procthread/user-mode-scheduling)).</para>
         /// <para><see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute#">Read more on docs.microsoft.com</see>.</para>
         /// </summary>
         /// <remarks>

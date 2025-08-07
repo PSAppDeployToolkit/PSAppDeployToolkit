@@ -35,7 +35,7 @@ namespace PSADT.SafeHandles
         /// Represents a collection of sizes for various WTS (Windows Terminal Services) type classes.
         /// </summary>
         /// <remarks>This collection contains the sizes of the structures <see cref="WTS_PROCESS_INFOW"/>,
-        /// <see cref="WTS_PROCESS_INFO_EXW"/>, and <see cref="WTS_SESSION_INFO_1W"/> as determined by  <see
+        /// <see cref="WTS_PROCESS_INFO_EXW"/>, and <see cref="WTS_SESSION_INFO_1W"/> as determined by <see
         /// cref="Marshal.SizeOf{T}"/>. These sizes are used for operations involving Windows Terminal Services data
         /// structures.</remarks>
         private static readonly ReadOnlyCollection<int> WtsTypeClassSizes = new([Marshal.SizeOf<WTS_PROCESS_INFOW>(), Marshal.SizeOf<WTS_PROCESS_INFO_EXW>(), Marshal.SizeOf<WTS_SESSION_INFO_1W>()]);
