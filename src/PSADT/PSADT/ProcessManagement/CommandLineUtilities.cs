@@ -40,7 +40,7 @@ namespace PSADT.ProcessManagement
         /// </remarks>
         public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool strict = false)
         {
-            if (commandLine is null)
+            if (string.IsNullOrWhiteSpace(commandLine))
             {
                 throw new ArgumentNullException(nameof(commandLine));
             }
