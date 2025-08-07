@@ -46,9 +46,9 @@ namespace PSADT.ProcessManagement
             }
             if (strict)
             {
-                return CommandLineToArgumentListStrict(commandLine.AsSpan());
+                return CommandLineToArgumentListStrict(commandLine.TrimRemoveNull().AsSpan());
             }
-            return CommandLineToArgumentListEnhanced(commandLine.AsSpan());
+            return CommandLineToArgumentListEnhanced(commandLine.TrimRemoveNull().AsSpan());
         }
 
         /// <summary>
