@@ -139,18 +139,16 @@ function Show-ADTInstallationWelcome
         Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the config.psd1, so the user cannot ignore it by dragging it aside.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
+        Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '2013-08-25'
 
         Allow the user to defer the deployment until the deadline is reached.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseProcessesCountdown 600
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '2013-08-25' -CloseProcessesCountdown 600
 
         Close Word and Excel and prevent the user from launching the applications while the deployment is in progress.
 
-        Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first.
-
-        When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
+        Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first. When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -168,7 +166,7 @@ function Show-ADTInstallationWelcome
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationWelcome
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'Interactive, with no other options.')]
+    [CmdletBinding(DefaultParameterSetName = 'Interactive, with no modifying options.')]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
@@ -248,7 +246,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
         [System.Management.Automation.SwitchParameter]$AllowDeferCloseProcesses,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Silent, with no other options.', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Silent, with no modifying options.', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, and with a free disk space check.', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, and with processes to close.', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
@@ -383,7 +381,7 @@ function Show-ADTInstallationWelcome
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$DeferRunInterval,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = 'The location of the dialog on the screen.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'The location of the dialog on the screen.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = 'The location of the dialog on the screen.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'The location of the dialog on the screen.')]
@@ -464,7 +462,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
         [System.Management.Automation.SwitchParameter]$PromptToSave,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1.')]
@@ -494,7 +492,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1.')]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
@@ -524,7 +522,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
@@ -555,7 +553,7 @@ function Show-ADTInstallationWelcome
         [System.Obsolete("This parameter will be removed in PSAppDeployToolkit 4.2.0.")]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
@@ -585,7 +583,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
@@ -615,7 +613,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [System.Management.Automation.SwitchParameter]$AllowMove,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no other options.', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
