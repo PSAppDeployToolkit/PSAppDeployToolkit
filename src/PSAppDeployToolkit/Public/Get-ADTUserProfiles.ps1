@@ -142,7 +142,8 @@ function Get-ADTUserProfiles
                         try
                         {
                             # Return early if the SID is to be excluded.
-                            if (($sid = [System.Security.Principal.SecurityIdentifier]$regProfile.PSChildName) -match $excludedSids)
+                            $sid = [System.Security.Principal.SecurityIdentifier]$regProfile.PSChildName
+                            if ($sid -match $excludedSids)
                             {
                                 continue
                             }
