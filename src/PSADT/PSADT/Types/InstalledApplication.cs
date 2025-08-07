@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using PSADT.ProcessManagement;
 
@@ -40,8 +41,8 @@ namespace PSADT.Types
             string? displayVersion,
             string? uninstallString,
             string? quietUninstallString,
-            string? installSource,
-            string? installLocation,
+            DirectoryInfo? installSource,
+            DirectoryInfo? installLocation,
             DateTime? installDate,
             string? publisher,
             Uri? helpLink,
@@ -70,13 +71,13 @@ namespace PSADT.Types
             if (null != UninstallString)
             {
                 var argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
-                UninstallStringFilePath = argumentList[0];
+                UninstallStringFilePath = new FileInfo(argumentList[0]);
                 UninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
             if (null != QuietUninstallString)
             {
                 var argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
-                QuietUninstallStringFilePath = argumentList[0];
+                QuietUninstallStringFilePath = new FileInfo(argumentList[0]);
                 QuietUninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
         }
@@ -131,7 +132,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the file path to the uninstall string, if available.
         /// </summary>
-        public readonly string? UninstallStringFilePath;
+        public readonly FileInfo? UninstallStringFilePath;
 
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
@@ -146,7 +147,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the file path to the quiet uninstall string, if available.
         /// </summary>
-        public readonly string? QuietUninstallStringFilePath;
+        public readonly FileInfo? QuietUninstallStringFilePath;
 
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
@@ -156,12 +157,12 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
-        public readonly string? InstallSource;
+        public readonly DirectoryInfo? InstallSource;
 
         /// <summary>
         /// Gets the location where the application is installed.
         /// </summary>
-        public readonly string? InstallLocation;
+        public readonly DirectoryInfo? InstallLocation;
 
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
