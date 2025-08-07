@@ -135,70 +135,71 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                Get-ItemProperty -Path "$userProfileListRegKey\*" | & {
-                    process
+                foreach ($regProfile in (Get-ItemProperty -Path "$userProfileListRegKey\*"))
+                {
+                    try
                     {
-                        # Try to parse the registry string into a SecurityIdentifier.
-                        $sid = try
+                        try
                         {
-                            [System.Security.Principal.SecurityIdentifier]$_.PSChildName
+                            # Return early if the SID is to be excluded.
+                            if (($sid = [System.Security.Principal.SecurityIdentifier]$regProfile.PSChildName) -match $excludedSids)
+                            {
+                                continue
+                            }
+
+                            # Return early for accounts that have a null NTAccount.
+                            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $sid -InformationAction SilentlyContinue))
+                            {
+                                continue
+                            }
+
+                            # Return early for excluded accounts.
+                            if ($ExcludeNTAccount -contains $ntAccount)
+                            {
+                                continue
+                            }
+
+                            # Establish base profile.
+                            $userProfile = [PSADT.Types.UserProfile]::new(
+                                $ntAccount,
+                                $sid,
+                                $regProfile.ProfileImagePath
+                            )
+
+                            # Append additional info if requested.
+                            if ($LoadProfilePaths)
+                            {
+                                $userProfile = Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -InformationAction SilentlyContinue -ScriptBlock {
+                                    [PSADT.Types.UserProfile]::new(
+                                        $_.NTAccount,
+                                        $_.SID,
+                                        $_.ProfilePath,
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'TEMP' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDrive' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                        $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDriveCommercial' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath)
+                                    )
+                                }
+                            }
+
+                            # Write out the object to the pipeline.
+                            if ($userProfile -and (!$FilterScript -or (ForEach-Object -InputObject $userProfile -Process $FilterScript -ErrorAction Ignore)))
+                            {
+                                $PSCmdlet.WriteObject($userProfile)
+                            }
                         }
                         catch
                         {
-                            Write-ADTLogEntry -Message "Unable to convert [$($_.PSChildName)] into a SecurityIdentifier, skipping entry..." -Severity Warning
-                            return
+                            Write-Error -ErrorRecord $_
                         }
-
-                        # Return early if the SID is to be excluded.
-                        if ($sid -match $excludedSids)
-                        {
-                            return
-                        }
-
-                        # Return early for accounts that have a null NTAccount.
-                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $sid -InformationAction SilentlyContinue))
-                        {
-                            return
-                        }
-
-                        # Return early for excluded accounts.
-                        if ($ExcludeNTAccount -contains $ntAccount)
-                        {
-                            return
-                        }
-
-                        # Establish base profile.
-                        $userProfile = [PSADT.Types.UserProfile]::new(
-                            $ntAccount,
-                            $sid,
-                            $_.ProfileImagePath
-                        )
-
-                        # Append additional info if requested.
-                        if ($LoadProfilePaths)
-                        {
-                            $userProfile = Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -InformationAction SilentlyContinue -ScriptBlock {
-                                [PSADT.Types.UserProfile]::new(
-                                    $_.NTAccount,
-                                    $_.SID,
-                                    $_.ProfilePath,
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'TEMP' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDrive' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                    $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDriveCommercial' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath)
-                                )
-                            }
-                        }
-
-                        # Write out the object to the pipeline.
-                        if ($userProfile -and (!$FilterScript -or (ForEach-Object -InputObject $userProfile -Process $FilterScript -ErrorAction Ignore)))
-                        {
-                            return $userProfile
-                        }
+                    }
+                    catch
+                    {
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to enumerate the user profile [$($regProfile.PSChildName)]." -ErrorAction SilentlyContinue
                     }
                 }
 
@@ -237,7 +238,7 @@ function Get-ADTUserProfiles
                     # Write out the object to the pipeline.
                     if ($userProfile -and (!$FilterScript -or (ForEach-Object -InputObject $userProfile -Process $FilterScript -ErrorAction Ignore)))
                     {
-                        return $userProfile
+                        $PSCmdlet.WriteObject($userProfile)
                     }
                 }
             }
