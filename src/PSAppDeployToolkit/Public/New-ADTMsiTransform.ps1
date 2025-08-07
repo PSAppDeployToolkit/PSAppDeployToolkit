@@ -25,7 +25,7 @@ function New-ADTMsiTransform
     .PARAMETER TransformProperties
         Hashtable which contains calls to `Set-ADTMsiProperty` for configuring the desired properties which should be included in the new transform file.
 
-        Example hashtable: @{ ALLUSERS = 1 }
+        Example hashtable: `@{ ALLUSERS = 1 }`
 
     .INPUTS
         None

@@ -49,7 +49,7 @@ function Get-ADTRegistryKey
         Returns the value of the registry key or value.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\VLC media player'
 
         This example retrieves all value names and data for the specified registry key.
 

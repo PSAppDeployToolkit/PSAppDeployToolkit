@@ -37,12 +37,12 @@ function Convert-ADTRegistryPath
         Returns the converted registry key path.
 
     .EXAMPLE
-        Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TreeSize Free_is1'
 
         Converts the specified registry key path to a format compatible with PowerShell cmdlets.
 
     .EXAMPLE
-        Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
+        Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\VLC media player'
 
         Converts the specified registry key path to a format compatible with PowerShell cmdlets.
 
