@@ -22,9 +22,9 @@ function Get-ADTShortcut
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Hashtable
+        PSADT.Types.ShortcutBase
 
-        Returns a hashtable with the following keys:
+        Returns an object with the following properties:
         - TargetPath
         - Arguments
         - Description
