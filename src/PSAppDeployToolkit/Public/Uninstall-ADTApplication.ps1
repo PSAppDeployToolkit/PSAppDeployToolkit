@@ -65,6 +65,9 @@ function Uninstall-ADTApplication
     .PARAMETER RebootExitCodes
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
+    .PARAMETER IgnoreExitCodes
+        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead.
+
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
@@ -185,6 +188,11 @@ function Uninstall-ADTApplication
         [System.Int32[]]$RebootExitCodes,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [System.String[]]$IgnoreExitCodes,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
@@ -210,7 +218,7 @@ function Uninstall-ADTApplication
             }
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList, SuccessExitCodes, RebootExitCodes, WaitForChildProcesses, KillChildProcessesWithParent, ExitOnProcessFailure
+            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList, SuccessExitCodes, RebootExitCodes, IgnoreExitCodes, WaitForChildProcesses, KillChildProcessesWithParent, ExitOnProcessFailure
             if (($installedApps = Get-ADTApplication @gaiaParams))
             {
                 $InstalledApplication = $installedApps
@@ -218,7 +226,7 @@ function Uninstall-ADTApplication
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType, SuccessExitCodes, RebootExitCodes, WaitForChildProcesses, KillChildProcessesWithParent
+        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType, SuccessExitCodes, RebootExitCodes, IgnoreExitCodes, WaitForChildProcesses, KillChildProcessesWithParent
         $sampParams.Action = 'Uninstall'
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
@@ -238,6 +246,10 @@ function Uninstall-ADTApplication
         if ($PSBoundParameters.ContainsKey('RebootExitCodes'))
         {
             $sapParams.Add('RebootExitCodes', $RebootExitCodes)
+        }
+        if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
+        {
+            $sapParams.Add('IgnoreExitCodes', $IgnoreExitCodes)
         }
 
         # Build out regex for determining valid exe uninstall strings.
