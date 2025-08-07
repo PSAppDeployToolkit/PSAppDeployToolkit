@@ -28,20 +28,7 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 |---------------------|-----------------|
 | ![CustomLightMode](https://github.com/user-attachments/assets/c092999f-46a2-43f6-bd28-bc2bdcd03b76) | ![CustomDarkMode](https://github.com/user-attachments/assets/26be16d2-f13e-491d-af86-72a169200f27) |
 
-## 🖥️ Whats New in v4.1 (RC2) - 2025-07-22
-
-**NOTE**: This is currently a release candidate (RC2) for PSADT 4.1. which has not yet reached final status. While we are confident that it is rock solid, we are still testing it and may make changes before final release. As such, it is not recommended for production use at this time.
-
-### 🛠️ Changes since RC1
-
-- Added [Test-ADTEspActive](https://psappdeploytoolkit.com/docs/next/reference/functions/Test-ADTEspActive) to test for an active Enrollment Status Page (ESP).
-- Added support for running processes from network drives.
-- Fixed launching processes in the users' session when using certain MDMs, e.g. VMware Workspace ONE.
-- Fixed setting the Accent Color using the ADMX templates.
-- Fixed minimize button not being shown on Fluent Progress and Restart Dialogs.
-- Fixed the "Restart Later" button in the Fluent Restart Dialog not being disabled during the warning period.
-
-## 🖥️ What's New in v4.1 (RC1) - 2025-07-08
+## 🖥️ Whats New in v4.1  - 2025-08-07
 
 ### 🎯 Major Improvements
 
@@ -82,6 +69,7 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
   - [Get-ADTIniSection](https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniSection) / [Set-ADTIniSection](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSection) / [Remove-ADTIniSection](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTIniSection)
   - [Get-ADTIniValue](https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniValue) / [Set-ADTIniValue](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniValue) / [Remove-ADTIniValue](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTIniValue)
 - Added [Start-ADTMsiProcessAsUser](https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcessAsUser) for installing / uninstalling user-context MSIs via the System account
+- Added [Test-ADTEspActive](https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTEspActive) to test for an active Enrollment Status Page (ESP)
 - Added -DeferRunInterval switch to [Show-ADTInstallationWelcome](https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationWelcome) to limit retry times from Intune
 - Added -Path / -LiteralPath support to registry functions
 - Added volatile key creation support to [Set-ADTRegistryKey](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTRegistryKey)
@@ -97,9 +85,14 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 - Added process detection code to enable automatic silent deployments when processes aren't running
 - Added /Debug switch to [Invoke-AppDeployToolkit.exe](https://psappdeploytoolkit.com/docs/deployment-concepts/invoke-appdeploytoolkit) to show terminal output for debugging purposes
 - Added /Core switch to [Invoke-AppDeployToolkit.exe](https://psappdeploytoolkit.com/docs/deployment-concepts/invoke-appdeploytoolkit) to allow PowerShell 7 usage
+- Added support for running processes from network drives
 
 ### 🛠️ Changes
 
+- Added -NoOobeDetection option to Open-ADTSession to bypass OOBE detection logic when DeployMode is set to Auto. Use this to show the UI during OOBE / Autopilot ESP phases.
+- Added -NoSessionDetection option to Open-ADTSession to bypass session detection logic when DeployMode is set to Auto. Use this to show the UI when no user is logged on and the SYSTEM process is interactive.
+- Added -NoProcessDetection option to Open-ADTSession to bypass process detection logic when DeployMode is set to Auto. Use this to show the UI even if there are no processes to close.
+- Changed -DeployMode Interactive to always show interactively. This means the toolkit will always show the dialogs, bypassing the OOBE/Session/Process detections that occur in Auto mode.
 - Changed default DeferExitCode from 60012 to 1602, since ConfigMgr and Intune recognize this natively as 'User cancelled the installation'
 - Changed toolkit to exit with 3010 if a suppressed reboot was encountered without having to use -AllowRebootPassThru. To mask 3010 return codes and exit with 0, you can now add -SuppressRebootPassThru
 - Changed default msiexec.exe parameters in interactive mode from /qb-! to /qn
@@ -115,6 +108,7 @@ PSAppDeployToolkit is a PowerShell-based, open-source framework for Windows soft
 - Fixed SCCM pending reboot tests within [Get-ADTPendingReboot](https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPendingReboot)
 - Fixed MSI repair to default to 'Reinstall' to avoid forced unavoidable reboots when running msiexec /f against an app that is in-use
 - Fixed OOBE detection code to factor in User ESP phase
+- Fixed launching processes in the users' session when using certain MDMs, e.g. VMware Workspace ONE.
 
 ## 🚀 Getting Started
 
