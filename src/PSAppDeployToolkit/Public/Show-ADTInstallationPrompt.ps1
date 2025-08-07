@@ -258,18 +258,6 @@ function Show-ADTInstallationPrompt
                     return
                 }
 
-                # Throw if the parent is ServiceUI and we're trying to use an input dialog.
-                if ($PSCmdlet.ParameterSetName.Equals('ShowInputDialog') -and [PSADT.AccountManagement.AccountUtilities]::CallerIsSystemInteractive -and (Get-ADTEnvironmentTable).usersLoggedOn)
-                {
-                    $naerParams = @{
-                        Exception = [System.InvalidOperationException]::new("The input dialog is only permitted when ServiceUI is not used to start the toolkit, or ConfigMgr's 'Allow users to view and interact with the program installation' option is unchecked.")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                        ErrorId = 'ServiceUiParentProcessFailure'
-                        RecommendedAction = "Please remove the use of ServiceUI within your environment and try again."
-                    }
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-                }
-
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{
                     AppTitle = $PSBoundParameters.Title

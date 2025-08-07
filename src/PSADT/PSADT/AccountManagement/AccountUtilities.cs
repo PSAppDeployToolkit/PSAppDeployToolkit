@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Security.Principal;
+using PSADT.ProcessManagement;
 using PSADT.Security;
 
 namespace PSADT.AccountManagement
@@ -53,6 +54,7 @@ namespace PSADT.AccountManagement
             // Determine if the caller is the local system account.
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
+            CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));   
         }
 
         /// <summary>
@@ -161,6 +163,11 @@ namespace PSADT.AccountManagement
         /// Indicates whether the current caller is running in an interactive system environment.
         /// </summary>
         public static readonly bool CallerIsSystemInteractive;
+
+        /// <summary>
+        /// Gets a value indicating whether the current process is running with ServiceUI anywhere as a parent process.
+        /// </summary>
+        public static readonly bool CallerUsingServiceUI;
 
         /// <summary>
         /// Gets a read-only list of privileges associated with the caller.

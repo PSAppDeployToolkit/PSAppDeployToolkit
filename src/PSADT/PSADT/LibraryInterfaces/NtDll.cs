@@ -476,6 +476,31 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Retrieves basic information about a specified process.
+        /// </summary>
+        /// <remarks>This method wraps the native NtQueryInformationProcess function and provides a
+        /// managed interface for querying process information.</remarks>
+        /// <param name="processHandle">A handle to the process for which information is being queried. The handle must have the necessary access
+        /// rights.</param>
+        /// <param name="processInformation">When the method returns, contains a <see cref="PROCESS_BASIC_INFORMATION"/> structure with basic information
+        /// about the process.</param>
+        /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. Returns <see
+        /// cref="NTSTATUS.STATUS_SUCCESS"/> if the operation succeeds.</returns>
+        internal static unsafe NTSTATUS NtQueryInformationProcess(IntPtr processHandle, out PROCESS_BASIC_INFORMATION processInformation)
+        {
+            fixed (PROCESS_BASIC_INFORMATION* processInformationLocal = &processInformation)
+            {
+                uint returnLength = 0;
+                var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)processHandle, PROCESSINFOCLASS.ProcessBasicInformation, processInformationLocal, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref returnLength);
+                if (res != NTSTATUS.STATUS_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
         internal static ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>

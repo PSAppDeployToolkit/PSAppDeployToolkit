@@ -133,6 +133,10 @@ namespace PSADT.UserInterface
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
         internal static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options)
         {
+            if (AccountUtilities.CallerUsingServiceUI)
+            {
+                throw new InvalidOperationException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.");
+            }
             if (options.MinimizeWindows)
             {
                 ShellUtilities.MinimizeAllWindows();
