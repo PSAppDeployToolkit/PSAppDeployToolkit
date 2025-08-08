@@ -162,6 +162,45 @@ function Write-Log
             try
             {
                 $PSBoundParameters.Message = $messages
+
+                # PRUNE ONCE: keep at most LogMaxFolderCount folders (including current
+                if (-not $script:__PSADT_LogPruneDone)
+                {
+                    $max = 0
+                    try { $max = [int]$script:Config.Toolkit.LogMaxFolderCount } catch { $max = 0 }
+                    if ($max -gt 0 -and $PSBoundParameters.ContainsKey('LogFileDirectory'))
+                    {
+                        $currentLogFolder = $PSBoundParameters['LogFileDirectory']
+                        if ($currentLogFolder)
+                        {
+                            $basePath    = Split-Path -Path $currentLogFolder -Parent
+                            $currentName = Split-Path -Path $currentLogFolder -Leaf
+
+                            if ($basePath -and (Test-Path -LiteralPath $basePath))
+                            {
+                                $candidates = Get-ChildItem -LiteralPath $basePath -Directory -ErrorAction SilentlyContinue |
+                                            Where-Object { $_.Name -ne $currentName } |
+                                            Sort-Object CreationTime
+
+                                # keep at most ($max - 1) previous folders; current will be created/used next
+                                $toKeep = [Math]::Max(0, $max - 1)
+                                $over   = $candidates.Count - $toKeep
+
+                                if ($over -gt 0)
+                                {
+                                    $toDelete = $candidates[0..($over - 1)]
+                                    foreach ($d in $toDelete)
+                                    {
+                                        Remove-Item -LiteralPath $d.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $script:__PSADT_LogPruneDone = $true
+                }
+                # END PRUNE ONCE
+
                 Write-ADTLogEntry @PSBoundParameters
             }
             catch

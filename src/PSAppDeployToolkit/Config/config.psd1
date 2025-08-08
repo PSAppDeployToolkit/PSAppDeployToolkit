@@ -52,6 +52,9 @@
         # Specify maximum file size limit for log file in megabytes (MB).
         LogMaxSize = 10
 
+        # Specify maximum number of previous log folders to retain (applies when LogToSubfolder or LogToHierarchy is enabled).
+        LogMaxFolderCount = 5
+
         # Log path used for Toolkit logging.
         LogPath = '$envWinDir\Logs\Software'
 
