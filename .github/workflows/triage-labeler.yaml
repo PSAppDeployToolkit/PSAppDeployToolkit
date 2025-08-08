@@ -8,14 +8,14 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
-      - name: Remove "needs-triage" if issue already has an assignee
+      - name: "Remove 'Status: Needs Triage' if issue already has an assignee"
         if: ${{ github.event.issue.assignee != null }}
         uses: actions-ecosystem/action-remove-labels@v1
         with:
-          labels: needs-triage
+          labels: "Status: Needs Triage"
 
-      - name: Add "needs-triage" if issue has no assignee
+      - name: "Add 'Status: Needs Triage' if issue has no assignee"
         if: ${{ github.event.issue.assignee == null }}
         uses: actions-ecosystem/action-add-labels@v1
         with:
-          labels: needs-triage
+          labels: "Status: Needs Triage"
