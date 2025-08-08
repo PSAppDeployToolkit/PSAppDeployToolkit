@@ -54,16 +54,30 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Get the command line for the process. Failing that, just get the image path.
-                string? imageName = null;
                 try
                 {
                     commandLine = CommandLineUtilities.CommandLineToArgumentList(GetProcessCommandLine(process.Id)).ToArray();
+                    if (commandLine.Length > 0)
+                    {
+                        if (!Path.GetExtension(commandLine[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            commandLine = (new[] { GetProcessImageName(process.Id, ntPathLookupTable) }).Concat(commandLine).ToArray();
+                        }
+                        else if (!Path.IsPathRooted(commandLine[0]) || !File.Exists(commandLine[0]))
+                        {
+                            commandLine[0] = GetProcessImageName(process.Id, ntPathLookupTable);
+                        }
+                    }
+                    else
+                    {
+                        commandLine = [GetProcessImageName(process.Id, ntPathLookupTable)];
+                    }
                 }
                 catch
                 {
                     try
                     {
-                        commandLine = [imageName = GetProcessImageName(process.Id, ntPathLookupTable)];
+                        commandLine = [GetProcessImageName(process.Id, ntPathLookupTable)];
                     }
                     catch
                     {
@@ -73,12 +87,6 @@ namespace PSADT.ProcessManagement
                         }
                         return [];
                     }
-                }
-
-                // If the command line process path isn't fully qualified, try to resolve it using the process image name.
-                if (!Path.IsPathRooted(commandLine[0]) && null == imageName)
-                {
-                    commandLine[0] = GetProcessImageName(process.Id, ntPathLookupTable);
                 }
 
                 // Cache and return the command line.
