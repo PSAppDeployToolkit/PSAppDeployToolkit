@@ -269,12 +269,12 @@ namespace PSADT.ProcessManagement
                 };
                 if (null != launchInfo.WindowStyle)
                 {
-                    startupInfo.nShow = (int)launchInfo.WindowStyle.Value;
+                    startupInfo.nShow = launchInfo.WindowStyle.Value;
                 }
                 if (launchInfo.CreateNoWindow)
                 {
                     startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
-                    startupInfo.nShow = (int)Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE;
+                    startupInfo.nShow = SHOW_WINDOW_CMD.SW_HIDE;
                 }
 
                 // Start the process and assign it to the job object if we have a handle.

@@ -10,7 +10,7 @@ namespace PSADT.LibraryInterfaces
     /// commands are typically used with functions that manipulate window visibility and state,  such as showing,
     /// hiding, minimizing, or maximizing a window. Each command corresponds to a specific action or state change for a
     /// window.</remarks>
-    public enum SHOW_WINDOW_CMD
+    public enum SHOW_WINDOW_CMD : int
     {
         /// <summary>
         /// Hides the window and activates another window.

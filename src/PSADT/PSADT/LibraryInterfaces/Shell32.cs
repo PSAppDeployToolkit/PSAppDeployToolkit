@@ -66,7 +66,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Flags that specify how an application is to be shown when it is opened.
             /// </summary>
-            internal int nShow;
+            internal SHOW_WINDOW_CMD nShow;
 
             /// <summary>
             /// Handle to the application that is calling the ShellExecuteEx function.
