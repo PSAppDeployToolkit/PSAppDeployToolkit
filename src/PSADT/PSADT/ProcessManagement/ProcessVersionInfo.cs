@@ -94,7 +94,7 @@ namespace PSADT.ProcessManagement
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
 
             // Set initial values. This is the minimum required to create a valid ProcessVersionInfo object.
-            FileName = !string.IsNullOrWhiteSpace(filePath) ? filePath! : ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable ?? FileSystemUtilities.GetNtPathLookupTable());
+            FileName = !string.IsNullOrWhiteSpace(filePath) ? filePath! : ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable ?? FileSystemUtilities.GetNtPathLookupTable());
             Process = process;
 
             // Get the main module base address and read the version resource from memory.

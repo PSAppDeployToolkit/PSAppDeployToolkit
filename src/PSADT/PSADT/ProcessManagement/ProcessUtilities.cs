@@ -7,11 +7,16 @@ using System.Linq;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
+using PSADT.SafeHandles;
 using PSADT.Security;
+using Windows.Wdk.System.Threading;
 using Windows.Win32.System.Services;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
 {
@@ -52,13 +57,13 @@ namespace PSADT.ProcessManagement
                 string? imageName = null;
                 try
                 {
-                    commandLine = CommandLineUtilities.CommandLineToArgumentList(ProcessTools.GetProcessCommandLine(process.Id)).ToArray();
+                    commandLine = CommandLineUtilities.CommandLineToArgumentList(GetProcessCommandLine(process.Id)).ToArray();
                 }
                 catch
                 {
                     try
                     {
-                        commandLine = [imageName = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable)];
+                        commandLine = [imageName = GetProcessImageName(process.Id, ntPathLookupTable)];
                     }
                     catch
                     {
@@ -73,7 +78,7 @@ namespace PSADT.ProcessManagement
                 // If the command line process path isn't fully qualified, try to resolve it using the process image name.
                 if (!Path.IsPathRooted(commandLine[0]) && null == imageName)
                 {
-                    commandLine[0] = ProcessTools.GetProcessImageName(process.Id, ntPathLookupTable);
+                    commandLine[0] = GetProcessImageName(process.Id, ntPathLookupTable);
                 }
 
                 // Cache and return the command line.
@@ -236,5 +241,67 @@ namespace PSADT.ProcessManagement
             }
             return procs.AsReadOnly();
         }
+
+        /// <summary>
+        /// Retrieves the command line arguments of a process given its process ID.
+        /// </summary>
+        /// <param name="processId"></param>
+        /// <returns></returns>
+        public static string GetProcessCommandLine(int processId)
+        {
+            // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
+            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, SafeMemoryHandle.Null, out var requiredLength);
+
+            // Fill the buffer, then retrieve the actual command line string.
+            var buffer = SafeHGlobalHandle.Alloc((int)requiredLength);
+            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
+            return buffer.ToStructure<UNICODE_STRING>().Buffer.ToString().TrimRemoveNull();
+        }
+
+        /// <summary>
+        /// Retrieves the image name of a process given its process ID.
+        /// </summary>
+        /// <param name="processId"></param>
+        /// <param name="ntPathLookupTable"></param>
+        /// <returns></returns>
+        internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        {
+            // Set up initial buffer that we need to query the process information.
+            var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)processId };
+            var processIdInfoSize = Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
+            using (var processIdInfoPtr = SafeHGlobalHandle.Alloc(processIdInfoSize).FromStructure(processIdInfo, false))
+            {
+                // Perform initial query so we can reallocate with the required length.
+                NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+                processIdInfo = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
+                using (var imageNamePtr = SafeHGlobalHandle.Alloc(processIdInfo.ImageName.MaximumLength))
+                {
+                    // Assign the ImageName buffer and perform the query again.
+                    processIdInfo.ImageName.Buffer = imageNamePtr.ToPWSTR();
+                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
+                    var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
+
+                    // If we have a lookup table, replace the NT path with the drive letter before returning.
+                    if (ntPathLookupTable != null)
+                    {
+                        var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                        if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
+                        {
+                            throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imagePath}].");
+                        }
+                        return imagePath.Replace(ntDeviceName, driveLetter);
+                    }
+                    return imagePath;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the image name of a process given its process ID.
+        /// </summary>
+        /// <param name="processId"></param>
+        /// <returns></returns>
+        public static string GetProcessImageName(int processId) => GetProcessImageName(processId, null);
     }
 }
