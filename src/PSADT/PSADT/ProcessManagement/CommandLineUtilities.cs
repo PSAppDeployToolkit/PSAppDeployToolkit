@@ -63,10 +63,10 @@ namespace PSADT.ProcessManagement
         /// <see cref="CommandLineToArgumentList(string)"/>, will yield the original arguments.
         /// Special characters are properly escaped according to Windows conventions.
         /// </remarks>
-        public static string? ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
+        public static string ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
         {
             // Consider a null or empty argument list as an error.
-            if (null == argv || argv.Count() == 0)
+            if (null == argv || argv.Count() == 0 || argv.Any(string.IsNullOrWhiteSpace))
             {
                 throw new ArgumentNullException(nameof(argv));
             }
@@ -89,7 +89,7 @@ namespace PSADT.ProcessManagement
                     sb.Append(' ');
                 }
             }
-            return sb.ToString().TrimRemoveNull() is string commandLine && commandLine.Length > 0 ? commandLine : null;
+            return sb.ToString().TrimRemoveNull();
         }
 
         /// <summary>
