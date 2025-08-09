@@ -280,24 +280,32 @@ function Start-ADTProcessAsUser
 
     begin
     {
-        # Test whether there's a proper username to proceed with.
-        if (!$Username)
-        {
-            $naerParams = @{
-                Exception = [System.ArgumentNullException]::new('Username', "There is no logged on user to run a new process as.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'NoActiveUserError'
-                TargetObject = $Username
-                RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-        $PSBoundParameters.Username = $Username
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
+        # Test whether there's a proper username to proceed with.
+        if (!$Username)
+        {
+            try
+            {
+                $naerParams = @{
+                    Exception = [System.ArgumentNullException]::new('Username', "There is no logged on user to run a new process as.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId = 'NoActiveUserError'
+                    TargetObject = $Username
+                    RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
+                }
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+            }
+            catch
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            }
+        }
+        $PSBoundParameters.Username = $Username
+
         # Just farm it out to Start-ADTProcess as it can do it all.
         try
         {
