@@ -127,26 +127,17 @@ namespace PSADT.ClientServer
                                 ptstrName = new PWSTR(pinnedUserSid.DangerousGetHandle())
                             }
                         };
-                        AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
+                        AdvApi32.SetEntriesInAcl([ea], IntPtr.Zero, out var pAcl);
 
                         // Set process owner to the caller and apply the ACL.
-                        byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
-                        using (SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid))
-                        using (pAcl)
+                        try
                         {
-                            bool pinnedCallerSidAddRef = false;
-                            try
-                            {
-                                pinnedCallerSid.DangerousAddRef(ref pinnedCallerSidAddRef);
-                                AdvApi32.SetSecurityInfo(_clientProcess!.Process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
-                            }
-                            finally
-                            {
-                                if (pinnedCallerSidAddRef)
-                                {
-                                    pinnedCallerSid.DangerousRelease();
-                                }
-                            }
+                            byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
+                            AdvApi32.SetSecurityInfo(_clientProcess!.Process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, callerSid, null, pAcl, IntPtr.Zero);
+                        }
+                        finally
+                        {
+                            Kernel32.LocalFree((HLOCAL)pAcl);
                         }
                     }
                     finally

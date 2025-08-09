@@ -419,32 +419,16 @@ namespace PSADT.LibraryInterfaces
         /// <param name="OldAcl"></param>
         /// <param name="NewAcl"></param>
         /// <returns></returns>
-        internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
+        internal unsafe static WIN32_ERROR SetEntriesInAcl([In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl)
         {
-            bool OldAclAddRef = false;
-            try
+            [DllImport("advapi32.dll", SetLastError = true)]
+            static extern WIN32_ERROR SetEntriesInAcl(uint cCountOfExplicitEntries, [In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl);
+            var res = SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntries, OldAcl, out NewAcl);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                ACL? oldAcl = null;
-                if (OldAcl is not null && !OldAcl.IsClosed)
-                {
-                    OldAcl.DangerousAddRef(ref OldAclAddRef);
-                    oldAcl = *(ACL*)OldAcl.DangerousGetHandle().ToPointer();
-                }
-                var res = PInvoke.SetEntriesInAcl(pListOfExplicitEntries, oldAcl, out var pNewAcl);
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-                }
-                NewAcl = new LocalFreeSafeHandle((IntPtr)pNewAcl, true);
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
-            finally
-            {
-                if (OldAclAddRef)
-                {
-                    OldAcl?.DangerousRelease();
-                }
-            }
+            return res;
         }
 
         /// <summary>
@@ -453,46 +437,21 @@ namespace PSADT.LibraryInterfaces
         /// <param name="handle"></param>
         /// <param name="ObjectType"></param>
         /// <param name="SecurityInfo"></param>
-        /// <param name="psidOwner"></param>
-        /// <param name="psidGroup"></param>
-        /// <param name="pDacl"></param>
-        /// <param name="pSacl"></param>
+        /// <param name="owner"></param>
+        /// <param name="group"></param>
+        /// <param name="dacl"></param>
+        /// <param name="sacl"></param>
         /// <returns></returns>
-        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl)
         {
-            bool pDaclAddRef = false;
-            bool pSaclAddRef = false;
-            try
+            [DllImport("advapi32.dll", SetLastError = true)]
+            static extern WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl);
+            var res = SetSecurityInfo(handle, ObjectType, SecurityInfo, owner, group, dacl, sacl);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                ACL? dacl = null; ACL? sacl = null;
-                if (pDacl is not null && !pDacl.IsClosed)
-                {
-                    pDacl.DangerousAddRef(ref pDaclAddRef);
-                    dacl = *(ACL*)pDacl.DangerousGetHandle().ToPointer();
-                }
-                if (pSacl is not null && !pSacl.IsClosed)
-                {
-                    pSacl.DangerousAddRef(ref pSaclAddRef);
-                    sacl = *(ACL*)pSacl.DangerousGetHandle().ToPointer();
-                }
-                var res = PInvoke.SetSecurityInfo(handle, ObjectType, SecurityInfo, psidOwner, psidGroup, dacl, sacl);
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
-            finally
-            {
-                if (pDaclAddRef)
-                {
-                    pDacl?.DangerousRelease();
-                }
-                if (pSaclAddRef)
-                {
-                    pSacl?.DangerousRelease();
-                }
-            }
+            return res;
         }
     }
 }

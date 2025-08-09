@@ -778,5 +778,20 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Frees a block of memory allocated by the LocalAlloc function.
+        /// </summary>
+        /// <param name="hMem"></param>
+        /// <returns></returns>
+        internal static HLOCAL LocalFree(HLOCAL hMem)
+        {
+            var res = PInvoke.LocalFree(hMem);
+            if (!res.IsNull)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return hMem;
+        }
     }
 }
