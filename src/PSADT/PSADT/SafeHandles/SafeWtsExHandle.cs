@@ -27,7 +27,7 @@ namespace PSADT.SafeHandles
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            handle = IntPtr.Zero;
+            handle = default;
             return res;
         }
 

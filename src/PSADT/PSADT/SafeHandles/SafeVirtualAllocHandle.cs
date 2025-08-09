@@ -78,6 +78,7 @@ namespace PSADT.SafeHandles
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            handle = default;
             return res;
         }
     }

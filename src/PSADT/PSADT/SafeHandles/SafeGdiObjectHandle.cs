@@ -1,5 +1,4 @@
 ﻿using System;
-using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
 
@@ -28,7 +27,7 @@ namespace PSADT.SafeHandles
             var res = PInvoke.DeleteObject((HGDIOBJ)handle);
             if (!res)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                throw new InvalidOperationException("Failed to delete GDI object handle.");
             }
             handle = default;
             return res;

@@ -49,8 +49,13 @@ namespace PSADT.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
+            if (handle == default || IntPtr.Zero == handle)
+            {
+                return true;
+            }
             PInvoke.DeleteProcThreadAttributeList((LPPROC_THREAD_ATTRIBUTE_LIST)handle);
             Marshal.FreeHGlobal(handle);
+            handle = default;
             return true;
         }
     }
