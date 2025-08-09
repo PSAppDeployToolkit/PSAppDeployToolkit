@@ -68,6 +68,12 @@ namespace PSADT.ProcessManagement
                 FilePath = filePath;
             }
 
+            // Validate the file path is rooted.
+            if (!Path.IsPathRooted(FilePath))
+            {
+                throw new ArgumentException("File path must be fully qualified.", nameof(filePath));
+            }
+
             // Validate all nullable parameters.
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
