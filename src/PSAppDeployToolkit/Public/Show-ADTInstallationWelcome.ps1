@@ -720,6 +720,7 @@ function Show-ADTInstallationWelcome
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $initialized = $false
+        $retries = 0
 
         # Log the deprecation of -NoMinimizeWindows to the log.
         if ($PSBoundParameters.ContainsKey('NoMinimizeWindows'))
@@ -775,7 +776,20 @@ function Show-ADTInstallationWelcome
             }
 
             # Show the dialog and return the result.
-            return Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType CloseAppsDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+            try
+            {
+                return Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType CloseAppsDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+            }
+            catch [System.ApplicationException]
+            {
+                if ($retries -ge 3)
+                {
+                    throw
+                }
+                Write-ADTLogEntry -Message "The client/server process was terminated unexpectedly. Retrying [$((++(Get-Variable -Name retries).Value))/3] times..."
+                (Get-Variable -Name initialized).Value = $false
+                return "TerminatedTryAgain"
+            }
         }
 
         # Internal worker function for updating the deferral history.
@@ -1183,7 +1197,7 @@ function Show-ADTInstallationWelcome
                                 Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                             }
                         }
-                        else
+                        elseif (!$promptResult.Equals('TerminatedTryAgain'))
                         {
                             # We should never get here. It means the dialog result we received was entirely unexpected.
                             $naerParams = @{
