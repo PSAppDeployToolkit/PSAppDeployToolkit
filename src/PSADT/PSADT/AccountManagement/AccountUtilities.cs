@@ -54,7 +54,7 @@ namespace PSADT.AccountManagement
             // Determine if the caller is the local system account.
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
-            CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));   
+            CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
