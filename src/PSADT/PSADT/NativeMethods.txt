@@ -286,11 +286,13 @@ SendMessage
 SendMessageTimeout
 SetActiveWindow
 SetCurrentProcessExplicitAppUserModelID
+SetEntriesInAcl
 SetFocus
 SetForegroundWindow
 SetInformationJobObject
 SetLastError
 SetPriorityClass
+SetSecurityInfo
 SHChangeNotify
 SHGetImageList
 SHGFI_FLAGS

@@ -5,8 +5,9 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
-using Windows.Win32.Security;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
+using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
@@ -409,6 +410,89 @@ namespace PSADT.LibraryInterfaces
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
+        }
+
+        /// <summary>
+        /// Creates a new access control list (ACL) by merging new access control or audit control information into an existing ACL structure.
+        /// </summary>
+        /// <param name="pListOfExplicitEntries"></param>
+        /// <param name="OldAcl"></param>
+        /// <param name="NewAcl"></param>
+        /// <returns></returns>
+        internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
+        {
+            bool OldAclAddRef = false;
+            try
+            {
+                ACL? oldAcl = null;
+                if (OldAcl is not null && !OldAcl.IsClosed)
+                {
+                    OldAcl.DangerousAddRef(ref OldAclAddRef);
+                    oldAcl = *(ACL*)OldAcl.DangerousGetHandle().ToPointer();
+                }
+                var res = PInvoke.SetEntriesInAcl(pListOfExplicitEntries, oldAcl, out var pNewAcl);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                }
+                NewAcl = new LocalFreeSafeHandle((IntPtr)pNewAcl, true);
+                return res;
+            }
+            finally
+            {
+                if (OldAclAddRef)
+                {
+                    OldAcl?.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets specified security information in the security descriptor of a specified object. The caller identifies the object by a handle.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="ObjectType"></param>
+        /// <param name="SecurityInfo"></param>
+        /// <param name="psidOwner"></param>
+        /// <param name="psidGroup"></param>
+        /// <param name="pDacl"></param>
+        /// <param name="pSacl"></param>
+        /// <returns></returns>
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
+        {
+            bool pDaclAddRef = false;
+            bool pSaclAddRef = false;
+            try
+            {
+                ACL? dacl = null; ACL? sacl = null;
+                if (pDacl is not null && !pDacl.IsClosed)
+                {
+                    pDacl.DangerousAddRef(ref pDaclAddRef);
+                    dacl = *(ACL*)pDacl.DangerousGetHandle().ToPointer();
+                }
+                if (pSacl is not null && !pSacl.IsClosed)
+                {
+                    pSacl.DangerousAddRef(ref pSaclAddRef);
+                    sacl = *(ACL*)pSacl.DangerousGetHandle().ToPointer();
+                }
+                var res = PInvoke.SetSecurityInfo(handle, ObjectType, SecurityInfo, psidOwner, psidGroup, dacl, sacl);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                }
+                return res;
+            }
+            finally
+            {
+                if (pDaclAddRef)
+                {
+                    pDacl?.DangerousRelease();
+                }
+                if (pSaclAddRef)
+                {
+                    pSacl?.DangerousRelease();
+                }
+            }
         }
     }
 }

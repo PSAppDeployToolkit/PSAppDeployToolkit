@@ -8,14 +8,21 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PSADT.AccountManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
+using PSADT.SafeHandles;
+using PSADT.Security;
 using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.WindowManagement;
+using Windows.Win32.Foundation;
+using Windows.Win32.Security;
+using Windows.Win32.Security.Authorization;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.ClientServer
 {
@@ -90,6 +97,66 @@ namespace PSADT.ClientServer
                 _outputServer.DisposeLocalCopyOfClientHandle();
                 _inputServer.DisposeLocalCopyOfClientHandle();
                 _logServer.DisposeLocalCopyOfClientHandle();
+            }
+
+            // If the process is being launched as a different user, modify the process security.
+            if (AccountUtilities.CallerUsername != Username && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
+            {
+                // Ensure the caller has the necessary privileges to modify process security.
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+
+                // Create a restricted access control list (ACL) for the client process and set it.
+                var userIdentifier = (SecurityIdentifier)Username.Translate(typeof(SecurityIdentifier));
+                byte[] userSid = new byte[userIdentifier.BinaryLength]; userIdentifier.GetBinaryForm(userSid, 0);
+                using (SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid))
+                {
+                    bool pinnedUserSidAddRef = false;
+                    try
+                    {
+                        // Generate an explicit access control entry (ACE) for the user SID.
+                        pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
+                        var ea = new EXPLICIT_ACCESS_W
+                        {
+                            grfAccessPermissions = (uint)(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),
+                            grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
+                            grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                            Trustee = new TRUSTEE_W
+                            {
+                                TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
+                                ptstrName = new PWSTR(pinnedUserSid.DangerousGetHandle())
+                            }
+                        };
+                        AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
+
+                        // Set process owner to the caller and apply the ACL.
+                        byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
+                        using (SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid))
+                        using (pAcl)
+                        {
+                            bool pinnedCallerSidAddRef = false;
+                            try
+                            {
+                                pinnedCallerSid.DangerousAddRef(ref pinnedCallerSidAddRef);
+                                AdvApi32.SetSecurityInfo(_clientProcess!.Process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
+                            }
+                            finally
+                            {
+                                if (pinnedCallerSidAddRef)
+                                {
+                                    pinnedCallerSid.DangerousRelease();
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        if (pinnedUserSidAddRef)
+                        {
+                            pinnedUserSid.DangerousRelease();
+                        }
+                    }
+                }
             }
 
             // Confirm the client starts and is ready to receive commands.
