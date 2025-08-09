@@ -141,12 +141,6 @@ namespace PSADT.SafeHandles
         internal unsafe void Clear() => new Span<byte>(handle.ToPointer(), Length).Clear();
 
         /// <summary>
-        /// Converts the handle to a <see cref="PWSTR"/> structure.
-        /// </summary>
-        /// <returns></returns>
-        internal PWSTR ToPWSTR() => new(handle);
-
-        /// <summary>
         /// Releases the handle and frees the allocated memory.
         /// </summary>
         /// <returns></returns>
