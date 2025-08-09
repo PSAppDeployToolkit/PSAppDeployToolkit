@@ -338,8 +338,24 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Call the underlying function to open the message prompt.
-                Write-ADTLogEntry -Message "Displaying custom installation prompt with message: [$Message]."
-                $result = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', $null) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                Write-ADTLogEntry -Message "Displaying custom installation prompt with message: [$Message]."; $retries = 0
+                do
+                {
+                    $result = try
+                    {
+                        Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', $null) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                    }
+                    catch [System.ApplicationException]
+                    {
+                        if ($retries -ge 3)
+                        {
+                            throw
+                        }
+                        Write-ADTLogEntry -Message "The client/server process was terminated unexpectedly. Retrying [$((++$retries))/3] times..."
+                        "TerminatedTryAgain"
+                    }
+                }
+                until (!$result.Equals('TerminatedTryAgain'))
 
                 # Process results.
                 if ($result -eq 'Timeout')

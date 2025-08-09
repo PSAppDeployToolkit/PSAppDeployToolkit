@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using PSADT.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.SystemInformation;
@@ -32,15 +33,8 @@ namespace PSADT.FileSystem
             }
             static T ReadStruct<T>(BinaryReader reader) where T : struct
             {
-                var handle = GCHandle.Alloc(reader.ReadBytes(Marshal.SizeOf<T>()), GCHandleType.Pinned);
-                try
-                {
-                    return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-                }
-                finally
-                {
-                    handle.Free();
-                }
+                using var handle = SafePinnedGCHandle.Alloc(reader.ReadBytes(Marshal.SizeOf<T>()));
+                return handle.ToStructure<T>();
             }
 
             // Read the DOS header and check for the PE signature.

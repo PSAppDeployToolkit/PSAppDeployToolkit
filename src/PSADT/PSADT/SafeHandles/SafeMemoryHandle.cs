@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.Win32.Foundation;
 
 namespace PSADT.SafeHandles
 {
@@ -56,15 +54,8 @@ namespace PSADT.SafeHandles
         {
             // Pin unconditionally to be safe across both .NET Framework 4.7.2 and .NET 8.
             // Marshal.StructureToPtr can be unsafe when structs contain reference types.
-            var gchandle = GCHandle.Alloc(structure, GCHandleType.Pinned);
-            try
-            {
-                Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
-            }
-            finally
-            {
-                gchandle.Free();
-            }
+            using var gchandle = SafePinnedGCHandle.Alloc(structure);
+            Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
             return this;
         }
 
@@ -139,12 +130,6 @@ namespace PSADT.SafeHandles
         /// Clears the memory block by setting all bytes to zero.
         /// </summary>
         internal unsafe void Clear() => new Span<byte>(handle.ToPointer(), Length).Clear();
-
-        /// <summary>
-        /// Converts the handle to a <see cref="PWSTR"/> structure.
-        /// </summary>
-        /// <returns></returns>
-        internal PWSTR ToPWSTR() => new(handle);
 
         /// <summary>
         /// Releases the handle and frees the allocated memory.

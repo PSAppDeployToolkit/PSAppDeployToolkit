@@ -5,8 +5,9 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
-using Windows.Win32.Security;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
+using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
@@ -407,6 +408,48 @@ namespace PSADT.LibraryInterfaces
             if (!res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0))
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Creates a new access control list (ACL) by merging new access control or audit control information into an existing ACL structure.
+        /// </summary>
+        /// <param name="pListOfExplicitEntries"></param>
+        /// <param name="OldAcl"></param>
+        /// <param name="NewAcl"></param>
+        /// <returns></returns>
+        internal unsafe static WIN32_ERROR SetEntriesInAcl([In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl)
+        {
+            [DllImport("advapi32.dll", SetLastError = true)]
+            static extern WIN32_ERROR SetEntriesInAcl(uint cCountOfExplicitEntries, [In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl);
+            var res = SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntries, OldAcl, out NewAcl);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Sets specified security information in the security descriptor of a specified object. The caller identifies the object by a handle.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="ObjectType"></param>
+        /// <param name="SecurityInfo"></param>
+        /// <param name="owner"></param>
+        /// <param name="group"></param>
+        /// <param name="dacl"></param>
+        /// <param name="sacl"></param>
+        /// <returns></returns>
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl)
+        {
+            [DllImport("advapi32.dll", SetLastError = true)]
+            static extern WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl);
+            var res = SetSecurityInfo(handle, ObjectType, SecurityInfo, owner, group, dacl, sacl);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
             return res;
         }

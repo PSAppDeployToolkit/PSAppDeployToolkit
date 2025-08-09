@@ -285,22 +285,35 @@ namespace PSADT.ProcessManagement
                 processIdInfo = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
                 using (var imageNamePtr = SafeHGlobalHandle.Alloc(processIdInfo.ImageName.MaximumLength))
                 {
-                    // Assign the ImageName buffer and perform the query again.
-                    processIdInfo.ImageName.Buffer = imageNamePtr.ToPWSTR();
-                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
-                    var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
-
-                    // If we have a lookup table, replace the NT path with the drive letter before returning.
-                    if (ntPathLookupTable != null)
+                    bool imageNamePtrAddRef = false;
+                    try
                     {
-                        var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                        if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
+                        // Assign the ImageName buffer and perform the query again.
+                        imageNamePtr.DangerousAddRef(ref imageNamePtrAddRef);
+                        processIdInfo.ImageName.Buffer = new PWSTR(imageNamePtr.DangerousGetHandle());
+                        NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
+                        var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
+                        processIdInfo.ImageName.Buffer = null;
+
+                        // If we have a lookup table, replace the NT path with the drive letter before returning.
+                        if (ntPathLookupTable != null)
                         {
-                            throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imagePath}].");
+                            var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                            if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
+                            {
+                                throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imagePath}].");
+                            }
+                            return imagePath.Replace(ntDeviceName, driveLetter);
                         }
-                        return imagePath.Replace(ntDeviceName, driveLetter);
+                        return imagePath;
                     }
-                    return imagePath;
+                    finally
+                    {
+                        if (imageNamePtrAddRef)
+                        {
+                            imageNamePtr.DangerousRelease();
+                        }
+                    }
                 }
             }
         }
