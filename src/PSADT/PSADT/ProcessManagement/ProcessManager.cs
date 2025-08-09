@@ -200,15 +200,28 @@ namespace PSADT.ProcessManagement
                         }
 
                         // Start the process with the user's token.
-                        using (var lpDesktop = SafeHGlobalHandle.StringToUni(@"winsta0\default"))
                         using (hPrimaryToken)
                         {
                             // Without creating an environment block, the process will take on the environment of the SYSTEM account.
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                            using (var lpDesktop = SafeHGlobalHandle.StringToUni(@"winsta0\default"))
                             using (lpEnvironment)
                             {
-                                OutLaunchArguments(launchInfo, session.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray(); startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
+                                bool lpDesktopAddRef = false;
+                                try
+                                {
+                                    startupInfo.lpDesktop = new PWSTR(lpDesktop.DangerousGetHandle());
+                                    OutLaunchArguments(launchInfo, session.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
+                                    CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
+                                    startupInfo.lpDesktop = null;
+                                }
+                                finally
+                                {
+                                    if (lpDesktopAddRef)
+                                    {
+                                        lpDesktop.DangerousRelease();
+                                    }
+                                }
                             }
                         }
                     }
