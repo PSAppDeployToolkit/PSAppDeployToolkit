@@ -302,6 +302,7 @@ function Start-ADTProcessAsUser
             catch
             {
                 Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                return
             }
         }
         $PSBoundParameters.Username = $Username
