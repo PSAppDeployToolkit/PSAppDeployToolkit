@@ -164,6 +164,7 @@ OpenProcessToken
 OpenSCManager
 OpenService
 OSVERSIONINFOEXW
+PostQueuedCompletionStatus
 PROC_THREAD_ATTRIBUTE_NUM
 PROC_THREAD_ATTRIBUTE_NUMBER
 PROC_THREAD_ATTRIBUTE_THREAD
@@ -345,7 +346,6 @@ VerQueryValue
 VS_FIXEDFILEINFO
 VirtualAlloc
 VirtualFree
-WaitForMultipleObjects
 WaitForSingleObject
 Windows.Win32.UI.Controls.IImageList
 WM_NULL
