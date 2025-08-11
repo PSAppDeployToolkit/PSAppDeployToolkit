@@ -269,34 +269,42 @@ namespace PSADT.ProcessManagement
             {
                 // Build the command line for the process.
                 OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out var arguments, out commandLine, out string? workingDirectory);
-
-                // Set up the shell execute info structure.
-                var startupInfo = new Shell32.SHELLEXECUTEINFO
+                process = new Process
                 {
-                    cbSize = (uint)Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
-                    fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
-                    lpVerb = launchInfo.Verb,
-                    lpFile = filePath,
-                    lpParameters = arguments,
-                    lpDirectory = workingDirectory,
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        Arguments = arguments,
+                        WorkingDirectory = workingDirectory,
+                        UseShellExecute = launchInfo.UseShellExecute,
+                        Verb = launchInfo.Verb,
+                    }
                 };
-                if (null != launchInfo.WindowStyle)
+                if (null != launchInfo.ProcessWindowStyle)
                 {
-                    startupInfo.nShow = launchInfo.WindowStyle.Value;
+                    process.StartInfo.WindowStyle = launchInfo.ProcessWindowStyle.Value;
                 }
                 if (launchInfo.CreateNoWindow)
                 {
-                    startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
-                    startupInfo.nShow = SHOW_WINDOW_CMD.SW_HIDE;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 }
 
-                // Start the process and assign it to the job object if we have a handle.
-                Shell32.ShellExecuteEx(ref startupInfo);
-                if (startupInfo.hProcess != IntPtr.Zero)
+                // Start the process and try to get the process's handle.
+                // For a pure shell action, we won't ever be able to get one.
+                process.Start();
+                try
                 {
-                    hProcess = new(startupInfo.hProcess, true);
-                    processId = Kernel32.GetProcessId(hProcess);
-                    process = GetProcessFromId(processId.Value);
+                    hProcess = process.SafeHandle;
+                }
+                catch
+                {
+                    hProcess = null;
+                }
+
+                // Assign the handle to the job object if we have one.
+                if (null != hProcess)
+                {
+                    processId = (uint)process.Id;
                     Kernel32.AssignProcessToJobObject(job, hProcess);
                     if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
