@@ -12,6 +12,7 @@ using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -67,7 +68,7 @@ namespace PSADT.ProcessManagement
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1);
-            var job = Kernel32.CreateJobObject(null, default); bool iocpAddRefOuter = false; iocp.DangerousAddRef(ref iocpAddRefOuter);
+            var job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
             Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
 
             // Set up the required job limit if child processes must be killed with the parent.
@@ -323,38 +324,41 @@ namespace PSADT.ProcessManagement
             TaskCompletionSource<ProcessResult> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
             Task.Run(async () =>
             {
-                bool ctsAddRef = false;
-                bool iocpAddRefInner = false;
+                // Set up the cancellation token source and registration if needed.
+                uint timeoutExitCode = ValueTypeConverter<uint>.Convert(TimeoutExitCode);
+                CancellationTokenRegistration ctr = default;
+                if (null != launchInfo.CancellationToken)
+                {
+                    ctr = launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, UIntPtr.Zero, null));
+                }
+
+                // Spin until complete or cancelled.
+                bool disposeJob = true;
                 try
                 {
-                    iocp.DangerousAddRef(ref iocpAddRefInner);
-                    launchInfo.CancellationToken?.WaitHandle.SafeWaitHandle.DangerousAddRef(ref ctsAddRef);
-                    ReadOnlySpan<HANDLE> handles = null != launchInfo.CancellationToken ? [(HANDLE)iocp.DangerousGetHandle(), (HANDLE)launchInfo.CancellationToken.Value.WaitHandle.SafeWaitHandle.DangerousGetHandle()] : [(HANDLE)iocp.DangerousGetHandle()];
                     while (true)
                     {
-                        var index = (uint)Kernel32.WaitForMultipleObjects(handles, false, PInvoke.INFINITE);
-                        if (index == 0)
-                        {
-                            Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
-                            if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && lpOverlapped.ToInt32() == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
-                            {
-                                await Task.WhenAll(hStdOutTask, hStdErrTask);
-                                Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                tcs.SetResult(new(process, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
-                                break;
-                            }
-                        }
-                        else if (index == 1)
+                        Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
+                        if (lpCompletionCode == timeoutExitCode)
                         {
                             if (launchInfo.NoTerminateOnTimeout)
                             {
+                                if (launchInfo.KillChildProcessesWithParent)
+                                {
+                                    disposeJob = false;
+                                }
+                                tcs.SetResult(new(process, launchInfo, commandLine, TimeoutExitCode, stdout, stderr, interleaved));
                                 break;
                             }
-                            Kernel32.TerminateJobObject(job, ValueTypeConverter<uint>.Convert(TimeoutExitCode));
+                            Kernel32.TerminateJobObject(job, timeoutExitCode);
+                            continue;
                         }
-                        else
+                        if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                         {
-                            throw new InvalidOperationException($"An invalid result was received while waiting for post-launch handles. Result: {index}");
+                            await Task.WhenAll(hStdOutTask, hStdErrTask);
+                            Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
+                            tcs.SetResult(new(process, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
+                            break;
                         }
                     }
                 }
@@ -364,21 +368,16 @@ namespace PSADT.ProcessManagement
                 }
                 finally
                 {
-                    if (ctsAddRef)
-                    {
-                        launchInfo.CancellationToken!.Value.WaitHandle.SafeWaitHandle.DangerousRelease();
-                    }
-                    if (iocpAddRefInner)
+                    ctr.Dispose(); hProcess.Dispose();
+                    if (iocpAddRef)
                     {
                         iocp.DangerousRelease();
                     }
-                    if (iocpAddRefOuter)
-                    {
-                        iocp.DangerousRelease();
-                    }
-                    hProcess.Dispose();
                     iocp.Dispose();
-                    job.Dispose();
+                    if (disposeJob)
+                    {
+                        job.Dispose();
+                    }
                 }
             });
 
