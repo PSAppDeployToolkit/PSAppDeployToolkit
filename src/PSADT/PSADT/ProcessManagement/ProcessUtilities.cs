@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -110,8 +111,17 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Skip this process if it's not running anymore.
-                    if (process.HasExited)
+                    try
                     {
+                        if (process.HasExited)
+                        {
+                            continue;
+                        }
+                    }
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
+                    {
+                        // If we can't access the process, skip it. We only need to test this
+                        // once here, it shouldn't be an issue for the remainder of the loop.
                         continue;
                     }
 
