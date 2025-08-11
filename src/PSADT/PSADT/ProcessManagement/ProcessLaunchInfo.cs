@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Diagnostics;
 using System.Security.Principal;
 using System.Threading;
 using System.Collections.Generic;
@@ -53,8 +52,8 @@ namespace PSADT.ProcessManagement
             bool waitForChildProcesses = false,
             bool killChildProcessesWithParent = false,
             Encoding? streamEncoding = null,
-            ProcessWindowStyle? windowStyle = null,
-            ProcessPriorityClass? priorityClass = null,
+            System.Diagnostics.ProcessWindowStyle? windowStyle = null,
+            System.Diagnostics.ProcessPriorityClass? priorityClass = null,
             CancellationToken? cancellationToken = null,
             bool noTerminateOnTimeout = false)
         {
@@ -69,7 +68,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate the file path is rooted.
-            if (!Path.IsPathRooted(FilePath))
+            if (!Path.IsPathRooted(FilePath) && !useShellExecute)
             {
                 throw new ArgumentException("File path must be fully qualified.", nameof(filePath));
             }
@@ -94,6 +93,7 @@ namespace PSADT.ProcessManagement
             if (null != windowStyle)
             {
                 WindowStyle = WindowStyleMap[windowStyle.Value];
+                ProcessWindowStyle = windowStyle.Value;
             }
             if (null != priorityClass)
             {
@@ -107,7 +107,8 @@ namespace PSADT.ProcessManagement
             // Handle the CreateNoWindow parameter.
             if (createNoWindow)
             {
-                WindowStyle = WindowStyleMap[ProcessWindowStyle.Hidden];
+                WindowStyle = WindowStyleMap[System.Diagnostics.ProcessWindowStyle.Hidden];
+                ProcessWindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 CreateNoWindow = true;
             }
 
@@ -127,12 +128,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, SHOW_WINDOW_CMD>
+        private static readonly ReadOnlyDictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD>
         {
-            { ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
-            { ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
-            { ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
-            { ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED }
+            { System.Diagnostics.ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
+            { System.Diagnostics.ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
+            { System.Diagnostics.ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
+            { System.Diagnostics.ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED }
         });
 
         /// <summary>
@@ -216,9 +217,14 @@ namespace PSADT.ProcessManagement
         public readonly SHOW_WINDOW_CMD? WindowStyle;
 
         /// <summary>
+        /// Gets the window style of the process.
+        /// </summary>
+        public readonly System.Diagnostics.ProcessWindowStyle? ProcessWindowStyle;
+
+        /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
-        public readonly ProcessPriorityClass? PriorityClass;
+        public readonly System.Diagnostics.ProcessPriorityClass? PriorityClass;
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.

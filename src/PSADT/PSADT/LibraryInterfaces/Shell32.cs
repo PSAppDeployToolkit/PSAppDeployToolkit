@@ -1,12 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
-using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Storage.FileSystem;
-using Windows.Win32.System.Registry;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -18,94 +14,6 @@ namespace PSADT.LibraryInterfaces
     /// </summary>
     internal static class Shell32
     {
-        /// <summary>
-        /// Execution information for the ShellExecuteEx function.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        internal struct SHELLEXECUTEINFO
-        {
-            /// <summary>
-            /// Size of the structure.
-            /// </summary>
-            internal uint cbSize;
-
-            /// <summary>
-            /// Flags that specify the behavior of the function.
-            /// </summary>
-            internal SEE_MASK_FLAGS fMask;
-
-            /// <summary>
-            /// Handle to the parent window used for displaying a UI or error messages.
-            /// </summary>
-            internal HWND hwnd;
-
-            /// <summary>
-            /// String that specifies the verb for the execution.
-            /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)]
-            internal string? lpVerb;
-
-            /// <summary>
-            /// String that specifies the name of the file or object on which to execute the specified verb.
-            /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)]
-            internal string lpFile;
-
-            /// <summary>
-            /// String that specifies the parameters to be passed to the application.
-            /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)]
-            internal string? lpParameters;
-
-            /// <summary>
-            /// String that specifies the default directory.
-            /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)]
-            internal string? lpDirectory;
-
-            /// <summary>
-            /// Flags that specify how an application is to be shown when it is opened.
-            /// </summary>
-            internal SHOW_WINDOW_CMD nShow;
-
-            /// <summary>
-            /// Handle to the application that is calling the ShellExecuteEx function.
-            /// </summary>
-            internal HINSTANCE hInstApp;
-
-            /// <summary>
-            /// Union member for the ID list.
-            /// </summary>
-            internal IntPtr lpIDList;
-
-            /// <summary>
-            /// String that specifies the class.
-            /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)]
-            internal string? lpClass;
-
-            /// <summary>
-            /// Handle to the key that identifies the file type.
-            /// </summary>
-            internal HKEY hkeyClass;
-
-            /// <summary>
-            /// Flags that specify the input and output values of this structure.
-            /// </summary>
-            internal uint dwHotKey;
-
-            /// <summary>
-            /// Member to the monitor handle when SEE_MASK_HMONITOR is used. This is
-            /// normally a HICON union, but the HICON is only used in Windows XP or less.
-            /// </summary>
-            internal HMONITOR hMonitor;
-
-            /// <summary>
-            /// Handle to the newly started application.
-            /// </summary>
-            internal HANDLE hProcess;
-        }
-
         /// <summary>
         /// Struct for retrieving information about a file, including its icon and display name.
         /// </summary>
@@ -203,24 +111,6 @@ namespace PSADT.LibraryInterfaces
         internal unsafe static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] IntPtr dwItem1, [Optional] IntPtr dwItem2)
         {
             PInvoke.SHChangeNotify(wEventId, uFlags, dwItem1.ToPointer(), dwItem2.ToPointer());
-        }
-
-        /// <summary>
-        /// Invokes an executable or action via the shell.
-        /// </summary>
-        /// <param name="lpExecInfo"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static bool ShellExecuteEx(ref SHELLEXECUTEINFO lpExecInfo)
-        {
-            [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-            static extern bool ShellExecuteExW(ref SHELLEXECUTEINFO lpExecInfo);
-            var res = ShellExecuteExW(ref lpExecInfo);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
         }
 
         /// <summary>
