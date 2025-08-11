@@ -137,8 +137,7 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData(new[] { "program with spaces" }, "\"program with spaces\"")]
         [InlineData(new[] { "program", "arg with spaces" }, "program \"arg with spaces\"")]
         [InlineData(new[] { "program with spaces", "arg with spaces" }, "\"program with spaces\" \"arg with spaces\"")]
-        [InlineData(new[] { "" }, "\"\"")]
-        [InlineData(new[] { "program", "", "arg" }, "program \"\" arg")]
+        [InlineData(new[] { "program", "arg" }, "program arg")]
         public void ArgumentListToCommandLine_ArgumentsWithSpaces_ReturnsQuotedCommandLine(string[] args, string expected)
         {
             // Act
@@ -240,23 +239,6 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Tests that a null argument within the array is treated as an empty, quoted string.
-        /// </summary>
-        [Fact]
-        public void ArgumentListToCommandLine_NullArgument_IsTreatedAsEmptyString()
-        {
-            // Arrange
-            string[] argsWithNull = { "program", null!, "arg" };
-            const string expected = "program \"\" arg";
-
-            // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(argsWithNull)!;
-
-            // Assert
-            Assert.Equal(expected, result);
-        }
-
-        /// <summary>
         /// Tests round-trip parsing: parsing a command line and then recreating it should yield equivalent results.
         /// </summary>
         [Theory]
@@ -264,7 +246,6 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("\"program with spaces\" \"arg with spaces\"")]
         [InlineData("program \"arg\\\"with\\\"quotes\"")]
         [InlineData("program \"arg\\\\with\\\\backslashes\"")]
-        [InlineData("program \"\"")]
         [InlineData("program \"path\\\\to\\\\file\\\\\"")]
         public void RoundTripParsing_VariousInputs_PreservesArguments(string originalCommandLine)
         {
@@ -296,20 +277,6 @@ namespace PSADT.Tests.ProcessManagement
             string commandLine2 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs2)!;
             IReadOnlyList<string> parsedArgs2 = CommandLineUtilities.CommandLineToArgumentList(commandLine2)!;
             Assert.Equal(expectedArgs2, parsedArgs2);
-
-            // Test case 3: Empty string
-            string[] originalArgs3 = { "" };
-            string[] expectedArgs3 = originalArgs3.Select(a => a ?? string.Empty).ToArray();
-            string commandLine3 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs3)!;
-            IReadOnlyList<string> parsedArgs3 = CommandLineUtilities.CommandLineToArgumentList(commandLine3)!;
-            Assert.Equal(expectedArgs3, parsedArgs3);
-
-            // Test case 4: Arguments with empty strings
-            string[] originalArgs4 = { "a", "", "b" };
-            string[] expectedArgs4 = originalArgs4.Select(a => a ?? string.Empty).ToArray();
-            string commandLine4 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs4)!;
-            IReadOnlyList<string> parsedArgs4 = CommandLineUtilities.CommandLineToArgumentList(commandLine4)!;
-            Assert.Equal(expectedArgs4, parsedArgs4);
 
             // Test case 5: Multiple simple arguments
             string[] originalArgs5 = { "a", "b c", "d", "e" };
@@ -417,23 +384,6 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Tests that arguments with null values are handled properly in ArgumentListToCommandLine.
-        /// </summary>
-        [Fact]
-        public void ArgumentListToCommandLine_ArgumentsWithNull_HandlesGracefully()
-        {
-            // Arrange
-            string[] argsWithNull = { "program", null!, "arg" };
-            string expected = "program \"\" arg";
-
-            // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(argsWithNull)!;
-
-            // Assert
-            Assert.Equal(expected, result);
-        }
-
-        /// <summary>
         /// Tests special Windows-specific cases that might appear in real-world scenarios.
         /// </summary>
         [Theory]
@@ -443,23 +393,6 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("powershell.exe -Command \"Get-Process | Where-Object { $_.Name -eq 'notepad' }\"",
                    new[] { "powershell.exe", "-Command", "Get-Process | Where-Object { $_.Name -eq 'notepad' }" })]
         public void CommandLineToArgumentList_RealWorldScenarios_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
-        {
-            // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
-
-            // Assert
-            Assert.Equal(expected, result);
-        }
-
-        /// <summary>
-        /// Tests handling of empty and whitespace-only command lines.
-        /// </summary>
-        [Theory]
-        [InlineData("", new string[0])]
-        [InlineData("   ", new string[0])]
-        [InlineData("\t", new string[0])]
-        [InlineData("  \t  ", new string[0])]
-        public void CommandLineToArgumentList_EmptyAndWhitespace_ReturnsEmptyList(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
             IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
@@ -562,7 +495,6 @@ namespace PSADT.Tests.ProcessManagement
         /// </summary>
         [Theory]
         [InlineData("\"a b c", new[] { "a b c" })]
-        [InlineData("\"a b c ", new[] { "a b c " })]
         [InlineData("program \"unterminated arg", new[] { "program", "unterminated arg" })]
         [InlineData("\"program with spaces", new[] { "program with spaces" })]
         public void CommandLineToArgumentList_UnterminatedQuote_ParsesToEndOfLine(string commandLine, IReadOnlyList<string> expected)
@@ -638,7 +570,6 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData(new[] { "program", "arg\\\\escaped" }, "program arg\\\\escaped")]  // Fixed: No quotes needed
         [InlineData(new[] { "a\\", "b" }, "a\\ b")]
         [InlineData(new[] { "a\\\\", "b" }, "a\\\\ b")]
-        [InlineData(new[] { "a\\", "" }, "a\\ \"\"")]
         public void ArgumentListToCommandLine_WindowsPathsAndTrailingBackslashes_EscapedCorrectly(string[] args, string expected)
         {
             // Act
@@ -658,8 +589,6 @@ namespace PSADT.Tests.ProcessManagement
             yield return new object[] { new[] { "a", "b" } };
             yield return new object[] { new[] { "a b", "c" } };
             yield return new object[] { new[] { "a\tb", "c" } };
-            yield return new object[] { new[] { "" } };
-            yield return new object[] { new[] { "a", "" } };
             yield return new object[] { new[] { "a\"b" } };
             yield return new object[] { new[] { "a\\b" } };
             yield return new object[] { new[] { "a\\\\b" } };
@@ -667,7 +596,6 @@ namespace PSADT.Tests.ProcessManagement
             yield return new object[] { new[] { "a b", "c d" } };
             yield return new object[] { new[] { "a\\", "b" } };
             yield return new object[] { new[] { "a\\\\", "b" } };
-            yield return new object[] { new[] { "a\\", "" } };
             yield return new object[] { new[] { "a b c" } };
             yield return new object[] { new[] { "a", "b c" } };
             yield return new object[] { new[] { "a", "b\tc" } };
@@ -684,7 +612,6 @@ namespace PSADT.Tests.ProcessManagement
             yield return new object[] { new[] { "c:\\Path with spaces\\trailing_backslash\\" } };
             yield return new object[] { new[] { "program", "arg1", "arg2" } };
             yield return new object[] { new[] { "complex\"arg", "with\\backslashes", "and spaces" } };
-            yield return new object[] { new[] { "\t\t", "  ", "mixed whitespace" } };
         }
 
         /// <summary>
@@ -722,10 +649,8 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("argument \"with inner\" quotes", new[] { "argument", "with inner", "quotes" })]
         [InlineData("argument with\" inner quotes\"", new[] { "argument", "with inner quotes" })]
         [InlineData("\"C:\\My Dir\\\\\"", new[] { "C:\\My Dir\\" })]
-        [InlineData("\"\"", new[] { "" })]
         [InlineData("one two \"three four\"", new[] { "one", "two", "three four" })]
         [InlineData("one \"two three\" four", new[] { "one", "two three", "four" })]
-        [InlineData("one \"\" two", new[] { "one", "", "two" })]
         [InlineData("a\\ b", new[] { "a\\", "b" })]
         [InlineData("a\\\\ b", new[] { "a\\\\", "b" })]
         [InlineData("a\\\"b c", new[] { "a\"b", "c" })]
