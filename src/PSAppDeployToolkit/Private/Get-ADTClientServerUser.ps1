@@ -27,7 +27,7 @@ function Private:Get-ADTClientServerUser
         }
 
         # Only return the calculated RunAsActiveUser if the user is still logged on and active as of right now.
-        if (($runAsUserSession = Get-ADTLoggedOnUser -InformationAction SilentlyContinue | & { process { if ($runAsActiveUser.NTAccount.Equals($_.NTAccount)) { return $_ } } } | Select-Object -First 1) -and $runAsUserSession.IsActiveUserSession)
+        if (($runAsUserSession = $(Get-ADTLoggedOnUser -InformationAction SilentlyContinue) | & { process { if ($runAsActiveUser.NTAccount.Equals($_.NTAccount)) { return $_ } } } | Select-Object -First 1) -and $runAsUserSession.IsActiveUserSession)
         {
             return $runAsActiveUser
         }
