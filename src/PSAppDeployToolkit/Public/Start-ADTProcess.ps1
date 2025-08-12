@@ -471,6 +471,8 @@ function Start-ADTProcess
         # Set up initial variables.
         $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo.MyCommand } }
         $extInvoker = !$funcCaller -or !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
+        $SEE_MASK_NOZONECHECKS = [System.Environment]::GetEnvironmentVariable('SEE_MASK_NOZONECHECKS')
+        [System.Environment]::SetEnvironmentVariable('SEE_MASK_NOZONECHECKS', 1)
 
         # Set up cancellation token.
         $cancellationTokenSource = if ($Timeout)
@@ -839,6 +841,7 @@ function Start-ADTProcess
                 $cancellationToken = $null
                 $cancellationTokenSource.Dispose()
             }
+            [System.Environment]::SetEnvironmentVariable('SEE_MASK_NOZONECHECKS', $SEE_MASK_NOZONECHECKS)
         }
     }
 
