@@ -119,31 +119,31 @@
         <# Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
             Language Code    Language
             =============    ========
-            AR               Arabic
-            CZ               Czech
-            DA               Danish
-            DE               German
-            EN               English
-            EL               Greek
-            ES               Spanish
-            FI               Finnish
-            FR               French
-            HE               Hebrew
-            HU               Hungarian
-            IT               Italian
-            JA               Japanese
-            KO               Korean
-            NL               Dutch
-            NB               Norwegian (Bokmål)
-            PL               Polish
-            PT               Portuguese (Portugal)
-            PT-BR            Portuguese (Brazil)
-            RU               Russian
-            SK               Slovak
-            SV               Swedish
-            TR               Turkish
-            ZH-Hans          Chinese (Simplified)
-            ZH-Hant          Chinese (Traditional)
+            ar               Arabic
+            cs               Czech
+            da               Danish
+            de               German
+            en               English
+            el               Greek
+            es               Spanish
+            fi               Finnish
+            fr               French
+            he               Hebrew
+            hu               Hungarian
+            it               Italian
+            ja               Japanese
+            ko               Korean
+            nl               Dutch
+            nb               Norwegian (Bokmål)
+            pl               Polish
+            pt               Portuguese (Portugal)
+            pt-BR            Portuguese (Brazil)
+            ru               Russian
+            sk               Slovak
+            sv               Swedish
+            tr               Turkish
+            zh-CN            Chinese (Simplified)
+            zh-HK            Chinese (Traditional)
         #>
         LanguageOverride = $null
 
