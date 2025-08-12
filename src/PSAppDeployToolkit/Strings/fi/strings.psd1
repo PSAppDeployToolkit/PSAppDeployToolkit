@@ -130,8 +130,8 @@
                 Uninstall = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Jatka asennusta valitsemalla Install.'
-                Repair = 'Jatka korjausta valitsemalla Repair.'
+                Install = 'Jatka asennusta valitsemalla Asenna.'
+                Repair = 'Jatka korjausta valitsemalla Korjaa.'
                 Uninstall = 'Jatka asennuksen poistamista valitsemalla Poista.'
             }
             AutomaticStartCountdown = 'Automaattinen käynnistyslaskenta'
