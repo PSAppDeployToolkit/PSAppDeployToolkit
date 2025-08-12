@@ -23,9 +23,12 @@ namespace PSADT.ClientServer
             using Process process = new();
             process.StartInfo.FileName = typeof(ClientLauncher).Assembly.Location.Replace(".Launcher.exe", ".exe");
             process.StartInfo.WorkingDirectory = Environment.SystemDirectory;
-            process.StartInfo.Arguments = CommandLineUtilities.ArgumentListToCommandLine(args);
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
+            if (args.Length > 0)
+            {
+                process.StartInfo.Arguments = CommandLineUtilities.ArgumentListToCommandLine(args);
+            }
             try
             {
                 process.Start(); process.WaitForExit();
