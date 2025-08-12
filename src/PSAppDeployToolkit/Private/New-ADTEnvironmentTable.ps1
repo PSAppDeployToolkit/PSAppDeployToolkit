@@ -216,24 +216,26 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Hardware
     $w32b = Get-CimInstance -ClassName Win32_BIOS -Verbose:$false
+    $w32bVersion = $w32b | Select-Object -ExpandProperty Version -ErrorAction Ignore
+    $w32bSerialNumber = $w32b | Select-Object -ExpandProperty SerialNumber -ErrorAction Ignore
     $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
-    $variables.Add('envHardwareType', $(if (($w32b.Version -match 'VRTUAL') -or (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*')))
+    $variables.Add('envHardwareType', $(if (($w32bVersion -match 'VRTUAL') -or (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*')))
             {
                 'Virtual:Hyper-V'
             }
-            elseif ($w32b.Version -match 'A M I')
+            elseif ($w32bVersion -match 'A M I')
             {
                 'Virtual:Virtual PC'
             }
-            elseif ($w32b.Version -like '*Xen*')
+            elseif ($w32bVersion -like '*Xen*')
             {
                 'Virtual:Xen'
             }
-            elseif (($w32b.SerialNumber -like '*VMware*') -or ($w32cs.Manufacturer -like '*VMWare*'))
+            elseif (($w32bSerialNumber -like '*VMware*') -or ($w32cs.Manufacturer -like '*VMWare*'))
             {
                 'Virtual:VMware'
             }
-            elseif (($w32b.SerialNumber -like '*Parallels*') -or ($w32cs.Manufacturer -like '*Parallels*'))
+            elseif (($w32bSerialNumber -like '*Parallels*') -or ($w32cs.Manufacturer -like '*Parallels*'))
             {
                 'Virtual:Parallels'
             }
