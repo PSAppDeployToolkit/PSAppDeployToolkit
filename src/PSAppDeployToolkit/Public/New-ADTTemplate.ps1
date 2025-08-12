@@ -199,7 +199,7 @@ function New-ADTTemplate
                 # Display the newly created folder in Windows Explorer.
                 if ($Show)
                 {
-                    & (Join-Path -Path [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows) -ChildPath explorer.exe) $templatePath
+                    & (Join-Path -Path ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows)) -ChildPath explorer.exe) $templatePath
                 }
 
                 # Return a DirectoryInfo object if passing through.
