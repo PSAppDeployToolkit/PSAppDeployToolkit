@@ -483,6 +483,40 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Retrieves the value of a specified environment variable.
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <returns></returns>
+        public string? GetEnvironmentVariable(string variable)
+        {
+            _logSource = "Get-ADTEnvironmentVariable";
+            return Invoke<string?>($"GetEnvironmentVariable{CommonUtilities.ArgumentSeparator}{variable}");
+        }
+
+        /// <summary>
+        /// Sets the value of a specified environment variable.
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool SetEnvironmentVariable(string variable, string value)
+        {
+            _logSource = "Set-ADTEnvironmentVariable";
+            return Invoke<bool>($"SetEnvironmentVariable{CommonUtilities.ArgumentSeparator}{variable}{CommonUtilities.ArgumentSeparator}{value}");
+        }
+
+        /// <summary>
+        /// Removes a specified environment variable for the user.
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <returns></returns>
+        public bool RemoveEnvironmentVariable(string variable)
+        {
+            _logSource = "Remove-ADTEnvironmentVariable";
+            return Invoke<bool>($"RemoveEnvironmentVariable{CommonUtilities.ArgumentSeparator}{variable}");
+        }
+
+        /// <summary>
         /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see

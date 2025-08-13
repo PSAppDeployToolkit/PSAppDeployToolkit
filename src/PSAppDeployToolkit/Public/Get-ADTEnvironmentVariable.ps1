@@ -13,6 +13,9 @@ function Get-ADTEnvironmentVariable
     .DESCRIPTION
         This function gets the value of the specified environment variable.
 
+    .PARAMETER Variable
+        The variable to get.
+
     .PARAMETER Target
         The target of the variable to get. This can be the machine, user, or process.
 
@@ -52,34 +55,14 @@ function Get-ADTEnvironmentVariable
     [OutputType([System.String])]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Variable,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.EnvironmentVariableTarget]$Target
     )
-
-    dynamicparam
-    {
-        # Define parameter dictionary for returning at the end.
-        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-
-        # Add in parameters we need as mandatory when there's no active ADTSession.
-        $paramDictionary.Add('Variable', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Variable', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $true; HelpMessage = "The variable to get." }
-                    if ($PSBoundParameters.ContainsKey('Target'))
-                    {
-                        [System.Management.Automation.ValidateSetAttribute]::new([System.String[]]([System.Environment]::GetEnvironmentVariables($PSBoundParameters.Target).Keys | Sort-Object))
-                    }
-                    else
-                    {
-                        [System.Management.Automation.ValidateSetAttribute]::new([System.String[]]([System.Environment]::GetEnvironmentVariables().Keys | Sort-Object))
-                    }
-                )
-            ))
-
-        # Return the populated dictionary.
-        return $paramDictionary
-    }
 
     begin
     {
@@ -93,13 +76,27 @@ function Get-ADTEnvironmentVariable
         {
             try
             {
-                if ($Target)
+                if ($PSBoundParameters.ContainsKey('Target'))
                 {
-                    Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)] for [$Target]"))."
-                    return [System.Environment]::GetEnvironmentVariable($PSBoundParameters.Variable, $Target)
+                    if ($Target.Equals([System.EnvironmentVariableTarget]::User))
+                    {
+                        if (!($runAsActiveUser = Get-ADTClientServerUser))
+                        {
+                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                            return
+                        }
+                        Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$($runAsActiveUser.NTAccount)]"))."
+                        if (($result = Invoke-ADTClientServerOperation -GetEnvironmentVariable -User $runAsActiveUser -Variable $Variable) -eq [PSADT.ClientServer.CommonUtilities]::ArgumentSeparator)
+                        {
+                            return
+                        }
+                        return $result
+                    }
+                    Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$Target]"))."
+                    return [System.Environment]::GetEnvironmentVariable($Variable, $Target)
                 }
-                Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)]"))."
-                return [System.Environment]::GetEnvironmentVariable($PSBoundParameters.Variable)
+                Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)]"))."
+                return [System.Environment]::GetEnvironmentVariable($Variable)
             }
             catch
             {

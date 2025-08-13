@@ -82,13 +82,26 @@ function Set-ADTEnvironmentVariable
         {
             try
             {
-                if ($Target)
+                if ($PSBoundParameters.ContainsKey('Target'))
                 {
+                    if ($Target.Equals([System.EnvironmentVariableTarget]::User))
+                    {
+                        if (!($runAsActiveUser = Get-ADTClientServerUser))
+                        {
+                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                            return
+                        }
+                        Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$($runAsActiveUser.NTAccount)] to [$Value]"))."
+                        Invoke-ADTClientServerOperation -SetEnvironmentVariable -User $runAsActiveUser -Variable $Variable -Value $Value
+                        return
+                    }
                     Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$Target] to [$Value]"))."
                     [System.Environment]::SetEnvironmentVariable($Variable, $Value, $Target)
+                    return
                 }
                 Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] to [$Value]"))."
                 [System.Environment]::SetEnvironmentVariable($Variable, $Value)
+                return
             }
             catch
             {
