@@ -13,6 +13,7 @@
     <RootNamespace>PSADT.ClientServer</RootNamespace>
     <AssemblyName>PSADT.ClientServer.Client</AssemblyName>
     <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
+    <Company>PSAppDeployToolkit Team</Company>
     <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
     <AssemblyTitle>PSAppDeployToolkit Client/Server Client Executable</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
