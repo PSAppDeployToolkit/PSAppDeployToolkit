@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
@@ -45,7 +46,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The type of access granted to the handle.
             /// </summary>
-            public FILE_ACCESS_RIGHTS GrantedAccess;
+            public FileSystemRights GrantedAccess;
 
             /// <summary>
             /// The number of references to the object.
@@ -169,7 +170,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The type's valid access mask.
             /// </summary>
-            internal FILE_ACCESS_RIGHTS ValidAccessMask;
+            internal FileSystemRights ValidAccessMask;
 
             /// <summary>
             /// The type's security required flag.
