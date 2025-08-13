@@ -127,7 +127,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Ensure the permissions are correct on all files before proceeding.
-    Set-ADTClientServerProcessPermissions -User $User
+    Set-ADTClientServerProcessPermissions
 
     # Go into client/server mode if a session is active and we're not asked to wait.
     if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
@@ -285,6 +285,7 @@ function Private:Invoke-ADTClientServerOperation
         $sapauParams = @{
             Username = $User.NTAccount
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
+            WorkingDirectory = [System.Environment]::SystemDirectory
             MsiExecWaitTime = 1
             CreateNoWindow = $true
             InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
