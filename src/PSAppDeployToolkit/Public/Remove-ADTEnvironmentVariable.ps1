@@ -75,13 +75,26 @@ function Remove-ADTEnvironmentVariable
         {
             try
             {
-                if ($Target)
+                if ($PSBoundParameters.ContainsKey('Target'))
                 {
+                    if ($Target.Equals([System.EnvironmentVariableTarget]::User))
+                    {
+                        if (!($runAsActiveUser = Get-ADTClientServerUser))
+                        {
+                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                            return
+                        }
+                        Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)] for [$($runAsActiveUser.NTAccount)]"))."
+                        Invoke-ADTClientServerOperation -RemoveEnvironmentVariable -User $runAsActiveUser -Variable $Variable
+                        return;
+                    }
                     Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable] for [$Target]"))."
                     [System.Environment]::SetEnvironmentVariable($Variable, $null, $Target)
+                    return;
                 }
                 Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable]"))."
                 [System.Environment]::SetEnvironmentVariable($Variable, $null)
+                return;
             }
             catch
             {

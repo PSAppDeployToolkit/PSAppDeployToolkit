@@ -5,13 +5,13 @@
     /// </summary>
     /// <remarks>This class contains shared definitions used in inter-process communication, such as the
     /// character used to separate command parameters in pipe-based communication.</remarks>
-    internal class CommonUtilities
+    public class CommonUtilities
     {
         /// <summary>
         /// Represents the character used to separate command parameters in pipe communication.
         /// </summary>
         /// <remarks>The separator is defined as the Unicode character with the value 0x1F. This character
         /// is used internally to delimit parameters in inter-process communication.</remarks>
-        internal const char ArgumentSeparator = (char)0x1F;
+        public const char ArgumentSeparator = (char)0x1F;
     }
 }

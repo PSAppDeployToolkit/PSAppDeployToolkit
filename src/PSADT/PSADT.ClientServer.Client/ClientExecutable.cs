@@ -70,9 +70,29 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(RefreshDesktopAndEnvironmentVariables());
                 }
+                else if (args.Any(static arg => arg == "/MinimizeAllWindows"))
+                {
+                    Console.WriteLine(MinimizeAllWindows());
+                }
+                else if (args.Any(static arg => arg == "/RestoreAllWindows"))
+                {
+                    Console.WriteLine(RestoreAllWindows());
+                }
                 else if (args.Any(static arg => arg == "/SendKeys"))
                 {
                     Console.WriteLine(SendKeys(ConvertArgsToDictionary(args)));
+                }
+                else if (args.Any(static arg => arg == "/GetEnvironmentVariable"))
+                {
+                    Console.WriteLine(GetEnvironmentVariable(ConvertArgsToDictionary(args)));
+                }
+                else if (args.Any(static arg => arg == "/SetEnvironmentVariable"))
+                {
+                    Console.WriteLine(SetEnvironmentVariable(ConvertArgsToDictionary(args)));
+                }
+                else if (args.Any(static arg => arg == "/RemoveEnvironmentVariable"))
+                {
+                    Console.WriteLine(RemoveEnvironmentVariable(ConvertArgsToDictionary(args)));
                 }
                 else if (args.Any(static arg => arg == "/SilentRestart"))
                 {
@@ -362,14 +382,12 @@ namespace PSADT.ClientServer
                                 else if (parts[0] == "MinimizeAllWindows")
                                 {
                                     // Minimize all windows and write back that we were successful.
-                                    ShellUtilities.MinimizeAllWindows();
-                                    WriteResult(SerializeObject(true));
+                                    WriteResult(MinimizeAllWindows());
                                 }
                                 else if (parts[0] == "RestoreAllWindows")
                                 {
                                     // Restore all windows and write back that we were successful.
-                                    ShellUtilities.RestoreAllWindows();
-                                    WriteResult(SerializeObject(true));
+                                    WriteResult(RestoreAllWindows());
                                 }
                                 else if (parts[0] == "SendKeys")
                                 {
@@ -403,6 +421,33 @@ namespace PSADT.ClientServer
                                 {
                                     // Get the foreground process Id and write it back to the output pipe.
                                     WriteResult(GetForegroundWindowProcessId());
+                                }
+                                else if (parts[0] == "GetEnvironmentVariable")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ClientException("The GetEnvironmentVariable command requires exactly one argument: Variable.", ClientExitCode.InvalidArguments);
+                                    }
+                                    WriteResult(GetEnvironmentVariable(new Dictionary<string, string> { { "Variable", parts[1] } }));
+                                }
+                                else if (parts[0] == "SetEnvironmentVariable")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 3)
+                                    {
+                                        throw new ClientException("The SetEnvironmentVariable command requires exactly two arguments: Variable and Value.", ClientExitCode.InvalidArguments);
+                                    }
+                                    WriteResult(SetEnvironmentVariable(new Dictionary<string, string> { { "Variable", parts[1] }, { "Value", parts[2] } }));
+                                }
+                                else if (parts[0] == "RemoveEnvironmentVariable")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ClientException("The RemoveEnvironmentVariable command requires exactly one argument: Variable.", ClientExitCode.InvalidArguments);
+                                    }
+                                    WriteResult(RemoveEnvironmentVariable(new Dictionary<string, string> { { "Variable", parts[1] } }));
                                 }
                                 else if (parts[0] == "Open")
                                 {
@@ -554,6 +599,26 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Minimizes all open windows on the desktop.
+        /// </summary>
+        /// <returns></returns>
+        private static string MinimizeAllWindows()
+        {
+            ShellUtilities.MinimizeAllWindows();
+            return SerializeObject(true);
+        }
+
+        /// <summary>
+        /// Restores all minimized windows on the desktop.
+        /// </summary>
+        /// <returns></returns>
+        private static string RestoreAllWindows()
+        {
+            ShellUtilities.RestoreAllWindows();
+            return SerializeObject(true);
+        }
+
+        /// <summary>
         /// Sends a sequence of keystrokes to the specified window.
         /// </summary>
         /// <remarks>This method brings the specified window to the foreground and ensures it is enabled 
@@ -578,6 +643,57 @@ namespace PSADT.ClientServer
 
             // Send the keys and write back that we were successful.
             System.Windows.Forms.SendKeys.SendWait(options.Keys);
+            return SerializeObject(true);
+        }
+
+        /// <summary>
+        /// Retrieves the value of an environment variable specified by the "Variable" key in the provided arguments dictionary.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        /// <exception cref="ClientException"></exception>
+        private static string GetEnvironmentVariable(IReadOnlyDictionary<string, string> arguments)
+        {
+            if (!arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+            {
+                throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+            }
+            return SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(CommonUtilities.ArgumentSeparator, 1));
+        }
+
+        /// <summary>
+        /// Sets an environment variable specified by the "Variable" and "Value" keys in the provided arguments dictionary.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        /// <exception cref="ClientException"></exception>
+        private static string SetEnvironmentVariable(IReadOnlyDictionary<string, string> arguments)
+        {
+            if (!arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+            {
+                throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+            }
+            if (!arguments.TryGetValue("Value", out string? value) || string.IsNullOrWhiteSpace(value))
+            {
+                throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
+            }
+            Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
+            return SerializeObject(true);
+        }
+
+        /// <summary>
+        /// Removes an environment variable specified by the "Variable" key in the provided arguments dictionary.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        /// <exception cref="ClientException"></exception>
+        private static string RemoveEnvironmentVariable(IReadOnlyDictionary<string, string> arguments)
+        {
+            if (!arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+            {
+                throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+            }
+            Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
             return SerializeObject(true);
         }
 
