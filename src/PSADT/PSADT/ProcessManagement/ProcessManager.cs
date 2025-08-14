@@ -183,7 +183,7 @@ namespace PSADT.ProcessManagement
                         SafeFileHandle hPrimaryToken;
                         using (hUserToken)
                         {
-                            if (launchInfo.UseLinkedAdminToken)
+                            if (launchInfo.UseLinkedAdminToken || launchInfo.UseHighestAvailableToken)
                             {
                                 try
                                 {
@@ -191,7 +191,11 @@ namespace PSADT.ProcessManagement
                                 }
                                 catch (Exception ex)
                                 {
-                                    throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{session.NTAccount}].", ex);
+                                    if (!launchInfo.UseHighestAvailableToken)
+                                    {
+                                        throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{session.NTAccount}].", ex);
+                                    }
+                                    hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
                                 }
                             }
                             else

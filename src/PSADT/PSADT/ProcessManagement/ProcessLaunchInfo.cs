@@ -22,8 +22,10 @@ namespace PSADT.ProcessManagement
         /// <param name="workingDirectory"></param>
         /// <param name="username"></param>
         /// <param name="useLinkedAdminToken"></param>
+        /// <param name="useHighestAvailableToken"></param>
         /// <param name="inheritEnvironmentVariables"></param>
         /// <param name="expandEnvironmentVariables"></param>
+        /// <param name="inheritHandles"></param>
         /// <param name="useUnelevatedToken"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="verb"></param>
@@ -42,6 +44,7 @@ namespace PSADT.ProcessManagement
             string? workingDirectory = null,
             NTAccount? username = null,
             bool useLinkedAdminToken = false,
+            bool useHighestAvailableToken = false,
             bool inheritEnvironmentVariables = false,
             bool expandEnvironmentVariables = false,
             bool inheritHandles = false,
@@ -115,6 +118,7 @@ namespace PSADT.ProcessManagement
             // Set remaining parameters.
             Username = username;
             UseLinkedAdminToken = useLinkedAdminToken;
+            UseHighestAvailableToken = useHighestAvailableToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             ExpandEnvironmentVariables = expandEnvironmentVariables;
             InheritHandles = inheritHandles;
@@ -160,6 +164,11 @@ namespace PSADT.ProcessManagement
         /// Gets a value indicating whether to use the linked admin token to start the process.
         /// </summary>
         public readonly bool UseLinkedAdminToken;
+
+        /// <summary>
+        /// Gets a value indicating whether to use the highest available token to start the process.
+        /// </summary>
+        public readonly bool UseHighestAvailableToken;
 
         /// <summary>
         /// Gets a value indicating whether to inherit the environment variables of the current process.
