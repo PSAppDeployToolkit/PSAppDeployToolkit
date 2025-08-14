@@ -460,13 +460,6 @@ function Start-ADTProcess
                 1641, 3010
             }
         }
-        if (!$PSBoundParameters.ContainsKey('WorkingDirectory'))
-        {
-            if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
-            {
-                $WorkingDirectory = $adtSession.DirFiles
-            }
-        }
 
         # Set up initial variables.
         $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo.MyCommand } }
@@ -538,6 +531,21 @@ function Start-ADTProcess
                     }
                 }
 
+                # Set the working directory when running in a session if the caller hasn't specified one.
+                # For non-msiexec situations, use the process's path for backwards compat, otherwise use $adtSession.DirFiles if defined.
+                # We don't do this when a session isn't running so `Start-ADTProcess` works the way one should expect (i.e. like `Start-Process`).
+                if ($adtSession -and !$PSBoundParameters.ContainsKey('WorkingDirectory'))
+                {
+                    $WorkingDirectory = if ($FilePath -notmatch 'msiexec')
+                    {
+                        [System.IO.Path]::GetDirectoryName($FilePath)
+                    }
+                    elseif (![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
+                    {
+                        $adtSession.DirFiles
+                    }
+                }
+
                 # Set up the process start flags.
                 $startInfo = [PSADT.ProcessManagement.ProcessLaunchInfo]::new(
                     $FilePath,
@@ -574,9 +582,9 @@ function Start-ADTProcess
                 {
                     Write-ADTLogEntry -Message 'CreateNoWindow not specified, StdOut/StdErr streams will not be available.'
                 }
-                if ($startInfo.WorkingDirectory)
+                if (![System.String]::IsNullOrWhiteSpace($startInfo.WorkingDirectory))
                 {
-                    Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
+                    Write-ADTLogEntry -Message "Working Directory is [$($startInfo.WorkingDirectory)]."
                 }
                 if ($ArgumentList)
                 {
