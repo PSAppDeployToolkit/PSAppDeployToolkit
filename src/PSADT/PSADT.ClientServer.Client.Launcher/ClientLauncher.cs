@@ -17,7 +17,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        private static int Main(string[] args)
+        private static int Main(string[] argv)
         {
             // Set up a new process to run the main application.
             using Process process = new();
@@ -25,9 +25,9 @@ namespace PSADT.ClientServer
             process.StartInfo.WorkingDirectory = Environment.SystemDirectory;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
-            if (args.Length > 0)
+            if (argv.Length > 0)
             {
-                process.StartInfo.Arguments = CommandLineUtilities.ArgumentListToCommandLine(args);
+                process.StartInfo.Arguments = CommandLineUtilities.ArgumentListToCommandLine(argv);
             }
             try
             {
