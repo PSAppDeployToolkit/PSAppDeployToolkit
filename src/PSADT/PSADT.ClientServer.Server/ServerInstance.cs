@@ -208,11 +208,21 @@ namespace PSADT.ClientServer
                 if (null != _logWriterTaskCts && null != _logWriterTask)
                 {
                     _logWriterTaskCts.Cancel();
-                    _logWriterTask.GetAwaiter().GetResult();
-                    _logWriterTask.Dispose();
-                    _logWriterTask = null;
-                    _logWriterTaskCts.Dispose();
-                    _logWriterTaskCts = null;
+                    try
+                    {
+                        _logWriterTask.GetAwaiter().GetResult();
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // The log writer task was canceled, which is expected when closing the server instance.
+                    }
+                    finally
+                    {
+                        _logWriterTask.Dispose();
+                        _logWriterTask = null;
+                        _logWriterTaskCts.Dispose();
+                        _logWriterTaskCts = null;
+                    }
                 }
 
                 // Close the client process and wait for it to exit.
@@ -220,12 +230,22 @@ namespace PSADT.ClientServer
                 {
                     _clientProcessCts.Cancel();
                 }
-                _clientProcess.Task.GetAwaiter().GetResult();
-                _clientProcess.Task.Dispose();
-                _clientProcess.Process.Dispose();
-                _clientProcess = null;
-                _clientProcessCts.Dispose();
-                _clientProcessCts = null;
+                try
+                {
+                    _clientProcess.Task.GetAwaiter().GetResult();
+                }
+                catch (TaskCanceledException)
+                {
+                    // The client process task was canceled, which is expected when closing the server instance.
+                }
+                finally
+                {
+                    _clientProcess.Task.Dispose();
+                    _clientProcess.Process.Dispose();
+                    _clientProcess = null;
+                    _clientProcessCts.Dispose();
+                    _clientProcessCts = null;
+                }
             }
         }
 
