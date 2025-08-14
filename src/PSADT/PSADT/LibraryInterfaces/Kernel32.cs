@@ -364,33 +364,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around SetPriorityClass to manage error handling.
-        /// </summary>
-        /// <param name="hProcess"></param>
-        /// <param name="dwPriorityClass"></param>
-        /// <returns></returns>
-        private static BOOL SetPriorityClass(SafeHandle hProcess, PROCESS_CREATION_FLAGS dwPriorityClass)
-        {
-            var res = PInvoke.SetPriorityClass(hProcess, dwPriorityClass);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Wrapper around SetPriorityClass to manage error handling.
-        /// </summary>
-        /// <param name="hProcess"></param>
-        /// <param name="dwPriorityClass"></param>
-        /// <returns></returns>
-        internal static BOOL SetPriorityClass(SafeHandle hProcess, ProcessPriorityClass dwPriorityClass)
-        {
-            return SetPriorityClass(hProcess, (PROCESS_CREATION_FLAGS)dwPriorityClass);
-        }
-
-        /// <summary>
         /// Terminates a job object and all child processes under it.
         /// </summary>
         /// <param name="hJob"></param>
