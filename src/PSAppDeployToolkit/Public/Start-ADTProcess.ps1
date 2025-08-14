@@ -545,6 +545,7 @@ function Start-ADTProcess
                     $WorkingDirectory,
                     $Username,
                     $UseLinkedAdminToken,
+                    $false,
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
                     $false,

@@ -76,6 +76,7 @@ namespace PSADT.ClientServer
                     Environment.SystemDirectory,
                     Username,
                     false,
+                    true,
                     false,
                     false,
                     true,
