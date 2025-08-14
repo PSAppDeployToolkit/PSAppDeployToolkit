@@ -17,7 +17,7 @@ function Mount-ADTWimFile
         Path to the WIM file to be mounted.
 
     .PARAMETER Path
-        Directory where the WIM file will be mounted. The directory must be empty and not have a pre-existing WIM mounted.
+        Directory where the WIM file will be mounted. The directory either must not exist, or must be empty and not have a pre-existing WIM mounted.
 
     .PARAMETER Index
         Index of the image within the WIM file to be mounted.
@@ -44,12 +44,12 @@ function Mount-ADTWimFile
     .EXAMPLE
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Index 1
 
-        Mounts the first image in the 'install.wim' file to the 'C:\Mount' directory.
+        Mounts the first image in the 'install.wim' file to the 'C:\Mount' directory, creating the directory if it does not exist.
 
     .EXAMPLE
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Name 'Windows 10 Pro'
 
-        Mounts the image named 'Windows 10 Pro' in the 'install.wim' file to the 'C:\Mount' directory.
+        Mounts the image named 'Windows 10 Pro' in the 'install.wim' file to the 'C:\Mount' directory, creating the directory if it does not exist.
 
     .EXAMPLE
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Index 1 -Force
