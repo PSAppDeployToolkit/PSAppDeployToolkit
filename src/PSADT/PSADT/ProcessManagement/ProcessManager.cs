@@ -295,27 +295,25 @@ namespace PSADT.ProcessManagement
                     process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 }
 
-                // Start the process and try to get the process's handle.
+                // Start the process and assign the handle to our job if we have one.
                 // For a pure shell action, we won't ever be able to get one.
                 process.Start();
                 try
                 {
-                    hProcess = process.SafeHandle;
+                    if (null != (hProcess = process.SafeHandle))
+                    {
+                        processId = (uint)process.Id;
+                        Kernel32.AssignProcessToJobObject(job, hProcess);
+                        if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                        {
+                            process.PriorityClass = launchInfo.PriorityClass.Value;
+                        }
+                    }
                 }
                 catch
                 {
                     hProcess = null;
-                }
-
-                // Assign the handle to the job object if we have one.
-                if (null != hProcess)
-                {
-                    processId = (uint)process.Id;
-                    Kernel32.AssignProcessToJobObject(job, hProcess);
-                    if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
-                    {
-                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass.Value);
-                    }
+                    processId = null;
                 }
             }
 

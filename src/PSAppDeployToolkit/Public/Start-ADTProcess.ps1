@@ -566,10 +566,6 @@ function Start-ADTProcess
                 if ($startInfo.UseShellExecute)
                 {
                     Write-ADTLogEntry -Message 'UseShellExecute is set to true, StdOut/StdErr streams will not be available.'
-                    if ($PSBoundParameters.ContainsKey('PriorityClass') -and !(Test-ADTCallerIsAdmin))
-                    {
-                        Write-ADTLogEntry -Message "Setting a priority class on a ShellExecute process is only possible for administrators." -Severity 2
-                    }
                 }
                 elseif (!$CreateNoWindow)
                 {

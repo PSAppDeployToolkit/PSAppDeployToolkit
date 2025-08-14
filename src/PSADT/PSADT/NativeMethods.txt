@@ -293,7 +293,6 @@ SetFocus
 SetForegroundWindow
 SetInformationJobObject
 SetLastError
-SetPriorityClass
 SetSecurityInfo
 SHChangeNotify
 SHGetImageList
