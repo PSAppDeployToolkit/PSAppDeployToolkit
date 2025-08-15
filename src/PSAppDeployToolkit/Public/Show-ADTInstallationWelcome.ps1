@@ -94,6 +94,7 @@ function Show-ADTInstallationWelcome
 
     .PARAMETER CustomText
         Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
+        This additional text appears below the DialogMessage
 
     .PARAMETER CheckDiskSpace
         Specify whether to check if there is enough disk space for the deployment to proceed.
@@ -102,6 +103,12 @@ function Show-ADTInstallationWelcome
 
     .PARAMETER RequiredDiskSpace
         Specify required disk space in MB, used in combination with CheckDiskSpace.
+        
+    .PARAMETER Subtitle
+        Subtitle of the prompt. Overrides Subtitle as defined in Strings.psd1.
+        
+    .PARAMETER Title
+        Title of the prompt. Overrides $adtSession.InstallTitle
 
     .INPUTS
         None
