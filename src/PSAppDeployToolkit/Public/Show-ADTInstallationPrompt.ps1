@@ -69,7 +69,14 @@ function Show-ADTInstallationPrompt
         This function does not generate any output.
 
     .EXAMPLE
-        Show-ADTInstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonLeftText 'Yes' -ButtonRightText 'No'
+        $userResponse = Show-ADTInstallationPrompt -Message 'Do you want to proceed with the installation?' -ButtonLeftText 'Yes' -ButtonRightText 'No'
+        If ($userResponse -eq 'Yes') {
+            Write-ADTLogEntry "User clicked Yes button"
+        } ElseIf ($userResponse -eq 'No') {
+            Write-ADTLogEntry "User clicked No button"
+        } Else {
+            #This will never be used
+        }
 
     .EXAMPLE
         Show-ADTInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonLeftText 'Good' -ButtonRightText 'Bad' -ButtonMiddleText 'Indifferent'
