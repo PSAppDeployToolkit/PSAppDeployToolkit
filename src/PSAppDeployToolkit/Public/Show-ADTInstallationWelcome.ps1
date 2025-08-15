@@ -103,10 +103,10 @@ function Show-ADTInstallationWelcome
 
     .PARAMETER RequiredDiskSpace
         Specify required disk space in MB, used in combination with CheckDiskSpace.
-        
+
     .PARAMETER Subtitle
         Subtitle of the prompt. Overrides Subtitle as defined in Strings.psd1.
-        
+
     .PARAMETER Title
         Title of the prompt. Overrides $adtSession.InstallTitle
 
