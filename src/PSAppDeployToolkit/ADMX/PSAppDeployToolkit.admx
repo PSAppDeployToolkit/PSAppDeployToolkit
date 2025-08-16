@@ -344,6 +344,11 @@
 							<string>AR</string>
 						</value>
 					</item>
+                    <item displayName="$(string.LanguageOverrideBulgarian)">
+                        <value>
+                            <string>BG</string>
+                        </value>
+                    </item>
 					<item displayName="$(string.LanguageOverrideCzech)">
 						<value>
 							<string>CZ</string>
