@@ -493,7 +493,23 @@ function Start-ADTProcess
                 # Validate and find the fully qualified path for the $FilePath variable.
                 if ((!$ExpandEnvironmentVariables -or !$Username) -and [System.IO.Path]::HasExtension($FilePath) -and ![System.IO.Path]::IsPathRooted($FilePath))
                 {
-                    if (!($fqPath = Get-Item -LiteralPath ("$WorkingDirectory;$($ExecutionContext.SessionState.Path.CurrentLocation.Path);$([System.Environment]::GetEnvironmentVariable('PATH'))".Split(';').Where({ ![System.String]::IsNullOrWhiteSpace($_) }).TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    $searchPaths = $(
+                        if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
+                        {
+                            $WorkingDirectory
+                        }
+                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
+                        {
+                            $adtSession.DirFiles
+                        }
+                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirSupportFiles))
+                        {
+                            $adtSession.DirSupportFiles
+                        }
+                        $ExecutionContext.SessionState.Path.CurrentLocation.Path
+                        [System.Environment]::GetEnvironmentVariable('PATH').Split(';').Where({ ![System.String]::IsNullOrWhiteSpace($_) }).TrimEnd('\')
+                    )
+                    if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
