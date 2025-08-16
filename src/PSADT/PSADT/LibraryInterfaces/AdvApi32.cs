@@ -478,17 +478,23 @@ namespace PSADT.LibraryInterfaces
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out FreeSidSafeHandle ppsidOwner, out FreeSidSafeHandle ppsidGroup, IntPtr ppDacl, IntPtr ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
+        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out FreeSidSafeHandle? ppsidOwner, out FreeSidSafeHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
-            var res = PInvoke.GetNamedSecurityInfo(pObjectName, ObjectType, SecurityInfo, out ppsidOwner, out ppsidGroup, (ACL**)ppDacl, (ACL**)ppSacl, out var ppSecurityDescriptorLocal);
+            [DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+            static extern WIN32_ERROR GetNamedSecurityInfoW(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out IntPtr ppsidOwner, out IntPtr ppsidGroup, out IntPtr ppDacl, out IntPtr ppSacl, out IntPtr ppSecurityDescriptor);
+            var res = GetNamedSecurityInfoW(pObjectName, ObjectType, SecurityInfo, out var ppsidOwnerLocal, out var ppsidGroupLocal, out var ppDaclLocal, out var ppSaclLocal, out var ppSecurityDescriptorLocal);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
-            if (ppSecurityDescriptorLocal.IsNull)
+            if (IntPtr.Zero == ppSecurityDescriptorLocal)
             {
                 throw new InvalidOperationException("Failed to retrieve security descriptor.");
             }
+            ppsidOwner = ppsidOwnerLocal != IntPtr.Zero ? new FreeSidSafeHandle(ppsidOwnerLocal, false) : null;
+            ppsidGroup = ppsidGroupLocal != IntPtr.Zero ? new FreeSidSafeHandle(ppsidGroupLocal, false) : null;
+            ppDacl = ppDaclLocal != IntPtr.Zero ? new LocalFreeSafeHandle(ppDaclLocal, false) : null;
+            ppSacl = ppSaclLocal != IntPtr.Zero ? new LocalFreeSafeHandle(ppSaclLocal, false) : null;
             ppSecurityDescriptor = new LocalFreeSafeHandle(ppSecurityDescriptorLocal, true);
             return res;
         }
