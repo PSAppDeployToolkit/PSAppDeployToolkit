@@ -97,6 +97,7 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="DialogStyleFluent">Fluent</string>
 			<string id="DialogStyleClassic">Classic</string>
 			<string id="LanguageOverrideArabic">Arabic</string>
+            <string id="LanguageOverrideBulgarian">Bulgarian</string>
 			<string id="LanguageOverrideCzech">Czech</string>
 			<string id="LanguageOverrideDanish">Danish</string>
 			<string id="LanguageOverrideGerman">German</string>

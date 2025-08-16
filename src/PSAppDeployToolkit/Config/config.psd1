@@ -120,6 +120,7 @@
             Language Code    Language
             =============    ========
             ar               Arabic
+            bg               Bulgarian
             cs               Czech
             da               Danish
             de               German
