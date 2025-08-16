@@ -19,6 +19,7 @@ using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.WindowManagement;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.Security.Authorization;
@@ -128,17 +129,17 @@ namespace PSADT.ClientServer
                                 ptstrName = new PWSTR(pinnedUserSid.DangerousGetHandle())
                             }
                         };
-                        AdvApi32.SetEntriesInAcl([ea], IntPtr.Zero, out var pAcl);
 
                         // Set process owner to the caller and apply the ACL.
-                        try
+                        AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
+                        using (pAcl)
                         {
                             byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
-                            AdvApi32.SetSecurityInfo(_clientProcess!.Process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, callerSid, null, pAcl, IntPtr.Zero);
-                        }
-                        finally
-                        {
-                            Kernel32.LocalFree((HLOCAL)pAcl);
+                            using (SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid))
+                            using (FreeSidSafeHandle pCallerSid = new(pinnedCallerSid.DangerousGetHandle(), false))
+                            {
+                                AdvApi32.SetSecurityInfo(_clientProcess!.Process.SafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pCallerSid, null, pAcl, null);
+                            }
                         }
                     }
                     finally
