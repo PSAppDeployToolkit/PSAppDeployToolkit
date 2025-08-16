@@ -413,45 +413,132 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Creates a new access control list (ACL) by merging new access control or audit control information into an existing ACL structure.
+        /// Modifies an access control list (ACL) by adding or updating the specified access control entries (ACEs).
         /// </summary>
-        /// <param name="pListOfExplicitEntries"></param>
-        /// <param name="OldAcl"></param>
-        /// <param name="NewAcl"></param>
-        /// <returns></returns>
-        internal unsafe static WIN32_ERROR SetEntriesInAcl([In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl)
+        /// <remarks>This method uses the Windows API function <c>SetEntriesInAcl</c> to modify the ACL.
+        /// The caller must ensure that the <paramref name="OldAcl"/> handle, if provided, is valid and not closed. The
+        /// <paramref name="NewAcl"/> handle must be released by the caller to avoid memory leaks.</remarks>
+        /// <param name="pListOfExplicitEntries">A read-only span of <see cref="EXPLICIT_ACCESS_W"/> structures that define the access control entries to be
+        /// added or updated in the ACL.</param>
+        /// <param name="OldAcl">An optional handle to the existing ACL to be modified. If <see langword="null"/>, a new ACL is created.</param>
+        /// <param name="NewAcl">When this method returns, contains a handle to the newly created or modified ACL. The caller is responsible
+        /// for releasing this handle.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation is successful.</returns>
+		internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
         {
-            [DllImport("advapi32.dll", SetLastError = true)]
-            static extern WIN32_ERROR SetEntriesInAcl(uint cCountOfExplicitEntries, [In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl);
-            var res = SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntries, OldAcl, out NewAcl);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                bool OldAclAddRef = false;
+                ACL* NewAclLocal = null;
+                try
+                {
+                    if (OldAcl is not null && !OldAcl.IsClosed)
+                    {
+                        OldAcl.DangerousAddRef(ref OldAclAddRef);
+                    }
+                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, null != OldAcl ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
+                    if (res != WIN32_ERROR.ERROR_SUCCESS)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                    }
+                    NewAcl = new LocalFreeSafeHandle((IntPtr)NewAclLocal, true);
+                    return res;
+                }
+                finally
+                {
+                    if (OldAclAddRef)
+                    {
+                        OldAcl?.DangerousRelease();
+                    }
+                }
             }
-            return res;
         }
 
         /// <summary>
-        /// Sets specified security information in the security descriptor of a specified object. The caller identifies the object by a handle.
+        /// Sets the security information for a specified object, such as a file, registry key, or other securable
+        /// object.
         /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="ObjectType"></param>
-        /// <param name="SecurityInfo"></param>
-        /// <param name="owner"></param>
-        /// <param name="group"></param>
-        /// <param name="dacl"></param>
-        /// <param name="sacl"></param>
-        /// <returns></returns>
-        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl)
+        /// <remarks>This method wraps the native <c>SetSecurityInfo</c> function and ensures proper
+        /// reference management for the provided handles. Callers are responsible for ensuring that the handles passed
+        /// to this method are valid and not closed.</remarks>
+        /// <param name="handle">A <see cref="SafeHandle"/> representing the handle to the object whose security information is being set.
+        /// The handle must not be null or closed.</param>
+        /// <param name="ObjectType">The type of object for which security information is being set. This is specified as a value of the <see
+        /// cref="SE_OBJECT_TYPE"/> enumeration.</param>
+        /// <param name="SecurityInfo">A bitmask of <see cref="OBJECT_SECURITY_INFORMATION"/> values that specify the type of security information
+        /// to set (e.g., owner, group, DACL, or SACL).</param>
+        /// <param name="psidOwner">An optional <see cref="FreeSidSafeHandle"/> representing the new owner SID to set. Pass <c>null</c> to leave
+        /// the owner unchanged.</param>
+        /// <param name="psidGroup">An optional <see cref="FreeSidSafeHandle"/> representing the new group SID to set. Pass <c>null</c> to leave
+        /// the group unchanged.</param>
+        /// <param name="pDacl">An optional <see cref="LocalFreeSafeHandle"/> representing the new discretionary access control list (DACL)
+        /// to set. Pass <c>null</c> to leave the DACL unchanged.</param>
+        /// <param name="pSacl">An optional <see cref="LocalFreeSafeHandle"/> representing the new system access control list (SACL) to set.
+        /// Pass <c>null</c> to leave the SACL unchanged.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null or closed.</exception>
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, FreeSidSafeHandle? psidOwner, FreeSidSafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
         {
-            [DllImport("advapi32.dll", SetLastError = true)]
-            static extern WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl);
-            var res = SetSecurityInfo(handle, ObjectType, SecurityInfo, owner, group, dacl, sacl);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            bool handleAddRef = false;
+            bool psidOwnerAddRef = false;
+            bool psidGroupAddRef = false;
+            bool pDaclAddRef = false;
+            bool pSaclAddRef = false;
+            try
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                if (handle is null || handle.IsClosed)
+                {
+                    throw new ArgumentNullException(nameof(handle));
+                }
+                if (psidOwner is not null && !psidOwner.IsClosed)
+                {
+                    psidOwner.DangerousAddRef(ref psidOwnerAddRef);
+                }
+                if (psidGroup is not null && !psidGroup.IsClosed)
+                {
+                    psidGroup.DangerousAddRef(ref psidGroupAddRef);
+                }
+                if (pDacl is not null && !pDacl.IsClosed)
+                {
+                    pDacl.DangerousAddRef(ref pDaclAddRef);
+                }
+                if (pSacl is not null && !pSacl.IsClosed)
+                {
+                    pSacl.DangerousAddRef(ref pSaclAddRef);
+                }
+                handle.DangerousAddRef(ref handleAddRef);
+                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, null != psidOwner ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, null != psidGroup ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                }
+                return res;
             }
-            return res;
+            finally
+            {
+                if (pSaclAddRef)
+                {
+                    pSacl?.DangerousRelease();
+                }
+                if (pDaclAddRef)
+                {
+                    pDacl?.DangerousRelease();
+                }
+                if (psidGroupAddRef)
+                {
+                    psidGroup?.DangerousRelease();
+                }
+                if (psidOwnerAddRef)
+                {
+                    psidOwner?.DangerousRelease();
+                }
+                if (handleAddRef)
+                {
+                    handle.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
@@ -480,23 +567,25 @@ namespace PSADT.LibraryInterfaces
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out FreeSidSafeHandle? ppsidOwner, out FreeSidSafeHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
-            [DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-            static extern WIN32_ERROR GetNamedSecurityInfoW(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out IntPtr ppsidOwner, out IntPtr ppsidGroup, out IntPtr ppDacl, out IntPtr ppSacl, out IntPtr ppSecurityDescriptor);
-            var res = GetNamedSecurityInfoW(pObjectName, ObjectType, SecurityInfo, out var ppsidOwnerLocal, out var ppsidGroupLocal, out var ppDaclLocal, out var ppSaclLocal, out var ppSecurityDescriptorLocal);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            fixed (char* pObjectNameLocal = pObjectName)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSECURITY_DESCRIPTOR = default;
+                var res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSECURITY_DESCRIPTOR);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                }
+                if (pSECURITY_DESCRIPTOR == default)
+                {
+                    throw new InvalidOperationException("Failed to retrieve security descriptor.");
+                }
+                ppsidOwner = psidOwner != default ? new FreeSidSafeHandle(psidOwner, false) : null;
+                ppsidGroup = pSidGroup != default ? new FreeSidSafeHandle(pSidGroup, false) : null;
+                ppDacl = pDacl != null ? new LocalFreeSafeHandle((IntPtr)pDacl, false) : null;
+                ppSacl = pSacl != null ? new LocalFreeSafeHandle((IntPtr)pSacl, false) : null;
+                ppSecurityDescriptor = new LocalFreeSafeHandle((IntPtr)pSECURITY_DESCRIPTOR, true);
+                return res;
             }
-            if (IntPtr.Zero == ppSecurityDescriptorLocal)
-            {
-                throw new InvalidOperationException("Failed to retrieve security descriptor.");
-            }
-            ppsidOwner = ppsidOwnerLocal != IntPtr.Zero ? new FreeSidSafeHandle(ppsidOwnerLocal, false) : null;
-            ppsidGroup = ppsidGroupLocal != IntPtr.Zero ? new FreeSidSafeHandle(ppsidGroupLocal, false) : null;
-            ppDacl = ppDaclLocal != IntPtr.Zero ? new LocalFreeSafeHandle(ppDaclLocal, false) : null;
-            ppSacl = ppSaclLocal != IntPtr.Zero ? new LocalFreeSafeHandle(ppSaclLocal, false) : null;
-            ppSecurityDescriptor = new LocalFreeSafeHandle(ppSecurityDescriptorLocal, true);
-            return res;
         }
 
         /// <summary>
