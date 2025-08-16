@@ -369,6 +369,12 @@ function Open-ADTSession
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
+        # Throw if we have duplicated process objects.
+        if ($AppProcessesToClose -and !($AppProcessesToClose.Name | Sort-Object | Get-Unique | Measure-Object).Count.Equals($AppProcessesToClose.Count))
+        {
+            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName AppProcessesToClose -ProvidedValue $AppProcessesToClose -ExceptionMessage 'The specified AppProcessesToClose array contains duplicate processes.'))
+        }
+
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller
         $callerInvocation = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo } }
