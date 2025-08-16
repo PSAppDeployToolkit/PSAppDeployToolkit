@@ -86,18 +86,18 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Determines whether the specified security identifier (SID) has the desired access rights to the specified
-        /// file or directory.
+        /// Determines the effective access rights for a specified security identifier (SID) on a file or directory.
         /// </summary>
-        /// <remarks>This method performs an access check by retrieving the security descriptor of the
-        /// specified file or directory and evaluating the access rights for the provided SID. It uses the Windows
-        /// Authorization API to perform the access check.</remarks>
-        /// <param name="path">The full path to the file or directory to check access for.</param>
-        /// <param name="sid">The security identifier (SID) of the user or group whose access is being checked.</param>
-        /// <param name="desiredAccessMask">The access rights to check, specified as a combination of <see cref="FileSystemRights"/> flags.</param>
-        /// <returns><see langword="true"/> if the specified SID has the desired access rights to the file or directory;
-        /// otherwise, <see langword="false"/>.</returns>
-        public static bool TestEffectiveAccess(string path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
+        /// <remarks>This method evaluates the effective access rights for the specified SID by performing
+        /// an access check against the security descriptor of the file or directory. The effective access rights are
+        /// determined based on the discretionary access control list (DACL) and the specified desired access
+        /// mask.</remarks>
+        /// <param name="path">The full path to the file or directory for which to evaluate access rights.</param>
+        /// <param name="sid">The security identifier (SID) of the user or group whose access rights are being evaluated.</param>
+        /// <param name="desiredAccessMask">The desired access mask specifying the access rights to evaluate.</param>
+        /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified SID
+        /// has on the file or directory.</returns>
+        public static FileSystemRights GetEffectiveAccess(string path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
             // Retrieve the security descriptor for the file.
             AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
@@ -137,7 +137,7 @@ namespace PSADT.FileSystem
                             AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out var phAccessCheckResults);
                             using (phAccessCheckResults)
                             {
-                                return ((FileSystemRights)grantedAccessMask.ReadInt32() & desiredAccessMask) == desiredAccessMask;
+                                return (FileSystemRights)grantedAccessMask.ReadInt32();
                             }
                         }
                         finally
@@ -154,6 +154,23 @@ namespace PSADT.FileSystem
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified security identifier (SID) has the desired access rights to the specified
+        /// file or directory.
+        /// </summary>
+        /// <remarks>This method performs an access check by retrieving the security descriptor of the
+        /// specified file or directory and evaluating the access rights for the provided SID. It uses the Windows
+        /// Authorization API to perform the access check.</remarks>
+        /// <param name="path">The full path to the file or directory to check access for.</param>
+        /// <param name="sid">The security identifier (SID) of the user or group whose access is being checked.</param>
+        /// <param name="desiredAccessMask">The access rights to check, specified as a combination of <see cref="FileSystemRights"/> flags.</param>
+        /// <returns><see langword="true"/> if the specified SID has the desired access rights to the file or directory;
+        /// otherwise, <see langword="false"/>.</returns>
+        public static bool TestEffectiveAccess(string path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
+        {
+            return (GetEffectiveAccess(path, sid, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
         }
     }
 }
