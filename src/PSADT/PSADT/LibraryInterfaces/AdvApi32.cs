@@ -413,45 +413,298 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Creates a new access control list (ACL) by merging new access control or audit control information into an existing ACL structure.
+        /// Modifies an access control list (ACL) by adding or updating the specified access control entries (ACEs).
         /// </summary>
-        /// <param name="pListOfExplicitEntries"></param>
-        /// <param name="OldAcl"></param>
-        /// <param name="NewAcl"></param>
-        /// <returns></returns>
-        internal unsafe static WIN32_ERROR SetEntriesInAcl([In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl)
+        /// <remarks>This method uses the Windows API function <c>SetEntriesInAcl</c> to modify the ACL.
+        /// The caller must ensure that the <paramref name="OldAcl"/> handle, if provided, is valid and not closed. The
+        /// <paramref name="NewAcl"/> handle must be released by the caller to avoid memory leaks.</remarks>
+        /// <param name="pListOfExplicitEntries">A read-only span of <see cref="EXPLICIT_ACCESS_W"/> structures that define the access control entries to be
+        /// added or updated in the ACL.</param>
+        /// <param name="OldAcl">An optional handle to the existing ACL to be modified. If <see langword="null"/>, a new ACL is created.</param>
+        /// <param name="NewAcl">When this method returns, contains a handle to the newly created or modified ACL. The caller is responsible
+        /// for releasing this handle.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation is successful.</returns>
+		internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
         {
-            [DllImport("advapi32.dll", SetLastError = true)]
-            static extern WIN32_ERROR SetEntriesInAcl(uint cCountOfExplicitEntries, [In] EXPLICIT_ACCESS_W[] pListOfExplicitEntries, IntPtr OldAcl, out IntPtr NewAcl);
-            var res = SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntries, OldAcl, out NewAcl);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                bool OldAclAddRef = false;
+                ACL* NewAclLocal = null;
+                try
+                {
+                    if (OldAcl is not null && !OldAcl.IsClosed)
+                    {
+                        OldAcl.DangerousAddRef(ref OldAclAddRef);
+                    }
+                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, null != OldAcl ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
+                    if (res != WIN32_ERROR.ERROR_SUCCESS)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                    }
+                    NewAcl = new LocalFreeSafeHandle((IntPtr)NewAclLocal, true);
+                    return res;
+                }
+                finally
+                {
+                    if (OldAclAddRef)
+                    {
+                        OldAcl?.DangerousRelease();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the security information for a specified object, such as a file, registry key, or other securable
+        /// object.
+        /// </summary>
+        /// <remarks>This method wraps the native <c>SetSecurityInfo</c> function and ensures proper
+        /// reference management for the provided handles. Callers are responsible for ensuring that the handles passed
+        /// to this method are valid and not closed.</remarks>
+        /// <param name="handle">A <see cref="SafeHandle"/> representing the handle to the object whose security information is being set.
+        /// The handle must not be null or closed.</param>
+        /// <param name="ObjectType">The type of object for which security information is being set. This is specified as a value of the <see
+        /// cref="SE_OBJECT_TYPE"/> enumeration.</param>
+        /// <param name="SecurityInfo">A bitmask of <see cref="OBJECT_SECURITY_INFORMATION"/> values that specify the type of security information
+        /// to set (e.g., owner, group, DACL, or SACL).</param>
+        /// <param name="psidOwner">An optional <see cref="FreeSidSafeHandle"/> representing the new owner SID to set. Pass <c>null</c> to leave
+        /// the owner unchanged.</param>
+        /// <param name="psidGroup">An optional <see cref="FreeSidSafeHandle"/> representing the new group SID to set. Pass <c>null</c> to leave
+        /// the group unchanged.</param>
+        /// <param name="pDacl">An optional <see cref="LocalFreeSafeHandle"/> representing the new discretionary access control list (DACL)
+        /// to set. Pass <c>null</c> to leave the DACL unchanged.</param>
+        /// <param name="pSacl">An optional <see cref="LocalFreeSafeHandle"/> representing the new system access control list (SACL) to set.
+        /// Pass <c>null</c> to leave the SACL unchanged.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null or closed.</exception>
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, FreeSidSafeHandle? psidOwner, FreeSidSafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
+        {
+            bool handleAddRef = false;
+            bool psidOwnerAddRef = false;
+            bool psidGroupAddRef = false;
+            bool pDaclAddRef = false;
+            bool pSaclAddRef = false;
+            try
+            {
+                if (handle is null || handle.IsClosed)
+                {
+                    throw new ArgumentNullException(nameof(handle));
+                }
+                if (psidOwner is not null && !psidOwner.IsClosed)
+                {
+                    psidOwner.DangerousAddRef(ref psidOwnerAddRef);
+                }
+                if (psidGroup is not null && !psidGroup.IsClosed)
+                {
+                    psidGroup.DangerousAddRef(ref psidGroupAddRef);
+                }
+                if (pDacl is not null && !pDacl.IsClosed)
+                {
+                    pDacl.DangerousAddRef(ref pDaclAddRef);
+                }
+                if (pSacl is not null && !pSacl.IsClosed)
+                {
+                    pSacl.DangerousAddRef(ref pSaclAddRef);
+                }
+                handle.DangerousAddRef(ref handleAddRef);
+                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, null != psidOwner ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, null != psidGroup ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                }
+                return res;
+            }
+            finally
+            {
+                if (pSaclAddRef)
+                {
+                    pSacl?.DangerousRelease();
+                }
+                if (pDaclAddRef)
+                {
+                    pDacl?.DangerousRelease();
+                }
+                if (psidGroupAddRef)
+                {
+                    psidGroup?.DangerousRelease();
+                }
+                if (psidOwnerAddRef)
+                {
+                    psidOwner?.DangerousRelease();
+                }
+                if (handleAddRef)
+                {
+                    handle.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves security information for a specified object, such as its owner, group, DACL, or SACL.
+        /// </summary>
+        /// <remarks>This method wraps the native <c>GetNamedSecurityInfo</c> function and provides a
+        /// managed interface for retrieving security information. The caller is responsible for freeing any handles or
+        /// memory returned by this method to avoid resource leaks.</remarks>
+        /// <param name="pObjectName">The name of the object for which to retrieve security information. This can be a file, registry key, or
+        /// other securable object.</param>
+        /// <param name="ObjectType">The type of the object specified by <paramref name="pObjectName"/>. This determines how the object name is
+        /// interpreted.</param>
+        /// <param name="SecurityInfo">A combination of flags that specify the type of security information to retrieve, such as owner, group,
+        /// DACL, or SACL.</param>
+        /// <param name="ppsidOwner">When the method returns, contains a handle to the security identifier (SID) of the object's owner. This
+        /// handle must be freed by the caller using the appropriate method.</param>
+        /// <param name="ppsidGroup">When the method returns, contains a handle to the security identifier (SID) of the object's primary group.
+        /// This handle must be freed by the caller using the appropriate method.</param>
+        /// <param name="ppDacl">A pointer to a pointer that, when the method returns, contains the discretionary access control list (DACL)
+        /// of the object. This value is null if the DACL is not requested or does not exist.</param>
+        /// <param name="ppSacl">A pointer to a pointer that, when the method returns, contains the system access control list (SACL) of the
+        /// object. This value is null if the SACL is not requested or does not exist.</param>
+        /// <param name="ppSecurityDescriptor">When the method returns, contains a pointer to the security descriptor of the object. The caller is
+        /// responsible for freeing this memory.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
+        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out FreeSidSafeHandle? ppsidOwner, out FreeSidSafeHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
+        {
+            fixed (char* pObjectNameLocal = pObjectName)
+            {
+                PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSECURITY_DESCRIPTOR = default;
+                var res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSECURITY_DESCRIPTOR);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                }
+                if (pSECURITY_DESCRIPTOR == default)
+                {
+                    throw new InvalidOperationException("Failed to retrieve security descriptor.");
+                }
+                ppsidOwner = psidOwner != default ? new FreeSidSafeHandle(psidOwner, false) : null;
+                ppsidGroup = pSidGroup != default ? new FreeSidSafeHandle(pSidGroup, false) : null;
+                ppDacl = pDacl != null ? new LocalFreeSafeHandle((IntPtr)pDacl, false) : null;
+                ppSacl = pSacl != null ? new LocalFreeSafeHandle((IntPtr)pSacl, false) : null;
+                ppSecurityDescriptor = new LocalFreeSafeHandle((IntPtr)pSECURITY_DESCRIPTOR, true);
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new Authz resource manager for managing access control and authorization operations.
+        /// </summary>
+        /// <param name="Flags">A set of flags that specify the behavior of the resource manager. This parameter can include values such as
+        /// <see langword="0"/> for default behavior.</param>
+        /// <param name="pfnDynamicAccessCheck">A callback function for performing dynamic access checks. This parameter can be <see langword="null"/> if no
+        /// dynamic access checks are required.</param>
+        /// <param name="pfnComputeDynamicGroups">A callback function for computing dynamic groups. This parameter can be <see langword="null"/> if no dynamic
+        /// group computation is required.</param>
+        /// <param name="pfnFreeDynamicGroups">A callback function for freeing resources allocated for dynamic groups. This parameter can be <see
+        /// langword="null"/> if no dynamic group resources need to be freed.</param>
+        /// <param name="szResourceManagerName">The name of the resource manager. This parameter cannot be <see langword="null"/> and must be a valid
+        /// string.</param>
+        /// <param name="phAuthzResourceManager">When this method returns, contains a handle to the initialized Authz resource manager. This handle must be
+        /// released using the appropriate cleanup method.</param>
+        /// <returns><see langword="true"/> if the resource manager was successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the initialization fails due to a system error.</exception>
+        internal static BOOL AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS Flags, PFN_AUTHZ_DYNAMIC_ACCESS_CHECK? pfnDynamicAccessCheck, PFN_AUTHZ_COMPUTE_DYNAMIC_GROUPS? pfnComputeDynamicGroups, PFN_AUTHZ_FREE_DYNAMIC_GROUPS? pfnFreeDynamicGroups, string szResourceManagerName, out AuthzFreeResourceManagerSafeHandle phAuthzResourceManager)
+        {
+            var res = PInvoke.AuthzInitializeResourceManager((uint)Flags, pfnDynamicAccessCheck, pfnComputeDynamicGroups, pfnFreeDynamicGroups, szResourceManagerName, out phAuthzResourceManager);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            if (phAuthzResourceManager.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to initialize Authz Resource Manager.");
             }
             return res;
         }
 
         /// <summary>
-        /// Sets specified security information in the security descriptor of a specified object. The caller identifies the object by a handle.
+        /// Initializes an authorization context from a security identifier (SID).
         /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="ObjectType"></param>
-        /// <param name="SecurityInfo"></param>
-        /// <param name="owner"></param>
-        /// <param name="group"></param>
-        /// <param name="dacl"></param>
-        /// <param name="sacl"></param>
-        /// <returns></returns>
-        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl)
+        /// <remarks>This method wraps the native <c>AuthzInitializeContextFromSid</c> function and
+        /// ensures proper error handling. It throws exceptions for common failure scenarios, such as invalid handles or
+        /// system errors.</remarks>
+        /// <param name="Flags">A combination of <see cref="AUTHZ_CONTEXT_FLAGS"/> values that specify the behavior of the authorization
+        /// context.</param>
+        /// <param name="UserSid">A <see cref="SafeHandle"/> representing the security identifier (SID) of the user for whom the context is
+        /// being initialized. This parameter cannot be null.</param>
+        /// <param name="hAuthzResourceManager">A <see cref="SafeHandle"/> representing the handle to the resource manager associated with the authorization
+        /// context. This parameter cannot be null.</param>
+        /// <param name="pExpirationTime">An optional expiration time for the context, specified as a nullable <see cref="long"/>. If null, the
+        /// context does not expire.</param>
+        /// <param name="Identifier">A <see cref="LUID"/> that uniquely identifies the authorization context.</param>
+        /// <param name="DynamicGroupArgs">A pointer to application-defined data used to compute dynamic groups. This parameter can be null if no
+        /// dynamic groups are required.</param>
+        /// <param name="phAuthzClientContext">When this method returns, contains an <see cref="AuthzFreeContextSafeHandle"/> representing the initialized
+        /// authorization context. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the initialization fails due to a Win32 error, or if the resulting authorization context is
+        /// invalid.</exception>
+        internal unsafe static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
-            [DllImport("advapi32.dll", SetLastError = true)]
-            static extern WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, byte[]? owner, byte[]? group, IntPtr dacl, IntPtr sacl);
-            var res = SetSecurityInfo(handle, ObjectType, SecurityInfo, owner, group, dacl, sacl);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            var res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, UserSid, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+            if (!res)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            if (phAuthzClientContext.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to initialize Authz Client Context from SID.");
             }
             return res;
+        }
+
+        /// <summary>
+        /// Performs an access check using the specified client context, access request, and security descriptors.
+        /// </summary>
+        /// <remarks>This method wraps the native <c>AuthzAccessCheck</c> function and performs additional
+        /// error handling to ensure proper resource management. The caller must ensure that all input handles and
+        /// structures are valid and properly initialized before calling this method.</remarks>
+        /// <param name="Flags">Flags that specify the behavior of the access check. This parameter can include one or more values from the
+        /// <see cref="AUTHZ_ACCESS_CHECK_FLAGS"/> enumeration.</param>
+        /// <param name="hAuthzClientContext">A handle to the client context used for the access check. This handle must be valid and initialized.</param>
+        /// <param name="pRequest">The access request structure that specifies the desired access rights and other parameters for the access
+        /// check.</param>
+        /// <param name="hAuditEvent">An optional handle to an audit event. If provided, the access check may generate audit events based on the
+        /// result.</param>
+        /// <param name="pSecurityDescriptor">A handle to the primary security descriptor against which the access check is performed. This handle must be
+        /// valid and properly initialized.</param>
+        /// <param name="OptionalSecurityDescriptorArray">An optional array of additional security descriptors to be considered during the access check. This
+        /// parameter can be empty if no additional descriptors are required.</param>
+        /// <param name="pReply">A reference to an <see cref="AUTHZ_ACCESS_REPLY"/> structure that receives the results of the access check,
+        /// including granted access rights and any error information.</param>
+        /// <param name="phAccessCheckResults">When the method returns, contains a handle to the access check results. The caller is responsible for
+        /// releasing this handle when it is no longer needed.</param>
+        /// <returns><see langword="true"/> if the access check is successful and the results are valid; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the access check fails or if the results handle is invalid.</exception>
+        internal unsafe static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
+        {
+            bool pSecurityDescriptorAddRef = false;
+            try
+            {
+                pSecurityDescriptor.DangerousAddRef(ref pSecurityDescriptorAddRef);
+                var res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                if (phAccessCheckResults.IsInvalid)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to perform Authz Access Check.");
+                }
+                return res;
+            }
+            finally
+            {
+                if (pSecurityDescriptorAddRef)
+                {
+                    pSecurityDescriptor.DangerousRelease();
+                }
+            }
         }
     }
 }

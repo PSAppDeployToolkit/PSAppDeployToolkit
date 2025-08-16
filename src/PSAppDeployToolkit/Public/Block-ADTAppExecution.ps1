@@ -123,7 +123,18 @@ function Block-ADTAppExecution
                 }
 
                 # Configure the appropriate permissions for the client/server process.
-                Set-ADTClientServerProcessPermissions
+                if (!$Script:ADT.ClientServerProcess)
+                {
+                    if (!($runAsActiveUser = Get-ADTClientServerUser))
+                    {
+                        Write-ADTLogEntry -Message "There is no active logged on user. Verifying client/server access permissions using [BUILTIN\Users]."
+                        Set-ADTClientServerProcessPermissions -SID ([PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid))
+                    }
+                    else
+                    {
+                        Set-ADTClientServerProcessPermissions -SID $runAsActiveUser.SID
+                    }
+                }
 
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{

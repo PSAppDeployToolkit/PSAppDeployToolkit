@@ -6,22 +6,34 @@
 
 function Private:Set-ADTClientServerProcessPermissions
 {
-    # If we're running under anything other than SYSTEM, assume we have access.
-    if (![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem)
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.Principal.SecurityIdentifier]$SID
+    )
+
+    # If we're running under the active user's account, return early as the user already has access.
+    if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.Equals($SID))
     {
         return
     }
 
     # Set required permissions on this module's library files.
-    $builtinUsersSid = [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid)
-    $saipParams = @{ User = "*$($builtinUsersSid.Value)"; Permission = [System.Security.AccessControl.FileSystemRights]::ReadAndExecute; PermissionType = 'Allow'; Method = 'AddAccessRule'; InformationAction = 'SilentlyContinue' }
-    Get-ChildItem -LiteralPath $("$Script:PSScriptRoot\lib"; if (Test-ADTModuleInitialized) { ($adtConfig = Get-ADTConfig).Assets.Logo; $adtConfig.Assets.LogoDark; $adtConfig.Assets.Banner }) | & {
-        process
+    $saipParams = @{ User = "*$($SID.Value)"; Permission = [System.Security.AccessControl.FileSystemRights]::ReadAndExecute; PermissionType = 'Allow'; Method = 'AddAccessRule'; InformationAction = 'SilentlyContinue' }
+    try
+    {
+        foreach ($path in (Get-ChildItem -LiteralPath $("$Script:PSScriptRoot\lib"; if (Test-ADTModuleInitialized) { ($adtConfig = Get-ADTConfig).Assets.Logo; $adtConfig.Assets.LogoDark; $adtConfig.Assets.Banner })).FullName)
         {
-            if (!((Get-Acl -LiteralPath $_.FullName).Access | & { process { if ($_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Equals($builtinUsersSid) -and ($_.FileSystemRights -band $saipParams.Permission)) { return $_ } } }))
+            if (![PSADT.FileSystem.FileSystemUtilities]::TestEffectiveAccess($path, $SID, $saipParams.Permission))
             {
-                Set-ADTItemPermission @saipParams -Path $_.FullName
+                Set-ADTItemPermission @saipParams -Path $path
             }
         }
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }
