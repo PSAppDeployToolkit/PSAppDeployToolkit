@@ -341,132 +341,132 @@
 				<enum id="LanguageOverride" valueName="LanguageOverride" required="true">
 					<item displayName="$(string.LanguageOverrideArabic)">
 						<value>
-							<string>AR</string>
+							<string>ar</string>
 						</value>
 					</item>
                     <item displayName="$(string.LanguageOverrideBulgarian)">
                         <value>
-                            <string>BG</string>
+                            <string>bg</string>
                         </value>
                     </item>
 					<item displayName="$(string.LanguageOverrideCzech)">
 						<value>
-							<string>CZ</string>
+							<string>cs</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideDanish)">
 						<value>
-							<string>DA</string>
+							<string>da</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideGerman)">
 						<value>
-							<string>DE</string>
+							<string>de</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideEnglish)">
 						<value>
-							<string>EN</string>
+							<string>en</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideGreek)">
 						<value>
-							<string>EL</string>
+							<string>el</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideSpanish)">
 						<value>
-							<string>ES</string>
+							<string>es</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideFinnish)">
 						<value>
-							<string>FI</string>
+							<string>fi</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideFrench)">
 						<value>
-							<string>FR</string>
+							<string>fr</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideHebrew)">
 						<value>
-							<string>HE</string>
+							<string>he</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideHungarian)">
 						<value>
-							<string>HU</string>
+							<string>hu</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideItalian)">
 						<value>
-							<string>IT</string>
+							<string>it</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideJapanese)">
 						<value>
-							<string>JA</string>
+							<string>ja</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideKorean)">
 						<value>
-							<string>KO</string>
+							<string>ko</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideDutch)">
 						<value>
-							<string>NL</string>
+							<string>nl</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideNorwegian)">
 						<value>
-							<string>NB</string>
+							<string>nb</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverridePolish)">
 						<value>
-							<string>PL</string>
+							<string>pl</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverridePortuguesePortugal)">
 						<value>
-							<string>PT</string>
+							<string>pt</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverridePortugueseBrazil)">
 						<value>
-							<string>PT-BR</string>
+							<string>pt-BR</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideRussian)">
 						<value>
-							<string>RU</string>
+							<string>ru</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideSlovak)">
 						<value>
-							<string>SK</string>
+							<string>sk</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideSwedish)">
 						<value>
-							<string>SV</string>
+							<string>sv</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideTurkish)">
 						<value>
-							<string>TR</string>
+							<string>tr</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideChineseSimplified)">
 						<value>
-							<string>ZH-Hans</string>
+							<string>zh-CN</string>
 						</value>
 					</item>
 					<item displayName="$(string.LanguageOverrideChineseTraditional)">
 						<value>
-							<string>ZH-Hant</string>
+							<string>zh-HK</string>
 						</value>
 					</item>
 				</enum>
