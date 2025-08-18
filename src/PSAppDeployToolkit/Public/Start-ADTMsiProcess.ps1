@@ -247,10 +247,6 @@ function Start-ADTMsiProcess
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogFileName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or white space.'))
                 }
-                if ([System.IO.Path]::GetExtension($_) -match '^\.(log|txt)$')
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogFileName -ProvidedValue $_ -ExceptionMessage 'The specified input cannot have an extension.'))
-                }
                 return $true
             })]
         [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
