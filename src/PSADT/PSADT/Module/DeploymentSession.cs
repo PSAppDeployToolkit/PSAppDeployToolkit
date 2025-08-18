@@ -1206,7 +1206,7 @@ namespace PSADT.Module
             {
                 return (T)CallerSessionState.PSVariable.GetValue(propertyName);
             }
-            return (T)(Enum.TryParse<DeploymentSettings>(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
+            return (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
         }
 
         /// <summary>
@@ -1707,6 +1707,11 @@ namespace PSADT.Module
         /// Gets the deployment session's log filename.
         /// </summary>
         public string LogName => GetPropertyValue<string>();
+
+        /// <summary>
+        /// Gets a value indicating whether administrative privileges are required.
+        /// </summary>
+        public bool RequireAdmin => GetPropertyValue<bool>();
 
 
         #endregion
