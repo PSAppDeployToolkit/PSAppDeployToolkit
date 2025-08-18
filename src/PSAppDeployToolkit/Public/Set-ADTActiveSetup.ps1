@@ -100,6 +100,7 @@ function Set-ADTActiveSetup
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'CreateNoExecute')]
         [ValidateScript({
                 if (('.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
                 {
