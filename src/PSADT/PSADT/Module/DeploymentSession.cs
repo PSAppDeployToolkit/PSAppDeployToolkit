@@ -362,8 +362,8 @@ namespace PSADT.Module
                             // Generate list of MSI executables for testing later on.
                             if (msiExecList.Count > 0)
                             {
-                                DefaultMsiExecutablesList = msiExecList.AsReadOnly();
-                                WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(static p => p.Name))}].");
+                                _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).ToList().AsReadOnly();
+                                WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                             }
                         }
 
@@ -1365,12 +1365,6 @@ namespace PSADT.Module
         public void AddMountedWimFile(FileInfo wimFile) => MountedWimFiles.Add(wimFile);
 
         /// <summary>
-        /// Gets the default MSI executables list.
-        /// </summary>
-        /// <returns>An array of default MSI executables.</returns>
-        public IReadOnlyList<ProcessDefinition> GetDefaultMsiExecutablesList() => DefaultMsiExecutablesList;
-
-        /// <summary>
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
@@ -1439,11 +1433,6 @@ namespace PSADT.Module
         /// Gets the mounted WIM files within this session.
         /// </summary>
         private readonly List<FileInfo> MountedWimFiles = [];
-
-        /// <summary>
-        /// Gets the list of executables found within a Zero-Config MSI file.
-        /// </summary>
-        private readonly ReadOnlyCollection<ProcessDefinition> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessDefinition>([]);
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.

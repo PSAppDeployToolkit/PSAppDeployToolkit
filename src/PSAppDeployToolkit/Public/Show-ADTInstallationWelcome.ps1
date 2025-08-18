@@ -841,12 +841,6 @@ function Show-ADTInstallationWelcome
                     $Silent = $true
                 }
 
-                # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseProcesses list
-                if ($adtSession -and ($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
-                {
-                    $CloseProcesses = $(if ($CloseProcesses) { $CloseProcesses }; $msiExecutables)
-                }
-
                 # Check disk space requirements if specified
                 if ($adtSession -and $CheckDiskSpace -and ($scriptDir = try { Get-ADTSessionCacheScriptDirectory } catch { $null = $null }))
                 {
