@@ -354,7 +354,7 @@ namespace PSADT.Module
                         }
 
                         // Read the MSI and get the installation details.
-                        if (Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
+                        if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
                             var exeProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                             List<ProcessDefinition> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
