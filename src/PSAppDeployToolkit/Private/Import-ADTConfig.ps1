@@ -138,7 +138,7 @@ function Private:Import-ADTConfig
     # Append the toolkit's name onto the temporary path.
     $config.Toolkit.TempPath = Join-Path -Path $config.Toolkit.TempPath -ChildPath $adtEnv.appDeployToolkitName
 
-    # Finally, handle some correctly renamed language identifiers for 4.1.1.
+    # Finally, handle some correctly renamed language identifiers for 4.1.2.
     if (![System.String]::IsNullOrWhiteSpace($config.UI.LanguageOverride))
     {
         $translator = @{
