@@ -165,8 +165,7 @@ function Resolve-ADTErrorRecord
             {
                 if ($propName -eq 'TargetObject')
                 {
-                    $osParams = if ($errorObject.$propName -isnot [System.Collections.IDictionary]) { @{ Width = [System.Int32]::MaxValue } } else { @{} }
-                    $logErrorProperties.Add($propName, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines(($errorObject.$propName | Out-String @osParams)))
+                    $logErrorProperties.Add($propName, [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines(($errorObject.$propName | Out-String)))
                 }
                 else
                 {
