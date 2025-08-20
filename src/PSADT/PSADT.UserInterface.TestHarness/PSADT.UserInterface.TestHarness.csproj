@@ -17,8 +17,8 @@
     <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
     <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.1.0</AssemblyVersion>
-    <InformationalVersion>4.1.1</InformationalVersion>
+    <AssemblyVersion>4.1.2.0</AssemblyVersion>
+    <InformationalVersion>4.1.2</InformationalVersion>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
