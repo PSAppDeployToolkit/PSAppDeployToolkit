@@ -2,8 +2,20 @@
 
 namespace PSADT.UserInterface.Dialogs
 {
-    internal static class DialogTools
+    /// <summary>
+    /// Provides utility methods and constants for working with dialog-related functionality,  such as managing button
+    /// text and parsing custom text formatting tags.
+    /// </summary>
+    /// <remarks>This class includes predefined constants for dialog button text and internal utilities  for
+    /// handling custom text formatting tags. It is designed to support dialog-related  operations in
+    /// applications.</remarks>
+    public static class DialogTools
     {
+        /// <summary>
+        /// Gets the text for the button used to block execution in a dialog.
+        /// </summary>
+        public static string BlockExecutionButtonText = "OK";
+
         /// <summary>
         /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as
         /// [url], [accent], [bold], and [italic].

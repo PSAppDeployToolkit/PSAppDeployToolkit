@@ -149,8 +149,8 @@ function Block-ADTAppExecution
                     MinimizeWindows = $false
                     DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
                     MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
+                    ButtonRightText = [PSADT.UserInterface.Dialogs.DialogTools]::BlockExecutionButtonText
                     Icon = [PSADT.UserInterface.Dialogs.DialogSystemIcon]::Warning
-                    ButtonRightText = 'OK'
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {
@@ -166,6 +166,7 @@ function Block-ADTAppExecution
                 $blockExecArgs.Add('Options', [PSADT.ClientServer.DataSerialization]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))
                 $blockExecArgs.Add('DialogType', [PSADT.UserInterface.Dialogs.DialogType]::CustomDialog.ToString())
                 $blockExecArgs.Add('DialogStyle', $adtConfig.UI.DialogStyle)
+                $blockExecArgs.Add('BlockExecution', $true)
 
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$($adtEnv.appDeployToolkitName)"; $blockExecRegName = 'BlockExecutionCommand'

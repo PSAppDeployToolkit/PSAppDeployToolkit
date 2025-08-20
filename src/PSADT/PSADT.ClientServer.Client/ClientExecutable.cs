@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Win32;
+using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
@@ -181,14 +182,14 @@ namespace PSADT.ClientServer
             }
 
             // Check whether an ArgumentsDictionary was provided.
-            if (arguments.TryGetValue("ArgV", out string? argvDictValue))
+            if (arguments.TryGetValue("ArgumentsDictionary", out var argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
             {
                 if (argvDictValue.StartsWith("HKEY"))
                 {
                     // Provided value is a registry key path.
                     if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue.Substring(0, valueDivider), argvDictValue.Substring(valueDivider + 1), null) is not string argvDictContent)
                     {
-                        throw new ClientException($"The specified ArgV registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
+                        throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
                     }
                     arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
                 }
@@ -506,6 +507,12 @@ namespace PSADT.ClientServer
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
         private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null)
         {
+            // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
+            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem)
+            {
+                return SerializeObject(DialogTools.BlockExecutionButtonText);
+            }
+
             // Confirm we have a DialogType and that it's valid.
             if (!arguments.TryGetValue("DialogType", out string? dialogTypeArg) || string.IsNullOrWhiteSpace(dialogTypeArg))
             {
