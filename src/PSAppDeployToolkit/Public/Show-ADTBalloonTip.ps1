@@ -27,6 +27,9 @@ function Show-ADTBalloonTip
     .PARAMETER NoWait
         Creates the balloon tip asynchronously.
 
+    .PARAMETER Force
+        Creates the balloon tip irrespective of whether running silently or not.
+
     .INPUTS
         None
 
@@ -76,7 +79,10 @@ function Show-ADTBalloonTip
         [System.Nullable[System.UInt32]]$BalloonTipTime = 10000,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait
+        [System.Management.Automation.SwitchParameter]$NoWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     dynamicparam
@@ -104,6 +110,7 @@ function Show-ADTBalloonTip
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtConfig = Get-ADTConfig
+        $forced = $false
 
         # Set up defaults if not specified.
         $BalloonTipTitle = if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
@@ -136,13 +143,21 @@ function Show-ADTBalloonTip
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. BalloonTipText: $BalloonTipText"
-                    return
+                    if (!$Force)
+                    {
+                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. BalloonTipText: $BalloonTipText"
+                        return
+                    }
+                    $forced = $true
                 }
                 if (Test-ADTUserIsBusy)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
-                    return
+                    if (!$Force)
+                    {
+                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
+                        return
+                    }
+                    $forced = $true
                 }
                 if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
@@ -163,11 +178,11 @@ function Show-ADTBalloonTip
                 # Display the balloon tip via our client/server process.
                 if ($NoWait)
                 {
-                    Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
+                    Write-ADTLogEntry -Message "$(("Displaying", "Forcibly displaying")[$forced]) balloon tip notification asynchronously with message [$BalloonTipText]."
                     Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options -NoWait
                     return
                 }
-                Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
+                Write-ADTLogEntry -Message "$(("Displaying", "Forcibly displaying")[$forced]) balloon tip notification with message [$BalloonTipText]."
                 Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options
             }
             catch
