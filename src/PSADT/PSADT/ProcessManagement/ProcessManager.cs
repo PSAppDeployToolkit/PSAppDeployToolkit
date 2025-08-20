@@ -552,9 +552,9 @@ namespace PSADT.ProcessManagement
 
             // Test whether the process is part of an existing job object.
             using (var cProcess = Process.GetCurrentProcess())
-            using (cProcess.SafeHandle)
+            using (var cProcessSafeHandle = cProcess.SafeHandle)
             {
-                Kernel32.IsProcessInJob(cProcess.SafeHandle, null, out var inJob);
+                Kernel32.IsProcessInJob(cProcessSafeHandle, null, out var inJob);
                 if (!inJob)
                 {
                     return CreateProcessUsingTokenStatus.OK;

@@ -185,13 +185,13 @@ namespace PSADT.FileSystem
 
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
             using (var currentProcess = Process.GetCurrentProcess())
-            using (currentProcess.SafeHandle)
+            using (var currentProcessHandle = currentProcess.SafeHandle)
             {
                 foreach (var handleEntry in handleEntries)
                 {
                     using var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
                     using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
-                    Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcess.SafeHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                    Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                     localHandle.Dispose();
                     localHandle = null;
                 }

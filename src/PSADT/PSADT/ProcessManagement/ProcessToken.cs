@@ -53,9 +53,10 @@ namespace PSADT.ProcessManagement
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
                 foreach (var explorerProcess in Process.GetProcessesByName("explorer").OrderBy(static p => p.StartTime))
                 {
-                    using (explorerProcess) using (explorerProcess.SafeHandle)
+                    using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                    using (explorerProcess)
                     {
-                        AdvApi32.OpenProcessToken(explorerProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+                        AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
                         if (TokenManager.GetTokenSid(hProcessToken) == sid)
                         {
                             hUserToken = hProcessToken;
@@ -113,9 +114,9 @@ namespace PSADT.ProcessManagement
         internal static SafeFileHandle GetUnelevatedToken()
         {
             using (var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()))
-            using (cProcess.SafeHandle)
+            using (var cProcessSafeHandle = cProcess.SafeHandle)
             {
-                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+                AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
                 using (hProcessToken)
                 {
                     if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
