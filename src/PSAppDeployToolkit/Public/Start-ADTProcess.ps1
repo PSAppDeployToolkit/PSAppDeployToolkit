@@ -643,13 +643,8 @@ function Start-ADTProcess
                     Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
                     if ($PassThru)
                     {
-                        if (!$execution.Task.IsCompleted)
-                        {
-                            Write-ADTLogEntry -Message 'PassThru parameter specified, returning task for external tracking.'
-                            return $execution
-                        }
-                        Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
-                        return $execution.Task.Result
+                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning task for external tracking.'
+                        return $execution
                     }
                     return
                 }
