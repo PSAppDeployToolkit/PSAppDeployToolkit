@@ -25,7 +25,6 @@ using PSADT.TerminalServices;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 
@@ -147,65 +146,8 @@ namespace PSADT.ProcessManagement
                     PROCESS_INFORMATION pi = new();
                     if (null != launchInfo.Username && launchInfo.Username != AccountUtilities.CallerUsername && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
                     {
-                        // Get the user's token.
-                        SafeFileHandle hUserToken = null!;
-                        if (!AccountUtilities.CallerIsLocalSystem)
-                        {
-                            // When we're not local system, we need to find the user's Explorer process and get its token.
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
-                            foreach (var explorerProcess in Process.GetProcessesByName("explorer").OrderBy(static p => p.StartTime))
-                            {
-                                using (explorerProcess) using (explorerProcess.SafeHandle)
-                                {
-                                    AdvApi32.OpenProcessToken(explorerProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
-                                    if (TokenManager.GetTokenSid(hProcessToken) == session.SID)
-                                    {
-                                        hUserToken = hProcessToken;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // When we're local system, we can just get the primary token for the user.
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                            WtsApi32.WTSQueryUserToken(session.SessionId, out hUserToken);
-                        }
-
-                        // Throw if for whatever reason, we couldn't get a token.
-                        if (null == hUserToken)
-                        {
-                            throw new InvalidOperationException($"Failed to retrieve a primary token for user [{session.NTAccount}]. Ensure the user is logged on and has an active session.");
-                        }
-
-                        // Get the primary token for the user, either linked or not.
-                        SafeFileHandle hPrimaryToken;
-                        using (hUserToken)
-                        {
-                            if (launchInfo.UseLinkedAdminToken || launchInfo.UseHighestAvailableToken)
-                            {
-                                try
-                                {
-                                    hPrimaryToken = TokenManager.GetLinkedPrimaryToken(hUserToken);
-                                }
-                                catch (Exception ex)
-                                {
-                                    if (!launchInfo.UseHighestAvailableToken)
-                                    {
-                                        throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{session.NTAccount}].", ex);
-                                    }
-                                    hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
-                                }
-                            }
-                            else
-                            {
-                                hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
-                            }
-                        }
-
                         // Start the process with the user's token.
-                        using (hPrimaryToken)
+                        using (var hPrimaryToken = ProcessToken.GetUserPrimaryToken(session.NTAccount, session.SID, session.SessionId, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken))
                         {
                             // Without creating an environment block, the process will take on the environment of the SYSTEM account.
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
@@ -234,7 +176,7 @@ namespace PSADT.ProcessManagement
                     else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem)
                     {
                         // We're running elevated but have been asked to de-elevate.
-                        using (var hPrimaryToken = GetUnelevatedToken())
+                        using (var hPrimaryToken = ProcessToken.GetUnelevatedToken())
                         {
                             OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
                             CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, SafeEnvironmentBlockHandle.Null, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
@@ -428,35 +370,6 @@ namespace PSADT.ProcessManagement
 
             // Return the session information for the user.
             return session;
-        }
-
-        /// <summary>
-        /// Retrieves a primary token for the Explorer process with limited access rights.
-        /// </summary>
-        /// <remarks>This method obtains a token associated with the Explorer process and duplicates it to
-        /// create a primary token. The returned token can be used for operations requiring an unelevated
-        /// context.</remarks>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the Explorer process, or <see
-        /// langword="null"/> if the operation fails.</returns>
-        private static SafeFileHandle GetUnelevatedToken()
-        {
-            using (var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()))
-            using (cProcess.SafeHandle)
-            {
-                AdvApi32.OpenProcessToken(cProcess.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
-                using (hProcessToken)
-                {
-                    if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
-                    {
-                        throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
-                    }
-                    if (TokenManager.IsTokenElevated(hProcessToken))
-                    {
-                        throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.");
-                    }
-                    return TokenManager.GetPrimaryToken(hProcessToken);
-                }
-            }
         }
 
         /// <summary>

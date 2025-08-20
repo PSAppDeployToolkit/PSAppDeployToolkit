@@ -76,8 +76,8 @@ namespace PSADT.ClientServer
                     new(["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()]),
                     Environment.SystemDirectory,
                     Username,
-                    false,
-                    true,
+                    UseLinkedAdminToken,
+                    UseHighestAvailableToken,
                     false,
                     false,
                     true,
@@ -731,6 +731,20 @@ namespace PSADT.ClientServer
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
         public bool IsRunning => null != _clientProcess && !_clientProcess.Process.HasExited;
+
+        /// <summary>
+        /// Indicates whether a linked administrator token should be used.
+        /// </summary>
+        /// <remarks>This constant is set to <see langword="false"/>, meaning that linked administrator
+        /// tokens are not utilized by default. This value is internal and cannot be modified.</remarks>
+        internal const bool UseLinkedAdminToken = false;
+
+        /// <summary>
+        /// Indicates whether the highest available token should be used.
+        /// </summary>
+        /// <remarks>This constant is set to <see langword="true"/> and is intended for internal use to
+        /// specify that the highest available token should be utilized in relevant operations.</remarks>
+        internal const bool UseHighestAvailableToken = true;
 
         /// <summary>
         /// Indicates whether the object has been disposed.
