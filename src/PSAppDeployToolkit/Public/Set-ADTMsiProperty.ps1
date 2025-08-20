@@ -38,8 +38,6 @@ function Set-ADTMsiProperty
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
-
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
