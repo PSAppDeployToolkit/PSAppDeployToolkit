@@ -33,6 +33,9 @@ function Start-ADTProcess
     .PARAMETER UseLinkedAdminToken
         Use a user's linked administrative token while running the process under their context.
 
+    .PARAMETER UseHighestAvailableToken
+        Use a user's linked administrative token if it's available while running the process under their context.
+
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
@@ -222,6 +225,17 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$UseHighestAvailableToken,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
@@ -569,7 +583,7 @@ function Start-ADTProcess
                     $WorkingDirectory,
                     $Username,
                     $UseLinkedAdminToken,
-                    $false,
+                    $UseHighestAvailableToken,
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
                     $false,
