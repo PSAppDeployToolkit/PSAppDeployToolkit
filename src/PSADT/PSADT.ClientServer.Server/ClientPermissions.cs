@@ -45,7 +45,7 @@ namespace PSADT.ClientServer
             SafeFileHandle? hPrimaryToken = null;
             if (runAsActiveUser.SessionId != uint.MaxValue)
             {
-                ProcessToken.GetUserPrimaryToken(runAsActiveUser.NTAccount, runAsActiveUser.SID, runAsActiveUser.SessionId, ServerInstance.UseLinkedAdminToken, ServerInstance.UseHighestAvailableToken);
+                hPrimaryToken = ProcessToken.GetUserPrimaryToken(runAsActiveUser.NTAccount, runAsActiveUser.SID, runAsActiveUser.SessionId, ServerInstance.UseLinkedAdminToken, ServerInstance.UseHighestAvailableToken);
             }
 
             // Ensure the user has the required file system permissions for the specified paths.
