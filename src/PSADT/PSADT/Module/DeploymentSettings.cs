@@ -8,7 +8,6 @@ namespace PSADT.Module
     [Flags]
     internal enum DeploymentSettings : uint
     {
-        None = 0,
         Disposed = 1,
         SuppressRebootPassThru = 2,
         TerminalServerMode = 4,
