@@ -615,7 +615,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (phAuthzResourceManager.IsInvalid)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to initialize Authz Resource Manager.");
+                throw new InvalidOperationException("Failed to initialize Authz Resource Manager.");
             }
             return res;
         }
@@ -652,7 +652,40 @@ namespace PSADT.LibraryInterfaces
             }
             if (phAuthzClientContext.IsInvalid)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to initialize Authz Client Context from SID.");
+                throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Initializes an authorization context from a specified token.
+        /// </summary>
+        /// <param name="Flags">A combination of <see cref="AUTHZ_CONTEXT_FLAGS"/> values that specify the behavior of the authorization
+        /// context.</param>
+        /// <param name="TokenHandle">A handle to the token from which the authorization context is initialized. This handle must be valid and
+        /// cannot be null.</param>
+        /// <param name="hAuthzResourceManager">A handle to the resource manager associated with the authorization context. This handle must be valid and
+        /// cannot be null.</param>
+        /// <param name="pExpirationTime">An optional expiration time for the authorization context, specified as a <see cref="long"/> value.  If
+        /// null, the context does not have an expiration time.</param>
+        /// <param name="Identifier">A <see cref="LUID"/> that uniquely identifies the authorization context.</param>
+        /// <param name="DynamicGroupArgs">A pointer to dynamic group arguments used during the initialization of the authorization context.  This
+        /// value can be <see cref="IntPtr.Zero"/> if no dynamic group arguments are provided.</param>
+        /// <param name="phAuthzClientContext">When this method returns, contains an <see cref="AuthzFreeContextSafeHandle"/> representing the initialized
+        /// authorization context.  This handle must be released by the caller when no longer needed.</param>
+        /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
+        internal unsafe static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        {
+            var res = PInvoke.AuthzInitializeContextFromToken((uint)Flags, TokenHandle, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            if (phAuthzClientContext.IsInvalid)
+            {
+                throw new InvalidOperationException("Failed to initialize Authz Client Context from Token.");
             }
             return res;
         }
@@ -694,7 +727,7 @@ namespace PSADT.LibraryInterfaces
                 }
                 if (phAccessCheckResults.IsInvalid)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to perform Authz Access Check.");
+                    throw new InvalidOperationException("Failed to perform Authz Access Check.");
                 }
                 return res;
             }

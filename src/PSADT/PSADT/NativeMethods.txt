@@ -23,6 +23,7 @@ AssignProcessToJobObject
 AttachThreadInput
 AuthzAccessCheck
 AuthzInitializeContextFromSid
+AuthzInitializeContextFromToken
 AuthzInitializeResourceManager
 AUTHZ_RESOURCE_MANAGER_FLAGS
 AUTHZ_SKIP_TOKEN_GROUPS

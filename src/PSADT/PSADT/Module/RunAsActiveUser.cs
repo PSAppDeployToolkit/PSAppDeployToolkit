@@ -16,13 +16,15 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="nTAccount">The NT account associated with the user. Cannot be <see langword="null"/>.</param>
         /// <param name="sID">The security identifier (SID) for the user. Cannot be <see langword="null"/>.</param>
+        /// <param name="sessionId">The session ID of the user.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
-        public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID)
+        public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId)
         {
             NTAccount = nTAccount ?? throw new ArgumentNullException(nameof(nTAccount));
             SID = sID ?? throw new ArgumentNullException(nameof(sID));
             string[] accountParts = nTAccount.Value.Split('\\');
             UserName = accountParts[1]; DomainName = accountParts[0];
+            SessionId = sessionId;
         }
 
         /// <summary>
@@ -50,5 +52,10 @@ namespace PSADT.Module
         /// Represents the domain name associated with the current context.
         /// </summary>
         public readonly string DomainName;
+
+        /// <summary>
+        /// Represents the session ID of the user.
+        /// </summary>
+        public readonly uint SessionId;
     }
 }
