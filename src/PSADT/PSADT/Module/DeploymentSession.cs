@@ -863,7 +863,7 @@ namespace PSADT.Module
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
                     }
-                    if (_deployMode != DeployMode.Auto)
+                    else if (_deployMode != DeployMode.Auto)
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was explicitly set to [{_deployMode}].");
                     }
