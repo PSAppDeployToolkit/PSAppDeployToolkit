@@ -50,6 +50,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.labelCloseProcessesMessage.Text = StripFormattingTags(options.Strings.Classic.CloseAppsMessage);
                 this.labelDeferralExpiryMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryMessage);
                 this.labelDeferWarningMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryWarning);
+                this.buttonCloseProcesses.Text = StripFormattingTags(options.Strings.Classic.ButtonClose);
+                this.buttonDefer.Text = StripFormattingTags(options.Strings.Classic.ButtonDefer);
+                this.buttonContinue.Text = StripFormattingTags(options.Strings.Classic.ButtonContinue);
                 this.toolTipButtonContinue.RemoveAll();
                 hideCloseButton = options.HideCloseButton;
                 forcedCountdown = options.ForcedCountdown;
