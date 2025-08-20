@@ -414,6 +414,11 @@
 							<string>ko</string>
 						</value>
 					</item>
+					<item displayName="$(string.LanguageOverrideLatvian)">
+						<value>
+							<string>lv</string>
+						</value>
+					</item>
 					<item displayName="$(string.LanguageOverrideDutch)">
 						<value>
 							<string>nl</string>

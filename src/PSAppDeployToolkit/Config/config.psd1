@@ -134,6 +134,7 @@
             it               Italian
             ja               Japanese
             ko               Korean
+            lv               Latvian
             nl               Dutch
             nb               Norwegian (Bokmål)
             pl               Polish

@@ -111,6 +111,7 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="LanguageOverrideItalian">Italian</string>
 			<string id="LanguageOverrideJapanese">Japanese</string>
 			<string id="LanguageOverrideKorean">Korean</string>
+			<string id="LanguageOverrideLatvian">Latvian</string>
 			<string id="LanguageOverrideDutch">Dutch</string>
 			<string id="LanguageOverrideNorwegian">Norwegian (Bokmål)</string>
 			<string id="LanguageOverridePolish">Polish</string>
