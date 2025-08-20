@@ -112,9 +112,9 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID associated with the specified process.</returns>
         public static string GetApplicationUserModelId(Process process)
         {
-            using (process.SafeHandle)
+            using (var hProcess = process.SafeHandle)
             {
-                return GetApplicationUserModelId(process.SafeHandle);
+                return GetApplicationUserModelId(hProcess);
             }
         }
 
