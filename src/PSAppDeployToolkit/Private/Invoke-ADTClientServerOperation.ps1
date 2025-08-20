@@ -314,6 +314,7 @@ function Private:Invoke-ADTClientServerOperation
         # Set up the parameters for Start-ADTProcessAsUser.
         $sapauParams = @{
             Username = $User.NTAccount
+            UseHighestAvailableToken = $true
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
             MsiExecWaitTime = 1

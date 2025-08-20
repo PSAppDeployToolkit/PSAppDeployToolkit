@@ -173,7 +173,7 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
-                    else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem)
+                    else if ((null != launchInfo.Username && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem))
                     {
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = ProcessToken.GetUnelevatedToken())
