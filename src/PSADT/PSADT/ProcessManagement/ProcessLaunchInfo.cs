@@ -1,10 +1,11 @@
 ﻿using System;
-using System.IO;
-using System.Text;
-using System.Security.Principal;
-using System.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Security.Principal;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using PSADT.LibraryInterfaces;
 
 namespace PSADT.ProcessManagement
@@ -71,7 +72,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate the file path is rooted.
-            if (!Path.IsPathRooted(FilePath) && !useShellExecute)
+            if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%"))
             {
                 throw new ArgumentException("File path must be fully qualified.", nameof(filePath));
             }
