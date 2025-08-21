@@ -235,6 +235,7 @@ function Uninstall-ADTApplication
             WaitForChildProcesses = $WaitForChildProcesses
             KillChildProcessesWithParent = $KillChildProcessesWithParent
             ExitOnProcessFailure = $ExitOnProcessFailure
+            ExpandEnvironmentVariables = $true
             WaitForMsiExec = $true
             CreateNoWindow = $true
             PassThru = $PassThru
@@ -251,11 +252,6 @@ function Uninstall-ADTApplication
         {
             $sapParams.Add('IgnoreExitCodes', $IgnoreExitCodes)
         }
-
-        # Build out regex for determining valid exe uninstall strings.
-        $invalidFileNameChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidFileNameChars()))
-        $invalidPathChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidPathChars()))
-        $validUninstallString = [System.Text.RegularExpressions.Regex]::new("^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$", [System.Text.RegularExpressions.RegexOptions]::Compiled)
     }
 
     process
@@ -293,65 +289,53 @@ function Uninstall-ADTApplication
                 }
                 else
                 {
-                    $uninstallString = if (![System.String]::IsNullOrWhiteSpace($removeApplication.QuietUninstallString))
+                    # Set up the FilePath to use for the uninstall.
+                    $uninstallProperty = if (![System.String]::IsNullOrWhiteSpace($removeApplication.QuietUninstallStringFilePath))
                     {
-                        $removeApplication.QuietUninstallString
+                        "QuietUninstallString"
                     }
-                    elseif (![System.String]::IsNullOrWhiteSpace($removeApplication.UninstallString))
+                    elseif (![System.String]::IsNullOrWhiteSpace($removeApplication.UninstallStringFilePath))
                     {
-                        $removeApplication.UninstallString
+                        "UninstallString"
                     }
                     else
                     {
                         Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
-
-                    if (!($results = $validUninstallString.Matches($uninstallString)).Success)
-                    {
-                        Write-ADTLogEntry -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
-                        continue
-                    }
-                    $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($results.Groups[1].Value)
+                    $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"
                     if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
                     {
                         $sapParams.FilePath = $commandPath.Source
                     }
 
+                    # Set up the ArgumentList for the uninstall.
                     if ($PSBoundParameters.ContainsKey('ArgumentList'))
                     {
                         $sapParams.ArgumentList = $ArgumentList
                     }
-                    elseif (![System.String]::IsNullOrWhiteSpace($results.Groups[2].Value))
+                    elseif (($null -ne ([System.String[]]$argv = $($removeApplication."$($uninstallProperty)ArgumentList"))) -and ($argv.Count -gt 0))
                     {
-                        $sapParams.ArgumentList = [System.Environment]::ExpandEnvironmentVariables($results.Groups[2].Value.Trim())
+                        $sapParams.ArgumentList = $argv
                     }
                     else
                     {
                         $null = $sapParams.Remove('ArgumentList')
                     }
 
+                    # Handle any additional arguments to pass.
                     if ($AdditionalArgumentList)
                     {
                         if ($sapParams.ContainsKey('ArgumentList'))
                         {
-                            $existing = if ($sapParams.ArgumentList -is [System.String] -or ($sapParams.ArgumentList -is [System.String[]] -and $sapParams.ArgumentList.Count -eq 1))
+                            if ($AdditionalArgumentList.Length -eq 1)
                             {
-                                [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($sapParams.ArgumentList)
+                                $sapParams.ArgumentList += [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($AdditionalArgumentList[0])
                             }
                             else
                             {
-                                $sapParams.ArgumentList
+                                $sapParams.ArgumentList += $AdditionalArgumentList
                             }
-                            $additional = if ($AdditionalArgumentList -is [System.String] -or ($AdditionalArgumentList -is [System.String[]] -and $AdditionalArgumentList.Count -eq 1))
-                            {
-                                [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($AdditionalArgumentList)
-                            }
-                            else
-                            {
-                                $AdditionalArgumentList
-                            }
-                            $sapParams.ArgumentList = @($existing) + @($additional)
                         }
                         else
                         {
