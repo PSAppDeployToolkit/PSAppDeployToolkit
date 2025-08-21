@@ -184,7 +184,7 @@ function Show-ADTInstallationProgress
         }
 
         # Bypass if no one's logged on to answer the dialog.
-        if (!($runAsActiveUser = Get-ADTClientServerUser))
+        if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return

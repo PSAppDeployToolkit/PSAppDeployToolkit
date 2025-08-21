@@ -6,6 +6,14 @@
 
 function Private:Get-ADTClientServerUser
 {
+    [CmdletBinding()]
+    [OutputType([PSADT.Module.RunAsActiveUser])]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$AllowSystemFallback
+    )
+
     # Get the active user from the environment if available.
     $runAsActiveUser = if ((Test-ADTSessionActive) -or (Test-ADTModuleInitialized))
     {
@@ -32,7 +40,7 @@ function Private:Get-ADTClientServerUser
             return $runAsActiveUser
         }
     }
-    elseif ([System.Environment]::UserInteractive)
+    elseif ([System.Environment]::UserInteractive -and (![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -or $AllowSystemFallback))
     {
         # If there's no RunAsActiveUser but the current process is interactive, just run it as the current user.
         return [PSADT.Module.RunAsActiveUser]::new([PSADT.AccountManagement.AccountUtilities]::CallerUsername, [PSADT.AccountManagement.AccountUtilities]::CallerSid, [PSADT.AccountManagement.AccountUtilities]::CallerSessionId)

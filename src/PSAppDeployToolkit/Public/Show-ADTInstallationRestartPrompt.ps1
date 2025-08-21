@@ -204,7 +204,7 @@ function Show-ADTInstallationRestartPrompt
                 }
 
                 # Just restart the computer if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = Get-ADTClientServerUser))
+                if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                 {
                     Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
                     if ($adtSession)
