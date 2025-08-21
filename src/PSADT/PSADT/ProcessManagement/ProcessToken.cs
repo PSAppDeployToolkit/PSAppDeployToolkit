@@ -53,8 +53,7 @@ namespace PSADT.ProcessManagement
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
                 foreach (var explorerProcess in Process.GetProcessesByName("explorer").OrderBy(static p => p.StartTime))
                 {
-                    using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
-                    using (explorerProcess)
+                    using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
                     {
                         AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
                         if (TokenManager.GetTokenSid(hProcessToken) == sid)
@@ -113,6 +112,10 @@ namespace PSADT.ProcessManagement
         /// langword="null"/> if the operation fails.</returns>
         internal static SafeFileHandle GetUnelevatedToken()
         {
+            if (AccountUtilities.CallerIsLocalSystem)
+            {
+                throw new InvalidOperationException("Cannot retrieve an unelevated token when running as the local system account.");
+            }
             using (var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()))
             using (var cProcessSafeHandle = cProcess.SafeHandle)
             {

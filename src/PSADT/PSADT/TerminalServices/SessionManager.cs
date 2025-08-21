@@ -178,8 +178,7 @@ namespace PSADT.TerminalServices
             // Attempt to get the SID from the caller's explorer.exe process if it exists.
             if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").Where(p => p.SessionId == sessionid).OrderBy(static p => p.StartTime).FirstOrDefault() is Process explorerProcess)
             {
-                using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
-                using (explorerProcess)
+                using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
                 {
                     AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
                     using (hProcessToken)
