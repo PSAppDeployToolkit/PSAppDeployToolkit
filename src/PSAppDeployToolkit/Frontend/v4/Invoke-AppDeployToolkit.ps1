@@ -112,6 +112,19 @@ $adtSession = @{
     DeployAppScriptVersion = '4.1.3'
 }
 
+# Set up parameters for Show-ADTInstallationWelcome.
+$welcomeParams = @{
+    AllowDefer = $true
+    DeferTimes = 3
+    CheckDiskSpace = $true
+    PersistPrompt = $true
+}
+
+
+##================================================
+## MARK: Install
+##================================================
+
 function Install-ADTDeployment
 {
     [CmdletBinding()]
@@ -119,67 +132,30 @@ function Install-ADTDeployment
     (
     )
 
-    ##================================================
-    ## MARK: Pre-Install
-    ##================================================
+    # Show initial UI to end user, along with progress dialog thereafter.
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
-
-    ## Show Welcome Message, close processes if specified, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    $saiwParams = @{
-        AllowDefer = $true
-        DeferTimes = 3
-        CheckDiskSpace = $true
-        PersistPrompt = $true
-    }
-    if ($adtSession.AppProcessesToClose.Count -gt 0)
-    {
-        $saiwParams.Add('CloseProcesses', $adtSession.AppProcessesToClose)
-    }
-    Show-ADTInstallationWelcome @saiwParams
-
-    ## Show Progress Message (with the default message).
+    Show-ADTInstallationWelcome @welcomeParams
     Show-ADTInstallationProgress
 
-    ## <Perform Pre-Installation tasks here>
+    # <Perform Pre-Installation tasks here>
 
-
-    ##================================================
-    ## MARK: Install
-    ##================================================
+    # <Perform Installation tasks here>
     $adtSession.InstallPhase = $adtSession.DeploymentType
 
-    ## Handle Zero-Config MSI installations.
-    if ($adtSession.UseDefaultMsi)
-    {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-        if ($adtSession.DefaultMstFile)
-        {
-            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-        }
-        Start-ADTMsiProcess @ExecuteDefaultMSISplat
-        if ($adtSession.DefaultMspFiles)
-        {
-            $adtSession.DefaultMspFiles | Start-ADTMsiProcess -Action Patch
-        }
-    }
-
-    ## <Perform Installation tasks here>
-
-
-    ##================================================
-    ## MARK: Post-Install
-    ##================================================
+    # <Perform Post-Installation tasks here>
     $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 
-    ## <Perform Post-Installation tasks here>
-
-
-    ## Display a message at the end of the install.
+    # Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
     {
         Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
     }
 }
+
+
+##================================================
+## MARK: Uninstall
+##================================================
 
 function Uninstall-ADTDeployment
 {
@@ -188,49 +164,24 @@ function Uninstall-ADTDeployment
     (
     )
 
-    ##================================================
-    ## MARK: Pre-Uninstall
-    ##================================================
+    # Show initial UI to end user, along with progress dialog thereafter.
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
-
-    ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
-    if ($adtSession.AppProcessesToClose.Count -gt 0)
-    {
-        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
-    }
-
-    ## Show Progress Message (with the default message).
+    Show-ADTInstallationWelcome @welcomeParams
     Show-ADTInstallationProgress
 
-    ## <Perform Pre-Uninstallation tasks here>
+    # <Perform Pre-Uninstallation tasks here>
 
-
-    ##================================================
-    ## MARK: Uninstall
-    ##================================================
+    # <Perform Uninstallation tasks here>
     $adtSession.InstallPhase = $adtSession.DeploymentType
 
-    ## Handle Zero-Config MSI uninstallations.
-    if ($adtSession.UseDefaultMsi)
-    {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-        if ($adtSession.DefaultMstFile)
-        {
-            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-        }
-        Start-ADTMsiProcess @ExecuteDefaultMSISplat
-    }
-
-    ## <Perform Uninstallation tasks here>
-
-
-    ##================================================
-    ## MARK: Post-Uninstallation
-    ##================================================
+    # <Perform Post-Uninstallation tasks here>
     $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
-
-    ## <Perform Post-Uninstallation tasks here>
 }
+
+
+##================================================
+## MARK: Repair
+##================================================
 
 function Repair-ADTDeployment
 {
@@ -239,48 +190,18 @@ function Repair-ADTDeployment
     (
     )
 
-    ##================================================
-    ## MARK: Pre-Repair
-    ##================================================
+    # Show initial UI to end user, along with progress dialog thereafter.
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
-
-    ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
-    if ($adtSession.AppProcessesToClose.Count -gt 0)
-    {
-        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
-    }
-
-    ## Show Progress Message (with the default message).
+    Show-ADTInstallationWelcome @welcomeParams
     Show-ADTInstallationProgress
 
-    ## <Perform Pre-Repair tasks here>
+    # <Perform Pre-Repair tasks here>
 
-
-    ##================================================
-    ## MARK: Repair
-    ##================================================
+    # <Perform Repair tasks here>
     $adtSession.InstallPhase = $adtSession.DeploymentType
 
-    ## Handle Zero-Config MSI repairs.
-    if ($adtSession.UseDefaultMsi)
-    {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-        if ($adtSession.DefaultMstFile)
-        {
-            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-        }
-        Start-ADTMsiProcess @ExecuteDefaultMSISplat
-    }
-
-    ## <Perform Repair tasks here>
-
-
-    ##================================================
-    ## MARK: Post-Repair
-    ##================================================
+    # <Perform Post-Repair tasks here>
     $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
-
-    ## <Perform Post-Repair tasks here>
 }
 
 
@@ -311,6 +232,10 @@ try
     $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
     $adtSession = Remove-ADTHashtableNullOrEmptyValues -Hashtable $adtSession
     $adtSession = Open-ADTSession @adtSession @iadtParams -PassThru
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        $welcomeParams.Add('CloseProcesses', $adtSession.AppProcessesToClose)
+    }
 }
 catch
 {
@@ -347,12 +272,5 @@ catch
     # An unhandled error has been caught.
     $mainErrorMessage = "An unhandled error within [$($MyInvocation.MyCommand.Name)] has occurred.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)"
     Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
-
-    ## Error details hidden from the user by default. Show a simple dialog with full stack trace:
-    # Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait
-
-    ## Or, a themed dialog with basic error message:
-    # Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) failed at line $($_.InvocationInfo.ScriptLineNumber), char $($_.InvocationInfo.OffsetInLine):`n$($_.InvocationInfo.Line.Trim())`n`nMessage:`n$($_.Exception.Message)" -MessageAlignment Left -ButtonRightText OK -Icon Error -NoWait
-
     Close-ADTSession -ExitCode 60001
 }
