@@ -62,5 +62,5 @@ function Show-ADTHelpConsole
     }
 
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
-    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser) -DialogType HelpConsole -DialogStyle Classic -Options $options -NoWait
+    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser -AllowSystemFallback) -DialogType HelpConsole -DialogStyle Classic -Options $options -NoWait
 }

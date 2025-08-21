@@ -162,7 +162,7 @@ function Show-ADTDialogBox
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
         }
-        if (!($runAsActiveUser = Get-ADTClientServerUser))
+        if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return

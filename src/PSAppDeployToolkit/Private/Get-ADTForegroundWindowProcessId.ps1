@@ -6,5 +6,5 @@
 
 function Private:Get-ADTForegroundWindowProcessId
 {
-    return (Invoke-ADTClientServerOperation -GetForegroundWindowProcessId -User (Get-ADTClientServerUser))
+    return (Invoke-ADTClientServerOperation -GetForegroundWindowProcessId -User (Get-ADTClientServerUser -AllowSystemFallback))
 }
