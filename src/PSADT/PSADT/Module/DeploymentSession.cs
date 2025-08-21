@@ -249,7 +249,7 @@ namespace PSADT.Module
 
 
                 #endregion
-                #region DetectDefaultWimFile
+                #region DetectDefaultWim
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
@@ -362,7 +362,7 @@ namespace PSADT.Module
                             // Generate list of MSI executables for testing later on.
                             if (msiExecList.Count > 0)
                             {
-                                _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).ToList().AsReadOnly();
+                                _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToList().AsReadOnly();
                                 WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                             }
                         }
