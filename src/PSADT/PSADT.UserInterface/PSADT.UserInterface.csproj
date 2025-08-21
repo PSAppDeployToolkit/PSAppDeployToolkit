@@ -19,8 +19,8 @@
     <AssemblyTitle>PSAppDeployToolkit User Interface Library</AssemblyTitle>
     <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.2.0</AssemblyVersion>
-    <InformationalVersion>4.1.2</InformationalVersion>
+    <AssemblyVersion>4.1.3.0</AssemblyVersion>
+    <InformationalVersion>4.1.3</InformationalVersion>
     <Platforms>AnyCPU</Platforms>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
