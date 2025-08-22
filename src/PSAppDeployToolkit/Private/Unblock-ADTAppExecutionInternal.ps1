@@ -33,11 +33,19 @@ function Private:Unblock-ADTAppExecutionInternal
                 Remove-ItemProperty -LiteralPath $_.PSParentPath -Name UseFilter -Verbose:$false
                 Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger -Verbose:$false
                 Remove-Item -LiteralPath "$($_.PSParentPath)\MyFilter" -Verbose:$false
+                if (!(Get-ChildItem -LiteralPath $_.PSParentPath -Verbose:$false) -and !(Get-ItemProperty -LiteralPath $_.PSParentPath -Verbose:$false))
+                {
+                    Remove-Item -LiteralPath $_.PSParentPath -Verbose:$false
+                }
             }
             else
             {
                 Write-Verbose -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
                 Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger -Verbose:$false
+                if (!(Get-ChildItem -LiteralPath $_.PSPath -Verbose:$false) -and !(Get-ItemProperty -LiteralPath $_.PSPath -Verbose:$false))
+                {
+                    Remove-Item -LiteralPath $_.PSPath -Verbose:$false
+                }
             }
         }
     }
