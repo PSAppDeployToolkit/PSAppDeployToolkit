@@ -12,6 +12,7 @@ using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
+using PSADT.RegistryManagement;
 using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
@@ -49,7 +50,7 @@ namespace PSADT.ClientServer
                 }
                 else if (argv.Any(static arg => arg == "/ShowModalDialog" || arg == "/smd"))
                 {
-                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv)));
+                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
                 }
                 else if (argv.Any(static arg => arg == "/ShowBalloonTip" || arg == "/sbt"))
                 {
@@ -505,11 +506,34 @@ namespace PSADT.ClientServer
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
-        private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null)
+        private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
-            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem)
+            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && null != argv)
             {
+                // Set up the required variables.
+                ReadOnlyCollection<string> command = argv.SkipWhile(static arg => !File.Exists(arg)).ToList().AsReadOnly();
+                var filePath = command[0]; var argumentList = command.Skip(1).ToList().AsReadOnly();
+                var ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
+                var fileName = Path.GetFileName(filePath); var ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
+
+                // Rename the IFEO subkey, start the process asynchronously, and then rename it back.
+                RegistryUtilities.RenameRegistryKey(ifeoPath, fileName, ifeoName);
+                ProcessHandle? handle;
+                try
+                {
+                    handle = ProcessManager.LaunchAsync(new(filePath, argumentList, Path.GetDirectoryName(filePath)));
+                }
+                finally
+                {
+                    RegistryUtilities.RenameRegistryKey(ifeoPath, ifeoName, fileName);
+                }
+
+                // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
+                if (handle?.Task.GetAwaiter().GetResult() is ProcessResult result)
+                {
+                    Environment.Exit(result.ExitCode);
+                }
                 return SerializeObject(DialogTools.BlockExecutionButtonText);
             }
 
