@@ -209,6 +209,7 @@ ReadProcessMemory
 RECT
 RegOpenKeyEx
 RegQueryInfoKey
+RegRenameKey
 ReleaseCapture
 RemoveMenu
 ResumeThread
