@@ -462,19 +462,22 @@ function Start-ADTMsiProcess
                 # Build the log path to use.
                 $logPath = if ($logFile)
                 {
+                    # Determine whether or not we use the NoAdminRights pathway.
+                    $logPathProperty = ('LogPath', 'LogPathNoAdminRights')[$PSBoundParameters.ContainsKey('Username')]
+
                     # A defined MSI log path is considered an override.
-                    if (![System.String]::IsNullOrWhiteSpace($adtConfig.MSI.LogPath))
+                    if (![System.String]::IsNullOrWhiteSpace($adtConfig.MSI.$logPathProperty))
                     {
                         # Create the Log directory if it doesn't already exist.
-                        if (!(Test-Path -LiteralPath $adtConfig.MSI.LogPath -PathType Container))
+                        if (!(Test-Path -LiteralPath $adtConfig.MSI.$logPathProperty -PathType Container))
                         {
-                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.LogPath)
+                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.$logPathProperty)
                         }
 
                         # Build the log file path.
-                        (Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $logFile).Trim()
+                        (Join-Path -Path $adtConfig.MSI.$logPathProperty -ChildPath $logFile).Trim()
                     }
-                    elseif ($adtSession)
+                    elseif ($adtSession -and !$PSBoundParameters.ContainsKey('Username'))
                     {
                         # Get the log directory from the session. This will factor in
                         # whether we're compressing logs, or logging to a subfolder.
@@ -483,13 +486,13 @@ function Start-ADTMsiProcess
                     else
                     {
                         # Fall back to the toolkit's LogPath.
-                        if (!(Test-Path -LiteralPath $adtConfig.Toolkit.LogPath -PathType Container))
+                        if (!(Test-Path -LiteralPath $adtConfig.Toolkit.$logPathProperty -PathType Container))
                         {
-                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath)
+                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.$logPathProperty)
                         }
 
                         # Build the log file path.
-                        (Join-Path -Path $adtConfig.Toolkit.LogPath -ChildPath $logFile).Trim()
+                        (Join-Path -Path $adtConfig.Toolkit.$logPathProperty -ChildPath $logFile).Trim()
                     }
                 }
 
@@ -559,6 +562,10 @@ function Start-ADTMsiProcess
                     if (!(Test-ADTCallerIsAdmin))
                     {
                         $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))
+                    }
+                    elseif ($PSBoundParameters.ContainsKey('Username'))
+                    {
+                        $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name $Username)
                     }
 
                     # Append ".log" to the MSI logfile path and enclose in quotes.
