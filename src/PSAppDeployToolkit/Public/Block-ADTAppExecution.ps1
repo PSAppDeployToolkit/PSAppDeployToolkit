@@ -92,6 +92,7 @@ function Block-ADTAppExecution
             Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             return
         }
+        Write-ADTLogEntry -Message "Preparing to block execution of the following processes: ['$([System.String]::Join("', '", $ProcessName))']."
 
         try
         {
@@ -102,24 +103,6 @@ function Block-ADTAppExecution
                 {
                     Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
                     Unblock-ADTAppExecution -Tasks $task
-                }
-
-                # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
-                Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
-                try
-                {
-                    $nstParams = @{
-                        Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
-                        Trigger = New-ScheduledTaskTrigger -AtStartup
-                        Action = New-ScheduledTaskAction -Execute (Get-ADTPowerShellProcessPath) -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Unblock-ADTAppExecutionInternal'.ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
-                        Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
-                    }
-                    $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity 3
-                    return
                 }
 
                 # Configure the appropriate permissions for the client/server process.
@@ -171,7 +154,32 @@ function Block-ADTAppExecution
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$($adtEnv.appDeployToolkitName)"; $blockExecRegName = 'BlockExecutionCommand'
                 $blockExecDbgPath = "`"$($Script:PSScriptRoot)\lib\PSADT.ClientServer.Client.Launcher.exe`" /smd -ArgV $($blockExecRegPath.Split('::', [System.StringSplitOptions]::RemoveEmptyEntries)[1])\$blockExecRegName"
+
+                # If the IFEO path is > 255 characters, warn about it and bomb out.
+                if ($blockExecDbgPath -gt 255)
+                {
+                    Write-ADTLogEntry -Message "The generated block execution command of [$blockExecDbgPath] exceeds the maximum allowable length of 255 characters; unable to block execution." -Severity Warning
+                    return
+                }
                 Set-ADTRegistryKey -Key $blockExecRegPath -Name $blockExecRegName -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString($blockExecArgs)) -InformationAction SilentlyContinue
+
+                # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
+                Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
+                try
+                {
+                    $nstParams = @{
+                        Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
+                        Trigger = New-ScheduledTaskTrigger -AtStartup
+                        Action = New-ScheduledTaskAction -Execute (Get-ADTPowerShellProcessPath) -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Unblock-ADTAppExecutionInternal'.ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
+                        Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
+                    }
+                    $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity 3
+                    return
+                }
 
                 # Enumerate each process and set the debugger value to block application execution.
                 foreach ($process in $ProcessName)
