@@ -188,6 +188,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
+    $variables.Add('IsTerminalServer', $osInfo.IsTerminalServer)
     $variables.Add('IsMultiSessionOS', $osInfo.IsWorkstationEnterpriseMultiSessionOS)
     $variables.Add('envOSProductTypeName', [Microsoft.PowerShell.Commands.ProductType]$variables.envOSProductType)
 
