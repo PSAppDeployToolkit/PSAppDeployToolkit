@@ -166,6 +166,7 @@ function Start-ADTMsiProcessAsUser
         [System.String]$Action = 'Install',
 
         [Parameter(Mandatory = $true, ParameterSetName = 'FilePath', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilePath_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the path to the MSI/MSP file to process.')]
         [ValidateScript({
                 if ([System.IO.Path]::GetExtension($_) -notmatch '^\.ms[ip]$')
                 {
@@ -176,10 +177,12 @@ function Start-ADTMsiProcessAsUser
         [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [ValidateNotNullOrEmpty()]
         [System.Guid]$ProductCode,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
@@ -254,15 +257,21 @@ function Start-ADTMsiProcessAsUser
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FilePath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ProductCode')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$SuccessExitCodes,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FilePath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ProductCode')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$RebootExitCodes,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FilePath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ProductCode')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$IgnoreExitCodes,
 
@@ -270,13 +279,17 @@ function Start-ADTMsiProcessAsUser
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FilePath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ProductCode')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoDesktopRefresh,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilePath_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication_NoWait')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
