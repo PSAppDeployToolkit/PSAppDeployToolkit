@@ -1216,7 +1216,6 @@ function Show-ADTInstallationWelcome
                 # If block execution switch is true, call the function to block execution of these processes.
                 if ($BlockExecution -and $CloseProcesses)
                 {
-                    Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
                     $baaeParams = @{ ProcessName = $CloseProcesses.Name }
                     if ($PSBoundParameters.ContainsKey('WindowLocation'))
                     {
