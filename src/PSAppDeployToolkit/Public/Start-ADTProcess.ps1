@@ -143,13 +143,13 @@ function Start-ADTProcess
         $result = Start-ADTProcess -FilePath "setup.exe" -ArgumentList "-i -f `"$($adtSession.dirFiles)\$($adtSession.LicenseFile)`"" -ErrorAction SilentlyContinue -PassThru
         if ($result.ExitCode -ne 0)
         {
-            Write-ADTLogEntry -Message "Installation was successful." -Severity 0
-        }
-        else
-        {
             Write-ADTLogEntry -Message "Installation failed with exit code [$($result.ExitCode)]." -Severity 3
             Write-ADTLogEntry -Message "Standard Out [$($result.StdOut)]." -Severity 3
             Write-ADTLogEntry -Message "Standard Error [$($result.StdErr)]." -Severity 3
+        }
+        else
+        {
+            Write-ADTLogEntry -Message "Installation was successful." -Severity 0
         }
         ```
 
