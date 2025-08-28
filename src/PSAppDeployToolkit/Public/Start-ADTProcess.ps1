@@ -27,8 +27,8 @@ function Start-ADTProcess
     .PARAMETER WorkingDirectory
         The working directory used for executing the process. Defaults to DirFiles if there is an active DeploymentSession. The use of UseShellExecute affects this parameter.
 
-    .PARAMETER Username
-        A username to invoke the process as. Only supported while running as the SYSTEM account.
+    .PARAMETER RunAsActiveUser
+        A RunAsActiveUser object to invoke the process as.
 
     .PARAMETER UseLinkedAdminToken
         Use a user's linked administrative token while running the process under their context.
@@ -202,50 +202,50 @@ function Start-ADTProcess
         [ValidateNotNullOrEmpty()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
-        # Identity: Username (only present in sets where identity is "Username")
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_Wait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        # Identity: RunAsActiveUser (only present in sets where identity is "RunAsActiveUser")
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username,
+        [PSADT.Module.RunAsActiveUser]$RunAsActiveUser,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseHighestAvailableToken,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
@@ -290,9 +290,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_Wait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
@@ -303,9 +303,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
@@ -314,9 +314,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
@@ -326,9 +326,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
@@ -359,9 +359,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
@@ -377,9 +377,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
@@ -389,9 +389,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
@@ -403,12 +403,12 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
@@ -424,12 +424,12 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
@@ -445,12 +445,12 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
@@ -471,12 +471,12 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
@@ -489,9 +489,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateWindow_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_WindowStyle_NoWait')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
@@ -562,7 +562,8 @@ function Start-ADTProcess
 
     process
     {
-        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if (![System.String]::IsNullOrWhiteSpace($Username)) {" for user [$Username]"})..."
+        # Commence the underlying execution process.
+        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
         if ($PSBoundParameters.ContainsKey('IgnoreExitCodes') -and !$($IgnoreExitCodes).Equals('*'))
         {
             Write-ADTLogEntry -Message "Please use [-SuccessExitCodes] and/or [-RebootExitCodes] to specify your process's exit codes."
@@ -649,7 +650,7 @@ function Start-ADTProcess
                     $FilePath,
                     $ArgumentList,
                     $WorkingDirectory,
-                    $Username,
+                    $RunAsActiveUser,
                     $UseLinkedAdminToken,
                     $UseHighestAvailableToken,
                     $InheritEnvironmentVariables,
@@ -685,16 +686,16 @@ function Start-ADTProcess
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
                     }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($Username) {" for user [$Username]"})..."
+                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
                 }
 
                 # Start the process.

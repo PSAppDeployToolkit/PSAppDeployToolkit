@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Security.Principal;
+using PSADT.LibraryInterfaces;
+using PSADT.Module;
 
 namespace PSADT.TerminalServices
 {
@@ -38,7 +40,7 @@ namespace PSADT.TerminalServices
             string domainName,
             uint sessionId,
             string? sessionName,
-            LibraryInterfaces.WTS_CONNECTSTATE_CLASS connectState,
+            WTS_CONNECTSTATE_CLASS connectState,
             bool isCurrentSession,
             bool isConsoleSession,
             bool isActiveUserSession,
@@ -78,6 +80,15 @@ namespace PSADT.TerminalServices
         }
 
         /// <summary>
+        /// Converts the current instance to a <see cref="RunAsActiveUser"/> object.
+        /// </summary>
+        /// <returns>A new <see cref="RunAsActiveUser"/> instance initialized with the current object.</returns>
+        public RunAsActiveUser ToRunAsActiveUser()
+        {
+            return new(this);
+        }
+
+        /// <summary>
         /// The NTAccount for the session's user.
         /// </summary>
         public readonly NTAccount NTAccount;
@@ -110,7 +121,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The connection state of the session.
         /// </summary>
-        public readonly LibraryInterfaces.WTS_CONNECTSTATE_CLASS ConnectState;
+        public readonly WTS_CONNECTSTATE_CLASS ConnectState;
 
         /// <summary>
         /// Whether the session is the current session of the caller.

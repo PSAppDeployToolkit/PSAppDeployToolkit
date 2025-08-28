@@ -47,10 +47,10 @@ namespace PSADT.ClientServer
         /// <remarks>This constructor creates anonymous pipe streams for input and output communication.
         /// The input stream is configured for reading, while the output stream is configured for writing. The output
         /// stream is set to automatically flush data to ensure timely communication.</remarks>
-        public ServerInstance(NTAccount user)
+        public ServerInstance(RunAsActiveUser runAsActiveUser)
         {
             // Initialize the anonymous pipe streams for inter-process communication.
-            Username = user ?? throw new ArgumentNullException("User cannot be null.", (Exception?)null);
+            RunAsActiveUser = runAsActiveUser ?? throw new ArgumentNullException("User cannot be null.", (Exception?)null);
             _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
@@ -76,7 +76,7 @@ namespace PSADT.ClientServer
                     _assemblyLocation,
                     new(["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()]),
                     Environment.SystemDirectory,
-                    Username,
+                    RunAsActiveUser,
                     UseLinkedAdminToken,
                     UseHighestAvailableToken,
                     false,
@@ -103,15 +103,14 @@ namespace PSADT.ClientServer
             }
 
             // If the process is being launched as a different user, modify the process security.
-            if (AccountUtilities.CallerUsername != Username && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
+            if (AccountUtilities.CallerUsername != RunAsActiveUser.NTAccount && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
             {
                 // Ensure the caller has the necessary privileges to modify process security.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
 
                 // Create a restricted access control list (ACL) for the client process and set it.
-                var userIdentifier = (SecurityIdentifier)Username.Translate(typeof(SecurityIdentifier));
-                byte[] userSid = new byte[userIdentifier.BinaryLength]; userIdentifier.GetBinaryForm(userSid, 0);
+                byte[] userSid = new byte[RunAsActiveUser.SID.BinaryLength]; RunAsActiveUser.SID.GetBinaryForm(userSid, 0);
                 using (SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid))
                 {
                     bool pinnedUserSidAddRef = false;
@@ -741,7 +740,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field stores details about the user's session, such as authentication or
         /// user-specific data. It is intended for internal use and should not be exposed directly to external
         /// consumers.</remarks>
-        public readonly NTAccount Username;
+        public readonly RunAsActiveUser RunAsActiveUser;
 
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
