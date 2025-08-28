@@ -71,7 +71,7 @@ function Start-ADTMspProcess
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMspProcess
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     [OutputType([System.Int32])]
     param
     (
