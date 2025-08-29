@@ -5,6 +5,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -128,6 +129,28 @@ namespace PSADT.Utilities
         {
             using var process = Process.GetProcessById((int)processId);
             return GetApplicationUserModelId(process);
+        }
+
+        /// <summary>
+        /// Retrieves the time elapsed since the last user input event.
+        /// </summary>
+        /// <remarks>This method uses system-level APIs to determine the time of the last user input, such
+        /// as  keyboard or mouse activity. The returned value may be useful for detecting user inactivity  or
+        /// implementing idle timeouts.</remarks>
+        /// <returns>A <see cref="TimeSpan"/> representing the duration since the last user input event.  The value is calculated
+        /// based on the system's tick count.</returns>
+        internal static TimeSpan GetLastInputTime()
+        {
+            // Get the last input information using User32 API.
+            User32.GetLastInputInfo(out var lastInputInfo);
+            ulong now64 = PInvoke.GetTickCount64();
+            ulong last32 = lastInputInfo.dwTime;
+
+            // Project 32-bit last-input onto the 64-bit timeline.
+            ulong base64 = now64 & ~0xFFFF_FFFFUL;
+            ulong last64 = base64 | last32;
+            if (last64 > now64) last64 -= 1UL << 32;
+            return TimeSpan.FromMilliseconds(now64 - last64);
         }
 
         /// <summary>
