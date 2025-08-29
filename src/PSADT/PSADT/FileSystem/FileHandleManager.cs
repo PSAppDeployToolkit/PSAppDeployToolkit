@@ -221,7 +221,7 @@ namespace PSADT.FileSystem
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
-                    if (PInvoke.WaitForSingleObject(hThread, GetObjectNameThreadTimeout) == WAIT_EVENT.WAIT_TIMEOUT)
+                    if (Kernel32.WaitForSingleObject(hThread, GetObjectNameThreadTimeout) == WAIT_EVENT.WAIT_TIMEOUT)
                     {
                         NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                     }

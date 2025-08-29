@@ -823,5 +823,46 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Retrieves the product type of the operating system based on the specified version and service pack
+        /// information.
+        /// </summary>
+        /// <param name="dwOSMajorVersion">The major version number of the operating system.</param>
+        /// <param name="dwOSMinorVersion">The minor version number of the operating system.</param>
+        /// <param name="dwSpMajorVersion">The major version number of the service pack installed on the operating system.</param>
+        /// <param name="dwSpMinorVersion">The minor version number of the service pack installed on the operating system.</param>
+        /// <param name="pdwReturnedProductType">When this method returns, contains the product type of the operating system.  This parameter is passed
+        /// uninitialized.</param>
+        /// <returns><see langword="true"/> if the product type information was successfully retrieved; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the product type information could not be retrieved.</exception>
+        internal static BOOL GetProductInfo(uint dwOSMajorVersion, uint dwOSMinorVersion, uint dwSpMajorVersion, uint dwSpMinorVersion, out OS_PRODUCT_TYPE pdwReturnedProductType)
+        {
+            var res = PInvoke.GetProductInfo(dwOSMajorVersion, dwOSMinorVersion, dwSpMajorVersion, dwSpMinorVersion, out pdwReturnedProductType);
+            if (!res)
+            {
+                throw new InvalidOperationException("Failed to get product info.");
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Waits for the specified object to enter a signaled state or for the specified timeout interval to elapse.
+        /// </summary>
+        /// <param name="hHandle">A handle to the object to wait for. This handle must be valid and cannot be null.</param>
+        /// <param name="dwMilliseconds">The time-out interval, in milliseconds. Specify <see langword="uint.MaxValue"/> to wait indefinitely.</param>
+        /// <returns>A <see cref="WAIT_EVENT"/> value indicating the result of the wait operation. Possible values include <see
+        /// cref="WAIT_EVENT.WAIT_OBJECT_0"/> for a signaled state, <see cref="WAIT_EVENT.WAIT_TIMEOUT"/> for a timeout,
+        /// or <see cref="WAIT_EVENT.WAIT_ABANDONED"/> for an abandoned mutex.</returns>
+        internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, uint dwMilliseconds)
+        {
+            var res = PInvoke.WaitForSingleObject(hHandle, dwMilliseconds);
+            if (res == WAIT_EVENT.WAIT_FAILED)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
     }
 }

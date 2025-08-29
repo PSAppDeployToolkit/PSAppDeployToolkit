@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -99,7 +98,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="options">The options containing the banner image to display. Cannot be <see langword="null"/>.</param>
         protected void SetPictureBox(PictureBox pictureBox, BaseOptions options)
         {
-            double dpiScale = (double)PInvoke.GetDpiForWindow((HWND)this.Handle) / 96.0;
+            double dpiScale = (double)User32.GetDpiForWindow((HWND)this.Handle) / 96.0;
             pictureBox.Image = ClassicAssets.GetBanner(options.AppBannerImage);
             pictureBox.Size = new Size((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * ((double)pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
         }
