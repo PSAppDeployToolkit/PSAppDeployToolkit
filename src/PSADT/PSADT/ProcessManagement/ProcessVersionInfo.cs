@@ -288,13 +288,10 @@ namespace PSADT.ProcessManagement
         {
             // Return any translation pairs found in the version resource.
             Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out var translationPtr, out var translationLength);
-            var pairCount = translationLength / 4;
-            for (int i = 0; i < pairCount; i++)
+            var langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
+            for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
-                var currentEntryPtr = IntPtr.Add(translationPtr, i * 4);
-                var language = Marshal.ReadInt16(currentEntryPtr, 0);
-                var codepage = Marshal.ReadInt16(currentEntryPtr, 2);
-                yield return $"{language:X4}{codepage:X4}";
+                yield return Marshal.PtrToStructure<Version32.LANGANDCODEPAGE>(IntPtr.Add(translationPtr, i * langAndCodepageSize)).ToTranslationTableString();
             }
 
             // Add some common fallback combinations that are known to work in many cases.
