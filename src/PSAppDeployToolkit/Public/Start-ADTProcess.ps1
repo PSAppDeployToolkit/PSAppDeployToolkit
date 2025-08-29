@@ -818,7 +818,7 @@ function Start-ADTProcess
                     {
                         $streamMessage = if ($result.$property)
                         {
-                            if ($result.$property -gt 1)
+                            if ($result.$property.Count -gt 1)
                             {
                                 "`n`n$([System.String]::Join("`n", $result.$property))"
                             }
