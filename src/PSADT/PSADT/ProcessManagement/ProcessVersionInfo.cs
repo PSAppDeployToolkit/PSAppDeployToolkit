@@ -315,7 +315,7 @@ namespace PSADT.ProcessManagement
         /// otherwise, <see langword="null"/>.</returns>
         private static string? GetFileVersionLanguage(SafeHGlobalHandle versionResource, string codepage)
         {
-            Span<char> szLang = stackalloc char[260];
+            Span<char> szLang = stackalloc char[(int)PInvoke.MAX_PATH];
             var len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber)), szLang);
             string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
             if (!string.IsNullOrWhiteSpace(result))
