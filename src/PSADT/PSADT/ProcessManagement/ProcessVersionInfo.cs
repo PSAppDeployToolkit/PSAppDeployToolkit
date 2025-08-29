@@ -38,10 +38,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="process">The process for which to obtain version information. Cannot be null.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
-        public static ProcessVersionInfo GetVersionInfo(Process process)
-        {
-            return new ProcessVersionInfo(process, null, null);
-        }
+        public static ProcessVersionInfo GetVersionInfo(Process process) => new(process, null, null);
 
         /// <summary>
         /// Retrieves version information for the specified process.
@@ -52,10 +49,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
         /// resolve paths within the process's version information.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
-        internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
-        {
-            return new ProcessVersionInfo(process, null, ntPathLookupTable);
-        }
+        internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable) => new(process, null, ntPathLookupTable);
 
         /// <summary>
         /// Retrieves version information for a specified process and file path.
@@ -64,10 +58,7 @@ namespace PSADT.ProcessManagement
         /// <param name="filePath">The file path associated with the process, used to locate version details.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version information of the specified process and
         /// file path.</returns>
-        internal static ProcessVersionInfo GetVersionInfo(Process process, string filePath)
-        {
-            return new ProcessVersionInfo(process, filePath, null);
-        }
+        internal static ProcessVersionInfo GetVersionInfo(Process process, string filePath) => new(process, filePath, null);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessVersionInfo"/> class for the specified process.
