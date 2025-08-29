@@ -8,7 +8,9 @@ using System.Security.Principal;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.ProcessManagement;
 using PSADT.Security;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -93,6 +95,11 @@ namespace PSADT.TerminalServices
             string domainName = sessionInfo.DomainName.ToString().TrimRemoveNull();
             NTAccount ntAccount = new(domainName, userName);
             SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
+            bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
+            bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
+            bool isActiveUserSession = sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
+            bool isValidUserSession = isActiveUserSession || sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
+            TimeSpan idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string pWinStationName = session.pWinStationName.ToString().TrimRemoveNull();
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
@@ -108,6 +115,19 @@ namespace PSADT.TerminalServices
                 isLocalAdminException = ex;
             }
 
+            // If there's an active console session and we've got the privileges, get the idle time via GetLastInputInfo().
+            if (isConsoleSession)
+            {
+                if (isCurrentSession)
+                {
+                    idleTime = ShellUtilities.GetLastInputTime();
+                }
+                else if ((AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerIsAdmin) && isValidUserSession)
+                {
+                    idleTime = new(long.Parse(ProcessManager.LaunchAsync(new(typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe"), new(["/GetLastInputTime"]), Environment.SystemDirectory, new(ntAccount, sid, session.SessionId)))!.Task.GetAwaiter().GetResult().StdOut!.First()));
+                }
+            }
+
             // Instantiate a SessionInfo object and return it to the caller.
             return new(
                 ntAccount,
@@ -117,16 +137,17 @@ namespace PSADT.TerminalServices
                 session.SessionId,
                 pWinStationName,
                 (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)sessionInfo.SessionState,
-                session.SessionId == AccountUtilities.CallerSessionId,
-                session.SessionId == PInvoke.WTSGetActiveConsoleSessionId(),
-                sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive,
+                isCurrentSession,
+                isConsoleSession,
+                isActiveUserSession,
+                isValidUserSession,
                 pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
                 clientProtocolType != 0,
                 isLocalAdmin,
                 isLocalAdminException,
                 DateTime.FromFileTime(sessionInfo.LogonTime),
-                DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime),
-                sessionInfo.DisconnectTime != 0 ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
+                idleTime,
+                sessionInfo.DisconnectTime != 0 && (!isConsoleSession || !isActiveUserSession) ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
                 clientName,
                 (WTS_PROTOCOL_TYPE)clientProtocolType!,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
