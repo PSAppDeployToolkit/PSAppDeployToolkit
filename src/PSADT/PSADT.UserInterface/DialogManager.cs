@@ -323,7 +323,11 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="System.Windows.Forms.DialogResult"/> value indicating the result of the dialog interaction. For
         /// example, <see cref="System.Windows.Forms.DialogResult.OK"/> if the user confirmed, or <see
         /// cref="System.Windows.Forms.DialogResult.Cancel"/> if the user canceled.</returns>
-        internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options) => InvokeDialogAction<System.Windows.Forms.DialogResult>(() => new Dialogs.Classic.HelpConsole(options).ShowDialog());
+        internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options) => InvokeDialogAction<System.Windows.Forms.DialogResult>(() =>
+        {
+            using Dialogs.Classic.HelpConsole helpConsole = new(options);
+            return helpConsole.ShowDialog();
+        });
 
         /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.
