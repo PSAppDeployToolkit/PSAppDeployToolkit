@@ -152,6 +152,7 @@ LocalFree
 LookupPrivilegeNameW
 LookupPrivilegeValueW
 LOWORD
+MAX_PATH
 MMDeviceEnumerator
 MONITORINFOEXW
 MONITORINFOF_PRIMARY
