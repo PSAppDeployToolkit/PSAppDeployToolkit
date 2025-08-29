@@ -18,34 +18,34 @@ namespace PSADT.LibraryInterfaces
         /// Struct for retrieving information about a file, including its icon and display name.
         /// </summary>
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        internal struct SHFILEINFO
+        internal readonly struct SHFILEINFO
         {
             /// <summary>
             /// The file system icon handle (must be destroyed with DestroyIcon when no longer needed).
             /// </summary>
-            internal HICON hIcon;
+            internal readonly HICON hIcon;
 
             /// <summary>
             /// The index of the icon in the system image list.
             /// </summary>
-            internal int iIcon;
+            internal readonly int iIcon;
 
             /// <summary>
             /// The file attributes (e.g., read-only, hidden, system).
             /// </summary>
-            internal FILE_FLAGS_AND_ATTRIBUTES dwAttributes;
+            internal readonly FILE_FLAGS_AND_ATTRIBUTES dwAttributes;
 
             /// <summary>
             /// The display name of the file.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-            internal string szDisplayName;
+            internal readonly string szDisplayName;
 
             /// <summary>
             /// The type name string.
             /// </summary>
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-            internal string szTypeName;
+            internal readonly string szTypeName;
         }
 
         /// <summary>

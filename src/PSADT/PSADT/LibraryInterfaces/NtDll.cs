@@ -26,200 +26,200 @@ namespace PSADT.LibraryInterfaces
         /// System information class for querying system handles.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
+        public readonly struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
         {
             /// <summary>
             /// The kernel object's address.
             /// </summary>
-            public IntPtr Object;
+            public readonly IntPtr Object;
 
             /// <summary>
             /// The owning process's identifier.
             /// </summary>
-            public UIntPtr UniqueProcessId;
+            public readonly UIntPtr UniqueProcessId;
 
             /// <summary>
             /// The handle's numerical identifier.
             /// </summary>
-            public UIntPtr HandleValue;
+            public readonly UIntPtr HandleValue;
 
             /// <summary>
             /// The type of access granted to the handle.
             /// </summary>
-            public FileSystemRights GrantedAccess;
+            public readonly FileSystemRights GrantedAccess;
 
             /// <summary>
             /// The number of references to the object.
             /// </summary>
-            public ushort CreatorBackTraceIndex;
+            public readonly ushort CreatorBackTraceIndex;
 
             /// <summary>
             /// The type of the object.
             /// </summary>
-            public ushort ObjectTypeIndex;
+            public readonly ushort ObjectTypeIndex;
 
             /// <summary>
             /// The handle attributes.
             /// </summary>
-            public OBJECT_ATTRIBUTES HandleAttributes;
+            public readonly OBJECT_ATTRIBUTES HandleAttributes;
 
             /// <summary>
             /// Reserved for future use.
             /// </summary>
-            public uint Reserved;
+            public readonly uint Reserved;
         }
 
         /// <summary>
         /// System information class for querying system handle information.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SYSTEM_HANDLE_INFORMATION_EX
+        internal readonly struct SYSTEM_HANDLE_INFORMATION_EX
         {
             /// <summary>
             /// The number of handles in the system.
             /// </summary>
-            internal UIntPtr NumberOfHandles;
+            internal readonly UIntPtr NumberOfHandles;
 
             /// <summary>
             /// Reserved for future use.
             /// </summary>
-            internal UIntPtr Reserved;
+            internal readonly UIntPtr Reserved;
         }
 
         /// <summary>
         /// System information class for querying system handle information.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        internal struct OBJECT_TYPE_INFORMATION
+        internal readonly struct OBJECT_TYPE_INFORMATION
         {
             /// <summary>
             /// The name of the type/
             /// </summary>
-            internal UNICODE_STRING TypeName;
+            internal readonly UNICODE_STRING TypeName;
 
             /// <summary>
             /// The type's object count.
             /// </summary>
-            internal uint TotalNumberOfObjects;
+            internal readonly uint TotalNumberOfObjects;
 
             /// <summary>
             /// The type's handle count.
             /// </summary>
-            internal uint TotalNumberOfHandles;
+            internal readonly uint TotalNumberOfHandles;
 
             /// <summary>
             /// The type's paged pool usage.
             /// </summary>
-            internal uint TotalPagedPoolUsage;
+            internal readonly uint TotalPagedPoolUsage;
 
             /// <summary>
             /// The type's non-paged pool usage.
             /// </summary>
-            internal uint TotalNonPagedPoolUsage;
+            internal readonly uint TotalNonPagedPoolUsage;
 
             /// <summary>
             /// The type's name pool usage.
             /// </summary>
-            internal uint TotalNamePoolUsage;
+            internal readonly uint TotalNamePoolUsage;
 
             /// <summary>
             /// The type's handle table usage.
             /// </summary>
-            internal uint TotalHandleTableUsage;
+            internal readonly uint TotalHandleTableUsage;
 
             /// <summary>
             /// The type's high-water mark for object count.
             /// </summary>
-            internal uint HighWaterNumberOfObjects;
+            internal readonly uint HighWaterNumberOfObjects;
 
             /// <summary>
             /// The type's high-water mark for handle count.
             /// </summary>
-            internal uint HighWaterNumberOfHandles;
+            internal readonly uint HighWaterNumberOfHandles;
 
             /// <summary>
             /// The type's high-water mark for paged pool usage.
             /// </summary>
-            internal uint HighWaterPagedPoolUsage;
+            internal readonly uint HighWaterPagedPoolUsage;
 
             /// <summary>
             /// The type's high-water mark for non-paged pool usage.
             /// </summary>
-            internal uint HighWaterNonPagedPoolUsage;
+            internal readonly uint HighWaterNonPagedPoolUsage;
 
             /// <summary>
             /// The type's high-water mark for name pool usage.
             /// </summary>
-            internal uint HighWaterNamePoolUsage;
+            internal readonly uint HighWaterNamePoolUsage;
 
             /// <summary>
             /// The type's high-water mark for handle table usage.
             /// </summary>
-            internal uint HighWaterHandleTableUsage;
+            internal readonly uint HighWaterHandleTableUsage;
 
             /// <summary>
             /// The type's invalid attributes.
             /// </summary>
-            internal OBJECT_ATTRIBUTES InvalidAttributes;
+            internal readonly OBJECT_ATTRIBUTES InvalidAttributes;
 
             /// <summary>
             /// The type's generic mapping.
             /// </summary>
-            internal GENERIC_MAPPING GenericMapping;
+            internal readonly GENERIC_MAPPING GenericMapping;
 
             /// <summary>
             /// The type's valid access mask.
             /// </summary>
-            internal FileSystemRights ValidAccessMask;
+            internal readonly FileSystemRights ValidAccessMask;
 
             /// <summary>
             /// The type's security required flag.
             /// </summary>
             [MarshalAs(UnmanagedType.U1)]
-            internal bool SecurityRequired;
+            internal readonly bool SecurityRequired;
 
             /// <summary>
             /// The type's security descriptor present flag.
             /// </summary>
             [MarshalAs(UnmanagedType.U1)]
-            internal bool MaintainHandleCount;
+            internal readonly bool MaintainHandleCount;
 
             /// <summary>
             /// The object type's index.
             /// </summary>
-            internal byte TypeIndex;
+            internal readonly byte TypeIndex;
 
             /// <summary>
             /// Reserved for future use.
             /// </summary>
-            internal byte ReservedByte;
+            internal readonly byte ReservedByte;
 
             /// <summary>
             /// The object type's pool type.
             /// </summary>
-            internal uint PoolType;
+            internal readonly uint PoolType;
 
             /// <summary>
             /// The default paged pool charge for the object type.
             /// </summary>
-            internal uint DefaultPagedPoolCharge;
+            internal readonly uint DefaultPagedPoolCharge;
 
             /// <summary>
             /// The default non-paged pool charge for the object type.
             /// </summary>
-            internal uint DefaultNonPagedPoolCharge;
+            internal readonly uint DefaultNonPagedPoolCharge;
         }
 
         /// <summary>
         /// System information class for querying system object types.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        internal struct OBJECT_TYPES_INFORMATION
+        internal readonly struct OBJECT_TYPES_INFORMATION
         {
             /// <summary>
             /// The number of object types in the system.
             /// </summary>
-            internal uint NumberOfTypes;
+            internal readonly uint NumberOfTypes;
         }
 
         /// <summary>
