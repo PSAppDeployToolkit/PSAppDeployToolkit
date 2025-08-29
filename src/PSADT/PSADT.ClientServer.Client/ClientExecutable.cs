@@ -517,7 +517,7 @@ namespace PSADT.ClientServer
             {
                 // Set up the required variables.
                 ReadOnlyCollection<string> command = argv.SkipWhile(static arg => !File.Exists(arg)).ToList().AsReadOnly();
-                var filePath = command[0]; var argumentList = command.Skip(1).ToList().AsReadOnly();
+                var filePath = command[0]; var argumentList = command.Count > 1 ? command.Skip(1).ToList().AsReadOnly() : null;
                 var ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 var fileName = Path.GetFileName(filePath); var ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
 
