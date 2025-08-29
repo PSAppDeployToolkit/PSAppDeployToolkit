@@ -44,12 +44,13 @@ namespace PSADT.TerminalServices
             bool isCurrentSession,
             bool isConsoleSession,
             bool isActiveUserSession,
+            bool isValidUserSession,
             bool isUserSession,
             bool isRdpSession,
             bool? isLocalAdmin,
             Exception? isLocalAdminException,
-            DateTime? logonTime,
-            TimeSpan? idleTime,
+            DateTime logonTime,
+            TimeSpan idleTime,
             DateTime? disconnectTime,
             string? clientName,
             WTS_PROTOCOL_TYPE clientProtocolType,
@@ -66,6 +67,7 @@ namespace PSADT.TerminalServices
             IsCurrentSession = isCurrentSession;
             IsConsoleSession = isConsoleSession;
             IsActiveUserSession = isActiveUserSession;
+            IsValidUserSession = isValidUserSession;
             IsUserSession = isUserSession;
             IsRdpSession = isRdpSession;
             IsLocalAdmin = isLocalAdmin;
@@ -139,6 +141,11 @@ namespace PSADT.TerminalServices
         public readonly bool IsActiveUserSession;
 
         /// <summary>
+        /// Whether the session's token can be used to create a process.
+        /// </summary>
+        public readonly bool IsValidUserSession;
+
+        /// <summary>
         /// Whether the session is that of a user.
         /// </summary>
         public readonly bool IsUserSession;
@@ -161,12 +168,12 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The logon time of the session.
         /// </summary>
-        public readonly DateTime? LogonTime;
+        public readonly DateTime LogonTime;
 
         /// <summary>
         /// How long the session has been idle for.
         /// </summary>
-        public readonly TimeSpan? IdleTime;
+        public readonly TimeSpan IdleTime;
 
         /// <summary>
         /// The last disconnection time of the session.
