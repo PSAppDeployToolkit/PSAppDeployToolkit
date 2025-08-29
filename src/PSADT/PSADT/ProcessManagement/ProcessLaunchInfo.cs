@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Security.Principal;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using PSADT.LibraryInterfaces;
+using PSADT.Module;
 
 namespace PSADT.ProcessManagement
 {
@@ -21,7 +20,7 @@ namespace PSADT.ProcessManagement
         /// <param name="filePath"></param>
         /// <param name="argumentList"></param>
         /// <param name="workingDirectory"></param>
-        /// <param name="username"></param>
+        /// <param name="runAsActiveUser"></param>
         /// <param name="useLinkedAdminToken"></param>
         /// <param name="useHighestAvailableToken"></param>
         /// <param name="inheritEnvironmentVariables"></param>
@@ -43,7 +42,7 @@ namespace PSADT.ProcessManagement
             string filePath,
             ReadOnlyCollection<string>? argumentList = null,
             string? workingDirectory = null,
-            NTAccount? username = null,
+            RunAsActiveUser? runAsActiveUser = null,
             bool useLinkedAdminToken = false,
             bool useHighestAvailableToken = false,
             bool inheritEnvironmentVariables = false,
@@ -117,7 +116,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Set remaining parameters.
-            Username = username;
+            RunAsActiveUser = runAsActiveUser;
             UseLinkedAdminToken = useLinkedAdminToken;
             UseHighestAvailableToken = useHighestAvailableToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
@@ -159,7 +158,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the username to use when starting the process.
         /// </summary>
-        public readonly NTAccount? Username;
+        public readonly RunAsActiveUser? RunAsActiveUser;
 
         /// <summary>
         /// Gets a value indicating whether to use the linked admin token to start the process.

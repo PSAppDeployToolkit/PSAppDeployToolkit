@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Principal;
+using PSADT.TerminalServices;
 
 namespace PSADT.Module
 {
@@ -25,6 +26,19 @@ namespace PSADT.Module
             string[] accountParts = nTAccount.Value.Split('\\');
             UserName = accountParts[1]; DomainName = accountParts[0];
             SessionId = sessionId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RunAsActiveUser"/> class using the specified session
+        /// information.
+        /// </summary>
+        /// <remarks>This constructor extracts the NT account, SID, and session ID from the provided
+        /// <paramref name="session"/>  and initializes the <see cref="RunAsActiveUser"/> instance with these
+        /// values.</remarks>
+        /// <param name="session">The session information containing the NT account, security identifier (SID), and session ID of the active
+        /// user.</param>
+        public RunAsActiveUser(SessionInfo session) : this(session.NTAccount, session.SID, session.SessionId)
+        {
         }
 
         /// <summary>

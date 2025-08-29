@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Security.Principal;
+using PSADT.LibraryInterfaces;
+using PSADT.Module;
 
 namespace PSADT.TerminalServices
 {
@@ -38,16 +40,17 @@ namespace PSADT.TerminalServices
             string domainName,
             uint sessionId,
             string? sessionName,
-            LibraryInterfaces.WTS_CONNECTSTATE_CLASS connectState,
+            WTS_CONNECTSTATE_CLASS connectState,
             bool isCurrentSession,
             bool isConsoleSession,
             bool isActiveUserSession,
+            bool isValidUserSession,
             bool isUserSession,
             bool isRdpSession,
             bool? isLocalAdmin,
             Exception? isLocalAdminException,
-            DateTime? logonTime,
-            TimeSpan? idleTime,
+            DateTime logonTime,
+            TimeSpan idleTime,
             DateTime? disconnectTime,
             string? clientName,
             WTS_PROTOCOL_TYPE clientProtocolType,
@@ -64,6 +67,7 @@ namespace PSADT.TerminalServices
             IsCurrentSession = isCurrentSession;
             IsConsoleSession = isConsoleSession;
             IsActiveUserSession = isActiveUserSession;
+            IsValidUserSession = isValidUserSession;
             IsUserSession = isUserSession;
             IsRdpSession = isRdpSession;
             IsLocalAdmin = isLocalAdmin;
@@ -75,6 +79,15 @@ namespace PSADT.TerminalServices
             ClientProtocolType = clientProtocolType;
             ClientDirectory = clientDirectory;
             ClientBuildNumber = clientBuildNumber;
+        }
+
+        /// <summary>
+        /// Converts the current instance to a <see cref="RunAsActiveUser"/> object.
+        /// </summary>
+        /// <returns>A new <see cref="RunAsActiveUser"/> instance initialized with the current object.</returns>
+        public RunAsActiveUser ToRunAsActiveUser()
+        {
+            return new(this);
         }
 
         /// <summary>
@@ -110,7 +123,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The connection state of the session.
         /// </summary>
-        public readonly LibraryInterfaces.WTS_CONNECTSTATE_CLASS ConnectState;
+        public readonly WTS_CONNECTSTATE_CLASS ConnectState;
 
         /// <summary>
         /// Whether the session is the current session of the caller.
@@ -126,6 +139,11 @@ namespace PSADT.TerminalServices
         /// Whether the session is active or not.
         /// </summary>
         public readonly bool IsActiveUserSession;
+
+        /// <summary>
+        /// Whether the session's token can be used to create a process.
+        /// </summary>
+        public readonly bool IsValidUserSession;
 
         /// <summary>
         /// Whether the session is that of a user.
@@ -150,12 +168,12 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The logon time of the session.
         /// </summary>
-        public readonly DateTime? LogonTime;
+        public readonly DateTime LogonTime;
 
         /// <summary>
         /// How long the session has been idle for.
         /// </summary>
-        public readonly TimeSpan? IdleTime;
+        public readonly TimeSpan IdleTime;
 
         /// <summary>
         /// The last disconnection time of the session.

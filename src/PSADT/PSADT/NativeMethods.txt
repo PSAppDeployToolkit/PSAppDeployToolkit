@@ -58,6 +58,7 @@ GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
+GetLastInputInfo
 GetModuleInformation
 GetNamedSecurityInfo
 GetPrivateProfileSection

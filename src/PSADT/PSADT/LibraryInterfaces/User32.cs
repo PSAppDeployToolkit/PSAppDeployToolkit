@@ -7,6 +7,7 @@ using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.LibraryInterfaces
@@ -444,6 +445,33 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new InvalidOperationException("Failed to retrieve the shell window handle.");
             }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the time of the last input event (e.g., keyboard or mouse activity) for the system.
+        /// </summary>
+        /// <remarks>This method wraps the native <c>GetLastInputInfo</c> function and ensures that the
+        /// <paramref name="plii"/> structure is properly initialized before the call. The caller can use the <see
+        /// cref="LASTINPUTINFO.dwTime"/> value to calculate the duration of user inactivity by comparing it with the
+        /// current system tick count.</remarks>
+        /// <param name="plii">When this method returns, contains a <see cref="LASTINPUTINFO"/> structure that holds the time of the last
+        /// input event. The <see cref="LASTINPUTINFO.dwTime"/> field represents the tick count at the time of the last
+        /// input, relative to system startup.</param>
+        /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the method fails to retrieve the last input information.</exception>
+        internal static BOOL GetLastInputInfo(out LASTINPUTINFO plii)
+        {
+            var pliiLocal = new LASTINPUTINFO
+            {
+                cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>()
+            };
+            var res = PInvoke.GetLastInputInfo(ref pliiLocal);
+            if (!res)
+            {
+                throw new InvalidOperationException("Failed to retrieve the last input info.");
+            }
+            plii = pliiLocal;
             return res;
         }
 
