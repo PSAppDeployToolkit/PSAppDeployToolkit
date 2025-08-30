@@ -52,6 +52,8 @@ FILE_FLAGS_AND_ATTRIBUTES
 FindWindow
 GENERIC_MAPPING
 GetApplicationUserModelId
+GetCurrentProcess
+GetCurrentProcessId
 GetCurrentThreadId
 GetDpiForMonitor
 GetDpiForWindow
@@ -203,6 +205,7 @@ PROC_THREAD_ATTRIBUTE_ENABLE_OPTIONAL_XSTATE_FEATURES
 PROCESS_ACCESS_RIGHTS
 PROCESS_BASIC_INFORMATION
 PROCESS_INFORMATION
+ProcessIdToSessionId
 QueryDosDevice
 QueryInformationJobObject
 QueryServiceStatusEx

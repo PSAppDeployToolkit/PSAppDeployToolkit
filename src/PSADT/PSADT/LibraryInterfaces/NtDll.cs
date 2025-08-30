@@ -487,17 +487,28 @@ namespace PSADT.LibraryInterfaces
         /// about the process.</param>
         /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. Returns <see
         /// cref="NTSTATUS.STATUS_SUCCESS"/> if the operation succeeds.</returns>
-        internal static unsafe NTSTATUS NtQueryInformationProcess(IntPtr processHandle, out PROCESS_BASIC_INFORMATION processInformation)
+        internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle processHandle, out PROCESS_BASIC_INFORMATION processInformation)
         {
-            fixed (PROCESS_BASIC_INFORMATION* processInformationLocal = &processInformation)
+            bool processHandleAddRef = false;
+            try
             {
-                uint returnLength = 0;
-                var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)processHandle, PROCESSINFOCLASS.ProcessBasicInformation, processInformationLocal, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref returnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS)
+                fixed (PROCESS_BASIC_INFORMATION* processInformationLocal = &processInformation)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    processHandle.DangerousAddRef(ref processHandleAddRef);  uint returnLength = 0;
+                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)processHandle.DangerousGetHandle(), PROCESSINFOCLASS.ProcessBasicInformation, processInformationLocal, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref returnLength);
+                    if (res != NTSTATUS.STATUS_SUCCESS)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    }
+                    return res;
                 }
-                return res;
+            }
+            finally
+            {
+                if (processHandleAddRef)
+                {
+                    processHandle.DangerousRelease();
+                }
             }
         }
 
