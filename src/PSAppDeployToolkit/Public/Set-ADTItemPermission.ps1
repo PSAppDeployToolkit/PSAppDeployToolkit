@@ -142,6 +142,9 @@ function Set-ADTItemPermission
         [Alias('ApplyMethod', 'ApplicationMethod')]
         [System.String]$Method = 'AddAccessRule',
 
+        [Parameter(Mandatory = $false, HelpMessage = 'Disables inheritance, preserving permissions before doing so.', ParameterSetName = 'DisableInheritance')]
+        [System.Management.Automation.SwitchParameter]$DisableInheritance,
+
         [Parameter(Mandatory = $true, HelpMessage = 'Enables inheritance, which removes explicit permissions.', ParameterSetName = 'EnableInheritance')]
         [System.Management.Automation.SwitchParameter]$EnableInheritance
     )
@@ -184,6 +187,13 @@ function Set-ADTItemPermission
 
                 # Get object ACLs for the given path.
                 $Acl = Get-Acl -LiteralPath $LiteralPath
+
+                # Disable inheritance if asked to do so.
+                if ($DisableInheritance)
+                {
+                    $Acl.SetAccessRuleProtection($true, $true); $null = Set-Acl -LiteralPath $Path -AclObject $Acl
+                    $Acl = Get-Acl -LiteralPath $LiteralPath
+                }
 
                 # Apply permissions on each user.
                 foreach ($Username in $User.Trim())
