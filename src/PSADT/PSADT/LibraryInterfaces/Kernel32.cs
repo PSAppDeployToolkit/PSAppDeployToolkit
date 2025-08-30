@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
@@ -473,6 +472,39 @@ namespace PSADT.LibraryInterfaces
         {
             var res = PInvoke.LoadLibrary(lpLibFileName);
             if (null == res || res.IsInvalid)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves a safe handle representing the current process.
+        /// </summary>
+        /// <remarks>The returned handle is safe to use with Windows API functions that require a process
+        /// handle. It is the caller's responsibility to ensure proper disposal of the handle to release system
+        /// resources.</remarks>
+        /// <returns>A <see cref="SafeProcessHandle"/> that encapsulates a handle to the current process.</returns>
+        internal static SafeProcessHandle GetCurrentProcess()
+        {
+            var res = PInvoke.GetCurrentProcess();
+            if (res != (nint)(-1))
+            {
+                throw new InvalidOperationException("Failed to retrieve handle for current process.");
+            }
+            return new(res, true);
+        }
+
+        /// <summary>
+        /// Retrieves the session ID associated with a specified process ID.
+        /// </summary>
+        /// <param name="dwProcessId">The process ID for which to retrieve the session ID.</param>
+        /// <param name="pSessionId">When this method returns, contains the session ID associated with the specified process ID.</param>
+        /// <returns><see langword="true"/> if the session ID was successfully retrieved; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL ProcessIdToSessionId(uint dwProcessId, out uint pSessionId)
+        {
+            var res = PInvoke.ProcessIdToSessionId(dwProcessId, out pSessionId);
+            if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }

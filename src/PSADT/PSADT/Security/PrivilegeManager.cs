@@ -26,8 +26,7 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
-            using (var cProcess = Process.GetCurrentProcess())
-            using (var cProcessSafeHandle = cProcess.SafeHandle)
+            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
             {
                 AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
                 using (hProcessToken)
@@ -109,8 +108,7 @@ namespace PSADT.Security
         /// available, the collection will be empty.</returns>
         internal static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges()
         {
-            using (var cProcess = Process.GetCurrentProcess())
-            using (var cProcessSafeHandle = cProcess.SafeHandle)
+            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
             {
                 AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
                 using (hProcessToken)
@@ -150,8 +148,7 @@ namespace PSADT.Security
         /// <returns></returns>
         internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
-            using (var cProcess = Process.GetCurrentProcess())
-            using (var cProcessSafeHandle = cProcess.SafeHandle)
+            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
             {
                 AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
                 using (hProcessToken)
@@ -191,8 +188,7 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         internal static void EnablePrivilege(SE_PRIVILEGE privilege)
         {
-            using (var cProcess = Process.GetCurrentProcess())
-            using (var cProcessSafeHandle = cProcess.SafeHandle)
+            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
             {
                 AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
                 using (hProcessToken)
@@ -210,8 +206,7 @@ namespace PSADT.Security
         /// <returns></returns>
         internal static bool TestProcessAccessRights(SafeProcessHandle token, PROCESS_ACCESS_RIGHTS accessRights)
         {
-            using (var cProcess = Process.GetCurrentProcess())
-            using (var cProcessSafeHandle = cProcess.SafeHandle)
+            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
             {
                 try
                 {

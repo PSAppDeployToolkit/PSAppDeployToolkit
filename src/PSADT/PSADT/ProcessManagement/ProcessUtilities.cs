@@ -202,15 +202,17 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the parent process of the specified process.
+        /// Retrieves the parent process of the specified process handle.
         /// </summary>
-        /// <remarks>This method uses system-level information to identify the parent process. The caller
-        /// must ensure that the provided process is valid and accessible.</remarks>
-        /// <param name="proc">The process for which to retrieve the parent process. Must not be null.</param>
-        /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
-        public static Process GetParentProcess(Process proc)
+        /// <remarks>This method uses the NtQueryInformationProcess function to retrieve information about
+        /// the specified process. Ensure that the provided process handle is valid and has the required
+        /// permissions.</remarks>
+        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose parent process is to be retrieved.
+        /// The handle must have the necessary access rights to query process information.</param>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
+        public static Process GetParentProcess(SafeHandle hProcess)
         {
-            NtDll.NtQueryInformationProcess(proc.Handle, out var pbi);
+            NtDll.NtQueryInformationProcess(hProcess, out var pbi);
             return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
         }
 
@@ -222,10 +224,21 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
         public static Process GetParentProcess()
         {
-            using (var proc = Process.GetCurrentProcess())
-            {
-                return GetParentProcess(proc);
-            }
+            using var hProcess = Kernel32.GetCurrentProcess();
+            return GetParentProcess(hProcess);
+        }
+
+        /// <summary>
+        /// Retrieves the parent process of the specified process.
+        /// </summary>
+        /// <remarks>This method uses system-level information to identify the parent process. The caller
+        /// must ensure that the provided process is valid and accessible.</remarks>
+        /// <param name="proc">The process for which to retrieve the parent process. Must not be null.</param>
+        /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
+        public static Process GetParentProcess(Process proc)
+        {
+            using var hProcess = proc.SafeHandle;
+            return GetParentProcess(hProcess);
         }
 
         /// <summary>

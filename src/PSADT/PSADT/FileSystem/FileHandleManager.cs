@@ -89,8 +89,7 @@ namespace PSADT.FileSystem
                 }
 
                 // Set up required handles for GetObjectName().
-                using (var currentProcess = Process.GetCurrentProcess())
-                using (var currentProcessHandle = currentProcess.SafeHandle)
+                using (var currentProcessHandle = Kernel32.GetCurrentProcess())
                 {
                     // Loop through all handles and return list of open file handles.
                     var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
@@ -184,8 +183,7 @@ namespace PSADT.FileSystem
             }
 
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
-            using (var currentProcess = Process.GetCurrentProcess())
-            using (var currentProcessHandle = currentProcess.SafeHandle)
+            using (var currentProcessHandle = Kernel32.GetCurrentProcess())
             {
                 foreach (var handleEntry in handleEntries)
                 {

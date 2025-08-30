@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Security.Principal;
+using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.Security;
+using Windows.Win32;
 
 namespace PSADT.AccountManagement
 {
@@ -30,11 +32,7 @@ namespace PSADT.AccountManagement
             }
 
             // Build out process/session id information.
-            using (var currentProcess = Process.GetCurrentProcess())
-            {
-                CallerSessionId = (uint)currentProcess.SessionId;
-                CallerProcessId = (uint)currentProcess.Id;
-            }
+            Kernel32.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
 
             // Initialize the lookup table for well-known SIDs. Continue on any errors.
             Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
