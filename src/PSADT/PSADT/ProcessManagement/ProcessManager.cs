@@ -21,7 +21,6 @@ using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Security;
-using PSADT.TerminalServices;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -78,7 +77,7 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (null != launchInfo.Username))
+            if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (null != launchInfo.RunAsActiveUser))
             {
                 AnonymousPipeServerStream? hStdOutRead = null;
                 AnonymousPipeServerStream? hStdErrRead = null;
@@ -144,10 +143,10 @@ namespace PSADT.ProcessManagement
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.Username && launchInfo.Username != AccountUtilities.CallerUsername && GetSessionForUsername(launchInfo.Username) is SessionInfo session)
+                    if (null != launchInfo.RunAsActiveUser && launchInfo.RunAsActiveUser.NTAccount != AccountUtilities.CallerUsername)
                     {
                         // Start the process with the user's token.
-                        using (var hPrimaryToken = ProcessToken.GetUserPrimaryToken(session.NTAccount, session.SID, session.SessionId, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken))
+                        using (var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken))
                         {
                             // Without creating an environment block, the process will take on the environment of the SYSTEM account.
                             UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
@@ -159,7 +158,7 @@ namespace PSADT.ProcessManagement
                                 {
                                     lpDesktop.DangerousAddRef(ref lpDesktopAddRef);
                                     startupInfo.lpDesktop = new PWSTR(lpDesktop.DangerousGetHandle());
-                                    OutLaunchArguments(launchInfo, session.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
+                                    OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
                                     CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
                                     startupInfo.lpDesktop = null;
                                 }
@@ -173,7 +172,7 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
-                    else if ((null != launchInfo.Username && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem))
+                    else if ((null != launchInfo.RunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem))
                     {
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = ProcessToken.GetUnelevatedToken())
@@ -328,48 +327,6 @@ namespace PSADT.ProcessManagement
 
             // Return a ProcessHandle object with this process and its running task.
             return new(process, launchInfo, commandLine, tcs.Task);
-        }
-
-        /// <summary>
-        /// Retrieves the session information for the specified user.
-        /// </summary>
-        /// <remarks>This method queries the system for session information associated with the specified
-        /// user. The user must be logged on and their session must be active for the method to succeed.</remarks>
-        /// <param name="username">The <see cref="NTAccount"/> representing the user whose session information is to be retrieved. The account
-        /// must correspond to a logged-on and active user.</param>
-        /// <returns>A <see cref="SessionInfo"/> object containing details about the user's session.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if no user sessions are available, if no session is found for the specified user, or if the user's
-        /// session is not active.</exception>
-        private static SessionInfo GetSessionForUsername(NTAccount username)
-        {
-            // You can only run a process as a user if they're logged on.
-            var userSessions = SessionManager.GetSessionInfo();
-            if (userSessions.Count == 0)
-            {
-                throw new InvalidOperationException("No user sessions are available to launch the process in.");
-            }
-
-            // You can only run a process as a user if they're active.
-            SessionInfo? session = null;
-            if (!username!.Value.Contains('\\'))
-            {
-                session = userSessions.FirstOrDefault(s => username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
-            }
-            else
-            {
-                session = userSessions.FirstOrDefault(s => s.NTAccount == username);
-            }
-            if (null == session)
-            {
-                throw new InvalidOperationException($"No session found for user {username}.");
-            }
-            if (session.ConnectState != WTS_CONNECTSTATE_CLASS.WTSActive)
-            {
-                throw new InvalidOperationException($"The session for user {username} is not active.");
-            }
-
-            // Return the session information for the user.
-            return session;
         }
 
         /// <summary>

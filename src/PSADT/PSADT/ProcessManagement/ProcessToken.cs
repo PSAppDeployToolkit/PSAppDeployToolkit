@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.LibraryInterfaces;
+using PSADT.Module;
 using PSADT.Security;
 using PSADT.Utilities;
 using Windows.Win32.Security;
@@ -29,10 +29,7 @@ namespace PSADT.ProcessManagement
         /// as the local system account, the method attempts to locate the user's Explorer process and retrieve its
         /// token. If the caller is running as the local system account, the method directly queries the user's session
         /// token.</remarks>
-        /// <param name="username">The <see cref="NTAccount"/> representing the user for whom the token is being retrieved.</param>
-        /// <param name="sid">The <see cref="SecurityIdentifier"/> of the user. This is used to match the user's session or process.</param>
-        /// <param name="sessionId">The session ID of the user. This is required when retrieving the token for a user logged into a specific
-        /// session.</param>
+        /// <param name="runAsActiveUser">The user for whom the primary token is being retrieved. This must represent an active session.</param>
         /// <param name="useLinkedAdminToken">A value indicating whether to retrieve the linked administrative token for the user, if available. If <see
         /// langword="true"/>, the method attempts to retrieve the linked token.</param>
         /// <param name="useHighestAvailableToken">A value indicating whether to retrieve the highest available token for the user if the linked administrative
@@ -43,7 +40,7 @@ namespace PSADT.ProcessManagement
         /// logged on or does not have an active session.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the linked administrative token cannot be retrieved and <paramref
         /// name="useHighestAvailableToken"/> is <see langword="false"/>.</exception>
-        internal static SafeFileHandle GetUserPrimaryToken(NTAccount username, SecurityIdentifier sid, uint sessionId, bool useLinkedAdminToken, bool useHighestAvailableToken)
+        internal static SafeFileHandle GetUserPrimaryToken(RunAsActiveUser runAsActiveUser, bool useLinkedAdminToken, bool useHighestAvailableToken)
         {
             // Get the user's token.
             SafeFileHandle hUserToken = null!;
@@ -56,7 +53,7 @@ namespace PSADT.ProcessManagement
                     using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
                     {
                         AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
-                        if (TokenManager.GetTokenSid(hProcessToken) == sid)
+                        if (TokenManager.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
                         {
                             hUserToken = hProcessToken;
                             break;
@@ -68,13 +65,13 @@ namespace PSADT.ProcessManagement
             {
                 // When we're local system, we can just get the primary token for the user.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                WtsApi32.WTSQueryUserToken(sessionId, out hUserToken);
+                WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out hUserToken);
             }
 
             // Throw if for whatever reason, we couldn't get a token.
             if (null == hUserToken)
             {
-                throw new InvalidOperationException($"Failed to retrieve a primary token for user [{username}]. Ensure the user is logged on and has an active session.");
+                throw new InvalidOperationException($"Failed to retrieve a primary token for user [{runAsActiveUser.NTAccount}]. Ensure the user is logged on and has an active session.");
             }
 
             // Get the primary token for the user, either linked or not.
@@ -90,7 +87,7 @@ namespace PSADT.ProcessManagement
                     {
                         if (!useHighestAvailableToken)
                         {
-                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{username}].", ex);
+                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
                         }
                         return TokenManager.GetPrimaryToken(hUserToken);
                     }
