@@ -6,16 +6,31 @@
 
 function Private:Get-ADTClientServerUser
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Default')]
     [OutputType([PSADT.Module.RunAsActiveUser])]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Username')]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.Principal.NTAccount]$Username,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [System.Management.Automation.SwitchParameter]$AllowSystemFallback
     )
 
     # Get the active user from the environment if available.
-    $runAsActiveUser = if ((Test-ADTSessionActive) -or (Test-ADTModuleInitialized))
+    $runAsActiveUser = if ($Username)
+    {
+        if ($Username.Value.Contains('\'))
+        {
+            (Get-ADTLoggedOnUser).GetEnumerator() | & { process { if ($_.NTAccount -eq $Username) { return [PSADT.Module.RunAsActiveUser]::new($_) } } } | Select-Object -First 1
+        }
+        else
+        {
+            (Get-ADTLoggedOnUser).GetEnumerator() | & { process { if ($_.Username -eq $Username) { return [PSADT.Module.RunAsActiveUser]::new($_) } } } | Select-Object -First 1
+        }
+    }
+    elseif ((Test-ADTSessionActive) -or (Test-ADTModuleInitialized))
     {
         (Get-ADTEnvironmentTable).RunAsActiveUser
     }
@@ -40,7 +55,7 @@ function Private:Get-ADTClientServerUser
             return $runAsActiveUser
         }
     }
-    elseif ([System.Environment]::UserInteractive -and (![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -or $AllowSystemFallback))
+    elseif (!$Username -and [System.Environment]::UserInteractive -and (![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -or $AllowSystemFallback))
     {
         # If there's no RunAsActiveUser but the current process is interactive, just run it as the current user.
         return [PSADT.Module.RunAsActiveUser]::new([PSADT.AccountManagement.AccountUtilities]::CallerUsername, [PSADT.AccountManagement.AccountUtilities]::CallerSid, [PSADT.AccountManagement.AccountUtilities]::CallerSessionId)

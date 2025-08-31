@@ -156,7 +156,7 @@ function Start-ADTProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),
+        [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -307,13 +307,14 @@ function Start-ADTProcessAsUser
 
     process
     {
-        # Test whether there's a proper username to proceed with.
-        if (!$Username)
+        # Convert the Username field into a RunAsActiveUser object as required by the subsystem.
+        $gacsuParams = if ($PSBoundParameters.ContainsKey('Username')) { @{ Username = $Username } } else { @{} }
+        if (!($PSBoundParameters.RunAsActiveUser = Get-ADTClientServerUser @gacsuParams))
         {
             try
             {
                 $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new('Username', "There is no logged on user to run a new process as.")
+                    Exception = [System.ArgumentNullException]::new("There is no logged on user to run a new process as.", $null)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId = 'NoActiveUserError'
                     TargetObject = $Username
@@ -327,7 +328,7 @@ function Start-ADTProcessAsUser
                 return
             }
         }
-        $PSBoundParameters.Username = $Username
+        $null = $PSBoundParameters.Remove('Username')
 
         # Just farm it out to Start-ADTProcess as it can do it all.
         try
