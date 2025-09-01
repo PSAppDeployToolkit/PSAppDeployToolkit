@@ -103,7 +103,7 @@ namespace PSADT.TerminalServices
             bool isValidUserSession = isActiveUserSession || sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
             TimeSpan idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
-            string pWinStationName = session.pWinStationName.ToString().TrimRemoveNull();
+            string? pWinStationName = session.pWinStationName.ToString()?.TrimRemoveNull();
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
 
             // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
@@ -149,7 +149,7 @@ namespace PSADT.TerminalServices
                 isLocalAdminException,
                 DateTime.FromFileTime(sessionInfo.LogonTime),
                 idleTime,
-                sessionInfo.DisconnectTime != 0 && (!isConsoleSession || !isActiveUserSession) ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
+                sessionInfo.DisconnectTime != 0 && !isActiveUserSession ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
                 clientName,
                 (WTS_PROTOCOL_TYPE)clientProtocolType!,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
