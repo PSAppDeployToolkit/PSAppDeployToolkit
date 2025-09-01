@@ -49,17 +49,17 @@ function Remove-ADTInvalidFileNameChars
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Name
     )
 
     begin
     {
-        $invalidChars = [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidFileNameChars())))]", [System.Text.RegularExpressions.RegexOptions]::Compiled)
+        $invalidChars = [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.Management.Automation.Language.NullString]::Value, [System.IO.Path]::GetInvalidFileNameChars())))]", [System.Text.RegularExpressions.RegexOptions]::Compiled)
     }
 
     process
     {
-        return $invalidChars.Replace($Name.Trim(), [System.String]::Empty)
+        return $invalidChars.Replace($Name, [System.String]::Empty).Trim()
     }
 }

@@ -279,14 +279,14 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!([System.Object]$HKLMValidVer = [System.String]::Join([System.String]::Empty, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_)) { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKLMValidVer, [ref]$HKLMValidVer))
+            if (!([System.Object]$HKLMValidVer = [System.String]::Join([System.Management.Automation.Language.NullString]::Value, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_)) { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKLMValidVer, [ref]$HKLMValidVer))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!([System.Object]$HKCUValidVer = [System.String]::Join([System.String]::Empty, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_)) { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKCUValidVer, [ref]$HKCUValidVer))
+            if (!([System.Object]$HKCUValidVer = [System.String]::Join([System.Management.Automation.Language.NullString]::Value, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_)) { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKCUValidVer, [ref]$HKCUValidVer))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
@@ -327,7 +327,7 @@ function Set-ADTActiveSetup
                 [System.String]$Version = [System.Management.Automation.Language.NullString]::Value,
 
                 [Parameter(Mandatory = $false)]
-                [AllowEmptyString()]
+                [ValidateNotNullOrEmpty()]
                 [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
 
                 [Parameter(Mandatory = $false)]
@@ -484,8 +484,11 @@ function Set-ADTActiveSetup
                 # Define common parameters split for Set-ADTActiveSetupRegistryEntry.
                 $sasreParams = @{
                     Version = $Version
-                    Locale = $Locale
                     DisableActiveSetup = $DisableActiveSetup
+                }
+                if ($PSBoundParameters.ContainsKey('Locale'))
+                {
+                    $sasreParams.Add('Locale', $Locale)
                 }
 
                 # Create the Active Setup entry in the registry.
@@ -541,7 +544,7 @@ function Set-ADTActiveSetup
                     {
                         if ($StubExeExt -eq '.ps1')
                         {
-                            $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", $null)
+                            $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", [System.Management.Automation.Language.NullString]::Value)
                         }
                         Start-ADTProcess -FilePath $CUStubExePath -UseUnelevatedToken -CreateNoWindow -PassThru:$PassThru -ArgumentList $CUArguments
                     }

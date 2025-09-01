@@ -43,7 +43,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
                             }
                             elseif ($_.Value -match '^0[xX][0-9a-fA-F]+$')
                             {
-                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value.Replace('0x', $null), [System.Globalization.NumberStyles]::HexNumber))
+                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value.Replace('0x', [System.Management.Automation.Language.NullString]::Value), [System.Globalization.NumberStyles]::HexNumber))
                             }
                             else
                             {

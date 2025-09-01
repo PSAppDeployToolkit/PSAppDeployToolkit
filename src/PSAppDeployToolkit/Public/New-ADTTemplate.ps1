@@ -193,7 +193,7 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', $null).Replace('2000-12-31', [System.DateTime]::Now.ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
+                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
                 }
 
                 # Display the newly created folder in Windows Explorer.
