@@ -53,35 +53,37 @@ namespace PSADT.TerminalServices
         /// <returns></returns>
         internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
+            // Internal helper for retrieving session information values.
             static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
                 WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out var pBuffer);
-                if (!pBuffer.IsInvalid)
+                using (pBuffer)
                 {
-                    using (pBuffer)
+                    if (typeof(T) == typeof(string))
                     {
-                        if (typeof(T) == typeof(string))
+                        if (pBuffer.ToStringUni()?.TrimRemoveNull() is string result && !string.IsNullOrWhiteSpace(result))
                         {
-                            if (pBuffer.ToStringUni()?.Trim() is string result && !string.IsNullOrWhiteSpace(result))
-                            {
-                                return (T)(object)result.TrimRemoveNull();
-                            }
+                            return (T)(object)result;
                         }
-                        if (typeof(T) == typeof(ushort))
-                        {
-                            return (T)(object)(ushort)pBuffer.ReadInt16();
-                        }
-                        else if (typeof(T) == typeof(uint))
-                        {
-                            return (T)(object)(uint)pBuffer.ReadInt32();
-                        }
-                        else if (typeof(T) == typeof(WTSINFOEXW))
-                        {
-                            return (T)(object)pBuffer.ToStructure<WTSINFOEXW>();
-                        }
+                        return default;
+                    }
+                    else if (typeof(T) == typeof(ushort))
+                    {
+                        return (T)(object)(ushort)pBuffer.ReadInt16();
+                    }
+                    else if (typeof(T) == typeof(uint))
+                    {
+                        return (T)(object)(uint)pBuffer.ReadInt32();
+                    }
+                    else if (typeof(T) == typeof(WTSINFOEXW))
+                    {
+                        return (T)(object)pBuffer.ToStructure<WTSINFOEXW>();
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"The type {typeof(T).FullName} is not supported by {nameof(GetValue)}.");
                     }
                 }
-                return default;
             }
 
             // Get extended information about the session, bombing out if we have no username (not a proper session).
