@@ -44,11 +44,11 @@ namespace PSADT.LibraryInterfaces
             }
             if (pLevel > 0)
             {
-                pProcessInfo = new SafeWtsExHandle((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true);
+                pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true);
             }
             else
             {
-                pProcessInfo = new SafeWtsExHandle((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
+                pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
             }
             return res;
         }
@@ -66,7 +66,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            pSessionInfo = new SafeWtsHandle((IntPtr)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
+            pSessionInfo = new((IntPtr)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             return res;
         }
 
@@ -86,7 +86,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            pBuffer = new SafeWtsHandle(new IntPtr(ppBuffer), (int)bytesReturned, true);
+            pBuffer = new(new(ppBuffer), (int)bytesReturned, true);
             return res;
         }
 
@@ -105,7 +105,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            phToken = new SafeFileHandle(phTokenLocal, true);
+            phToken = new(phTokenLocal, true);
             return res;
         }
     }

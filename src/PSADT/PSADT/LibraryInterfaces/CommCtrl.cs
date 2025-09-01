@@ -75,7 +75,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h">The handle represented as an <see cref="IntPtr"/> to be converted.</param>
         public static implicit operator TASKDIALOG_ICON(IntPtr h)
         {
-            return new TASKDIALOG_ICON(h);
+            return new(h);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h">The handle represented as an <see cref="PCWSTR"/> to be converted.</param>
         public unsafe static implicit operator TASKDIALOG_ICON(PCWSTR h)
         {
-            return new TASKDIALOG_ICON((IntPtr)h.Value);
+            return new((IntPtr)h.Value);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h">The handle represented as an <see cref="uint"/> to be converted.</param>
         public static implicit operator TASKDIALOG_ICON(uint h)
         {
-            return new TASKDIALOG_ICON((IntPtr)h);
+            return new((IntPtr)h);
         }
 
         /// <summary>

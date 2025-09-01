@@ -377,7 +377,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
                 }
-                threadHandle = new SafeThreadHandle(hThread, true);
+                threadHandle = new(hThread, true);
                 return res;
             }
             finally

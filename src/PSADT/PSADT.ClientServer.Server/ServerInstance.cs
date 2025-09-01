@@ -126,7 +126,7 @@ namespace PSADT.ClientServer
                             Trustee = new TRUSTEE_W
                             {
                                 TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
-                                ptstrName = new PWSTR(pinnedUserSid.DangerousGetHandle())
+                                ptstrName = new(pinnedUserSid.DangerousGetHandle())
                             }
                         };
 

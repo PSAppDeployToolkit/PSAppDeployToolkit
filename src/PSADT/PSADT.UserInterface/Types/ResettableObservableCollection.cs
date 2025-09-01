@@ -28,7 +28,7 @@ namespace PSADT.UserInterface.Types
                 Add(item);
             }
             _suppressNotification = false;
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnCollectionChanged(new(NotifyCollectionChangedAction.Reset));
         }
 
         /// <summary>

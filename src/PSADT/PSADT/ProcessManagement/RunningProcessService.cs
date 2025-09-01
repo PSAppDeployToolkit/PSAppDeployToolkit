@@ -80,7 +80,7 @@ namespace PSADT.ProcessManagement
                 if (!_lastProcessDescriptions.SequenceEqual(processDescs))
                 {
                     _lastProcessDescriptions = processDescs;
-                    ProcessesToCloseChanged?.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
+                    ProcessesToCloseChanged?.Invoke(this, new(_processesToClose));
                 }
 
                 // Wait for the specified interval before polling again.

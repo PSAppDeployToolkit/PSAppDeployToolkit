@@ -156,7 +156,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static HRESULT SHGetImageList(SHIL_SIZE iImageList, out IImageList ppvObj)
         {
-            var res = PInvoke.SHGetImageList((int)iImageList, new System.Guid("46EB5926-582E-4017-9FDF-E8998DAA0950"), out var ppvObjLocal).ThrowOnFailure();
+            var res = PInvoke.SHGetImageList((int)iImageList, new("46EB5926-582E-4017-9FDF-E8998DAA0950"), out var ppvObjLocal).ThrowOnFailure();
             ppvObj = (IImageList)ppvObjLocal;
             return res;
         }

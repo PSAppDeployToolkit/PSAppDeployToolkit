@@ -77,8 +77,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.tableLayoutPanelIconMessage.SetColumn(this.labelMessage, 0);
                     this.tableLayoutPanelIconMessage.SetColumnSpan(this.labelMessage, 2);
                     var extraWidth = (int)this.tableLayoutPanelIconMessage.ColumnStyles[0].Width;
-                    this.labelMessage.MinimumSize = new Size(this.labelMessage.MinimumSize.Width + extraWidth, this.labelMessage.MinimumSize.Height);
-                    this.labelMessage.MaximumSize = new Size(this.labelMessage.MaximumSize.Width + extraWidth, this.labelMessage.MaximumSize.Height);
+                    this.labelMessage.MinimumSize = new(this.labelMessage.MinimumSize.Width + extraWidth, this.labelMessage.MinimumSize.Height);
+                    this.labelMessage.MaximumSize = new(this.labelMessage.MaximumSize.Width + extraWidth, this.labelMessage.MaximumSize.Height);
                     this.tableLayoutPanelIconMessage.ResumeLayout();
                 }
                 else

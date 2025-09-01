@@ -172,8 +172,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
 
                 // Update text content
-                DateTimeFormatInfo dateTimeFormatInfo = new DateTimeFormatInfo();
-                DateTimeOffset deferralDeadlineOffset = new DateTimeOffset((DateTime)_deferralDeadline!);
+                DateTimeFormatInfo dateTimeFormatInfo = new();
+                DateTimeOffset deferralDeadlineOffset = new((DateTime)_deferralDeadline!);
                 string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f");
                 if (ButtonRight.IsEnabled)
                 {
@@ -245,7 +245,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonLeft.IsEnabled = true;
                 if (_continueOnProcessClosure)
                 {
-                    ButtonLeft.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    ButtonLeft.RaiseEvent(new(Button.ClickEvent));
                 }
             }
         }

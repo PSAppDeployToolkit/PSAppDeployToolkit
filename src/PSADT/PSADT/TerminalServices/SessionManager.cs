@@ -240,7 +240,7 @@ namespace PSADT.TerminalServices
                     try
                     {
                         hPrimaryToken.DangerousAddRef(ref hPrimaryTokenAddRef);
-                        using var identity = new WindowsIdentity(hPrimaryToken.DangerousGetHandle());
+                        using WindowsIdentity identity = new(hPrimaryToken.DangerousGetHandle());
                         return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
                     }
                     finally

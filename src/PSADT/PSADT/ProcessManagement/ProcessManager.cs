@@ -157,7 +157,7 @@ namespace PSADT.ProcessManagement
                                 try
                                 {
                                     lpDesktop.DangerousAddRef(ref lpDesktopAddRef);
-                                    startupInfo.lpDesktop = new PWSTR(lpDesktop.DangerousGetHandle());
+                                    startupInfo.lpDesktop = new(lpDesktop.DangerousGetHandle());
                                     OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
                                     CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
                                     startupInfo.lpDesktop = null;
