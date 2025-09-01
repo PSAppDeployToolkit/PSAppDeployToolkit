@@ -72,8 +72,8 @@ namespace PSADT.Security
             {
                 // Retrieve the token privileges and filter them based on the specified attributes before returning them.
                 AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
-                var privilegeCount = buffer.ReadInt32();
-                var bufferOffset = sizeof(int);
+                var privilegeCount = buffer.ToStructure<TOKEN_PRIVILEGES>().PrivilegeCount;
+                var bufferOffset = sizeof(uint);
                 var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
                 Span<char> charSpan = stackalloc char[(int)PInvoke.MAX_PATH];
                 List<SE_PRIVILEGE> privileges = [];
