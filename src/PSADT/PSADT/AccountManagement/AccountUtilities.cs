@@ -7,6 +7,7 @@ using System.DirectoryServices;
 using System.Linq;
 using System.Security.Principal;
 using PSADT.LibraryInterfaces;
+using PSADT.Module;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using Windows.Win32;
@@ -53,6 +54,9 @@ namespace PSADT.AccountManagement
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
             CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
+
+            // Generate a RunAsActiveUser object for the current user.
+            CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId);
         }
 
         /// <summary>
@@ -166,6 +170,12 @@ namespace PSADT.AccountManagement
         /// Gets a value indicating whether the current process is running with ServiceUI anywhere as a parent process.
         /// </summary>
         public static readonly bool CallerUsingServiceUI;
+
+        /// <summary>
+        /// Represents a predefined instance of <see cref="RunAsActiveUser"/> that executes operations  as the currently
+        /// active user.
+        /// </summary>
+        public static readonly RunAsActiveUser CallerRunAsActiveUser;
 
         /// <summary>
         /// Gets a read-only list of privileges associated with the caller.
