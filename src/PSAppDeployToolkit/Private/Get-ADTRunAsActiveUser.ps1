@@ -60,15 +60,15 @@ function Private:Get-ADTRunAsActiveUser
         if ($session.SID.Equals([PSADT.AccountManagement.AccountUtilities]::CallerSid) -and $session.IsActiveUserSession)
         {
             Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-            return [PSADT.Module.RunAsActiveUser]::new($session.NTAccount, $session.SID, $session.SessionId)
+            return $session.ToRunAsActiveUser()
         }
     }
 
     # The caller SID isn't the active user session, try to find the best available match.
-    if ($session = $userSessions | & { process { if ($_.NTAccount -and $_.IsActiveUserSession) { return $_ } } } | Sort-Object -Property LogonTime -Descending | Select-Object -First 1)
+    if ($session = $userSessions | & { process { if ($_.IsActiveUserSession) { return $_ } } } | Sort-Object -Property LogonTime -Descending | Select-Object -First 1)
     {
         Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
-        return [PSADT.Module.RunAsActiveUser]::new($session.NTAccount, $session.SID, $session.SessionId)
+        return $session.ToRunAsActiveUser()
     }
     Write-ADTLogEntry -Message 'There was no active user session found on this device.'
 }

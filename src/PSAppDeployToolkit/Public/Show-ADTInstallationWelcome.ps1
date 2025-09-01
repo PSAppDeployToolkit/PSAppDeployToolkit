@@ -1118,17 +1118,17 @@ function Show-ADTInstallationWelcome
                             Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
                             if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                             {
-                                if ($PromptToSave)
-                                {
-                                    Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
-                                }
-                                else
+                                if (!$PromptToSave)
                                 {
                                     foreach ($runningApp in $runningApps)
                                     {
                                         Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)]..."
                                         Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
                                     }
+                                }
+                                else
+                                {
+                                    Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
 
                                 # Test whether apps are still running. If they are still running, the Welcome Window will be displayed again after 5 seconds.
