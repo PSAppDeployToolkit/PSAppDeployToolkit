@@ -53,7 +53,10 @@ function Set-ADTItemPermission
         * RemoveAccessRuleSpecific - Removes specific permissions.
 
     .PARAMETER EnableInheritance
-        Enables inheritance on the files/folders.
+        Enables inheritance, which removes explicit permissions.
+
+    .PARAMETER DisableInheritance
+        Disables inheritance, preserving permissions before doing so.
 
     .INPUTS
         None
