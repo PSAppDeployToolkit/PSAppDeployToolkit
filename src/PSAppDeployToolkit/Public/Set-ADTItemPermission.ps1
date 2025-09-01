@@ -191,7 +191,7 @@ function Set-ADTItemPermission
                 # Disable inheritance if asked to do so.
                 if ($DisableInheritance)
                 {
-                    $Acl.SetAccessRuleProtection($true, $true); $null = Set-Acl -LiteralPath $Path -AclObject $Acl
+                    $Acl.SetAccessRuleProtection($true, $true); $null = Set-Acl -LiteralPath $LiteralPath -AclObject $Acl
                     $Acl = Get-Acl -LiteralPath $LiteralPath
                 }
 
