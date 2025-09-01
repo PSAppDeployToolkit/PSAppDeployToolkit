@@ -172,7 +172,7 @@ function Remove-ADTFolder
                     if ($SubfoldersSkipped)
                     {
                         $naerParams = @{
-                            Exception = [System.IO.IOException]::new("The following subfolders are not empty ['$([System.String]::Join("'; '", $SubfoldersSkipped.FullName.Replace("$($item.FullName)\", $null)))'].")
+                            Exception = [System.IO.IOException]::new("The following subfolders are not empty ['$([System.String]::Join("'; '", $SubfoldersSkipped.FullName.Replace("$($item.FullName)\", [System.Management.Automation.Language.NullString]::Value)))'].")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                             ErrorId = 'NonEmptySubfolderError'
                             TargetObject = $SubfoldersSkipped

@@ -160,14 +160,14 @@ function Remove-ADTRegistryKey
                         return
                     }
                     Write-ADTLogEntry -Message "Deleting registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name]."
-                    if ($Name -eq '(Default)')
+                    $null = if ($Name -eq '(Default)')
                     {
                         # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
-                        $null = (Get-Item @pathParam).OpenSubKey('', 'ReadWriteSubTree').DeleteValue('')
+                        (Get-Item @pathParam).OpenSubKey([System.String]::Empty, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree).DeleteValue([System.String]::Empty)
                     }
                     else
                     {
-                        $null = Remove-ItemProperty @pathParam -Name $Name -Force
+                        Remove-ItemProperty @pathParam -Name $Name -Force
                     }
                 }
             }

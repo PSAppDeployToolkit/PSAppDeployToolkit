@@ -442,7 +442,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Transforms.Length; $i++)
                         {
-                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', '')).Trim()) -PathType Leaf)
+                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', [System.Management.Automation.Language.NullString]::Value)).Trim()) -PathType Leaf)
                             {
                                 $Transforms[$i] = $fullPath
                             }
@@ -454,7 +454,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Patches.Length; $i++)
                         {
-                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', '')).Trim()) -PathType Leaf)
+                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', [System.Management.Automation.Language.NullString]::Value)).Trim()) -PathType Leaf)
                             {
                                 $Patches[$i] = $fullPath
                             }

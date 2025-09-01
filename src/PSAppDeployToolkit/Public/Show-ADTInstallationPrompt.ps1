@@ -338,7 +338,7 @@ function Show-ADTInstallationPrompt
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Message]."
-                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', $null) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', [System.Management.Automation.Language.NullString]::Value) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 
@@ -354,7 +354,7 @@ function Show-ADTInstallationPrompt
                 {
                     $result = try
                     {
-                        Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', $null) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                        Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', [System.Management.Automation.Language.NullString]::Value) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
                     }
                     catch [System.ApplicationException]
                     {

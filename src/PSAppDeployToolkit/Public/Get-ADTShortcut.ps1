@@ -110,9 +110,9 @@ function Get-ADTShortcut
                         {
                             switch ($_)
                             {
-                                { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', $null); break }
-                                { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', $null); break }
-                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('IconFile=', $null); break }
+                                { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', [System.Management.Automation.Language.NullString]::Value); break }
+                                { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', [System.Management.Automation.Language.NullString]::Value); break }
+                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('IconFile=', [System.Management.Automation.Language.NullString]::Value); break }
                             }
                         }
                     }
