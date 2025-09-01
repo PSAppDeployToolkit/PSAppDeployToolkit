@@ -707,7 +707,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h">The handle represented as an <see cref="IntPtr"/> to be converted.</param>
         public static implicit operator RESOURCE_TYPE(IntPtr h)
         {
-            return new RESOURCE_TYPE(h);
+            return new(h);
         }
 
         /// <summary>
@@ -716,7 +716,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h">The handle represented as an <see cref="PCWSTR"/> to be converted.</param>
         public unsafe static implicit operator RESOURCE_TYPE(PCWSTR h)
         {
-            return new RESOURCE_TYPE((IntPtr)h.Value);
+            return new((IntPtr)h.Value);
         }
 
         /// <summary>
@@ -725,7 +725,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h">The handle represented as an <see cref="uint"/> to be converted.</param>
         public static implicit operator RESOURCE_TYPE(uint h)
         {
-            return new RESOURCE_TYPE((IntPtr)h);
+            return new((IntPtr)h);
         }
 
         /// <summary>

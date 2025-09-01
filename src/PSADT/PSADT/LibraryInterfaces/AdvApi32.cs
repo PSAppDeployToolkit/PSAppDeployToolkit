@@ -441,7 +441,7 @@ namespace PSADT.LibraryInterfaces
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                     }
-                    NewAcl = new LocalFreeSafeHandle((IntPtr)NewAclLocal, true);
+                    NewAcl = new((IntPtr)NewAclLocal, true);
                     return res;
                 }
                 finally
@@ -578,11 +578,11 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw new InvalidOperationException("Failed to retrieve security descriptor.");
                 }
-                ppsidOwner = psidOwner != default ? new FreeSidSafeHandle(psidOwner, false) : null;
-                ppsidGroup = pSidGroup != default ? new FreeSidSafeHandle(pSidGroup, false) : null;
-                ppDacl = pDacl != null ? new LocalFreeSafeHandle((IntPtr)pDacl, false) : null;
-                ppSacl = pSacl != null ? new LocalFreeSafeHandle((IntPtr)pSacl, false) : null;
-                ppSecurityDescriptor = new LocalFreeSafeHandle((IntPtr)pSECURITY_DESCRIPTOR, true);
+                ppsidOwner = psidOwner != default ? new(psidOwner, false) : null;
+                ppsidGroup = pSidGroup != default ? new(pSidGroup, false) : null;
+                ppDacl = pDacl != null ? new((IntPtr)pDacl, false) : null;
+                ppSacl = pSacl != null ? new((IntPtr)pSacl, false) : null;
+                ppSecurityDescriptor = new((IntPtr)pSECURITY_DESCRIPTOR, true);
                 return res;
             }
         }

@@ -48,7 +48,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the countdown timer.
                 if (null != options.CountdownDuration)
                 {
-                    this.countdownTimer = new System.Threading.Timer(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    this.countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     this.countdownDuration = options.CountdownDuration.Value;
                     if (null != options.CountdownNoMinimizeDuration)
                     {

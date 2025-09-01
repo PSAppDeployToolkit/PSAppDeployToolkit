@@ -139,7 +139,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the countdown timer.
                 if (null != countdownDuration)
                 {
-                    countdownTimer = new System.Threading.Timer(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     countdownStopwatch = state.CountdownStopwatch;
                     if (this.richTextBoxCloseProcesses.Lines?.Length > 0)
                     {

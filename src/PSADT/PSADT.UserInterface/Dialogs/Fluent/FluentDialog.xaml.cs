@@ -125,21 +125,21 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set the expiry timer if specified.
             if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
             {
-                _expiryTimer = new DispatcherTimer() { Interval = options.DialogExpiryDuration.Value };
+                _expiryTimer = new DispatcherTimer { Interval = options.DialogExpiryDuration.Value };
                 _expiryTimer.Tick += (sender, e) => CloseDialog();
             }
 
             // PersistPrompt timer code.
             if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
             {
-                _persistTimer = new DispatcherTimer() { Interval = options.DialogPersistInterval.Value };
+                _persistTimer = new DispatcherTimer { Interval = options.DialogPersistInterval.Value };
                 _persistTimer.Tick += PersistTimer_Tick;
             }
 
             // Initialize countdown if specified
             if (null != _countdownDuration)
             {
-                _countdownTimer = new Timer(CountdownTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
+                _countdownTimer = new(CountdownTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
                 CountdownStackPanel.Visibility = Visibility.Visible;    
                 CountdownDeferPanelSeparator.Visibility = Visibility.Visible;
             }
@@ -172,7 +172,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Raises the PropertyChanged event for the specified property.
         /// </summary>
         /// <param name="propertyName"></param>
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new(propertyName));
 
         /// <summary>
         /// Prevent window movement by handling WM_SYSCOMMAND
@@ -295,7 +295,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             HwndSource? source = HwndSource.FromHwnd(helper.Handle);
             if (source != null)
             {
-                source.AddHook(new HwndSourceHook(WndProc));
+                source.AddHook(new(WndProc));
             }
         }
 
@@ -343,7 +343,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Add text before the current match
                 if (match.Index > lastPos)
                 {
-                    textBlock.Inlines.Add(new Run(message.Substring(lastPos, match.Index - lastPos)));
+                    textBlock.Inlines.Add(message.Substring(lastPos, match.Index - lastPos));
                 }
 
                 // Process the matched element
@@ -354,7 +354,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Add any remaining text after the last match
             if (lastPos < message.Length)
             {
-                textBlock.Inlines.Add(new Run(message.Substring(lastPos)));
+                textBlock.Inlines.Add(message.Substring(lastPos));
             }
         }
 
@@ -441,7 +441,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             else
             {
                 // If it's not a valid URI, just add as plain text
-                textBlock.Inlines.Add(new Run(url));
+                textBlock.Inlines.Add(url);
             }
         }
 
@@ -494,7 +494,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Updates the Grid RowDefinition based on the current content.
         /// </summary>
-        protected void UpdateRowDefinition() => CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
+        protected void UpdateRowDefinition() => CenterPanelRow.Height = new(1, GridUnitType.Auto);
 
         /// <summary>
         /// Converts a 32-bit integer representation of a color into a <see cref="Color"/> object.
@@ -541,7 +541,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     BitmapImage bitmapImage = new();
                     bitmapImage.BeginInit();
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
+                    bitmapImage.UriSource = new(dialogIconPath, UriKind.Absolute);
                     bitmapImage.EndInit();
 
                     // Make it shareable across threads
@@ -705,35 +705,35 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 for (int i = 0; i < visibleButtons.Count; i++)
                 {
                     // Set margin based on position
-                    ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
                     Grid.SetColumn(visibleButtons[i], i);
                     Button button = (Button)visibleButtons[i];
                     if (i == 0)
                     {
-                        button.Margin = new Thickness(0, 0, 4, 0);
+                        button.Margin = new(0, 0, 4, 0);
                     }
                     else if (i == visibleButtons.Count - 1)
                     {
-                        button.Margin = new Thickness(4, 0, 0, 0);
+                        button.Margin = new(4, 0, 0, 0);
                     }
                     else
                     {
-                        button.Margin = new Thickness(4, 0, 4, 0);
+                        button.Margin = new(4, 0, 4, 0);
                     }
                 }
             }
             else
             {
                 // Add two columns - one for the button (50% width) and one empty (50% width)
-                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
+                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
 
                 // Place the single button in the second column
                 Grid.SetColumn(visibleButtons[0], 1);
 
                 // Set appropriate margin
                 Button button = (Button)visibleButtons[0];
-                button.Margin = new Thickness(0, 0, 0, 0);
+                button.Margin = new(0, 0, 0, 0);
 
                 // Set this to be the default button with accent
                 SetDefaultButton(button);

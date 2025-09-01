@@ -54,7 +54,7 @@ namespace PSADT.SafeHandles
             {
                 return;
             }
-            SetHandle(Marshal.ReAllocHGlobal(handle, new IntPtr(length)));
+            SetHandle(Marshal.ReAllocHGlobal(handle, new(length)));
             Length = length;
         }
 

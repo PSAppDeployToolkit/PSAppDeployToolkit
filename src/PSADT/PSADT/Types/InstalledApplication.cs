@@ -71,13 +71,13 @@ namespace PSADT.Types
             if (null != UninstallString)
             {
                 var argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
-                UninstallStringFilePath = new FileInfo(argumentList[0]);
+                UninstallStringFilePath = new(argumentList[0]);
                 UninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
             if (null != QuietUninstallString)
             {
                 var argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
-                QuietUninstallStringFilePath = new FileInfo(argumentList[0]);
+                QuietUninstallStringFilePath = new(argumentList[0]);
                 QuietUninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
         }

@@ -18,7 +18,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached icon if available, otherwise load and cache it before returning it.
             if (!iconCache.TryGetValue(path, out Icon? icon))
             {
-                using var source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new Icon(path);
+                using Icon source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new(path);
                 icon = (Icon)source.Clone();
                 iconCache.Add(path, icon);
             }

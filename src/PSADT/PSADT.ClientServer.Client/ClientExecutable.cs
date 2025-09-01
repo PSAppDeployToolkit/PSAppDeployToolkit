@@ -245,7 +245,7 @@ namespace PSADT.ClientServer
             AnonymousPipeClientStream logPipeClient;
             try
             {
-                outputPipeClient = new AnonymousPipeClientStream(PipeDirection.Out, outputPipeHandle);
+                outputPipeClient = new(PipeDirection.Out, outputPipeHandle);
             }
             catch (Exception ex)
             {
@@ -253,7 +253,7 @@ namespace PSADT.ClientServer
             }
             try
             {
-                inputPipeClient = new AnonymousPipeClientStream(PipeDirection.In, inputPipeHandle);
+                inputPipeClient = new(PipeDirection.In, inputPipeHandle);
             }
             catch (Exception ex)
             {
@@ -261,7 +261,7 @@ namespace PSADT.ClientServer
             }
             try
             {
-                logPipeClient = new AnonymousPipeClientStream(PipeDirection.Out, logPipeHandle);
+                logPipeClient = new(PipeDirection.Out, logPipeHandle);
             }
             catch (Exception ex)
             {

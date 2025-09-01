@@ -51,14 +51,14 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the expiry timer if specified.
                 if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
                 {
-                    this.expiryTimer = new Timer() { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
+                    this.expiryTimer = new Timer { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
                     this.expiryTimer.Tick += (s, e) => CloseDialog();
                 }
 
                 // PersistPrompt timer code.
                 if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
                 {
-                    this.persistTimer = new Timer() { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
+                    this.persistTimer = new Timer { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
                     this.persistTimer.Tick += PersistTimer_Tick;
                 }
 
@@ -100,7 +100,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         {
             double dpiScale = (double)User32.GetDpiForWindow((HWND)this.Handle) / 96.0;
             pictureBox.Image = ClassicAssets.GetBanner(options.AppBannerImage);
-            pictureBox.Size = new Size((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * ((double)pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
+            pictureBox.Size = new((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * ((double)pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
         }
 
         /// <summary>
@@ -345,7 +345,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             top += dialogPosName.StartsWith("Bottom") ? 1 : dialogPosName.StartsWith("Top") ? -1 : 0;
 
             // Set the form’s location
-            Location = startingPoint = new Point((int)left, (int)top);
+            Location = startingPoint = new((int)left, (int)top);
         }
 
         /// <summary>

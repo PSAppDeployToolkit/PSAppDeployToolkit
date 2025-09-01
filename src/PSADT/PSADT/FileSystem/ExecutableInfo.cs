@@ -80,7 +80,7 @@ namespace PSADT.FileSystem
         /// <param name="imageBase"></param>
         private ExecutableInfo(string filePath, IMAGE_FILE_MACHINE machine, IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
         {
-            FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new FileInfo(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
+            FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
             Machine = (LibraryInterfaces.IMAGE_FILE_MACHINE)machine;
             Subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)subsystem;
             IsDotNetExecutable = isDotNetExecutable;

@@ -90,7 +90,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // The hashtable was correctly defined, assign the remaining values.
-            Strings = new CloseAppsDialogStrings(strings, deploymentType);
+            Strings = new(strings, deploymentType);
         }
 
         /// <summary>
@@ -217,8 +217,8 @@ namespace PSADT.UserInterface.DialogOptions
                 }
 
                 // The hashtable was correctly defined, assign the remaining values.
-                Classic = new CloseAppsDialogClassicStrings(classicStrings, deploymentType);
-                Fluent = new CloseAppsDialogFluentStrings(fluentStrings, deploymentType);
+                Classic = new(classicStrings, deploymentType);
+                Fluent = new(fluentStrings, deploymentType);
             }
 
             /// <summary>

@@ -50,7 +50,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // The hashtable was correctly defined, assign the remaining values.
-            Strings = new RestartDialogStrings(strings, deploymentType);
+            Strings = new(strings, deploymentType);
         }
 
         /// <summary>

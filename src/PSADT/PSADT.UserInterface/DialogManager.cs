@@ -337,7 +337,7 @@ namespace PSADT.UserInterface
             // Initialize the WPF application if necessary, otherwise just invoke the callback.
             if (!appInitialized.IsSet)
             {
-                appThread = new Thread(() =>
+                appThread = new(() =>
                 {
                     app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     app.Startup += (_, _) => appInitialized.Set();

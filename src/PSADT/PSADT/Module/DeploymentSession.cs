@@ -152,23 +152,23 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (null != paramValue))
                     {
-                        _deployAppScriptParameters = new ReadOnlyDictionary<string, object>((Dictionary<string, object>)paramValue);
+                        _deployAppScriptParameters = new((Dictionary<string, object>)paramValue);
                     }
                     if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (null != paramValue))
                     {
-                        _appSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
+                        _appSuccessExitCodes = new((int[])paramValue);
                     }
                     if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (null != paramValue))
                     {
-                        _appRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
+                        _appRebootExitCodes = new((int[])paramValue);
                     }
                     if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (null != paramValue))
                     {
-                        _appProcessesToClose = new ReadOnlyCollection<ProcessDefinition>((ProcessDefinition[])paramValue);
+                        _appProcessesToClose = new((ProcessDefinition[])paramValue);
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (null != paramValue))
                     {
-                        _scriptDirectory = new ReadOnlyCollection<string>((string[])paramValue);
+                        _scriptDirectory = new((string[])paramValue);
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
@@ -188,7 +188,7 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (null != paramValue))
                     {
-                        _defaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
+                        _defaultMspFiles = new((string[])paramValue);
                     }
                     if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -263,7 +263,7 @@ namespace PSADT.Module
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                         string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
                         ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
-                        AddMountedWimFile(new FileInfo(wimFile)); _dirFiles = mountPath;
+                        AddMountedWimFile(new(wimFile)); _dirFiles = mountPath;
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
@@ -341,7 +341,7 @@ namespace PSADT.Module
                         {
                             if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase)).ToArray() is string[] mspFiles) && (mspFiles.Length > 0))
                             {
-                                _defaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
+                                _defaultMspFiles = new(mspFiles);
                             }
                         }
                         else if (!string.IsNullOrWhiteSpace(_dirFiles) && (null != _defaultMspFiles.FirstOrDefault(static f => !Path.IsPathRooted(f))))
@@ -935,11 +935,11 @@ namespace PSADT.Module
                 {
                     foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
-                        callerSessionState.PSVariable.Set(new PSVariable(property.Name, property.GetValue(this)));
+                        callerSessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
                     }
                     foreach (FieldInfo field in typeof(DeploymentSession).GetFields())
                     {
-                        callerSessionState.PSVariable.Set(new PSVariable(field.Name, field.GetValue(this)));
+                        callerSessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
                     }
                     CallerSessionState = callerSessionState;
                 }
@@ -1219,7 +1219,7 @@ namespace PSADT.Module
         {
             if (null != CallerSessionState)
             {
-                CallerSessionState.PSVariable.Set(new PSVariable(propertyName, value));
+                CallerSessionState.PSVariable.Set(new(propertyName, value));
             }
             BackingFields[propertyName!].SetValue(this, value);
         }
@@ -1412,7 +1412,7 @@ namespace PSADT.Module
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly ReadOnlyCollection<string> DriveLetters = new ReadOnlyCollection<string>([@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"]);
+        private static readonly ReadOnlyCollection<string> DriveLetters = new([@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"]);
 
         /// <summary>
         /// Buffer for log entries.
@@ -1467,9 +1467,9 @@ namespace PSADT.Module
         private readonly string? _appArch;
         private readonly string? _appLang;
         private readonly string? _appRevision;
-        private readonly ReadOnlyCollection<int> _appSuccessExitCodes = new ReadOnlyCollection<int>([0]);
-        private readonly ReadOnlyCollection<int> _appRebootExitCodes = new ReadOnlyCollection<int>([1641, 3010]);
-        private readonly ReadOnlyCollection<ProcessDefinition> _appProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([]);
+        private readonly ReadOnlyCollection<int> _appSuccessExitCodes = new([0]);
+        private readonly ReadOnlyCollection<int> _appRebootExitCodes = new([1641, 3010]);
+        private readonly ReadOnlyCollection<ProcessDefinition> _appProcessesToClose = new([]);
         private readonly Version? _appScriptVersion;
         private readonly DateTime? _appScriptDate;
         private readonly string? _appScriptAuthor;
@@ -1480,10 +1480,10 @@ namespace PSADT.Module
         private readonly ReadOnlyDictionary<string, object>? _deployAppScriptParameters;
         private readonly string _currentDate;
         private readonly string _currentTime;
-        private readonly ReadOnlyCollection<string> _scriptDirectory = new ReadOnlyCollection<string>([]);
+        private readonly ReadOnlyCollection<string> _scriptDirectory = new([]);
         private readonly string? _defaultMsiFile;
         private readonly string? _defaultMstFile;
-        private readonly ReadOnlyCollection<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
+        private readonly ReadOnlyCollection<string> _defaultMspFiles = new([]);
         private readonly string _logPath;
         private readonly string _logName;
         private string _installPhase = "Initialization";

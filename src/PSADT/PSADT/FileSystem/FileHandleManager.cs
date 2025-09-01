@@ -156,7 +156,7 @@ namespace PSADT.FileSystem
                         string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                         if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                         {
-                            openHandles.Add(new FileHandleInfo(sysHandle, dosPath, objectName, objectType));
+                            openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                         }
                     });
                     return openHandles.ToList().AsReadOnly();
