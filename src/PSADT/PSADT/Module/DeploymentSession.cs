@@ -1247,7 +1247,7 @@ namespace PSADT.Module
                 return null;
             }
             WriteLogEntry("Getting deferral history...");
-            var history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).First();
+            var history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
             if (null == history)
             {
                 return null;
