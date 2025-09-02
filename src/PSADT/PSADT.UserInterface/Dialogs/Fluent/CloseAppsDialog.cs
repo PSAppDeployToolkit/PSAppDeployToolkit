@@ -282,10 +282,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (_disposed)
-            {
-                return;
-            }
             if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
             {
                 DialogResult = CloseAppsDialogResult.Close;
@@ -305,10 +301,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (_disposed)
-            {
-                return;
-            }
             DialogResult = CloseAppsDialogResult.Defer;
             base.ButtonRight_Click(sender, e);
         }
@@ -446,11 +438,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly BinaryWriter? _logWriter;
 
         /// <summary>
-        /// Whether this window has been disposed.
-        /// </summary>
-        private bool _disposed = false;
-
-        /// <summary>
         /// App/process icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _appIconCache = [];
@@ -470,9 +457,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 {
                     _runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
                 }
+                AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
             }
             base.Dispose(disposing);
-            _disposed = true;
         }
     }
 }

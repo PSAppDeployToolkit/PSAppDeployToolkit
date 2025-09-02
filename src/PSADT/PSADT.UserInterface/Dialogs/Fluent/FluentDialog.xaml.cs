@@ -159,12 +159,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         public void CloseDialog()
         {
-            // If we're already processing, just return.
-            if (_disposed)
-            {
-                return;
-            }
             _canClose = true;
+            _persistTimer?.Stop();
+            _expiryTimer?.Stop();
             Dispatcher.Invoke(Close);
         }
 
@@ -198,10 +195,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected virtual void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
-            if (_disposed)
-            {
-                return;
-            }
             CloseDialog();
         }
 
@@ -212,10 +205,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected virtual void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
-            if (_disposed)
-            {
-                return;
-            }
             CloseDialog();
         }
 
@@ -226,10 +215,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected virtual void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
-            if (_disposed)
-            {
-                return;
-            }
             CloseDialog();
         }
 
@@ -291,11 +276,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             PositionWindow();
 
             // Add hook to prevent window movement
-            WindowInteropHelper helper = new(this);
-            HwndSource? source = HwndSource.FromHwnd(helper.Handle);
-            if (source != null)
+            if (_hwndSource == null)
             {
-                source.AddHook(new(WndProc));
+                WindowInteropHelper helper = new(this);
+                _hwndSource = HwndSource.FromHwnd(helper.Handle);
+                _hwndSource.AddHook(WndProc);
             }
         }
 
@@ -314,10 +299,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             // Use ShellExecute to open the URL in the default browser/handler
-            if (_disposed)
-            {
-                return;
-            }
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
             e.Handled = true;
         }
@@ -822,7 +803,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Whether this window has been disposed.
         /// </summary>
-        private bool _disposed = false;
+        protected bool _disposed { get; private set; } = false;
 
         /// <summary>
         /// Whether this window is able to be closed.
@@ -885,6 +866,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private double _startingLeft;
 
         /// <summary>
+        /// Represents the underlying window handle source for a WPF application.
+        /// </summary>
+        /// <remarks>This field is used to manage the interoperation between WPF and Win32 by providing
+        /// access to the window handle source. It is typically used in scenarios involving advanced window management
+        /// or interoperation with native code.</remarks>
+        private HwndSource? _hwndSource;
+
+        /// <summary>
         /// A read-only dictionary that caches dialog icons for different application themes.
         /// </summary>
         /// <remarks>This dictionary maps <see cref="ApplicationTheme"/> values to their corresponding
@@ -923,6 +912,25 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             if (disposing)
             {
+                // Remove event handlers.
+                Loaded -= FluentDialog_Loaded;
+                SizeChanged -= FluentDialog_SizeChanged;
+
+                // Remove timer event handlers if they exist.
+                if (_expiryTimer != null)
+                {
+                    _expiryTimer.Tick -= (sender, e) => CloseDialog();
+                    _expiryTimer.Stop();
+                }
+                if (_persistTimer != null)
+                {
+                    _persistTimer.Tick -= PersistTimer_Tick;
+                    _persistTimer.Stop();
+                }
+
+                // Clean up resources.
+                ThemeManager.RemoveActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
+                _hwndSource?.RemoveHook(WndProc);
                 _countdownTimer?.Dispose();
             }
             _disposed = true;
