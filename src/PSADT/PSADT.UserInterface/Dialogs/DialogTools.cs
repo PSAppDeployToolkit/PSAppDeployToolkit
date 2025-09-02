@@ -6,8 +6,8 @@ namespace PSADT.UserInterface.Dialogs
     /// Provides utility methods and constants for working with dialog-related functionality,  such as managing button
     /// text and parsing custom text formatting tags.
     /// </summary>
-    /// <remarks>This class includes predefined constants for dialog button text and internal utilities  for
-    /// handling custom text formatting tags. It is designed to support dialog-related  operations in
+    /// <remarks>This class includes predefined constants for dialog button text and internal utilities for
+    /// handling custom text formatting tags. It is designed to support dialog-related operations in
     /// applications.</remarks>
     public static class DialogTools
     {

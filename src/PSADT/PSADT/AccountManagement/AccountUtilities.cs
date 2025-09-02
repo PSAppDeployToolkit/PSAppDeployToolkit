@@ -172,7 +172,7 @@ namespace PSADT.AccountManagement
         public static readonly bool CallerUsingServiceUI;
 
         /// <summary>
-        /// Represents a predefined instance of <see cref="RunAsActiveUser"/> that executes operations  as the currently
+        /// Represents a predefined instance of <see cref="RunAsActiveUser"/> that executes operations as the currently
         /// active user.
         /// </summary>
         public static readonly RunAsActiveUser CallerRunAsActiveUser;

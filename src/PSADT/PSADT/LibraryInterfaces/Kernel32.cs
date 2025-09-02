@@ -832,7 +832,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwOSMinorVersion">The minor version number of the operating system.</param>
         /// <param name="dwSpMajorVersion">The major version number of the service pack installed on the operating system.</param>
         /// <param name="dwSpMinorVersion">The minor version number of the service pack installed on the operating system.</param>
-        /// <param name="pdwReturnedProductType">When this method returns, contains the product type of the operating system.  This parameter is passed
+        /// <param name="pdwReturnedProductType">When this method returns, contains the product type of the operating system. This parameter is passed
         /// uninitialized.</param>
         /// <returns><see langword="true"/> if the product type information was successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>

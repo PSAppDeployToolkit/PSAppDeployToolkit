@@ -127,8 +127,8 @@ namespace PSADT.FileSystem
         /// directory.
         /// </summary>
         /// <remarks>This method evaluates the effective access rights by considering the specified SID,
-        /// the desired access mask,  and the security settings of the file or directory at the given path. The result
-        /// reflects the actual permissions  granted to the SID, taking into account any deny or allow rules in the
+        /// the desired access mask, and the security settings of the file or directory at the given path. The result
+        /// reflects the actual permissions granted to the SID, taking into account any deny or allow rules in the
         /// access control list (ACL).</remarks>
         /// <param name="path">The file or directory path for which to evaluate access rights.</param>
         /// <param name="sid">The security identifier (SID) of the user or group whose access rights are being evaluated.</param>

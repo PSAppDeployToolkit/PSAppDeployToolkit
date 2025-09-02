@@ -135,9 +135,9 @@ namespace PSADT.Utilities
         /// Retrieves the time elapsed since the last user input event.
         /// </summary>
         /// <remarks>This method uses system-level APIs to determine the time of the last user input, such
-        /// as  keyboard or mouse activity. The returned value may be useful for detecting user inactivity  or
+        /// as keyboard or mouse activity. The returned value may be useful for detecting user inactivity or
         /// implementing idle timeouts.</remarks>
-        /// <returns>A <see cref="TimeSpan"/> representing the duration since the last user input event.  The value is calculated
+        /// <returns>A <see cref="TimeSpan"/> representing the duration since the last user input event. The value is calculated
         /// based on the system's tick count.</returns>
         internal static TimeSpan GetLastInputTime()
         {
