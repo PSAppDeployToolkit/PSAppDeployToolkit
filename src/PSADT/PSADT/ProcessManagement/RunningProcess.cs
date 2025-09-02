@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace PSADT.ProcessManagement
 {
@@ -16,14 +17,14 @@ namespace PSADT.ProcessManagement
         /// <param name="description"></param>
         /// <param name="fileName"></param>
         /// <param name="arguments"></param>
-        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string>? arguments)
+        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string> arguments)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
             FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
-            if (null != arguments)
+            if (arguments.Where(static a => !string.IsNullOrWhiteSpace(a)) is var argv && argv.Any())
             {
-                Arguments = CommandLineUtilities.ArgumentListToCommandLine(arguments);
+                Arguments = CommandLineUtilities.ArgumentListToCommandLine(argv);
             }
         }
 
