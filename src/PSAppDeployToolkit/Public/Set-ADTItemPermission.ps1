@@ -172,6 +172,22 @@ function Set-ADTItemPermission
                 # Get the FileInfo/DirectoryInfo for the specified LiteralPath.
                 $pathInfo = Get-Item -LiteralPath $LiteralPath
 
+                # Add extension methods to object if we're in PowerShell 7.
+                if ($PSEdition.Equals('Core'))
+                {
+                    $pathInfo | Add-Member -MemberType ScriptMethod -Name SetAccessControl -Value {
+                        [CmdletBinding()]
+                        param
+                        (
+                            [Parameter(Mandatory = $true)]
+                            [ValidateNotNullOrEmpty()]
+                            [System.Security.AccessControl.FileSystemSecurity]$Acl
+                        )
+
+                        [System.IO.FileSystemAclExtensions]::SetAccessControl($this, $Acl)
+                    }
+                }
+
                 # Directly apply the permissions if an ACL object has been provided.
                 if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
                 {
@@ -180,11 +196,14 @@ function Set-ADTItemPermission
                     return
                 }
 
+                # Get object ACLs for the given path.
+                $Acl = Get-Acl -LiteralPath $pathInfo.FullName
+
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
                     Write-ADTLogEntry -Message "Enabling Inheritance on path [$LiteralPath]."
-                    ($Acl = $pathInfo.GetAccessControl()).SetAccessRuleProtection($false, $true)
+                    $Acl.SetAccessRuleProtection($false, $true)
                     if ($RemoveExplicitRules)
                     {
                         $Acl.GetAccessRules($true, $false, [System.Security.Principal.SecurityIdentifier]) | & {
@@ -206,14 +225,11 @@ function Set-ADTItemPermission
                     $Propagation = [System.Security.AccessControl.PropagationFlags]::None
                 }
 
-                # Get object ACLs for the given path.
-                $Acl = $pathInfo.GetAccessControl()
-
                 # Disable inheritance if asked to do so.
                 if ($DisableInheritance)
                 {
                     $Acl.SetAccessRuleProtection($true, $true); $pathInfo.SetAccessControl($Acl)
-                    $Acl = $pathInfo.GetAccessControl()
+                    $Acl = Get-Acl -LiteralPath $pathInfo.FullName
                 }
 
                 # Apply permissions on each user.
