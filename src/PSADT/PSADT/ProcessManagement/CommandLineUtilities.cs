@@ -66,9 +66,17 @@ namespace PSADT.ProcessManagement
         public static string ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
         {
             // Consider a null or empty argument list as an error.
-            if (null == argv || argv.Count() == 0 || argv.Any(string.IsNullOrWhiteSpace))
+            if (null == argv)
             {
-                throw new ArgumentNullException(nameof(argv));
+                throw new ArgumentNullException("The specified enumerable is null.", (Exception?)null);
+            }
+            if (!argv.Any())
+            {
+                throw new ArgumentNullException("The specified enumerable is empty.", (Exception?)null);
+            }
+            if (argv.Any(string.IsNullOrWhiteSpace))
+            {
+                throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
             }
 
             // Construct and return the command line string.
