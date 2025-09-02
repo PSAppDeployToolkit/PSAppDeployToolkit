@@ -202,7 +202,7 @@ namespace PSADT.UserInterface.TestHarness
 
                 // #################################################################################
 
-                // Show CloseApps Dialog
+                // Show CloseApps Dialog.
 
                 if (closeAppsResult != CloseAppsDialogResult.Defer)
                 {
