@@ -29,43 +29,47 @@ function Private:Import-ADTStringTable
     )
 
     # Internal filter to expand variables.
-    filter Expand-ADTConfigValuesInStringTable
+    function Expand-ADTConfigValuesInStringTable
     {
-        # Go recursive if we've received a hashtable, otherwise just update the values.
-        foreach ($section in $($_.GetEnumerator()))
+        begin
         {
-            if ($section.Value -is [System.String])
+            $substitutions = [System.Text.RegularExpressions.Regex]::new('\{([^\d]+)\}', [System.Text.RegularExpressions.RegexOptions]::Compiled)
+            $config = Get-ADTConfig
+        }
+
+        process
+        {
+            foreach ($section in $($_.GetEnumerator()))
             {
-                $_.($section.Key) = $substitutions.Replace($section.Value,
-                    {
-                        return $args[0].Groups[1].Value.Split('\') | & {
-                            begin
-                            {
-                                $result = $config
+                if ($section.Value -is [System.String])
+                {
+                    $_.($section.Key) = $substitutions.Replace($section.Value,
+                        {
+                            return $args[0].Groups[1].Value.Split('\') | & {
+                                begin
+                                {
+                                    $result = $config
+                                }
+                                process
+                                {
+                                    $result = $result.$_
+                                }
+                                end
+                                {
+                                    return $result
+                                }
                             }
-                            process
-                            {
-                                $result = $result.$_
-                            }
-                            end
-                            {
-                                return $result
-                            }
-                        }
-                    })
-            }
-            elseif ($section.Value -is [System.Collections.Hashtable])
-            {
-                $section.Value | & $MyInvocation.MyCommand
+                        })
+                }
+                elseif ($section.Value -is [System.Collections.Hashtable])
+                {
+                    $section.Value | & $MyInvocation.MyCommand
+                }
             }
         }
     }
 
-    # Get the current config so we can read its values.
-    $config = Get-ADTConfig
-
     # Import string table, perform value substitutions, then return it to the caller.
-    $substitutions = [System.Text.RegularExpressions.Regex]::new('\{([^\d]+)\}', [System.Text.RegularExpressions.RegexOptions]::Compiled)
     $strings = Import-ADTModuleDataFile @PSBoundParameters -FileName strings.psd1 -IgnorePolicy
     $strings | Expand-ADTConfigValuesInStringTable
     return $strings

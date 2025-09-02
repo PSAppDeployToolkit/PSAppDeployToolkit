@@ -59,6 +59,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ThemeManager.Current.AccentColor = IntToColor(options.FluentAccentColor.Value);
             }
 
+            // Set the language and flow direction for the dialog.
+            Language = System.Windows.Markup.XmlLanguage.GetLanguage(options.Language.IetfLanguageTag);
+            FlowDirection = options.Language.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+
             // Set basic properties
             Title = options.AppTitle;
             AppTitleTextBlock.Text = options.AppTitle;
