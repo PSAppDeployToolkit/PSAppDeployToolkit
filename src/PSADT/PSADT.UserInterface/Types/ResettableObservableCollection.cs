@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.Types
         /// <param name="items"></param>
         internal void ResetItems(IEnumerable<T> items, bool force = false)
         {
-            if (!force && items.Count() == 0 && Count == 0)
+            if (!force && !items.Any() && Count == 0)
             {
                 return;
             }
