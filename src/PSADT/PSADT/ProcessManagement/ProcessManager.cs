@@ -143,7 +143,7 @@ namespace PSADT.ProcessManagement
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.RunAsActiveUser && launchInfo.RunAsActiveUser.NTAccount != AccountUtilities.CallerUsername)
+                    if (null != launchInfo.RunAsActiveUser && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
                     {
                         // Start the process with the user's token.
                         using (var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken))
