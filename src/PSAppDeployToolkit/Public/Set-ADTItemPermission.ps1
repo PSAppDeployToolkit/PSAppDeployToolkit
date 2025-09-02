@@ -58,6 +58,9 @@ function Set-ADTItemPermission
     .PARAMETER DisableInheritance
         Disables inheritance, preserving permissions before doing so.
 
+    .PARAMETER RemoveExplicitRules
+        Removes non-inherited permissions from the object when enabling inheritance.
+
     .INPUTS
         None
 
@@ -149,7 +152,10 @@ function Set-ADTItemPermission
         [System.Management.Automation.SwitchParameter]$DisableInheritance,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Enables inheritance on the files/folders.', ParameterSetName = 'EnableInheritance')]
-        [System.Management.Automation.SwitchParameter]$EnableInheritance
+        [System.Management.Automation.SwitchParameter]$EnableInheritance,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Removes non-inherited permissions from the object when enabling inheritance.', ParameterSetName = 'EnableInheritance')]
+        [System.Management.Automation.SwitchParameter]$RemoveExplicitRules
     )
 
     begin
@@ -177,8 +183,17 @@ function Set-ADTItemPermission
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
-                    ($Acl = $pathInfo.GetAccessControl()).SetAccessRuleProtection($false, $true)
                     Write-ADTLogEntry -Message "Enabling Inheritance on path [$LiteralPath]."
+                    ($Acl = $pathInfo.GetAccessControl()).SetAccessRuleProtection($false, $true)
+                    if ($RemoveExplicitRules)
+                    {
+                        $Acl.GetAccessRules($true, $false, [System.Security.Principal.SecurityIdentifier]) | & {
+                            process
+                            {
+                                $Acl.RemoveAccessRuleSpecific($_)
+                            }
+                        }
+                    }
                     $pathInfo.SetAccessControl($Acl)
                     return
                 }
