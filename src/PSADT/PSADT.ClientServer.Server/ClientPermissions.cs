@@ -24,11 +24,11 @@ namespace PSADT.ClientServer
         /// Ensures that the specified user has the required file system permissions for a set of file paths.
         /// </summary>
         /// <remarks>This method verifies and, if necessary, updates the file system permissions for the
-        /// specified user  on the provided file paths. If the user already has the required permissions, no changes are
+        /// specified user on the provided file paths. If the user already has the required permissions, no changes are
         /// made.</remarks>
-        /// <param name="runAsActiveUser">The user for whom the file system permissions will be remediated.  This parameter cannot be <see
+        /// <param name="runAsActiveUser">The user for whom the file system permissions will be remediated. This parameter cannot be <see
         /// langword="null"/>.</param>
-        /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process.  All paths must be absolute
+        /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must be absolute
         /// and point to existing files.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>

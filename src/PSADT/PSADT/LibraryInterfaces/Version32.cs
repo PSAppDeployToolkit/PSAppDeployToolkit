@@ -32,7 +32,7 @@ namespace PSADT.LibraryInterfaces
             /// Represents the code page identifier used for character encoding.
             /// </summary>
             /// <remarks>The code page identifier specifies the character encoding used for text
-            /// processing.  This value is typically associated with a specific encoding standard, such as UTF-8 or
+            /// processing. This value is typically associated with a specific encoding standard, such as UTF-8 or
             /// Windows-1252.</remarks>
             internal readonly ushort wCodePage;
 

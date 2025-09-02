@@ -665,13 +665,13 @@ namespace PSADT.LibraryInterfaces
         /// cannot be null.</param>
         /// <param name="hAuthzResourceManager">A handle to the resource manager associated with the authorization context. This handle must be valid and
         /// cannot be null.</param>
-        /// <param name="pExpirationTime">An optional expiration time for the authorization context, specified as a <see cref="long"/> value.  If
+        /// <param name="pExpirationTime">An optional expiration time for the authorization context, specified as a <see cref="long"/> value. If
         /// null, the context does not have an expiration time.</param>
         /// <param name="Identifier">A <see cref="LUID"/> that uniquely identifies the authorization context.</param>
-        /// <param name="DynamicGroupArgs">A pointer to dynamic group arguments used during the initialization of the authorization context.  This
+        /// <param name="DynamicGroupArgs">A pointer to dynamic group arguments used during the initialization of the authorization context. This
         /// value can be <see cref="IntPtr.Zero"/> if no dynamic group arguments are provided.</param>
         /// <param name="phAuthzClientContext">When this method returns, contains an <see cref="AuthzFreeContextSafeHandle"/> representing the initialized
-        /// authorization context.  This handle must be released by the caller when no longer needed.</param>
+        /// authorization context. This handle must be released by the caller when no longer needed.</param>
         /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
