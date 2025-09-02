@@ -378,7 +378,7 @@ function Set-ADTActiveSetup
 
                     # All remaining users thereafter.
                     Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
-                    Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } } | Select-Object -First 1) -ScriptBlock {
+                    Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser) -ScriptBlock {
                         if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
                         {
                             Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
