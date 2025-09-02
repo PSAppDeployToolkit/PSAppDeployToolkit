@@ -59,6 +59,19 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         public static bool TestFileAccess(FileInfo path, FileSystemRights desiredAccess = FileSystemRights.ReadAndExecute)
         {
+            // Validate the input path.
+            if (null == path)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            // Validate that the path exists.
+            if (!path.Exists)
+            {
+                throw new FileNotFoundException($"The specified path does not exist: {path}");
+            }
+
+            // Set up the required flags for CreateFile, then see if we can open the file.
             var dwShareMode = FILE_SHARE_MODE.FILE_SHARE_NONE;
             if ((desiredAccess & FileSystemRights.Read) == FileSystemRights.Read)
             {
@@ -184,6 +197,18 @@ namespace PSADT.FileSystem
         /// has on the file or directory.</returns>
         private static FileSystemRights GetEffectiveAccess(string path, SafeHandle token, FileSystemRights desiredAccessMask, TokenType tokenType)
         {
+            // Validate the input path.
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            // Validate that the path exists.
+            if (!File.Exists(path) && !Directory.Exists(path))
+            {
+                throw new FileNotFoundException($"The specified path does not exist: {path}");
+            }
+
             // Retrieve the security descriptor for the file.
             AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
             using (ppSecurityDescriptor)
