@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Globalization;
 using System.IO;
 using PSADT.UserInterface.Dialogs;
 using Newtonsoft.Json;
@@ -42,6 +43,10 @@ namespace PSADT.UserInterface.DialogOptions
             if (options["DialogTopMost"] is not bool dialogTopMost)
             {
                 throw new ArgumentNullException("DialogTopMost value is null or invalid.", (Exception?)null);
+            }
+            if (options["Language"] is not CultureInfo language)
+            {
+                throw new ArgumentNullException("Language value is null or invalid.", (Exception?)null);
             }
 
             // Test that the specified image paths are valid.
@@ -107,6 +112,7 @@ namespace PSADT.UserInterface.DialogOptions
             AppIconDarkImage = appIconDarkImage;
             AppBannerImage = appBannerImage;
             DialogTopMost = dialogTopMost;
+            Language = language;
         }
 
         /// <summary>
@@ -120,27 +126,28 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="appIconImage">The path to the application's icon image. Cannot be null or empty.</param>
         /// <param name="appIconDarkImage">The path to the application's dark mode icon image. Cannot be null or empty.</param>
         /// <param name="appBannerImage">The path to the application's banner image. Cannot be null or empty.</param>
+        /// <param name="dialogTopMost">Indicates whether the dialog should always appear on top of other windows.</param>
+        /// <param name="language">The culture information representing the language for the dialog. Cannot be null.</param>
+        /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
         /// <param name="dialogPosition">The position of the dialog on the screen. If null, the default position is used.</param>
         /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If null, the default behavior is used.</param>
-        /// <param name="dialogTopMost">Indicates whether the dialog should always appear on top of other windows. Defaults to <see
-        /// langword="true"/>.</param>
-        /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires. If null, the dialog does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
         [JsonConstructor]
-        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool dialogTopMost = true, int? fluentAccentColor = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             AppTitle = appTitle ?? throw new ArgumentNullException(nameof(appTitle), "AppTitle cannot be null or empty.");
             Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle), "Subtitle cannot be null or empty.");
             AppIconImage = appIconImage ?? throw new ArgumentNullException(nameof(appIconImage), "AppIconImage cannot be null or empty.");
             AppIconDarkImage = appIconDarkImage ?? throw new ArgumentNullException(nameof(appIconDarkImage), "AppIconDarkImage cannot be null or empty.");
             AppBannerImage = appBannerImage ?? throw new ArgumentNullException(nameof(appBannerImage), "AppBannerImage cannot be null or empty.");
-            DialogPosition = dialogPosition;
-            DialogAllowMove = dialogAllowMove;
+            Language = language ?? throw new ArgumentNullException(nameof(language), "Language cannot be null.");
             DialogTopMost = dialogTopMost;
             FluentAccentColor = fluentAccentColor;
+            DialogPosition = dialogPosition;
+            DialogAllowMove = dialogAllowMove;
             DialogExpiryDuration = dialogExpiryDuration;
             DialogPersistInterval = dialogPersistInterval;
         }
@@ -176,6 +183,24 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly string AppBannerImage;
 
         /// <summary>
+        /// Indicates whether the dialog should be displayed as a top-most window.
+        /// </summary>
+        [JsonProperty]
+        public readonly bool DialogTopMost;
+
+        /// <summary>
+        /// Gets the culture information representing the language associated with this instance.
+        /// </summary>
+        [JsonProperty]
+        public readonly CultureInfo Language;
+
+        /// <summary>
+        /// The accent color for the dialog.
+        /// </summary>
+        [JsonProperty]
+        public readonly int? FluentAccentColor;
+
+        /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
         [JsonProperty]
@@ -186,18 +211,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [JsonProperty]
         public readonly bool? DialogAllowMove;
-
-        /// <summary>
-        /// Indicates whether the dialog should be displayed as a top-most window.
-        /// </summary>
-        [JsonProperty]
-        public readonly bool DialogTopMost;
-
-        /// <summary>
-        /// The accent color for the dialog.
-        /// </summary>
-        [JsonProperty]
-        public readonly int? FluentAccentColor;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.

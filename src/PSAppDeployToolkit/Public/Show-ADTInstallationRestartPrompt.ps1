@@ -226,6 +226,7 @@ function Show-ADTInstallationRestartPrompt
                     AppIconDarkImage = $adtConfig.Assets.LogoDark
                     AppBannerImage = $adtConfig.Assets.Banner
                     DialogTopMost = !$NotTopMost
+                    Language = $Script:ADT.Language
                     Strings = $adtStrings.RestartPrompt
                 }
                 if (!$NoCountdown)
