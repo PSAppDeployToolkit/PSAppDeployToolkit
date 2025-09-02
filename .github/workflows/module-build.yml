@@ -63,6 +63,7 @@ jobs:
         name: PSAppDeployToolkit_ModuleOnly
         path: .\src\Artifacts\Module
         if-no-files-found: error
+        compression-level: 9
         overwrite: true
 
     - name: Upload v3 module template
@@ -71,6 +72,7 @@ jobs:
         name: PSAppDeployToolkit_Template_v3
         path: .\src\Artifacts\Template_v3
         if-no-files-found: error
+        compression-level: 9
         overwrite: true
 
     - name: Upload v4 module template
@@ -79,6 +81,7 @@ jobs:
         name: PSAppDeployToolkit_Template_v4
         path: .\src\Artifacts\Template_v4
         if-no-files-found: error
+        compression-level: 9
         overwrite: true
 
     - name: Update Website Docs
