@@ -14,6 +14,9 @@ function Private:Get-ADTClientServerUser
         [ValidateNotNullOrEmpty()]
         [System.Security.Principal.NTAccount]$Username,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [System.Management.Automation.SwitchParameter]$AllowAnyValidSession,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'Default')]
         [System.Management.Automation.SwitchParameter]$AllowSystemFallback
     )
@@ -50,7 +53,7 @@ function Private:Get-ADTClientServerUser
         }
 
         # Only return the calculated RunAsActiveUser if the user is still logged on and active as of right now.
-        if (($runAsUserSession = $(Get-ADTLoggedOnUser -InformationAction SilentlyContinue) | & { process { if ($runAsActiveUser.NTAccount.Equals($_.NTAccount)) { return $_ } } } | Select-Object -First 1) -and $runAsUserSession.IsActiveUserSession)
+        if (($runAsUserSession = $(Get-ADTLoggedOnUser -InformationAction SilentlyContinue) | & { process { if ($runAsActiveUser.SID.Equals($_.SID)) { return $_ } } } | Select-Object -First 1) -and ($runAsUserSession.IsActiveUserSession -or ($AllowAnyValidSession -and $runAsUserSession.IsValidUserSession)))
         {
             return $runAsActiveUser
         }
