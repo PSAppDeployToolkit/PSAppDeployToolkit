@@ -65,6 +65,7 @@ namespace PSADT.ProcessManagement
 
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
+            bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent;
             var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1);
             var job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
             Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
@@ -190,9 +191,13 @@ namespace PSADT.ProcessManagement
 
                     // Start tracking the process and allow it to resume execution.
                     process = GetProcessFromId((processId = pi.dwProcessId).Value);
+                    hProcess = new(pi.hProcess, true);
                     using (SafeThreadHandle hThread = new(pi.hThread, true))
                     {
-                        Kernel32.AssignProcessToJobObject(job, hProcess = new(pi.hProcess, true));
+                        if (assignProcessToJob)
+                        {
+                            Kernel32.AssignProcessToJobObject(job, hProcess);
+                        }
                         Kernel32.ResumeThread(hThread);
                     }
                 }
@@ -244,7 +249,10 @@ namespace PSADT.ProcessManagement
                     if (null != (hProcess = process.SafeHandle))
                     {
                         processId = (uint)process.Id;
-                        Kernel32.AssignProcessToJobObject(job, hProcess);
+                        if (assignProcessToJob)
+                        {
+                            Kernel32.AssignProcessToJobObject(job, hProcess);
+                        }
                         if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                         {
                             process.PriorityClass = launchInfo.PriorityClass.Value;
@@ -280,31 +288,40 @@ namespace PSADT.ProcessManagement
                 bool disposeJob = true;
                 try
                 {
-                    while (true)
+                    int exitCode;
+                    if (assignProcessToJob)
                     {
-                        Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
-                        if (lpCompletionCode == timeoutExitCode)
+                        while (true)
                         {
-                            if (launchInfo.NoTerminateOnTimeout)
+                            Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
+                            if (lpCompletionCode == timeoutExitCode)
                             {
-                                if (launchInfo.KillChildProcessesWithParent)
+                                if (launchInfo.NoTerminateOnTimeout)
                                 {
-                                    disposeJob = false;
+                                    if (launchInfo.KillChildProcessesWithParent)
+                                    {
+                                        disposeJob = false;
+                                    }
+                                    exitCode = TimeoutExitCode;
+                                    break;
                                 }
-                                tcs.SetResult(new(process, launchInfo, commandLine, TimeoutExitCode, stdout, stderr, interleaved));
+                                Kernel32.TerminateJobObject(job, timeoutExitCode);
+                            }
+                            else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                            {
+                                await Task.WhenAll(hStdOutTask, hStdErrTask);
+                                Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
+                                exitCode = ValueTypeConverter<int>.Convert(lpExitCode);
                                 break;
                             }
-                            Kernel32.TerminateJobObject(job, timeoutExitCode);
-                            continue;
-                        }
-                        if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
-                        {
-                            await Task.WhenAll(hStdOutTask, hStdErrTask);
-                            Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                            tcs.SetResult(new(process, launchInfo, commandLine, ValueTypeConverter<int>.Convert(lpExitCode), stdout, stderr, interleaved));
-                            break;
                         }
                     }
+                    else
+                    {
+                        process.WaitForExit();
+                        exitCode = process.ExitCode;
+                    }
+                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved));
                 }
                 catch (Exception ex)
                 {
