@@ -121,7 +121,7 @@ function Start-ADTMspProcessAsUser
             try
             {
                 $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new("Could not find an valid logged on user session$(if ($PSBoundParameters.ContainsKey('Username')) { " for [$Username]" }).", $null)
+                    Exception = [System.ArgumentNullException]::new("Could not find a valid logged on user session$(if ($PSBoundParameters.ContainsKey('Username')) { " for [$Username]" }).", $null)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId = 'NoActiveUserError'
                     TargetObject = $Username
