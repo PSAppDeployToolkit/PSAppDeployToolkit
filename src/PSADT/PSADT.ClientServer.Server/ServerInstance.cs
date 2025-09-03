@@ -100,67 +100,71 @@ namespace PSADT.ClientServer
                 _logServer.DisposeLocalCopyOfClientHandle();
             }
 
-            // If the process is being launched as a different user, modify the process security.
+            // If the client/server process isn't ours, we'll want to change the owner to ourselves if we can.
+            bool changeOwner = false;
             if (RunAsActiveUser.SID != AccountUtilities.CallerSid && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
             {
-                // Ensure the caller has the necessary privileges to modify process security.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+                changeOwner = true;
+            }
 
-                // Create a restricted access control list (ACL) for the client process and set it.
-                byte[] userSid = new byte[RunAsActiveUser.SID.BinaryLength]; RunAsActiveUser.SID.GetBinaryForm(userSid, 0);
-                using (SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid))
+            // Create a restricted access control list (ACL) for the client process so the user can't terminate it.
+            byte[] userSid = new byte[RunAsActiveUser.SID.BinaryLength]; RunAsActiveUser.SID.GetBinaryForm(userSid, 0);
+            using (SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid))
+            {
+                bool pinnedUserSidAddRef = false;
+                try
                 {
-                    bool pinnedUserSidAddRef = false;
-                    try
+                    // Generate an explicit access control entry (ACE) for the user SID.
+                    pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
+                    var ea = new EXPLICIT_ACCESS_W
                     {
-                        // Generate an explicit access control entry (ACE) for the user SID.
-                        pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
-                        var ea = new EXPLICIT_ACCESS_W
+                        grfAccessPermissions = (uint)(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),
+                        grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
+                        grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                        Trustee = new TRUSTEE_W
                         {
-                            grfAccessPermissions = (uint)(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),
-                            grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
-                            grfInheritance = ACE_FLAGS.NO_INHERITANCE,
-                            Trustee = new TRUSTEE_W
-                            {
-                                TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
-                                ptstrName = new(pinnedUserSid.DangerousGetHandle())
-                            }
-                        };
+                            TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
+                            ptstrName = new(pinnedUserSid.DangerousGetHandle())
+                        }
+                    };
 
-                        // Set process owner to the caller and apply the ACL.
-                        AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
-                        using (pAcl)
+                    // Apply the ACL and potentially change the owner of the client process.
+                    AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
+                    using (SafeProcessHandle hProcess = new(_clientProcess!.Process.Handle, false))
+                    using (pAcl)
+                    {
+                        if (changeOwner)
                         {
                             byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
-                            using (SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid))
+                            using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid);
+                            bool pinnedCallerSidAddRef = false;
+                            try
                             {
-                                bool pinnedCallerSidAddRef = false;
-                                try
+                                pinnedCallerSid.DangerousAddRef(ref pinnedCallerSidAddRef);
+                                using FreeSidSafeHandle pCallerSid = new(pinnedCallerSid.DangerousGetHandle(), false);
+                                AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pCallerSid, null, pAcl, null);
+                            }
+                            finally
+                            {
+                                if (pinnedCallerSidAddRef)
                                 {
-                                    pinnedCallerSid.DangerousAddRef(ref pinnedCallerSidAddRef);
-                                    using (FreeSidSafeHandle pCallerSid = new(pinnedCallerSid.DangerousGetHandle(), false))
-                                    using (SafeProcessHandle hProcess = new(_clientProcess!.Process.Handle, false))
-                                    {
-                                        AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pCallerSid, null, pAcl, null);
-                                    }
-                                }
-                                finally
-                                {
-                                    if (pinnedCallerSidAddRef)
-                                    {
-                                        pinnedCallerSid.DangerousRelease();
-                                    }
+                                    pinnedCallerSid.DangerousRelease();
                                 }
                             }
                         }
-                    }
-                    finally
-                    {
-                        if (pinnedUserSidAddRef)
+                        else
                         {
-                            pinnedUserSid.DangerousRelease();
+                            AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, null, null, pAcl, null);
                         }
+                    }
+                }
+                finally
+                {
+                    if (pinnedUserSidAddRef)
+                    {
+                        pinnedUserSid.DangerousRelease();
                     }
                 }
             }
