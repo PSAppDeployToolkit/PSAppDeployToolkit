@@ -308,13 +308,17 @@ function Start-ADTProcessAsUser
     process
     {
         # Convert the Username field into a RunAsActiveUser object as required by the subsystem.
-        $gacsuParams = if ($PSBoundParameters.ContainsKey('Username')) { @{ Username = $Username } } else { @{} }
+        $gacsuParams = @{}; if ($PSBoundParameters.ContainsKey('Username'))
+        {
+            $gacsuParams.Add('Username', $Username)
+            $gacsuParams.Add('AllowAnyValidSession', $true)
+        }
         if (!($PSBoundParameters.RunAsActiveUser = Get-ADTClientServerUser @gacsuParams))
         {
             try
             {
                 $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new("There is no logged on user to run a new process as.", $null)
+                    Exception = [System.ArgumentNullException]::new("Could not find an valid logged on user session$(if ($PSBoundParameters.ContainsKey('Username')) { " for [$Username]" }).", $null)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId = 'NoActiveUserError'
                     TargetObject = $Username
