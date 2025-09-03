@@ -58,7 +58,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ArgumentException($"The path [{path.FullName}] is not rooted. All paths must be absolute.", nameof(extraPaths));
                     }
-                    if (!File.Exists(path.FullName))
+                    if (!path.Exists)
                     {
                         throw new FileNotFoundException($"The file [{path.FullName}] does not exist.", path.FullName);
                     }
@@ -66,9 +66,9 @@ namespace PSADT.ClientServer
                     {
                         continue;
                     }
-                    FileSecurity fileSecurity = path.GetAccessControl(AccessControlSections.Access);
+                    FileSecurity fileSecurity = FileSystemAclExtensions.GetAccessControl(path, AccessControlSections.Access);
                     fileSecurity.AddAccessRule(fileSystemAccessRule);
-                    path.SetAccessControl(fileSecurity);
+                    FileSystemAclExtensions.SetAccessControl(path, fileSecurity);
                 }
             }
         }
@@ -84,6 +84,6 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = Directory.GetFiles(Path.GetDirectoryName(typeof(ServerInstance).Assembly.Location)!).Select(static f => new FileInfo(f)).ToList().AsReadOnly();
+        private static readonly ReadOnlyCollection<FileInfo> _assemblies = Directory.GetFiles(Path.GetDirectoryName(typeof(ServerInstance).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToList().AsReadOnly();
     }
 }
