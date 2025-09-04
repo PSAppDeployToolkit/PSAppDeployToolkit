@@ -13,25 +13,25 @@ namespace PSADT.LibraryInterfaces
         /// Represents the error icon used in task dialog configurations.
         /// </summary>
         /// <remarks>This constant is typically used to specify the icon displayed in a task dialog to indicate an error state.</remarks>
-        public static readonly TASKDIALOG_ICON TD_ERROR_ICON = Windows.Win32.PInvoke.TD_ERROR_ICON;
+        internal static readonly TASKDIALOG_ICON TD_ERROR_ICON = Windows.Win32.PInvoke.TD_ERROR_ICON;
 
         /// <summary>
         /// Represents the information icon used in task dialog configurations.
         /// </summary>
         /// <remarks>This constant is typically used to specify an information icon in a task dialog. The value corresponds to a predefined system icon.</remarks>
-        public static readonly TASKDIALOG_ICON TD_INFORMATION_ICON = Windows.Win32.PInvoke.TD_INFORMATION_ICON;
+        internal static readonly TASKDIALOG_ICON TD_INFORMATION_ICON = Windows.Win32.PInvoke.TD_INFORMATION_ICON;
 
         /// <summary>
         /// Represents the resource identifier for the shield icon used in task dialog configurations.
         /// </summary>
         /// <remarks>This value is typically used to specify a predefined icon in a task dialog, such as a security shield, to indicate a warning or security-related message.</remarks>
-        public static readonly TASKDIALOG_ICON TD_SHIELD_ICON = Windows.Win32.PInvoke.TD_SHIELD_ICON;
+        internal static readonly TASKDIALOG_ICON TD_SHIELD_ICON = Windows.Win32.PInvoke.TD_SHIELD_ICON;
 
         /// <summary>
         /// Represents the warning icon used in task dialog configurations.
         /// </summary>
         /// <remarks>This constant is used to specify a warning icon in task dialog APIs. The value corresponds to the predefined warning icon resource.</remarks>
-        public static readonly TASKDIALOG_ICON TD_WARNING_ICON = Windows.Win32.PInvoke.TD_WARNING_ICON;
+        internal static readonly TASKDIALOG_ICON TD_WARNING_ICON = Windows.Win32.PInvoke.TD_WARNING_ICON;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TASKDIALOG_ICON"/> class with the specified handle.
