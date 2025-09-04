@@ -126,7 +126,21 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input was null or an empty string.'))
+                }
+                if ($_ -notmatch '^\d+(?:([.,])\d+)(?:\1\d+)*$')
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input should consist of numbers and dots/commas to separate version segments.'))
+                }
+                if ([System.Text.RegularExpressions.Regex]::Matches($_, '\.|,').Count -gt 3)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input can only have a maximum of four octets.'))
+                }
+                return !!$_
+            })]
         [System.String]$Version = [System.DateTime]::Now.ToString('yyMM,ddHH,mmss'), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -229,6 +243,99 @@ function Set-ADTActiveSetup
                 [System.String]$SID
             )
 
+            # Internal worker for parsing the version number out.
+            function Get-ADTActiveSetupVersion
+            {
+                [CmdletBinding()]
+                [OutputType([System.Version])]
+                param
+                (
+                    [Parameter(Mandatory = $true)]
+                    [ValidateNotNullOrEmpty()]
+                    [System.String]$InputObject
+                )
+
+                # Sanitise the input string.
+                return $InputObject.GetEnumerator() | & {
+                    begin
+                    {
+                        # Open a buffer to store each individual character in the string.
+                        $chars = [System.Collections.Generic.List[System.Char]]::new()
+                    }
+                    process
+                    {
+                        # Only digits or dots/commas are valud.
+                        if ([System.Char]::IsDigit($_) -or ($_ -eq '.'))
+                        {
+                            $chars.Add($_)
+                        }
+                        elseif ($_ -eq ',')
+                        {
+                            $chars.Add('.')
+                        }
+                    }
+                    end
+                    {
+                        # Return null if we've got nothing.
+                        if ($chars.Count -eq 0)
+                        {
+                            return
+                        }
+
+                        # Return null if we've got no digits to work with.
+                        if (!($chars -match '^\d$'))
+                        {
+                            return
+                        }
+
+                        # If the first character isn't a digit, skip every character until we hit one.
+                        if (![System.Char]::IsDigit($chars[0]))
+                        {
+                            $chars = $chars.GetEnumerator() | & {
+                                begin
+                                {
+                                    $chars = [System.Collections.Generic.List[System.Char]]::new()
+                                    $skip = $true
+                                }
+                                process
+                                {
+                                    if (!$skip -or [System.Char]::IsDigit($_))
+                                    {
+                                        $chars.Add($_)
+                                        $skip = $false
+                                    }
+                                }
+                                end
+                                {
+                                    return ,$chars
+                                }
+                            }
+                        }
+
+                        # Return null if we've got more than four octets (not a valid version).
+                        if (($delimiters = ($chars.GetEnumerator() | & { process { if ($_ -match '^(\.|,)$') { return $_ } } } | Measure-Object).Count) -gt 3)
+                        {
+                            return
+                        }
+
+                        # If we've got no delimiters at all, add .0 onto the end so we've got a valid version number.
+                        if ($delimiters -eq 0)
+                        {
+                            $chars.AddRange([System.Char[]]('.', '0'))
+                        }
+
+                        # If we've got a delimiter but for some reason it's the last entry, just tack on a 0 and move on.
+                        if ($chars[-1] -match '^(\.|,)$')
+                        {
+                            $chars.Add('0')
+                        }
+
+                        # Join the characters back into a string and return as a version to the caller.
+                        return [System.Version][System.String]::Join([System.Management.Automation.Language.NullString]::Value, $chars)
+                    }
+                }
+            }
+
             # Set up initial variables.
             $HKCUProps = if ($SID)
             {
@@ -279,14 +386,14 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!([System.Object]$HKLMValidVer = [System.String]::Join([System.Management.Automation.Language.NullString]::Value, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or $_ -eq '.') { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKLMValidVer, [ref]$HKLMValidVer))
+            if (!($HKLMValidVer = Get-ADTActiveSetupVersion -InputObject $HKLMVer))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!([System.Object]$HKCUValidVer = [System.String]::Join([System.Management.Automation.Language.NullString]::Value, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or $_ -eq '.') { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKCUValidVer, [ref]$HKCUValidVer))
+            if (!($HKCUValidVer = Get-ADTActiveSetupVersion -InputObject $HKCUVer))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
