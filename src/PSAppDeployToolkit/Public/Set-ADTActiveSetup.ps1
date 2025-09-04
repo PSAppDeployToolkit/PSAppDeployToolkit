@@ -131,7 +131,7 @@ function Set-ADTActiveSetup
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input was null or an empty string.'))
                 }
-                if ($_ -notmatch '^\d+(?:([.,])\d+)(?:\1\d+)*$')
+                if ($_ -notmatch '^\d+(?:(?:([.,])\d+)(?:\1\d+)*)?$')
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input should consist of numbers and dots/commas to separate version segments.'))
                 }
