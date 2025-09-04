@@ -23,7 +23,7 @@ function Private:Set-ADTClientServerProcessPermissions
     # Set required permissions on this module's library files.
     try
     {
-        [PSADT.ClientServer.ClientPermissions]::Remediate($User, [System.String[]]$(if (Test-ADTModuleInitialized) { ($adtConfig = Get-ADTConfig).Assets.Logo; $adtConfig.Assets.LogoDark; $adtConfig.Assets.Banner }))
+        [PSADT.ClientServer.ClientPermissions]::Remediate($User, [System.IO.FileInfo[]]$(if (Test-ADTModuleInitialized) { ($adtConfig = Get-ADTConfig).Assets.Logo; $adtConfig.Assets.LogoDark; $adtConfig.Assets.Banner }))
     }
     catch
     {
