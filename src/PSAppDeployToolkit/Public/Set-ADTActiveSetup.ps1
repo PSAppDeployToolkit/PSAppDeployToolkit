@@ -330,6 +330,15 @@ function Set-ADTActiveSetup
                             $chars.Add('0')
                         }
 
+                        # Finally, padd out the version to a full four octets.
+                        if (($padding = 3 - ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).Count) -gt 0)
+                        {
+                            for ($i = 0; $i -lt $padding; $i++)
+                            {
+                                $chars.AddRange([System.Char[]]('.', '0'))
+                            }
+                        }
+
                         # Join the characters back into a string and return as a version to the caller.
                         return [System.Version][System.String]::Join([System.Management.Automation.Language.NullString]::Value, $chars)
                     }
