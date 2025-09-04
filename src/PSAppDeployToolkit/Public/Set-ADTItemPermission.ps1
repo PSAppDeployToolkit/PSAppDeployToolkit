@@ -172,27 +172,11 @@ function Set-ADTItemPermission
                 # Get the FileInfo/DirectoryInfo for the specified LiteralPath.
                 $pathInfo = Get-Item -LiteralPath $LiteralPath
 
-                # Add extension methods to object if we're in PowerShell 7.
-                if ($PSEdition.Equals('Core'))
-                {
-                    $pathInfo | Add-Member -MemberType ScriptMethod -Name SetAccessControl -Value {
-                        [CmdletBinding()]
-                        param
-                        (
-                            [Parameter(Mandatory = $true)]
-                            [ValidateNotNullOrEmpty()]
-                            [System.Security.AccessControl.FileSystemSecurity]$Acl
-                        )
-
-                        [System.IO.FileSystemAclExtensions]::SetAccessControl($this, $Acl)
-                    }
-                }
-
                 # Directly apply the permissions if an ACL object has been provided.
                 if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
                 {
                     Write-ADTLogEntry -Message "Setting specifieds ACL on path [$LiteralPath]."
-                    $pathInfo.SetAccessControl($AccessControlList)
+                    [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $AccessControlList)
                     return
                 }
 
@@ -213,7 +197,7 @@ function Set-ADTItemPermission
                             }
                         }
                     }
-                    $pathInfo.SetAccessControl($Acl)
+                    [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
                     return
                 }
 
@@ -228,7 +212,7 @@ function Set-ADTItemPermission
                 # Disable inheritance if asked to do so.
                 if ($DisableInheritance)
                 {
-                    $Acl.SetAccessRuleProtection($true, $true); $pathInfo.SetAccessControl($Acl)
+                    $Acl.SetAccessRuleProtection($true, $true); [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
                     $Acl = Get-Acl -LiteralPath $pathInfo.FullName
                 }
 
@@ -253,7 +237,7 @@ function Set-ADTItemPermission
                 }
 
                 # Use the prepared ACL.
-                $pathInfo.SetAccessControl($Acl)
+                [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
             }
             catch
             {
