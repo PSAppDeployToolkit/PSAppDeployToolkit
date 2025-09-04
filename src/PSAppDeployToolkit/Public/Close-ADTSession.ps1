@@ -22,6 +22,9 @@ function Close-ADTSession
     .PARAMETER Force
         Forcibly exits PowerShell upon closing of the final session.
 
+    .PARAMETER PassThru
+        Returns the exit code of the session being closed.
+
     .INPUTS
         None
 
@@ -67,7 +70,12 @@ function Close-ADTSession
         [System.Management.Automation.SwitchParameter]$NoShellExit,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Force')]
-        [System.Management.Automation.SwitchParameter]$Force
+        [System.Management.Automation.SwitchParameter]$Force,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'None')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoShellExit')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Force')]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin
@@ -187,6 +195,12 @@ function Close-ADTSession
         if (!$Script:ADT.Sessions.Count)
         {
             Exit-ADTInvocation -ExitCode $ExitCode -NoShellExit:($NoShellExit -or !$adtSession.CanExitOnClose()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and ($preCloseErrors -or $postCloseErrors)))
+        }
+
+        # If we're still here and are to pass through the exit code, do so.
+        if ($PassThru)
+        {
+            return $ExitCode
         }
     }
 
