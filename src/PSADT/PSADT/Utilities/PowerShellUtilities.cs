@@ -87,7 +87,7 @@ namespace PSADT.Utilities
                 // Handle all over values.
                 if (entry.Value is string str)
                 {
-                    val = $"'{str.Replace("'", "''")}'";
+                    val = $"'{Regex.Replace(str, @"(?<!')'(?!')", "''")}'";
                 }
                 else if (entry.Value is List<object> list)
                 {
@@ -97,7 +97,7 @@ namespace PSADT.Utilities
                 {
                     if (enumerable.OfType<string>().ToArray() is string[] strings)
                     {
-                        val = $"'{string.Join("','", strings.Select(s => s.Replace("'", "''")))}'";
+                        val = $"'{string.Join("','", strings.Select(s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'";
                     }
                     else
                     {
