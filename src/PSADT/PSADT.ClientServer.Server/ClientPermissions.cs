@@ -33,7 +33,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
-        public static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<string>? extraPaths)
+        public static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
         {
             // Validate the runAsActiveUser parameter.
             if (null == runAsActiveUser)
@@ -52,7 +52,7 @@ namespace PSADT.ClientServer
             using (hPrimaryToken)
             {
                 FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
-                foreach (var path in _assemblies.Concat(extraPaths?.Select(static f => new FileInfo(f)) ?? []))
+                foreach (var path in _assemblies.Concat(extraPaths ?? []))
                 {
                     if (!Path.IsPathRooted(path.FullName))
                     {
