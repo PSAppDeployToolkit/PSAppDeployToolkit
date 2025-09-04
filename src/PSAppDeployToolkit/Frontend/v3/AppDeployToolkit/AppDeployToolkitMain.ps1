@@ -5101,16 +5101,16 @@ Set-StrictMode -Version 3
 $adtModule = if (Test-Path -LiteralPath "$PSScriptRoot\PSAppDeployToolkit" -PathType Container)
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.3' } -Force -PassThru -ErrorAction Stop
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.4' } -Force -PassThru -ErrorAction Stop
 }
 elseif (Test-Path -LiteralPath "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -PathType Container)
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.3' } -Force -PassThru -ErrorAction Stop
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.4' } -Force -PassThru -ErrorAction Stop
 }
 else
 {
-    Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.3' } -Force -PassThru -ErrorAction Stop
+    Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.4' } -Force -PassThru -ErrorAction Stop
 }
 
 # Build out parameter hashtable and open a new deployment session.
