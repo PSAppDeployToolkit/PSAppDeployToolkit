@@ -289,28 +289,28 @@ function Set-ADTActiveSetup
                         }
 
                         # Strip any leading and consecutive delimiters.
-                        [System.Collections.Generic.List[System.Char]]$chars = $chars.GetEnumerator() | & {
-                            begin
-                            {
-                                $chars = [System.Collections.Generic.List[System.Char]]::new()
-                                $skip = $true
-                            }
-                            process
-                            {
-                                if (!$skip -or [System.Char]::IsDigit($_))
+                        [System.Collections.Generic.List[System.Char]]$chars = [System.Char[]]($chars.GetEnumerator() | & {
+                                begin
                                 {
-                                    if ([System.Char]::IsDigit($_) -or !$chars.Count -or ($chars[-1] -ne '.'))
-                                    {
-                                        $chars.Add($_)
-                                    }
-                                    $skip = $false
+                                    $chars = [System.Collections.Generic.List[System.Char]]::new()
+                                    $skip = $true
                                 }
-                            }
-                            end
-                            {
-                                return $chars
-                            }
-                        }
+                                process
+                                {
+                                    if (!$skip -or [System.Char]::IsDigit($_))
+                                    {
+                                        if ([System.Char]::IsDigit($_) -or !$chars.Count -or ($chars[-1] -ne '.'))
+                                        {
+                                            $chars.Add($_)
+                                        }
+                                        $skip = $false
+                                    }
+                                }
+                                end
+                                {
+                                    return $chars
+                                }
+                            })
 
                         # Return null if we've got more than four octets (not a valid version).
                         if (($delimiters = ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).Count) -gt 3)
