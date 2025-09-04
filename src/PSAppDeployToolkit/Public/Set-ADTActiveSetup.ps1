@@ -291,7 +291,7 @@ function Set-ADTActiveSetup
                         # If the first character isn't a digit, skip every character until we hit one.
                         if (![System.Char]::IsDigit($chars[0]))
                         {
-                            $chars = $chars.GetEnumerator() | & {
+                            [System.Collections.Generic.List[System.Char]]$chars = $chars.GetEnumerator() | & {
                                 begin
                                 {
                                     $chars = [System.Collections.Generic.List[System.Char]]::new()
@@ -307,7 +307,7 @@ function Set-ADTActiveSetup
                                 }
                                 end
                                 {
-                                    return ,$chars
+                                    return $chars
                                 }
                             }
                         }
