@@ -363,7 +363,8 @@ function Show-ADTInstallationPrompt
                         {
                             throw
                         }
-                        Write-ADTLogEntry -Message "The client/server process was terminated unexpectedly. Retrying [$((++$retries))/3] times..."
+                        Write-ADTLogEntry -Message "The client/server process was terminated unexpectedly.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
+                        Write-ADTLogEntry -Message "Retrying user client/server process again [$((++$retries))/3] times..."
                         "TerminatedTryAgain"
                     }
                 }
