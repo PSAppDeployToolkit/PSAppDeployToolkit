@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -352,20 +353,31 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (!_appIconCache.TryGetValue(appFilePath, out var bitmapSource))
             {
                 // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
-                using var drawingBitmap = DrawingUtilities.ExtractBitmapFromExecutable(appFilePath);
-                using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true);
-                bool hBitmapAddRef = false;
+                Bitmap drawingBitmap;
                 try
                 {
-                    hBitmap.DangerousAddRef(ref hBitmapAddRef);
-                    (bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap.DangerousGetHandle(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())).Freeze();
-                    _appIconCache.Add(appFilePath, bitmapSource);
+                    drawingBitmap = DrawingUtilities.ExtractBitmapFromExecutable(appFilePath);
                 }
-                finally
+                catch
                 {
-                    if (hBitmapAddRef)
+                    drawingBitmap = SystemIcons.Get(DialogSystemIcon.Application);
+                }
+                using (drawingBitmap)
+                using (SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true))
+                {
+                    bool hBitmapAddRef = false;
+                    try
                     {
-                        hBitmap.DangerousRelease();
+                        hBitmap.DangerousAddRef(ref hBitmapAddRef);
+                        (bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap.DangerousGetHandle(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())).Freeze();
+                        _appIconCache.Add(appFilePath, bitmapSource);
+                    }
+                    finally
+                    {
+                        if (hBitmapAddRef)
+                        {
+                            hBitmap.DangerousRelease();
+                        }
                     }
                 }
             }
