@@ -3,5 +3,5 @@
     /// <summary>
     /// Represents a URL shortcut.
     /// </summary>
-    public sealed record ShortcutUrl(string? path = null, string? targetPath = null, string? iconIndex = null, string? iconLocation = null) : ShortcutBase(path, targetPath, iconIndex, iconLocation);
+    public sealed record ShortcutUrl(string path, string targetPath, string? iconLocation, string? iconIndex) : ShortcutBase(path, targetPath, iconLocation, iconIndex);
 }

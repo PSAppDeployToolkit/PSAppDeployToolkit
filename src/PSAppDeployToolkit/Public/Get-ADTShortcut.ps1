@@ -119,8 +119,8 @@ function Get-ADTShortcut
                     return [PSADT.Types.ShortcutUrl]::new(
                         $Output.Path,
                         $Output.TargetPath,
-                        $Output.IconIndex,
-                        $Output.IconLocation
+                        $Output.IconLocation,
+                        $Output.IconIndex
                     )
                 }
                 else
@@ -130,8 +130,8 @@ function Get-ADTShortcut
                     return [PSADT.Types.ShortcutLnk]::new(
                         $Output.Path,
                         $shortcut.TargetPath,
-                        $Output.IconIndex,
                         $Output.IconLocation,
+                        $Output.IconIndex,
                         $shortcut.Arguments,
                         $shortcut.Description,
                         $shortcut.WorkingDirectory,
