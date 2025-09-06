@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using Microsoft.Win32.SafeHandles;
-using PSADT.FileSystem;
 using PSADT.Module;
-using PSADT.ProcessManagement;
 
 namespace PSADT.ClientServer
 {
@@ -35,55 +29,7 @@ namespace PSADT.ClientServer
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
         public static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
         {
-            // Validate the runAsActiveUser parameter.
-            if (null == runAsActiveUser)
-            {
-                throw new ArgumentNullException(nameof(runAsActiveUser), "RunAsActiveUser cannot be null.");
-            }
-
-            // Get the primary token for the user if they have a valid session ID.
-            SafeFileHandle? hPrimaryToken = null;
-            if (runAsActiveUser.SessionId != uint.MaxValue)
-            {
-                hPrimaryToken = ProcessToken.GetUserPrimaryToken(runAsActiveUser, ServerInstance.UseLinkedAdminToken, ServerInstance.UseHighestAvailableToken);
-            }
-
-            // Ensure the user has the required file system permissions for the specified paths.
-            using (hPrimaryToken)
-            {
-                FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
-                foreach (var path in _assemblies.Concat(extraPaths ?? []))
-                {
-                    if (!Path.IsPathRooted(path.FullName))
-                    {
-                        throw new ArgumentException($"The path [{path.FullName}] is not rooted. All paths must be absolute.", nameof(extraPaths));
-                    }
-                    if (!path.Exists)
-                    {
-                        throw new FileNotFoundException($"The file [{path.FullName}] does not exist.", path.FullName);
-                    }
-                    if (null != hPrimaryToken ? FileSystemUtilities.TestEffectiveAccess(path.FullName, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path.FullName, runAsActiveUser.SID, _requiredPermissions))
-                    {
-                        continue;
-                    }
-                    FileSecurity fileSecurity = FileSystemAclExtensions.GetAccessControl(path, AccessControlSections.Access);
-                    fileSecurity.AddAccessRule(fileSystemAccessRule);
-                    FileSystemAclExtensions.SetAccessControl(path, fileSecurity);
-                }
-            }
+            AssemblyPermissions.Remediate(runAsActiveUser, extraPaths, ServerInstance.UseLinkedAdminToken, ServerInstance.UseHighestAvailableToken);
         }
-
-        /// <summary>
-        /// Represents the required file system permissions for the operation.
-        /// </summary>
-        /// <remarks>This field specifies the minimum permissions needed to access and execute files. It
-        /// is set to <see cref="FileSystemRights.ReadAndExecute"/>, which allows reading and executing files but not
-        /// modifying them.</remarks>
-        private static readonly FileSystemRights _requiredPermissions = FileSystemRights.ReadAndExecute;
-
-        /// <summary>
-        /// Gets the path that contains this assembly (and all required client/server assembly files).
-        /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = Directory.GetFiles(Path.GetDirectoryName(typeof(ServerInstance).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToList().AsReadOnly();
     }
 }

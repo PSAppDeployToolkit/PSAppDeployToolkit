@@ -8,6 +8,7 @@ using System.Security.Principal;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.Module;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.Utilities;
@@ -101,7 +102,7 @@ namespace PSADT.TerminalServices
             bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
             bool isActiveUserSession = sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
             bool isValidUserSession = isActiveUserSession || sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
-            TimeSpan idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
+            TimeSpan? idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string? pWinStationName = session.pWinStationName.ToString()?.TrimRemoveNull();
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
@@ -126,7 +127,17 @@ namespace PSADT.TerminalServices
                 }
                 else if ((AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerIsAdmin) && isValidUserSession)
                 {
-                    idleTime = new(long.Parse(ProcessManager.LaunchAsync(new(typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe"), new(["/GetLastInputTime"]), Environment.SystemDirectory, new(ntAccount, sid, session.SessionId)))!.Task.GetAwaiter().GetResult().StdOut!.First()));
+                    try
+                    {
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId); AssemblyPermissions.Remediate(user);
+                        string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
+                        ProcessLaunchInfo args = new(clientServerPath, new(["/GetLastInputTime"]), Environment.SystemDirectory, user, createNoWindow: true);
+                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut!.First()));
+                    }
+                    catch
+                    {
+                        idleTime = null;
+                    }
                 }
             }
 

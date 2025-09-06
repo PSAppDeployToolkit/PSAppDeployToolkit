@@ -50,7 +50,7 @@ namespace PSADT.TerminalServices
             bool? isLocalAdmin,
             Exception? isLocalAdminException,
             DateTime logonTime,
-            TimeSpan idleTime,
+            TimeSpan? idleTime,
             DateTime? disconnectTime,
             string? clientName,
             WTS_PROTOCOL_TYPE clientProtocolType,
@@ -173,7 +173,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// How long the session has been idle for.
         /// </summary>
-        public readonly TimeSpan IdleTime;
+        public readonly TimeSpan? IdleTime;
 
         /// <summary>
         /// The last disconnection time of the session.
