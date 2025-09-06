@@ -17,7 +17,7 @@ namespace PSADT.Types
         /// <param name="windowStyle">Window style (e.g., normal, minimized, maximized).</param>
         /// <param name="hotkey">Hotkey associated with the shortcut.</param>
         /// <param name="runAsAdmin">Indicates if the shortcut requires administrative privileges.</param>
-        public ShortcutLnk(string? path, string? targetPath, string? iconIndex, string? iconLocation, string? arguments, string? description, string? workingDirectory, string? windowStyle, string? hotkey, bool runAsAdmin) : base(path, targetPath, iconIndex, iconLocation)
+        public ShortcutLnk(string path, string targetPath, string? iconLocation, string? iconIndex, string? arguments, string? description, string? workingDirectory, string? windowStyle, string? hotkey, bool runAsAdmin) : base(path, targetPath, iconLocation, iconIndex)
         {
             if (string.IsNullOrWhiteSpace(windowStyle) || !Regex.IsMatch(windowStyle, "^(Normal|Minimized|Maximized)$", RegexOptions.IgnoreCase))
             {
