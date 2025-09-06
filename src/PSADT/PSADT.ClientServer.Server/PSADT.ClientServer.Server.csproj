@@ -17,8 +17,8 @@
     <AssemblyTitle>PSAppDeployToolkit Client/Server Server Library</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.4.0</AssemblyVersion>
-    <InformationalVersion>4.1.4</InformationalVersion>
+    <AssemblyVersion>4.1.5.0</AssemblyVersion>
+    <InformationalVersion>4.1.5</InformationalVersion>
     <Platforms>AnyCPU</Platforms>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
