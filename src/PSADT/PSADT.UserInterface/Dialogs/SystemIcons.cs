@@ -5,6 +5,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.UI.Controls;
+using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Dialogs
@@ -24,18 +25,18 @@ namespace PSADT.UserInterface.Dialogs
         static SystemIcons()
         {
             // Define temporary list of system icons to look up.
-            SHSTOCKICONID[] lookupList =
-            {
+            ReadOnlyCollection<SHSTOCKICONID> lookupList = new(
+            [
                 SHSTOCKICONID.SIID_APPLICATION,
                 SHSTOCKICONID.SIID_ERROR,
                 SHSTOCKICONID.SIID_HELP,
                 SHSTOCKICONID.SIID_INFO,
                 SHSTOCKICONID.SIID_SHIELD,
                 SHSTOCKICONID.SIID_WARNING,
-            };
+            ]);
 
             // Get the DPI for the current system.
-            SHCore.GetDpiForDefaultMonitor(Windows.Win32.UI.HiDpi.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
+            SHCore.GetDpiForDefaultMonitor(MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
             int x = (int)(48.0 * (dpiX / 96.0)); int y = (int)(48.0 * (dpiY / 96.0));
 
             // Internal worker method to retrieve a stock icon as a Bitmap.
@@ -101,7 +102,7 @@ namespace PSADT.UserInterface.Dialogs
             {
                 throw new KeyNotFoundException($"The requested system icon [{icon}] is not available.");
             }
-            return bitmap;
+            return (Bitmap)bitmap.Clone();
         }
 
         /// <summary>
