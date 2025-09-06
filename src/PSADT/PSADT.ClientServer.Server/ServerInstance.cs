@@ -77,20 +77,13 @@ namespace PSADT.ClientServer
                     RunAsActiveUser,
                     UseLinkedAdminToken,
                     UseHighestAvailableToken,
-                    false,
-                    false,
-                    true,
-                    false,
-                    false,
-                    null,
-                    true,
-                    true,
-                    true,
-                    Encoding.UTF8,
-                    ProcessWindowStyle.Hidden,
-                    null,
-                    (_clientProcessCts = new()).Token,
-                    false
+                    inheritHandles: true,
+                    createNoWindow: true,
+                    waitForChildProcesses: true,
+                    killChildProcessesWithParent: true,
+                    streamEncoding: Encoding.UTF8,
+                    windowStyle: ProcessWindowStyle.Hidden,
+                    cancellationToken: (_clientProcessCts = new()).Token
                 ));
             }
             finally
