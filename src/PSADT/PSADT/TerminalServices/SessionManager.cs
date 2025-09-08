@@ -210,14 +210,25 @@ namespace PSADT.TerminalServices
             }
 
             // Attempt to get the SID from the caller's explorer.exe process if it exists.
-            if ((AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId) && Process.GetProcessesByName("explorer").Where(p => p.SessionId == sessionid).OrderBy(static p => p.StartTime).FirstOrDefault() is Process explorerProcess)
+            if (AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId)
             {
-                using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                foreach (var explorerProcess in Process.GetProcessesByName("explorer").Where(p => p.SessionId == sessionid).OrderBy(static p => p.StartTime))
                 {
-                    AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
-                    using (hProcessToken)
+                    try
                     {
-                        return TokenManager.GetTokenSid(hProcessToken);
+                        using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                        {
+                            AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+                            using (hProcessToken)
+                            {
+                                return TokenManager.GetTokenSid(hProcessToken);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // It's possible the process may be inaccessible if Explorer is elevated by EPM but the caller is not.
+                        continue;
                     }
                 }
             }
