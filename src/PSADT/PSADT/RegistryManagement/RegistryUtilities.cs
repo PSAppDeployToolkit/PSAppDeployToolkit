@@ -68,27 +68,31 @@ namespace PSADT.RegistryManagement
             string hiveName = parts[0];
             string subKeyPath = parts[1];
 
-            // Validate and get the correct handle for the root hive.
-            if (!HiveMap.TryGetValue(hiveName, out var hKeyRoot))
-            {
-                throw new ArgumentException($"Invalid registry hive: {hiveName}", nameof(fullKeyPath));
-            }
-
             // Open the registry key and return it to the caller.
+            using var hKeyRoot = GetRegistryHiveHandle(hiveName);
             AdvApi32.RegOpenKeyEx(hKeyRoot, subKeyPath, openFlags, out var hKey);
             return hKey;
         }
 
         /// <summary>
-        /// Registry hive lookup table.
+        /// Retrieves a handle to the specified registry hive.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, SafeRegistryHandle> HiveMap = new(new Dictionary<string, SafeRegistryHandle>()
+        /// <param name="hiveName">The name of the registry hive to retrieve. Supported values are <c>"HKEY_LOCAL_MACHINE"</c>,
+        /// <c>"HKEY_CURRENT_USER"</c>, <c>"HKEY_CLASSES_ROOT"</c>, <c>"HKEY_USERS"</c>, and <c>"HKEY_CURRENT_CONFIG"</c>.</param>
+        /// <returns>A <see cref="Microsoft.Win32.SafeHandles.SafeRegistryHandle"/> representing the handle to the specified
+        /// registry hive.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="hiveName"/> is not one of the supported registry hive names.</exception>
+        private static SafeRegistryHandle GetRegistryHiveHandle(string hiveName)
         {
-            { "HKEY_LOCAL_MACHINE", new(HKEY.HKEY_LOCAL_MACHINE, false) },
-            { "HKEY_CURRENT_USER", new(HKEY.HKEY_CURRENT_USER, false) },
-            { "HKEY_CLASSES_ROOT", new(HKEY.HKEY_LOCAL_MACHINE, false) },
-            { "HKEY_USERS", new(HKEY.HKEY_USERS, false) },
-            { "HKEY_CURRENT_CONFIG", new(HKEY.HKEY_CURRENT_CONFIG, false) }
-        });
+            return hiveName switch
+            {
+                "HKEY_LOCAL_MACHINE" => new(HKEY.HKEY_LOCAL_MACHINE, false),
+                "HKEY_CURRENT_USER" => new(HKEY.HKEY_CURRENT_USER, false),
+                "HKEY_CLASSES_ROOT" => new(HKEY.HKEY_CLASSES_ROOT, false),
+                "HKEY_USERS" => new(HKEY.HKEY_USERS, false),
+                "HKEY_CURRENT_CONFIG" => new(HKEY.HKEY_CURRENT_CONFIG, false),
+                _ => throw new ArgumentException($"Invalid registry hive: {hiveName}", nameof(hiveName)),
+            };
+        }
     }
 }
