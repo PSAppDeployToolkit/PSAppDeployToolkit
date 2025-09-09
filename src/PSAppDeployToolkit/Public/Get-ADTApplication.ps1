@@ -228,6 +228,42 @@ function Get-ADTApplication
                         $installDate = [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
                     }
 
+                    # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
+                    $appProperties = 'DisplayVersion', 'UninstallString', 'QuietUninstallString', 'Publisher', 'EstimatedSize' | & {
+                        begin
+                        {
+                            $collector = @{}
+                        }
+                        process
+                        {
+                            if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, $null))))
+                            {
+                                $collector.Add($_, $value)
+                            }
+                        }
+                        end
+                        {
+                            return $collector
+                        }
+                    }
+
+                    # Process the source/location directory paths.
+                    'InstallSource', 'InstallLocation' | & {
+                        process
+                        {
+                            if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, [System.String]::Empty).TrimStart('"').TrimEnd('"'))) -and [PSADT.FileSystem.FileSystemUtilities]::IsValidFilePath($value))
+                            {
+                                $appProperties.Add($_, $value)
+                            }
+                        }
+                    }
+
+                    # Process the HelpLink, accepting only valid URLs.
+                    if ([System.Uri]::TryCreate($item.GetValue('HelpLink', [System.String]::Empty), [System.UriKind]::Absolute, [ref]$defUriValue))
+                    {
+                        $appProperties.Add('HelpLink', $defUriValue)
+                    }
+
                     # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                     $app = [PSADT.Types.InstalledApplication]::new(
                         $item.PSPath,
@@ -235,15 +271,15 @@ function Get-ADTApplication
                         $item.PSChildName,
                         $appMsiGuid,
                         $appDisplayName,
-                        $(if (($appDisplayVersion = $item.GetValue('DisplayVersion', $null)) -and ![System.String]::IsNullOrWhiteSpace($appDisplayVersion)) { $appDisplayVersion }),
-                        $(if (($appUninstallString = $item.GetValue('UninstallString', $null)) -and ![System.String]::IsNullOrWhiteSpace($appUninstallString)) { $appUninstallString }),
-                        $(if (($appQuietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and ![System.String]::IsNullOrWhiteSpace($appQuietUninstallString)) { $appQuietUninstallString }),
-                        $(if (($appInstallSource = $item.GetValue('InstallSource', $null)) -and ![System.String]::IsNullOrWhiteSpace($appInstallSource)) { $appInstallSource.TrimStart('"').TrimEnd('"') }),
-                        $(if (($appInstallLocation = $item.GetValue('InstallLocation', $null)) -and ![System.String]::IsNullOrWhiteSpace($appInstallLocation)) { $appInstallLocation.TrimStart('"').TrimEnd('"') }),
+                        $appProperties['DisplayVersion'],
+                        $appProperties['UninstallString'],
+                        $appProperties['QuietUninstallString'],
+                        $appProperties['InstallSource'],
+                        $appProperties['InstallLocation'],
                         $installDate,
-                        $(if (($appPublisher = $item.GetValue('Publisher', $null)) -and ![System.String]::IsNullOrWhiteSpace($appPublisher)) { $appPublisher }),
-                        $(if ([System.Uri]::TryCreate($item.GetValue('HelpLink', [System.String]::Empty), [System.UriKind]::Absolute, [ref]$defUriValue)) { $defUriValue }),
-                        $(if (($appEstimatedSize = $item.GetValue('EstimatedSize', $null)) -and ![System.String]::IsNullOrWhiteSpace($appEstimatedSize)) { $appEstimatedSize }),
+                        $appProperties['Publisher'],
+                        $appProperties['HelpLink'],
+                        $appProperties['EstimatedSize'],
                         $item.GetValue('SystemComponent', $false),
                         $windowsInstaller,
                         ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
