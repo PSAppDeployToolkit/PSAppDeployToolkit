@@ -56,13 +56,13 @@ namespace PSADT.Types
             PSChildName = !string.IsNullOrWhiteSpace(psChildName) ? psChildName : throw new ArgumentNullException("PSChildName cannot be null or empty.", (Exception?)null);
             ProductCode = productCode;
             DisplayName = !string.IsNullOrWhiteSpace(displayName) ? displayName : throw new ArgumentNullException("DisplayName cannot be null or empty.", (Exception?)null);
-            DisplayVersion = displayVersion;
-            UninstallString = uninstallString;
-            QuietUninstallString = quietUninstallString;
+            DisplayVersion = !string.IsNullOrWhiteSpace(displayVersion) ? displayVersion : null;
+            UninstallString = !string.IsNullOrWhiteSpace(uninstallString) ? uninstallString : null;
+            QuietUninstallString = !string.IsNullOrWhiteSpace(quietUninstallString) ? quietUninstallString : null;
             InstallSource = installSource;
             InstallLocation = installLocation;
             InstallDate = installDate;
-            Publisher = publisher;
+            Publisher = !string.IsNullOrWhiteSpace(publisher) ? publisher : null;
             HelpLink = helpLink;
             EstimatedSize = estimatedSize;
             SystemComponent = systemComponent;

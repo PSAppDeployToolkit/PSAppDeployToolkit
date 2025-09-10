@@ -298,13 +298,13 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
-    $variables.Add('LoggedOnUserSessions', (Get-ADTLoggedOnUser 4>$null))
+    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionInfo[]](Get-ADTLoggedOnUser 4>$null))
     if ($variables.LoggedOnUserSessions)
     {
         $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
-        $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
-        $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
-        $variables.Add('LoggedOnUserSessionsText', ($variables.LoggedOnUserSessions | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
+        $variables.Add('CurrentLoggedOnUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('CurrentConsoleUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('LoggedOnUserSessionsText', ($($variables.LoggedOnUserSessions) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
         $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions 4>$null))
     }
     else

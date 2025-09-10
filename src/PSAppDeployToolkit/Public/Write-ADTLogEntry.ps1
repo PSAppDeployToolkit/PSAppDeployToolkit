@@ -155,9 +155,9 @@ function Write-ADTLogEntry
         }
 
         # If we don't have an active session, write the message to the verbose stream (4).
-        if (!$bypassSession -and (Test-ADTSessionActive))
+        $logEntries = if (!$bypassSession -and (Test-ADTSessionActive))
         {
-            $logEntries = (Get-ADTSession).WriteLogEntry(
+            (Get-ADTSession).WriteLogEntry(
                 $messages,
                 $DebugMessage,
                 $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
@@ -168,10 +168,6 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
                 $HostLogStream
             )
-            if ($PassThru -and $logEntries)
-            {
-                $PSCmdlet.WriteObject($logEntries, $false)
-            }
         }
         elseif (!$DebugMessage)
         {
@@ -179,7 +175,7 @@ function Write-ADTLogEntry
             {
                 Initialize-ADTModule
             }
-            $logEntries = [PSADT.Module.LogUtilities]::WriteLogEntry(
+            [PSADT.Module.LogUtilities]::WriteLogEntry(
                 $messages,
                 $(if ($PSBoundParameters.ContainsKey('HostLogStream')) { $HostLogStream } else { ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)] }),
                 $false,
@@ -190,10 +186,10 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
                 $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType })
             )
-            if ($PassThru -and $logEntries)
-            {
-                $PSCmdlet.WriteObject($logEntries, $false)
-            }
+        }
+        if ($PassThru -and $logEntries)
+        {
+            return $logEntries
         }
     }
 }

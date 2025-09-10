@@ -66,10 +66,7 @@ function Get-ADTModuleCallback
     # Directly clear the backend list.
     try
     {
-        if (($callbackList = $Script:ADT.Callbacks.$Hookpoint))
-        {
-            $PSCmdlet.WriteObject([System.Collections.Generic.IReadOnlyList[System.Management.Automation.CommandInfo]]$callbackList.AsReadOnly(), $false)
-        }
+        $PSCmdlet.WriteObject([System.Collections.Generic.IReadOnlyList[System.Management.Automation.CommandInfo]]$Script:ADT.Callbacks.$Hookpoint.AsReadOnly(), $false)
     }
     catch
     {

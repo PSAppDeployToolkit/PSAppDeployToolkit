@@ -44,6 +44,7 @@ function Get-ADTRunningProcesses
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Generic.IReadOnlyList[PSADT.ProcessManagement.RunningProcess]])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -59,5 +60,5 @@ function Get-ADTRunningProcesses
         return
     }
     Write-ADTLogEntry -Message "The following processes are running: ['$([System.String]::Join("', '", ($runningProcesses.Process.ProcessName | Select-Object -Unique)))']."
-    $PSCmdlet.WriteObject($runningProcesses, $false)
+    return $runningProcesses
 }

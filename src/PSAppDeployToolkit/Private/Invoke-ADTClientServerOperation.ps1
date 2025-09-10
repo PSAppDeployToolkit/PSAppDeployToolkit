@@ -406,6 +406,6 @@ function Private:Invoke-ADTClientServerOperation
     # Only write a result out for modes where we're expecting a result.
     if ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable)$')
     {
-        $PSCmdlet.WriteObject($result, $false)
+        return $result
     }
 }

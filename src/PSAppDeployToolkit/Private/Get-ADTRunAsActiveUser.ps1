@@ -43,13 +43,13 @@ function Private:Get-ADTRunAsActiveUser
     #>
 
     # Get all active sessions for subsequent filtration. Attempting to get it from $args is to try and speed up module init.
-    $userSessions = if (!$args.Count -or $args[-1] -isnot [System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]])
+    $userSessions = if (!$args.Count -or ($args[-1] -isnot [System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]]))
     {
         Get-ADTLoggedOnUser -InformationAction SilentlyContinue
     }
     else
     {
-        $args[-1]
+        $($args[-1])
     }
 
     # Determine the account that will be used to execute client/server commands in the user's context.
