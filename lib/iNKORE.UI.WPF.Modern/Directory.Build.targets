@@ -43,7 +43,7 @@
         <When Condition="$(DefineConstants.Contains('NET5_0_OR_NEWER'))" />
         <When Condition="$(DefineConstants.Contains('NET461_OR_NEWER'))">
           <ItemGroup>
-            <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.755" />
+            <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.26100.4948" />
           </ItemGroup>
         </When>
         <Otherwise>
