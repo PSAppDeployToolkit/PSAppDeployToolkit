@@ -33,6 +33,6 @@ function Private:Close-ADTClientServerProcess
     finally
     {
         $Script:ADT.ClientServerProcess = $null
-        Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
+        Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
     }
 }

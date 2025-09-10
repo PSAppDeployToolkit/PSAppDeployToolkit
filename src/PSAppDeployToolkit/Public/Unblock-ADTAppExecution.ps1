@@ -75,7 +75,7 @@ function Unblock-ADTAppExecution
             try
             {
                 Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
-                Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
+                Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
             }
             catch
             {
