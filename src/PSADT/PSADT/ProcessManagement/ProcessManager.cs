@@ -173,7 +173,7 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
-                    else if ((null != launchInfo.RunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin && !AccountUtilities.CallerIsLocalSystem))
+                    else if ((null != launchInfo.RunAsActiveUser && launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin))
                     {
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = ProcessToken.GetUnelevatedToken())
