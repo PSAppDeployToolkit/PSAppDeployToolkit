@@ -26,11 +26,11 @@ function Private:Get-ADTClientServerUser
     {
         if ($Username.Value.Contains('\'))
         {
-            (Get-ADTLoggedOnUser).GetEnumerator() | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
+            Get-ADTLoggedOnUser | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
         }
         else
         {
-            (Get-ADTLoggedOnUser).GetEnumerator() | & { process { if ($_.Username -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
+            Get-ADTLoggedOnUser | & { process { if ($_.Username -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
         }
     }
     elseif ((Test-ADTSessionActive) -or (Test-ADTModuleInitialized))
@@ -53,7 +53,7 @@ function Private:Get-ADTClientServerUser
         }
 
         # Only return the calculated RunAsActiveUser if the user is still logged on and active as of right now.
-        if (($runAsUserSession = $(Get-ADTLoggedOnUser -InformationAction SilentlyContinue) | & { process { if ($runAsActiveUser.SID.Equals($_.SID)) { return $_ } } } | Select-Object -First 1) -and ($runAsUserSession.IsActiveUserSession -or ($AllowAnyValidSession -and $runAsUserSession.IsValidUserSession)))
+        if (($runAsUserSession = Get-ADTLoggedOnUser -InformationAction SilentlyContinue | & { process { if ($runAsActiveUser.SID.Equals($_.SID)) { return $_ } } } | Select-Object -First 1) -and ($runAsUserSession.IsActiveUserSession -or ($AllowAnyValidSession -and $runAsUserSession.IsValidUserSession)))
         {
             return $runAsActiveUser
         }

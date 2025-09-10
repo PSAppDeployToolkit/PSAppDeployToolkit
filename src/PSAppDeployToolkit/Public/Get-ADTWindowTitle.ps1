@@ -122,10 +122,7 @@ function Get-ADTWindowTitle
         {
             try
             {
-                if (($windowInfo = Invoke-ADTClientServerOperation -GetProcessWindowInfo -User $runAsActiveUser -Options ([PSADT.WindowManagement.WindowInfoOptions]::new($WindowTitle, $WindowHandle, $ParentProcess))))
-                {
-                    $PSCmdlet.WriteObject($windowInfo, $false)
-                }
+                return Invoke-ADTClientServerOperation -GetProcessWindowInfo -User $runAsActiveUser -Options ([PSADT.WindowManagement.WindowInfoOptions]::new($WindowTitle, $WindowHandle, $ParentProcess))
             }
             catch
             {

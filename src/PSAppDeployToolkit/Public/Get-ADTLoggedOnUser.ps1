@@ -86,6 +86,7 @@ function Get-ADTLoggedOnUser
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]])]
     param
     (
     )
@@ -125,7 +126,7 @@ function Get-ADTLoggedOnUser
                             }
                         }
                     }
-                    $PSCmdlet.WriteObject($sessionInfo, $false)
+                    return $sessionInfo
                 }
             }
             catch
