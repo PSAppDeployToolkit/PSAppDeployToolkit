@@ -1094,7 +1094,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="writeHost"></param>
         /// <returns></returns>
-        private HostLogStream GetHostLogStreamMode(bool? writeHost = null)
+        private static HostLogStream GetHostLogStreamMode(bool? writeHost = null)
         {
             var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
             if ((null != writeHost && !writeHost.Value) || !(bool)configToolkit["LogWriteToHost"]!)
