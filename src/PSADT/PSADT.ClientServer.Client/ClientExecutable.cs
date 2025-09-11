@@ -117,12 +117,20 @@ namespace PSADT.ClientServer
             catch (ClientException ex)
             {
                 // We've caught our own error. Write it out and exit with its code.
+                if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Process.GetCurrentProcess().ProcessName + ".Launcher", StringComparison.OrdinalIgnoreCase))
+                {
+                    Environment.FailFast($"Failed to perform the requested operation with error code [{ex.HResult}].\nException Info: {ex}", ex);
+                }
                 Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
                 return ex.HResult;
             }
             catch (Exception ex)
             {
                 // This block is here as a fail-safe and should never be reached.
+                if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Process.GetCurrentProcess().ProcessName + ".Launcher", StringComparison.OrdinalIgnoreCase))
+                {
+                    Environment.FailFast($"An unexpected exception occurred with HRESULT [{ex.HResult}].\nException Info: {ex}", ex);
+                }
                 Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
                 return (int)ClientExitCode.Unknown;
             }
