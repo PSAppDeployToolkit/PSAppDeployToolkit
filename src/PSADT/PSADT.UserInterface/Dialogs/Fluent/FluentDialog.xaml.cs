@@ -609,6 +609,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     break;
 
                 case DialogPosition.BottomRight:
+                case DialogPosition.Default:
                 default:
                     // Align to bottom right (original behavior)
                     left = workingArea.Left + (workingArea.Width - ActualWidth);
