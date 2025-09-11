@@ -6,6 +6,11 @@
     public enum DialogPosition
     {
         /// <summary>
+        /// Represents the default location for the dialog.
+        /// </summary>
+        Default,
+
+        /// <summary>
         /// Represents the top-left corner of the screen.
         /// </summary>
         TopLeft,

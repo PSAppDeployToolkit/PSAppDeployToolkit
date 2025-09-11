@@ -325,6 +325,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     break;
 
                 case DialogPosition.Center:
+                case DialogPosition.Default:
                 default:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
                     top  = workingArea.Top  + ((workingArea.Height - Height) / 2);
