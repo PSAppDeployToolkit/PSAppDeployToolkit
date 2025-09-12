@@ -48,16 +48,23 @@ namespace PSADT.ProcessManagement
             {
                 // When we're not local system, we need to find the user's Explorer process and get its token.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
-                foreach (var explorerProcess in Process.GetProcessesByName("explorer").OrderBy(static p => p.StartTime))
+                foreach (var explorerProcess in Process.GetProcessesByName("explorer").Where(p => p.SessionId == runAsActiveUser.SessionId).OrderBy(static p => p.StartTime))
                 {
-                    using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                    try
                     {
-                        AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
-                        if (TokenManager.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
+                        using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
                         {
-                            hUserToken = hProcessToken;
-                            break;
+                            AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+                            if (TokenManager.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
+                            {
+                                hUserToken = hProcessToken;
+                                break;
+                            }
                         }
+                    }
+                    catch
+                    {
+                        continue;
                     }
                 }
             }
