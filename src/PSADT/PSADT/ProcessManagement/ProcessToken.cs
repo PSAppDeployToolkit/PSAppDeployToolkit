@@ -64,6 +64,7 @@ namespace PSADT.ProcessManagement
                     }
                     catch
                     {
+                        // It's possible the process may be inaccessible if Explorer is elevated by EPM but the caller is not.
                         continue;
                     }
                 }
