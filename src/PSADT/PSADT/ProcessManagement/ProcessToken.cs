@@ -96,13 +96,9 @@ namespace PSADT.ProcessManagement
                         {
                             throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
                         }
-                        return TokenManager.GetPrimaryToken(hUserToken);
                     }
                 }
-                else
-                {
-                    return TokenManager.GetPrimaryToken(hUserToken);
-                }
+                return TokenManager.GetPrimaryToken(hUserToken);
             }
         }
 
