@@ -82,7 +82,7 @@ namespace PSADT.Security
                     for (int i = 0; i < privilegeCount; i++)
                     {
                         var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
-                        if ((attr.Attributes & attributes) != attributes)
+                        if ((attr.Attributes & attributes) == attributes)
                         {
                             privileges.Add(GetPrivilege(attr, charSpan));
                         }
