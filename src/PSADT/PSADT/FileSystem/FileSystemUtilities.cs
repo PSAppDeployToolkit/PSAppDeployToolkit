@@ -41,7 +41,7 @@ namespace PSADT.FileSystem
                 foreach (var path in targetPath.ToString().Trim('\0').Trim().Split('\0'))
                 {
                     var ntPath = path.Trim();
-                    if (ntPath.Length > 0)
+                    if (ntPath.Length > 0 && !lookupTable.ContainsKey(ntPath))
                     {
                         lookupTable.Add(ntPath, driveLetter);
                     }
