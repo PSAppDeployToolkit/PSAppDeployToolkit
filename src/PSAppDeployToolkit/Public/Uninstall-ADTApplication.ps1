@@ -273,7 +273,7 @@ function Uninstall-ADTApplication
                         Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
-                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode.ToString('B'))]."
+                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })] with ProductCode [$($removeApplication.ProductCode.ToString('B'))]."
                     try
                     {
                         if ($sampParams.ContainsKey('FilePath'))
@@ -300,7 +300,7 @@ function Uninstall-ADTApplication
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]. Skipping removal."
                         continue
                     }
                     $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"
@@ -343,7 +343,7 @@ function Uninstall-ADTApplication
                         }
                     }
 
-                    Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
+                    Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]."
                     try
                     {
                         Start-ADTProcess @sapParams -ErrorAction $OriginalErrorAction
