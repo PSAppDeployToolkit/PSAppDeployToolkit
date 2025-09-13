@@ -288,7 +288,7 @@ function Get-ADTApplication
                     # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
                     if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                     {
-                        Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
+                        Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
                         $app
                     }
                 }
