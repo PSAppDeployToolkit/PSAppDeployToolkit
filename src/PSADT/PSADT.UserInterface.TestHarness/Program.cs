@@ -11,6 +11,7 @@ using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
+using System.Globalization;
 
 namespace PSADT.UserInterface.TestHarness
 {
@@ -74,7 +75,7 @@ namespace PSADT.UserInterface.TestHarness
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            //string customMessageText = "Oh yeah. You can do [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And [accent]accent colored text strings![/accent] This is a custom message that can be added using the [bold]-CustomText[/bold] parameter on [bold]Show-ADTInstallationWelcome[/bold] and [bold]Show-ADTInstallationRestartPrompt[/bold].";
+            string customMessageText = "You can find the security policy at [url]https://psappdeploytoolkit.com[/url]. But you can also find it [url=https://psappdeploytoolkit.com]at this URL description clickable link[/url]. And a side note, I know you've seen [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And even [accent]accent colored text strings![/accent]. But have you seen [bold][italic]bold italics before? How about [accent]bold accent italics?[/accent][/italic][/bold].";
 
             uint deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-09-20T13:00:00");
@@ -86,7 +87,7 @@ namespace PSADT.UserInterface.TestHarness
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
 
-            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? And don't forget to visit this website [url]https://psappdeploytoolkit.com[/url]";
+            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
 
             string inputDialogMessageText = "Enter the server name e.g. [italic]remotesvr1.psadt.ca[/italic]";
             string inputDialogTextBox = "YouCompleteMe";
@@ -114,7 +115,8 @@ namespace PSADT.UserInterface.TestHarness
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
-                //{ "CustomMessageText", customMessageText },
+                { "CustomMessageText", customMessageText },
+                { "Language", CultureInfo.CurrentCulture },
                 { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
             };
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
@@ -131,6 +133,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "AppBannerImage", appBannerImage },
                 { "ProgressMessageText", progressMessageText },
                 { "ProgressDetailMessageText", progressDetailMessageText },
+                { "Language", CultureInfo.CurrentCulture },
                 { "AdditionalOption", true }
             });
             var customDialogOptions = new CustomDialogOptions(new Hashtable
@@ -151,6 +154,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "ButtonRightText", ButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
                 { "MinimizeWindows", false },
+                { "Language", CultureInfo.CurrentCulture },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
 
@@ -172,6 +176,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "ButtonRightText", inputDialogButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
                 { "MinimizeWindows", false },
+                { "Language", CultureInfo.CurrentCulture },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             })
             {
@@ -191,6 +196,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "CountdownDuration", restartCountdownDuration },
                 { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
                 // { "CustomMessageText", customMessageText },
+                { "Language", CultureInfo.CurrentCulture },
                 { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };
 
