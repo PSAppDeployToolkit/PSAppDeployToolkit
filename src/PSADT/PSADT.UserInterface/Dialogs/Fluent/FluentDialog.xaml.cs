@@ -376,9 +376,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="formattingStack">The current formatting context stack.</param>
         private void ProcessFormattingTag(TextBlock textBlock, Match match, Stack<FormattingContext> formattingStack)
         {
-            if (match.Groups["UrlLink"].Success)
+            if (match.Groups["UrlLinkSimple"].Success)
             {
-                ProcessUrlLink(textBlock, match.Groups["UrlLinkContent"].Value);
+                ProcessUrlLink(textBlock, match.Groups["UrlLinkSimpleContent"].Value, match.Groups["UrlLinkSimpleContent"].Value);
+            }
+            else if (match.Groups["UrlLinkDescriptive"].Success)
+            {
+                ProcessUrlLink(textBlock, match.Groups["UrlLinkUrl"].Value, match.Groups["UrlLinkDescription"].Value);
             }
             else if (match.Groups["OpenAccent"].Success)
             {
@@ -474,11 +478,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
 
         /// <summary>
-        /// Creates a hyperlink with the specified URL.
+        /// Creates a hyperlink with the specified URL and display text.
         /// </summary>
-        /// <param name="textBlock"></param>
-        /// <param name="url"></param>
-        private void ProcessUrlLink(TextBlock textBlock, string url)
+        /// <param name="textBlock">The TextBlock to add the hyperlink to.</param>
+        /// <param name="url">The URL to navigate to when clicked.</param>
+        /// <param name="displayText">The text to display for the hyperlink.</param>
+        private void ProcessUrlLink(TextBlock textBlock, string url, string displayText)
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
@@ -494,7 +499,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Add the URL as a proper hyperlink
             if (!AccountUtilities.CallerIsSystemInteractive && Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
             {
-                Hyperlink link = new(new Run(url))
+                Hyperlink link = new(new Run(displayText))
                 {
                     NavigateUri = uri,
                     ToolTip = $"Open link: {url}"
@@ -505,7 +510,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             else
             {
                 // If it's not a valid URI, just add as plain text
-                textBlock.Inlines.Add(url);
+                textBlock.Inlines.Add(displayText);
             }
         }
 
