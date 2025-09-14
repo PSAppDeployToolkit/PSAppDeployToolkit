@@ -309,7 +309,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
         /// <summary>
         /// Formats the message text with enhanced markdown support including hyperlinks, bold, italic, and accent colored.
-        /// Supports: [text](url), **bold**, *italic*, __bold__, _italic_, and colored quotes (> warning:, > info:, > error:, > success:).
+        /// Supports nested and combined formatting: [url], [accent], [bold], [italic] tags that can be combined for cumulative effects.
         /// </summary>
         /// <param name="textBlock"></param>
         /// <param name="message"></param>
@@ -322,77 +322,156 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 return;
             }
 
+            // Use stack-based approach to handle nested/combined formatting
+            var formattingStack = new Stack<FormattingContext>();
             var lastPos = 0;
+
             foreach (Match match in DialogTools.TextFormattingRegex.Matches(message))
             {
-                // Add text before the current match
+                // Add text before the current match with current formatting
                 if (match.Index > lastPos)
                 {
-                    textBlock.Inlines.Add(message.Substring(lastPos, match.Index - lastPos));
+                    var textContent = message.Substring(lastPos, match.Index - lastPos);
+                    AddFormattedText(textBlock, textContent, formattingStack);
                 }
 
-                // Process the matched element
-                ProcessMatch(textBlock, match);
+                // Process the matched tag
+                ProcessFormattingTag(textBlock, match, formattingStack);
                 lastPos = match.Index + match.Length;
             }
 
             // Add any remaining text after the last match
             if (lastPos < message.Length)
             {
-                textBlock.Inlines.Add(message.Substring(lastPos));
+                var remainingText = message.Substring(lastPos);
+                AddFormattedText(textBlock, remainingText, formattingStack);
             }
         }
 
         /// <summary>
-        /// Processes a regex match and adds the corresponding formatted text to the TextBlock.
+        /// Represents the formatting context for nested text formatting.
         /// </summary>
-        /// <param name="textBlock">The TextBlock to add the formatted text to.</param>
+        private sealed class FormattingContext
+        {
+            public bool IsAccent { get; set; }
+            public bool IsBold { get; set; }
+            public bool IsItalic { get; set; }
+
+            public FormattingContext Clone()
+            {
+                return new FormattingContext
+                {
+                    IsAccent = IsAccent,
+                    IsBold = IsBold,
+                    IsItalic = IsItalic
+                };
+            }
+        }
+
+        /// <summary>
+        /// Processes a formatting tag match and updates the formatting stack.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock to add content to.</param>
         /// <param name="match">The regex match to process.</param>
-        private void ProcessMatch(TextBlock textBlock, Match match)
+        /// <param name="formattingStack">The current formatting context stack.</param>
+        private void ProcessFormattingTag(TextBlock textBlock, Match match, Stack<FormattingContext> formattingStack)
         {
             if (match.Groups["UrlLink"].Success)
             {
                 ProcessUrlLink(textBlock, match.Groups["UrlLinkContent"].Value);
             }
-            else if (match.Groups["Accent"].Success)
+            else if (match.Groups["OpenAccent"].Success)
             {
-                AddAccentText(textBlock, match.Groups["AccentText"].Value);
+                var newContext = GetCurrentFormattingContext(formattingStack).Clone();
+                newContext.IsAccent = true;
+                formattingStack.Push(newContext);
             }
-            else if (match.Groups["Bold"].Success)
+            else if (match.Groups["CloseAccent"].Success)
             {
-                AddBoldText(textBlock, match.Groups["BoldText"].Value);
+                PopFormattingContext(formattingStack, ctx => ctx.IsAccent);
             }
-            else if (match.Groups["Italic"].Success)
+            else if (match.Groups["OpenBold"].Success)
             {
-                AddItalicText(textBlock, match.Groups["ItalicText"].Value);
+                var newContext = GetCurrentFormattingContext(formattingStack).Clone();
+                newContext.IsBold = true;
+                formattingStack.Push(newContext);
+            }
+            else if (match.Groups["CloseBold"].Success)
+            {
+                PopFormattingContext(formattingStack, ctx => ctx.IsBold);
+            }
+            else if (match.Groups["OpenItalic"].Success)
+            {
+                var newContext = GetCurrentFormattingContext(formattingStack).Clone();
+                newContext.IsItalic = true;
+                formattingStack.Push(newContext);
+            }
+            else if (match.Groups["CloseItalic"].Success)
+            {
+                PopFormattingContext(formattingStack, ctx => ctx.IsItalic);
             }
         }
 
         /// <summary>
-        /// Adds accent-colored text to the TextBlock.
+        /// Gets the current formatting context from the stack.
         /// </summary>
-        /// <param name="textBlock">The TextBlock to add the text to.</param>
-        /// <param name="text">The text to add.</param>
-        private static void AddAccentText(TextBlock textBlock, string text)
+        /// <param name="formattingStack">The formatting context stack.</param>
+        /// <returns>The current formatting context.</returns>
+        private static FormattingContext GetCurrentFormattingContext(Stack<FormattingContext> formattingStack)
         {
-            Run accentRun = new(text) { FontWeight = FontWeights.Bold };
-            accentRun.SetResourceReference(ForegroundProperty, ThemeKeys.AccentTextFillColorPrimaryBrushKey);
-            textBlock.Inlines.Add(accentRun);
+            return formattingStack.Count > 0 ? formattingStack.Peek() : new FormattingContext();
         }
 
         /// <summary>
-        /// Adds bold text to the TextBlock.
+        /// Pops the most recent formatting context that matches the specified predicate.
         /// </summary>
-        /// <param name="textBlock">The TextBlock to add the text to.</param>
-        /// <param name="text">The text to add.</param>
-        private static void AddBoldText(TextBlock textBlock, string text) => textBlock.Inlines.Add(new Run(text) { FontWeight = FontWeights.Bold });
+        /// <param name="formattingStack">The formatting context stack.</param>
+        /// <param name="predicate">The condition to match for popping.</param>
+        private static void PopFormattingContext(Stack<FormattingContext> formattingStack, Func<FormattingContext, bool> predicate)
+        {
+            if (formattingStack.Count > 0 && predicate(formattingStack.Peek()))
+            {
+                formattingStack.Pop();
+            }
+        }
 
         /// <summary>
-        /// Adds italicized text to the TextBlock.
+        /// Adds formatted text to the TextBlock based on the current formatting context.
         /// </summary>
-        /// <param name="textBlock">The TextBlock to add the text to.</param>
-        /// <param name="text">The text to add.</param>
-        private static void AddItalicText(TextBlock textBlock, string text) => textBlock.Inlines.Add(new Run(text) { FontStyle = FontStyles.Italic });
+        /// <param name="textBlock">The TextBlock to add text to.</param>
+        /// <param name="text">The text content to add.</param>
+        /// <param name="formattingStack">The current formatting context stack.</param>
+        private void AddFormattedText(TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            var context = GetCurrentFormattingContext(formattingStack);
+            var run = new Run(text);
+
+            // Apply formatting based on context
+            if (context.IsBold)
+            {
+                run.FontWeight = FontWeights.Bold;
+            }
+            if (context.IsItalic)
+            {
+                run.FontStyle = FontStyles.Italic;
+            }
+            if (context.IsAccent)
+            {
+                if (!context.IsBold) // Only set bold if not already bold
+                {
+                    run.FontWeight = FontWeights.Bold;
+                }
+                run.SetResourceReference(ForegroundProperty, ThemeKeys.AccentTextFillColorPrimaryBrushKey);
+            }
+
+            textBlock.Inlines.Add(run);
+        }
+
 
         /// <summary>
         /// Creates a hyperlink with the specified URL.
