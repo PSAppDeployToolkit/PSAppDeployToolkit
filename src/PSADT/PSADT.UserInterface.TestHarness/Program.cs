@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Management.Automation.Language;
 using System.Threading;
@@ -11,7 +12,6 @@ using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
-using System.Globalization;
 
 namespace PSADT.UserInterface.TestHarness
 {

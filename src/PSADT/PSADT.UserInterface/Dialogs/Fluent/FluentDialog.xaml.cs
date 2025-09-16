@@ -323,7 +323,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             // Use stack-based approach to handle nested/combined formatting
-            var formattingStack = new Stack<FormattingContext>();
+            Stack<FormattingContext> formattingStack = new();
             var lastPos = 0;
 
             foreach (Match match in DialogTools.TextFormattingRegex.Matches(message))
@@ -345,26 +345,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 var remainingText = message.Substring(lastPos);
                 AddFormattedText(textBlock, remainingText, formattingStack);
-            }
-        }
-
-        /// <summary>
-        /// Represents the formatting context for nested text formatting.
-        /// </summary>
-        private sealed class FormattingContext
-        {
-            public bool IsAccent { get; set; }
-            public bool IsBold { get; set; }
-            public bool IsItalic { get; set; }
-
-            public FormattingContext Clone()
-            {
-                return new FormattingContext
-                {
-                    IsAccent = IsAccent,
-                    IsBold = IsBold,
-                    IsItalic = IsItalic
-                };
             }
         }
 
@@ -423,7 +403,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <returns>The current formatting context.</returns>
         private static FormattingContext GetCurrentFormattingContext(Stack<FormattingContext> formattingStack)
         {
-            return formattingStack.Count > 0 ? formattingStack.Peek() : new FormattingContext();
+            return formattingStack.Count > 0 ? formattingStack.Peek() : new();
         }
 
         /// <summary>
@@ -447,13 +427,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="formattingStack">The current formatting context stack.</param>
         private void AddFormattedText(TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
         {
-            if (string.IsNullOrEmpty(text))
+            if (string.IsNullOrWhiteSpace(text))
             {
                 return;
             }
 
             var context = GetCurrentFormattingContext(formattingStack);
-            var run = new Run(text);
+            Run run = new(text);
 
             // Apply formatting based on context
             if (context.IsBold)
@@ -1023,6 +1003,26 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 _countdownTimer?.Dispose();
             }
             _disposed = true;
+        }
+
+        /// <summary>
+        /// Represents the formatting context for nested text formatting.
+        /// </summary>
+        private sealed class FormattingContext
+        {
+            public bool IsAccent { get; set; }
+            public bool IsBold { get; set; }
+            public bool IsItalic { get; set; }
+
+            public FormattingContext Clone()
+            {
+                return new FormattingContext
+                {
+                    IsAccent = IsAccent,
+                    IsBold = IsBold,
+                    IsItalic = IsItalic
+                };
+            }
         }
     }
 }
