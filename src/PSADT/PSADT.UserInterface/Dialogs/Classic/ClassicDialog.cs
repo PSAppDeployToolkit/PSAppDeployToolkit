@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -234,30 +234,29 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <remarks>This method processes text to remove specific formatting tags, such as bold, italic,
         /// accent, and URL tags, as defined by the <see cref="DialogTools.TextFormattingRegex"/> regular expression.
-        /// The content within these tags is preserved and included in the returned string.</remarks>
+        /// The content within these tags is preserved and included in the returned string. Handles nested tags properly
+        /// by repeatedly processing the text until all tags are removed.</remarks>
         /// <param name="text">The input string containing formatting tags to be stripped.</param>
         /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
         protected string StripFormattingTags(string text)
         {
-            foreach (Match match in DialogTools.TextFormattingRegex.Matches(text))
+            // Keep processing until no more tags are found
+            string previousText;
+            do
             {
-                if (match.Groups["UrlLink"].Success)
-                {
-                    text = text.Replace(match.Groups["UrlLink"].Value, match.Groups["UrlLinkContent"].Value);
-                }
-                else if (match.Groups["Accent"].Success)
-                {
-                    text = text.Replace(match.Groups["Accent"].Value, match.Groups["AccentText"].Value);
-                }
-                else if (match.Groups["Bold"].Success)
-                {
-                    text = text.Replace(match.Groups["Bold"].Value, match.Groups["BoldText"].Value);
-                }
-                else if (match.Groups["Italic"].Success)
-                {
-                    text = text.Replace(match.Groups["Italic"].Value, match.Groups["ItalicText"].Value);
-                }
-            }
+                previousText = text;
+
+                // Remove URL tags (both simple and descriptive formats)
+                text = Regex.Replace(text, @"\[url\](.+?)\[/url\]", "$1", RegexOptions.IgnoreCase);
+                text = Regex.Replace(text, @"\[url=([^\]]+)\](.+?)\[/url\]", "$2", RegexOptions.IgnoreCase);
+
+                // Remove formatting tags (accent, bold, italic)
+                text = Regex.Replace(text, @"\[/?accent\]", "", RegexOptions.IgnoreCase);
+                text = Regex.Replace(text, @"\[/?bold\]", "", RegexOptions.IgnoreCase);
+                text = Regex.Replace(text, @"\[/?italic\]", "", RegexOptions.IgnoreCase);
+
+            } while (text != previousText);
+
             return text;
         }
 
