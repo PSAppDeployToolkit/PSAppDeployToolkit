@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -75,7 +75,11 @@ namespace PSADT.UserInterface.TestHarness
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            string customMessageText = "You can find the security policy at [url]https://psappdeploytoolkit.com[/url]. But you can also find it [url=https://psappdeploytoolkit.com]at this URL description clickable link[/url]. And a side note, I know you've seen [italic]italics[/italic] now. And [bold]bold text strings[/bold]. And even [accent]accent colored text strings![/accent]. But have you seen [bold][italic]bold italics before? How about [accent]bold accent italics?[/accent][/italic][/bold].";
+            string customMessageText = @"Basic URL: [url]https://example.com[/url]
+URL with Description: [url=https://example.com]Read the IT Security Policy here[/url].
+This is [bold]bold text[/bold] and [italic]italic text[/italic].
+Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]accent[/accent][/bold].
+Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
 
             uint deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-09-20T13:00:00");
