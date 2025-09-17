@@ -326,7 +326,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Stack<FormattingContext> formattingStack = new();
             var lastPos = 0;
 
-            foreach (Match match in DialogTools.TextFormattingRegex.Matches(message))
+            foreach (Match match in DialogConstants.TextFormattingRegex.Matches(message))
             {
                 // Add text before the current match with current formatting
                 if (match.Index > lastPos)
