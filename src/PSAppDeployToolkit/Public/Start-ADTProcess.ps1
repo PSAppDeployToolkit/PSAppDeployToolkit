@@ -904,7 +904,7 @@ function Start-ADTProcess
                 default
                 {
                     # This is the handler for any other error/exception that may occur.
-                    Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process."
+                    Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -DisableErrorResolving:$false
                     break
                 }
             }
