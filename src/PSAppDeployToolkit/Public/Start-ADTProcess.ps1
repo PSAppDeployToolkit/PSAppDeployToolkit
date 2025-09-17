@@ -623,13 +623,13 @@ function Start-ADTProcess
                 # We don't do this when a session isn't running so `Start-ADTProcess` works the way one should expect (i.e. like `Start-Process`).
                 if ($adtSession -and !$PSBoundParameters.ContainsKey('WorkingDirectory'))
                 {
-                    $WorkingDirectory = if ([System.IO.Path]::HasExtension($FilePath) -and [System.IO.Path]::IsPathRooted($FilePath) -and ($FilePath -notmatch 'msiexec'))
+                    if ([System.IO.Path]::HasExtension($FilePath) -and [System.IO.Path]::IsPathRooted($FilePath) -and ($FilePath -notmatch 'msiexec'))
                     {
-                        [System.IO.Path]::GetDirectoryName($FilePath)
+                        $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                     }
                     elseif (![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
                     {
-                        $adtSession.DirFiles
+                        $WorkingDirectory = $adtSession.DirFiles
                     }
                 }
 
