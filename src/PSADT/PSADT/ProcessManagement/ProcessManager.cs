@@ -319,6 +319,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         process.WaitForExit();
+                        await Task.WhenAll(hStdOutTask, hStdErrTask);
                         exitCode = process.ExitCode;
                     }
                     tcs.SetResult(new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved));
