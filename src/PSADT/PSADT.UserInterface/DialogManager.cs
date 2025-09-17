@@ -340,7 +340,11 @@ namespace PSADT.UserInterface
                 appThread = new(() =>
                 {
                     app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
-                    app.Startup += (_, _) => appInitialized.Set();
+                    app.Startup += (_, _) =>
+                    {
+                        System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                        appInitialized.Set();
+                    };
                     app.Run();
                 });
                 appThread.SetApartmentState(ApartmentState.STA);
