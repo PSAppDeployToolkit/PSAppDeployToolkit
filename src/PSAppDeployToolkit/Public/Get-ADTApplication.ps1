@@ -232,21 +232,13 @@ function Get-ADTApplication
                     }
 
                     # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
-                    $appProperties = 'DisplayVersion', 'UninstallString', 'QuietUninstallString', 'Publisher', 'EstimatedSize' | & {
-                        begin
-                        {
-                            $collector = @{}
-                        }
+                    $appProperties = @{}; 'DisplayVersion', 'UninstallString', 'QuietUninstallString', 'Publisher', 'EstimatedSize' | & {
                         process
                         {
                             if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, $null))))
                             {
-                                $collector.Add($_, $value)
+                                $appProperties.Add($_, $value)
                             }
-                        }
-                        end
-                        {
-                            return $collector
                         }
                     }
 
