@@ -166,6 +166,9 @@ function Get-ADTApplication
                 }
             }
         }
+
+        # Define compiled regex for use throughout main loop.
+        $updatesAndHotFixesRegex = [System.Text.RegularExpressions.Regex]::new('((?i)kb\d+|(Cumulative|Security) Update|Hotfix)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Compiled)
     }
 
     process
@@ -196,7 +199,7 @@ function Get-ADTApplication
                     }
 
                     # Bypass any updates or hotfixes.
-                    if (!$IncludeUpdatesAndHotfixes -and ($appDisplayName -match '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'))
+                    if (!$IncludeUpdatesAndHotfixes -and $updatesAndHotFixesRegex.Matches($appDisplayName).Count)
                     {
                         $updatesSkippedCounter++
                         continue
