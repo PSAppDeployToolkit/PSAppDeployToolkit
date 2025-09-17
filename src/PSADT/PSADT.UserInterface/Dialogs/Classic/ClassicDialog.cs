@@ -247,13 +247,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     text = text.Replace(urlLinkSimple.Value, match.Groups["UrlLinkSimpleContent"].Value);
                 }
-                if (match.Groups["UrlLinkDescriptive"] is Group urlLinkDescriptive && urlLinkDescriptive.Success)
+                else if (match.Groups["UrlLinkDescriptive"] is Group urlLinkDescriptive && urlLinkDescriptive.Success)
                 {
                     text = text.Replace(urlLinkDescriptive.Value, match.Groups["UrlLinkDescription"].Value);
                 }
-                foreach (var formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open") || g.Name.StartsWith("Close"))))
+                else
                 {
-                    text = text.Replace(formattingTag.Value, null);
+                    foreach (var formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open") || g.Name.StartsWith("Close"))))
+                    {
+                        text = text.Replace(formattingTag.Value, null);
+                    }
                 }
             }
             return text;
