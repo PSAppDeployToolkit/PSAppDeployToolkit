@@ -17,11 +17,11 @@ namespace PSADT.Invoke
         /// <summary>
         /// The entry point for the application.
         /// </summary>
-        /// <param name="args"></param>
-        private static int Main(string[] args)
+        /// <param name="argv"></param>
+        private static int Main(string[] argv)
         {
             // Configure debug mode if /Debug is specified.
-            var cliArguments = args.ToList().ConvertAll(x => x.Trim());
+            var cliArguments = argv.ToList().ConvertAll(static x => x.Trim());
             ConfigureDebugMode(cliArguments);
 
             // Announce commencement and begin.
@@ -141,13 +141,13 @@ namespace PSADT.Invoke
         /// <param name="cliArguments"></param>
         private static void ConfigureDebugMode(List<string> cliArguments)
         {
-            if (cliArguments.Exists(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
+            if (cliArguments.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
             {
                 if (!inDebugMode)
                 {
                     inDebugMode = Kernel32.AllocConsole();
                 }
-                cliArguments.RemoveAll(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+                cliArguments.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -178,8 +178,8 @@ namespace PSADT.Invoke
         private static string GetPowerShellPath(List<string> cliArguments)
         {
             // Confirm /32 and /Core both haven't been passed as it's not supported.
-            bool x32Specified = cliArguments.Exists(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-            bool coreSpecified = cliArguments.Exists(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+            bool x32Specified = cliArguments.Exists(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+            bool coreSpecified = cliArguments.Exists(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
             if (x32Specified && coreSpecified)
             {
                 throw new ArgumentException("The use of both [/32] and [/Core] on the command line is not supported.");
@@ -189,12 +189,12 @@ namespace PSADT.Invoke
             string pwshExecutablePath = pwshDefaultPath;
             if (coreSpecified)
             {
-                if (!(Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault() is string pwshCorePath))
+                if (!(Environment.GetEnvironmentVariable("PATH").Split(';').Where(static p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(static p => Path.Combine(p, "pwsh.exe")).FirstOrDefault() is string pwshCorePath))
                 {
                     throw new InvalidOperationException("The [/Core] parameter was specified, but PowerShell Core was not found on this system.");
                 }
                 WriteDebugMessage("The [/Core] parameter was specified on the command line. Running using PowerShell 7...");
-                cliArguments.RemoveAll(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+                cliArguments.RemoveAll(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
                 pwshExecutablePath = pwshCorePath;
             }
 
@@ -203,7 +203,7 @@ namespace PSADT.Invoke
             {
                 // Remove the /32 command line argument so that it is not passed to PowerShell script
                 WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
-                cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+                cliArguments.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64"))
                 {
                     pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\PowerShell.exe");
@@ -234,14 +234,14 @@ namespace PSADT.Invoke
         private static string GetPowerShellArguments(List<string> cliArguments)
         {
             // Check for the App Deploy Script file being specified.
-            if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
+            if (cliArguments.Exists(static x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("The [-Command] parameter was specified on the command line. Please use the [-File] parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
             }
 
             // Determine the path to the script to invoke.
             string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-            var fileIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
+            var fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
                 adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", null);
@@ -253,14 +253,14 @@ namespace PSADT.Invoke
                 cliArguments.RemoveAt(fileIndex);
                 WriteDebugMessage("The [-File] parameter was specified on command line. Passing command line untouched...");
             }
-            else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
+            else if (cliArguments.Exists(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
             {
-                adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
+                adtFrontendPath = cliArguments.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
                     adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                 }
-                cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
+                cliArguments.RemoveAt(cliArguments.FindIndex(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
                 WriteDebugMessage("Using script (.ps1) file directly specified on the command line...");
             }
             else
