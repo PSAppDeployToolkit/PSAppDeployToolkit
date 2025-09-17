@@ -67,20 +67,20 @@ Describe 'Copy-ADTFile'-ForEach @(
         }
 
         It 'Copies a single file ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
-            Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
 
             "$DestinationPath\test.txt" | Should -Exist
         }
 
         It 'Copies a single file with a new filename ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
-            Copy-ADTFile -Path "$SourcePath\test.txt" -Destination "$DestinationPath\new.txt" -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path "$SourcePath\test.txt" -Destination "$DestinationPath\new.txt" -FileCopyMode $FileCopyMode
 
             "$DestinationPath\new.txt" | Should -Exist
         }
 
         It 'Copies a file where only filename is supplied ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Push-Location $SourcePath
-            Copy-ADTFile -Path 'test.txt' -Destination $DestinationPath -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path 'test.txt' -Destination $DestinationPath -FileCopyMode $FileCopyMode
             Pop-Location
 
             "$DestinationPath\test.txt" | Should -Exist
@@ -88,7 +88,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
         It 'Copies a file where only filename is supplied prefixed with .\ ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Push-Location $SourcePath
-            Copy-ADTFile -Path '.\test.txt' -Destination $DestinationPath -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path '.\test.txt' -Destination $DestinationPath -FileCopyMode $FileCopyMode
             Pop-Location
 
             "$DestinationPath\test.txt" | Should -Exist
@@ -96,7 +96,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
         It 'Copies a file where both source and destination folders are prefixed with .\ ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Push-Location $TestDrive
-            Copy-ADTFile -Path '.\Source\test.txt' -Destination '.\Destination' -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path '.\Source\test.txt' -Destination '.\Destination' -FileCopyMode $FileCopyMode
             Pop-Location
 
             "$DestinationPath\test.txt" | Should -Exist
@@ -104,14 +104,14 @@ Describe 'Copy-ADTFile'-ForEach @(
 
         It 'Copies a file where both source and destination folders are prefixed with ..\ ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Push-Location "$SourcePath\Subfolder1"
-            Copy-ADTFile -Path '..\test.txt' -Destination '..\..\Destination' -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path '..\test.txt' -Destination '..\..\Destination' -FileCopyMode $FileCopyMode
             Pop-Location
 
             "$DestinationPath\test.txt" | Should -Exist
         }
 
         It 'Copies a file to and from a UNC path ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
-            Copy-ADTFile -Path "$($SourcePath.Replace('C:\', '\\localhost\c$\'))\test.txt" -Destination $DestinationPath.Replace('C:\', '\\localhost\c$\') -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path "$($SourcePath.Replace('C:\', '\\localhost\c$\'))\test.txt" -Destination $DestinationPath.Replace('C:\', '\\localhost\c$\') -FileCopyMode $FileCopyMode
 
             "$DestinationPath\test.txt" | Should -Exist
         }
@@ -122,7 +122,7 @@ Describe 'Copy-ADTFile'-ForEach @(
             @{ Recurse = $false; Flatten = $true }
         ) {
             It 'Copies a folder ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
-                Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
+                Copy-ADTFile -Verbose -Path $SourcePath -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
 
                 if ($Flatten)
                 {
@@ -150,7 +150,7 @@ Describe 'Copy-ADTFile'-ForEach @(
             }
 
             It 'Copies files with a * as the source filename ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
-                Copy-ADTFile -Path "$SourcePath\*" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
+                Copy-ADTFile -Verbose -Path "$SourcePath\*" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
 
                 "$DestinationPath\test.txt" | Should -Exist
                 "$DestinationPath\test3.txt" | Should -Exist
@@ -177,7 +177,7 @@ Describe 'Copy-ADTFile'-ForEach @(
             }
 
             It 'Copies files with a wildcard in the source filename ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
-                Copy-ADTFile -Path "$SourcePath\test*.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
+                Copy-ADTFile -Verbose -Path "$SourcePath\test*.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
 
                 "$DestinationPath\test.txt" | Should -Exist
                 "$DestinationPath\test3.txt" | Should -Exist
@@ -203,7 +203,7 @@ Describe 'Copy-ADTFile'-ForEach @(
             }
 
             It 'Copies files with a wildcard in the source folder path ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
-                Copy-ADTFile -Path "$SourcePath*\test.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
+                Copy-ADTFile -Verbose -Path "$SourcePath*\test.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
 
                 if ($Flatten)
                 {
@@ -224,7 +224,7 @@ Describe 'Copy-ADTFile'-ForEach @(
             }
 
             It 'Copies files with wildcards in the source folder path and filenames ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
-                Copy-ADTFile -Path "$SourcePath*\test*.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
+                Copy-ADTFile -Verbose -Path "$SourcePath*\test*.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
 
                 if ($Flatten)
                 {
@@ -254,15 +254,15 @@ Describe 'Copy-ADTFile'-ForEach @(
     It 'Overwrites existing newer files ($FileCopyMode = $<FileCopyMode>)' {
         New-Item -Path "$DestinationPath\old.txt" -ItemType File -Force | Set-Content -Value 'new file'
 
-        Copy-ADTFile -Path "$SourcePath\Subfolder3\old.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
+        Copy-ADTFile -Verbose -Path "$SourcePath\Subfolder3\old.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
 
         "$DestinationPath\old.txt" | Should -FileContentMatch 'old file'
     }
 
 
     It 'Maintains attributes on copied items ($FileCopyMode = $<FileCopyMode>)' {
-        Copy-ADTFile -Path "$SourcePath\Subfolder3\*.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
-        Copy-ADTFile -Path "$SourcePath\SubfolderHidden\test.txt" -Destination "$DestinationPath\NewFolder" -FileCopyMode $FileCopyMode
+        Copy-ADTFile -Verbose -Path "$SourcePath\Subfolder3\*.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
+        Copy-ADTFile -Verbose -Path "$SourcePath\SubfolderHidden\test.txt" -Destination "$DestinationPath\NewFolder" -FileCopyMode $FileCopyMode
 
         "$DestinationPath\hidden.txt" | Should -Exist
         "$DestinationPath\system.txt" | Should -Exist
@@ -277,7 +277,7 @@ Describe 'Copy-ADTFile'-ForEach @(
     }
 
     It 'Copies an array of items ($FileCopyMode = $<FileCopyMode>)' {
-        Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder1\test1.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode
+        Copy-ADTFile -Verbose -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder1\test1.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode
 
         "$DestinationPath\test.txt" | Should -Exist
         "$DestinationPath\test1.txt" | Should -Exist
@@ -285,22 +285,22 @@ Describe 'Copy-ADTFile'-ForEach @(
     }
 
     It 'Quits copying files when encountering an error ($FileCopyMode = $<FileCopyMode>)' {
-        Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder99\test99.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction SilentlyContinue 2>$null
+        Copy-ADTFile -Verbose -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder99\test99.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction SilentlyContinue 2>$null
 
         "$DestinationPath\test.txt" | Should -Exist
         "$DestinationPath\test2.txt" | Should -Not -Exist
     }
 
     It 'Continues copying files when encountering an error ($FileCopyMode = $<FileCopyMode>)' {
-        Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder99\test99.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -ContinueFileCopyOnError -ErrorAction SilentlyContinue
+        Copy-ADTFile -Verbose -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder99\test99.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -ContinueFileCopyOnError -ErrorAction SilentlyContinue
 
         "$DestinationPath\test.txt" | Should -Exist
         "$DestinationPath\test2.txt" | Should -Exist
     }
 
     It 'Handles -ErrorAction correctly when copying a file that does not exist ($FileCopyMode = $<FileCopyMode>)' {
-        { Copy-ADTFile -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction SilentlyContinue } | Should -Not -Throw
-        { Copy-ADTFile -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction Stop } | Should -Throw
+        { Copy-ADTFile -Verbose -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction SilentlyContinue } | Should -Not -Throw
+        { Copy-ADTFile -Verbose -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction Stop } | Should -Throw
     }
 
     if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1)
@@ -312,8 +312,8 @@ Describe 'Copy-ADTFile'-ForEach @(
 
             Write-Debug "Destination path length: $($LongDestinationPath.Length)"
 
-            Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $LongDestinationPath -FileCopyMode $FileCopyMode
-            Copy-ADTFile -Path "$LongDestinationPath\test.txt" -Destination "$LongDestinationPath\test2.txt" -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path "$SourcePath\test.txt" -Destination $LongDestinationPath -FileCopyMode $FileCopyMode
+            Copy-ADTFile -Verbose -Path "$LongDestinationPath\test.txt" -Destination "$LongDestinationPath\test2.txt" -FileCopyMode $FileCopyMode
 
             "$LongDestinationPath\test.txt" | Should -Exist
             "$LongDestinationPath\test2.txt" | Should -Exist
