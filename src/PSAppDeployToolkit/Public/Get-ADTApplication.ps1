@@ -212,7 +212,8 @@ function Get-ADTApplication
                     }
 
                     # Apply application type filter if specified.
-                    $windowsInstaller = $item.GetValue('WindowsInstaller', $false)
+                    $uninstallString = $item.GetValue('UninstallString', $null); $quietUninstallString = $item.GetValue('QuietUninstallString', $null)
+                    $windowsInstaller = $item.GetValue('WindowsInstaller', $false) -or ($uninstallString -match 'msiexec') -or ($quietUninstallString -match 'msiexec')
                     if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
                     {
                         continue
@@ -232,7 +233,7 @@ function Get-ADTApplication
                     }
 
                     # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
-                    $appProperties = @{}; 'DisplayVersion', 'UninstallString', 'QuietUninstallString', 'Publisher', 'EstimatedSize' | & {
+                    $appProperties = @{}; 'DisplayVersion', 'Publisher', 'EstimatedSize' | & {
                         process
                         {
                             if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, $null))))
@@ -267,8 +268,8 @@ function Get-ADTApplication
                         $appMsiGuid,
                         $appDisplayName,
                         $appProperties['DisplayVersion'],
-                        $appProperties['UninstallString'],
-                        $appProperties['QuietUninstallString'],
+                        $uninstallString,
+                        $quietUninstallString,
                         $appProperties['InstallSource'],
                         $appProperties['InstallLocation'],
                         $installDate,
