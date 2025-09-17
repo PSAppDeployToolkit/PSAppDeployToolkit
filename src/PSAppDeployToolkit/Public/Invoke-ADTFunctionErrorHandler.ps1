@@ -139,7 +139,7 @@ function Invoke-ADTFunctionErrorHandler
     }
 
     # Write out the error to the log file.
-    if ($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$' -and (!$PSBoundParameters.ContainsKey('DisableErrorResolving') -or !$PSBoundParameters.DisableErrorResolving))
+    if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -or ($PSBoundParameters.ContainsKey('DisableErrorResolving') -and !$PSBoundParameters.DisableErrorResolving))
     {
         $raerProps = @{ ErrorRecord = $ErrorRecord }; if ($PSCmdlet.ParameterSetName.Equals('AdditionalResolveErrorProperties'))
         {
