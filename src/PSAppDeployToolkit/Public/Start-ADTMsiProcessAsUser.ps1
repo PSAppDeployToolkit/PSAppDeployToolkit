@@ -163,6 +163,7 @@ function Start-ADTMsiProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = '$RunAsActiveUser.UserName')]
         [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $false)]

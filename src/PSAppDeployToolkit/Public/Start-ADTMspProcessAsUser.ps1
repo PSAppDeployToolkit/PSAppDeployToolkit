@@ -74,6 +74,7 @@ function Start-ADTMspProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = '$RunAsActiveUser.UserName')]
         [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please supply the path to the MSP file to process.')]
