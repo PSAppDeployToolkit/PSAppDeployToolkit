@@ -156,6 +156,7 @@ function Start-ADTProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = '$RunAsActiveUser.UserName')]
         [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $true)]
