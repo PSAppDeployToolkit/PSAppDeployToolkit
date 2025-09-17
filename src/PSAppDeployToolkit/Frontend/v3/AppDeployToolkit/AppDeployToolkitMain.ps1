@@ -5160,7 +5160,7 @@ $sessionParams = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values
         # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
         if ($sessionParams.ContainsKey('DeployAppScriptParameters'))
         {
-            $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters
+            $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[2].InvocationInfo.BoundParameters
         }
 
         # Return the dictionary to the caller.
