@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
@@ -240,23 +241,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
         protected string StripFormattingTags(string text)
         {
-            // Keep processing until no more tags are found
-            string previousText;
-            do
+            foreach (Match match in DialogTools.TextFormattingRegex.Matches(text))
             {
-                previousText = text;
-
-                // Remove URL tags (both simple and descriptive formats)
-                text = Regex.Replace(text, @"\[url\](.+?)\[/url\]", "$1", RegexOptions.IgnoreCase);
-                text = Regex.Replace(text, @"\[url=([^\]]+)\](.+?)\[/url\]", "$2", RegexOptions.IgnoreCase);
-
-                // Remove formatting tags (accent, bold, italic)
-                text = Regex.Replace(text, @"\[/?accent\]", "", RegexOptions.IgnoreCase);
-                text = Regex.Replace(text, @"\[/?bold\]", "", RegexOptions.IgnoreCase);
-                text = Regex.Replace(text, @"\[/?italic\]", "", RegexOptions.IgnoreCase);
-
-            } while (text != previousText);
-
+                if (match.Groups["UrlLinkSimple"] is Group urlLinkSimple && urlLinkSimple.Success)
+                {
+                    text = text.Replace(urlLinkSimple.Value, match.Groups["UrlLinkSimpleContent"].Value);
+                }
+                if (match.Groups["UrlLinkDescriptive"] is Group urlLinkDescriptive && urlLinkDescriptive.Success)
+                {
+                    text = text.Replace(urlLinkDescriptive.Value, match.Groups["UrlLinkDescription"].Value);
+                }
+                foreach (var formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open") || g.Name.StartsWith("Close"))))
+                {
+                    text = text.Replace(formattingTag.Value, null);
+                }
+            }
             return text;
         }
 
