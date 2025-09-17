@@ -5113,14 +5113,8 @@ else
     Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.5' } -Force -PassThru -ErrorAction Stop
 }
 
-# Build out parameter hashtable and open a new deployment session.
-$sessionParams = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
-    begin
-    {
-        # Open collector to hold valid parameters.
-        $sessionParams = @{}
-    }
-
+# Build out parameter hashtable.
+$sessionParams = @{}; $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
     process
     {
         # Skip any Open-ADTSession params that are considered frontend params/variables.
@@ -5141,32 +5135,28 @@ $sessionParams = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values
             $sessionParams.Add($variable.Name, $variable.Value)
         }
     }
+}
 
-    end
+# Remove dates if they fail to parse using local culture settings.
+if ($sessionParams.ContainsKey('AppScriptDate'))
+{
+    try
     {
-        # Remove dates if they fail to parse using local culture settings.
-        if ($sessionParams.ContainsKey('AppScriptDate'))
-        {
-            try
-            {
-                $sessionParams.AppScriptDate = [System.DateTime]::Parse($sessionParams.AppScriptDate, $Host.CurrentCulture)
-            }
-            catch
-            {
-                $null = $sessionParams.Remove('AppScriptDate')
-            }
-        }
-
-        # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
-        if ($sessionParams.ContainsKey('DeployAppScriptParameters'))
-        {
-            $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[2].InvocationInfo.BoundParameters
-        }
-
-        # Return the dictionary to the caller.
-        return $sessionParams
+        $sessionParams.AppScriptDate = [System.DateTime]::Parse($sessionParams.AppScriptDate, $Host.CurrentCulture)
+    }
+    catch
+    {
+        $null = $sessionParams.Remove('AppScriptDate')
     }
 }
+
+# Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
+if ($sessionParams.ContainsKey('DeployAppScriptParameters'))
+{
+    $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters
+}
+
+# Open a new deployment session.
 Open-ADTSession -SessionState $ExecutionContext.SessionState @sessionParams
 
 # Define aliases for some functions to maintain backwards compatibility.
