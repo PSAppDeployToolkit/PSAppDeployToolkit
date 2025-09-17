@@ -202,6 +202,12 @@ function Get-ADTApplication
                         continue
                     }
 
+                    # Apply name filter if specified.
+                    if ($nameFilterScript -and !(& $nameFilterScript))
+                    {
+                        continue
+                    }
+
                     # Apply application type filter if specified.
                     $windowsInstaller = $item.GetValue('WindowsInstaller', $false)
                     if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
@@ -212,12 +218,6 @@ function Get-ADTApplication
                     # Apply ProductCode filter if specified.
                     $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($item.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
                     if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
-                    {
-                        continue
-                    }
-
-                    # Apply name filter if specified.
-                    if ($nameFilterScript -and !(& $nameFilterScript))
                     {
                         continue
                     }
