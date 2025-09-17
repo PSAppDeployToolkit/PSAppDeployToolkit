@@ -247,6 +247,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected virtual void FluentDialog_Loaded(object sender, RoutedEventArgs e)
         {
+            // Force software rendering.
+            ((HwndSource)PresentationSource.FromVisual(this)).CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
+
             // Update dialog layout
             UpdateButtonLayout();
             UpdateLayout();
