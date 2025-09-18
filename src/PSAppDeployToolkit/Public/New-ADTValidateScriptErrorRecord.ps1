@@ -89,7 +89,7 @@ function New-ADTValidateScriptErrorRecord
         Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
         ErrorId = "Invalid$($ParameterName)ParameterValue"
         TargetObject = $ProvidedValue
-        TargetName = $ProvidedValue
+        TargetName = $ProvidedValue.ToString()
         TargetType = $(if ($null -ne $ProvidedValue) { $ProvidedValue.GetType().Name })
         RecommendedAction = "Review the supplied $($ParameterName) parameter value and try again."
     }
