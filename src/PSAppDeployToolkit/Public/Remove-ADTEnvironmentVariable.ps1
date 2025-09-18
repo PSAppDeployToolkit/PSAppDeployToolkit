@@ -89,11 +89,11 @@ function Remove-ADTEnvironmentVariable
                         return;
                     }
                     Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable] for [$Target]"))."
-                    [System.Environment]::SetEnvironmentVariable($Variable, $null, $Target)
+                    [System.Environment]::SetEnvironmentVariable($Variable, [System.Management.Automation.Language.NullString]::Value, $Target)
                     return;
                 }
                 Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable]"))."
-                [System.Environment]::SetEnvironmentVariable($Variable, $null)
+                [System.Environment]::SetEnvironmentVariable($Variable, [System.Management.Automation.Language.NullString]::Value)
                 return;
             }
             catch
