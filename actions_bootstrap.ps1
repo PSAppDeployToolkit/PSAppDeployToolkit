@@ -16,7 +16,7 @@ $modulesToInstall = New-Object System.Collections.Generic.List[object]
 # https://github.com/nightroman/Invoke-Build
 [void]$modulesToInstall.Add(([PSCustomObject]@{
             ModuleName    = 'InvokeBuild'
-            ModuleVersion = '5.14.15'
+            ModuleVersion = '5.14.19'
         }))
 # https://github.com/PowerShell/PSScriptAnalyzer
 [void]$modulesToInstall.Add(([PSCustomObject]@{
