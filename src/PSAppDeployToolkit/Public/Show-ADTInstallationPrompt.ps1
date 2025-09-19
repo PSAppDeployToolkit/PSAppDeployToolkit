@@ -58,6 +58,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER AllowMove
         Specifies that the user can move the dialog on the screen.
 
+    .PARAMETER Force
+        Specifies whether the message box should appear irrespective of an ongoing DeploymentSession's DeployMode.
+
     .INPUTS
         None
 
@@ -160,7 +163,10 @@ function Show-ADTInstallationPrompt
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$AllowMove
+        [System.Management.Automation.SwitchParameter]$AllowMove,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     dynamicparam
@@ -256,7 +262,7 @@ function Show-ADTInstallationPrompt
             try
             {
                 # Bypass if in non-interactive mode.
-                if ($adtSession -and $adtSession.IsNonInteractive())
+                if ($adtSession -and $adtSession.IsNonInteractive() -and !$Force)
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Message: $Message"
                     return
