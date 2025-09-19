@@ -40,24 +40,24 @@ function Invoke-ADTAllUsersRegistryAction
 
     .EXAMPLE
         Invoke-ADTAllUsersRegistryAction -ScriptBlock {
-            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
-            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
+            Set-ADTRegistryKey -SID $_.SID -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord
+            Set-ADTRegistryKey -SID $_.SID -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord
         }
 
         Example demonstrating the setting of two values within each user's HKEY_CURRENT_USER hive.
 
     .EXAMPLE
         Invoke-ADTAllUsersRegistryAction {
-            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
-            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
+            Set-ADTRegistryKey -SID $_.SID -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord
+            Set-ADTRegistryKey -SID $_.SID -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord
         }
 
         As the previous example, but showing how to use ScriptBlock as a positional parameter with no name specified.
 
     .EXAMPLE
         Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser) -ScriptBlock {
-            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
-            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
+            Set-ADTRegistryKey -SID $_.SID -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord
+            Set-ADTRegistryKey -SID $_.SID -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord
         }
 
         As the previous example, but sending specific user profiles through to exclude the Default profile.
