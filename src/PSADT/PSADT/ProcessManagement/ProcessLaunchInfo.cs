@@ -25,6 +25,7 @@ namespace PSADT.ProcessManagement
         /// <param name="useHighestAvailableToken"></param>
         /// <param name="inheritEnvironmentVariables"></param>
         /// <param name="expandEnvironmentVariables"></param>
+        /// <param name="denyUserTermination"></param>
         /// <param name="inheritHandles"></param>
         /// <param name="useUnelevatedToken"></param>
         /// <param name="useShellExecute"></param>
@@ -47,6 +48,7 @@ namespace PSADT.ProcessManagement
             bool useHighestAvailableToken = false,
             bool inheritEnvironmentVariables = false,
             bool expandEnvironmentVariables = false,
+            bool denyUserTermination = false,
             bool inheritHandles = false,
             bool useUnelevatedToken = false,
             bool useShellExecute = false,
@@ -121,6 +123,7 @@ namespace PSADT.ProcessManagement
             UseHighestAvailableToken = useHighestAvailableToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             ExpandEnvironmentVariables = expandEnvironmentVariables;
+            DenyUserTermination = denyUserTermination;
             InheritHandles = inheritHandles;
             UseUnelevatedToken = useUnelevatedToken;
             UseShellExecute = useShellExecute;
@@ -179,6 +182,11 @@ namespace PSADT.ProcessManagement
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
         public readonly bool ExpandEnvironmentVariables;
+
+        /// <summary>
+        /// Indicates whether user termination is denied.
+        /// </summary>
+        public readonly bool DenyUserTermination;
 
         /// <summary>
         /// Gets a value indicating whether anonymous handles are being used.
