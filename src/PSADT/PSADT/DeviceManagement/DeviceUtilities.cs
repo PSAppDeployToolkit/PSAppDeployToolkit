@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
+using System.IO;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
@@ -64,14 +65,7 @@ namespace PSADT.DeviceManagement
         /// </summary>
         internal static void RestartComputer()
         {
-            // Reboot the system and hard-exit this process.
-            using Process process = new();
-            process.StartInfo.FileName = "shutdown.exe";
-            process.StartInfo.Arguments = "/r /f /t 0";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start(); process.WaitForExit();
-            Environment.Exit(0);
+            Environment.Exit(ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), new(["/r /f /t 0"]), Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))!.Task.GetAwaiter().GetResult().ExitCode);
         }
 
         /// <summary>

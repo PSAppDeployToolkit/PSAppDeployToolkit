@@ -27,7 +27,7 @@ function Private:Get-ADTStringLanguage
         else
         {
             # We failed all the above, so get the actual user's $PSUICulture value.
-            $((Start-ADTProcess -RunAsActiveUser $runAsActiveUser -FilePath powershell.exe -ArgumentList '-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $PSUICulture' -MsiExecWaitTime ([System.TimeSpan]::FromSeconds($adtConfig.MSI.MutexWaitTime)) -CreateNoWindow -PassThru -InformationAction SilentlyContinue).StdOut)
+            $((Start-ADTProcess -RunAsActiveUser $runAsActiveUser -DenyUserTermination -FilePath powershell.exe -ArgumentList '-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $PSUICulture' -MsiExecWaitTime ([System.TimeSpan]::FromSeconds($adtConfig.MSI.MutexWaitTime)) -CreateNoWindow -PassThru -InformationAction SilentlyContinue).StdOut)
         }
     }
     else

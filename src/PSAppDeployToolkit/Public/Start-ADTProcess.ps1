@@ -39,6 +39,9 @@ function Start-ADTProcess
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
+    .PARAMETER DenyUserTermination
+        Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
+
     .PARAMETER UseUnelevatedToken
         If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
 
@@ -235,6 +238,17 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
@@ -643,6 +657,7 @@ function Start-ADTProcess
                     $UseHighestAvailableToken,
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
+                    $DenyUserTermination,
                     $false,
                     $UseUnelevatedToken,
                     $UseShellExecute,

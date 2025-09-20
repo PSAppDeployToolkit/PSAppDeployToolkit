@@ -315,6 +315,7 @@ function Private:Invoke-ADTClientServerOperation
         $sapauParams = @{
             Username = $User.NTAccount
             UseHighestAvailableToken = $true
+            DenyUserTermination = $true
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
             MsiExecWaitTime = 1

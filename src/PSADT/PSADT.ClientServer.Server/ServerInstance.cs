@@ -7,22 +7,14 @@ using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles;
-using PSADT.AccountManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
-using PSADT.SafeHandles;
-using PSADT.Security;
 using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.WindowManagement;
-using Windows.Win32;
-using Windows.Win32.Security;
-using Windows.Win32.Security.Authorization;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.ClientServer
 {
@@ -77,6 +69,7 @@ namespace PSADT.ClientServer
                     RunAsActiveUser,
                     UseLinkedAdminToken,
                     UseHighestAvailableToken,
+                    denyUserTermination: true,
                     inheritHandles: true,
                     createNoWindow: true,
                     waitForChildProcesses: true,
@@ -91,75 +84,6 @@ namespace PSADT.ClientServer
                 _outputServer.DisposeLocalCopyOfClientHandle();
                 _inputServer.DisposeLocalCopyOfClientHandle();
                 _logServer.DisposeLocalCopyOfClientHandle();
-            }
-
-            // If the client/server process isn't ours, we'll want to change the owner to ourselves if we can.
-            bool changeOwner = false;
-            if (RunAsActiveUser.SID != AccountUtilities.CallerSid && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
-            {
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
-                changeOwner = true;
-            }
-
-            // Create a restricted access control list (ACL) for the client process so the user can't terminate it.
-            byte[] userSid = new byte[RunAsActiveUser.SID.BinaryLength]; RunAsActiveUser.SID.GetBinaryForm(userSid, 0);
-            using (SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid))
-            {
-                bool pinnedUserSidAddRef = false;
-                try
-                {
-                    // Generate an explicit access control entry (ACE) for the user SID.
-                    pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
-                    var ea = new EXPLICIT_ACCESS_W
-                    {
-                        grfAccessPermissions = (uint)(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),
-                        grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
-                        grfInheritance = ACE_FLAGS.NO_INHERITANCE,
-                        Trustee = new TRUSTEE_W
-                        {
-                            TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
-                            ptstrName = new(pinnedUserSid.DangerousGetHandle())
-                        }
-                    };
-
-                    // Apply the ACL and potentially change the owner of the client process.
-                    AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
-                    using (SafeProcessHandle hProcess = new(_clientProcess!.Process.Handle, false))
-                    using (pAcl)
-                    {
-                        if (changeOwner)
-                        {
-                            byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
-                            using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid);
-                            bool pinnedCallerSidAddRef = false;
-                            try
-                            {
-                                pinnedCallerSid.DangerousAddRef(ref pinnedCallerSidAddRef);
-                                using FreeSidSafeHandle pCallerSid = new(pinnedCallerSid.DangerousGetHandle(), false);
-                                AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pCallerSid, null, pAcl, null);
-                            }
-                            finally
-                            {
-                                if (pinnedCallerSidAddRef)
-                                {
-                                    pinnedCallerSid.DangerousRelease();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, null, null, pAcl, null);
-                        }
-                    }
-                }
-                finally
-                {
-                    if (pinnedUserSidAddRef)
-                    {
-                        pinnedUserSid.DangerousRelease();
-                    }
-                }
             }
 
             // Confirm the client starts and is ready to receive commands.

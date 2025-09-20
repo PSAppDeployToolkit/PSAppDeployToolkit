@@ -47,6 +47,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="PSADT.Tests" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
   </ItemGroup>
