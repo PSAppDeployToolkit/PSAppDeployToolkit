@@ -42,6 +42,9 @@ function Start-ADTProcessAsUser
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
+    .PARAMETER DenyUserTermination
+        Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
+
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
@@ -185,6 +188,9 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]
