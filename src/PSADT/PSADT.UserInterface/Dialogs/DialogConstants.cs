@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// Gets the text for the button used to block execution in a dialog.
         /// </summary>
-        public static string BlockExecutionButtonText = "OK";
+        public const string BlockExecutionButtonText = "OK";
 
         /// <summary>
         /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as
