@@ -91,7 +91,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             _customMessageText = customMessageText;
             _countdownDuration = countdownDuration;
             _countdownWarningDuration = countdownWarningDuration;
-            _countdownStopwatch = null != countdownStopwatch ? countdownStopwatch : new();
+            _countdownStopwatch = countdownStopwatch ?? new();
             CountdownStackPanel.Visibility = _countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
             // Pre-format the custom message if we have one
