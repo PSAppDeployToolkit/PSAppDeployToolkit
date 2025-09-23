@@ -33,7 +33,7 @@ namespace PSADT.Module
             Message = !string.IsNullOrWhiteSpace(message) ? message.TrimEndRemoveNull() : throw new ArgumentNullException("Message cannot be null or empty.", (Exception?)null);
             Severity = severity;
             Source = !string.IsNullOrWhiteSpace(source) ? source : throw new ArgumentNullException("Source cannot be null or empty.", (Exception?)null);
-            ScriptSection = scriptSection;
+            ScriptSection = !string.IsNullOrWhiteSpace(scriptSection) ? scriptSection : null;
             DebugMessage = debugMessage;
             CallerFileName = !string.IsNullOrWhiteSpace(callerFileName) ? callerFileName : throw new ArgumentNullException("Caller file name cannot be null or empty.", (Exception?)null);
             CallerSource = !string.IsNullOrWhiteSpace(callerSource) ? callerSource : throw new ArgumentNullException("Caller source cannot be null or empty.", (Exception?)null);
