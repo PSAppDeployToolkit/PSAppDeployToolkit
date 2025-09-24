@@ -1116,12 +1116,13 @@ function Show-ADTInstallationWelcome
                         }
                         elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Close))
                         {
-                            # Force the applications to close. Update the process list right before closing, in case it changed.
-                            Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
+                            # Update the process list right before closing, in case it changed.
+                            Write-ADTLogEntry -Message 'The user agreed with closing of the application(s).'
                             if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                             {
                                 if (!$PromptToSave)
                                 {
+                                    Write-ADTLogEntry -Message "Force closing of the application(s). PromptToSave is: $PromptToSave"
                                     foreach ($runningApp in $runningApps)
                                     {
                                         Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)]..."
@@ -1130,6 +1131,7 @@ function Show-ADTInstallationWelcome
                                 }
                                 else
                                 {
+                                    Write-ADTLogEntry -Message "Non-Force closing of the application(s). PromptToSave is: $PromptToSave"
                                     Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
 
