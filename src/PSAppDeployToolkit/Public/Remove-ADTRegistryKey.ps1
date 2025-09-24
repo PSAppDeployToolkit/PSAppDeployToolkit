@@ -44,19 +44,29 @@ function Remove-ADTRegistryKey
         This function does not generate any output.
 
     .EXAMPLE
-        Remove-ADTRegistryKey -Key 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+        Remove-ADTRegistryKey -LiteralPath 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
 
         Deletes the specified registry key.
 
     .EXAMPLE
-        Remove-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
+        Remove-ADTRegistryKey -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
 
         Deletes the specified registry value.
 
     .EXAMPLE
-        Remove-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
+        Remove-ADTRegistryKey -LiteralPath 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 
         Deletes the default registry value in the specified key.
+
+    .EXAMPLE
+        Remove-ADTRegistryKey -Path 'HKEY_LOCAL_MACHINE\SOFTWARE\MyCustomKey\*' -Recurse
+
+        Removes all subkeys from `HKEY_LOCAL_MACHINE\SOFTWARE\MyCustomKey` as requested.
+
+    .EXAMPLE
+        Remove-ADTRegistryKey -Path 'HKEY_LOCAL_MACHINE\SOFTWARE\MyCustomKey\*' -Name 'PropertyName'
+
+        Removes `PropertyName` from all subkeys of `HKEY_LOCAL_MACHINE\SOFTWARE\MyCustomKey`.
 
     .NOTES
         An active ADT session is NOT required to use this function.
