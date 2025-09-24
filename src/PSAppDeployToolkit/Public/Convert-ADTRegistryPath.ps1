@@ -132,15 +132,18 @@ function Convert-ADTRegistryPath
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    if ($Key -match '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\')
+                    if ($Key -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\')
                     {
-                        $Key = $Key -replace '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$SID\"
+                        $naerParams = @{
+                            Exception = [System.InvalidOperationException]::new("SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                            ErrorId = 'SidSpecifiedForNonUserRegistryHive'
+                            TargetObject = $Key
+                            RecommendedAction = "Please confirm the supplied value is correct and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
-                    else
-                    {
-                        Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
-                        return
-                    }
+                    $Key = $Key -replace '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$SID\"
                 }
 
                 # Check for expected key string format.

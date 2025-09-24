@@ -84,7 +84,7 @@ function Test-ADTMutexAvailability
         }
         $IsUnhandledException = $false
         $IsMutexFree = $false
-        [System.Threading.Mutex]$OpenExistingMutex = $null
+        $OpenExistingMutex = $null
     }
 
     process
