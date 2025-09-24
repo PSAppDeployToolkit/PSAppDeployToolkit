@@ -535,9 +535,9 @@ namespace PSADT.LibraryInterfaces
         /// <returns>The size, in bytes, of the firmware table data retrieved.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer provided in <paramref name="pFirmwareTableBuffer"/> is too small to hold the firmware
         /// table data.</exception>
-        internal static uint GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER FirmwareTableProviderSignature, uint FirmwareTableID, Span<byte> pFirmwareTableBuffer)
+        internal static uint GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER FirmwareTableProviderSignature, FIRMWARE_TABLE_ID FirmwareTableID, Span<byte> pFirmwareTableBuffer)
         {
-            var res = PInvoke.GetSystemFirmwareTable(FirmwareTableProviderSignature, FirmwareTableID, pFirmwareTableBuffer);
+            var res = PInvoke.GetSystemFirmwareTable(FirmwareTableProviderSignature, (uint)FirmwareTableID, pFirmwareTableBuffer);
             if (res == 0)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
