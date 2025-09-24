@@ -49,27 +49,27 @@ function Get-ADTRegistryKey
         Returns the value of the registry key or value.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\VLC media player'
+        Get-ADTRegistryKey -LiteralPath 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\VLC media player'
 
         This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
+        Get-ADTRegistryKey -LiteralPath 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
 
         This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Name 'Version'
+        Get-ADTRegistryKey -LiteralPath 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Name 'Version'
 
         This example retrieves the 'Version' value data for the specified registry key.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'Path' -DoNotExpandEnvironmentNames
+        Get-ADTRegistryKey -LiteralPath 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'Path' -DoNotExpandEnvironmentNames
 
         This example retrieves the 'Path' value data without expanding environment variables.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
+        Get-ADTRegistryKey -LiteralPath 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 
         This example retrieves the default value data for the specified registry key.
 
