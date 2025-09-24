@@ -138,11 +138,10 @@ function Start-ADTMspProcess
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Failed to find MSP file [$FilePath]." -Severity 3
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$FilePath].")
                         Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        ErrorId = 'MsiFileNotFound'
+                        ErrorId = 'MspFileNotFound'
                         TargetObject = $FilePath
                         RecommendedAction = "Please confirm the path of the MSP file and try again."
                     }
