@@ -1116,13 +1116,13 @@ function Show-ADTInstallationWelcome
                         }
                         elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Close))
                         {
-                            # Update the process list right before closing, in case it changed.
-                            Write-ADTLogEntry -Message 'The user agreed with closing of the application(s).'
+                            # Force the applications to close. Update the process list right before closing, in case it changed.
+                            Write-ADTLogEntry -Message 'The user selected to close the application(s)...'
                             if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                             {
                                 if (!$PromptToSave)
                                 {
-                                    Write-ADTLogEntry -Message "Force closing of the application(s). PromptToSave is: $PromptToSave"
+                                    Write-ADTLogEntry -Message "The parameter [-PromptToSave] not specified, force closing the application(s)."
                                     foreach ($runningApp in $runningApps)
                                     {
                                         Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)]..."
@@ -1131,7 +1131,7 @@ function Show-ADTInstallationWelcome
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "Non-Force closing of the application(s). PromptToSave is: $PromptToSave"
+                                    Write-ADTLogEntry -Message "The parameter [-PromptToSave] was specified, prompting user to close the application(s)."
                                     Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
 
@@ -1154,6 +1154,7 @@ function Show-ADTInstallationWelcome
                             }
                             else
                             {
+                                Write-ADTLogEntry -Message "All running application(s) were already closed."
                                 break
                             }
                         }
