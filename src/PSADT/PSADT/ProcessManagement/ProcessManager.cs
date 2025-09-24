@@ -45,12 +45,12 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
-            Task hStdOutTask = Task.CompletedTask; Task hStdErrTask = Task.CompletedTask;
-            List<string> stdout = []; List<string> stderr = [];
+            Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask;
+            List<string> stdout = [], stderr = [];
             ConcurrentQueue<string> interleaved = [];
-            SafeProcessHandle? hProcess = null;
-            Process process = null!;
-            uint? processId = null;
+            SafeProcessHandle? hProcess;
+            Process process;
+            uint? processId;
             string commandLine;
 
             // Determine whether the process we're starting is a console app or not. This is important
@@ -248,23 +248,26 @@ namespace PSADT.ProcessManagement
                 process.Start();
                 try
                 {
-                    if (null != (hProcess = process.SafeHandle))
-                    {
-                        processId = (uint)process.Id;
-                        if (assignProcessToJob)
-                        {
-                            Kernel32.AssignProcessToJobObject(job, hProcess);
-                        }
-                        if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
-                        {
-                            process.PriorityClass = launchInfo.PriorityClass.Value;
-                        }
-                    }
+                    hProcess = process.SafeHandle;
+                    processId = (uint)process.Id;
                 }
                 catch
                 {
                     hProcess = null;
                     processId = null;
+                }
+
+                // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
+                if (null != hProcess)
+                {
+                    if (assignProcessToJob)
+                    {
+                        Kernel32.AssignProcessToJobObject(job, hProcess);
+                    }
+                    if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    {
+                        process.PriorityClass = launchInfo.PriorityClass.Value;
+                    }
                 }
             }
 
