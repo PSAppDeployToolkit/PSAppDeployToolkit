@@ -1099,7 +1099,7 @@ function Show-InstallationPrompt
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$MinimizeWindows,
+        [System.Boolean]$MinimizeWindows = $false,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
