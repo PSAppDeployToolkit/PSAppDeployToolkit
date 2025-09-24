@@ -97,21 +97,8 @@ function New-ADTZipFile
 
     begin
     {
-        # Remove invalid characters from the supplied filename.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if (($DestinationArchiveFileName = Remove-ADTInvalidFileNameChars -Name $DestinationArchiveFileName).Length -eq 0)
-        {
-            $naerParams = @{
-                Exception = [System.ArgumentException]::new('Invalid filename characters replacement resulted into an empty string.', $_)
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'DestinationArchiveFileNameInvalid'
-                TargetObject = $DestinationArchiveFileName
-                RecommendedAction = "Please review the supplied value to '-DestinationArchiveFileName' and try again."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-
         # Remove parameters from PSBoundParameters that don't apply to Compress-Archive.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($PSBoundParameters.ContainsKey('RemoveSourceAfterArchiving'))
         {
             $null = $PSBoundParameters.Remove('RemoveSourceAfterArchiving')
@@ -130,8 +117,8 @@ function New-ADTZipFile
                 # Get the full destination path where the archive will be stored.
                 Write-ADTLogEntry -Message "Creating a zip archive with the requested content at destination path [$DestinationPath]."
 
-                # If the destination archive already exists, delete it if the -OverwriteArchive option was selected.
-                if ((Test-Path -LiteralPath $DestinationPath -PathType Leaf) -and $OverwriteArchive)
+                # If the destination archive already exists, delete it if the -Force option was selected.
+                if ((Test-Path -LiteralPath $DestinationPath -PathType Leaf) -and $Force)
                 {
                     Write-ADTLogEntry -Message "An archive at the destination path already exists, deleting file [$DestinationPath]."
                     $null = Remove-Item -LiteralPath $DestinationPath -Force
@@ -151,21 +138,20 @@ function New-ADTZipFile
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to recursively delete [$sourcePath].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to recursively delete [$sourcePath]." -ErrorAction SilentlyContinue
                     }
                 }
 
                 # If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users.
                 # Apply the parent folder's permissions to the archive file to fix the problem.
                 $parentPath = [System.IO.Path]::GetDirectoryName($DestinationPath)
-                Write-ADTLogEntry -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$parentPath] to file [$DestinationPath]."
                 try
                 {
                     Set-Acl -LiteralPath $DestinationPath -AclObject (Get-Acl -LiteralPath $parentPath)
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to apply parent folder's [$parentPath] permissions to file [$DestinationPath].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to apply parent folder's [$parentPath] permissions to file [$DestinationPath]." -ErrorAction SilentlyContinue
                 }
             }
             catch
