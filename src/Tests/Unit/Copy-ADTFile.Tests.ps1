@@ -285,7 +285,7 @@ Describe 'Copy-ADTFile'-ForEach @(
     }
 
     It 'Quits copying files when encountering an error ($FileCopyMode = $<FileCopyMode>)' {
-        Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder99\test99.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction SilentlyContinue 2>$null
+        { Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder99\test99.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode } | Should -Throw
 
         "$DestinationPath\test.txt" | Should -Exist
         "$DestinationPath\test2.txt" | Should -Not -Exist
