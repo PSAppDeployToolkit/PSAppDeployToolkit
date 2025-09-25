@@ -33,7 +33,7 @@ namespace PSADT.Utilities
                         {
                             continue;
                         }
-                        if ((argument is string str) && Regex.IsMatch(str, "^-"))
+                        if ((argument is string str) && Regex.IsMatch(str, @"^-[\w\d][\w\d-]+:?$"))
                         {
                             currentKey = Regex.Replace(str, "(^-|:$)", string.Empty);
                             values.Add(currentKey, new SwitchParameter(true));
