@@ -441,11 +441,20 @@ function Copy-ADTFile
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
-                    if (!$ContinueFileCopyOnError)
+                    $iafehParams = @{
+                        Cmdlet = $PSCmdlet
+                        SessionState = $ExecutionContext.SessionState
+                        ErrorRecord = $_
+                        LogMessage = "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
+                    }
+                    if ($ContinueFileCopyOnError)
                     {
-                        Write-ADTLogEntry -Message 'ContinueFileCopyOnError not specified, exiting function.'
-                        return
+                        $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                    }
+                    Invoke-ADTFunctionErrorHandler @iafehParams
+                    if ($ContinueFileCopyOnError)
+                    {
+                        Write-ADTLogEntry -Message 'ContinueFileCopyOnError specified, processing next item.'
                     }
                 }
             }
