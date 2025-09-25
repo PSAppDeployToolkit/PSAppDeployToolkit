@@ -376,6 +376,9 @@ function Copy-ADTFile
                 {
                     try
                     {
+                        # Determine whether the path exists before continuing. This will throw a suitable error for us.
+                        $null = Get-Item -Path $srcPath
+
                         # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist.
                         if ((![System.IO.Path]::HasExtension($Destination) -or ([System.IO.Path]::HasExtension($Destination) -and ![System.IO.Path]::GetFileNameWithoutExtension($Destination))) -and !(Test-Path -LiteralPath $Destination -PathType Container))
                         {
