@@ -183,23 +183,8 @@ function Copy-ADTFile
             {
                 try
                 {
-                    if (!(Get-ChildItem -Path $srcPath -Recurse -Force))
-                    {
-                        if (!$ContinueFileCopyOnError)
-                        {
-                            Write-ADTLogEntry -Message "Source path [$srcPath] not found." -Severity 2
-                            $naerParams = @{
-                                Exception = [System.IO.FileNotFoundException]::new("Source path [$srcPath] not found.")
-                                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                                ErrorId = 'FileNotFoundError'
-                                TargetObject = $srcPath
-                                RecommendedAction = 'Please verify that the path is accessible and try again.'
-                            }
-                            Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                        }
-                        Write-ADTLogEntry -Message "Source path [$srcPath] not found. Will continue due to ContinueFileCopyOnError = `$true." -Severity 2
-                        continue
-                    }
+                    # Determine whether the path exists before continuing. This will throw a suitable error for us.
+                    $null = Get-Item -Path $srcPath
 
                     # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path.
                     if (!(Test-Path -LiteralPath $Destination -PathType Container))
@@ -359,11 +344,20 @@ function Copy-ADTFile
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
-                    if (!$ContinueFileCopyOnError)
+                    $iafehParams = @{
+                        Cmdlet = $PSCmdlet
+                        SessionState = $ExecutionContext.SessionState
+                        ErrorRecord = $_
+                        LogMessage = "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
+                    }
+                    if ($ContinueFileCopyOnError)
                     {
-                        Write-ADTLogEntry -Message 'ContinueFileCopyOnError not specified, exiting function.'
-                        return
+                        $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                    }
+                    Invoke-ADTFunctionErrorHandler @iafehParams
+                    if ($ContinueFileCopyOnError)
+                    {
+                        Write-ADTLogEntry -Message 'ContinueFileCopyOnError specified, processing next item.'
                     }
                 }
             }
