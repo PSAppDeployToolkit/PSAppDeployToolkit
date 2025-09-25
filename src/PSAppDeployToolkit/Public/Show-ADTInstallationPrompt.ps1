@@ -296,6 +296,14 @@ function Show-ADTInstallationPrompt
                     }
                     $dialogOptions.MessageAlignment = $MessageAlignment
                 }
+                if ($Icon)
+                {
+                    if ($adtConfig.UI.DialogStyle -eq 'Fluent')
+                    {
+                        Write-ADTLogEntry -Message "The parameter [-Icon] is not supported with Fluent dialogs and has no effect." -Severity 2
+                    }
+                    $dialogOptions.Add('Icon', $Icon)
+                }
                 if ($PSBoundParameters.ContainsKey('DefaultValue'))
                 {
                     $dialogOptions.InitialInputText = $DefaultValue
@@ -311,10 +319,6 @@ function Show-ADTInstallationPrompt
                 if ($ButtonMiddleText)
                 {
                     $dialogOptions.Add('ButtonMiddleText', $ButtonMiddleText)
-                }
-                if ($Icon)
-                {
-                    $dialogOptions.Add('Icon', $Icon)
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {
