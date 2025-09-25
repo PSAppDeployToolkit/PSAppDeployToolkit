@@ -422,7 +422,7 @@ function Copy-ADTFile
                         }
 
                         # Measure success.
-                        if ($ContinueFileCopyOnError -and $FileCopyError.Count)
+                        if ($ContinueFileCopyOnError -and (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError) -and $FileCopyError -and $FileCopyError.Count)
                         {
                             Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.Exception.Message))" -Severity 2
                         }
