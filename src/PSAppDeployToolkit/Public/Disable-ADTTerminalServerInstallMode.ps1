@@ -63,7 +63,6 @@ function Disable-ADTTerminalServerInstallMode
             try
             {
                 Invoke-ADTTerminalServerModeChange -Mode Execute
-                $Script:ADT.TerminalServerMode = $false
             }
             catch
             {
