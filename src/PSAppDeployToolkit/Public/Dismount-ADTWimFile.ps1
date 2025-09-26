@@ -93,7 +93,7 @@ function Dismount-ADTWimFile
                         }
 
                         # Get all open file handles for our path.
-                        Write-ADTLogEntry -Message "The directory could not be completely unmounted. Checking for any open file handles that can be closed."
+                        Write-ADTLogEntry -Message "Checking for any open file handles that can be closed."
                         $pathHandles = [PSADT.FileSystem.FileHandleManager]::GetOpenHandles($wimFile.Path)
 
                         # Throw if we have no handles to close, it means we don't know why the WIM didn't dismount.
@@ -110,6 +110,7 @@ function Dismount-ADTWimFile
                         }
 
                         # Attempt the dismount again.
+                        Write-ADTLogEntry -Message "Dismounting WIM file at path [$($wimFile.Path)]."
                         $null = Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
                     }
                     Write-ADTLogEntry -Message "Successfully dismounted WIM file."
