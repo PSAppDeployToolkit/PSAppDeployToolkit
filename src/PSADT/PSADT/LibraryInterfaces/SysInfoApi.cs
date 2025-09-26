@@ -4,7 +4,7 @@
     /// Firmware table IDs used with GetSystemFirmwareTable()
     /// Values are stored in little-endian format as expected by the Windows API
     /// </summary>
-    public enum FIRMWARE_TABLE_ID : uint
+    internal enum FIRMWARE_TABLE_ID : uint
     {
         /// <summary>
         /// SMBIOS firmware table (System Management BIOS)
