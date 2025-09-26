@@ -98,7 +98,7 @@ function Test-ADTEspActive
                 # Locate the IsSyncDone property and coerce it into a bool for return. If the value is null, we return null here to indicate indetermination.
                 if (($isSyncDone = $espData | Select-Object -ExpandProperty IsSyncDone -ErrorAction Ignore) -is [System.Int32])
                 {
-                    return !!$isSyncDone
+                    return !$isSyncDone
                 }
             }
             catch
