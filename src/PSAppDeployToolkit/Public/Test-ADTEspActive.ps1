@@ -55,6 +55,7 @@ function Test-ADTEspActive
     process
     {
         # Perform the device ESP tests, followed by the user ESP tests.
+        Write-ADTLogEntry -Message "Testing whether Windows is currently in a device or user ESP state."
         try
         {
             try
@@ -62,44 +63,52 @@ function Test-ADTEspActive
                 # Test whether the device is Autopilot-enrolled.
                 if (![Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot", "CloudAssignedTenantId", $null))
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [Device has no Autopilot cloud-assigned tenant Id]."
                     return $false
                 }
 
                 # Test whether wwahost.exe is running. This is responsible for displaying the ESP.
                 if (!($wwaHostProcess = [System.Diagnostics.Process]::GetProcessesByName('wwahost')).Length)
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [There is no wwahost process currently running]."
                     return $false
                 }
 
                 # Return early if the device is actively within the OOBE according to the system.
                 if (!(Test-ADTOobeCompleted))
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$true]. Reason: [Device is still within the OOBE phase]."
                     return $true
                 }
 
                 # Confirm that there's an actively logged on user.
                 if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [There is actively logged on user]."
                     return $false
                 }
 
                 # Return early if the wwahost process is not owned by the currently logged on user.
                 if (!($wwaHostProcess | & { process { if ($_.SessionId -eq $runAsActiveUser.SessionId) { return $_ } } } | Select-Object -First 1))
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [The current wwahost process is not running as the actively logged on user]."
                     return $false
                 }
 
                 # Test whether there's active ESP data for the current user.
                 if (!($espData = Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\$($runAsActiveUser.SID)"))
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [There is no ESP data for the actively logged on user]."
                     return $false
                 }
 
                 # Locate the IsSyncDone property and coerce it into a bool for return. If the value is null, we return null here to indicate indetermination.
                 if (($isSyncDone = $espData | Select-Object -ExpandProperty IsSyncDone -ErrorAction Ignore) -is [System.Int32])
                 {
+                    Write-ADTLogEntry -Message "Current ESP state is [$(!$isSyncDone)]. Reason: [Based on IsSyncDone flag within the registry]."
                     return !$isSyncDone
                 }
+                Write-ADTLogEntry -Message "Current ESP state is [Unknown]. Reason: [Value of IsSyncDoneFlag is '$isSyncDone' and is unable to be handled]."
             }
             catch
             {
