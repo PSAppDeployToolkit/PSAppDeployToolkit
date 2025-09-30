@@ -747,7 +747,7 @@ namespace PSADT.Module
                         WriteLogEntry("Detected OOBE in progress but toolkit is configured to not adjust deployment mode.");
                     }
                 }
-                else if (Process.GetProcessesByName("WWAHost").Length > 0)
+                else if (Process.GetProcessesByName("WWAHost") is Process[] wwaHostProcesses && wwaHostProcesses.Length > 0)
                 {
                     // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
                     WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
@@ -756,12 +756,12 @@ namespace PSADT.Module
                         WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
                         if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
                         {
-                            var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
-                            if (null != fsRegData)
+                            if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
                             {
-                                if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo isSyncDone && isSyncDone.Value is int syncDoneValue)
+                                var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                                if (null != fsRegData)
                                 {
-                                    if (syncDoneValue == 0)
+                                    if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
                                     {
                                         if (deployModeChanged)
                                         {
@@ -781,23 +781,19 @@ namespace PSADT.Module
                                             WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
                                         }
                                     }
-                                    else if (syncDoneValue == 1)
-                                    {
-                                        WriteLogEntry("The ESP User Account Setup phase is already complete.");
-                                    }
                                     else
                                     {
-                                        WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDoneValue}].", LogSeverity.Warning);
+                                        WriteLogEntry("The ESP User Account Setup phase is already complete.");
                                     }
                                 }
                                 else
                                 {
-                                    WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", LogSeverity.Warning);
+                                    WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
                                 }
                             }
                             else
                             {
-                                WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
+                                WriteLogEntry("There are no WWAHost processes running for the currently logged on user");
                             }
                         }
                         else

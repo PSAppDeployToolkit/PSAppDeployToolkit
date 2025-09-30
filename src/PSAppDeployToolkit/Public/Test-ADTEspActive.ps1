@@ -102,13 +102,10 @@ function Test-ADTEspActive
                     return $false
                 }
 
-                # Locate the IsSyncDone property and coerce it into a bool for return. If the value is null, we return null here to indicate indetermination.
-                if (($isSyncDone = $espData | Select-Object -ExpandProperty IsSyncDone -ErrorAction Ignore) -is [System.Int32])
-                {
-                    Write-ADTLogEntry -Message "Current ESP state is [$(!$isSyncDone)]. Reason: [Based on IsSyncDone flag within the registry]."
-                    return !$isSyncDone
-                }
-                Write-ADTLogEntry -Message "Current ESP state is [Unknown]. Reason: [Value of IsSyncDoneFlag is '$isSyncDone' and is unable to be handled]."
+                # Locate the IsSyncDone property and coerce it into a bool for return. If the value is null, we consider that false.
+                $isEspActive = !($espData | Select-Object -ExpandProperty IsSyncDone -ErrorAction Ignore)
+                Write-ADTLogEntry -Message "Current ESP state is [$isEspActive]. Reason: [Based on IsSyncDone flag within the registry]."
+                return $isEspActive
             }
             catch
             {
