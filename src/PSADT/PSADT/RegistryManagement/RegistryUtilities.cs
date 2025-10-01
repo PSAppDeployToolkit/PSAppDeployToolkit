@@ -46,7 +46,7 @@ namespace PSADT.RegistryManagement
         /// </summary>
         /// <remarks>The method validates the input path, determines the appropriate registry hive, and
         /// opens the specified subkey with read-only access. The caller is responsible for disposing of the returned
-        /// <see cref="Microsoft.Win32.SafeHandles.SafeRegistryHandle"/>  to release the associated resources.</remarks>
+        /// <see cref="Microsoft.Win32.SafeHandles.SafeRegistryHandle"/> to release the associated resources.</remarks>
         /// <param name="fullKeyPath">The full path of the registry key to open, including the hive name (e.g.,
         /// "HKEY_LOCAL_MACHINE\Software\Example").</param>
         /// <returns>A <see cref="Microsoft.Win32.SafeHandles.SafeRegistryHandle"/> representing the opened registry key.</returns>

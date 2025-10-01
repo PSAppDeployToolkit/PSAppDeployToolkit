@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// </summary>
     /// <remarks>This type encapsulates the required properties for configuring a balloon tip notification,
     /// including the tray title, tray icon, balloon tip title, text, and icon. Use the <see
-    /// cref="BalloonTipOptions(Hashtable)"/>  constructor to initialize an instance with validated configuration
+    /// cref="BalloonTipOptions(Hashtable)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
     public sealed record BalloonTipOptions
     {
