@@ -171,7 +171,7 @@ namespace PSADT.FileSystem
         /// <param name="desiredAccessMask">The access rights to check, specified as a combination of <see cref="FileSystemRights"/> flags.</param>
         /// <returns><see langword="true"/> if the specified SID has the desired access rights to the file or directory;
         /// otherwise, <see langword="false"/>.</returns>
-        public static bool TestEffectiveAccess(string path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
+        public static bool TestEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
             return (GetEffectiveAccess(path, sid, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
         }
@@ -189,7 +189,7 @@ namespace PSADT.FileSystem
         /// cref="System.Security.AccessControl.FileSystemRights"/> flags.</param>
         /// <returns><see langword="true"/> if the specified token has all the requested access rights to the path; otherwise,
         /// <see langword="false"/>.</returns>
-        public static bool TestEffectiveAccess(string path, SafeHandle token, FileSystemRights desiredAccessMask)
+        public static bool TestEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
             return (GetEffectiveAccess(path, token, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
         }
@@ -207,7 +207,7 @@ namespace PSADT.FileSystem
         /// <param name="desiredAccessMask">The desired access mask specifying the access rights to evaluate.</param>
         /// <returns>A <see cref="FileSystemRights"/> value representing the effective access rights for the specified SID on the
         /// given path.</returns>
-        public static FileSystemRights GetEffectiveAccess(string path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
+        public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
             if (sid is null)
             {
@@ -233,7 +233,7 @@ namespace PSADT.FileSystem
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified token
         /// has for the given path.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="token"/> is null or invalid.</exception>
-        public static FileSystemRights GetEffectiveAccess(string path, SafeHandle token, FileSystemRights desiredAccessMask)
+        public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
             if (token is null || token.IsInvalid)
             {
@@ -250,26 +250,28 @@ namespace PSADT.FileSystem
         /// determined based on the discretionary access control list (DACL) and the specified desired access
         /// mask.</remarks>
         /// <param name="path">The full path to the file or directory for which to evaluate access rights.</param>
-        /// <param name="sid">The security identifier (SID) of the user or group whose access rights are being evaluated.</param>
+        /// <param name="token">A valid security token representing the user or group for which to evaluate access rights. This cannot be
+        /// null or invalid.</param>
         /// <param name="desiredAccessMask">The desired access mask specifying the access rights to evaluate.</param>
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified SID
         /// has on the file or directory.</returns>
-        private static FileSystemRights GetEffectiveAccess(string path, SafeHandle token, FileSystemRights desiredAccessMask, TokenType tokenType)
+        private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, TokenType tokenType)
         {
-            // Validate the input path.
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
             // Validate that the path exists.
-            if (!File.Exists(path) && !Directory.Exists(path))
+            if (!path.Exists)
             {
-                throw new FileNotFoundException($"The specified path does not exist: {path}");
+                if (path is DirectoryInfo)
+                {
+                    throw new DirectoryNotFoundException($"The specified directory does not exist: {path}");
+                }
+                else
+                {
+                    throw new FileNotFoundException($"The specified file does not exist: {path}");
+                }
             }
 
             // Retrieve the security descriptor for the file.
-            AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
+            AdvApi32.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
             using (ppSecurityDescriptor)
             using (ppsidOwner)
             using (ppsidGroup)
@@ -285,10 +287,10 @@ namespace PSADT.FileSystem
                     switch (tokenType)
                     {
                         case TokenType.SID:
-                            AdvApi32.AuthzInitializeContextFromSid(0, token, hAuthzResourceManager, 0, default, IntPtr.Zero, out phAuthzClientContext);
+                            AdvApi32.AuthzInitializeContextFromSid(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext);
                             break;
                         case TokenType.UserToken:
-                            AdvApi32.AuthzInitializeContextFromToken(0, token, hAuthzResourceManager, 0, default, IntPtr.Zero, out phAuthzClientContext);
+                            AdvApi32.AuthzInitializeContextFromToken(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext);
                             break;
                         default:
                             throw new ArgumentException("Invalid token type specified.", nameof(tokenType));
@@ -339,7 +341,7 @@ namespace PSADT.FileSystem
         /// Represents the types of tokens that can be safely handled within the system.
         /// </summary>
         /// <remarks>This enumeration defines the specific categories of tokens, such as security
-        /// identifiers (SID)  and user tokens, that are used in the context of secure operations.</remarks>
+        /// identifiers (SID) and user tokens, that are used in the context of secure operations.</remarks>
         private enum TokenType
         {
             SID,
