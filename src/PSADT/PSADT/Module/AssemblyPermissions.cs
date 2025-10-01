@@ -55,13 +55,20 @@ namespace PSADT.Module
                 {
                     throw new FileNotFoundException($"The file [{path.FullName}] does not exist.", path.FullName);
                 }
-                if (null != hPrimaryToken ? FileSystemUtilities.TestEffectiveAccess(path.FullName, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path.FullName, runAsActiveUser.SID, _requiredPermissions))
+                if (null != hPrimaryToken ? FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions))
                 {
                     continue;
                 }
                 FileSecurity fileSecurity = FileSystemAclExtensions.GetAccessControl(path, AccessControlSections.Access);
                 fileSecurity.AddAccessRule(fileSystemAccessRule);
-                FileSystemAclExtensions.SetAccessControl(path, fileSecurity);
+                try
+                {
+                    FileSystemAclExtensions.SetAccessControl(path, fileSecurity);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to grant [{runAsActiveUser.NTAccount}] the permissions [{_requiredPermissions}] to file [{path.FullName}]. This can occur when the caller can't modify permissions, such as when the file is located on a network share.", ex);
+                }
             }
         }
 
