@@ -33,7 +33,7 @@ namespace PSADT.Module
         /// information.
         /// </summary>
         /// <remarks>This constructor extracts the NT account, SID, and session ID from the provided
-        /// <paramref name="session"/>  and initializes the <see cref="RunAsActiveUser"/> instance with these
+        /// <paramref name="session"/> and initializes the <see cref="RunAsActiveUser"/> instance with these
         /// values.</remarks>
         /// <param name="session">The session information containing the NT account, security identifier (SID), and session ID of the active
         /// user.</param>

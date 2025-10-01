@@ -171,7 +171,7 @@ namespace PSADT.ClientServer
         /// follow as a separate argument. If a key is not followed by a valid value (e.g., null, empty, or another
         /// key-like argument), the method writes an error message to the standard error stream and terminates the
         /// application with an exit code indicating invalid arguments.</remarks>
-        /// <param name="argv">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-')  and
+        /// <param name="argv">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-') and
         /// followed by its corresponding value as a separate argument.</param>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
         /// arguments.</returns>
