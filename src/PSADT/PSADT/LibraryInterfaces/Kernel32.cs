@@ -83,9 +83,9 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName);
-            if (res == lpReturnedString.Length - 1)
+            if (res == lpReturnedString.Length - 2)
             {
-                throw new OverflowException("Buffer was too small. Value was truncated.");
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
@@ -102,9 +102,9 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName);
-            if (res == lpReturnedString.Length - 1)
+            if (res == lpReturnedString.Length - 2)
             {
-                throw new OverflowException("Buffer was too small. Value was truncated.");
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
@@ -127,9 +127,9 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
             }
-            else if (res == lpReturnedString.Length - 1)
+            else if (res == lpReturnedString.Length - 1 || res == lpReturnedString.Length - 2)
             {
-                throw new OverflowException("Buffer was too small. Value was truncated.");
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
