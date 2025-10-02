@@ -771,7 +771,7 @@ namespace PSADT.Module
                                         {
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
                                         }
-                                        else if ((bool)configToolkit["OobeDetection"]!)
+                                        else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                                         {
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
                                             deployModeChanged = true;
