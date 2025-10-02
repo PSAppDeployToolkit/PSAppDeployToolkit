@@ -1176,6 +1176,10 @@ function Show-ADTInstallationWelcome
                                 Update-ADTDeferHistory
                                 Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                             }
+                            else
+                            {
+                                return
+                            }
                         }
                         elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Defer))
                         {
@@ -1194,6 +1198,10 @@ function Show-ADTInstallationWelcome
                             {
                                 Update-ADTDeferHistory
                                 Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                            }
+                            else
+                            {
+                                return
                             }
                         }
                         elseif (!$promptResult.Equals('TerminatedTryAgain'))
@@ -1219,7 +1227,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # If block execution switch is true, call the function to block execution of these processes.
-                if ($BlockExecution -and $CloseProcesses)
+                if ($adtSession -and $BlockExecution -and $CloseProcesses)
                 {
                     $baaeParams = @{ ProcessName = $CloseProcesses.Name }
                     if ($PSBoundParameters.ContainsKey('WindowLocation'))
