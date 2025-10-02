@@ -133,7 +133,7 @@ function Block-ADTAppExecution
                     MinimizeWindows = $false
                     DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
                     MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
-                    ButtonRightText = [PSADT.UserInterface.Dialogs.DialogTools]::BlockExecutionButtonText
+                    ButtonRightText = [PSADT.UserInterface.Dialogs.DialogConstants]::BlockExecutionButtonText
                     Icon = [PSADT.UserInterface.Dialogs.DialogSystemIcon]::Warning
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
