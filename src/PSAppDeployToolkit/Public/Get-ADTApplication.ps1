@@ -211,8 +211,17 @@ function Get-ADTApplication
                         continue
                     }
 
+                    # Grab all available uninstall string.
+                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', $null)))
+                    {
+                        $uninstallString = $null
+                    }
+                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', $null)))
+                    {
+                        $quietUninstallString = $null
+                    }
+
                     # Apply application type filter if specified.
-                    $uninstallString = $item.GetValue('UninstallString', $null); $quietUninstallString = $item.GetValue('QuietUninstallString', $null)
                     $windowsInstaller = $item.GetValue('WindowsInstaller', $false) -or ($uninstallString -match 'msiexec') -or ($quietUninstallString -match 'msiexec')
                     if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
                     {
