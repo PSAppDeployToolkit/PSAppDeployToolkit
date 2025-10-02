@@ -544,7 +544,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length)
             {
-                throw new OverflowException("Buffer was too small. Value was truncated.");
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
@@ -761,11 +761,11 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.VerLanguageName(wLang, szLang);
             if (res == 0)
             {
-                throw new Win32Exception("Failed to retrieve language name.");
+                throw new InvalidOperationException("Failed to retrieve language name.");
             }
             if (res > szLang.Length)
             {
-                throw new OverflowException("Buffer was too small. Value was truncated.");
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
