@@ -44,9 +44,9 @@ namespace PSADT.ClientServer
             _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _outputWriter = new(_outputServer, Encoding.UTF8, true);
-            _inputReader = new(_inputServer, Encoding.UTF8, true);
-            _logReader = new(_logServer, Encoding.UTF8, true);
+            _outputWriter = new(_outputServer, Encoding.UTF8);
+            _inputReader = new(_inputServer, Encoding.UTF8);
+            _logReader = new(_logServer, Encoding.UTF8);
         }
 
         /// <summary>
