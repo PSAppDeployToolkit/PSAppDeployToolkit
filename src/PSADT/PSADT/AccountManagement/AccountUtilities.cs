@@ -2,15 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using Windows.Win32;
+using Windows.Win32.Security.Authentication.Identity;
 
 namespace PSADT.AccountManagement
 {
@@ -35,18 +36,26 @@ namespace PSADT.AccountManagement
             // Build out process/session id information.
             Kernel32.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
 
+            // Retrieve the local account domain SID.
+            AdvApi32.LsaOpenPolicy(null, new LSA_OBJECT_ATTRIBUTES { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out var hPolicy);
+            using (hPolicy)
+            {
+                AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out var buf);
+                using (buf)
+                {
+                    LocalAccountDomainSid = new(buf.ToStructure<POLICY_ACCOUNT_DOMAIN_INFO>().DomainSid);
+                }
+            }
+
             // Initialize the lookup table for well-known SIDs. Continue on any errors.
             Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
-            foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>())
+            foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>().Distinct())
             {
-                try
-                {
-                    wellKnownSids.Add(wellKnownSid, new(wellKnownSid, null));
-                }
-                catch
+                if (wellKnownSid == WellKnownSidType.LogonIdsSid)
                 {
                     continue;
                 }
+                wellKnownSids.Add(wellKnownSid, new(wellKnownSid, LocalAccountDomainSid));
             }
             WellKnownSidLookupTable = new(wellKnownSids);
 
@@ -181,6 +190,14 @@ namespace PSADT.AccountManagement
         /// Gets a read-only list of privileges associated with the caller.
         /// </summary>
         public static readonly IReadOnlyList<SE_PRIVILEGE> CallerPrivileges = PrivilegeManager.GetPrivileges();
+
+        /// <summary>
+        /// Represents the security identifier (SID) for the local account domain.
+        /// </summary>
+        /// <remarks>This SID is used to identify the local account domain on the system. It is typically
+        /// used in scenarios involving security-related operations, such as access control or user account
+        /// management.</remarks>
+        public static readonly SecurityIdentifier LocalAccountDomainSid;
 
         /// <summary>
         /// A read-only dictionary that maps <see cref="WellKnownSidType"/> values to their corresponding <see
