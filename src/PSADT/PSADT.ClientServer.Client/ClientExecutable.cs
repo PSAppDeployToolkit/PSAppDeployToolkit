@@ -282,9 +282,9 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (BinaryWriter outputWriter = new(outputPipeClient, Encoding.UTF8, true))
-                using (BinaryReader inputReader = new(inputPipeClient, Encoding.UTF8, true))
-                using (BinaryWriter logWriter = new(logPipeClient, Encoding.UTF8, true))
+                using (BinaryWriter outputWriter = new(outputPipeClient, Encoding.UTF8))
+                using (BinaryReader inputReader = new(inputPipeClient, Encoding.UTF8))
+                using (BinaryWriter logWriter = new(logPipeClient, Encoding.UTF8))
                 {
                     // Helper method to reduce some boilerplate.
                     void WriteResult(string result)

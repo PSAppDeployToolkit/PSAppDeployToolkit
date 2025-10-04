@@ -7,6 +7,7 @@ using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
+using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
@@ -754,6 +755,60 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
+            return res;
+        }
+
+        /// <summary>
+        /// Opens a handle to the Local Security Authority (LSA) Policy object on a specified system.
+        /// </summary>
+        /// <remarks>This method wraps the native LsaOpenPolicy function and provides error handling by
+        /// throwing a <see cref="Win32Exception"/> if the operation fails. Ensure that the caller has the necessary 
+        /// privileges to access the specified policy object.</remarks>
+        /// <param name="SystemName">An optional <see cref="LSA_UNICODE_STRING"/> that specifies the name of the system whose LSA Policy object
+        /// is to be opened. If <see langword="null"/>, the local system's LSA Policy object is opened.</param>
+        /// <param name="ObjectAttributes">A reference to an <see cref="LSA_OBJECT_ATTRIBUTES"/> structure that specifies attributes for the policy
+        /// object. This parameter is typically initialized to default values.</param>
+        /// <param name="DesiredAccess">A bitmask specifying the access rights requested for the policy object. Use constants defined in the
+        /// LSA_POLICY_ACCESS enumeration to specify the desired access.</param>
+        /// <param name="PolicyHandle">When this method returns, contains a <see cref="LsaCloseSafeHandle"/> that represents the opened policy
+        /// object. The caller is responsible for closing this handle using the appropriate method.</param>
+        /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. Returns <see
+        /// cref="NTSTATUS.STATUS_SUCCESS"/> if the operation is successful.</returns>
+        /// <exception cref="Win32Exception">Thrown if the operation fails. The exception's error code corresponds to the Windows error code derived
+        /// from the returned <see cref="NTSTATUS"/> value.</exception>
+        internal static NTSTATUS LsaOpenPolicy(LSA_UNICODE_STRING? SystemName, in LSA_OBJECT_ATTRIBUTES ObjectAttributes, LSA_POLICY_ACCESS DesiredAccess, out LsaCloseSafeHandle PolicyHandle)
+        {
+            var res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle);
+            if (res != NTSTATUS.STATUS_SUCCESS)
+            {
+                throw new Win32Exception((int)PInvoke.LsaNtStatusToWinError(res));
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Queries information from a policy object based on the specified information class.
+        /// </summary>
+        /// <remarks>This method wraps the native LSA (Local Security Authority) function
+        /// <c>LsaQueryInformationPolicy</c>. The caller must ensure that the <paramref name="PolicyHandle"/> is valid
+        /// and has the necessary access rights. The returned buffer must be freed using the appropriate mechanism to
+        /// avoid memory leaks.</remarks>
+        /// <param name="PolicyHandle">A handle to the policy object from which information is to be queried. This handle must have the appropriate
+        /// access rights for the requested information.</param>
+        /// <param name="InformationClass">The class of information to query. This determines the type of policy information returned.</param>
+        /// <param name="Buffer">When this method returns, contains a handle to the buffer that holds the queried policy information. The
+        /// caller is responsible for freeing this buffer.</param>
+        /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. A value of <see
+        /// cref="NTSTATUS.STATUS_SUCCESS"/> indicates success.</returns>
+        /// <exception cref="Win32Exception">Thrown if the operation fails, wrapping the corresponding Windows error code.</exception>
+        internal static unsafe NTSTATUS LsaQueryInformationPolicy(SafeHandle PolicyHandle, POLICY_INFORMATION_CLASS InformationClass, out SafeLsaFreeMemoryHandle Buffer)
+        {
+            var res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out var BufferLocal);
+            if (res != NTSTATUS.STATUS_SUCCESS)
+            {
+                throw new Win32Exception((int)PInvoke.LsaNtStatusToWinError(res));
+            }
+            Buffer = new((IntPtr)BufferLocal, true);
             return res;
         }
     }
