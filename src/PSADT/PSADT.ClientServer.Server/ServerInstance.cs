@@ -95,6 +95,10 @@ namespace PSADT.ClientServer
                     throw new ApplicationException("The opened client process is not properly responding to commands.");
                 }
             }
+            catch (InvalidDataException ex) when (null == _clientProcess?.Task)
+            {
+                throw new ApplicationException("The opened client process is not properly responding to commands.", ex);
+            }
             finally
             {
                 if (null == opened || !opened.Value)
