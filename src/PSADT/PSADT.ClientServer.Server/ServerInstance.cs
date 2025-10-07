@@ -586,8 +586,18 @@ namespace PSADT.ClientServer
         /// <returns>An object of type <typeparamref name="T"/> representing the deserialized result of the command execution.</returns>
         private T Invoke<T>(string command)
         {
-            _outputWriter.Write(command);
-            _outputWriter.Flush();
+            // Send the command off to the client.
+            try
+            {
+                _outputWriter.Write(command);
+                _outputWriter.Flush();
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidDataException("An error occurred while writing to the output stream.", ex);
+            }
+
+            // Read the client's response.
             string response;
             try
             {
@@ -601,6 +611,8 @@ namespace PSADT.ClientServer
             {
                 throw new InvalidDataException("An error occurred while reading from the input stream.", ex);
             }
+
+            // If the response is an error, rethrow it. Otherwise, deserialize the response.
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
             {
                 throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response.Substring(6)));
