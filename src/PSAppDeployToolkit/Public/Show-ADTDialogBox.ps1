@@ -50,7 +50,7 @@ function Show-ADTDialogBox
         Returns the text of the button that was clicked.
 
     .EXAMPLE
-        Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
+        Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -NotTopMost
 
     .NOTES
         An active ADT session is NOT required to use this function.
