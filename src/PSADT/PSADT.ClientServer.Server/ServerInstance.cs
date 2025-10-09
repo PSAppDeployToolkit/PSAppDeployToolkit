@@ -384,7 +384,7 @@ namespace PSADT.ClientServer
         public bool SendKeys(SendKeysOptions options)
         {
             _logSource = "Send-ADTKeys";
-            return Invoke<bool>($"SendKeys{CommonUtilities.ArgumentSeparator}{options}");
+            return Invoke<bool>($"SendKeys{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>
