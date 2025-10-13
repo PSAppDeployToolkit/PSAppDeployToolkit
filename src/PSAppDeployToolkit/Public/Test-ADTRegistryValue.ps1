@@ -38,7 +38,7 @@ function Test-ADTRegistryValue
         Returns $true if the registry value exists, $false if it does not.
 
     .EXAMPLE
-        Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations'
+        Test-ADTRegistryValue -Key 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations'
 
         Checks if the registry value 'PendingFileRenameOperations' exists under the specified key.
 
