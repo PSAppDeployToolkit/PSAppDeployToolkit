@@ -117,9 +117,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpLuid"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static BOOL LookupPrivilegeValue(string? lpSystemName, string lpName, out LUID lpLuid)
+        internal static BOOL LookupPrivilegeValue(string? lpSystemName, SE_PRIVILEGE lpName, out LUID lpLuid)
         {
-            var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName, out lpLuid);
+            var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName.ToString(), out lpLuid);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
