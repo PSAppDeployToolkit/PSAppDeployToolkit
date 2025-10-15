@@ -923,7 +923,14 @@ namespace PSADT.Module
                 // If terminal server mode was specified, change the installation mode to support it.
                 if (TerminalServerMode)
                 {
-                    ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
+                    if (!OperatingSystemInfo.Current.IsTerminalServer)
+                    {
+                        WriteLogEntry("The [-TerminalServerMode] parameter was specified but system is not a terminal server.", LogSeverity.Warning);
+                    }
+                    else
+                    {
+                        ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
+                    }
                 }
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
