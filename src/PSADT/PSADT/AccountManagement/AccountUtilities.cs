@@ -47,11 +47,11 @@ namespace PSADT.AccountManagement
                 }
             }
 
-            // Initialize the lookup table for well-known SIDs. Continue on any errors.
+            // Initialize the lookup table for well-known SIDs, skipping ones that don't construct.
             Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
-            foreach (var wellKnownSid in typeof(WellKnownSidType).GetEnumValues().Cast<WellKnownSidType>().Distinct())
+            foreach (WellKnownSidType wellKnownSid in typeof(WellKnownSidType).GetEnumValues())
             {
-                if (wellKnownSid == WellKnownSidType.LogonIdsSid)
+                if (wellKnownSids.ContainsKey(wellKnownSid) || wellKnownSid == WellKnownSidType.LogonIdsSid || (int)wellKnownSid == 80 || (int)wellKnownSid == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
                 {
                     continue;
                 }
