@@ -10,8 +10,8 @@
     <AssemblyTitle>PSAppDeployToolkit Deployment Script Launcher</AssemblyTitle>
     <AssemblyDescription>Launches a PSAppDeployToolkit Invoke-AppDeployToolkit.ps1 script without a PowerShell console window being visible.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.6.0</AssemblyVersion>
-    <InformationalVersion>4.1.6</InformationalVersion>
+    <AssemblyVersion>4.1.7.0</AssemblyVersion>
+    <InformationalVersion>4.1.7</InformationalVersion>
     <LangVersion>latest</LangVersion>
     <WarningLevel>9999</WarningLevel>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
