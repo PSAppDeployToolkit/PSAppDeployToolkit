@@ -130,7 +130,7 @@
                 Uninstall = 'Pred pokračovaním uložte svoju prácu, pretože nasledujúce aplikácie budú automaticky ukončené.'
             }
             DialogMessageNoProcesses = @{
-                Install = 'Prosím, vyberte Install, aby ste mohli pokračovať v inštalácii.'
+                Install = 'Prosím, vyberte Install (Inštalovať), aby ste mohli pokračovať v inštalácii.'
                 Repair = 'Prosím, vyberte Repair (Opraviť), ak chcete pokračovať v oprave.'
                 Uninstall = 'Vyberte Uninstall (Odinštalovať), ak chcete pokračovať v odinštalovaní.'
             }
