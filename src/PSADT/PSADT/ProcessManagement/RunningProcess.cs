@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
 
 namespace PSADT.ProcessManagement
 {
@@ -17,7 +18,7 @@ namespace PSADT.ProcessManagement
         /// <param name="description"></param>
         /// <param name="fileName"></param>
         /// <param name="arguments"></param>
-        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string> arguments)
+        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string> arguments, NTAccount? username)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
@@ -25,6 +26,10 @@ namespace PSADT.ProcessManagement
             if (arguments.Where(static a => !string.IsNullOrWhiteSpace(a)) is var argv && argv.Any())
             {
                 Arguments = CommandLineUtilities.ArgumentListToCommandLine(argv);
+            }
+            if (username is not null)
+            {
+                Username = username;
             }
         }
 
@@ -47,5 +52,13 @@ namespace PSADT.ProcessManagement
         /// Gets the arguments passed to the running process.
         /// </summary>
         public readonly string? Arguments;
+
+        /// <summary>
+        /// Represents the username associated with a Windows NT account.
+        /// </summary>
+        /// <remarks>The <see cref="NTAccount"/> class provides a way to work with Windows NT account
+        /// names, including translating them to and from security identifiers (SIDs). This field is
+        /// read-only.</remarks>
+        public readonly NTAccount? Username;
     }
 }
