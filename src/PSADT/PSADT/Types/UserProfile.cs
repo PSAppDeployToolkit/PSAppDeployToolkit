@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Security.Principal;
 
@@ -23,6 +24,7 @@ namespace PSADT.Types
         /// <param name="tempPath">The path to the user's Temp directory.</param>
         /// <param name="oneDrivePath">The path to the user's OneDrive directory.</param>
         /// <param name="oneDriveCommercialPath">The path to the user's OneDrive for Business directory.</param>
+        /// <param name="userLocale">The locale information for the user.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null or empty.</exception>
         public UserProfile(
             NTAccount ntAccount,
@@ -35,7 +37,8 @@ namespace PSADT.Types
             DirectoryInfo? startMenuPath = null,
             DirectoryInfo? tempPath = null,
             DirectoryInfo? oneDrivePath = null,
-            DirectoryInfo? oneDriveCommercialPath = null)
+            DirectoryInfo? oneDriveCommercialPath = null,
+            CultureInfo? userLocale = null)
         {
             NTAccount = ntAccount ?? throw new ArgumentNullException("NTAccount cannot be null.", (Exception?)null);
             SID = sid ?? throw new ArgumentNullException("SID cannot be null.", (Exception?)null);
@@ -48,6 +51,7 @@ namespace PSADT.Types
             TempPath = tempPath;
             OneDrivePath = oneDrivePath;
             OneDriveCommercialPath = oneDriveCommercialPath;
+            UserLocale = userLocale;
         }
 
         /// <summary>
@@ -104,5 +108,10 @@ namespace PSADT.Types
         /// Gets the path to the user's OneDrive for Business directory.
         /// </summary>
         public readonly DirectoryInfo? OneDriveCommercialPath;
+
+        /// <summary>
+        /// Gets the locale information for the user.
+        /// </summary>
+        public readonly CultureInfo? UserLocale;
     }
 }
