@@ -6,6 +6,7 @@ using System.DirectoryServices;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
@@ -43,7 +44,7 @@ namespace PSADT.AccountManagement
                 AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out var buf);
                 using (buf)
                 {
-                    LocalAccountDomainSid = new(buf.ToStructure<POLICY_ACCOUNT_DOMAIN_INFO>().DomainSid);
+                    LocalAccountDomainSid = buf.ToStructure<POLICY_ACCOUNT_DOMAIN_INFO>().DomainSid.ToSecurityIdentifier();
                 }
             }
 
