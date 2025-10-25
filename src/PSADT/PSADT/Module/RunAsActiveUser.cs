@@ -19,13 +19,14 @@ namespace PSADT.Module
         /// <param name="sID">The security identifier (SID) for the user. Cannot be <see langword="null"/>.</param>
         /// <param name="sessionId">The session ID of the user.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
-        public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId)
+        public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
             NTAccount = nTAccount ?? throw new ArgumentNullException(nameof(nTAccount));
             SID = sID ?? throw new ArgumentNullException(nameof(sID));
             string[] accountParts = nTAccount.Value.Split('\\');
             UserName = accountParts[1]; DomainName = accountParts[0];
             SessionId = sessionId;
+            IsLocalAdmin = isLocalAdmin;
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace PSADT.Module
         /// values.</remarks>
         /// <param name="session">The session information containing the NT account, security identifier (SID), and session ID of the active
         /// user.</param>
-        public RunAsActiveUser(SessionInfo session) : this(session.NTAccount, session.SID, session.SessionId)
+        public RunAsActiveUser(SessionInfo session) : this(session.NTAccount, session.SID, session.SessionId, session.IsLocalAdmin)
         {
         }
 
@@ -71,5 +72,10 @@ namespace PSADT.Module
         /// Represents the session ID of the user.
         /// </summary>
         public readonly uint SessionId;
+
+        /// <summary>
+        /// Indicates whether the current user has local administrator privileges.
+        /// </summary>
+        public readonly bool? IsLocalAdmin;
     }
 }
