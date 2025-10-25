@@ -359,7 +359,7 @@ namespace PSADT.Module
                             var gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
                             if (gmtpOutput.Count > 0)
                             {
-                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput.First().BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
+                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
                                 if (msiExecList.Any())
                                 {
                                     _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToList().AsReadOnly();
@@ -369,7 +369,7 @@ namespace PSADT.Module
                         }
 
                         // Update our app variables with new values.
-                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
+                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
                         if (string.IsNullOrWhiteSpace(_appName))
                         {
                             _appName = (string)msiProps["ProductName"];
