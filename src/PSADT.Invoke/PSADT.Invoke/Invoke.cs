@@ -143,7 +143,7 @@ namespace PSADT.Invoke
         {
             if (cliArguments.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
             {
-                if (!inDebugMode)
+                if (!inDebugMode && Environment.UserInteractive)
                 {
                     inDebugMode = Kernel32.AllocConsole();
                 }
