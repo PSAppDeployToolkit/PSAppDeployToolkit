@@ -780,6 +780,38 @@ function Show-ADTInstallationWelcome
                 Set-ADTDeferHistory @sadhParams
             }
         }
+
+        # Internal worker to get running processes, factoring in whether we're running as SYSTEM and the user can see the process or not.
+        function Get-ADTRunningProcessesUserCanClose
+        {
+            param
+            (
+                [System.Management.Automation.ActionPreference]$InformationAction
+            )
+
+            # Return early if there's no processes to close.
+            if (!$CloseProcesses -or !($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses @PSBoundParameters))
+            {
+                return
+            }
+
+            # If we're not running as SYSTEM, return the process list.
+            if (![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -or $runAsActiveUser.IsLocalAdmin)
+            {
+                return $runningApps
+            }
+
+            # Filter the running apps list based on the process's username.
+            return $runningApps | & {
+                process
+                {
+                    if ($_.Username -eq $runAsActiveUser.Username)
+                    {
+                        return $_
+                    }
+                }
+            }
+        }
     }
 
     process
@@ -1007,7 +1039,7 @@ function Show-ADTInstallationWelcome
                     $dialogOptions = [PSADT.UserInterface.DialogOptions.CloseAppsDialogOptions]::new($DeploymentType, $dialogOptions)
 
                     # Spin until apps are closed, countdown elapses, or deferrals are exhausted.
-                    while (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningApps = Get-ADTRunningProcessesUserCanClose) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                         if ($AllowDefer)
@@ -1051,13 +1083,13 @@ function Show-ADTInstallationWelcome
                         if ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Continue))
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
-                            if (!$AllowDeferCloseProcesses -and !($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
+                            if (!$AllowDeferCloseProcesses -and !($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                             {
                                 Write-ADTLogEntry -Message 'The user selected to continue...'
                             }
                             for ($i = 0; $i -lt 5; $i++)
                             {
-                                if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
+                                if (($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                                 {
                                     Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
                                     [System.Threading.Thread]::Sleep(1000)
@@ -1078,7 +1110,7 @@ function Show-ADTInstallationWelcome
                         {
                             # Force the applications to close. Update the process list right before closing, in case it changed.
                             Write-ADTLogEntry -Message 'The user selected to close the application(s)...'
-                            if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
+                            if (($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                             {
                                 if (!$PromptToSave)
                                 {
@@ -1098,7 +1130,7 @@ function Show-ADTInstallationWelcome
                                 # Test whether apps are still running. If they are still running, the Welcome Window will be displayed again after 5 seconds.
                                 for ($i = 0; $i -lt 5; $i++)
                                 {
-                                    if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
+                                    if (($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                                     {
                                         Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
                                         [System.Threading.Thread]::Sleep(1000)
@@ -1176,6 +1208,15 @@ function Show-ADTInstallationWelcome
                             }
                             throw (New-ADTErrorRecord @naerParams)
                         }
+                    }
+
+                    # Close any remaining processes that are open that the user couldn't close.
+                    if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses }))
+                    {
+                        # Force the processes to close silently, without prompting the user.
+                        Write-ADTLogEntry -Message "Force closing application(s) ['$([System.String]::Join("', '", $runningApps.Description))'] that the user had no permissions to close."
+                        Stop-Process -InputObject $runningApps.Process -Force -ErrorAction Ignore
+                        [System.Threading.Thread]::Sleep(2000)
                     }
                 }
                 elseif (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses }))
