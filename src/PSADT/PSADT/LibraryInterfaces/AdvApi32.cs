@@ -479,7 +479,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null or closed.</exception>
-        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, FreeSidSafeHandle? psidOwner, FreeSidSafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
         {
             bool handleAddRef = false;
             bool psidOwnerAddRef = false;
@@ -509,7 +509,7 @@ namespace PSADT.LibraryInterfaces
                     pSacl.DangerousAddRef(ref pSaclAddRef);
                 }
                 handle.DangerousAddRef(ref handleAddRef);
-                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, null != psidOwner ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, null != psidGroup ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, null != psidOwner ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, null != psidGroup ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -565,7 +565,7 @@ namespace PSADT.LibraryInterfaces
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out FreeSidSafeHandle? ppsidOwner, out FreeSidSafeHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
+        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
             fixed (char* pObjectNameLocal = pObjectName)
             {
@@ -579,8 +579,8 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw new InvalidOperationException("Failed to retrieve security descriptor.");
                 }
-                ppsidOwner = psidOwner != default ? new(psidOwner, false) : null;
-                ppsidGroup = pSidGroup != default ? new(pSidGroup, false) : null;
+                ppsidOwner = psidOwner != default ? new((IntPtr)psidOwner.Value) : null;
+                ppsidGroup = pSidGroup != default ? new((IntPtr)pSidGroup.Value) : null;
                 ppDacl = pDacl != null ? new((IntPtr)pDacl, false) : null;
                 ppSacl = pSacl != null ? new((IntPtr)pSacl, false) : null;
                 ppSecurityDescriptor = new((IntPtr)pSECURITY_DESCRIPTOR, true);
@@ -645,16 +645,28 @@ namespace PSADT.LibraryInterfaces
         /// invalid.</exception>
         internal unsafe static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
-            var res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, UserSid, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
-            if (!res)
+            bool UserSidAddRef = false;
+            try
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                UserSid.DangerousAddRef(ref UserSidAddRef);
+                var res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                if (phAuthzClientContext.IsInvalid)
+                {
+                    throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+                }
+                return res;
             }
-            if (phAuthzClientContext.IsInvalid)
+            finally
             {
-                throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+                if (UserSidAddRef)
+                {
+                    UserSid.DangerousRelease();
+                }
             }
-            return res;
         }
 
         /// <summary>
