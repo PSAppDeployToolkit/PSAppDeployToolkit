@@ -66,7 +66,7 @@ namespace PSADT.AccountManagement
             CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
 
             // Generate a RunAsActiveUser object for the current user.
-            CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId);
+            CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
         }
 
         /// <summary>
