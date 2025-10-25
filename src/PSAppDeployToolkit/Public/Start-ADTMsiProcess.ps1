@@ -143,6 +143,11 @@ function Start-ADTMsiProcess
         Install an MSI and stores the result of the execution into a variable by using the -PassThru option.
 
     .EXAMPLE
+        $ExecuteMSIResult = Start-ADTMsiProcess -Action 'Install' -FilePath 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -AdditionalArgumentList 'ALLUSERS=1', 'SOMEPROPERTY=TRUE' -PassThru
+
+        Install an MSI and stores the result of the execution into a variable by using the -PassThru option, specifically taking advantage of our `-AdditionalArgumentList` array support to avoid escaped quote issues.
+
+    .EXAMPLE
         Start-ADTMsiProcess -Action 'Uninstall' -ProductCode '{26923b43-4d38-484f-9b9e-de460746276c}'
 
         Uninstall an MSI using a product code.
