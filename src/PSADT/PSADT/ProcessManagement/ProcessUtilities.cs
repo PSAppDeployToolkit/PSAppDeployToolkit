@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.ServiceProcess;
 using PSADT.Extensions;
 using PSADT.FileSystem;
@@ -17,6 +18,7 @@ using PSADT.Security;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.System.Services;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
@@ -167,8 +169,19 @@ namespace PSADT.ProcessManagement
                         procDescription = process.ProcessName;
                     }
 
+                    // Grab the process owner if we're an administrator.
+                    NTAccount? username = null;
+                    if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
+                    {
+                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
+                        using (hToken)
+                        {
+                            username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
+                        }
+                    }
+
                     // Store the process information.
-                    RunningProcess runningProcess = new(process, procDescription, commandLine[0], commandLine.Skip(1));
+                    RunningProcess runningProcess = new(process, procDescription, commandLine[0], commandLine.Skip(1), username);
                     if (!process.HasExited && ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess)))
                     {
                         runningProcesses.Add(runningProcess);
