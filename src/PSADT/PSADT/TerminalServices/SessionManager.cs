@@ -203,7 +203,7 @@ namespace PSADT.TerminalServices
                         WTS_PROCESS_INFOW process = pProcessInfo.ToStructure<WTS_PROCESS_INFOW>(objLength * i);
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            return new((IntPtr)process.pUserSid);
+                            return process.pUserSid.ToSecurityIdentifier();
                         }
                     }
                 }
