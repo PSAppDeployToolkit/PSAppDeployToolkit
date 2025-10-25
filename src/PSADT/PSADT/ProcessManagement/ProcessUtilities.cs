@@ -120,7 +120,7 @@ namespace PSADT.ProcessManagement
                             continue;
                         }
                     }
-                    catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_ACCESS_DENIED)
                     {
                         // If we can't access the process, skip it. We only need to test this
                         // once here, it shouldn't be an issue for the remainder of the loop.
