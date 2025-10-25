@@ -132,7 +132,7 @@ namespace PSADT.TerminalServices
                         RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
                         ProcessLaunchInfo args = new(clientServerPath, new(["/GetLastInputTime"]), Environment.SystemDirectory, user, createNoWindow: true);
-                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut!.First()));
+                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0]));
                     }
                     catch
                     {
