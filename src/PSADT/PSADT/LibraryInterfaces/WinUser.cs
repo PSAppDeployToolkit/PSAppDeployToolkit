@@ -563,115 +563,115 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Accelerator table.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_ACCELERATOR = Windows.Win32.PInvoke.RT_ACCELERATOR;
+        internal static readonly RESOURCE_TYPE RT_ACCELERATOR = new(Windows.Win32.PInvoke.RT_ACCELERATOR);
 
         /// <summary>
         /// Animated cursor.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_ANICURSOR = Windows.Win32.PInvoke.RT_ANICURSOR;
+        internal static readonly RESOURCE_TYPE RT_ANICURSOR = new(Windows.Win32.PInvoke.RT_ANICURSOR);
 
         /// <summary>
         /// Animated icon.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_ANIICON = Windows.Win32.PInvoke.RT_ANIICON;
+        internal static readonly RESOURCE_TYPE RT_ANIICON = new(Windows.Win32.PInvoke.RT_ANIICON);
 
         /// <summary>
         /// Bitmap resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_BITMAP = Windows.Win32.PInvoke.RT_BITMAP;
+        internal static readonly RESOURCE_TYPE RT_BITMAP = new(Windows.Win32.PInvoke.RT_BITMAP);
 
         /// <summary>
         /// Hardware-dependent cursor resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_CURSOR = Windows.Win32.PInvoke.RT_CURSOR;
+        internal static readonly RESOURCE_TYPE RT_CURSOR = new(Windows.Win32.PInvoke.RT_CURSOR);
 
         /// <summary>
         /// Dialog box.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_DIALOG = Windows.Win32.PInvoke.RT_DIALOG;
+        internal static readonly RESOURCE_TYPE RT_DIALOG = new(Windows.Win32.PInvoke.RT_DIALOG);
 
         /// <summary>
         /// Allows a resource editing tool to associate a string with an .rc file. Typically, the string is the name of the header file that provides symbolic names. The resource compiler parses the string but otherwise ignores the value.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_DLGINCLUDE = Windows.Win32.PInvoke.RT_DLGINCLUDE;
+        internal static readonly RESOURCE_TYPE RT_DLGINCLUDE = new(Windows.Win32.PInvoke.RT_DLGINCLUDE);
 
         /// <summary>
         /// Font resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_FONT = Windows.Win32.PInvoke.RT_FONT;
+        internal static readonly RESOURCE_TYPE RT_FONT = new(Windows.Win32.PInvoke.RT_FONT);
 
         /// <summary>
         /// Font directory resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_FONTDIR = Windows.Win32.PInvoke.RT_FONTDIR;
+        internal static readonly RESOURCE_TYPE RT_FONTDIR = new(Windows.Win32.PInvoke.RT_FONTDIR);
 
         /// <summary>
         /// Hardware-independent cursor resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_GROUP_CURSOR = Windows.Win32.PInvoke.RT_GROUP_CURSOR;
+        internal static readonly RESOURCE_TYPE RT_GROUP_CURSOR = new(Windows.Win32.PInvoke.RT_GROUP_CURSOR);
 
         /// <summary>
         /// Hardware-independent icon resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_GROUP_ICON = Windows.Win32.PInvoke.RT_GROUP_ICON;
+        internal static readonly RESOURCE_TYPE RT_GROUP_ICON = new(Windows.Win32.PInvoke.RT_GROUP_ICON);
 
         /// <summary>
         /// HTML resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_HTML = Windows.Win32.PInvoke.RT_HTML;
+        internal static readonly RESOURCE_TYPE RT_HTML = new(Windows.Win32.PInvoke.RT_HTML);
 
         /// <summary>
         /// Hardware-dependent icon resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_ICON = Windows.Win32.PInvoke.RT_ICON;
+        internal static readonly RESOURCE_TYPE RT_ICON = new(Windows.Win32.PInvoke.RT_ICON);
 
         /// <summary>
         /// Side-by-Side Assembly Manifest.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_MANIFEST = Windows.Win32.PInvoke.RT_MANIFEST;
+        internal static readonly RESOURCE_TYPE RT_MANIFEST = new(Windows.Win32.PInvoke.RT_MANIFEST);
 
         /// <summary>
         /// Menu resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_MENU = Windows.Win32.PInvoke.RT_MENU;
+        internal static readonly RESOURCE_TYPE RT_MENU = new(Windows.Win32.PInvoke.RT_MENU);
 
         /// <summary>
         /// Message-table entry.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_MESSAGETABLE = Windows.Win32.PInvoke.RT_MESSAGETABLE;
+        internal static readonly RESOURCE_TYPE RT_MESSAGETABLE = new(Windows.Win32.PInvoke.RT_MESSAGETABLE);
 
         /// <summary>
         /// Plug and Play resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_PLUGPLAY = Windows.Win32.PInvoke.RT_PLUGPLAY;
+        internal static readonly RESOURCE_TYPE RT_PLUGPLAY = new(Windows.Win32.PInvoke.RT_PLUGPLAY);
 
         /// <summary>
         /// Application-defined resource (raw data).
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_RCDATA = Windows.Win32.PInvoke.RT_RCDATA;
+        internal static readonly RESOURCE_TYPE RT_RCDATA = new(Windows.Win32.PInvoke.RT_RCDATA);
 
         /// <summary>
         /// String-table entry.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_STRING = Windows.Win32.PInvoke.RT_STRING;
+        internal static readonly RESOURCE_TYPE RT_STRING = new(Windows.Win32.PInvoke.RT_STRING);
 
         /// <summary>
         /// Version resource.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_VERSION = Windows.Win32.PInvoke.RT_VERSION;
+        internal static readonly RESOURCE_TYPE RT_VERSION = new(Windows.Win32.PInvoke.RT_VERSION);
 
         /// <summary>
         /// VXD.
         /// </summary>
-        internal static readonly RESOURCE_TYPE RT_VXD = Windows.Win32.PInvoke.RT_VXD;
+        internal static readonly RESOURCE_TYPE RT_VXD = new(Windows.Win32.PInvoke.RT_VXD);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RESOURCE_TYPE"/> class with the specified handle.
         /// </summary>
         /// <param name="value">The handle to be associated with this instance.</param>
-        private RESOURCE_TYPE(IntPtr value)
+        private unsafe RESOURCE_TYPE(PCWSTR value)
         {
-            Value = value;
+            Value = (IntPtr)value.Value;
         }
 
         /// <summary>
@@ -699,33 +699,6 @@ namespace PSADT.LibraryInterfaces
         public static explicit operator uint(RESOURCE_TYPE h)
         {
             return (uint)h.Value;
-        }
-
-        /// <summary>
-        /// Converts an <see cref="IntPtr"/> to a <see cref="RESOURCE_TYPE"/>.
-        /// </summary>
-        /// <param name="h">The handle represented as an <see cref="IntPtr"/> to be converted.</param>
-        public static implicit operator RESOURCE_TYPE(IntPtr h)
-        {
-            return new(h);
-        }
-
-        /// <summary>
-        /// Converts an <see cref="PCWSTR"/> to a <see cref="RESOURCE_TYPE"/>.
-        /// </summary>
-        /// <param name="h">The handle represented as an <see cref="PCWSTR"/> to be converted.</param>
-        public unsafe static implicit operator RESOURCE_TYPE(PCWSTR h)
-        {
-            return new((IntPtr)h.Value);
-        }
-
-        /// <summary>
-        /// Converts an <see cref="uint"/> to a <see cref="RESOURCE_TYPE"/>.
-        /// </summary>
-        /// <param name="h">The handle represented as an <see cref="uint"/> to be converted.</param>
-        public static implicit operator RESOURCE_TYPE(uint h)
-        {
-            return new((IntPtr)h);
         }
 
         /// <summary>
