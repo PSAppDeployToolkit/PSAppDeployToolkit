@@ -85,6 +85,10 @@ function Get-ADTUserProfiles
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'Specific')]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.Principal.SecurityIdentifier[]]$SID,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [ValidateNotNullOrEmpty()]
         [System.Security.Principal.NTAccount[]]$ExcludeNTAccount,
@@ -109,7 +113,19 @@ function Get-ADTUserProfiles
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $userProfileListRegKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
-        $excludedSids = "^S-1-5-($([System.String]::Join('|', $(
+        $gipParams = if ($SID)
+        {
+            @{
+                LiteralPath = $SID -replace '^', "$userProfileListRegKey\"
+            }
+        }
+        else
+        {
+            @{
+                Path = "$userProfileListRegKey\*"
+            }
+        }
+        $excludedSecurityIdentifiers = "^S-1-5-($([System.String]::Join('|', $(
             if (!$IncludeSystemProfiles)
             {
                 18  # System (or LocalSystem)
@@ -135,21 +151,21 @@ function Get-ADTUserProfiles
             try
             {
                 # Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.
-                foreach ($regProfile in (Get-ItemProperty -Path "$userProfileListRegKey\*"))
+                foreach ($regProfile in (Get-ItemProperty @gipParams))
                 {
                     try
                     {
                         try
                         {
                             # Return early if the SID is to be excluded.
-                            $sid = [System.Security.Principal.SecurityIdentifier]$regProfile.PSChildName
-                            if ($sid -match $excludedSids)
+                            $securityIdentifier = [System.Security.Principal.SecurityIdentifier]$regProfile.PSChildName
+                            if ($securityIdentifier -match $excludedSecurityIdentifiers)
                             {
                                 continue
                             }
 
                             # Return early for accounts that have a null NTAccount.
-                            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $sid -InformationAction SilentlyContinue))
+                            if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $securityIdentifier -InformationAction SilentlyContinue))
                             {
                                 continue
                             }
@@ -163,7 +179,7 @@ function Get-ADTUserProfiles
                             # Establish base profile.
                             $userProfile = [PSADT.Types.UserProfile]::new(
                                 $ntAccount,
-                                $sid,
+                                $securityIdentifier,
                                 $regProfile.ProfileImagePath
                             )
 
@@ -207,7 +223,7 @@ function Get-ADTUserProfiles
 
                 # Create a custom object for the Default User profile. Since the Default User is not an actual user account, it does not have a username or a SID.
                 # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
-                if (!$ExcludeDefaultUser)
+                if (!$ExcludeDefaultUser -and !$SID)
                 {
                     # The path to the default profile is stored in the default string value for the key.
                     $defaultUserProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
