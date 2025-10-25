@@ -853,7 +853,7 @@ function Start-ADTProcess
                 }
 
                 # Update the session's last exit code with the value if externally called.
-                if ($adtSession -and $extInvoker -and !$ignoreExitCode)
+                if ($adtSession -and $extInvoker -and !$ignoreExitCode -and $adtSession.GetExitCode().Equals(0))
                 {
                     $adtSession.SetExitCode($result.ExitCode)
                 }
@@ -887,7 +887,7 @@ function Start-ADTProcess
                     # Handle requirements for when there's an active session.
                     if ($adtSession -and $extInvoker)
                     {
-                        if ($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$')
+                        if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -and $adtSession.GetExitCode().Equals(0))
                         {
                             $adtSession.SetExitCode($result.ExitCode)
                         }
