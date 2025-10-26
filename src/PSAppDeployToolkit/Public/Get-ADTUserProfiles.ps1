@@ -18,6 +18,9 @@ function Get-ADTUserProfiles
     .PARAMETER FilterScript
         Allows filtration of the returned result by any property in a UserProfile object.
 
+    .PARAMETER SID
+        Specifies the SID to get rather than returning all user profiles.
+
     .PARAMETER ExcludeNTAccount
         Specify NT account names in DOMAIN\username format to exclude from the list of user profiles.
 
