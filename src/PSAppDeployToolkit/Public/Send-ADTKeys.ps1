@@ -27,9 +27,6 @@ function Send-ADTKeys
     .PARAMETER Keys
         The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 
-    .PARAMETER WaitSeconds
-        This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use `-WaitDuration` instead.
-
     .PARAMETER WaitDuration
         An optional amount of time to wait after the sending of the keys.
 
@@ -91,12 +88,6 @@ function Send-ADTKeys
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]
-        [System.Obsolete("Please use 'WaitDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
-        [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.Int32]]$WaitSeconds,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$WaitDuration
     )
@@ -105,16 +96,6 @@ function Send-ADTKeys
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $gawtParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
-
-        # Log the deprecation of -WaitSeconds to the log.
-        if ($PSBoundParameters.ContainsKey('WaitSeconds'))
-        {
-            Write-ADTLogEntry -Message "The parameter [-WaitSeconds] is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use [-WaitDuration] instead." -Severity 2
-            if (!$PSBoundParameters.ContainsKey('WaitDuration'))
-            {
-                $WaitDuration = [System.TimeSpan]::FromSeconds($WaitSeconds)
-            }
-        }
     }
 
     process
