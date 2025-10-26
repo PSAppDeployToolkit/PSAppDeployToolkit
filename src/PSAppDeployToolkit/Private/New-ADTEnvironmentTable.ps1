@@ -306,6 +306,7 @@ function Private:New-ADTEnvironmentTable
         $variables.Add('CurrentConsoleUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
         $variables.Add('LoggedOnUserSessionsText', ($($variables.LoggedOnUserSessions) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
         $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions 4>$null))
+        $variables.Add('RunAsActiveUserLocale', [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\International", "LocaleName", $null))
     }
     else
     {
@@ -314,6 +315,7 @@ function Private:New-ADTEnvironmentTable
         $variables.Add('CurrentConsoleUserSession', $null)
         $variables.Add('LoggedOnUserSessionsText', $null)
         $variables.Add('RunAsActiveUser', $null)
+        $variables.Add('RunAsActiveUserLocale', $null)
     }
 
     ## Variables: User profile information.
