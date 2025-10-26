@@ -76,6 +76,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.flowLayoutPanelDialog.Controls.Remove(this.labelCustomMessage);
                 }
 
+                // Allow the dialog to be minimised if specified.
+                if (options.DialogAllowMinimize)
+                {
+                    this.FormBorderStyle = FormBorderStyle.FixedSingle;
+                    this.ControlBox = true;
+                    this.MinimizeBox = true;
+                    this.MaximizeBox = false;
+                    this.ShowInTaskbar = true;
+                }
+
                 // Set up the process service.
                 this.richTextBoxCloseProcesses.Lines = null;
                 if (null != state.RunningProcessService)
