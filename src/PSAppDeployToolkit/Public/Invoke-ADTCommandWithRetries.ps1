@@ -27,9 +27,6 @@ function Invoke-ADTCommandWithRetries
 
         If this parameter is supplied and the `-Retries` parameter isn't, this command will continue to retry the provided command until the time limit runs out.
 
-    .PARAMETER SleepSeconds
-        This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use `-SleepDuration` instead.
-
     .PARAMETER Parameters
         A 'ValueFromRemainingArguments' parameter to collect the parameters as would be passed to the provided Command.
 
@@ -103,11 +100,6 @@ function Invoke-ADTCommandWithRetries
             })]
         [System.TimeSpan]$MaximumElapsedTime,
 
-        [Parameter(Mandatory = $false)]
-        [System.Obsolete("Please use 'SleepDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
-        [ValidateRange(1, 60)]
-        [System.UInt32]$SleepSeconds = 5,
-
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Collections.Generic.IReadOnlyList[System.Object]]$Parameters
@@ -117,16 +109,6 @@ function Invoke-ADTCommandWithRetries
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-        # Log the deprecation of -SleepSeconds to the log.
-        if ($PSBoundParameters.ContainsKey('SleepSeconds'))
-        {
-            Write-ADTLogEntry -Message "The parameter [-SleepSeconds] is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use [-SleepDuration] instead." -Severity 2
-            if (!$PSBoundParameters.ContainsKey('SleepDuration'))
-            {
-                $SleepDuration = [System.TimeSpan]::FromSeconds($SleepSeconds)
-            }
-        }
     }
 
     process
