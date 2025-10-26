@@ -297,7 +297,7 @@ namespace PSADT.Module
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLower()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLowerInvariant()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
@@ -553,7 +553,7 @@ namespace PSADT.Module
 
                 // Open log file with commencement message.
                 WriteInitialDivider(ref writtenDivider);
-                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLower()} started.");
+                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLowerInvariant()} started.");
 
 
                 #endregion
@@ -1001,7 +1001,7 @@ namespace PSADT.Module
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
@@ -1411,7 +1411,7 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.

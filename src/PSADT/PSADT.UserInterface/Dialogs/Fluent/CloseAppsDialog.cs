@@ -39,7 +39,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             /// <param name="processToClose"></param>
             public AppToClose(ProcessToClose processToClose)
             {
-                Name = Path.GetFileName(processToClose.Path).ToLower();
+                Name = Path.GetFileName(processToClose.Path).ToLowerInvariant();
                 Description = processToClose.Description;
                 Icon = GetAppIcon(processToClose.Path) ?? throw new ArgumentNullException("Could not retrieve an icon for the given application.", (Exception?)null);
                 if (string.IsNullOrWhiteSpace(Name))

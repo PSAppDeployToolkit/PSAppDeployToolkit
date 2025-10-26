@@ -27,8 +27,8 @@ function Private:New-ADTEnvironmentTable
     ## Variables: Culture
     $variables.Add('culture', $Host.CurrentCulture)
     $variables.Add('uiculture', $Host.CurrentUICulture)
-    $variables.Add('currentLanguage', $variables.culture.TwoLetterISOLanguageName.ToUpper())
-    $variables.Add('currentUILanguage', $variables.uiculture.TwoLetterISOLanguageName.ToUpper())
+    $variables.Add('currentLanguage', $variables.culture.TwoLetterISOLanguageName.ToUpperInvariant())
+    $variables.Add('currentUILanguage', $variables.uiculture.TwoLetterISOLanguageName.ToUpperInvariant())
 
     ## Variables: Environment Variables
     $variables.Add('envHost', $Host)
@@ -87,14 +87,14 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envMachineADDomain', $null)
     $variables.Add('envLogonServer', $null)
     $variables.Add('MachineDomainController', $null)
-    $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLower() } } } | Select-Object -First 1))
-    $variables.Add('envUserDNSDomain', ([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLower() } } } | Select-Object -First 1))
-    $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpper() }))
-    $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
+    $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
+    $variables.Add('envUserDNSDomain', ([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
+    $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpperInvariant() }))
+    $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpperInvariant())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain)
     {
-        $variables.envMachineADDomain = $w32csd.ToLower()
+        $variables.envMachineADDomain = $w32csd.ToLowerInvariant()
         $variables.envComputerNameFQDN = try
         {
             [System.Net.Dns]::GetHostEntry('localhost').HostName
@@ -131,7 +131,7 @@ function Private:New-ADTEnvironmentTable
     }
     else
     {
-        $variables.envMachineWorkgroup = $w32csd.ToUpper()
+        $variables.envMachineWorkgroup = $w32csd.ToUpperInvariant()
     }
 
     # Get the OS Architecture.

@@ -143,7 +143,7 @@ function Invoke-ADTAllUsersRegistryAction
                                 $naerParams = @{
                                     Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...")
                                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                                    ErrorId = "$([System.IO.Path]::GetFileNameWithoutExtension($regHive.Path).ToUpper())RegistryHiveFileNotFound"
+                                    ErrorId = "$([System.IO.Path]::GetFileNameWithoutExtension($regHive.Path).ToUpperInvariant())RegistryHiveFileNotFound"
                                     TargetObject = $regHive.Path
                                     RecommendedAction = "Please confirm the state of this user profile and try again."
                                 }
