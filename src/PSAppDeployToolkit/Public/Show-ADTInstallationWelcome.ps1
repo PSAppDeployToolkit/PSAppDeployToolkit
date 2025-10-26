@@ -1008,7 +1008,7 @@ function Show-ADTInstallationWelcome
                             $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
                         }
                     }
-                    elseif ($PersistPrompt)
+                    if ($PersistPrompt)
                     {
                         $dialogOptions.Add('DialogPersistInterval', [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultPromptPersistInterval))
                     }
