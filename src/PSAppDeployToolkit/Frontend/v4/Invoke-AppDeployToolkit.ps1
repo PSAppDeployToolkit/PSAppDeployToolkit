@@ -112,6 +112,11 @@ $adtSession = @{
     DeployAppScriptVersion = '4.1.7'
 }
 
+
+##================================================
+## MARK: Deployment type definitions
+##================================================
+
 function Install-ADTDeployment
 {
     [CmdletBinding()]
