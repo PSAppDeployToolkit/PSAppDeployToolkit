@@ -15,7 +15,7 @@ function Private:Invoke-ADTTerminalServerModeChange
     )
 
     # Change the terminal server mode. An exit code of 1 is considered successful.
-    Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
+    Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLowerInvariant()) mode"))."
     $terminalServerResult = & "$([System.Environment]::SystemDirectory)\change.exe" User /$Mode 2>&1
     if ($Global:LASTEXITCODE.Equals(1))
     {

@@ -55,7 +55,7 @@ function Private:Invoke-ADTServiceAndDependencyOperation
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
+                Write-ADTLogEntry -Message "Failed to $($Operation.ToLowerInvariant()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
             }
         }
     }
