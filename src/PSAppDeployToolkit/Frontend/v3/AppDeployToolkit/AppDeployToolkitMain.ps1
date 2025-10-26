@@ -551,7 +551,7 @@ function Remove-MSIApplications
                     {
                         if ($_[1] -is [System.Boolean])
                         {
-                            "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
+                            "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLowerInvariant())"
                         }
                         else
                         {
@@ -583,7 +583,7 @@ function Remove-MSIApplications
                     {
                         if ($_[1] -is [System.Boolean])
                         {
-                            "`$_.$($_[0]) -ne `$$($_[1].ToString().ToLower())"
+                            "`$_.$($_[0]) -ne `$$($_[1].ToString().ToLowerInvariant())"
                         }
                         else
                         {
