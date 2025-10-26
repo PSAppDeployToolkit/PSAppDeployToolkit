@@ -81,6 +81,14 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 HideCloseButton = hideCloseButton;
             }
+            if (options.ContainsKey("DialogAllowMinimize"))
+            {
+                if (options["DialogAllowMinimize"] is not bool dialogAllowMinimize)
+                {
+                    throw new ArgumentOutOfRangeException("DialogAllowMinimize value is not valid.", (Exception?)null);
+                }
+                DialogAllowMinimize = dialogAllowMinimize;
+            }
             if (options.ContainsKey("CustomMessageText"))
             {
                 if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
@@ -125,9 +133,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// displayed.</param>
         /// <param name="forcedCountdown">A value indicating whether the countdown timer is mandatory and cannot be skipped.</param>
         /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
+        /// <param name="dialogAllowMinimize">A value indicating whether the dialog can be minimized by the user.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
         [JsonConstructor]
-        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
+        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             // Assign the values.
             Strings = strings;
@@ -138,6 +147,7 @@ namespace PSADT.UserInterface.DialogOptions
             CountdownDuration = countdownDuration;
             ForcedCountdown = forcedCountdown;
             HideCloseButton = hideCloseButton;
+            DialogAllowMinimize = dialogAllowMinimize;
             CustomMessageText = customMessageText;
         }
 
@@ -188,6 +198,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [JsonProperty]
         public readonly bool HideCloseButton;
+
+        /// <summary>
+        /// Indicates whether the dialog allows minimizing.
+        /// </summary>
+        [JsonProperty]
+        public readonly bool DialogAllowMinimize;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.

@@ -19,6 +19,7 @@ using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
 using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -105,6 +106,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
+
+            // Allow the dialog to be minimised if specified.
+            if (options.DialogAllowMinimize)
+            {
+                SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
+            }
 
             // Set up/process optional values.
             if (null != state.RunningProcessService)
