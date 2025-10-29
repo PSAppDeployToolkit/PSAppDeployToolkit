@@ -189,7 +189,7 @@ function Get-ADTUserProfiles
                             # Append additional info if requested.
                             if ($LoadProfilePaths)
                             {
-                                $userProfile = if (Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\S-1-5-21-3442802063-1446377815-2928486735-1002')
+                                $userProfile = if (Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$securityIdentifier")
                                 {
                                     $userShellFolders = [Microsoft.Win32.Registry]::Users.OpenSubKey("$securityIdentifier\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders", $false)
                                     $environment = [Microsoft.Win32.Registry]::Users.OpenSubKey("$securityIdentifier\Environment", $false)
