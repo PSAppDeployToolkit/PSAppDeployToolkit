@@ -111,7 +111,7 @@ function Initialize-ADTModule
                     {
                         [System.String[]]$Script:ADT.Directories.$_ = foreach ($directory in $Script:ADT.Directories.Script)
                         {
-                            if (Test-Path -LiteralPath (Join-Path -Path $directory -ChildPath "$_\$($_.ToLower()).psd1") -PathType Leaf)
+                            if (Test-Path -LiteralPath (Join-Path -Path $directory -ChildPath "$_\$($_.ToLowerInvariant()).psd1") -PathType Leaf)
                             {
                                 (Join-Path -Path $directory -ChildPath $_).Trim()
                             }

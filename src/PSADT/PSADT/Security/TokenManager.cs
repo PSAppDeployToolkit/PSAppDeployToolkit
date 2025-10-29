@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using Windows.Win32.Security;
@@ -107,7 +108,7 @@ namespace PSADT.Security
             using (var buffer = SafeHGlobalHandle.Alloc((int)returnLength))
             {
                 AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
-                return new((IntPtr)buffer.ToStructure<TOKEN_USER>().User.Sid);
+                return buffer.ToStructure<TOKEN_USER>().User.Sid.ToSecurityIdentifier();
             }
         }
 
