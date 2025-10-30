@@ -24,6 +24,7 @@ function Start-ADTMsiProcess
 
     .PARAMETER FilePath
         The file path to the MSI/MSP file.
+        As a value for Filepath parameter is allowed also only the MSI/MSP filename, like: -FilePath "example.msi", in this case PSADT automatically appends the path of 'Files' folder, this means appends the ($adtSession.DirFiles).
 
     .PARAMETER ProductCode
         The product code of the installed MSI.
