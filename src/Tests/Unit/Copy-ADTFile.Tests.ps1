@@ -276,6 +276,14 @@ Describe 'Copy-ADTFile'-ForEach @(
         Get-ItemPropertyValue -Path "$DestinationPath\NewFolder" -Name Attributes | Should -Not -Match 'Hidden'
     }
 
+    It 'Copies hidden files and folders ($FileCopyMode = $<FileCopyMode>)' {
+        Copy-ADTFile -Path "$SourcePath\Subfolder3\hidden.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
+        Copy-ADTFile -Path "$SourcePath\SubfolderHidden" -Destination $DestinationPath -FileCopyMode $FileCopyMode -Recurse
+
+        "$DestinationPath\hidden.txt" | Should -Exist
+        "$DestinationPath\SubfolderHidden" | Should -Exist
+    }
+
     It 'Copies an array of items ($FileCopyMode = $<FileCopyMode>)' {
         Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder1\test1.txt", "$SourcePath\Subfolder2\test2.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode
 
