@@ -23,8 +23,7 @@ function Start-ADTMsiProcess
         Specifies the action to be performed. Available options: Install, Uninstall, Patch, Repair, ActiveSetup.
 
     .PARAMETER FilePath
-        The file path to the MSI/MSP file.
-        As a value for Filepath parameter is allowed also only the MSI/MSP filename, like: -FilePath "example.msi", in this case PSADT automatically appends the path of 'Files' folder, this means appends the ($adtSession.DirFiles).
+        The file path to the MSI/MSP file. If the specified FilePath is just a file name, the function will look within `$adtSession.DirFiles` for the specified file, so long as a session is active.
 
     .PARAMETER ProductCode
         The product code of the installed MSI.
