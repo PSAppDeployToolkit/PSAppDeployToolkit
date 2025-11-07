@@ -77,7 +77,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Throw if for whatever reason, we couldn't get a token.
-            if (null == hUserToken)
+            if (hUserToken is null)
             {
                 throw new InvalidOperationException($"Failed to retrieve a primary token for user [{runAsActiveUser.NTAccount}]. Ensure the user is logged on and has an active session.");
             }

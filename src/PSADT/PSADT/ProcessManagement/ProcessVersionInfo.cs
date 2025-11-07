@@ -74,7 +74,7 @@ namespace PSADT.ProcessManagement
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
             // Validate the input process.
-            if (null == process)
+            if (process is null)
             {
                 throw new ArgumentNullException(nameof(process));
             }

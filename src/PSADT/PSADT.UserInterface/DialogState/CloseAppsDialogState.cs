@@ -26,7 +26,7 @@ namespace PSADT.UserInterface.DialogState
             {
                 RunningProcessService = new(closeProcesses);
             }
-            if (null != logWriter)
+            if (logWriter is not null)
             {
                 LogWriter = logWriter;
             }

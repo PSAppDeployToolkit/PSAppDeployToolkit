@@ -153,7 +153,7 @@ namespace PSADT.FileSystem
 
                         // Add the handle information to the list if it matches the specified directory path.
                         string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                        if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
+                        if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                         {
                             openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                         }
@@ -176,7 +176,7 @@ namespace PSADT.FileSystem
         public static void CloseHandles(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
             // Confirm the provided input isn't null.
-            if (null == handleEntries)
+            if (handleEntries is null)
             {
                 throw new ArgumentNullException(nameof(handleEntries));
             }

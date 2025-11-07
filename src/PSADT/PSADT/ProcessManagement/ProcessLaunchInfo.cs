@@ -83,7 +83,7 @@ namespace PSADT.ProcessManagement
             {
                 WorkingDirectory = workingDirectory!.Trim();
             }
-            if (null != argumentList && argumentList.Count > 0)
+            if (argumentList is not null && argumentList.Count > 0)
             {
                 ArgumentList = argumentList;
             }
@@ -91,20 +91,20 @@ namespace PSADT.ProcessManagement
             {
                 Verb = verb;
             }
-            if (null != streamEncoding)
+            if (streamEncoding is not null)
             {
                 StreamEncoding = streamEncoding;
             }
-            if (null != windowStyle)
+            if (windowStyle is not null)
             {
                 WindowStyle = WindowStyleMap[windowStyle.Value];
                 ProcessWindowStyle = windowStyle.Value;
             }
-            if (null != priorityClass)
+            if (priorityClass is not null)
             {
                 PriorityClass = priorityClass.Value;
             }
-            if (null != cancellationToken)
+            if (cancellationToken is not null)
             {
                 CancellationToken = cancellationToken.Value;
             }

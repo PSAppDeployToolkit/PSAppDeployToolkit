@@ -29,7 +29,7 @@ namespace PSADT.Utilities
                     string currentKey = string.Empty;
                     foreach (object argument in remainingArguments)
                     {
-                        if (null == argument)
+                        if (argument is null)
                         {
                             continue;
                         }
@@ -68,11 +68,11 @@ namespace PSADT.Utilities
                 string val = string.Empty;
 
                 // Skip anything null or excluded.
-                if (null == entry.Value)
+                if (entry.Value is null)
                 {
                     continue;
                 }
-                if ((null != exclusions) && exclusions.Contains(entry.Key.ToString()))
+                if ((exclusions is not null) && exclusions.Contains(entry.Key.ToString()))
                 {
                     continue;
                 }

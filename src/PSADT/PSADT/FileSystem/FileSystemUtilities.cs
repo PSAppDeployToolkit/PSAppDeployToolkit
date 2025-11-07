@@ -119,7 +119,7 @@ namespace PSADT.FileSystem
         public static bool TestFileAccess(FileInfo path, FileSystemRights desiredAccess = FileSystemRights.ReadAndExecute)
         {
             // Validate the input path.
-            if (null == path)
+            if (path is null)
             {
                 throw new ArgumentNullException(nameof(path));
             }

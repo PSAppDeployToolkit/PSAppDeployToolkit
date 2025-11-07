@@ -164,7 +164,7 @@ namespace PSADT.TerminalServices
                 clientName,
                 (WTS_PROTOCOL_TYPE)clientProtocolType!,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
-                (null != clientName) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
+                (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
         }
 

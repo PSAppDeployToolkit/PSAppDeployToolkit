@@ -22,19 +22,19 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons based on provided texts
-            if (null != options.ButtonLeftText)
+            if (options.ButtonLeftText is not null)
             {
                 SetButtonContentWithAccelerator(ButtonLeft, options.ButtonLeftText);
                 ButtonLeft.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonLeft, options.ButtonLeftText);
             }
-            if (null != options.ButtonMiddleText)
+            if (options.ButtonMiddleText is not null)
             {
                 SetButtonContentWithAccelerator(ButtonMiddle, options.ButtonMiddleText);
                 ButtonMiddle.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonMiddle, options.ButtonMiddleText);
             }
-            if (null != options.ButtonRightText)
+            if (options.ButtonRightText is not null)
             {
                 SetButtonContentWithAccelerator(ButtonRight, options.ButtonRightText);
                 ButtonRight.Visibility = Visibility.Visible;

@@ -48,7 +48,7 @@ namespace PSADT.LibraryInterfaces
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
         {
             var res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -182,7 +182,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -199,7 +199,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
             var res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -424,7 +424,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
         {
             var res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -471,7 +471,7 @@ namespace PSADT.LibraryInterfaces
         internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
         {
             var res = PInvoke.LoadLibrary(lpLibFileName);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }

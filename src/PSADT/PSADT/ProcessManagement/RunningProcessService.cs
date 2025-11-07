@@ -19,7 +19,7 @@ namespace PSADT.ProcessManagement
         internal void Start()
         {
             // We can't restart the polling task if it's already running.
-            if (_pollingTask != null)
+            if (_pollingTask is not null)
             {
                 throw new InvalidOperationException("The polling task is already running.");
             }
@@ -224,7 +224,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The caller's specified process definitions.
         /// </summary>
-        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = null != processDefinitions && processDefinitions.Count > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = processDefinitions is not null && processDefinitions.Count > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
 
         /// <summary>
         /// The interval at which to poll for running processes.
