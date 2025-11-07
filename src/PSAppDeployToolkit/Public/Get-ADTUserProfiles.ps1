@@ -207,7 +207,16 @@ function Get-ADTUserProfiles
                                             $(if ($value = $environment.GetValue('TEMP', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $regProfile.ProfileImagePath }),
                                             $(if ($value = $environment.GetValue('OneDrive', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $regProfile.ProfileImagePath }),
                                             $(if ($value = $environment.GetValue('OneDriveCommercial', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $regProfile.ProfileImagePath }),
-                                            $([Microsoft.Win32.Registry]::GetValue("HKEY_USERS\$securityIdentifier\Control Panel\International", "LocaleName", $null))
+                                            $(
+                                                if (!($userLocale = [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\$securityIdentifier\Control Panel\International", "LocaleName", $null)))
+                                                {
+                                                    [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\$securityIdentifier\Control Panel\International\User Profile", "Languages", $null) | Select-Object -First 1
+                                                }
+                                                else
+                                                {
+                                                    $userLocale
+                                                }
+                                            )
                                         )
                                     }
                                     finally
@@ -233,7 +242,16 @@ function Get-ADTUserProfiles
                                             $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'TEMP' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
                                             $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDrive' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
                                             $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDriveCommercial' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International' -Name 'LocaleName' -SID $_.SID))
+                                            $(
+                                                if (!($userLocale = Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International' -Name 'LocaleName' -SID $_.SID))
+                                                {
+                                                    Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International\User Profile' -Name 'Languages' -SID $_.SID | Select-Object -First 1
+                                                }
+                                                else
+                                                {
+                                                    $userLocale
+                                                }
+                                            )
                                         )
                                     }
                                 }
@@ -289,7 +307,16 @@ function Get-ADTUserProfiles
                                 $(if ($value = $environment.GetValue('TEMP', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $defaultUserProfilePath }),
                                 $(if ($value = $environment.GetValue('OneDrive', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $defaultUserProfilePath }),
                                 $(if ($value = $environment.GetValue('OneDriveCommercial', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $defaultUserProfilePath }),
-                                $([Microsoft.Win32.Registry]::GetValue("HKEY_USERS\.DEFAULT\Control Panel\International", "LocaleName", $null))
+                                $(
+                                    if (!($userLocale = [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\.DEFAULT\Control Panel\International", "LocaleName", $null)))
+                                    {
+                                        [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\.DEFAULT\Control Panel\International\User Profile", "Languages", $null) | Select-Object -First 1
+                                    }
+                                    else
+                                    {
+                                        $userLocale
+                                    }
+                                )
                             )
                         }
                         finally
