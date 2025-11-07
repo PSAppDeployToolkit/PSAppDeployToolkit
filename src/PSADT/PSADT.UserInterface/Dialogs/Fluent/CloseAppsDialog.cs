@@ -115,14 +115,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             // Set up/process optional values.
-            if (null != state.RunningProcessService)
+            if (state.RunningProcessService is not null)
             {
                 _runningProcessService = state.RunningProcessService;
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
             UpdateRunningProcesses();
-            if (null != state.LogWriter)
+            if (state.LogWriter is not null)
             {
                 _logWriter = state.LogWriter;
             }

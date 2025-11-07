@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             InitializeComponent();
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Base properties.
                 this.SuspendLayout();
@@ -50,27 +50,27 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.ResumeLayout();
 
                 // Set the expiry timer if specified.
-                if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
+                if (options.DialogExpiryDuration is not null && options.DialogExpiryDuration.Value != TimeSpan.Zero)
                 {
                     this.expiryTimer = new Timer { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
                     this.expiryTimer.Tick += (s, e) => CloseDialog();
                 }
 
                 // PersistPrompt timer code.
-                if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
+                if (options.DialogPersistInterval is not null && options.DialogPersistInterval.Value != TimeSpan.Zero)
                 {
                     this.persistTimer = new Timer { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
                     this.persistTimer.Tick += PersistTimer_Tick;
                 }
 
                 // Set the optional dialog position.
-                if (null != options.DialogPosition)
+                if (options.DialogPosition is not null)
                 {
                     dialogPosition = options.DialogPosition.Value;
                 }
 
                 // Set whether the dialog can be moved.
-                if (null != options.DialogAllowMove)
+                if (options.DialogAllowMove is not null)
                 {
                     dialogAllowMove = options.DialogAllowMove.Value;
                 }
@@ -183,13 +183,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
-            if (null != persistTimer)
+            if (persistTimer is not null)
             {
                 persistTimer.Stop();
                 persistTimer.Dispose();
                 persistTimer = null;
             }
-            if (null != expiryTimer)
+            if (expiryTimer is not null)
             {
                 expiryTimer.Stop();
                 expiryTimer.Dispose();
@@ -222,7 +222,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected void ResetPersistTimer()
         {
             // Reset the persist timer to its initial state.
-            if (null != persistTimer)
+            if (persistTimer is not null)
             {
                 persistTimer.Stop();
                 persistTimer.Start();

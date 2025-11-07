@@ -29,13 +29,13 @@ namespace PSADT.WindowManagement
         internal static IReadOnlyList<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
         {
             // Get the list of processes based on the provided filters.
-            var processes = null != windowHandleFilter && null != parentProcessFilter ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
-                            null != windowHandleFilter ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle)) :
-                            null != parentProcessFilter ? Process.GetProcesses().Where(p => parentProcessFilter.Contains(p.ProcessName)) :
+            var processes = windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
+                            windowHandleFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle)) :
+                            parentProcessFilter is not null ? Process.GetProcesses().Where(p => parentProcessFilter.Contains(p.ProcessName)) :
                             Process.GetProcesses();
 
             // Create a list to hold the window information.
-            Regex? windowTitleRegex = null != windowTitleFilter ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
+            Regex? windowTitleRegex = windowTitleFilter is not null ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
             List<WindowInfo> windowInfos = [];
             foreach (var window in WindowTools.EnumWindows())
             {
@@ -52,14 +52,14 @@ namespace PSADT.WindowManagement
                 }
 
                 // Continue if the visible window title doesn't match our filter.
-                if (null != windowTitleRegex && !windowTitleRegex.IsMatch(windowText))
+                if (windowTitleRegex is not null && !windowTitleRegex.IsMatch(windowText))
                 {
                     continue;
                 }
 
                 // Continue if the window doesn't have an associated process.
                 var process = processes.FirstOrDefault(p => p.Id == WindowTools.GetWindowThreadProcessId(window));
-                if (null == process)
+                if (process is null)
                 {
                     continue;
                 }

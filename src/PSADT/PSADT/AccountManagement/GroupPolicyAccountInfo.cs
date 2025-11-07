@@ -28,7 +28,7 @@ namespace PSADT.AccountManagement
             // Confirm we have a Group Policy Data Store to work with.
             using var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
             List<GroupPolicyAccountInfo> accountInfoList = [];
-            if (null == datastore)
+            if (datastore is null)
             {
                 return accountInfoList.AsReadOnly();
             }
@@ -44,7 +44,7 @@ namespace PSADT.AccountManagement
 
                 // Skip over the entry if there's no indices.
                 using var indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}");
-                if (null == indices)
+                if (indices is null)
                 {
                     continue;
                 }

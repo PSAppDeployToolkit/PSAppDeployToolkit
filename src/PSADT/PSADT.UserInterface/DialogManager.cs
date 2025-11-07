@@ -34,14 +34,14 @@ namespace PSADT.UserInterface
         {
             // Start the RunningProcessService if it is not already running.
             bool stopProcessService = false;
-            if (null != state.RunningProcessService && !state.RunningProcessService.IsRunning)
+            if (state.RunningProcessService is not null && !state.RunningProcessService.IsRunning)
             {
                 state.RunningProcessService.Start();
                 stopProcessService = true;
             }
 
             // Perform logging if we have a log writer.
-            if (null != state.LogWriter)
+            if (state.LogWriter is not null)
             {
                 // Announce whether there's apps to close.
                 var procsRunning = state.RunningProcessService?.ProcessesToClose;
@@ -52,7 +52,7 @@ namespace PSADT.UserInterface
                 }
 
                 // Announce the current countdown information.
-                if (null != options.CountdownDuration)
+                if (options.CountdownDuration is not null)
                 {
                     var elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
                     if (elapsed < TimeSpan.Zero)
@@ -76,7 +76,7 @@ namespace PSADT.UserInterface
             var result = ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state);
 
             // Perform some result logging before returning.
-            if ((null != state.LogWriter) && (null != options.CountdownDuration) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
+            if ((state.LogWriter is not null) && (options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
             {
                 switch (result)
                 {

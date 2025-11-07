@@ -49,13 +49,13 @@ namespace PSADT.Module
             }
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
-            bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
+            bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
             var stackFrames = new StackTrace(true).GetFrames().Skip(1); string? callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
                 var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
-                if (null == invoker.GetFileName())
+                if (invoker.GetFileName() is null)
                 {
                     invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
                 }
@@ -93,7 +93,7 @@ namespace PSADT.Module
                     logType = LogStyle.CMTrace;
                 }
             }
-            if (null == severity)
+            if (severity is null)
             {
                 severity = LogSeverity.Info;
             }
@@ -101,11 +101,11 @@ namespace PSADT.Module
             {
                 source = callerSource;
             }
-            if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
+            if ((logFileDirectory is not null) && !Directory.Exists(logFileDirectory))
             {
                 Directory.CreateDirectory(logFileDirectory);
             }
-            if (null != scriptSection && string.IsNullOrWhiteSpace(scriptSection))
+            if (scriptSection is not null && string.IsNullOrWhiteSpace(scriptSection))
             {
                 scriptSection = null;
             }

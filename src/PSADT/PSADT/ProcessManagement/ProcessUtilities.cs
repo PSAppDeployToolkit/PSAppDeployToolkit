@@ -182,7 +182,7 @@ namespace PSADT.ProcessManagement
 
                     // Store the process information.
                     RunningProcess runningProcess = new(process, procDescription, commandLine[0], commandLine.Skip(1), username);
-                    if (!process.HasExited && ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess)))
+                    if (!process.HasExited && ((processDefinition.Filter is null) || processDefinition.Filter(runningProcess)))
                     {
                         runningProcesses.Add(runningProcess);
                     }
@@ -332,7 +332,7 @@ namespace PSADT.ProcessManagement
                         processIdInfo.ImageName.Buffer = null;
 
                         // If we have a lookup table, replace the NT path with the drive letter before returning.
-                        if (ntPathLookupTable != null)
+                        if (ntPathLookupTable is not null)
                         {
                             var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                             if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))

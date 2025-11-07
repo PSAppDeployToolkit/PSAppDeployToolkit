@@ -80,7 +80,7 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (null != launchInfo.RunAsActiveUser))
+            if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (launchInfo.RunAsActiveUser is not null))
             {
                 AnonymousPipeServerStream? hStdOutRead = null;
                 AnonymousPipeServerStream? hStdErrRead = null;
@@ -92,7 +92,7 @@ namespace PSADT.ProcessManagement
                 {
                     // Set up the startup information for the process.
                     var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
-                    if (null != launchInfo.WindowStyle)
+                    if (launchInfo.WindowStyle is not null)
                     {
                         startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
                         startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
@@ -104,7 +104,7 @@ namespace PSADT.ProcessManagement
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
                     // Set the process priority class if specified.
-                    if (null != launchInfo.PriorityClass)
+                    if (launchInfo.PriorityClass is not null)
                     {
                         creationFlags |= (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass.Value;
                     }
@@ -146,7 +146,7 @@ namespace PSADT.ProcessManagement
 
                     // Handle user process creation, otherwise just create the process for the running user.
                     PROCESS_INFORMATION pi = new();
-                    if (null != launchInfo.RunAsActiveUser && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
+                    if (launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
                     {
                         // Start the process with the user's token.
                         using (var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken))
@@ -175,7 +175,7 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
-                    else if ((null != launchInfo.RunAsActiveUser && launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin))
+                    else if ((launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin))
                     {
                         // We're running elevated but have been asked to de-elevate.
                         using (var hPrimaryToken = ProcessToken.GetUnelevatedToken())
@@ -234,7 +234,7 @@ namespace PSADT.ProcessManagement
                         Verb = launchInfo.Verb,
                     }
                 };
-                if (null != launchInfo.ProcessWindowStyle)
+                if (launchInfo.ProcessWindowStyle is not null)
                 {
                     process.StartInfo.WindowStyle = launchInfo.ProcessWindowStyle.Value;
                 }
@@ -258,13 +258,13 @@ namespace PSADT.ProcessManagement
                 }
 
                 // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
-                if (null != hProcess)
+                if (hProcess is not null)
                 {
                     if (assignProcessToJob)
                     {
                         Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
-                    if (null != launchInfo.PriorityClass && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    if (launchInfo.PriorityClass is not null && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
                         process.PriorityClass = launchInfo.PriorityClass.Value;
                     }
@@ -272,7 +272,7 @@ namespace PSADT.ProcessManagement
             }
 
             // If we don't have a process (shell action), return early.
-            if (!(null != hProcess && null != processId))
+            if (!(hProcess is not null && processId is not null))
             {
                 return null;
             }
@@ -341,7 +341,7 @@ namespace PSADT.ProcessManagement
                 // Set up the cancellation token source and registration if needed.
                 uint timeoutExitCode = ValueTypeConverter<uint>.Convert(TimeoutExitCode);
                 CancellationTokenRegistration ctr = default;
-                if (null != launchInfo.CancellationToken)
+                if (launchInfo.CancellationToken is not null)
                 {
                     ctr = launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, UIntPtr.Zero, null));
                 }
@@ -517,7 +517,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentException("Input cannot be null or empty.", nameof(input));
             }
-            if (null == environment)
+            if (environment is null)
             {
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
@@ -543,7 +543,7 @@ namespace PSADT.ProcessManagement
         /// if not specified.</param>
         private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string commandLine, out string? workingDirectory)
         {
-            if (null != environmentDictionary)
+            if (environmentDictionary is not null)
             {
                 var argv = launchInfo.ArgumentList?.ToArray() ?? [];
                 for (int i = 0; i < argv.Length; i++)
@@ -552,12 +552,12 @@ namespace PSADT.ProcessManagement
                 }
                 filePath = ExpandEnvironmentVariables(username, launchInfo.FilePath, environmentDictionary);
                 arguments = argv.Length > 1 ? CommandLineUtilities.ArgumentListToCommandLine(argv) : argv.Length > 0 ? argv[0] : null;
-                workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
+                workingDirectory = launchInfo.WorkingDirectory is not null ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
             }
             else
             {
                 filePath = launchInfo.FilePath;
-                arguments = null != launchInfo.ArgumentList ? launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null : null;
+                arguments = launchInfo.ArgumentList is not null ? launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null : null;
                 workingDirectory = launchInfo.WorkingDirectory;
             }
             commandLine = $"\"{filePath}\"{(!string.IsNullOrWhiteSpace(arguments) ? $" {arguments}" : null)}\0";

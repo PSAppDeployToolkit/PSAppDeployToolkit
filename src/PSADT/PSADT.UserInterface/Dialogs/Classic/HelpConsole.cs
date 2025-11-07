@@ -36,7 +36,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             InitializeComponent();
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Null out PSModulePath to prevent any module conflicts.
                 // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
@@ -79,7 +79,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.FormClosed += (sender, e) =>
                 {
                     // Ensure the runspace is closed when the form is closed.
-                    if (null != this.runspace && this.runspace.RunspaceStateInfo.State == RunspaceState.Opened)
+                    if (this.runspace is not null && this.runspace.RunspaceStateInfo.State == RunspaceState.Opened)
                     {
                         this.runspace.Close();
                         this.runspace.Dispose();

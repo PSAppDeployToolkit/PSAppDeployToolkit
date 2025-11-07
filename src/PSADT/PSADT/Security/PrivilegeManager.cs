@@ -76,7 +76,7 @@ namespace PSADT.Security
                 var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
                 Span<char> charSpan = stackalloc char[(int)PInvoke.MAX_PATH];
                 List<SE_PRIVILEGE> privileges = [];
-                if (null != attributes)
+                if (attributes is not null)
                 {
                     for (int i = 0; i < privilegeCount; i++)
                     {

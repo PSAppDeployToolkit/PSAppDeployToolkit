@@ -44,7 +44,7 @@ namespace PSADT.ClientServer
             try
             {
                 // Determine the mode of operation based on the provided arguments.
-                if (null == argv || argv.Length == 0)
+                if (argv is null || argv.Length == 0)
                 {
                     ShowHelpDialog();
                 }
@@ -187,7 +187,7 @@ namespace PSADT.ClientServer
                 }
                 var key = argv[i].Substring(1).Trim();
                 var value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (null == value || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
+                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
@@ -234,15 +234,15 @@ namespace PSADT.ClientServer
         private static void EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
-            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || null == outputPipeHandle || string.IsNullOrWhiteSpace(outputPipeHandle))
+            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || outputPipeHandle is null || string.IsNullOrWhiteSpace(outputPipeHandle))
             {
                 throw new ClientException("The specified OutputPipe handle was null or invalid.", ClientExitCode.NoOutputPipe);
             }
-            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || null == inputPipeHandle || string.IsNullOrWhiteSpace(inputPipeHandle))
+            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || inputPipeHandle is null || string.IsNullOrWhiteSpace(inputPipeHandle))
             {
                 throw new ClientException("The specified InputPipe handle was null or invalid.", ClientExitCode.NoInputPipe);
             }
-            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || null == logPipeHandle || string.IsNullOrWhiteSpace(logPipeHandle))
+            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || logPipeHandle is null || string.IsNullOrWhiteSpace(logPipeHandle))
             {
                 throw new ClientException("The specified LogPipe handle was null or invalid.", ClientExitCode.NoLogPipe);
             }
@@ -325,7 +325,7 @@ namespace PSADT.ClientServer
                                     var promptToCloseTimeout = TimeSpan.Parse(parts[1]);
 
                                     // Process each running app.
-                                    if (null == closeAppsDialogState.RunningProcessService)
+                                    if (closeAppsDialogState.RunningProcessService is null)
                                     {
                                         throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
                                     }
@@ -523,7 +523,7 @@ namespace PSADT.ClientServer
         private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
-            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && null != argv)
+            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
                 // Set up the required variables.
                 ReadOnlyCollection<string> command = argv.SkipWhile(static arg => !File.Exists(arg)).ToList().AsReadOnly();
@@ -779,7 +779,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions);
             }
-            if (null == options || string.IsNullOrWhiteSpace(options))
+            if (options is null || string.IsNullOrWhiteSpace(options))
             {
                 throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions);
             }

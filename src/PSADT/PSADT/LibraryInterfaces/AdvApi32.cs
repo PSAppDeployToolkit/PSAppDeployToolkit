@@ -438,7 +438,7 @@ namespace PSADT.LibraryInterfaces
                     {
                         OldAcl.DangerousAddRef(ref OldAclAddRef);
                     }
-                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, null != OldAcl ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
+                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
                     if (res != WIN32_ERROR.ERROR_SUCCESS)
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -510,7 +510,7 @@ namespace PSADT.LibraryInterfaces
                     pSacl.DangerousAddRef(ref pSaclAddRef);
                 }
                 handle.DangerousAddRef(ref handleAddRef);
-                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, null != psidOwner ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, null != psidGroup ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -582,8 +582,8 @@ namespace PSADT.LibraryInterfaces
                 }
                 ppsidOwner = psidOwner != default ? new((IntPtr)psidOwner.Value) : null;
                 ppsidGroup = pSidGroup != default ? new((IntPtr)pSidGroup.Value) : null;
-                ppDacl = pDacl != null ? new((IntPtr)pDacl, false) : null;
-                ppSacl = pSacl != null ? new((IntPtr)pSacl, false) : null;
+                ppDacl = pDacl is not null ? new((IntPtr)pDacl, false) : null;
+                ppSacl = pSacl is not null ? new((IntPtr)pSacl, false) : null;
                 ppSecurityDescriptor = new((IntPtr)pSECURITY_DESCRIPTOR, true);
                 return res;
             }

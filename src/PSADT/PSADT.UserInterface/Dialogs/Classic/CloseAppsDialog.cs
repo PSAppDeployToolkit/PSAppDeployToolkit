@@ -44,7 +44,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.SuspendLayout();
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Set up main options.
                 this.labelWelcomeMessage.Text = StripFormattingTags(options.Strings.Classic.WelcomeMessage);
@@ -68,7 +68,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 SetPictureBox(this.pictureBanner, options);
 
                 // Set the custom message text if we have one.
-                if (null != options.CustomMessageText)
+                if (options.CustomMessageText is not null)
                 {
                     this.labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
                 }
@@ -89,7 +89,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
                 // Set up the process service.
                 this.richTextBoxCloseProcesses.Lines = null;
-                if (null != state.RunningProcessService)
+                if (state.RunningProcessService is not null)
                 {
                     // Get the current running apps and amend the form accordingly.
                     var runningApps = (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
@@ -118,10 +118,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up our deferrals display.
-                if (!((null == options.DeferralsRemaining) && (null == options.DeferralDeadline)))
+                if (!((options.DeferralsRemaining is null) && (options.DeferralDeadline is null)))
                 {
                     this.labelDeferDeadline.Text = null;
-                    if (null != options.DeferralsRemaining && !options.UnlimitedDeferrals)
+                    if (options.DeferralsRemaining is not null && !options.UnlimitedDeferrals)
                     {
                         this.labelDeferDeadline.Text = StripFormattingTags($"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim());
                         if (options.DeferralsRemaining <= 0)
@@ -129,7 +129,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                             this.buttonDefer.Enabled = false;
                         }
                     }
-                    if (null != options.DeferralDeadline)
+                    if (options.DeferralDeadline is not null)
                     {
                         this.labelDeferDeadline.Text = StripFormattingTags($"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim());
                         if (options.DeferralDeadline <= DateTime.Now)
@@ -149,7 +149,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set the countdown timer.
-                if (null != countdownDuration)
+                if (countdownDuration is not null)
                 {
                     countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     countdownStopwatch = state.CountdownStopwatch;
@@ -175,7 +175,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up the log writer if we have one.
-                if (null != state.LogWriter)
+                if (state.LogWriter is not null)
                 {
                     logWriter = state.LogWriter;
                 }
@@ -201,13 +201,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
             base.Form_Load(sender, e);
 
             // Initialize the running process service and set up event handlers.
-            if (null != runningProcessService)
+            if (runningProcessService is not null)
             {
                 runningProcessService.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
             }
 
             // Start the counterdown timer if we have one.
-            if (null != countdownTimer)
+            if (countdownTimer is not null)
             {
                 if (!countdownStopwatch!.IsRunning)
                 {
@@ -237,7 +237,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             countdownTimer = null;
 
             // Unhook the event handlers.
-            if (null != runningProcessService)
+            if (runningProcessService is not null)
             {
                 runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
             }
@@ -295,7 +295,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 this.Invoke(() =>
                 {
-                    if (forcedCountdown && (null == runningProcessService || richTextBoxCloseProcesses.Lines.Length == 0))
+                    if (forcedCountdown && (runningProcessService is null || richTextBoxCloseProcesses.Lines.Length == 0))
                     {
                         buttonContinue.PerformClick();
                     }
@@ -331,7 +331,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (e.ProcessesToClose.Count > 0)
                 {
                     var runningApps = e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
-                    if (null != logWriter)
+                    if (logWriter is not null)
                     {
                         logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
                         logWriter.Flush();
@@ -350,7 +350,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    if (null != logWriter)
+                    if (logWriter is not null)
                     {
                         logWriter.Write("Previously detected running processes are no longer running.");
                         logWriter.Flush();

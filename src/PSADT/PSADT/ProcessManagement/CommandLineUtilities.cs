@@ -67,7 +67,7 @@ namespace PSADT.ProcessManagement
         public static string ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
         {
             // Consider a null or empty argument list as an error.
-            if (null == argv)
+            if (argv is null)
             {
                 throw new ArgumentNullException("The specified enumerable is null.", (Exception?)null);
             }

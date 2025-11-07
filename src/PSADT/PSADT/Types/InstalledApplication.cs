@@ -68,7 +68,7 @@ namespace PSADT.Types
             SystemComponent = systemComponent;
             WindowsInstaller = windowsInstaller;
             Is64BitApplication = is64BitApplication;
-            if (null != UninstallString)
+            if (UninstallString is not null)
             {
                 var argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
                 UninstallStringFilePath = new(argumentList[0]);
@@ -77,7 +77,7 @@ namespace PSADT.Types
                     UninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
                 }
             }
-            if (null != QuietUninstallString)
+            if (QuietUninstallString is not null)
             {
                 var argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
                 QuietUninstallStringFilePath = new(argumentList[0]);
@@ -92,7 +92,7 @@ namespace PSADT.Types
         /// Validates whether the product code is a valid GUID.
         /// </summary>
         /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
-        public bool IsValidProductCode() => null != ProductCode;
+        public bool IsValidProductCode() => ProductCode is not null;
 
         /// <summary>
         /// Returns a string representation of the installed application.

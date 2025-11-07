@@ -101,7 +101,7 @@ namespace PSADT.ClientServer
             }
             finally
             {
-                if (null == opened || !opened.Value)
+                if (opened is null || !opened.Value)
                 {
                     Close(true);
                 }
@@ -165,7 +165,7 @@ namespace PSADT.ClientServer
                 }
 
                 // Close the client process and wait for it to exit.
-                if (null == closed || !closed.Value)
+                if (closed is null || !closed.Value)
                 {
                     _clientProcessCts.Cancel();
                 }
@@ -208,7 +208,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke<bool>($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke<bool>($"InitCloseAppsDialog{(closeProcesses is not null ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(closeProcesses)}" : null)}");
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace PSADT.ClientServer
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
+            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((progressPercentage is not null) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((messageAlignment is not null) ? messageAlignment.ToString() : ' ')}");
         }
 
         /// <summary>
