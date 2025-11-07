@@ -54,7 +54,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             InitializeComponent();
 
             // If the accent color is passed through, update via ThemeManager
-            if (null != options.FluentAccentColor)
+            if (options.FluentAccentColor is not null)
             {
                 ThemeManager.Current.AccentColor = IntToColor(options.FluentAccentColor.Value);
             }
@@ -72,11 +72,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             AutomationProperties.SetName(this, options.AppTitle);
 
             // Set remaining properties from the options
-            if (null != options.DialogPosition)
+            if (options.DialogPosition is not null)
             {
                 _dialogPosition = options.DialogPosition.Value;
             }
-            if (null != options.DialogAllowMove)
+            if (options.DialogAllowMove is not null)
             {
                 _dialogAllowMove = options.DialogAllowMove.Value;
             }
@@ -127,14 +127,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetDialogIcon();
 
             // Set the expiry timer if specified.
-            if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
+            if (options.DialogExpiryDuration is not null && options.DialogExpiryDuration.Value != TimeSpan.Zero)
             {
                 _expiryTimer = new DispatcherTimer { Interval = options.DialogExpiryDuration.Value };
                 _expiryTimer.Tick += (sender, e) => CloseDialog();
             }
 
             // PersistPrompt timer code.
-            if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
+            if (options.DialogPersistInterval is not null && options.DialogPersistInterval.Value != TimeSpan.Zero)
             {
                 _persistTimer = new DispatcherTimer { Interval = options.DialogPersistInterval.Value };
                 _persistTimer.Tick += PersistTimer_Tick;
@@ -283,7 +283,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             PositionWindow();
 
             // Add hook to prevent window movement
-            if (_hwndSource == null)
+            if (_hwndSource is null)
             {
                 WindowInteropHelper helper = new(this);
                 _hwndSource = HwndSource.FromHwnd(helper.Handle);
@@ -989,12 +989,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 SizeChanged -= FluentDialog_SizeChanged;
 
                 // Remove timer event handlers if they exist.
-                if (_expiryTimer != null)
+                if (_expiryTimer is not null)
                 {
                     _expiryTimer.Tick -= (sender, e) => CloseDialog();
                     _expiryTimer.Stop();
                 }
-                if (_persistTimer != null)
+                if (_persistTimer is not null)
                 {
                     _persistTimer.Tick -= PersistTimer_Tick;
                     _persistTimer.Stop();

@@ -28,7 +28,7 @@ namespace PSADT.ClientServer
         static DataSerialization()
         {
             // Set the default serialization binder to ensure compatibility between .NET Core and .NET Framework.
-            if (null == AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(static a => null != a.FullName && a.FullName.StartsWith("System.Private.CoreLib")))
+            if (AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(static a => a.FullName is not null && a.FullName.StartsWith("System.Private.CoreLib")) is null)
             {
                 DefaultJsonSerializerSettings.SerializationBinder = new DotNetCompatibleSerializationBinder();
             }

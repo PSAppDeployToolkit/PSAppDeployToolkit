@@ -37,7 +37,7 @@ namespace PSADT.Module
         internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false)
         {
             // Validate the runAsActiveUser parameter.
-            if (null == runAsActiveUser)
+            if (runAsActiveUser is null)
             {
                 throw new ArgumentNullException(nameof(runAsActiveUser), "RunAsActiveUser cannot be null.");
             }
@@ -55,7 +55,7 @@ namespace PSADT.Module
                 {
                     throw new FileNotFoundException($"The file [{path.FullName}] does not exist.", path.FullName);
                 }
-                if (null != hPrimaryToken ? FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions))
+                if (hPrimaryToken is not null ? FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions))
                 {
                     continue;
                 }

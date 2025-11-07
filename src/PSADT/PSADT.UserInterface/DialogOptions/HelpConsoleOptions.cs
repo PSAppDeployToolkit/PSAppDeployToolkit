@@ -26,7 +26,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("ExecutionPolicy value is null or invalid.", (Exception?)null);
             }
-            if (options["Modules"] is not ReadOnlyCollection<ModuleSpecification> modules || modules.Count == 0 || modules.Any(static m => string.IsNullOrWhiteSpace(m.Name) || null == m.Guid || null == m.Version))
+            if (options["Modules"] is not ReadOnlyCollection<ModuleSpecification> modules || modules.Count == 0 || modules.Any(static m => string.IsNullOrWhiteSpace(m.Name) || m.Guid is null || m.Version is null))
             {
                 throw new ArgumentNullException("Modules value is null or invalid.", (Exception?)null);
             }

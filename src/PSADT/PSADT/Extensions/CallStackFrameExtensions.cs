@@ -14,11 +14,11 @@ namespace PSADT.Extensions
         /// <returns></returns>
         internal static string GetCommand(this CallStackFrame frame)
         {
-            if (null == frame.InvocationInfo)
+            if (frame.InvocationInfo is null)
             {
                 return frame.FunctionName;
             }
-            if (null == frame.InvocationInfo.MyCommand)
+            if (frame.InvocationInfo.MyCommand is null)
             {
                 return frame.InvocationInfo.InvocationName;
             }

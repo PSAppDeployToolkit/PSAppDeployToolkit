@@ -90,7 +90,7 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown if <paramref name="hProcess"/> is closed or invalid.</exception>
         public static string GetApplicationUserModelId(SafeHandle hProcess)
         {
-            if (hProcess == null)
+            if (hProcess is null)
             {
                 throw new ArgumentNullException(nameof(hProcess), "Process handle cannot be null.");
             }

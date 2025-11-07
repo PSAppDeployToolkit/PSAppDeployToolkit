@@ -35,13 +35,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.SuspendLayout();
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Set up the picturebox.
                 SetPictureBox(this.pictureBanner, options);
 
                 // Set up the buttons.
-                if (options.ButtonLeftText != null)
+                if (options.ButtonLeftText is not null)
                 {
                     this.buttonLeft.Text = StripFormattingTags(options.ButtonLeftText);
                     this.buttonLeft.Visible = true;
@@ -50,7 +50,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     this.tableLayoutPanelButton.Controls.Remove(buttonLeft);
                 }
-                if (options.ButtonMiddleText != null)
+                if (options.ButtonMiddleText is not null)
                 {
                     this.buttonMiddle.Text = StripFormattingTags(options.ButtonMiddleText);
                     this.buttonMiddle.Visible = true;
@@ -59,7 +59,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     this.tableLayoutPanelButton.Controls.Remove(buttonMiddle);
                 }
-                if (options.ButtonRightText != null)
+                if (options.ButtonRightText is not null)
                 {
                     this.buttonRight.Text = StripFormattingTags(options.ButtonRightText);
                     this.buttonRight.Visible = true;
@@ -70,7 +70,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up the icon.
-                if (null == options.Icon)
+                if (options.Icon is null)
                 {
                     this.tableLayoutPanelIconMessage.SuspendLayout();
                     this.tableLayoutPanelIconMessage.Controls.Remove(this.pictureIcon);
@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up the message.
-                if ((null != options.MessageAlignment) && Enum.TryParse<ContentAlignment>($"Top{options.MessageAlignment}", out var alignment))
+                if ((options.MessageAlignment is not null) && Enum.TryParse<ContentAlignment>($"Top{options.MessageAlignment}", out var alignment))
                 {
                     this.labelMessage.TextAlign = alignment;
                 }

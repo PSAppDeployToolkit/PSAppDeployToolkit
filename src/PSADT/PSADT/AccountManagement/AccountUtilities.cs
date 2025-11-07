@@ -118,7 +118,7 @@ namespace PSADT.AccountManagement
 
                     // Skip over the SID if it's malformed.
                     var sid = memberEntry.Properties["ObjectSID"].Value;
-                    if (null == sid)
+                    if (sid is null)
                     {
                         continue;
                     }
