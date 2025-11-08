@@ -117,6 +117,7 @@ namespace PSADT.LibraryInterfaces
         /// Retrieves information about a file, including its icon and display name.
         /// </summary>
         /// <param name="pszPath"></param>
+        /// <param name="psfi"></param>
         /// <param name="uFlags"></param>
         /// <param name="dwFileAttributes"></param>
         /// <returns></returns>

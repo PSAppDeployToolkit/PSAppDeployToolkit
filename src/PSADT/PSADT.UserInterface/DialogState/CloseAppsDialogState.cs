@@ -18,6 +18,7 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
+        /// <param name="logWriter">An optional <see cref="BinaryWriter"/> for logging purposes.</param>
         internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, BinaryWriter? logWriter)
         {
             // Only initialise these variables if they're not null.

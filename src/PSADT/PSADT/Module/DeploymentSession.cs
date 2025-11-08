@@ -897,7 +897,7 @@ namespace PSADT.Module
                 if (_deployMode == DeployMode.Auto)
                 {
                     _deployMode = DeployMode.Interactive;
-            }
+                }
 
                 // Set Deploy Mode switches.
                 WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
@@ -992,7 +992,7 @@ namespace PSADT.Module
             }
 
             // Establish initial variable values.
-            var adtExitCode = ModuleDatabase.Get().Properties["LastExitCode"];
+            var adtExitCode = (int)ModuleDatabase.Get().Properties["LastExitCode"].Value;
 
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
@@ -1032,7 +1032,7 @@ namespace PSADT.Module
             // Update the module's last tracked exit code.
             if (ExitCode != 0)
             {
-                adtExitCode.Value = ExitCode;
+                adtExitCode = ExitCode;
             }
 
             // Remove any subst paths if created in the zero-config WIM code.
@@ -1089,7 +1089,7 @@ namespace PSADT.Module
             }
 
             // Return the module's cached exit code to the caller.
-            return (int)adtExitCode.Value;
+            return adtExitCode;
         }
 
         /// <summary>
@@ -1343,7 +1343,6 @@ namespace PSADT.Module
         {
             // Extrapolate the UI options from the config hashtable.
             var configUI = (Hashtable)ModuleDatabase.GetConfig()["UI"]!;
-
             if ((ExitCode == (int)configUI["DefaultExitCode"]!) || (ExitCode == (int)configUI["DeferExitCode"]!))
             {
                 return DeploymentStatus.FastRetry;

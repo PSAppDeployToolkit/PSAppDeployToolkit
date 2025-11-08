@@ -106,7 +106,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Displays a custom dialog with the specified style and options, and returns the result as a string.
         /// </summary>
-        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.Custom"/>. The dialog's behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>.</remarks>
+        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.CustomDialog"/>. The dialog's behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>.</remarks>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
@@ -234,6 +234,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogType"></param>
         /// <param name="dialogStyle"></param>
         /// <param name="options"></param>
+        /// <param name="state"></param>
         /// <returns></returns>
         private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options, BaseState? state = null)
         {
@@ -289,7 +290,7 @@ namespace PSADT.UserInterface
         /// <param name="Icon">The icon to display in the message box, such as Information, Warning, or Error.</param>
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
-        /// <returns>A <see cref="MsgBoxResult"/> value indicating the button clicked by the user.</returns>
+        /// <returns>A <see cref="DialogBoxResult"/> value indicating the button clicked by the user.</returns>
         internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, TimeSpan Timeout) => (DialogBoxResult)ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : 0), Timeout);
 
         /// <summary>
@@ -297,9 +298,9 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="Title">The title text to display in the message box's title bar.</param>
         /// <param name="Prompt">The text to display in the message box.</param>
-        /// <param name="Options">A <see cref="MESSAGEBOX_STYLE"/> value that specifies the buttons and icons to display in the message box.</param>
+        /// <param name="Options">A MESSAGEBOX_RESULT value that specifies the buttons and icons to display in the message box.</param>
         /// <param name="Timeout">An optional <see cref="TimeSpan"/> value that specifies the duration after which the message box will automatically close. If not specified, the message box will remain open until the user interacts with it.</param>
-        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value that indicates which button the user clicked in the message box.</returns>
+        /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default) => InvokeDialogAction<MESSAGEBOX_RESULT>(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
 
         /// <summary>
@@ -311,7 +312,7 @@ namespace PSADT.UserInterface
         /// <param name="Prompt">The main prompt or message displayed in the dialog box.</param>
         /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> value.</param>
         /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
-        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the button that the user clicked to close the dialog.</returns>
+        /// <returns>A MESSAGEBOX_RESULT value indicating the button that the user clicked to close the dialog.</returns>
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon) => InvokeDialogAction<MESSAGEBOX_RESULT>(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
 
         /// <summary>

@@ -60,7 +60,7 @@ namespace PSADT.LibraryInterfaces
             fixed (uint* lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
             fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
             {
-                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, null != lpClass ? &lpcchClassLocal : null, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
+                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, Span<char>.Empty != lpClass ? &lpcchClassLocal : null, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -189,6 +189,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpSystemName"></param>
         /// <param name="lpLuid"></param>
         /// <param name="lpName"></param>
+        /// <param name="cchName"></param>
         /// <returns></returns>
         internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
@@ -313,7 +314,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpCommandLine != null && lpCommandLine.LastIndexOf('\0') == -1)
+            if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", "lpCommandLine");
             }
@@ -468,9 +469,9 @@ namespace PSADT.LibraryInterfaces
         /// cref="SE_OBJECT_TYPE"/> enumeration.</param>
         /// <param name="SecurityInfo">A bitmask of <see cref="OBJECT_SECURITY_INFORMATION"/> values that specify the type of security information
         /// to set (e.g., owner, group, DACL, or SACL).</param>
-        /// <param name="psidOwner">An optional <see cref="FreeSidSafeHandle"/> representing the new owner SID to set. Pass <c>null</c> to leave
+        /// <param name="psidOwner">An optional <see cref="SafeHandle"/> representing the new owner SID to set. Pass <c>null</c> to leave
         /// the owner unchanged.</param>
-        /// <param name="psidGroup">An optional <see cref="FreeSidSafeHandle"/> representing the new group SID to set. Pass <c>null</c> to leave
+        /// <param name="psidGroup">An optional <see cref="SafeHandle"/> representing the new group SID to set. Pass <c>null</c> to leave
         /// the group unchanged.</param>
         /// <param name="pDacl">An optional <see cref="LocalFreeSafeHandle"/> representing the new discretionary access control list (DACL)
         /// to set. Pass <c>null</c> to leave the DACL unchanged.</param>

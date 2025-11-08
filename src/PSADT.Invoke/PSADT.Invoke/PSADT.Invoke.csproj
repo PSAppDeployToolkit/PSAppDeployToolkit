@@ -18,9 +18,17 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <StartupObject>PSADT.Invoke.Program</StartupObject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
+
+  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
+    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
+  </Target>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

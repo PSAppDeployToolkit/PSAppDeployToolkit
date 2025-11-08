@@ -18,6 +18,7 @@ namespace PSADT.Module
         /// <param name="nTAccount">The NT account associated with the user. Cannot be <see langword="null"/>.</param>
         /// <param name="sID">The security identifier (SID) for the user. Cannot be <see langword="null"/>.</param>
         /// <param name="sessionId">The session ID of the user.</param>
+        /// <param name="isLocalAdmin">Indicates whether the user has local administrator privileges. Can be <see langword="null"/> if unknown.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
@@ -49,6 +47,7 @@ namespace PSADT.RegistryManagement
         /// <see cref="Microsoft.Win32.SafeHandles.SafeRegistryHandle"/> to release the associated resources.</remarks>
         /// <param name="fullKeyPath">The full path of the registry key to open, including the hive name (e.g.,
         /// "HKEY_LOCAL_MACHINE\Software\Example").</param>
+        /// <param name="openFlags">The access flags to use when opening the registry key. Defaults to <see cref="REG_SAM_FLAGS.KEY_READ"/>.</param>
         /// <returns>A <see cref="Microsoft.Win32.SafeHandles.SafeRegistryHandle"/> representing the opened registry key.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="fullKeyPath"/> is null, empty, or not in a valid registry key format.</exception>
         private static SafeRegistryHandle OpenRegistryKey(string fullKeyPath, REG_SAM_FLAGS openFlags = REG_SAM_FLAGS.KEY_READ)
