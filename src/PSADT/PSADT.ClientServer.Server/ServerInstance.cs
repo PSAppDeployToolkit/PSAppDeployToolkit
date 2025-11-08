@@ -26,8 +26,8 @@ namespace PSADT.ClientServer
     /// streams, and provides methods to send commands and retrieve responses. This class implements <see
     /// cref="IDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
     /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to initialize the client-server communication, and
-    /// using <see cref="Invoke(ClientServerCommandType)"/> to send commands to the client. Once the communication is
-    /// complete, the <see cref="Dispose"/> method should be called to release resources. </para></remarks>
+    /// using a number of predefined methods to send commands to the client. Once the communication is
+    /// complete, the <see cref="Dispose()"/> method should be called to release resources. </para></remarks>
     public sealed class ServerInstance : IDisposable
     {
         /// <summary>
@@ -347,7 +347,6 @@ namespace PSADT.ClientServer
         /// are invalid.</remarks>
         /// <param name="options">The configuration options for the balloon tip, including its title, text, icon, and duration. This parameter
         /// cannot be null.</param>
-        /// value.</param>
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
@@ -376,7 +375,7 @@ namespace PSADT.ClientServer
         /// Sends a sequence of keystrokes to the specified window.
         /// </summary>
         /// <remarks>Ensure that the specified window handle is valid and the target window is capable of
-        /// receiving keystrokes. The format of the <paramref name="keys"/> parameter may depend on the underlying
+        /// receiving keystrokes. The format of the <paramref name="options"/> parameter may depend on the underlying
         /// implementation.</remarks>
         /// <param name="options">The configuration options that specify the keys to send and their associated behavior. This parameter cannot
         /// be null.</param>

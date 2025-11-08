@@ -33,6 +33,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
+        /// <param name="state"></param>
         internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options)
         {
             // Initialise the form and reset the control order.

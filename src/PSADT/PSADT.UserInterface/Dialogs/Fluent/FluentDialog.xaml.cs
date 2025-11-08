@@ -144,7 +144,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (null != _countdownDuration)
             {
                 _countdownTimer = new(CountdownTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
-                CountdownStackPanel.Visibility = Visibility.Visible;    
+                CountdownStackPanel.Visibility = Visibility.Visible;
                 CountdownDeferPanelSeparator.Visibility = Visibility.Visible;
             }
 
@@ -951,7 +951,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <remarks>This dictionary maps <see cref="ApplicationTheme"/> values to their corresponding
         /// <see cref="BitmapSource"/> icons. It is intended to optimize access to preloaded icons for dialogs, ensuring
         /// consistent and efficient retrieval.</remarks>
-        private readonly ReadOnlyDictionary<ApplicationTheme, BitmapSource> _dialogBitmapCache; 
+        private readonly ReadOnlyDictionary<ApplicationTheme, BitmapSource> _dialogBitmapCache;
 
         /// <summary>
         /// Dialog icon cache for improved performance

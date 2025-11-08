@@ -18,6 +18,7 @@ namespace PSADT.ProcessManagement
         /// <param name="description"></param>
         /// <param name="fileName"></param>
         /// <param name="arguments"></param>
+        /// <param name="username"></param>
         internal RunningProcess(Process process, string description, string fileName, IEnumerable<string> arguments, NTAccount? username)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);

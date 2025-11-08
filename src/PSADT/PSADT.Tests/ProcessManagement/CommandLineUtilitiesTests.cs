@@ -708,11 +708,11 @@ namespace PSADT.Tests.ProcessManagement
         /// These scenarios are based on actual command lines that might be encountered in Windows environments.
         /// </summary>
         [Theory]
-        [InlineData("\"C:\\Program Files\\\\app.exe\" -arg \"value with \\\"quotes\\\"\"", 
+        [InlineData("\"C:\\Program Files\\\\app.exe\" -arg \"value with \\\"quotes\\\"\"",
                    new[] { "C:\\Program Files\\\\app.exe", "-arg", "value with \"quotes\"" })]
-        [InlineData("command -o \"output file.txt\" --path \"C:\\Users\\Test User\\\\\"", 
+        [InlineData("command -o \"output file.txt\" --path \"C:\\Users\\Test User\\\\\"",
                    new[] { "command", "-o", "output file.txt", "--path", "C:\\Users\\Test User\\" })]
-        [InlineData("arg1 \"arg2 with \"\"quotes\"\"\" arg3", 
+        [InlineData("arg1 \"arg2 with \"\"quotes\"\"\" arg3",
                    new[] { "arg1", "arg2 with \"quotes\"", "arg3" })]
         [InlineData("msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn TARGETDIR=\"C:\\Program Files\\My App\\\"",
                    new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=C:\\Program Files\\My App\"" })]
@@ -746,13 +746,13 @@ namespace PSADT.Tests.ProcessManagement
         /// These test the reverse operation to ensure proper escaping for complex arguments.
         /// </summary>
         [Theory]
-        [InlineData(new[] { "C:\\Program Files\\app.exe", "-arg", "value with \"quotes\"" }, 
+        [InlineData(new[] { "C:\\Program Files\\app.exe", "-arg", "value with \"quotes\"" },
                    "\"C:\\Program Files\\app.exe\" -arg \"value with \\\"quotes\\\"\"")]
-        [InlineData(new[] { "command", "-o", "output file.txt", "--path", "C:\\Users\\Test User\\" }, 
+        [InlineData(new[] { "command", "-o", "output file.txt", "--path", "C:\\Users\\Test User\\" },
                    "command -o \"output file.txt\" --path \"C:\\Users\\Test User\\\\\"")]
-        [InlineData(new[] { "a b \" c \\ d e f" }, 
+        [InlineData(new[] { "a b \" c \\ d e f" },
                    "\"a b \\\" c \\ d e f\"")]
-        [InlineData(new[] { "arg1", "arg2 with \"quotes\"", "arg3" }, 
+        [InlineData(new[] { "arg1", "arg2 with \"quotes\"", "arg3" },
                    "arg1 \"arg2 with \\\"quotes\\\"\" arg3")]
         [InlineData(new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=C:\\Program Files\\My App\\" },
                    "msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn \"TARGETDIR=C:\\Program Files\\My App\\\\\"")]
@@ -872,7 +872,7 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("\"\\\\server name\\share name\"", new[] { "\\\\server name\\share name" })]
         [InlineData("\"\\\\server\\share with spaces\\file.txt\"", new[] { "\\\\server\\share with spaces\\file.txt" })]
         [InlineData("\"\\\\server\\share\\folder with spaces\\\"", new[] { "\\\\server\\share\\folder with spaces\"" })]
-        [InlineData("\"\\\\very long server name\\very long share name\\very long file name.txt\"", 
+        [InlineData("\"\\\\very long server name\\very long share name\\very long file name.txt\"",
                    new[] { "\\\\very long server name\\very long share name\\very long file name.txt" })]
         public void CommandLineToArgumentList_UncPathsWithSpaces_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
@@ -1052,11 +1052,11 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests the new path detection functionality for unquoted paths with spaces.
         /// </summary>
         [Theory]
-        [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag", 
+        [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag",
                    new[] { "C:\\Program Files\\MyApp\\myapp.exe", "/flag" })]
         [InlineData("C:\\ProgramData\\Caphyon\\Advanced Installer\\{E928DFCD-4C3A-4301-872C-4655F1B18AC1}\\minitab22.3.1.0setup.x64.exe /i {E928DFCD-4C3A-4301-872C-4655F1B18AC1} AI_UNINSTALLER_CTP=1",
                    new[] { "C:\\ProgramData\\Caphyon\\Advanced Installer\\{E928DFCD-4C3A-4301-872C-4655F1B18AC1}\\minitab22.3.1.0setup.x64.exe", "/i", "{E928DFCD-4C3A-4301-872C-4655F1B18AC1}", "AI_UNINSTALLER_CTP=1" })]
-        [InlineData("\\\\server\\share\\My App\\setup.exe /silent", 
+        [InlineData("\\\\server\\share\\My App\\setup.exe /silent",
                    new[] { "\\\\server\\share\\My App\\setup.exe", "/silent" })]
         [InlineData("D:\\Some Folder\\Another Folder\\app.msi PROPERTY=value",
                    new[] { "D:\\Some Folder\\Another Folder\\app.msi", "PROPERTY=value" })]
@@ -1075,9 +1075,9 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests that path detection can be disabled and falls back to standard parsing.
         /// </summary>
         [Theory]
-        [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag", 
+        [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag",
                    new[] { "C:\\Program", "Files\\MyApp\\myapp.exe", "/flag" })]
-        [InlineData("\\\\server\\share\\My App\\setup.exe /silent", 
+        [InlineData("\\\\server\\share\\My App\\setup.exe /silent",
                    new[] { "\\\\server\\share\\My", "App\\setup.exe", "/silent" })]
         public void CommandLineToArgumentList_PathDetectionDisabled_UsesStandardParsing(string commandLine, IReadOnlyList<string> expected)
         {
@@ -1092,9 +1092,9 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests that quoted paths are still handled correctly with path detection enabled.
         /// </summary>
         [Theory]
-        [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" /flag", 
+        [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" /flag",
                    new[] { "C:\\Program Files\\MyApp\\myapp.exe", "/flag" })]
-        [InlineData("\"\\\\server\\share\\My App\\setup.exe\" /silent", 
+        [InlineData("\"\\\\server\\share\\My App\\setup.exe\" /silent",
                    new[] { "\\\\server\\share\\My App\\setup.exe", "/silent" })]
         [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" \"C:\\Some Other Path\\file.txt\" /option",
                    new[] { "C:\\Program Files\\MyApp\\myapp.exe", "C:\\Some Other Path\\file.txt", "/option" })]

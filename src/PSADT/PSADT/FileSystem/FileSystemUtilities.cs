@@ -253,6 +253,7 @@ namespace PSADT.FileSystem
         /// <param name="token">A valid security token representing the user or group for which to evaluate access rights. This cannot be
         /// null or invalid.</param>
         /// <param name="desiredAccessMask">The desired access mask specifying the access rights to evaluate.</param>
+        /// <param name="tokenType">The type of token being used for the access check (SID or UserToken).</param>
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified SID
         /// has on the file or directory.</returns>
         private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, TokenType tokenType)

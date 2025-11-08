@@ -14,6 +14,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new Custom dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
+        /// <param name="setFocus">Indicates whether to set focus to the dialog upon creation.</param>
         internal CustomDialog(CustomDialogOptions options, bool setFocus = true) : base(options)
         {
             // Set up UI

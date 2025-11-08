@@ -15,6 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class.
         /// </summary>
+        /// <param name="deploymentType"></param>
         /// <param name="options"></param>
         public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : base(options)
         {

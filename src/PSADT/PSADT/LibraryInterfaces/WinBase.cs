@@ -27,7 +27,7 @@ namespace PSADT.LibraryInterfaces
         /// Represents the attribute value for BNO isolation in process and thread attribute settings.
         /// </summary>
         /// <remarks>This field is used to specify the BNO isolation attribute when configuring process
-        /// and thread attributes. It is a constant value derived from the <see cref="ProcThreadAttributeValue"/>
+        /// and thread attributes. It is a constant value derived from the ProcThreadAttributeValue
         /// method, which combines various attribute flags. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2744</remarks>
         PROC_THREAD_ATTRIBUTE_BNO_ISOLATION = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeBnoIsolation | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
@@ -52,16 +52,14 @@ namespace PSADT.LibraryInterfaces
         /// Represents a console reference attribute for a process or thread.
         /// </summary>
         /// <remarks>This attribute is used to specify a console reference when creating a process or
-        /// thread. It is a constant value that combines the attribute number and flags using the <see
-        /// cref="ProcThreadAttributeValue"/> method. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2732</remarks>
+        /// thread. It is a constant value that combines the attribute number and flags using the ProcThreadAttributeValue method. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2732</remarks>
         PROC_THREAD_ATTRIBUTE_CONSOLE_REFERENCE = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeConsoleReference | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
         /// Represents the attribute value used to create a new attribute store for a process or thread.
         /// </summary>
         /// <remarks>This field is used in process and thread attribute lists to specify that a new
-        /// attribute store should be created. It is a constant value derived from the <see
-        /// cref="ProcThreadAttributeValue"/> method, which combines various attribute flags. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2752</remarks>
+        /// attribute store should be created. It is a constant value derived from the ProcThreadAttributeValue method, which combines various attribute flags. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2752</remarks>
         PROC_THREAD_ATTRIBUTE_CREATE_STORE = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeCreateStore | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
         /// <summary>
@@ -86,8 +84,7 @@ namespace PSADT.LibraryInterfaces
         /// Represents the attribute value for extended flags in a process or thread context.
         /// </summary>
         /// <remarks>This field is used to specify extended flags when creating or modifying a process or
-        /// thread. The value is determined by combining specific attributes using the <see
-        /// cref="ProcThreadAttributeValue"/> method. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2724</remarks>
+        /// thread. The value is determined by combining specific attributes using the ProcThreadAttributeValue method. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2724</remarks>
         PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeExtendedFlags | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT | PInvoke.PROC_THREAD_ATTRIBUTE_ADDITIVE,
 
         /// <summary>
@@ -121,7 +118,7 @@ namespace PSADT.LibraryInterfaces
         /// Represents the attribute value for process thread isolation manifest.
         /// </summary>
         /// <remarks>This field is used to specify the isolation manifest attribute for a process thread.
-        /// It is a constant value calculated using the <see cref="ProcThreadAttributeValue"/> method with specific
+        /// It is a constant value calculated using the ProcThreadAttributeValue method with specific
         /// parameters to define the isolation manifest attribute. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2748</remarks>
         PROC_THREAD_ATTRIBUTE_ISOLATION_MANIFEST = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeIsolationManifest | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 
@@ -232,7 +229,7 @@ namespace PSADT.LibraryInterfaces
         /// Represents a trusted application attribute for process and thread creation.
         /// </summary>
         /// <remarks>This field is used to specify that a process or thread is a trusted application. It
-        /// is a constant value derived from the <see cref="ProcThreadAttributeValue"/> method with specific parameters
+        /// is a constant value derived from the ProcThreadAttributeValue method with specific parameters
         /// indicating its trusted status. https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2756</remarks>
         PROC_THREAD_ATTRIBUTE_TRUSTED_APP = PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeTrustedApp | PInvoke.PROC_THREAD_ATTRIBUTE_INPUT,
 

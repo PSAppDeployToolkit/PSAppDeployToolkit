@@ -494,7 +494,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (PROCESS_BASIC_INFORMATION* processInformationLocal = &processInformation)
                 {
-                    processHandle.DangerousAddRef(ref processHandleAddRef);  uint returnLength = 0;
+                    processHandle.DangerousAddRef(ref processHandleAddRef); uint returnLength = 0;
                     var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)processHandle.DangerousGetHandle(), PROCESSINFOCLASS.ProcessBasicInformation, processInformationLocal, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref returnLength);
                     if (res != NTSTATUS.STATUS_SUCCESS)
                     {

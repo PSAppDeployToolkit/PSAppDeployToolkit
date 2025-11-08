@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             if (null != options)
             {
                 // Base properties.
-                this.SuspendLayout();   
+                this.SuspendLayout();
                 this.Text = StripFormattingTags(options.AppTitle);
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.TopMost = options.DialogTopMost;
@@ -275,7 +275,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Positions the form on the screen based on the specified dialog position.
         /// </summary>
-        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="_dialogPosition"/> field, which specifies predefined locations such as top-left, center, or bottom-right. If the calculated position exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
+        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="dialogPosition"/> field, which specifies predefined locations such as top-left, center, or bottom-right. If the calculated position exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
         private void PositionForm()
         {
             // Get the working area (pixels not DIPs)
@@ -287,55 +287,55 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 case DialogPosition.TopLeft:
                     left = workingArea.Left;
-                    top  = workingArea.Top;
+                    top = workingArea.Top;
                     break;
 
                 case DialogPosition.Top:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top;
+                    top = workingArea.Top;
                     break;
 
                 case DialogPosition.TopRight:
                     left = workingArea.Right - Width;
-                    top  = workingArea.Top;
+                    top = workingArea.Top;
                     break;
 
                 case DialogPosition.TopCenter:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
+                    top = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
                     break;
 
                 case DialogPosition.BottomLeft:
                     left = workingArea.Left;
-                    top  = workingArea.Bottom - Height;
+                    top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.Bottom:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Bottom - Height;
+                    top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.BottomCenter:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top  + ((workingArea.Height - Height) * (5.0 / 6.0));
+                    top = workingArea.Top + ((workingArea.Height - Height) * (5.0 / 6.0));
                     break;
 
                 case DialogPosition.BottomRight:
                     left = workingArea.Right - Width;
-                    top  = workingArea.Bottom - Height;
+                    top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.Center:
                 case DialogPosition.Default:
                 default:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top  + ((workingArea.Height - Height) / 2);
+                    top = workingArea.Top + ((workingArea.Height - Height) / 2);
                     break;
             }
 
             // Clamp to working-area bounds
-            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right  - Width));
-            top  = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - Height));
+            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right - Width));
+            top = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - Height));
 
             // Align positions to whole pixels.
             left = Math.Floor(left);

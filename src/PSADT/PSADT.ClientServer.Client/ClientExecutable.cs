@@ -291,7 +291,7 @@ namespace PSADT.ClientServer
                     {
                         outputWriter.Write(result);
                         outputWriter.Flush();
-                    };
+                    }
 
                     // Initialize variables needed throughout the loop.
                     CloseAppsDialogState closeAppsDialogState = default!;
@@ -511,6 +511,8 @@ namespace PSADT.ClientServer
         /// <description><c>DialogStyle</c>: Specifies the style of the dialog. Must be a valid <see
         /// cref="DialogStyle"/> value.</description> </item> <item> <description><c>DialogOptions</c>: A
         /// JSON-serialized string containing the options specific to the dialog type.</description> </item> </list></param>
+        /// <param name="closeAppsDialogState">An optional <see cref="BaseState"/> object representing the state of a Close Apps dialog, if applicable.</param>
+        /// <param name="argv">An optional array of command-line arguments, used for special handling in BlockExecution scenarios.</param>
         /// <returns>A JSON-serialized string representing the result of the dialog. The format and content of the result depend
         /// on the dialog type.</returns>
         /// <exception cref="ClientException">Thrown if any of the following conditions occur: <list type="bullet"> <item><description>The

@@ -50,7 +50,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// Gets session info for any provided valid session Id.
         /// </summary>
-        /// <param name="sessionId"></param>
+        /// <param name="session"></param>
         /// <returns></returns>
         internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {

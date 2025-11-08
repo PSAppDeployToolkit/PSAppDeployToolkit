@@ -73,6 +73,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
+        /// <param name="state">Optional state values for the dialog.</param>
         internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, options.CustomMessageText, options.CountdownDuration, null, state.CountdownStopwatch)
         {
             // Set up the context for data binding

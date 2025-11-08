@@ -67,6 +67,8 @@ namespace PSADT.ProcessManagement
         /// process's main module. It requires the SeDebugPrivilege to read the process memory. If the privilege is not
         /// enabled, it will attempt to enable it.</remarks>
         /// <param name="process">The process from which to retrieve version information. Cannot be <see langword="null"/>.</param>
+        /// <param name="filePath">The file path associated with the process. If <see langword="null"/> or whitespace, the image name of the process will be used.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary for resolving NT paths to user-friendly paths. If <see langword="null"/>, a default lookup table will be used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
@@ -320,7 +322,9 @@ namespace PSADT.ProcessManagement
         /// associated with the given name. If the information is found and is not empty or whitespace, it returns the
         /// version string; otherwise, it returns <see langword="null"/>.</remarks>
         /// <param name="versionResource">A handle to the version resource from which to retrieve the version string.</param>
+        /// <param name="codepage">The codepage string used to locate the version information.</param>
         /// <param name="name">The name of the version information to query.</param>
+        /// <param name="success">A reference boolean that indicates whether the retrieval was successful.</param>
         /// <returns>A string containing the version information if found and not empty; otherwise, <see langword="null"/>.</returns>
         private static string? GetFileVersionString(SafeHGlobalHandle versionResource, string codepage, string name, ref bool success)
         {

@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Diagnostics;
-using System.ComponentModel;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -267,6 +266,7 @@ namespace PSADT.FileSystem
         /// <param name="fileHandle"></param>
         /// <param name="infoClass"></param>
         /// <param name="infoBuffer"></param>
+        /// <param name="infoBufferLength"></param>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
         private static SafeVirtualAllocHandle GetObjectTypeShellcode(FARPROC ntQueryObject, IntPtr fileHandle, OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength, FARPROC exitThread)

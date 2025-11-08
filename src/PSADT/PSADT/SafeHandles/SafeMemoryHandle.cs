@@ -90,9 +90,9 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Writes a 64-bit signed integer to the specified memory location.
         /// </summary>
-        /// <remarks>This method uses the <see cref="System.Runtime.InteropServices.Marshal.WriteInt64"/>
-        /// function to write the integer value to unmanaged memory. Ensure that the memory location is valid and
-        /// accessible to avoid undefined behavior.</remarks>
+        /// <remarks>This method writes the specified <paramref name="value"/> to the unmanaged memory
+        /// block associated with the current instance. Ensure that the offset is within the bounds of the allocated
+        /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 64-bit signed integer to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal void WriteInt64(long value, int offset = 0) => Marshal.WriteInt64(handle, offset, value);
@@ -100,9 +100,9 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Writes a 32-bit integer value to a specific location in unmanaged memory.
         /// </summary>
-        /// <remarks>This method writes the specified integer value to the unmanaged memory block
-        /// referenced by the handle. Ensure that the memory location is valid and that the offset does not exceed the
-        /// bounds of the allocated memory.</remarks>
+        /// <remarks>This method writes the specified <paramref name="value"/> to the unmanaged memory
+        /// block associated with the current instance. Ensure that the offset is within the bounds of the allocated
+        /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 32-bit integer value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal void WriteInt32(int value, int offset = 0) => Marshal.WriteInt32(handle, offset, value);
@@ -120,8 +120,9 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Writes a byte value to a specific location in unmanaged memory.
         /// </summary>
-        /// <remarks>This method writes directly to unmanaged memory, which can lead to memory corruption
-        /// if not used carefully. Ensure that the offset is within the bounds of the allocated memory.</remarks>
+        /// <remarks>This method writes the specified <paramref name="value"/> to the unmanaged memory
+        /// block associated with the current instance. Ensure that the offset is within the bounds of the allocated
+        /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The byte value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal void WriteByte(byte value, int offset = 0) => Marshal.WriteByte(handle, offset, value);

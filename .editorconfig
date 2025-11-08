@@ -9,3 +9,12 @@ indent_size = 4
 indent_style = space
 trim_trailing_whitespace = true
 insert_final_newline = true
+
+[*.cs]
+dotnet_diagnostic.IDE0005.severity = error
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
+dotnet_diagnostic.IDE0041.severity = error
+dotnet_diagnostic.RS0030.severity = error
+dotnet_code_quality.RS0030.enabled = true
+dotnet_code_quality.RS0030.banned_symbols =
+	M:System.String.IsNullOrEmpty(System.String)

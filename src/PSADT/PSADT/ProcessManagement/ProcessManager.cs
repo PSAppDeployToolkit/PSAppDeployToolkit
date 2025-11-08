@@ -503,6 +503,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>This method uses the provided environment block to resolve environment variable
         /// placeholders. Placeholders are expected to be in the format <c>%VariableName%</c>. If a placeholder does not
         /// match any environment variable in the block, it remains unchanged in the output.</remarks>
+        /// <param name="ntAccount">The NT account of the user whose environment variables are being expanded. Used for error messages.</param>
         /// <param name="input">The input string containing environment variable placeholders in the format <c>%VariableName%</c>.</param>
         /// <param name="environment">A handle to the environment block used for resolving environment variables. The handle must be valid and not
         /// invalid.</param>
@@ -536,6 +537,7 @@ namespace PSADT.ProcessManagement
         /// directory.</param>
         /// <param name="filePath">When this method returns, contains the fully qualified file path of the executable to launch.</param>
         /// <param name="arguments">When this method returns, contains the command line arguments for the process launch, or <see langword="null"/>
+        /// if not specified.</param>
         /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
@@ -655,6 +657,7 @@ namespace PSADT.ProcessManagement
         /// possible, falling back to <c>CreateProcessWithToken</c> if necessary. It requires specific privileges to be
         /// enabled, such as <c>SeIncreaseQuotaPrivilege</c> and <c>SeAssignPrimaryTokenPrivilege</c>.</remarks>
         /// <param name="hPrimaryToken">The primary token representing the user context under which the process will be created.</param>
+        /// <param name="filePath">The fully qualified path to the executable file for the new process.</param>
         /// <param name="commandLine">The command line to be executed by the new process.</param>
         /// <param name="inheritHandles">Specifies whether the new process inherits handles from the calling process.</param>
         /// <param name="callerUsingHandles">The caller is passing anonymous handles to the process, so cannot use CreateProcessWithToken().</param>
