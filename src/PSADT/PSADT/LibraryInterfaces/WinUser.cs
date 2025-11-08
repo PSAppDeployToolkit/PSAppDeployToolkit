@@ -21,6 +21,10 @@ namespace PSADT.LibraryInterfaces
         /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. An application should specify this flag when displaying the window for the first time.
         /// </summary>
         SW_SHOWNORMAL = Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWNORMAL,
+
+        /// <summary>
+        /// Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. An application should specify this flag when displaying the window for the first time.
+        /// </summary>
         SW_NORMAL = Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_NORMAL,
 
         /// <summary>
@@ -32,6 +36,10 @@ namespace PSADT.LibraryInterfaces
         /// Activates the window and displays it as a maximized window.
         /// </summary>
         SW_SHOWMAXIMIZED = Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED,
+
+        /// <summary>
+        /// Activates the window and displays it as a maximized window.
+        /// </summary>
         SW_MAXIMIZE = Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_MAXIMIZE,
 
         /// <summary>

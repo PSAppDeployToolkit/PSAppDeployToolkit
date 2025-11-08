@@ -15,6 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.
         /// </summary>
+        /// <param name="deploymentType"></param>
         /// <param name="options"></param>
         public CloseAppsDialogOptions(DeploymentType deploymentType, Hashtable options) : base(options)
         {
@@ -243,9 +244,9 @@ namespace PSADT.UserInterface.DialogOptions
             /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class with the specified classic
             /// and fluent dialog strings.
             /// </summary>
-            /// <param name="classicStrings">The strings used for the classic dialog style. Cannot be <see langword="null"/>.</param>
-            /// <param name="fluentStrings">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="classicStrings"/> or <paramref name="fluentStrings"/> is <see
+            /// <param name="classic">The strings used for the classic dialog style. Cannot be <see langword="null"/>.</param>
+            /// <param name="fluent">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="classic"/> or <paramref name="fluent"/> is <see
             /// langword="null"/>.</exception>
             [JsonConstructor]
             private CloseAppsDialogStrings(CloseAppsDialogClassicStrings classic, CloseAppsDialogFluentStrings fluent)

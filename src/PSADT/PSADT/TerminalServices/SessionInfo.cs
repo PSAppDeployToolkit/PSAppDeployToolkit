@@ -23,9 +23,11 @@ namespace PSADT.TerminalServices
         /// <param name="isCurrentSession"></param>
         /// <param name="isConsoleSession"></param>
         /// <param name="isActiveUserSession"></param>
+        /// <param name="isValidUserSession"></param>
         /// <param name="isUserSession"></param>
         /// <param name="isRdpSession"></param>
         /// <param name="isLocalAdmin"></param>
+        /// <param name="isLocalAdminException"></param>
         /// <param name="logonTime"></param>
         /// <param name="idleTime"></param>
         /// <param name="disconnectTime"></param>

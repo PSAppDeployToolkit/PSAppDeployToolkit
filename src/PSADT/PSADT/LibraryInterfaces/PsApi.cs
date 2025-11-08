@@ -21,7 +21,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hProcess">A handle to the process whose modules are to be enumerated. This handle must have the
         /// PROCESS_QUERY_INFORMATION and PROCESS_VM_READ access rights.</param>
         /// <param name="lphModule">When this method returns, contains a handle to the module. This parameter is passed uninitialized.</param>
-        /// <param name="cb">The size, in bytes, of the lphModule buffer.</param>
         /// <param name="lpcbNeeded">When this method returns, contains the number of bytes required to store all module handles in the lphModule
         /// buffer.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
@@ -64,7 +63,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hModule">A handle to the module whose information is to be retrieved.</param>
         /// <param name="lpmodinfo">When this method returns, contains a <see cref="MODULEINFO"/> structure that receives the module
         /// information.</param>
-        /// <param name="cb">The size of the <see cref="MODULEINFO"/> structure, in bytes.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal unsafe static BOOL GetModuleInformation(SafeHandle hProcess, HMODULE hModule, out MODULEINFO lpmodinfo)
         {

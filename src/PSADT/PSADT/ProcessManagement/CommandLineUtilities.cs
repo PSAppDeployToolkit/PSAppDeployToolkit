@@ -55,13 +55,13 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Converts an array of arguments back into a properly escaped Windows command line string.
         /// </summary>
-        /// <param name="args">The array of arguments to convert.</param>
+        /// <param name="argv">The array of arguments to convert.</param>
         /// <param name="strict">If true, use strict escaping rules. If false, use compatible escaping rules.</param>
         /// <returns>A properly escaped command line string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="args"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="argv"/> is null.</exception>
         /// <remarks>
         /// This method ensures that the resulting command line, when parsed back through 
-        /// <see cref="CommandLineToArgumentList(string)"/>, will yield the original arguments.
+        /// <see cref="CommandLineToArgumentList(string, bool)"/>, will yield the original arguments.
         /// Special characters are properly escaped according to Windows conventions.
         /// </remarks>
         public static string ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
@@ -215,7 +215,7 @@ namespace PSADT.ProcessManagement
                     // We can use ParseSingleArgument to correctly find the end of the quoted value,
                     // accounting for escaped quotes and other complexities.
                     int valueStartPosition = position;
-                    
+
                     // Create a temporary copy of the position to be advanced by ParseSingleArgument.
                     int tempPosition = position;
 
@@ -232,7 +232,7 @@ namespace PSADT.ProcessManagement
                         // Append the raw slice of the command line that represents the entire quoted value.
                         result.Append(commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString());
                     }
-                    
+
                     // Update the main position to continue parsing after this key-value pair.
                     position = tempPosition;
                 }
@@ -311,7 +311,7 @@ namespace PSADT.ProcessManagement
                 {
                     break;
                 }
-                
+
                 // Check if this position starts a new argument (but not for the first token).
                 if (tokens.Count > 0 && IsStartOfNewArgument(commandLine, position))
                 {
@@ -319,10 +319,10 @@ namespace PSADT.ProcessManagement
                     position = beforeWhitespace;
                     break;
                 }
-                
+
                 // Record the start position of this token.
                 tokenPositions.Add(position);
-                
+
                 // Parse the current token (non-whitespace characters).
                 StringBuilder tokenBuilder = new();
                 while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
@@ -407,7 +407,7 @@ namespace PSADT.ProcessManagement
                 if (token.Length > 0)
                 {
                     char lastChar = token[token.Length - 1];
-                    if (lastChar == ';' || lastChar == '|' || lastChar == '&' || 
+                    if (lastChar == ';' || lastChar == '|' || lastChar == '&' ||
                         lastChar == '<' || lastChar == '>' || lastChar == '^')
                     {
                         // This token contains a command separator, so the path ends here.
@@ -437,18 +437,18 @@ namespace PSADT.ProcessManagement
                     for (int i = 3; i < tokens.Count; i++)
                     {
                         string token = tokens[i];
-                        
+
                         if (token.Contains(';') || token.Contains('|') || token.Contains('&') ||
                             token.Contains('<') || token.Contains('>') || token.Contains('^'))
                         {
                             return (string.Join(" ", tokens.Take(i)), i);
                         }
                     }
-                    
+
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
                     string lastToken = tokens[tokens.Count - 1];
-                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") && 
+                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") &&
                         !lastToken.Contains("=") && !lastToken.StartsWith("{"))
                     {
                         return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
