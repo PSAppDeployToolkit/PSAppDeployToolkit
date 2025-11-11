@@ -1,19 +1,19 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Diagnostics;
-using System.IO.Compression;
-using System.Security.Principal;
-using System.Management.Automation;
-using System.Management.Automation.Host;
-using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Host;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
@@ -297,7 +297,7 @@ namespace PSADT.Module
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLower()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLowerInvariant()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
@@ -359,7 +359,7 @@ namespace PSADT.Module
                             var gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
                             if (gmtpOutput.Count > 0)
                             {
-                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput.First().BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
+                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
                                 if (msiExecList.Any())
                                 {
                                     _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToList().AsReadOnly();
@@ -369,7 +369,7 @@ namespace PSADT.Module
                         }
 
                         // Update our app variables with new values.
-                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
+                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
                         if (string.IsNullOrWhiteSpace(_appName))
                         {
                             _appName = (string)msiProps["ProductName"];
@@ -553,7 +553,7 @@ namespace PSADT.Module
 
                 // Open log file with commencement message.
                 WriteInitialDivider(ref writtenDivider);
-                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLower()} started.");
+                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLowerInvariant()} started.");
 
 
                 #endregion
@@ -1001,7 +1001,7 @@ namespace PSADT.Module
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
@@ -1411,7 +1411,7 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.

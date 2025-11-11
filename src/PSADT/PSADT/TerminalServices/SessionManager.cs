@@ -129,10 +129,10 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId); AssemblyPermissions.Remediate(user);
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
                         ProcessLaunchInfo args = new(clientServerPath, new(["/GetLastInputTime"]), Environment.SystemDirectory, user, createNoWindow: true);
-                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut!.First()));
+                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0]));
                     }
                     catch
                     {
@@ -203,7 +203,7 @@ namespace PSADT.TerminalServices
                         WTS_PROCESS_INFOW process = pProcessInfo.ToStructure<WTS_PROCESS_INFOW>(objLength * i);
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            return new((IntPtr)process.pUserSid);
+                            return process.pUserSid.ToSecurityIdentifier();
                         }
                     }
                 }
