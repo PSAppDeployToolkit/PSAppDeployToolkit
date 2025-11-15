@@ -122,11 +122,11 @@ function Resolve-ADTErrorRecord
             # If we've asked for all properties, return early with the above.
             if ($propsIsWildCard)
             {
-                return $properties | & { process { if (![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String).Trim())) { return $_ } } }
+                return $properties | & { process { if (![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String))) { return $_ } } }
             }
 
             # Return all valid properties in the order used by the caller.
-            return $Property | & { process { if (($properties -contains $_) -and ![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String).Trim())) { return $_ } } }
+            return $Property | & { process { if (($properties -contains $_) -and ![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String))) { return $_ } } }
         }
     }
 
