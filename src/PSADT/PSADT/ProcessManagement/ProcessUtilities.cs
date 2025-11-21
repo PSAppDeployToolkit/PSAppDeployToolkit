@@ -57,10 +57,26 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Get the command line for the process. Failing that, just get the image path.
+                string? commandLine;
                 try
                 {
-                    argv = CommandLineUtilities.CommandLineToArgumentList(GetProcessCommandLine(process.Id)).ToArray();
-                    if (argv.Length > 0)
+                    commandLine = GetProcessCommandLine(process.Id);
+                }
+                catch
+                {
+                    commandLine = null;
+                }
+
+                // Convert the command line into an argument array.
+                if (commandLine is not null)
+                {
+                    argv = CommandLineUtilities.CommandLineToArgumentList(commandLine).ToArray();
+                }
+
+                // If we couldn't get the command line or the file path is malformed, try and get the process's image name.
+                try
+                {
+                    if (argv?.Length > 0)
                     {
                         if (!Path.GetExtension(argv[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                         {
@@ -78,18 +94,11 @@ namespace PSADT.ProcessManagement
                 }
                 catch
                 {
-                    try
+                    if (!process.HasExited)
                     {
-                        argv = [GetProcessImageName(process.Id, ntPathLookupTable)];
+                        throw;
                     }
-                    catch
-                    {
-                        if (!process.HasExited)
-                        {
-                            throw;
-                        }
-                        return [];
-                    }
+                    return [];
                 }
 
                 // Cache and return the command line.
