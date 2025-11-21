@@ -60,7 +60,7 @@ namespace PSADT.ProcessManagement
                 string? commandLine;
                 try
                 {
-                    commandLine = GetProcessCommandLine(process.Id);
+                    commandLine = GetProcessCommandLine(process);
                 }
                 catch
                 {
@@ -80,16 +80,16 @@ namespace PSADT.ProcessManagement
                     {
                         if (!Path.GetExtension(argv[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            argv = (new[] { GetProcessImageName(process.Id, ntPathLookupTable) }).Concat(argv).ToArray();
+                            argv = (new[] { GetProcessImageName(process, ntPathLookupTable) }).Concat(argv).ToArray();
                         }
                         else if (!Path.IsPathRooted(argv[0]) || !File.Exists(argv[0]))
                         {
-                            argv[0] = GetProcessImageName(process.Id, ntPathLookupTable);
+                            argv[0] = GetProcessImageName(process, ntPathLookupTable);
                         }
                     }
                     else
                     {
-                        argv = [GetProcessImageName(process.Id, ntPathLookupTable)];
+                        argv = [GetProcessImageName(process, ntPathLookupTable)];
                     }
                 }
                 catch
@@ -298,12 +298,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Retrieves the command line arguments of a process given its process ID.
         /// </summary>
-        /// <param name="processId"></param>
+        /// <param name="process"></param>
         /// <returns></returns>
-        public static string GetProcessCommandLine(int processId)
+        public static string GetProcessCommandLine(Process process)
         {
             // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
-            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, SafeMemoryHandle.Null, out var requiredLength);
 
             // Fill the buffer, then retrieve the actual command line string.
@@ -313,15 +313,22 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the image name of a process given its process ID.
+        /// Retrieves the command line arguments of a process given its process ID.
         /// </summary>
         /// <param name="processId"></param>
+        /// <returns></returns>
+        public static string GetProcessCommandLine(int processId) => GetProcessCommandLine(Process.GetProcessById(processId));
+
+        /// <summary>
+        /// Retrieves the image name of a process given its process ID.
+        /// </summary>
+        /// <param name="process"></param>
         /// <param name="ntPathLookupTable"></param>
         /// <returns></returns>
-        internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             // Set up initial buffer that we need to query the process information.
-            var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)processId };
+            var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)process.Id };
             var processIdInfoSize = Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
             using (var processIdInfoPtr = SafeHGlobalHandle.Alloc(processIdInfoSize).FromStructure(processIdInfo, false))
             {
@@ -339,6 +346,12 @@ namespace PSADT.ProcessManagement
                         NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
                         var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
                         processIdInfo.ImageName.Buffer = null;
+
+                        // Validate we received something valid from the buffer. This function is known to return garbage.
+                        if (!imagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imagePath}].");
+                        }
 
                         // If we have a lookup table, replace the NT path with the drive letter before returning.
                         if (ntPathLookupTable is not null)
@@ -368,6 +381,6 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        public static string GetProcessImageName(int processId) => GetProcessImageName(processId, null);
+        public static string GetProcessImageName(int processId) => GetProcessImageName(Process.GetProcessById(processId), null);
     }
 }
