@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Diagnostics;
-using System.ComponentModel;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -154,7 +153,7 @@ namespace PSADT.FileSystem
 
                         // Add the handle information to the list if it matches the specified directory path.
                         string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                        if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
+                        if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                         {
                             openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                         }
@@ -177,7 +176,7 @@ namespace PSADT.FileSystem
         public static void CloseHandles(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
             // Confirm the provided input isn't null.
-            if (null == handleEntries)
+            if (handleEntries is null)
             {
                 throw new ArgumentNullException(nameof(handleEntries));
             }
@@ -267,6 +266,7 @@ namespace PSADT.FileSystem
         /// <param name="fileHandle"></param>
         /// <param name="infoClass"></param>
         /// <param name="infoBuffer"></param>
+        /// <param name="infoBufferLength"></param>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
         private static SafeVirtualAllocHandle GetObjectTypeShellcode(FARPROC ntQueryObject, IntPtr fileHandle, OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength, FARPROC exitThread)

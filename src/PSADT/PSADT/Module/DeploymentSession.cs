@@ -1,19 +1,19 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Diagnostics;
-using System.IO.Compression;
-using System.Security.Principal;
-using System.Management.Automation;
-using System.Management.Automation.Host;
-using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Host;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
@@ -72,13 +72,13 @@ namespace PSADT.Module
                 var isAdmin = (bool)adtEnv["IsAdmin"]!;
 
                 // Set up other variable values based on incoming dictionary.
-                if (null != parameters && parameters.Count > 0)
+                if (parameters is not null && parameters.Count > 0)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out var paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("DeploymentType", out var paramValue) && (paramValue is not null))
                     {
                         _deploymentType = (DeploymentType)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployMode", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("DeployMode", out paramValue) && (paramValue is not null))
                     {
                         _deployMode = (DeployMode)paramValue;
                     }
@@ -118,11 +118,11 @@ namespace PSADT.Module
                     {
                         _appRevision = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (paramValue is not null))
                     {
                         _appScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptDate", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("AppScriptDate", out paramValue) && (paramValue is not null))
                     {
                         _appScriptDate = (DateTime)paramValue;
                     }
@@ -146,27 +146,27 @@ namespace PSADT.Module
                     {
                         _deployAppScriptFriendlyName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue) && (paramValue is not null))
                     {
                         _deployAppScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (paramValue is not null))
                     {
                         _deployAppScriptParameters = new((Dictionary<string, object>)paramValue);
                     }
-                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
                     {
                         _appSuccessExitCodes = new((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
                     {
                         _appRebootExitCodes = new((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
                     {
                         _appProcessesToClose = new((ProcessDefinition[])paramValue);
                     }
-                    if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
                         _scriptDirectory = new((string[])paramValue);
                     }
@@ -186,7 +186,7 @@ namespace PSADT.Module
                     {
                         _defaultMstFile = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (null != paramValue))
+                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
                     {
                         _defaultMspFiles = new((string[])paramValue);
                     }
@@ -297,7 +297,7 @@ namespace PSADT.Module
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLower()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLowerInvariant()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
@@ -359,7 +359,7 @@ namespace PSADT.Module
                             var gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
                             if (gmtpOutput.Count > 0)
                             {
-                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput.First().BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
+                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
                                 if (msiExecList.Any())
                                 {
                                     _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToList().AsReadOnly();
@@ -369,7 +369,7 @@ namespace PSADT.Module
                         }
 
                         // Update our app variables with new values.
-                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
+                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
                         if (string.IsNullOrWhiteSpace(_appName))
                         {
                             _appName = (string)msiProps["ProductName"];
@@ -553,7 +553,7 @@ namespace PSADT.Module
 
                 // Open log file with commencement message.
                 WriteInitialDivider(ref writtenDivider);
-                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLower()} started.");
+                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLowerInvariant()} started.");
 
 
                 #endregion
@@ -594,7 +594,7 @@ namespace PSADT.Module
                 WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", (string[])adtDirectories.Properties["Strings"].Value)}'].");
 
                 // Announce session instantiation mode.
-                if (null != callerSessionState)
+                if (callerSessionState is not null)
                 {
                     WriteLogEntry($"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
                     WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverity.Warning);
@@ -663,7 +663,7 @@ namespace PSADT.Module
                     }
 
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                    if (null != RunAsActiveUser)
+                    if (RunAsActiveUser is not null)
                     {
                         WriteLogEntry($"The active logged on user who will receive UI elements is [{RunAsActiveUser.NTAccount}].");
                     }
@@ -685,7 +685,7 @@ namespace PSADT.Module
                 }
 
                 // Check if the caller explicitly wants interactivity but we can't do it.
-                if (_deployMode == DeployMode.Interactive && null == RunAsActiveUser && !IsProcessUserInteractive)
+                if (_deployMode == DeployMode.Interactive && RunAsActiveUser is null && !IsProcessUserInteractive)
                 {
                     throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
@@ -759,7 +759,7 @@ namespace PSADT.Module
                             if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
                             {
                                 var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
-                                if (null != fsRegData)
+                                if (fsRegData is not null)
                                 {
                                     if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
                                     {
@@ -825,7 +825,7 @@ namespace PSADT.Module
                     else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
                         // If the process is not able to display a UI, enable silent mode.
-                        if (null == RunAsActiveUser)
+                        if (RunAsActiveUser is null)
                         {
                             // If there's no users logged on but we're interactive anyway, don't change the DeployMode.
                             if (!IsProcessUserInteractive)
@@ -897,7 +897,7 @@ namespace PSADT.Module
                 if (_deployMode == DeployMode.Auto)
                 {
                     _deployMode = DeployMode.Interactive;
-            }
+                }
 
                 // Set Deploy Mode switches.
                 WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
@@ -935,7 +935,7 @@ namespace PSADT.Module
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-                if (null != callerSessionState)
+                if (callerSessionState is not null)
                 {
                     foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
@@ -992,7 +992,7 @@ namespace PSADT.Module
             }
 
             // Establish initial variable values.
-            var adtExitCode = ModuleDatabase.Get().Properties["LastExitCode"];
+            var adtExitCode = (int)ModuleDatabase.Get().Properties["LastExitCode"].Value;
 
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
@@ -1001,7 +1001,7 @@ namespace PSADT.Module
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
@@ -1032,7 +1032,7 @@ namespace PSADT.Module
             // Update the module's last tracked exit code.
             if (ExitCode != 0)
             {
-                adtExitCode.Value = ExitCode;
+                adtExitCode = ExitCode;
             }
 
             // Remove any subst paths if created in the zero-config WIM code.
@@ -1089,7 +1089,7 @@ namespace PSADT.Module
             }
 
             // Return the module's cached exit code to the caller.
-            return (int)adtExitCode.Value;
+            return adtExitCode;
         }
 
         /// <summary>
@@ -1100,7 +1100,7 @@ namespace PSADT.Module
         private static HostLogStream GetHostLogStreamMode(bool? writeHost = null)
         {
             var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
-            if ((null != writeHost && !writeHost.Value) || !(bool)configToolkit["LogWriteToHost"]!)
+            if ((writeHost is not null && !writeHost.Value) || !(bool)configToolkit["LogWriteToHost"]!)
             {
                 return HostLogStream.None;
             }
@@ -1206,7 +1206,7 @@ namespace PSADT.Module
         /// <returns></returns>
         private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
         {
-            if (null != CallerSessionState)
+            if (CallerSessionState is not null)
             {
                 return (T)CallerSessionState.PSVariable.GetValue(propertyName);
             }
@@ -1221,7 +1221,7 @@ namespace PSADT.Module
         /// <param name="propertyName"></param>
         private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
         {
-            if (null != CallerSessionState)
+            if (CallerSessionState is not null)
             {
                 CallerSessionState.PSVariable.Set(new(propertyName, value));
             }
@@ -1251,21 +1251,21 @@ namespace PSADT.Module
             }
             WriteLogEntry("Getting deferral history...");
             var history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
-            if (null == history)
+            if (history is null)
             {
                 return null;
             }
             var deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
             var deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
             var deferDeadline = history.Properties["DeferDeadline"]?.Value;
-            if (null == deferRunIntervalLastTime && null == deferTimesRemaining && null == deferDeadline)
+            if (deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null)
             {
                 return null;
             }
             return new(
-                null != deferTimesRemaining ? deferTimesRemaining is string ? (uint)int.Parse((string)deferTimesRemaining) : (uint)(int)deferTimesRemaining : null,
-                null != deferDeadline ? DateTime.Parse((string)deferDeadline) : null,
-                null != deferRunIntervalLastTime ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
+                deferTimesRemaining is not null ? deferTimesRemaining is string ? (uint)int.Parse((string)deferTimesRemaining) : (uint)(int)deferTimesRemaining : null,
+                deferDeadline is not null ? DateTime.Parse((string)deferDeadline) : null,
+                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
         }
 
         /// <summary>
@@ -1281,7 +1281,7 @@ namespace PSADT.Module
             var moduleSessionState = ModuleDatabase.GetSessionState();
 
             // Test each property and set it if it exists.
-            if (null != deferTimesRemaining)
+            if (deferTimesRemaining is not null)
             {
                 var deferTimesRemainingValue = deferTimesRemaining.Value;
                 WriteLogEntry($"Setting deferral history: [DeferTimesRemaining = {deferTimesRemainingValue}].");
@@ -1291,7 +1291,7 @@ namespace PSADT.Module
                 }
                 moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", RegistryValueKind.DWord.ToString(), deferTimesRemainingValue, true, true);
             }
-            if (null != deferDeadline)
+            if (deferDeadline is not null)
             {
                 var deferDeadlineValue = deferDeadline.Value.ToUniversalTime().ToString("O");
                 WriteLogEntry($"Setting deferral history: [DeferDeadline = {deferDeadlineValue}].");
@@ -1301,7 +1301,7 @@ namespace PSADT.Module
                 }
                 moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", RegistryValueKind.String.ToString(), deferDeadlineValue, true, true);
             }
-            if (null != deferRunInterval)
+            if (deferRunInterval is not null)
             {
                 var deferRunIntervalValue = deferRunInterval.Value.ToString("c");
                 WriteLogEntry($"Setting deferral history: [DeferRunInterval = {deferRunIntervalValue}].");
@@ -1311,7 +1311,7 @@ namespace PSADT.Module
                 }
                 moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", RegistryValueKind.String.ToString(), deferRunIntervalValue, true, true);
             }
-            if (null != deferRunIntervalLastTime)
+            if (deferRunIntervalLastTime is not null)
             {
                 var deferRunIntervalLastTimeValue = deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O");
                 WriteLogEntry($"Setting deferral history: [DeferRunIntervalLastTime = {deferRunIntervalLastTimeValue}].");
@@ -1343,7 +1343,6 @@ namespace PSADT.Module
         {
             // Extrapolate the UI options from the config hashtable.
             var configUI = (Hashtable)ModuleDatabase.GetConfig()["UI"]!;
-
             if ((ExitCode == (int)configUI["DefaultExitCode"]!) || (ExitCode == (int)configUI["DeferExitCode"]!))
             {
                 return DeploymentStatus.FastRetry;
@@ -1411,7 +1410,7 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.

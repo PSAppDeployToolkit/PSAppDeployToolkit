@@ -161,7 +161,9 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static BOOL AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
-            var res = PInvoke.AttachThreadInput(idAttach, idAttachTo, fAttach);
+            [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern BOOL AttachThreadInput(uint idAttach, uint idAttachTo, BOOL fAttach);
+            var res = AttachThreadInput(idAttach, idAttachTo, fAttach);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();

@@ -117,6 +117,7 @@ namespace PSADT.Invoke
         /// Writes a debug message to the log file and optionally displays an error message.
         /// </summary>
         /// <param name="debugMessage"></param>
+        /// <param name="isError"></param>
         private static void WriteDebugMessage(string debugMessage, bool isError = false)
         {
             // Log only when we're in debug mode.
@@ -143,7 +144,7 @@ namespace PSADT.Invoke
         {
             if (cliArguments.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
             {
-                if (!inDebugMode)
+                if (!inDebugMode && Environment.UserInteractive)
                 {
                     inDebugMode = Kernel32.AllocConsole();
                 }

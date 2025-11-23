@@ -111,7 +111,7 @@ namespace PSADT.Utilities
         /// <param name="filepath">Path to the INI file</param>
         public static void WriteSection(string filepath, string section, IDictionary? content)
         {
-            if (content == null)
+            if (content is null)
             {
                 Kernel32.WritePrivateProfileSection(section, null, filepath);
                 return;
@@ -133,7 +133,7 @@ namespace PSADT.Utilities
                         throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]", nameof(content));
                     }
 
-                    if (!(entry.Value is string || entry.Value is ValueType || entry.Value == null))
+                    if (!(entry.Value is string || entry.Value is ValueType || entry.Value is null))
                     {
                         throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
                     }

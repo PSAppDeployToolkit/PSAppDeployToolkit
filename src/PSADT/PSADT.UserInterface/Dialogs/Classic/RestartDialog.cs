@@ -40,17 +40,17 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.Text = StripFormattingTags(options.Strings.Title);
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Set up the picturebox.
                 SetPictureBox(this.pictureBanner, options);
 
                 // Set the countdown timer.
-                if (null != options.CountdownDuration)
+                if (options.CountdownDuration is not null)
                 {
                     this.countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     this.countdownDuration = options.CountdownDuration.Value;
-                    if (null != options.CountdownNoMinimizeDuration)
+                    if (options.CountdownNoMinimizeDuration is not null)
                     {
                         this.minimizeDuration = options.CountdownNoMinimizeDuration.Value;
                     }
@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set the custom message text if we have one.
-                if (null != options.CustomMessageText)
+                if (options.CustomMessageText is not null)
                 {
                     this.labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
                 }
@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             base.Form_Load(sender, e);
 
             // Start the counterdown timer if we have one.
-            if (null != countdownTimer)
+            if (countdownTimer is not null)
             {
                 if (!countdownStopwatch.IsRunning)
                 {
@@ -171,7 +171,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 this.Invoke(() => buttonRestartNow.PerformClick());
             }
-            else if ((null != minimizeDuration) && (remaining <= minimizeDuration))
+            else if ((minimizeDuration is not null) && (remaining <= minimizeDuration))
             {
                 this.Invoke(() =>
                 {

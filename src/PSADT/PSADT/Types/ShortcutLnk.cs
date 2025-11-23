@@ -11,6 +11,10 @@ namespace PSADT.Types
         /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutLnk"/> class with specified properties.
         /// </summary>
+        /// <param name="path">Path to the shortcut file.</param>
+        /// <param name="targetPath">Path to the target application.</param>
+        /// <param name="iconLocation">Location of the icon for the shortcut.</param>
+        /// <param name="iconIndex">Index of the icon within the icon location.</param>
         /// <param name="arguments">Arguments passed to the target application.</param>
         /// <param name="description">Description of the shortcut.</param>
         /// <param name="workingDirectory">Working directory for the target application.</param>

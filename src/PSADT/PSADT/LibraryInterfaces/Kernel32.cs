@@ -48,7 +48,7 @@ namespace PSADT.LibraryInterfaces
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
         {
             var res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -182,7 +182,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -199,7 +199,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
             var res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -424,7 +424,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
         {
             var res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -471,7 +471,7 @@ namespace PSADT.LibraryInterfaces
         internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
         {
             var res = PInvoke.LoadLibrary(lpLibFileName);
-            if (null == res || res.IsInvalid)
+            if (res is null || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -484,7 +484,7 @@ namespace PSADT.LibraryInterfaces
         /// <remarks>The returned handle is safe to use with Windows API functions that require a process
         /// handle. It is the caller's responsibility to ensure proper disposal of the handle to release system
         /// resources.</remarks>
-        /// <returns>A <see cref="SafeProcessHandle"/> that encapsulates a handle to the current process.</returns>
+        /// <returns>A <see cref="SafeHandle"/> that encapsulates a handle to the current process.</returns>
         internal static SafeProcessHandle GetCurrentProcess()
         {
             var res = PInvoke.GetCurrentProcess();
@@ -593,8 +593,7 @@ namespace PSADT.LibraryInterfaces
         /// <remarks>This method is a wrapper around the native Windows API function
         /// <c>QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
         /// such as accounting information, limits, and process information.</remarks>
-        /// <param name="hJob">A handle to the job object. This handle must have the <see cref="JobObjectAccessRights.Query"/> access
-        /// right.</param>
+        /// <param name="hJob">A handle to the job object. This handle must have the Query access right.</param>
         /// <param name="JobObjectInformationClass">The information class for the job object. This parameter specifies the type of information to be queried.</param>
         /// <param name="lpJobObjectInformation">A buffer that receives the information. The format of this data depends on the value of the <paramref
         /// name="JobObjectInformationClass"/> parameter.</param>
@@ -674,7 +673,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="Attribute">The attribute key to update. This specifies which attribute to modify in the list.</param>
         /// <param name="lpValue">A pointer to the attribute value. The type and meaning of this value depend on the attribute key specified
         /// by <paramref name="Attribute"/>.</param>
-        /// <param name="cbSize">The size in bytes of the attribute value specified by <paramref name="lpValue"/>.</param>
         /// <param name="lpPreviousValue">A pointer to a buffer that receives the previous value of the attribute. This parameter can be <see
         /// langword="null"/> if the previous value is not required.</param>
         /// <param name="lpReturnSize">A pointer to a variable that receives the size of the attribute value. This parameter can be <see
@@ -717,7 +715,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hProcess">A handle to the process with memory that is being read. The handle must have PROCESS_VM_READ access.</param>
         /// <param name="lpBaseAddress">A pointer to the base address in the specified process from which to read.</param>
         /// <param name="lpBuffer">A pointer to a buffer that receives the contents from the address space of the specified process.</param>
-        /// <param name="nSize">The number of bytes to be read from the specified process.</param>
         /// <param name="lpNumberOfBytesRead">A pointer to a variable that receives the number of bytes transferred into the specified buffer. This
         /// parameter can be null.</param>
         /// <returns>A <see cref="BOOL"/> indicating whether the operation succeeded.</returns>

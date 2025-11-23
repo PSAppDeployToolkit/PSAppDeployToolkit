@@ -13,6 +13,14 @@ using PSADT.Extensions;
 
 namespace PSADT.Module
 {
+    /// <summary>
+    /// Provides utility methods for logging operations, including writing log entries to various outputs such as files,
+    /// console, and PowerShell streams.
+    /// </summary>
+    /// <remarks>This class contains methods and constants to facilitate structured logging with support for
+    /// configurable log severity, log styles, and output streams. It is designed to handle both debug and non-debug log
+    /// messages, and supports writing logs to disk, console, or PowerShell streams based on the provided
+    /// parameters.</remarks>
     public static class LogUtilities
     {
         /// <summary>
@@ -41,13 +49,13 @@ namespace PSADT.Module
             }
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
-            bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
+            bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
             var stackFrames = new StackTrace(true).GetFrames().Skip(1); string? callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
                 var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
-                if (null == invoker.GetFileName())
+                if (invoker.GetFileName() is null)
                 {
                     invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
                 }
@@ -85,7 +93,7 @@ namespace PSADT.Module
                     logType = LogStyle.CMTrace;
                 }
             }
-            if (null == severity)
+            if (severity is null)
             {
                 severity = LogSeverity.Info;
             }
@@ -93,11 +101,11 @@ namespace PSADT.Module
             {
                 source = callerSource;
             }
-            if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
+            if ((logFileDirectory is not null) && !Directory.Exists(logFileDirectory))
             {
                 Directory.CreateDirectory(logFileDirectory);
             }
-            if (null != scriptSection && string.IsNullOrWhiteSpace(scriptSection))
+            if (scriptSection is not null && string.IsNullOrWhiteSpace(scriptSection))
             {
                 scriptSection = null;
             }
@@ -167,14 +175,14 @@ namespace PSADT.Module
         /// Represents a compiled regular expression used to match specific caller commands.
         /// </summary>
         /// <remarks>The regular expression matches commands in the following formats: - "Write-Log" or
-        /// "Write-ADTLogEntry" - "<ScriptBlock>" optionally followed by "<tag>" This regex is optimized for performance
+        /// "Write-ADTLogEntry" - "&lt;ScriptBlock&gt;" optionally followed by "&lt;tag&gt;" This regex is optimized for performance
         /// using the <see cref="RegexOptions.Compiled"/> option.</remarks>
         private static readonly Regex CallerCommandRegex = new(@"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
 
         /// <summary>
         /// Represents a compiled regular expression used to match script block patterns.
         /// </summary>
-        /// <remarks>The regular expression matches strings that begin with "<ScriptBlock>" and optionally
+        /// <remarks>The regular expression matches strings that begin with "&lt;ScriptBlock&gt;" and optionally
         /// include an additional tag. This is useful for identifying specific script block structures in
         /// text.</remarks>
         private static readonly Regex CallerScriptBlockRegex = new(@"^(<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
@@ -183,7 +191,7 @@ namespace PSADT.Module
         /// Represents a compiled regular expression used to match caller script locations.
         /// </summary>
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
-        /// "<example>"). This is typically used to identify script locations in a specific format.</remarks>
+        /// "&lt;example&gt;"). This is typically used to identify script locations in a specific format.</remarks>
         private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
 
         /// <summary>

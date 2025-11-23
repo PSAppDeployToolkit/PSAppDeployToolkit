@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.ServiceProcess;
 using PSADT.Extensions;
 using PSADT.FileSystem;
@@ -17,6 +18,7 @@ using PSADT.Security;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.System.Services;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
@@ -37,7 +39,7 @@ namespace PSADT.ProcessManagement
         {
             // Set up some caches for performance.
             var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-            Dictionary<Process, string[]> processCommandLines = [];
+            Dictionary<Process, string[]> processArgvMap = [];
 
             // Ensure we have a PowerShell runspace available for command execution here.
             if (processDefinitions.Any(p => p.Filter is not null) && Runspace.DefaultRunspace is null)
@@ -46,58 +48,67 @@ namespace PSADT.ProcessManagement
             }
 
             // Inline lambda to get the command line from the given process.
-            static string[] GetCommandLine(Process process, Dictionary<Process, string[]> processCommandLines, ReadOnlyDictionary<string, string> ntPathLookupTable)
+            static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
                 // Get the command line from the cache if we have it.
-                if (processCommandLines.TryGetValue(process, out var commandLine))
+                if (processArgvMap.TryGetValue(process, out var argv))
                 {
-                    return commandLine;
+                    return argv;
                 }
 
                 // Get the command line for the process. Failing that, just get the image path.
+                string? commandLine;
                 try
                 {
-                    commandLine = CommandLineUtilities.CommandLineToArgumentList(GetProcessCommandLine(process.Id)).ToArray();
-                    if (commandLine.Length > 0)
+                    commandLine = GetProcessCommandLine(process);
+                }
+                catch
+                {
+                    commandLine = null;
+                }
+
+                // Convert the command line into an argument array.
+                if (commandLine is not null)
+                {
+                    argv = CommandLineUtilities.CommandLineToArgumentList(commandLine).ToArray();
+                }
+
+                // If we couldn't get the command line or the file path is malformed, try and get the process's image name.
+                try
+                {
+                    if (argv?.Length > 0)
                     {
-                        if (!Path.GetExtension(commandLine[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                        if (!Path.GetExtension(argv[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            commandLine = (new[] { GetProcessImageName(process.Id, ntPathLookupTable) }).Concat(commandLine).ToArray();
+                            argv = (new[] { GetProcessImageName(process, ntPathLookupTable) }).Concat(argv).ToArray();
                         }
-                        else if (!Path.IsPathRooted(commandLine[0]) || !File.Exists(commandLine[0]))
+                        else if (!Path.IsPathRooted(argv[0]) || !File.Exists(argv[0]))
                         {
-                            commandLine[0] = GetProcessImageName(process.Id, ntPathLookupTable);
+                            argv[0] = GetProcessImageName(process, ntPathLookupTable);
                         }
                     }
                     else
                     {
-                        commandLine = [GetProcessImageName(process.Id, ntPathLookupTable)];
+                        argv = [GetProcessImageName(process, ntPathLookupTable)];
                     }
                 }
                 catch
                 {
-                    try
+                    if (!process.HasExited)
                     {
-                        commandLine = [GetProcessImageName(process.Id, ntPathLookupTable)];
+                        throw;
                     }
-                    catch
-                    {
-                        if (!process.HasExited)
-                        {
-                            throw;
-                        }
-                        return [];
-                    }
+                    return [];
                 }
 
                 // Cache and return the command line.
-                processCommandLines.Add(process, commandLine);
-                return commandLine;
+                processArgvMap.Add(process, argv);
+                return argv;
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            var processNames = processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToLower());
-            var allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToLower()));
+            var processNames = processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToLowerInvariant());
+            var allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToLowerInvariant()));
             List<RunningProcess> runningProcesses = [];
             foreach (var processDefinition in processDefinitions)
             {
@@ -118,7 +129,7 @@ namespace PSADT.ProcessManagement
                             continue;
                         }
                     }
-                    catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_ACCESS_DENIED)
                     {
                         // If we can't access the process, skip it. We only need to test this
                         // once here, it shouldn't be an issue for the remainder of the loop.
@@ -126,10 +137,10 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Try to get the command line. If we can't, skip this process.
-                    string[] commandLine;
+                    string[] argv;
                     try
                     {
-                        commandLine = GetCommandLine(process, processCommandLines, ntPathLookupTable);
+                        argv = GetProcessArgv(process, processArgvMap, ntPathLookupTable);
                     }
                     catch (ArgumentException)
                     {
@@ -137,13 +148,13 @@ namespace PSADT.ProcessManagement
                     }
 
                     // If we couldn't get the command line, skip this process.
-                    if (commandLine.Length == 0)
+                    if (argv.Length == 0)
                     {
                         continue;
                     }
 
                     // Continue if this isn't our process or it's ended since we cached it.
-                    if (Path.IsPathRooted(processDefinition.Name) && !commandLine[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                    if (Path.IsPathRooted(processDefinition.Name) && !argv[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -154,11 +165,11 @@ namespace PSADT.ProcessManagement
                     {
                         procDescription = processDefinition.Description!;
                     }
-                    else if (File.Exists(commandLine[0]) && FileVersionInfo.GetVersionInfo(commandLine[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription))
+                    else if (File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription))
                     {
                         procDescription = fileInfo.FileDescription;
                     }
-                    else if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited && ProcessVersionInfo.GetVersionInfo(process, commandLine[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                    else if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
                     {
                         procDescription = procInfo.FileDescription!;
                     }
@@ -167,9 +178,20 @@ namespace PSADT.ProcessManagement
                         procDescription = process.ProcessName;
                     }
 
+                    // Grab the process owner if we're an administrator.
+                    NTAccount? username = null;
+                    if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
+                    {
+                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
+                        using (hToken)
+                        {
+                            username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
+                        }
+                    }
+
                     // Store the process information.
-                    RunningProcess runningProcess = new(process, procDescription, commandLine[0], commandLine.Skip(1));
-                    if (!process.HasExited && ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess)))
+                    RunningProcess runningProcess = new(process, procDescription, argv[0], argv.Skip(1), username);
+                    if (!process.HasExited && ((processDefinition.Filter is null) || processDefinition.Filter(runningProcess)))
                     {
                         runningProcesses.Add(runningProcess);
                     }
@@ -276,12 +298,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Retrieves the command line arguments of a process given its process ID.
         /// </summary>
-        /// <param name="processId"></param>
+        /// <param name="process"></param>
         /// <returns></returns>
-        public static string GetProcessCommandLine(int processId)
+        public static string GetProcessCommandLine(Process process)
         {
             // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
-            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, SafeMemoryHandle.Null, out var requiredLength);
 
             // Fill the buffer, then retrieve the actual command line string.
@@ -291,15 +313,22 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the image name of a process given its process ID.
+        /// Retrieves the command line arguments of a process given its process ID.
         /// </summary>
         /// <param name="processId"></param>
+        /// <returns></returns>
+        public static string GetProcessCommandLine(int processId) => GetProcessCommandLine(Process.GetProcessById(processId));
+
+        /// <summary>
+        /// Retrieves the image name of a process given its process ID.
+        /// </summary>
+        /// <param name="process"></param>
         /// <param name="ntPathLookupTable"></param>
         /// <returns></returns>
-        internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             // Set up initial buffer that we need to query the process information.
-            var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)processId };
+            var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)process.Id };
             var processIdInfoSize = Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
             using (var processIdInfoPtr = SafeHGlobalHandle.Alloc(processIdInfoSize).FromStructure(processIdInfo, false))
             {
@@ -318,8 +347,14 @@ namespace PSADT.ProcessManagement
                         var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
                         processIdInfo.ImageName.Buffer = null;
 
+                        // Validate we received something valid from the buffer. This function is known to return garbage.
+                        if (!imagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imagePath}].");
+                        }
+
                         // If we have a lookup table, replace the NT path with the drive letter before returning.
-                        if (ntPathLookupTable != null)
+                        if (ntPathLookupTable is not null)
                         {
                             var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                             if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
@@ -346,6 +381,6 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        public static string GetProcessImageName(int processId) => GetProcessImageName(processId, null);
+        public static string GetProcessImageName(int processId) => GetProcessImageName(Process.GetProcessById(processId), null);
     }
 }

@@ -10,12 +10,6 @@ namespace PSADT.WindowManagement
     /// <remarks>This record provides criteria for filtering windows based on their titles, handles, or parent
     /// processes. Any of the filters can be null, indicating that the corresponding criterion should not be
     /// applied.</remarks>
-    /// <param name="windowTitleFilter">An array of strings specifying window titles to match. Only windows with titles that match one of the strings in
-    /// this array will be included. If null, no filtering by title is applied.</param>
-    /// <param name="windowHandleFilter">An array of window handles (as <see langword="nint"/> values) to match. Only windows with handles that match one
-    /// of the values in this array will be included. If null, no filtering by handle is applied.</param>
-    /// <param name="parentProcessFilter">An array of strings specifying parent process names to match. Only windows associated with processes whose names
-    /// match one of the strings in this array will be included. If null, no filtering by parent process is applied.</param>
     public sealed record WindowInfoOptions
     {
         /// <summary>

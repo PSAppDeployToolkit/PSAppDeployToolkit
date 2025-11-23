@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PSADT.ProcessManagement
 {
     /// <summary>
-    /// Represents the event arguments for the <see cref="RunningProcessService.ProcessesToCloseListChanged"/> event.
+    /// Represents the event arguments for the <see cref="RunningProcessService.ProcessesToCloseChanged"/> event.
     /// </summary>
     internal sealed class ProcessesToCloseChangedEventArgs(IReadOnlyList<ProcessToClose> processesToClose) : EventArgs
     {

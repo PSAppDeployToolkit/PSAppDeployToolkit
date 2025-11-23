@@ -19,6 +19,7 @@ using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
 using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -39,7 +40,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             /// <param name="processToClose"></param>
             public AppToClose(ProcessToClose processToClose)
             {
-                Name = Path.GetFileName(processToClose.Path).ToLower();
+                Name = Path.GetFileName(processToClose.Path).ToLowerInvariant();
                 Description = processToClose.Description;
                 Icon = GetAppIcon(processToClose.Path) ?? throw new ArgumentNullException("Could not retrieve an icon for the given application.", (Exception?)null);
                 if (string.IsNullOrWhiteSpace(Name))
@@ -72,6 +73,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
+        /// <param name="state">Optional state values for the dialog.</param>
         internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, options.CustomMessageText, options.CountdownDuration, null, state.CountdownStopwatch)
         {
             // Set up the context for data binding
@@ -106,15 +108,21 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
+            // Allow the dialog to be minimised if specified.
+            if (options.DialogAllowMinimize)
+            {
+                SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
+            }
+
             // Set up/process optional values.
-            if (null != state.RunningProcessService)
+            if (state.RunningProcessService is not null)
             {
                 _runningProcessService = state.RunningProcessService;
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
             UpdateRunningProcesses();
-            if (null != state.LogWriter)
+            if (state.LogWriter is not null)
             {
                 _logWriter = state.LogWriter;
             }

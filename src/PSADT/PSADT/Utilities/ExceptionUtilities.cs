@@ -19,7 +19,7 @@ namespace PSADT.Utilities
         {
             var win32ErrorCode = lastWin32Error.HasValue ? (int)lastWin32Error.Value : Marshal.GetLastWin32Error();
             var marshalException = Marshal.GetExceptionForHR(GetHRForWin32ErrorCode(win32ErrorCode));
-            return null != marshalException && marshalException is not COMException ? marshalException : new Win32Exception(win32ErrorCode);
+            return marshalException is not null && marshalException is not COMException ? marshalException : new Win32Exception(win32ErrorCode);
         }
 
         /// <summary>

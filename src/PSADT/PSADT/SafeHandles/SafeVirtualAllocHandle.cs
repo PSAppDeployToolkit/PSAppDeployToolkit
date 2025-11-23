@@ -16,12 +16,14 @@ namespace PSADT.SafeHandles
         /// This is fully implemented here as static virtual members don't come until C# 11 (.NET 7).
         /// </summary>
         /// <param name="length"></param>
+        /// <param name="allocationType"></param>
+        /// <param name="protect"></param>
         /// <returns></returns>
         /// <exception cref="OutOfMemoryException"></exception>
         internal unsafe static SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
         {
             var handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
-            if (null == handle)
+            if (handle is null)
             {
                 throw new OutOfMemoryException("Failed to allocate memory.");
             }
@@ -47,7 +49,7 @@ namespace PSADT.SafeHandles
         /// <exception cref="ArgumentException"></exception>
         internal void Write(byte[] data, int startIndex = 0)
         {
-            if (null == data)
+            if (data is null)
             {
                 throw new ArgumentNullException(nameof(data));
             }

@@ -50,7 +50,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// Gets session info for any provided valid session Id.
         /// </summary>
-        /// <param name="sessionId"></param>
+        /// <param name="session"></param>
         /// <returns></returns>
         internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
@@ -129,10 +129,10 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId); AssemblyPermissions.Remediate(user);
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
                         ProcessLaunchInfo args = new(clientServerPath, new(["/GetLastInputTime"]), Environment.SystemDirectory, user, createNoWindow: true);
-                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut!.First()));
+                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0]));
                     }
                     catch
                     {
@@ -164,7 +164,7 @@ namespace PSADT.TerminalServices
                 clientName,
                 (WTS_PROTOCOL_TYPE)clientProtocolType!,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
-                (null != clientName) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
+                (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
         }
 
@@ -203,7 +203,7 @@ namespace PSADT.TerminalServices
                         WTS_PROCESS_INFOW process = pProcessInfo.ToStructure<WTS_PROCESS_INFOW>(objLength * i);
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            return new((IntPtr)process.pUserSid);
+                            return process.pUserSid.ToSecurityIdentifier();
                         }
                     }
                 }

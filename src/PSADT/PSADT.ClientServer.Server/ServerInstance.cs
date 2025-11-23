@@ -26,8 +26,8 @@ namespace PSADT.ClientServer
     /// streams, and provides methods to send commands and retrieve responses. This class implements <see
     /// cref="IDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
     /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to initialize the client-server communication, and
-    /// using <see cref="Invoke(ClientServerCommandType)"/> to send commands to the client. Once the communication is
-    /// complete, the <see cref="Dispose"/> method should be called to release resources. </para></remarks>
+    /// using a number of predefined methods to send commands to the client. Once the communication is
+    /// complete, the <see cref="Dispose()"/> method should be called to release resources. </para></remarks>
     public sealed class ServerInstance : IDisposable
     {
         /// <summary>
@@ -101,7 +101,7 @@ namespace PSADT.ClientServer
             }
             finally
             {
-                if (null == opened || !opened.Value)
+                if (opened is null || !opened.Value)
                 {
                     Close(true);
                 }
@@ -165,7 +165,7 @@ namespace PSADT.ClientServer
                 }
 
                 // Close the client process and wait for it to exit.
-                if (null == closed || !closed.Value)
+                if (closed is null || !closed.Value)
                 {
                     _clientProcessCts.Cancel();
                 }
@@ -208,7 +208,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke<bool>($"InitCloseAppsDialog{(null != closeProcesses ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke<bool>($"InitCloseAppsDialog{(closeProcesses is not null ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(closeProcesses)}" : null)}");
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace PSADT.ClientServer
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
+            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((progressPercentage is not null) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((messageAlignment is not null) ? messageAlignment.ToString() : ' ')}");
         }
 
         /// <summary>
@@ -347,7 +347,6 @@ namespace PSADT.ClientServer
         /// are invalid.</remarks>
         /// <param name="options">The configuration options for the balloon tip, including its title, text, icon, and duration. This parameter
         /// cannot be null.</param>
-        /// value.</param>
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
@@ -376,7 +375,7 @@ namespace PSADT.ClientServer
         /// Sends a sequence of keystrokes to the specified window.
         /// </summary>
         /// <remarks>Ensure that the specified window handle is valid and the target window is capable of
-        /// receiving keystrokes. The format of the <paramref name="keys"/> parameter may depend on the underlying
+        /// receiving keystrokes. The format of the <paramref name="options"/> parameter may depend on the underlying
         /// implementation.</remarks>
         /// <param name="options">The configuration options that specify the keys to send and their associated behavior. This parameter cannot
         /// be null.</param>

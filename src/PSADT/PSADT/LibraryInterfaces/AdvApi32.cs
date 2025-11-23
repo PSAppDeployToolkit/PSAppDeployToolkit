@@ -60,7 +60,7 @@ namespace PSADT.LibraryInterfaces
             fixed (uint* lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
             fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
             {
-                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, null != lpClass ? &lpcchClassLocal : null, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
+                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, Span<char>.Empty != lpClass ? &lpcchClassLocal : null, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -189,6 +189,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpSystemName"></param>
         /// <param name="lpLuid"></param>
         /// <param name="lpName"></param>
+        /// <param name="cchName"></param>
         /// <returns></returns>
         internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
@@ -313,7 +314,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpCommandLine != null && lpCommandLine.LastIndexOf('\0') == -1)
+            if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", "lpCommandLine");
             }
@@ -437,7 +438,7 @@ namespace PSADT.LibraryInterfaces
                     {
                         OldAcl.DangerousAddRef(ref OldAclAddRef);
                     }
-                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, null != OldAcl ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
+                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
                     if (res != WIN32_ERROR.ERROR_SUCCESS)
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -468,9 +469,9 @@ namespace PSADT.LibraryInterfaces
         /// cref="SE_OBJECT_TYPE"/> enumeration.</param>
         /// <param name="SecurityInfo">A bitmask of <see cref="OBJECT_SECURITY_INFORMATION"/> values that specify the type of security information
         /// to set (e.g., owner, group, DACL, or SACL).</param>
-        /// <param name="psidOwner">An optional <see cref="FreeSidSafeHandle"/> representing the new owner SID to set. Pass <c>null</c> to leave
+        /// <param name="psidOwner">An optional <see cref="SafeHandle"/> representing the new owner SID to set. Pass <c>null</c> to leave
         /// the owner unchanged.</param>
-        /// <param name="psidGroup">An optional <see cref="FreeSidSafeHandle"/> representing the new group SID to set. Pass <c>null</c> to leave
+        /// <param name="psidGroup">An optional <see cref="SafeHandle"/> representing the new group SID to set. Pass <c>null</c> to leave
         /// the group unchanged.</param>
         /// <param name="pDacl">An optional <see cref="LocalFreeSafeHandle"/> representing the new discretionary access control list (DACL)
         /// to set. Pass <c>null</c> to leave the DACL unchanged.</param>
@@ -479,7 +480,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null or closed.</exception>
-        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, FreeSidSafeHandle? psidOwner, FreeSidSafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
+        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
         {
             bool handleAddRef = false;
             bool psidOwnerAddRef = false;
@@ -509,7 +510,7 @@ namespace PSADT.LibraryInterfaces
                     pSacl.DangerousAddRef(ref pSaclAddRef);
                 }
                 handle.DangerousAddRef(ref handleAddRef);
-                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, null != psidOwner ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, null != psidGroup ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -565,7 +566,7 @@ namespace PSADT.LibraryInterfaces
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out FreeSidSafeHandle? ppsidOwner, out FreeSidSafeHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
+        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
             fixed (char* pObjectNameLocal = pObjectName)
             {
@@ -579,10 +580,10 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw new InvalidOperationException("Failed to retrieve security descriptor.");
                 }
-                ppsidOwner = psidOwner != default ? new(psidOwner, false) : null;
-                ppsidGroup = pSidGroup != default ? new(pSidGroup, false) : null;
-                ppDacl = pDacl != null ? new((IntPtr)pDacl, false) : null;
-                ppSacl = pSacl != null ? new((IntPtr)pSacl, false) : null;
+                ppsidOwner = psidOwner != default ? new((IntPtr)psidOwner.Value) : null;
+                ppsidGroup = pSidGroup != default ? new((IntPtr)pSidGroup.Value) : null;
+                ppDacl = pDacl is not null ? new((IntPtr)pDacl, false) : null;
+                ppSacl = pSacl is not null ? new((IntPtr)pSacl, false) : null;
                 ppSecurityDescriptor = new((IntPtr)pSECURITY_DESCRIPTOR, true);
                 return res;
             }
@@ -645,16 +646,28 @@ namespace PSADT.LibraryInterfaces
         /// invalid.</exception>
         internal unsafe static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
-            var res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, UserSid, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
-            if (!res)
+            bool UserSidAddRef = false;
+            try
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                UserSid.DangerousAddRef(ref UserSidAddRef);
+                var res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                if (phAuthzClientContext.IsInvalid)
+                {
+                    throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+                }
+                return res;
             }
-            if (phAuthzClientContext.IsInvalid)
+            finally
             {
-                throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+                if (UserSidAddRef)
+                {
+                    UserSid.DangerousRelease();
+                }
             }
-            return res;
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new Custom dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
+        /// <param name="setFocus">Indicates whether to set focus to the dialog upon creation.</param>
         internal CustomDialog(CustomDialogOptions options, bool setFocus = true) : base(options)
         {
             // Set up UI
@@ -21,19 +22,19 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons based on provided texts
-            if (null != options.ButtonLeftText)
+            if (options.ButtonLeftText is not null)
             {
                 SetButtonContentWithAccelerator(ButtonLeft, options.ButtonLeftText);
                 ButtonLeft.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonLeft, options.ButtonLeftText);
             }
-            if (null != options.ButtonMiddleText)
+            if (options.ButtonMiddleText is not null)
             {
                 SetButtonContentWithAccelerator(ButtonMiddle, options.ButtonMiddleText);
                 ButtonMiddle.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonMiddle, options.ButtonMiddleText);
             }
-            if (null != options.ButtonRightText)
+            if (options.ButtonRightText is not null)
             {
                 SetButtonContentWithAccelerator(ButtonRight, options.ButtonRightText);
                 ButtonRight.Visibility = Visibility.Visible;

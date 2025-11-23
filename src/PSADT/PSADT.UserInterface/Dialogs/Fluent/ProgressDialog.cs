@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -56,7 +56,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessage);
             }
 
-            if (!(ProgressBar.IsIndeterminate = percentComplete == null))
+            if (!(ProgressBar.IsIndeterminate = percentComplete is null))
             {
                 // Create a smooth animation for the progress value
                 var animation = new DoubleAnimation

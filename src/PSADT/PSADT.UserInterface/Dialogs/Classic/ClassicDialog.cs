@@ -37,10 +37,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
             InitializeComponent();
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Base properties.
-                this.SuspendLayout();   
+                this.SuspendLayout();
                 this.Text = StripFormattingTags(options.AppTitle);
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.TopMost = options.DialogTopMost;
@@ -50,27 +50,27 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.ResumeLayout();
 
                 // Set the expiry timer if specified.
-                if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
+                if (options.DialogExpiryDuration is not null && options.DialogExpiryDuration.Value != TimeSpan.Zero)
                 {
                     this.expiryTimer = new Timer { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
                     this.expiryTimer.Tick += (s, e) => CloseDialog();
                 }
 
                 // PersistPrompt timer code.
-                if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
+                if (options.DialogPersistInterval is not null && options.DialogPersistInterval.Value != TimeSpan.Zero)
                 {
                     this.persistTimer = new Timer { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
                     this.persistTimer.Tick += PersistTimer_Tick;
                 }
 
                 // Set the optional dialog position.
-                if (null != options.DialogPosition)
+                if (options.DialogPosition is not null)
                 {
                     dialogPosition = options.DialogPosition.Value;
                 }
 
                 // Set whether the dialog can be moved.
-                if (null != options.DialogAllowMove)
+                if (options.DialogAllowMove is not null)
                 {
                     dialogAllowMove = options.DialogAllowMove.Value;
                 }
@@ -183,13 +183,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
-            if (null != persistTimer)
+            if (persistTimer is not null)
             {
                 persistTimer.Stop();
                 persistTimer.Dispose();
                 persistTimer = null;
             }
-            if (null != expiryTimer)
+            if (expiryTimer is not null)
             {
                 expiryTimer.Stop();
                 expiryTimer.Dispose();
@@ -222,7 +222,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected void ResetPersistTimer()
         {
             // Reset the persist timer to its initial state.
-            if (null != persistTimer)
+            if (persistTimer is not null)
             {
                 persistTimer.Stop();
                 persistTimer.Start();
@@ -275,7 +275,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Positions the form on the screen based on the specified dialog position.
         /// </summary>
-        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="_dialogPosition"/> field, which specifies predefined locations such as top-left, center, or bottom-right. If the calculated position exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
+        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="dialogPosition"/> field, which specifies predefined locations such as top-left, center, or bottom-right. If the calculated position exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
         private void PositionForm()
         {
             // Get the working area (pixels not DIPs)
@@ -287,55 +287,55 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 case DialogPosition.TopLeft:
                     left = workingArea.Left;
-                    top  = workingArea.Top;
+                    top = workingArea.Top;
                     break;
 
                 case DialogPosition.Top:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top;
+                    top = workingArea.Top;
                     break;
 
                 case DialogPosition.TopRight:
                     left = workingArea.Right - Width;
-                    top  = workingArea.Top;
+                    top = workingArea.Top;
                     break;
 
                 case DialogPosition.TopCenter:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
+                    top = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
                     break;
 
                 case DialogPosition.BottomLeft:
                     left = workingArea.Left;
-                    top  = workingArea.Bottom - Height;
+                    top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.Bottom:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Bottom - Height;
+                    top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.BottomCenter:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top  + ((workingArea.Height - Height) * (5.0 / 6.0));
+                    top = workingArea.Top + ((workingArea.Height - Height) * (5.0 / 6.0));
                     break;
 
                 case DialogPosition.BottomRight:
                     left = workingArea.Right - Width;
-                    top  = workingArea.Bottom - Height;
+                    top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.Center:
                 case DialogPosition.Default:
                 default:
                     left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top  = workingArea.Top  + ((workingArea.Height - Height) / 2);
+                    top = workingArea.Top + ((workingArea.Height - Height) / 2);
                     break;
             }
 
             // Clamp to working-area bounds
-            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right  - Width));
-            top  = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - Height));
+            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right - Width));
+            top = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - Height));
 
             // Align positions to whole pixels.
             left = Math.Floor(left);

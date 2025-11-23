@@ -15,6 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.
         /// </summary>
+        /// <param name="deploymentType"></param>
         /// <param name="options"></param>
         public CloseAppsDialogOptions(DeploymentType deploymentType, Hashtable options) : base(options)
         {
@@ -81,6 +82,14 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 HideCloseButton = hideCloseButton;
             }
+            if (options.ContainsKey("DialogAllowMinimize"))
+            {
+                if (options["DialogAllowMinimize"] is not bool dialogAllowMinimize)
+                {
+                    throw new ArgumentOutOfRangeException("DialogAllowMinimize value is not valid.", (Exception?)null);
+                }
+                DialogAllowMinimize = dialogAllowMinimize;
+            }
             if (options.ContainsKey("CustomMessageText"))
             {
                 if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
@@ -125,9 +134,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// displayed.</param>
         /// <param name="forcedCountdown">A value indicating whether the countdown timer is mandatory and cannot be skipped.</param>
         /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
+        /// <param name="dialogAllowMinimize">A value indicating whether the dialog can be minimized by the user.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
         [JsonConstructor]
-        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
+        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             // Assign the values.
             Strings = strings;
@@ -138,6 +148,7 @@ namespace PSADT.UserInterface.DialogOptions
             CountdownDuration = countdownDuration;
             ForcedCountdown = forcedCountdown;
             HideCloseButton = hideCloseButton;
+            DialogAllowMinimize = dialogAllowMinimize;
             CustomMessageText = customMessageText;
         }
 
@@ -190,6 +201,12 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly bool HideCloseButton;
 
         /// <summary>
+        /// Indicates whether the dialog allows minimizing.
+        /// </summary>
+        [JsonProperty]
+        public readonly bool DialogAllowMinimize;
+
+        /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
         [JsonProperty]
@@ -227,9 +244,9 @@ namespace PSADT.UserInterface.DialogOptions
             /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class with the specified classic
             /// and fluent dialog strings.
             /// </summary>
-            /// <param name="classicStrings">The strings used for the classic dialog style. Cannot be <see langword="null"/>.</param>
-            /// <param name="fluentStrings">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
-            /// <exception cref="ArgumentNullException">Thrown if <paramref name="classicStrings"/> or <paramref name="fluentStrings"/> is <see
+            /// <param name="classic">The strings used for the classic dialog style. Cannot be <see langword="null"/>.</param>
+            /// <param name="fluent">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="classic"/> or <paramref name="fluent"/> is <see
             /// langword="null"/>.</exception>
             [JsonConstructor]
             private CloseAppsDialogStrings(CloseAppsDialogClassicStrings classic, CloseAppsDialogFluentStrings fluent)

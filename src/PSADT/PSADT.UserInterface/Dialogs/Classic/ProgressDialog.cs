@@ -38,7 +38,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.SuspendLayout();
 
             // Apply options to the form if we have any (i.e. not in the designer).
-            if (null != options)
+            if (options is not null)
             {
                 // Set up the picturebox.
                 SetPictureBox(this.pictureBanner, options);
@@ -88,7 +88,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
 
             // Update the message alignment.
-            if ((null != messageAlignment) && Enum.TryParse<ContentAlignment>($"Top{messageAlignment}", out var alignment))
+            if ((messageAlignment is not null) && Enum.TryParse<ContentAlignment>($"Top{messageAlignment}", out var alignment))
             {
                 this.labelMessage.TextAlign = alignment;
                 this.labelDetail.TextAlign = alignment;
@@ -100,7 +100,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
 
             // Update the progress percentage.
-            if (null != progressPercentage)
+            if (progressPercentage is not null)
             {
                 this.progressBar.Style = ProgressBarStyle.Blocks;
                 this.progressBar.Value = (int)progressPercentage.Value;
