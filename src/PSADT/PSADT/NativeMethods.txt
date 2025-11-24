@@ -219,6 +219,7 @@ QueryInformationJobObject
 QueryServiceStatusEx
 ReadProcessMemory
 RECT
+REG_OPEN_CREATE_OPTIONS
 RegOpenKeyEx
 RegQueryInfoKey
 RegRenameKey

@@ -311,7 +311,7 @@ namespace PSADT.ProcessManagement
                     };
 
                     // Apply the ACL and potentially change the owner of the client process.
-                    AdvApi32.SetEntriesInAcl([ea], null, out var pAcl);
+                    AdvApi32.SetEntriesInAcl([ea], out var pAcl);
                     using (pAcl)
                     {
                         if (changeOwner)

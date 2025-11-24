@@ -213,7 +213,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The process ID of the specified service.</returns>
         public static uint GetServiceProcessId(ServiceController service)
         {
-            using var scm = AdvApi32.OpenSCManager(null, null, SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
+            using var scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
             using var svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
             AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);

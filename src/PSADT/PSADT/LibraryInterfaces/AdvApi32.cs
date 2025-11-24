@@ -16,21 +16,38 @@ using Windows.Win32.System.Threading;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// CsWin32 P/Invoke wrappers for the advapi32.dll library.
+    /// Provides managed wrappers for selected Windows advanced API (AdvApi32.dll) functions related to security,
+    /// registry, process, and service control operations.
     /// </summary>
+    /// <remarks>This static class exposes a set of internal methods that facilitate interaction with
+    /// low-level Windows security and system management APIs, such as registry access, token manipulation, process
+    /// creation, service control, and authorization. Each method enforces error handling by throwing exceptions for
+    /// failure scenarios, and callers are responsible for managing the lifetime of any returned handles or resources as
+    /// documented per method. The class is intended for internal use within the assembly and is not designed for direct
+    /// use by external consumers.</remarks>
     internal static class AdvApi32
     {
         /// <summary>
-        /// Opens the requested registry subkey for the given key.
+        /// Opens the specified registry key with desired access rights and returns a handle to the opened key.
         /// </summary>
-        /// <param name="hKey"></param>
-        /// <param name="lpSubKey"></param>
-        /// <param name="samDesired"></param>
-        /// <param name="phkResult"></param>
-        /// <returns></returns>
-        internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
+        /// <remarks>If the operation does not succeed, an exception is thrown corresponding to the
+        /// specific Win32 error code. The caller should ensure that the provided handles and parameters are valid and
+        /// that the necessary permissions are granted.</remarks>
+        /// <param name="hKey">A handle to an open registry key that serves as the root for the subkey to be opened. This handle must be
+        /// valid and have appropriate access rights.</param>
+        /// <param name="lpSubKey">The name of the registry subkey to be opened. This value can be null or an empty string to open the key
+        /// identified by hKey itself.</param>
+        /// <param name="ulOptions">Options that control how the key is opened. This parameter is typically set to zero unless specific open or
+        /// create options are required.</param>
+        /// <param name="samDesired">A mask that specifies the desired access rights to the key. This determines the operations that can be
+        /// performed on the opened key.</param>
+        /// <param name="phkResult">When this method returns, contains a SafeRegistryHandle representing the opened registry key. If the
+        /// operation fails, this value is set to an invalid handle.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the key is
+        /// opened successfully; otherwise, an error code is returned.</returns>
+        internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            var res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
+            var res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -39,63 +56,73 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Retrieves information about the specified registry key.
+        /// Opens the specified registry key with the desired access rights.
         /// </summary>
-        /// <param name="hKey"></param>
-        /// <param name="lpClass"></param>
-        /// <param name="lpcchClass"></param>
-        /// <param name="lpcSubKeys"></param>
-        /// <param name="lpcbMaxSubKeyLen"></param>
-        /// <param name="lpcbMaxClassLen"></param>
-        /// <param name="lpcValues"></param>
-        /// <param name="lpcbMaxValueNameLen"></param>
-        /// <param name="lpcbMaxValueLen"></param>
-        /// <param name="lpcbSecurityDescriptor"></param>
-        /// <param name="lpftLastWriteTime"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, out uint? lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
+        /// <param name="hKey">A handle to an open registry key that serves as the root for the subkey to be opened. This handle must be
+        /// valid and have appropriate access rights.</param>
+        /// <param name="lpSubKey">The name of the registry subkey to be opened. This value is relative to the key specified by <paramref
+        /// name="hKey"/>. If <see langword="null"/>, the function opens the key identified by <paramref name="hKey"/>
+        /// itself.</param>
+        /// <param name="samDesired">A bitmask specifying the requested access rights to the key. This determines the operations that can be
+        /// performed on the opened key.</param>
+        /// <param name="phkResult">When this method returns, contains a handle to the opened registry key if the operation succeeds; otherwise,
+        /// contains an invalid handle.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the key is opened successfully; otherwise, returns a nonzero error
+        /// code.</returns>
+        internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult) => RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
+
+        /// <summary>
+        /// Retrieves information about the specified registry key, including the number of subkeys, value entries, and
+        /// other metadata.
+        /// </summary>
+        /// <remarks>This method throws an exception if the underlying Windows API call fails. All output
+        /// parameters are set only if the operation succeeds.</remarks>
+        /// <param name="hKey">A handle to an open registry key. The handle must have been opened with the appropriate access rights for
+        /// querying information.</param>
+        /// <param name="lpClass">A buffer that receives the user-defined class name of the key. This buffer can be empty if the class name is
+        /// not required.</param>
+        /// <param name="lpcchClass">On input, specifies the size of the lpClass buffer, in characters. On output, receives the number of
+        /// characters stored in lpClass, not including the terminating null character.</param>
+        /// <param name="lpcSubKeys">When this method returns, contains the number of subkeys that are contained by the specified key.</param>
+        /// <param name="lpcbMaxSubKeyLen">When this method returns, contains the length, in characters, of the longest subkey name.</param>
+        /// <param name="lpcbMaxClassLen">When this method returns, contains the length, in characters, of the longest class string among the subkeys.</param>
+        /// <param name="lpcValues">When this method returns, contains the number of value entries for the key.</param>
+        /// <param name="lpcbMaxValueNameLen">When this method returns, contains the length, in characters, of the longest value name.</param>
+        /// <param name="lpcbMaxValueLen">When this method returns, contains the length, in bytes, of the longest data component among the key's
+        /// values.</param>
+        /// <param name="lpcbSecurityDescriptor">When this method returns, contains the size, in bytes, of the key's security descriptor.</param>
+        /// <param name="lpftLastWriteTime">When this method returns, contains the last write time of the key as a FILETIME structure.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns ERROR_SUCCESS if the call succeeds;
+        /// otherwise, an error code is returned.</returns>
+        internal static WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, out uint lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
         {
-            bool hKeyAddRef = false;
-            try
+            lpcchClass = (uint)lpClass.Length;
+            var res = PInvoke.RegQueryInfoKey(hKey, lpClass, ref lpcchClass, out lpcSubKeys, out lpcbMaxSubKeyLen, out lpcbMaxClassLen, out lpcValues, out lpcbMaxValueNameLen, out lpcbMaxValueLen, out lpcbSecurityDescriptor, out lpftLastWriteTime);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                fixed (uint* lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
-                fixed (System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
-                fixed (char* lpClassLocal = lpClass)
-                {
-                    bool lpClassHasValue = lpClass.Length > 0;
-                    uint lpcchClassLocal = (uint)lpClass.Length;
-                    hKey.DangerousAddRef(ref hKeyAddRef);
-                    var res = PInvoke.RegQueryInfoKey((HKEY)hKey.DangerousGetHandle(), lpClassHasValue ? lpClassLocal : null, lpClassHasValue ? &lpcchClassLocal : null, null, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
-                    if (res != WIN32_ERROR.ERROR_SUCCESS)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-                    }
-                    lpcchClass = lpClassHasValue ? lpcchClassLocal : null;
-                    return res;
-                }
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
-            finally
-            {
-                if (hKeyAddRef)
-                {
-                    hKey.DangerousRelease();
-                }
-            }
+            return res;
         }
 
         /// <summary>
-        /// Duplicates an access token.
+        /// Creates a new access token that duplicates an existing token, with specified access rights, attributes,
+        /// impersonation level, and token type.
         /// </summary>
-        /// <param name="hExistingToken"></param>
-        /// <param name="dwDesiredAccess"></param>
-        /// <param name="lpTokenAttributes"></param>
-        /// <param name="ImpersonationLevel"></param>
-        /// <param name="TokenType"></param>
-        /// <param name="phNewToken"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static BOOL DuplicateTokenEx(SafeHandle hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out SafeFileHandle phNewToken)
+        /// <remarks>This method throws an exception if the token duplication fails. The caller is
+        /// responsible for closing the returned token handle when it is no longer needed.</remarks>
+        /// <param name="hExistingToken">A handle to the existing access token to duplicate. This handle must have appropriate access rights for
+        /// duplication.</param>
+        /// <param name="dwDesiredAccess">A set of access rights to assign to the new token. Specify the desired access mask for the duplicated token.</param>
+        /// <param name="lpTokenAttributes">A pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned handle can be inherited by
+        /// child processes. Can be null to use default attributes.</param>
+        /// <param name="ImpersonationLevel">Specifies the security impersonation level for the new token. Determines how the new token can be used for
+        /// impersonation.</param>
+        /// <param name="TokenType">Specifies whether the new token is a primary token or an impersonation token.</param>
+        /// <param name="phNewToken">When this method returns, contains a handle to the newly created access token.</param>
+        /// <returns>true if the token was duplicated successfully; otherwise, false.</returns>
+        internal static BOOL DuplicateTokenEx(SafeHandle hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, in SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out SafeFileHandle phNewToken)
         {
             var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes, ImpersonationLevel, TokenType, out phNewToken);
             if (!res)
@@ -106,13 +133,18 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Opens the access token associated with a process.
+        /// Opens the access token associated with a process handle.
         /// </summary>
-        /// <param name="ProcessHandle"></param>
-        /// <param name="DesiredAccess"></param>
-        /// <param name="TokenHandle"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>If the operation fails, an exception is thrown containing the relevant Win32 error
+        /// information. The caller is responsible for closing the returned token handle when it is no longer
+        /// needed.</remarks>
+        /// <param name="ProcessHandle">A handle to the process whose access token is to be opened. The handle must have appropriate access rights
+        /// for the requested token operations.</param>
+        /// <param name="DesiredAccess">A set of bit flags that specify the requested access rights for the access token. This parameter determines
+        /// the operations that can be performed on the token.</param>
+        /// <param name="TokenHandle">When this method returns, contains a handle to the newly opened access token if the operation succeeds.</param>
+        /// <returns>A value indicating whether the operation succeeded. Returns <see langword="true"/> if the access token was
+        /// opened successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL OpenProcessToken(SafeHandle ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out SafeFileHandle TokenHandle)
         {
             var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, out TokenHandle);
@@ -124,13 +156,16 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Enables or disables privileges in the specified access token.
+        /// Retrieves the locally unique identifier (LUID) used on a specified system to locally represent the specified
+        /// privilege name.
         /// </summary>
-        /// <param name="lpSystemName"></param>
-        /// <param name="lpName"></param>
-        /// <param name="lpLuid"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>If the lookup fails, an exception is thrown containing the last Win32 error. This
+        /// method wraps the native LookupPrivilegeValue function and enforces error handling via exceptions.</remarks>
+        /// <param name="lpSystemName">The name of the system on which the privilege name is to be looked up. If this parameter is null, the local
+        /// system is used.</param>
+        /// <param name="lpName">The name of the privilege to look up. This must be a valid privilege constant.</param>
+        /// <param name="lpLuid">When this method returns, contains the LUID that represents the specified privilege on the specified system.</param>
+        /// <returns>true if the privilege name was successfully found and the LUID was retrieved; otherwise, false.</returns>
         internal static BOOL LookupPrivilegeValue(string? lpSystemName, SE_PRIVILEGE lpName, out LUID lpLuid)
         {
             var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName.ToString(), out lpLuid);
@@ -142,14 +177,28 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Retrieves a specified type of information about an access token.
+        /// Retrieves the locally unique identifier (LUID) that represents the specified privilege on the local system.
         /// </summary>
-        /// <param name="TokenHandle"></param>
-        /// <param name="TokenInformationClass"></param>
-        /// <param name="TokenInformation"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <param name="lpName">The name of the privilege to retrieve the LUID for. This must be a valid privilege name recognized by the
+        /// system.</param>
+        /// <param name="lpLuid">When this method returns, contains the LUID that corresponds to the specified privilege name.</param>
+        /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the privilege name
+        /// was found and the LUID was retrieved successfully; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL LookupPrivilegeValue(SE_PRIVILEGE lpName, out LUID lpLuid) => LookupPrivilegeValue(null, lpName, out lpLuid);
+
+        /// <summary>
+        /// Retrieves information about the specified access token.
+        /// </summary>
+        /// <remarks>If the buffer specified by TokenInformation is too small, the method throws an
+        /// exception. The required buffer size is returned in ReturnLength.</remarks>
+        /// <param name="TokenHandle">A handle to the access token from which information is retrieved. This handle must have appropriate access
+        /// rights for the requested information class.</param>
+        /// <param name="TokenInformationClass">A value that specifies the type of information to retrieve about the token.</param>
+        /// <param name="TokenInformation">A span of bytes that receives the requested token information. The required size depends on the information
+        /// class specified.</param>
+        /// <param name="ReturnLength">When this method returns, contains the number of bytes returned in the TokenInformation buffer or, if the
+        /// buffer is too small, the number of bytes required.</param>
+        /// <returns>A value that is <see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal static BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, Span<byte> TokenInformation, out uint ReturnLength)
         {
             var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation, out ReturnLength);
@@ -161,17 +210,28 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Enables or disables privileges in the specified access token.
+        /// Adjusts the privileges of the specified access token.
         /// </summary>
-        /// <param name="TokenHandle"></param>
-        /// <param name="NewState"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
+        /// <remarks>This method wraps the native AdjustTokenPrivileges API and throws an exception if the
+        /// operation fails. The caller is responsible for ensuring that the token handle has the necessary access
+        /// rights.</remarks>
+        /// <param name="TokenHandle">A handle to the access token whose privileges are to be modified. The handle must have
+        /// TOKEN_ADJUST_PRIVILEGES access.</param>
+        /// <param name="DisableAllPrivileges">A value that determines whether all privileges are to be disabled. Specify <see langword="true"/> to disable
+        /// all privileges; otherwise, <see langword="false"/> to modify privileges as specified by <paramref
+        /// name="NewState"/>.</param>
+        /// <param name="NewState">A structure that specifies the privileges and their attributes to be adjusted. The contents are used only if
+        /// <paramref name="DisableAllPrivileges"/> is <see langword="false"/>.</param>
+        /// <param name="PreviousState">A buffer that receives the previous state of the token's privileges. This buffer can be empty if the
+        /// previous state is not required.</param>
+        /// <param name="ReturnLength">When this method returns, contains the number of bytes required to store the previous state of the token's
+        /// privileges.</param>
+        /// <returns>A value indicating whether the operation succeeded. If the function fails, an exception is thrown.</returns>
+        internal unsafe static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState, Span<byte> PreviousState, out uint ReturnLength)
         {
             fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
             {
-                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, false, newStatePtr, null, out _);
+                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -181,22 +241,35 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Retrieves the name of the specified privilege.
+        /// Adjusts the privileges of the specified access token according to the provided new state.
         /// </summary>
-        /// <param name="lpSystemName"></param>
-        /// <param name="lpLuid"></param>
-        /// <param name="lpName"></param>
-        /// <param name="cchName"></param>
-        /// <returns></returns>
+        /// <param name="TokenHandle">A handle to the access token whose privileges are to be modified. The handle must have
+        /// TOKEN_ADJUST_PRIVILEGES access rights.</param>
+        /// <param name="NewState">A structure that specifies the privileges to enable or disable for the access token.</param>
+        /// <returns>A value that indicates whether the function succeeds. Returns <see langword="true"/> if the operation is
+        /// successful; otherwise, <see langword="false"/>.</returns>
+        internal unsafe static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState) => AdjustTokenPrivileges(TokenHandle, false, in NewState, null, out _);
+
+        /// <summary>
+        /// Retrieves the name of a privilege specified by a locally unique identifier (LUID) on the specified system.
+        /// </summary>
+        /// <remarks>If the buffer specified by lpName is too small, an exception is thrown. The privilege
+        /// name is returned as a null-terminated Unicode string.</remarks>
+        /// <param name="lpSystemName">The name of the target system. If this parameter is null, the local system is used.</param>
+        /// <param name="lpLuid">A reference to the LUID that uniquely identifies the privilege to look up.</param>
+        /// <param name="lpName">A span of characters that receives the name of the privilege. The buffer must be large enough to receive the
+        /// privilege name, including the terminating null character.</param>
+        /// <param name="cchName">On input, specifies the size of the lpName buffer, in characters. On output, receives the number of
+        /// characters written to lpName, including the terminating null character.</param>
+        /// <returns>true if the privilege name was successfully retrieved; otherwise, false.</returns>
         internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
-            var len = (uint)lpName.Length;
-            var res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref len);
+            cchName = (uint)lpName.Length;
+            var res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref cchName);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            cchName = len;
             return res;
         }
 
@@ -229,12 +302,11 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(lpEnvironment));
             }
-
             bool lpEnvironmentAddRef = false;
             try
             {
                 lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+                var res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -251,33 +323,43 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around CreateProcessAsUser to manage error handling.
+        /// Creates a new process and its primary thread in the security context of the specified user token.
         /// </summary>
-        /// <param name="hToken"></param>
-        /// <param name="lpApplicationName"></param>
-        /// <param name="lpCommandLine"></param>
-        /// <param name="lpProcessAttributes"></param>
-        /// <param name="lpThreadAttributes"></param>
-        /// <param name="bInheritHandles"></param>
-        /// <param name="dwCreationFlags"></param>
-        /// <param name="lpEnvironment"></param>
-        /// <param name="lpCurrentDirectory"></param>
-        /// <param name="lpStartupInfo"></param>
-        /// <param name="lpProcessInformation"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        /// <param name="hToken">A handle to the primary token that represents the user for whom the new process is created. The token must
+        /// have appropriate access rights for process creation.</param>
+        /// <param name="lpApplicationName">The name of the module to be executed. This can be null, in which case the module name must be the first
+        /// white space–delimited token in lpCommandLine.</param>
+        /// <param name="lpCommandLine">A reference to a span containing the command line to be executed. The string can include the application
+        /// name and any arguments.</param>
+        /// <param name="lpProcessAttributes">A pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned process handle can be
+        /// inherited by child processes. Can be null.</param>
+        /// <param name="lpThreadAttributes">A pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned thread handle can be
+        /// inherited by child processes. Can be null.</param>
+        /// <param name="bInheritHandles">A value that indicates whether each inheritable handle in the calling process is inherited by the new
+        /// process. Specify <see langword="true"/> to inherit handles; otherwise, <see langword="false"/>.</param>
+        /// <param name="dwCreationFlags">Flags that control the priority class and the creation of the process. This parameter can be a combination
+        /// of PROCESS_CREATION_FLAGS values.</param>
+        /// <param name="lpEnvironment">A handle to the environment block for the new process. Must not be null or closed.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process. If this parameter is null, the new process will
+        /// have the same current drive and directory as the calling process.</param>
+        /// <param name="lpStartupInfo">A reference to a STARTUPINFOW structure that specifies the window station, desktop, standard handles, and
+        /// appearance of the main window for the new process.</param>
+        /// <param name="lpProcessInformation">When this method returns, contains a PROCESS_INFORMATION structure with information about the newly created
+        /// process and its primary thread.</param>
+        /// <returns>A value indicating whether the process was created successfully. Returns <see langword="true"/> if the
+        /// process was created; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
+        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
                 throw new ArgumentNullException(nameof(lpEnvironment));
             }
-
             bool lpEnvironmentAddRef = false;
             try
             {
                 lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -294,22 +376,36 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around CreateProcessAsUser to manage error handling.
+        /// Creates a new process and its primary thread in the security context of the specified user token, using
+        /// extended startup information and environment block.
         /// </summary>
-        /// <param name="hToken"></param>
-        /// <param name="lpApplicationName"></param>
-        /// <param name="lpCommandLine"></param>
-        /// <param name="lpProcessAttributes"></param>
-        /// <param name="lpThreadAttributes"></param>
-        /// <param name="bInheritHandles"></param>
-        /// <param name="dwCreationFlags"></param>
-        /// <param name="lpEnvironment"></param>
-        /// <param name="lpCurrentDirectory"></param>
-        /// <param name="lpStartupInfoEx"></param>
-        /// <param name="lpProcessInformation"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        /// <remarks>This method wraps the native CreateProcessAsUser Windows API and requires appropriate
+        /// privileges to create a process in another user's context. The caller is responsible for ensuring that all
+        /// handles and structures provided are valid and remain valid for the duration of the call. On failure, a Win32
+        /// exception is thrown with details from the last error code.</remarks>
+        /// <param name="hToken">A handle to the primary token that represents the user for whom the new process is to be created. The handle
+        /// must have appropriate access rights for process creation.</param>
+        /// <param name="lpApplicationName">The name of the module to be executed. This can be null, in which case the module name is the first white
+        /// space–delimited token in the command line.</param>
+        /// <param name="lpCommandLine">A reference to a span of characters containing the command line to be executed. The span must be
+        /// null-terminated; otherwise, an exception is thrown.</param>
+        /// <param name="lpProcessAttributes">Optional security attributes for the new process. If null, default security attributes are used.</param>
+        /// <param name="lpThreadAttributes">Optional security attributes for the primary thread of the new process. If null, default security attributes
+        /// are used.</param>
+        /// <param name="bInheritHandles">A value that determines whether each inheritable handle in the calling process is inherited by the new
+        /// process. Specify <see langword="true"/> to inherit handles; otherwise, <see langword="false"/>.</param>
+        /// <param name="dwCreationFlags">Flags that control the priority class and creation of the process. This parameter can be a combination of
+        /// PROCESS_CREATION_FLAGS values.</param>
+        /// <param name="lpEnvironment">A handle to an environment block for the new process. The environment block must be properly formatted for
+        /// the target process.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process. If null, the new process will have the same
+        /// current drive and directory as the calling process.</param>
+        /// <param name="lpStartupInfoEx">A reference to a STARTUPINFOEXW structure that specifies the window station, desktop, standard handles, and
+        /// extended attributes for the new process.</param>
+        /// <param name="lpProcessInformation">When this method returns, contains information about the newly created process and its primary thread.</param>
+        /// <returns>true if the process is created successfully; otherwise, false.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
+        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
@@ -323,8 +419,8 @@ namespace PSADT.LibraryInterfaces
                 fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
                 fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                 {
-                    SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
-                    SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
+                    SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
+                    SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                     PWSTR wstrlpCommandLine = plpCommandLine;
                     hToken.DangerousAddRef(ref hTokenAddRef);
                     lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
@@ -368,6 +464,27 @@ namespace PSADT.LibraryInterfaces
             }
             return handle;
         }
+
+        /// <summary>
+        /// Opens a handle to the service control manager database on the specified computer with the desired access
+        /// rights.
+        /// </summary>
+        /// <param name="lpDatabaseName">The name of the service control manager database. This parameter is typically null to specify the default
+        /// database, "ServicesActive".</param>
+        /// <param name="dwDesiredAccess">A bitmask of access rights required for the returned handle. This determines the operations that can be
+        /// performed on the service control manager.</param>
+        /// <returns>A safe handle to the service control manager database. The caller is responsible for closing the handle when
+        /// it is no longer needed.</returns>
+        internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess) => OpenSCManager(null, lpDatabaseName, dwDesiredAccess);
+
+        /// <summary>
+        /// Opens a handle to the Service Control Manager on the local computer with the specified access rights.
+        /// </summary>
+        /// <param name="dwDesiredAccess">A bitmask of access rights to request for the Service Control Manager. This value determines the operations
+        /// that can be performed with the returned handle.</param>
+        /// <returns>A safe handle to the Service Control Manager. The caller is responsible for closing the handle when it is no
+        /// longer needed.</returns>
+        internal static CloseServiceHandleSafeHandle OpenSCManager(SC_MANAGER_ACCESS dwDesiredAccess) => OpenSCManager(null, null, dwDesiredAccess);
 
         /// <summary>
         /// Opens an existing service in the specified service control manager database.
@@ -452,6 +569,18 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
+
+        /// <summary>
+        /// Creates a new access control list (ACL) by applying the specified list of explicit access entries to a
+        /// default or empty ACL.
+        /// </summary>
+        /// <param name="pListOfExplicitEntries">A read-only span containing the explicit access entries to apply to the new ACL. Each entry defines access
+        /// permissions for a trustee.</param>
+        /// <param name="NewAcl">When this method returns, contains a handle to the newly created ACL. The caller is responsible for
+        /// releasing this handle when it is no longer needed.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the ACL was
+        /// created successfully; otherwise, returns an error code.</returns>
+        internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl) => SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
 
         /// <summary>
         /// Sets the security information for a specified object, such as a file, registry key, or other securable
@@ -567,13 +696,13 @@ namespace PSADT.LibraryInterfaces
         {
             fixed (char* pObjectNameLocal = pObjectName)
             {
-                PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSECURITY_DESCRIPTOR = default;
-                var res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSECURITY_DESCRIPTOR);
+                PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSecurityDescriptor = default;
+                var res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                 }
-                if (pSECURITY_DESCRIPTOR == default)
+                if (pSecurityDescriptor == default)
                 {
                     throw new InvalidOperationException("Failed to retrieve security descriptor.");
                 }
@@ -581,7 +710,7 @@ namespace PSADT.LibraryInterfaces
                 ppsidGroup = pSidGroup != default ? new((IntPtr)pSidGroup.Value) : null;
                 ppDacl = pDacl is not null ? new((IntPtr)pDacl, false) : null;
                 ppSacl = pSacl is not null ? new((IntPtr)pSacl, false) : null;
-                ppSecurityDescriptor = new((IntPtr)pSECURITY_DESCRIPTOR, true);
+                ppSecurityDescriptor = new((IntPtr)pSecurityDescriptor, true);
                 return res;
             }
         }
@@ -641,7 +770,7 @@ namespace PSADT.LibraryInterfaces
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the initialization fails due to a Win32 error, or if the resulting authorization context is
         /// invalid.</exception>
-        internal unsafe static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        internal unsafe static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             bool UserSidAddRef = false;
             try
@@ -686,7 +815,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
-        internal unsafe static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        internal unsafe static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             var res = PInvoke.AuthzInitializeContextFromToken((uint)Flags, TokenHandle, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
             if (!res)
@@ -791,7 +920,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle);
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
-                throw new Win32Exception((int)PInvoke.LsaNtStatusToWinError(res));
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
             }
             return res;
         }
@@ -811,12 +940,12 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. A value of <see
         /// cref="NTSTATUS.STATUS_SUCCESS"/> indicates success.</returns>
         /// <exception cref="Win32Exception">Thrown if the operation fails, wrapping the corresponding Windows error code.</exception>
-        internal static unsafe NTSTATUS LsaQueryInformationPolicy(SafeHandle PolicyHandle, POLICY_INFORMATION_CLASS InformationClass, out SafeLsaFreeMemoryHandle Buffer)
+        internal unsafe static NTSTATUS LsaQueryInformationPolicy(SafeHandle PolicyHandle, POLICY_INFORMATION_CLASS InformationClass, out SafeLsaFreeMemoryHandle Buffer)
         {
             var res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out var BufferLocal);
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
-                throw new Win32Exception((int)PInvoke.LsaNtStatusToWinError(res));
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
             }
             Buffer = new((IntPtr)BufferLocal, true);
             return res;
