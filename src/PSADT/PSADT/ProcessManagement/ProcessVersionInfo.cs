@@ -4,13 +4,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
-using PSADT.SafeHandles;
 using PSADT.Security;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -157,10 +157,10 @@ namespace PSADT.ProcessManagement
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
-            PsApi.EnumProcessModules(processHandle, SafeMemoryHandle.Null, out var bytesNeeded);
-            using var moduleBuffer = SafeHGlobalHandle.Alloc((int)bytesNeeded);
+            PsApi.EnumProcessModules(processHandle, null, out var bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
             PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
-            PsApi.GetModuleInformation(processHandle, moduleBuffer.ToStructure<HMODULE>(), out var moduleInfo);
+            ref var hModule = ref Unsafe.As<byte, HMODULE>(ref MemoryMarshal.GetReference(moduleBuffer));
+            PsApi.GetModuleInformation(processHandle, in hModule, out var moduleInfo);
             return moduleInfo;
         }
 
