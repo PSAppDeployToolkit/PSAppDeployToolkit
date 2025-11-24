@@ -1,5 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using PSADT.SafeHandles;
+﻿using System;
+using System.Runtime.InteropServices;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -24,29 +24,26 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpcbNeeded">When this method returns, contains the number of bytes required to store all module handles in the lphModule
         /// buffer.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL EnumProcessModules(SafeHandle hProcess, SafeMemoryHandle lphModule, out uint lpcbNeeded)
+        internal unsafe static BOOL EnumProcessModules(SafeHandle hProcess, Span<byte> lphModule, out uint lpcbNeeded)
         {
             fixed (uint* pcbNeeded = &lpcbNeeded)
             {
                 bool hProcessAddRef = false;
-                bool lphModuleAddRef = false;
                 try
                 {
                     hProcess.DangerousAddRef(ref hProcessAddRef);
-                    lphModule.DangerousAddRef(ref lphModuleAddRef);
-                    var res = PInvoke.EnumProcessModules((HANDLE)hProcess.DangerousGetHandle(), (HMODULE*)lphModule.DangerousGetHandle().ToPointer(), (uint)lphModule.Length, pcbNeeded);
-                    if (!res)
+                    fixed (byte* pLphModule = lphModule)
                     {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                        var res = PInvoke.EnumProcessModules((HANDLE)hProcess.DangerousGetHandle(), (HMODULE*)pLphModule, (uint)lphModule.Length, pcbNeeded);
+                        if (!res)
+                        {
+                            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                        }
+                        return res;
                     }
-                    return res;
                 }
                 finally
                 {
-                    if (lphModuleAddRef)
-                    {
-                        lphModule.DangerousRelease();
-                    }
                     if (hProcessAddRef)
                     {
                         hProcess.DangerousRelease();
@@ -64,7 +61,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpmodinfo">When this method returns, contains a <see cref="MODULEINFO"/> structure that receives the module
         /// information.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL GetModuleInformation(SafeHandle hProcess, HMODULE hModule, out MODULEINFO lpmodinfo)
+        internal unsafe static BOOL GetModuleInformation(SafeHandle hProcess, in HMODULE hModule, out MODULEINFO lpmodinfo)
         {
             fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
             {
