@@ -170,7 +170,7 @@ namespace PSADT.Security
             {
                 throw new UnauthorizedAccessException($"The current process does not have the [{privilege}] privilege available.");
             }
-            AdvApi32.LookupPrivilegeValue(null, privilege, out var luid);
+            AdvApi32.LookupPrivilegeValue(privilege, out var luid);
             var tp = new TOKEN_PRIVILEGES
             {
                 PrivilegeCount = 1,
