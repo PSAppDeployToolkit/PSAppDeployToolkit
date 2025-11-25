@@ -516,17 +516,9 @@ function Start-ADTProcess
             Get-ADTSession
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $canSetExitCode = $true
 
         # Set up defaults if not specified.
-        if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
-        {
-            if (!$adtSession)
-            {
-                $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-            }
-            $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
-        }
-
         if (!$PSBoundParameters.ContainsKey('SuccessExitCodes'))
         {
             $SuccessExitCodes = if ($adtSession)
@@ -538,6 +530,10 @@ function Start-ADTProcess
                 0
             }
         }
+        else
+        {
+            $canSetExitCode = $false
+        }
         if (!$PSBoundParameters.ContainsKey('RebootExitCodes'))
         {
             $RebootExitCodes = if ($adtSession)
@@ -548,6 +544,18 @@ function Start-ADTProcess
             {
                 1641, 3010
             }
+        }
+        else
+        {
+            $canSetExitCode = $false
+        }
+        if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
+        {
+            if (!$adtSession)
+            {
+                $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+            }
+            $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
         }
 
         # Set up initial variables.
@@ -564,6 +572,63 @@ function Start-ADTProcess
         $cancellationToken = if ($cancellationTokenSource)
         {
             $cancellationTokenSource.Token
+        }
+
+        # Internal worker function to set the session exit code.
+        function Set-ADTSessionExitCode
+        {
+            [CmdletBinding()]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [ValidateNotNullOrEmpty()]
+                [System.Nullable[System.Int32]]$ExitCode
+            )
+
+            # Throw if there's no active session; the caller didn't do their homework.
+            if (!$adtSession)
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The function [Start-ADTProcess] attempted to set a session exit code, but no deployment session is active.")
+                    Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    ErrorId = 'NoActiveAdtDeploymentSession'
+                    TargetObject = $ExitCode
+                    RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+            if (!$canSetExitCode)
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The function [Start-ADTProcess] is attempting to set a session exit code when it shouldn't.")
+                    Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    ErrorId = 'SetAdtDeploymentSessionExitCodeError'
+                    TargetObject = $ExitCode
+                    RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+
+            # Start working out whether we can set the exit code or not.
+            $adtSessionStatus = $adtSession.GetDeploymentStatus()
+            $isSuccessCode = $SuccessExitCodes.Contains($ExitCode)
+            $isRestartCode = $RebootExitCodes.Contains($ExitCode)
+            $isFailureCode = !$isSuccessCode -and !$isRestartCode
+            if ($isFailureCode -and ($adtSessionStatus -le [PSADT.Module.DeploymentStatus]::Error))
+            {
+                $adtSession.SetExitCode($ExitCode)
+                return
+            }
+            if ($isRestartCode -and ($adtSessionStatus -le [PSADT.Module.DeploymentStatus]::RestartRequired))
+            {
+                $adtSession.SetExitCode($ExitCode)
+                return
+            }
+            if ($isSuccessCode -and ($adtSessionStatus -le [PSADT.Module.DeploymentStatus]::Complete))
+            {
+                $adtSession.SetExitCode($ExitCode)
+                return
+            }
         }
     }
 
@@ -858,9 +923,9 @@ function Start-ADTProcess
                 }
 
                 # Update the session's last exit code with the value if externally called.
-                if ($adtSession -and $extInvoker -and !$ignoreExitCode -and $adtSession.GetExitCode().Equals(0))
+                if ($adtSession -and $extInvoker -and !$ignoreExitCode -and $canSetExitCode)
                 {
-                    $adtSession.SetExitCode($result.ExitCode)
+                    Set-ADTSessionExitCode -ExitCode $result.ExitCode
                 }
 
                 # If the passthru switch is specified, return the exit code and any output from process.
@@ -892,9 +957,9 @@ function Start-ADTProcess
                     # Handle requirements for when there's an active session.
                     if ($adtSession -and $extInvoker)
                     {
-                        if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -and $adtSession.GetExitCode().Equals(0))
+                        if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -and $canSetExitCode)
                         {
-                            $adtSession.SetExitCode($result.ExitCode)
+                            Set-ADTSessionExitCode -ExitCode $result.ExitCode
                         }
                         if ($ExitOnProcessFailure)
                         {
