@@ -1,19 +1,25 @@
 ﻿using System;
+using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
 
 namespace PSADT.SafeHandles
 {
     /// <summary>
-    /// Represents a safe handle for a GDI object, ensuring proper release of resources.
+    /// Provides a safe handle for a Windows GDI object, ensuring that the underlying handle is released reliably.
     /// </summary>
-    /// <remarks>This class provides a managed wrapper for a GDI object handle, ensuring that the handle is
-    /// released correctly when no longer needed. It inherits from <see cref="SafeBaseHandle"/> and overrides the <see
-    /// cref="ReleaseHandle"/> method to implement the specific release logic for GDI objects.</remarks>
-    /// <param name="handle"></param>
-    /// <param name="ownsHandle"></param>
-    internal sealed class SafeGdiObjectHandle(IntPtr handle, bool ownsHandle) : SafeBaseHandle(handle, ownsHandle)
+    /// <remarks>This class is intended for internal use when working with unmanaged GDI resources. It ensures
+    /// that the associated GDI object is properly deleted when the handle is no longer needed, helping to prevent
+    /// resource leaks. The handle is considered invalid if it is zero or minus one.</remarks>
+    internal sealed class SafeGdiObjectHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
+        /// <summary>
+        /// Initializes a new instance of the SafeGdiObjectHandle class with the specified handle and ownership value.
+        /// </summary>
+        /// <param name="handle">The native handle to a GDI object to be wrapped by this instance.</param>
+        /// <param name="ownsHandle">true to reliably release the handle during finalization; false to prevent the handle from being released.</param>
+        internal SafeGdiObjectHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
+
         /// <summary>
         /// Releases the handle.
         /// </summary>
