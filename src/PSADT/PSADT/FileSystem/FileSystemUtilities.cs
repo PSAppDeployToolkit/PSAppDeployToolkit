@@ -296,42 +296,23 @@ namespace PSADT.FileSystem
                         default:
                             throw new ArgumentException("Invalid token type specified.", nameof(tokenType));
                     }
-                    using (var grantedAccessMask = SafeHGlobalHandle.Alloc(sizeof(uint)))
-                    using (var error = SafeHGlobalHandle.Alloc(sizeof(uint)))
                     using (phAuthzClientContext)
                     {
-                        bool grantedAccessMaskAddRef = false;
-                        bool errorAddRef = false;
-                        try
+                        // Prepare the access request and reply structures.
+                        var req = new AUTHZ_ACCESS_REQUEST { DesiredAccess = (uint)desiredAccessMask };
+                        var reply = new AUTHZ_ACCESS_REPLY { ResultListLength = 1 };
+                        uint grantedAccessMask, error;
+                        unsafe
                         {
-                            // Prepare the access request and reply structures.
-                            var req = new AUTHZ_ACCESS_REQUEST { DesiredAccess = (uint)desiredAccessMask };
-                            var reply = new AUTHZ_ACCESS_REPLY { ResultListLength = 1 };
-                            unsafe
-                            {
-                                grantedAccessMask.DangerousAddRef(ref grantedAccessMaskAddRef);
-                                reply.GrantedAccessMask = (uint*)grantedAccessMask.DangerousGetHandle();
-                                error.DangerousAddRef(ref errorAddRef);
-                                reply.Error = (uint*)error.DangerousGetHandle();
-                            }
-
-                            // Perform the access check.
-                            AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out var phAccessCheckResults);
-                            using (phAccessCheckResults)
-                            {
-                                return (FileSystemRights)grantedAccessMask.ReadInt32();
-                            }
+                            reply.GrantedAccessMask = &grantedAccessMask;
+                            reply.Error = &error;
                         }
-                        finally
+
+                        // Perform the access check.
+                        AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out var phAccessCheckResults);
+                        using (phAccessCheckResults)
                         {
-                            if (grantedAccessMaskAddRef)
-                            {
-                                grantedAccessMask.DangerousRelease();
-                            }
-                            if (errorAddRef)
-                            {
-                                error.DangerousRelease();
-                            }
+                            return (FileSystemRights)grantedAccessMask;
                         }
                     }
                 }
