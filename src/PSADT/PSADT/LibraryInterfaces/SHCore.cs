@@ -19,10 +19,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dpiX">When the method returns, contains the DPI value along the horizontal axis.</param>
         /// <param name="dpiY">When the method returns, contains the DPI value along the vertical axis.</param>
         /// <returns>A <see cref="HRESULT"/> indicating the success or failure of the operation. A successful result indicates that the DPI values were retrieved successfully.</returns>
-        internal static HRESULT GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
-        {
-            return PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY).ThrowOnFailure();
-        }
+        internal static HRESULT GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY) => PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY).ThrowOnFailure();
 
         /// <summary>
         /// Retrieves the DPI (dots per inch) values for the default monitor.
@@ -32,9 +29,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dpiX">When the method returns, contains the horizontal DPI of the default monitor.</param>
         /// <param name="dpiY">When the method returns, contains the vertical DPI of the default monitor.</param>
         /// <returns>A <see cref="HRESULT"/> indicating the success or failure of the operation. A successful result indicates that the DPI values were retrieved successfully.</returns>
-        internal static HRESULT GetDpiForDefaultMonitor(MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
-        {
-            return GetDpiForMonitor(User32.MonitorFromPoint(new(0, 0), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY), dpiType, out dpiX, out dpiY).ThrowOnFailure();
-        }
+        internal static HRESULT GetDpiForDefaultMonitor(MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY) => GetDpiForMonitor(User32.MonitorFromPoint(new(0, 0), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY), dpiType, out dpiX, out dpiY).ThrowOnFailure();
     }
 }

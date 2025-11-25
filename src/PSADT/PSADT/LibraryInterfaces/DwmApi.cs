@@ -14,9 +14,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pcrColorization"></param>
         /// <param name="pfOpaqueBlend"></param>
         /// <returns></returns>
-        internal static HRESULT DwmGetColorizationColor(out uint pcrColorization, out BOOL pfOpaqueBlend)
-        {
-            return PInvoke.DwmGetColorizationColor(out pcrColorization, out pfOpaqueBlend).ThrowOnFailure();
-        }
+        internal static HRESULT DwmGetColorizationColor(out uint pcrColorization, out BOOL pfOpaqueBlend) => PInvoke.DwmGetColorizationColor(out pcrColorization, out pfOpaqueBlend).ThrowOnFailure();
     }
 }

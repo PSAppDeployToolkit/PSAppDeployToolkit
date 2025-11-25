@@ -3,6 +3,11 @@ using Windows.Win32;
 
 namespace PSADT.LibraryInterfaces
 {
+    /// <summary>
+    /// Specifies flags that control the behavior of authorization context initialization in Authz APIs.
+    /// </summary>
+    /// <remarks>These flags are used with functions such as AuthzInitializeContextFromSid to modify how the
+    /// authorization context is created. Multiple flags can be combined using a bitwise OR operation.</remarks>
     [Flags]
     internal enum AUTHZ_CONTEXT_FLAGS : uint
     {
