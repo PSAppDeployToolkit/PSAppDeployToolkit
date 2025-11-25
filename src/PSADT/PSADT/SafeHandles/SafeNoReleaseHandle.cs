@@ -1,16 +1,27 @@
 ﻿using System;
+using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.SafeHandles
 {
     /// <summary>
-    /// Represents a safe handle that does not release the underlying handle resource.
+    /// Provides a SafeHandle implementation that encapsulates a native handle without taking ownership or releasing it
+    /// when disposed or finalized.
     /// </summary>
-    /// <remarks>This class is intended for scenarios where the handle should not be released or closed when
-    /// the object is disposed or finalized. It overrides the release behavior to ensure the handle remains
-    /// intact.</remarks>
-    /// <param name="handle"></param>
-    internal sealed class SafeNoReleaseHandle(IntPtr handle) : SafeBaseHandle(handle, false)
+    /// <remarks>Use SafeNoReleaseHandle when you need to wrap a native handle for interop or API
+    /// compatibility, but the handle's lifetime is managed externally. This type does not release or close the
+    /// underlying handle; disposing or finalizing the SafeNoReleaseHandle instance has no effect on the native
+    /// resource.</remarks>
+    internal sealed class SafeNoReleaseHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
+        /// <summary>
+        /// Initializes a new instance of the SafeNoReleaseHandle class with the specified handle value.
+        /// </summary>
+        /// <remarks>This constructor does not take ownership of the handle and will not release it when
+        /// the SafeNoReleaseHandle is disposed or finalized. Use this when the handle's lifetime is managed
+        /// elsewhere.</remarks>
+        /// <param name="handle">The native handle to be encapsulated by the SafeNoReleaseHandle instance.</param>
+        internal SafeNoReleaseHandle(IntPtr handle) : base(false) => SetHandle(handle);
+
         /// <summary>
         /// Releases the handle associated with the current instance.
         /// </summary>

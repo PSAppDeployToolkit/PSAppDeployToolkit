@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.SafeHandles
 {
     /// <summary>
-    /// Represents a wrapper for an environment block handle that ensures the handle is properly released.
+    /// Represents a safe handle for a process thread attribute list used with Windows process and thread creation APIs.
     /// </summary>
-    internal sealed class SafeProcThreadAttributeListHandle : SafeBaseHandle
+    /// <remarks>This class manages the lifetime of a process thread attribute list handle, ensuring that
+    /// unmanaged resources are released reliably. It is intended for use with native interop scenarios where process or
+    /// thread attributes must be specified. The handle is released automatically when the object is disposed or
+    /// finalized.</remarks>
+    internal sealed class SafeProcThreadAttributeListHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         /// <summary>
         /// Creates a new instance of <see cref="SafeProcThreadAttributeListHandle"/> with the specified number of
@@ -39,9 +44,7 @@ namespace PSADT.SafeHandles
         /// <param name="handle">The initial handle to the process thread attribute list.</param>
         /// <param name="ownsHandle">A value indicating whether the handle should be released when the safe handle is disposed. true if the
         /// handle should be released; otherwise, false.</param>
-        private SafeProcThreadAttributeListHandle(IntPtr handle, bool ownsHandle) : base(handle, ownsHandle)
-        {
-        }
+        private SafeProcThreadAttributeListHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
 
         /// <summary>
         /// Releases the handle.

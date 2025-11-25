@@ -1,12 +1,20 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.SafeHandles
 {
     /// <summary>
-    /// Represents a wrapper for a handle to a block of memory allocated from the Marshal class.
+    /// Provides a base class for managing and safely releasing unmanaged memory handles. Ensures that memory is
+    /// properly released and offers utility methods for reading, writing, and interpreting the underlying memory
+    /// region.
     /// </summary>
-    internal abstract class SafeMemoryHandle : SafeBaseHandle
+    /// <remarks>This class is intended for use as a base for safe handle implementations that manage
+    /// unmanaged memory blocks. It provides methods for reading and writing primitive values, converting memory to and
+    /// from structures, and exposing the memory as spans for efficient access. Inheritors must implement the
+    /// ReleaseHandle method to define how the memory is freed. Instances of this class are not thread safe unless
+    /// otherwise specified by derived types.</remarks>
+    internal abstract class SafeMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SafeMemoryHandle"/> class with a specified handle, length, and
@@ -17,9 +25,10 @@ namespace PSADT.SafeHandles
         /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle"/> should reliably release the handle during the
         /// finalization phase.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
-        protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(handle, ownsHandle)
+        protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(ownsHandle)
         {
             Length = length >= 0 ? length : throw new ArgumentOutOfRangeException(nameof(length));
+            SetHandle(handle);
         }
 
         /// <summary>
