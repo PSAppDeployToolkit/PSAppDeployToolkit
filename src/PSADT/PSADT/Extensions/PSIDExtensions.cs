@@ -17,7 +17,7 @@ namespace PSADT.Extensions
         /// </summary>
         /// <param name="pSid">The <see cref="PSID"/> instance to convert. Must not be null.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the specified <see cref="PSID"/>.</returns>
-        internal static unsafe SecurityIdentifier ToSecurityIdentifier(this PSID pSid)
+        internal unsafe static SecurityIdentifier ToSecurityIdentifier(this PSID pSid)
         {
             return new((IntPtr)pSid.Value);
         }
