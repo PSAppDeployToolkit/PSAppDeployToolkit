@@ -19,15 +19,25 @@ using Windows.Win32.System.Threading;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// CsWin32 P/Invoke wrappers for the kernel32.dll library.
+    /// Provides managed wrappers for selected native Windows Kernel32.dll functions, enabling advanced process, thread,
+    /// job object, file, and system operations from .NET code.
     /// </summary>
+    /// <remarks>The methods in this class offer safe and convenient access to low-level Windows API
+    /// functionality, including process and thread management, job object configuration, file and device operations,
+    /// and system information retrieval. Most methods throw exceptions on failure, translating native error codes into
+    /// .NET exceptions for easier error handling. Handles returned by these methods must be released by the caller to
+    /// avoid resource leaks. This class is intended for advanced scenarios that require direct interaction with Windows
+    /// system APIs.</remarks>
     public static class Kernel32
     {
         /// <summary>
-        /// Tests whether the current device has completed its Out-of-Box Experience (OOBE).
+        /// Determines whether the Out-Of-Box Experience (OOBE) has been completed on the system.
         /// </summary>
-        /// <param name="isOOBEComplete"></param>
-        /// <returns></returns>
+        /// <param name="isOOBEComplete">When this method returns, contains a value that indicates whether OOBE is complete. Contains <see
+        /// langword="true"/> if OOBE is complete; otherwise, <see langword="false"/>. This parameter is passed
+        /// uninitialized.</param>
+        /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the call was
+        /// successful; otherwise, <see langword="false"/>.</returns>
         internal static BOOL OOBEComplete(out BOOL isOOBEComplete)
         {
             var res = PInvoke.OOBEComplete(out isOOBEComplete);
@@ -39,12 +49,16 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around LoadLibraryEx to manage error handling.
+        /// Loads the specified module into the address space of the calling process with the given loading options.
         /// </summary>
-        /// <param name="lpLibFileName"></param>
-        /// <param name="dwFlags"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method throws an exception if the module cannot be loaded. The returned handle
+        /// must be released to avoid resource leaks.</remarks>
+        /// <param name="lpLibFileName">The name or path of the module to load. This can be a library file name or a full path. Cannot be null or
+        /// empty.</param>
+        /// <param name="dwFlags">A combination of flags that control how the module is loaded. These flags determine aspects such as search
+        /// path behavior and dependency resolution.</param>
+        /// <returns>A safe handle representing the loaded module. The caller is responsible for releasing the handle when it is
+        /// no longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
         {
             var res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
@@ -56,12 +70,16 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetProcAddress to manage error handling.
+        /// Retrieves the address of an exported function or variable from the specified dynamic-link library (DLL)
+        /// module.
         /// </summary>
-        /// <param name="hModule"></param>
-        /// <param name="lpProcName"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method throws an exception if the specified function or variable cannot be
+        /// found. The returned address can be used to invoke the function or access the variable. The caller is
+        /// responsible for ensuring that the signature of the function or variable matches the expected type.</remarks>
+        /// <param name="hModule">A handle to the DLL module that contains the function or variable. This handle must have been obtained by
+        /// loading the module with a method such as LoadLibrary. Cannot be null.</param>
+        /// <param name="lpProcName">The name of the function or variable to retrieve, or the ordinal value as a string. Cannot be null or empty.</param>
+        /// <returns>A FARPROC representing the address of the specified function or variable.</returns>
         internal static FARPROC GetProcAddress(SafeHandle hModule, string lpProcName)
         {
             var res = PInvoke.GetProcAddress(hModule, lpProcName);
@@ -73,13 +91,15 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetPrivateProfileSectionNames to manage error handling.
+        /// Retrieves the names of all sections in the specified initialization file.
         /// </summary>
-        /// <param name="lpReturnedString"></param>
-        /// <param name="lpFileName"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        /// <exception cref="OverflowException"></exception>
+        /// <remarks>If the buffer specified by lpReturnedString is too small to hold all section names,
+        /// an exception is thrown. The section names are returned as a sequence of null-terminated strings, terminated
+        /// by an additional null character.</remarks>
+        /// <param name="lpReturnedString">A span of characters that receives the section names, separated by null characters. The buffer must be large
+        /// enough to hold all section names and a final null terminator.</param>
+        /// <param name="lpFileName">The full path to the initialization (.ini) file from which to retrieve section names. Cannot be null.</param>
+        /// <returns>The number of characters copied to lpReturnedString, not including the final null character.</returns>
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName);
@@ -91,14 +111,17 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetPrivateProfileSection to manage error handling.
+        /// Retrieves all key name and value pairs for the specified section from the given initialization file.
         /// </summary>
-        /// <param name="lpAppName"></param>
-        /// <param name="lpReturnedString"></param>
-        /// <param name="lpFileName"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        /// <exception cref="OverflowException"></exception>
+        /// <remarks>If the buffer is too small to hold all the data, an exception is thrown. The returned
+        /// data consists of key-value pairs separated by null characters, with a double null character marking the end
+        /// of the data.</remarks>
+        /// <param name="lpAppName">The name of the section in the initialization file whose key-value pairs are to be retrieved. Cannot be
+        /// null.</param>
+        /// <param name="lpReturnedString">A buffer that receives the key name and value pairs, formatted as a series of null-terminated strings. The
+        /// buffer must be large enough to hold the data, including the final null terminator.</param>
+        /// <param name="lpFileName">The name of the initialization file. Cannot be null.</param>
+        /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
         internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName);
@@ -110,17 +133,19 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetPrivateProfileString to manage error handling.
+        /// Retrieves a string value from the specified section and key in an initialization (INI) file.
         /// </summary>
-        /// <param name="lpAppName"></param>
-        /// <param name="lpKeyName"></param>
-        /// <param name="lpDefault"></param>
-        /// <param name="lpReturnedString"></param>
-        /// <param name="lpFileName"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        /// <exception cref="OverflowException"></exception>
-        internal static uint GetPrivateProfileString(string lpAppName, string lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
+        /// <remarks>If the buffer is too small to hold the result, an exception is thrown. This method
+        /// throws an exception if a Windows error occurs during the operation.</remarks>
+        /// <param name="lpAppName">The name of the section containing the key. Cannot be null.</param>
+        /// <param name="lpKeyName">The name of the key whose value is to be retrieved. If null, all key names in the specified section are
+        /// returned.</param>
+        /// <param name="lpDefault">The default string to return if the key is not found. If null, an empty string is used as the default.</param>
+        /// <param name="lpReturnedString">A buffer that receives the retrieved string. The buffer must be large enough to hold the result, including
+        /// the terminating null character.</param>
+        /// <param name="lpFileName">The full path to the initialization file. Cannot be null.</param>
+        /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
+        internal static uint GetPrivateProfileString(string lpAppName, string? lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName);
             if (res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
@@ -135,12 +160,18 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around WritePrivateProfileSection to manage error handling.
+        /// Writes a section to the specified initialization file (INI file), replacing the existing section with the
+        /// provided key-value pairs.
         /// </summary>
-        /// <param name="lpAppName"></param>
-        /// <param name="lpString"></param>
-        /// <param name="lpFileName"></param>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>If <paramref name="lpString"/> is null, the specified section is removed from the
+        /// file. The file must be accessible for writing. This method throws an exception if the underlying Windows API
+        /// call fails.</remarks>
+        /// <param name="lpAppName">The name of the section to be written to the initialization file. Cannot be null or empty.</param>
+        /// <param name="lpString">A string containing the key-value pairs to write to the section, formatted as a sequence of null-terminated
+        /// strings ending with two null characters. If null, the section is deleted.</param>
+        /// <param name="lpFileName">The full path to the initialization file. Cannot be null or empty.</param>
+        /// <returns>A value indicating whether the operation succeeded. Returns <see langword="true"/> if the section was
+        /// written successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WritePrivateProfileSection(string lpAppName, string? lpString, string lpFileName)
         {
             var res = PInvoke.WritePrivateProfileSection(lpAppName, lpString, lpFileName);
@@ -152,14 +183,18 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around WritePrivateProfileString to manage error handling.
+        /// Writes a string value to the specified section and key in an initialization (INI) file.
         /// </summary>
-        /// <param name="lpAppName"></param>
-        /// <param name="lpKeyName"></param>
-        /// <param name="lpString"></param>
-        /// <param name="lpFileName"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method throws an exception if the underlying Windows API call fails. The method
+        /// is intended for use with legacy INI files and may not be suitable for new applications. The file specified
+        /// by lpFileName must exist and be accessible for writing.</remarks>
+        /// <param name="lpAppName">The name of the section to which the string will be written. This value cannot be null.</param>
+        /// <param name="lpKeyName">The name of the key to be associated with the string. If this parameter is null, the entire section
+        /// specified by lpAppName is deleted.</param>
+        /// <param name="lpString">The string to write to the specified key. If this parameter is null, the key specified by lpKeyName is
+        /// deleted.</param>
+        /// <param name="lpFileName">The full path to the initialization file. This value cannot be null.</param>
+        /// <returns>true if the operation succeeds; otherwise, false.</returns>
         internal static BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
             var res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
@@ -171,15 +206,23 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around CreateIoCompletionPort to manage error handling.
+        /// Creates a new I/O completion port or associates a file handle with an existing I/O completion port.
         /// </summary>
-        /// <param name="FileHandle"></param>
-        /// <param name="ExistingCompletionPort"></param>
-        /// <param name="CompletionKey"></param>
-        /// <param name="NumberOfConcurrentThreads"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
+        /// <remarks>This method wraps the native CreateIoCompletionPort Windows API. If the operation
+        /// fails, a Win32 exception is thrown. The returned handle should be closed when no longer needed to avoid
+        /// resource leaks.</remarks>
+        /// <param name="FileHandle">The file handle to associate with the I/O completion port. Can be a file, socket, or device handle. If null,
+        /// a new completion port is created.</param>
+        /// <param name="ExistingCompletionPort">An existing I/O completion port handle to associate with the file handle, or null to create a new completion
+        /// port.</param>
+        /// <param name="CompletionKey">A value to be returned through the completion port with each I/O completion packet for the specified file
+        /// handle. Used to identify the source of the I/O operation.</param>
+        /// <param name="NumberOfConcurrentThreads">The maximum number of threads that the operating system can allow to concurrently process I/O completion
+        /// packets for the port. Must be greater than zero when creating a new port; ignored when associating with an
+        /// existing port.</param>
+        /// <returns>A SafeFileHandle representing the I/O completion port. The handle is valid and must be released by the
+        /// caller.</returns>
+        internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
             if (res is null || res.IsInvalid)
@@ -188,6 +231,24 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Creates or associates an I/O completion port with a specified file handle, allowing asynchronous I/O
+        /// operations to be managed and completed efficiently.
+        /// </summary>
+        /// <remarks>This method is intended for advanced scenarios involving asynchronous I/O on Windows
+        /// platforms. The caller is responsible for managing the lifetime of the returned handle. Improper use may lead
+        /// to resource leaks or undefined behavior.</remarks>
+        /// <param name="FileHandle">The handle to a file, socket, or device to associate with the I/O completion port. If this parameter is set
+        /// to a special value indicating no file association, a new completion port is created.</param>
+        /// <param name="ExistingCompletionPort">An existing I/O completion port to associate with the file handle, or null to create a new completion port.</param>
+        /// <param name="CompletionKey">A value to be returned through the completion port with each I/O completion packet for the specified file
+        /// handle. This value can be used to identify the source of the I/O operation.</param>
+        /// <param name="NumberOfConcurrentThreads">The maximum number of threads that the operating system can allow to concurrently process I/O completion
+        /// packets for the port. Must be greater than zero.</param>
+        /// <returns>A SafeFileHandle representing the I/O completion port. The handle can be used to post and retrieve I/O
+        /// completion packets.</returns>
+        internal static SafeFileHandle CreateIoCompletionPort(HANDLE FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads) => CreateIoCompletionPort(new SafeFileHandle(FileHandle, false), ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
 
         /// <summary>
         /// Wrapper around CreateJobObject to manage error handling.
@@ -207,14 +268,18 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around AssignProcessToJobObject to manage error handling.
+        /// Sets limits or configuration information for the specified job object.
         /// </summary>
-        /// <param name="hJob"></param>
-        /// <param name="JobObjectInformationClass"></param>
-        /// <param name="lpJobObjectInformation"></param>
-        /// <param name="cbJobObjectInformationLength"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method throws an exception if the operation fails. The caller is responsible for
+        /// ensuring that the buffer passed to lpJobObjectInformation is properly initialized and matches the expected
+        /// structure for the specified information class.</remarks>
+        /// <param name="hJob">A handle to the job object to be modified. This handle must have the JOB_OBJECT_SET_ATTRIBUTES access right.</param>
+        /// <param name="JobObjectInformationClass">A value that specifies the type of information to set for the job object. This determines the structure
+        /// expected in the information buffer.</param>
+        /// <param name="lpJobObjectInformation">A pointer to a buffer that contains the information to be set. The structure and contents of this buffer
+        /// depend on the value of the JobObjectInformationClass parameter.</param>
+        /// <param name="cbJobObjectInformationLength">The size, in bytes, of the information buffer pointed to by lpJobObjectInformation.</param>
+        /// <returns>true if the information was set successfully; otherwise, false.</returns>
         private unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, void* lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             bool hJobAddRef = false;
@@ -238,56 +303,79 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around SetInformationJobObject to provide a managed interface for JOBOBJECT_ASSOCIATE_COMPLETION_PORT setups.
+        /// Associates a completion port with the specified job object.
         /// </summary>
-        /// <param name="hJob"></param>
-        /// <param name="JobObjectInformationClass"></param>
-        /// <param name="lpJobObjectInformation"></param>
-        /// <returns></returns>
-        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
+        /// <remarks>This method is typically used to receive asynchronous notifications about job object
+        /// events through an I/O completion port. The job object must not already be associated with a completion
+        /// port.</remarks>
+        /// <param name="hJob">A handle to the job object to associate with a completion port. This handle must have the
+        /// JOB_OBJECT_SET_ATTRIBUTES access right.</param>
+        /// <param name="lpJobObjectInformation">A structure that specifies the completion port and completion key to associate with the job object.</param>
+        /// <returns>A nonzero value if the function succeeds; otherwise, zero. To get extended error information, call
+        /// GetLastError.</returns>
+        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, in JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
-            return SetInformationJobObject(hJob, JobObjectInformationClass, &lpJobObjectInformation, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+            fixed (JOBOBJECT_ASSOCIATE_COMPLETION_PORT* pInfo = &lpJobObjectInformation)
+            {
+                return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+            }
         }
 
         /// <summary>
-        /// Wrapper around SetInformationJobObject to provide a managed interface for JOBOBJECT_EXTENDED_LIMIT_INFORMATION setups.
+        /// Sets extended limit information for the specified job object.
         /// </summary>
-        /// <param name="hJob"></param>
-        /// <param name="JobObjectInformationClass"></param>
-        /// <param name="lpJobObjectInformation"></param>
-        /// <returns></returns>
-        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
+        /// <remarks>Use this method to configure resource limits and other extended settings for a job
+        /// object. The job object must have been created previously, and the caller must have appropriate permissions.
+        /// For more information about job objects and their limits, see the Windows API documentation.</remarks>
+        /// <param name="hJob">A handle to the job object to be updated. This handle must have the JOB_OBJECT_SET_ATTRIBUTES access right.</param>
+        /// <param name="lpJobObjectInformation">A structure that contains the extended limit information to set for the job object.</param>
+        /// <returns>A nonzero value if the function succeeds; otherwise, zero.</returns>
+        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, in JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
         {
-            return SetInformationJobObject(hJob, JobObjectInformationClass, &lpJobObjectInformation, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+            fixed (JOBOBJECT_EXTENDED_LIMIT_INFORMATION* pInfo = &lpJobObjectInformation)
+            {
+                return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+            }
         }
 
         /// <summary>
-        /// Wrapper around CreateProcess to manage error handling.
+        /// Creates a new process and its primary thread using the specified application name, command line, security
+        /// attributes, environment block, and startup information.
         /// </summary>
-        /// <param name="lpApplicationName"></param>
-        /// <param name="lpCommandLine"></param>
-        /// <param name="lpProcessAttributes"></param>
-        /// <param name="lpThreadAttributes"></param>
-        /// <param name="bInheritHandles"></param>
-        /// <param name="dwCreationFlags"></param>
-        /// <param name="lpEnvironment"></param>
-        /// <param name="lpCurrentDirectory"></param>
-        /// <param name="lpStartupInfo"></param>
-        /// <param name="lpProcessInformation"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal unsafe static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        /// <remarks>This method wraps the native CreateProcess Windows API and throws an exception if
+        /// process creation fails. The caller is responsible for closing handles in the returned PROCESS_INFORMATION
+        /// structure when they are no longer needed.</remarks>
+        /// <param name="lpApplicationName">The name of the module to execute. If this parameter is null, the module name must be the first white
+        /// space–delimited token in lpCommandLine.</param>
+        /// <param name="lpCommandLine">A reference to a span containing the command line to execute. The string can include the application name
+        /// and any arguments.</param>
+        /// <param name="lpProcessAttributes">A SECURITY_ATTRIBUTES structure that determines whether the returned process handle can be inherited by
+        /// child processes. Can be null to use default security.</param>
+        /// <param name="lpThreadAttributes">A SECURITY_ATTRIBUTES structure that determines whether the returned thread handle can be inherited by child
+        /// processes. Can be null to use default security.</param>
+        /// <param name="bInheritHandles">true if each inheritable handle in the calling process is inherited by the new process; otherwise, false.</param>
+        /// <param name="dwCreationFlags">A combination of PROCESS_CREATION_FLAGS values that control the priority class and creation of the process.</param>
+        /// <param name="lpEnvironment">A SafeEnvironmentBlockHandle representing the environment block for the new process. Cannot be null or
+        /// closed.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process. If null, the new process will have the same
+        /// current drive and directory as the calling process.</param>
+        /// <param name="lpStartupInfo">A reference to a STARTUPINFOW structure specifying the window station, desktop, standard handles, and
+        /// appearance of the main window for the new process.</param>
+        /// <param name="lpProcessInformation">When this method returns, contains a PROCESS_INFORMATION structure with information about the newly created
+        /// process and its primary thread.</param>
+        /// <returns>true if the process is created successfully; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if lpEnvironment is null or has been closed.</exception>
+        internal unsafe static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpEnvironment is null || lpEnvironment.IsClosed)
             {
                 throw new ArgumentNullException(nameof(lpEnvironment));
             }
-
             bool lpEnvironmentAddRef = false;
             try
             {
                 lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+                var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -304,12 +392,17 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around AssignProcessToJobObject to manage error handling.
+        /// Associates a process with a job object, enabling the job object to manage and limit the process according to
+        /// its configuration.
         /// </summary>
-        /// <param name="hJob"></param>
-        /// <param name="hProcess"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>Once a process is assigned to a job object, it cannot be assigned to another job
+        /// object. Attempting to assign a process that is already associated with a job object will fail.</remarks>
+        /// <param name="hJob">A handle to the job object to which the process will be assigned. This handle must have
+        /// JOB_OBJECT_ASSIGN_PROCESS access rights and must not be null.</param>
+        /// <param name="hProcess">A handle to the process to assign to the job object. This handle must have PROCESS_SET_QUOTA and
+        /// PROCESS_TERMINATE access rights and must not be null.</param>
+        /// <returns>A value indicating whether the process was successfully assigned to the job object. Returns <see
+        /// langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         internal static BOOL AssignProcessToJobObject(SafeHandle hJob, SafeHandle hProcess)
         {
             var res = PInvoke.AssignProcessToJobObject(hJob, hProcess);
@@ -321,11 +414,11 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around ResumeThread to manage error handling.
+        /// Resumes a thread that has been suspended, allowing it to continue execution.
         /// </summary>
-        /// <param name="hThread"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <param name="hThread">A handle to the thread to be resumed. The handle must have the THREAD_SUSPEND_RESUME access right and must
+        /// not be closed or invalid.</param>
+        /// <returns>The thread's previous suspend count. If the return value is zero, the thread was not previously suspended.</returns>
         internal static uint ResumeThread(SafeHandle hThread)
         {
             var res = PInvoke.ResumeThread(hThread);
@@ -337,15 +430,19 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetQueuedCompletionStatus to manage error handling.
+        /// Retrieves the results of an I/O operation that has completed on the specified I/O completion port.
         /// </summary>
-        /// <param name="CompletionPort"></param>
-        /// <param name="lpCompletionCode"></param>
-        /// <param name="lpCompletionKey"></param>
-        /// <param name="lpOverlapped"></param>
-        /// <param name="dwMilliseconds"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>If the operation fails, an exception is thrown containing the last Win32 error. This
+        /// method is typically used in advanced scenarios involving asynchronous I/O and completion ports.</remarks>
+        /// <param name="CompletionPort">A handle to the I/O completion port from which to dequeue a completion packet. This handle must have been
+        /// created by a call to the appropriate completion port creation function.</param>
+        /// <param name="lpCompletionCode">When this method returns, contains the completion code associated with the completed I/O operation.</param>
+        /// <param name="lpCompletionKey">When this method returns, contains the completion key that was specified when the file handle was associated
+        /// with the completion port.</param>
+        /// <param name="lpOverlapped">When this method returns, contains a pointer to the OVERLAPPED structure that was specified when the I/O
+        /// operation was started.</param>
+        /// <param name="dwMilliseconds">The number of milliseconds to wait for a completion packet. Specify INFINITE to wait indefinitely.</param>
+        /// <returns>true if a completion packet was successfully dequeued; otherwise, false.</returns>
         internal unsafe static BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out nuint lpOverlapped, uint dwMilliseconds)
         {
             var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out var pOverlapped, dwMilliseconds);
@@ -358,12 +455,13 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetExitCodeProcess to manage error handling.
+        /// Retrieves the termination status code of the specified process.
         /// </summary>
-        /// <param name="hProcess"></param>
-        /// <param name="lpExitCode"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <param name="hProcess">A handle to the process whose exit code is to be retrieved. The handle must have the
+        /// PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpExitCode">When this method returns, contains the exit code of the specified process if the function succeeds.</param>
+        /// <returns>A value indicating whether the exit code was successfully retrieved. Returns <see langword="true"/> if
+        /// successful; otherwise, <see langword="false"/>.</returns>
         internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
         {
             var res = PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
@@ -375,11 +473,14 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Terminates a job object and all child processes under it.
+        /// Terminates all processes associated with the specified job object and closes the job object handle.
         /// </summary>
-        /// <param name="hJob"></param>
-        /// <param name="uExitCode"></param>
-        /// <returns></returns>
+        /// <remarks>After termination, the job object handle is closed and cannot be used in subsequent
+        /// operations. This method throws an exception if the termination fails.</remarks>
+        /// <param name="hJob">A handle to the job object to terminate. This handle must have the JOB_OBJECT_TERMINATE access right and
+        /// must not be null.</param>
+        /// <param name="uExitCode">The exit code to be used by all processes and threads in the job object.</param>
+        /// <returns>true if the job object and all associated processes were terminated successfully; otherwise, false.</returns>
         internal static BOOL TerminateJobObject(SafeHandle hJob, uint uExitCode)
         {
             var res = PInvoke.TerminateJobObject(hJob, uExitCode);
@@ -391,10 +492,11 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetProcessId to manage error handling.
+        /// Retrieves the process identifier (PID) for the specified process handle.
         /// </summary>
-        /// <param name="Process"></param>
-        /// <returns></returns>
+        /// <param name="Process">A safe handle to the process whose identifier is to be retrieved. The handle must have the
+        /// PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <returns>The process identifier (PID) associated with the specified process handle.</returns>
         internal static uint GetProcessId(SafeHandle Process)
         {
             var res = PInvoke.GetProcessId(Process);
@@ -406,17 +508,27 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around DuplicateHandle to manage error handling.
+        /// Duplicates an object handle from one process to another, allowing the target process to access the same
+        /// object with specified access rights and options.
         /// </summary>
-        /// <param name="hSourceProcessHandle"></param>
-        /// <param name="hSourceHandle"></param>
-        /// <param name="hTargetProcessHandle"></param>
-        /// <param name="lpTargetHandle"></param>
-        /// <param name="dwDesiredAccess"></param>
-        /// <param name="bInheritHandle"></param>
-        /// <param name="dwOptions"></param>
-        /// <returns></returns>
-        internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
+        /// <remarks>Both the source and target process handles must have the PROCESS_DUP_HANDLE access
+        /// right. The caller is responsible for closing the duplicated handle when it is no longer needed to avoid
+        /// resource leaks.</remarks>
+        /// <param name="hSourceProcessHandle">A handle to the process with the handle to be duplicated. This handle must have the PROCESS_DUP_HANDLE
+        /// access right.</param>
+        /// <param name="hSourceHandle">The handle to be duplicated. This handle must be valid in the context of the source process.</param>
+        /// <param name="hTargetProcessHandle">A handle to the process that will receive the duplicated handle. This handle must have the
+        /// PROCESS_DUP_HANDLE access right.</param>
+        /// <param name="lpTargetHandle">When this method returns, contains the duplicated handle, valid in the context of the target process.</param>
+        /// <param name="dwDesiredAccess">The access rights for the duplicated handle. This parameter specifies the requested access to the object for
+        /// the new handle.</param>
+        /// <param name="bInheritHandle">A value that indicates whether the duplicated handle is inheritable by child processes. Specify <see
+        /// langword="true"/> to make the handle inheritable; otherwise, <see langword="false"/>.</param>
+        /// <param name="dwOptions">Options that control the duplication behavior. This parameter can be a combination of
+        /// DUPLICATE_HANDLE_OPTIONS flags.</param>
+        /// <returns>A value that is <see langword="true"/> if the handle was duplicated successfully; otherwise, <see
+        /// langword="false"/>.</returns>
+        internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
         {
             var res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out lpTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
             if (!res)
@@ -427,13 +539,19 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around OpenProcess to manage error handling.
+        /// Opens an existing local process object and returns a handle with the specified access rights.
         /// </summary>
-        /// <param name="dwDesiredAccess"></param>
-        /// <param name="bInheritHandle"></param>
-        /// <param name="dwProcessId"></param>
-        /// <returns></returns>
-        internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
+        /// <remarks>If the process cannot be opened, an exception is thrown. The returned handle grants
+        /// the access rights specified by <paramref name="dwDesiredAccess"/>. This method is intended for advanced
+        /// scenarios that require direct process handle manipulation.</remarks>
+        /// <param name="dwDesiredAccess">A combination of process access rights indicating the requested access to the process object. This
+        /// determines the permitted operations on the returned handle.</param>
+        /// <param name="bInheritHandle">A value that determines whether the returned handle can be inherited by child processes. Specify <see
+        /// langword="true"/> to allow handle inheritance; otherwise, <see langword="false"/>.</param>
+        /// <param name="dwProcessId">The identifier of the local process to open. This must be the process ID of an existing process.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the opened process handle. The caller is responsible for
+        /// releasing the handle when it is no longer needed.</returns>
+        internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
         {
             var res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
             if (res is null || res.IsInvalid)
@@ -444,11 +562,16 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around QueryDosDevice to manage error handling.
+        /// Retrieves information about MS-DOS device names and their associated target paths on the local system.
         /// </summary>
-        /// <param name="lpDeviceName"></param>
-        /// <param name="lpTargetPath"></param>
-        /// <returns></returns>
+        /// <remarks>If lpDeviceName is null, lpTargetPath receives a list of all existing MS-DOS device
+        /// names. If lpDeviceName is specified, lpTargetPath receives the target path(s) for that device. This method
+        /// throws an exception if the underlying system call fails.</remarks>
+        /// <param name="lpDeviceName">The device name to query. Specify a device name (such as "C:") to retrieve its mapping, or null to retrieve
+        /// a list of all device names. If not null, the string must not be empty.</param>
+        /// <param name="lpTargetPath">A buffer that receives the result of the query. The buffer should be large enough to hold the returned path
+        /// or list of device names, including the terminating null character(s).</param>
+        /// <returns>The number of characters stored in lpTargetPath, not including the terminating null character(s).</returns>
         internal static uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
         {
             var res = PInvoke.QueryDosDevice(lpDeviceName, lpTargetPath);
@@ -460,11 +583,14 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around GetExitCodeThread to manage error handling.
+        /// Retrieves the termination status of the specified thread.
         /// </summary>
-        /// <param name="hThread"></param>
-        /// <param name="lpExitCode"></param>
-        /// <returns></returns>
+        /// <remarks>If the thread has not terminated, the exit code returned is STILL_ACTIVE. This method
+        /// throws an exception if the underlying system call fails.</remarks>
+        /// <param name="hThread">A handle to the thread whose exit code is to be retrieved. The handle must have the THREAD_QUERY_INFORMATION
+        /// or THREAD_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="lpExitCode">When this method returns, contains the exit code of the specified thread if the function succeeds.</param>
+        /// <returns>true if the exit code was successfully retrieved; otherwise, false.</returns>
         internal static BOOL GetExitCodeThread(SafeHandle hThread, out uint lpExitCode)
         {
             var res = PInvoke.GetExitCodeThread(hThread, out lpExitCode);
@@ -476,10 +602,14 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around LoadLibrary to manage error handling.
+        /// Loads the specified dynamic-link library (DLL) into the address space of the calling process.
         /// </summary>
-        /// <param name="lpLibFileName"></param>
-        /// <returns></returns>
+        /// <remarks>The caller is responsible for releasing the returned handle to avoid resource leaks.
+        /// If the library cannot be loaded, an exception is thrown.</remarks>
+        /// <param name="lpLibFileName">The name of the DLL file to load. This can be a full path or a file name that is searched for in the
+        /// system's standard DLL search order. Cannot be null or empty.</param>
+        /// <returns>A <see cref="FreeLibrarySafeHandle"/> representing the loaded library. The handle must be released when no
+        /// longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
         {
             var res = PInvoke.LoadLibrary(lpLibFileName);
@@ -744,28 +874,20 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Frees a block of memory allocated by the LocalAlloc function.
+        /// Posts an I/O completion packet to the specified I/O completion port.
         /// </summary>
-        /// <param name="hMem"></param>
-        /// <returns></returns>
-        internal static HLOCAL LocalFree(HLOCAL hMem)
-        {
-            var res = PInvoke.LocalFree(hMem);
-            if (!res.IsNull)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return hMem;
-        }
-
-        /// <summary>
-        /// Posts a completion packet to a specified completion port.
-        /// </summary>
-        /// <param name="CompletionPort"></param>
-        /// <param name="dwNumberOfBytesTransferred"></param>
-        /// <param name="dwCompletionKey"></param>
-        /// <param name="lpOverlapped"></param>
-        /// <returns></returns>
+        /// <remarks>This method is typically used to queue custom completion packets to an I/O completion
+        /// port, allowing threads waiting on the port to be notified. The method throws an exception if the underlying
+        /// system call fails.</remarks>
+        /// <param name="CompletionPort">A handle to the I/O completion port to which the completion packet will be posted. Must be a valid, open
+        /// handle.</param>
+        /// <param name="dwNumberOfBytesTransferred">The number of bytes associated with the I/O operation. This value is returned through the completion packet
+        /// and can be used by the consumer to determine the amount of data transferred.</param>
+        /// <param name="dwCompletionKey">A value to be associated with the completion packet. This value is returned when the completion packet is
+        /// dequeued and can be used to identify the source or context of the completion.</param>
+        /// <param name="lpOverlapped">A reference to a NativeOverlapped structure to be associated with the completion packet, or the default
+        /// value if no overlapped structure is required.</param>
+        /// <returns>true if the operation succeeds; otherwise, false.</returns>
         internal unsafe static BOOL PostQueuedCompletionStatus(SafeHandle CompletionPort, uint dwNumberOfBytesTransferred, nuint dwCompletionKey, in NativeOverlapped lpOverlapped = default)
         {
             fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
@@ -780,17 +902,31 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Creates or opens a file or I/O device.
+        /// Opens an existing file or creates a new file, device, or named pipe, returning a handle with the specified
+        /// access rights and sharing mode.
         /// </summary>
-        /// <param name="lpFileName"></param>
-        /// <param name="dwDesiredAccess"></param>
-        /// <param name="dwShareMode"></param>
-        /// <param name="lpSecurityAttributes"></param>
-        /// <param name="dwCreationDisposition"></param>
-        /// <param name="dwFlagsAndAttributes"></param>
-        /// <param name="hTemplateFile"></param>
-        /// <returns></returns>
-        internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FILE_FLAGS_AND_ATTRIBUTES dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
+        /// <remarks>This method throws an exception if the file cannot be opened or created. The caller
+        /// is responsible for closing the returned SafeFileHandle when it is no longer needed. The method is intended
+        /// for advanced scenarios that require direct control over file creation and access flags, similar to the
+        /// Windows CreateFile API.</remarks>
+        /// <param name="lpFileName">The name or path of the file, device, or named pipe to be created or opened. This parameter cannot be null
+        /// or empty.</param>
+        /// <param name="dwDesiredAccess">The access rights requested for the returned handle, such as read, write, or execute permissions. Specify
+        /// one or more values from the FileSystemRights enumeration.</param>
+        /// <param name="dwShareMode">The sharing mode for the file or device, determining how the file can be shared with other processes.
+        /// Specify one or more values from the FILE_SHARE_MODE enumeration.</param>
+        /// <param name="lpSecurityAttributes">A pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned handle can be inherited by
+        /// child processes. Can be null to use default security settings.</param>
+        /// <param name="dwCreationDisposition">Specifies the action to take on files that exist or do not exist. Use a value from the
+        /// FILE_CREATION_DISPOSITION enumeration to control whether to create a new file, open an existing file, or
+        /// overwrite an existing file.</param>
+        /// <param name="dwFlagsAndAttributes">The file or device attributes and flags, such as file attributes, security flags, and other special options.
+        /// Specify one or more values from the FILE_FLAGS_AND_ATTRIBUTES enumeration.</param>
+        /// <param name="hTemplateFile">A handle to a template file with the desired attributes to apply to the file being created. Can be null if
+        /// no template is needed.</param>
+        /// <returns>A SafeFileHandle representing the opened or newly created file, device, or named pipe. The handle is valid
+        /// and ready for use. If the operation fails, an exception is thrown.</returns>
+        internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, in SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FILE_FLAGS_AND_ATTRIBUTES dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
         {
             var res = PInvoke.CreateFile(lpFileName, (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
             if (res.IsInvalid)
