@@ -1073,6 +1073,7 @@ function Show-ADTInstallationWelcome
                     $dialogOptions = [PSADT.UserInterface.DialogOptions.CloseAppsDialogOptions]::new($DeploymentType, $dialogOptions)
 
                     # Spin until apps are closed, countdown elapses, or deferrals are exhausted.
+                    $sessionClosed = $false
                     while (($runningApps = Get-ADTRunningProcessesUserCanClose) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
@@ -1095,7 +1096,7 @@ function Show-ADTInstallationWelcome
                                         if ($deferRunIntervalNextTime -gt [System.TimeSpan]::Zero)
                                         {
                                             Write-ADTLogEntry -Message "Next run interval not due until [$(($currentDateTimeLocal + $deferRunIntervalNextTime).ToString('O'))], exiting gracefully."
-                                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                                            $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                                         }
                                     }
                                 }
@@ -1200,12 +1201,9 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
-                                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                                $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                             }
-                            else
-                            {
-                                return
-                            }
+                            return
                         }
                         elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Defer))
                         {
@@ -1223,12 +1221,9 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
-                                Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                                $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                             }
-                            else
-                            {
-                                return
-                            }
+                            return
                         }
                         elseif (!$promptResult.Equals('TerminatedTryAgain'))
                         {
@@ -1242,6 +1237,12 @@ function Show-ADTInstallationWelcome
                             }
                             throw (New-ADTErrorRecord @naerParams)
                         }
+                    }
+
+                    # Break if the session has closed as Close-ADTSession won't be able to break out of the above while loop.
+                    if ($sessionClosed)
+                    {
+                        break
                     }
 
                     # Close any remaining processes that are open that the user couldn't close.
