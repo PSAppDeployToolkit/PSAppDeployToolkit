@@ -149,29 +149,20 @@ namespace PSADT.ProcessManagement
                     PROCESS_INFORMATION pi = new();
                     if (launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
                     {
-                        // Start the process with the user's token.
-                        using (var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken))
+                        // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
+                        using var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
+                        UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                        using (var lpDesktop = SafeHGlobalHandle.StringToUni(@"winsta0\default"))
+                        using (lpEnvironment)
                         {
-                            // Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                            UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                            using (var lpDesktop = SafeHGlobalHandle.StringToUni(@"winsta0\default"))
-                            using (lpEnvironment)
+                            unsafe
                             {
-                                bool lpDesktopAddRef = false;
-                                try
+                                fixed (char* pDesktop = @"winsta0\default")
                                 {
-                                    lpDesktop.DangerousAddRef(ref lpDesktopAddRef);
-                                    startupInfo.lpDesktop = new(lpDesktop.DangerousGetHandle());
+                                    startupInfo.lpDesktop = new(pDesktop);
                                     OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
                                     CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
                                     startupInfo.lpDesktop = null;
-                                }
-                                finally
-                                {
-                                    if (lpDesktopAddRef)
-                                    {
-                                        lpDesktop.DangerousRelease();
-                                    }
                                 }
                             }
                         }
