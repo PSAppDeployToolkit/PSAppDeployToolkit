@@ -885,6 +885,7 @@ function Start-ADTProcess
             }
 
             # Switch on the exception type's name.
+            $sessionClosed = $false
             switch -Regex ($_.Exception.GetType().FullName)
             {
                 '^System\.Runtime\.InteropServices\.ExternalException$'
@@ -907,6 +908,7 @@ function Start-ADTProcess
                     Invoke-ADTFunctionErrorHandler @iafehParams -Silent
                     if ($iafehParams.ContainsKey('ErrorAction'))
                     {
+                        $sessionClosed = $true
                         Close-ADTSession
                     }
                     break
@@ -927,6 +929,12 @@ function Start-ADTProcess
                     Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -DisableErrorResolving:$false -ErrorAction Stop
                     break
                 }
+            }
+
+            # Break if the session has closed as Close-ADTSession won't be able to break out of the above switch.
+            if ($sessionClosed)
+            {
+                break
             }
 
             # If the passthru switch is specified, return the exit code and any output from process.
