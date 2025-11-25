@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -24,10 +23,9 @@ namespace PSADT.Utilities
         internal static void RefreshDesktopAndEnvironmentVariables()
         {
             // Update desktop icons using SHChangeNotify, then notify all top-level windows that the environment variables have changed.
-            using var lpString = SafeHGlobalHandle.StringToUni("Environment");
             Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
-            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, SafeMemoryHandle.Null, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
-            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, lpString, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
+            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
+            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
         }
 
         /// <summary>
