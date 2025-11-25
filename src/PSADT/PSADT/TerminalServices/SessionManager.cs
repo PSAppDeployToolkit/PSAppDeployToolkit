@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.AccountManagement;
@@ -34,13 +35,15 @@ namespace PSADT.TerminalServices
             WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo);
             using (pSessionInfo)
             {
-                int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
                 List<SessionInfo> sessions = [];
+                var pSessionInfoSpan = pSessionInfo.AsSpan();
+                int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
-                    if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i)) is SessionInfo session)
+                    ref var session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan.Slice(objLength * i)));
+                    if (GetSessionInfo(in session) is SessionInfo sessionInfo)
                     {
-                        sessions.Add(session);
+                        sessions.Add(sessionInfo);
                     }
                 }
                 return sessions.AsReadOnly();
@@ -197,10 +200,11 @@ namespace PSADT.TerminalServices
                 WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out var pProcessInfo);
                 using (pProcessInfo)
                 {
+                    var pProcessInfoSpan = pProcessInfo.AsSpan();
                     int objLength = Marshal.SizeOf(typeof(WTS_PROCESS_INFOW));
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
-                        WTS_PROCESS_INFOW process = pProcessInfo.ToStructure<WTS_PROCESS_INFOW>(objLength * i);
+                        ref var process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan.Slice(objLength * i)));
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
                             return process.pUserSid.ToSecurityIdentifier();

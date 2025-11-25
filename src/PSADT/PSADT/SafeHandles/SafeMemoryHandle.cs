@@ -128,6 +128,48 @@ namespace PSADT.SafeHandles
         internal void WriteByte(byte value, int offset = 0) => Marshal.WriteByte(handle, offset, value);
 
         /// <summary>
+        /// Returns a read-only span of type T over the memory region, starting at the specified byte offset.
+        /// </summary>
+        /// <remarks>The returned span reflects the contents of the underlying memory. Modifying the
+        /// memory through other means will be visible in the span. The caller is responsible for ensuring that the
+        /// memory remains valid for the lifetime of the span.</remarks>
+        /// <typeparam name="T">The unmanaged value type to interpret the memory as.</typeparam>
+        /// <param name="offset">The byte offset at which to begin the span. Must be non-negative and aligned to the size of T.</param>
+        /// <returns>A read-only span of type T that represents the memory region starting at the specified offset.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is negative or greater than the length of the memory region.</exception>
+        /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
+        internal unsafe ReadOnlySpan<T> AsSpan<T>(int offset = 0) where T : unmanaged
+        {
+            int length = (Length - offset) / sizeof(T);
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");
+            }
+            if ((Length - offset) % sizeof(T) != 0)
+            {
+                throw new ArgumentException("Offset must be aligned to the size of the type T.", nameof(offset));
+            }
+            return new((void*)(handle + offset), length);
+        }
+
+        /// <summary>
+        /// Returns a read-only span of bytes representing the memory region, starting at the specified offset.
+        /// </summary>
+        /// <param name="offset">The zero-based byte offset at which to begin the span. Must be greater than or equal to 0 and less than or
+        /// equal to the length of the memory region.</param>
+        /// <returns>A read-only span of bytes beginning at the specified offset and extending to the end of the memory region.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
+        internal unsafe ReadOnlySpan<byte> AsSpan(int offset = 0) 
+        {
+            int length = Length - offset;
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");
+            }
+            return new((void*)(handle + offset), length);
+        }
+
+        /// <summary>
         /// Clears the memory block by setting all bytes to zero.
         /// </summary>
         internal unsafe void Clear() => new Span<byte>(handle.ToPointer(), Length).Clear();
