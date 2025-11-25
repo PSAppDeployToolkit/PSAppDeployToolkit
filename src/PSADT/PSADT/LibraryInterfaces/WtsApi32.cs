@@ -54,11 +54,16 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around WTSEnumerateSessions to manage error handling.
+        /// Enumerates the sessions on the specified Remote Desktop Session Host (RD Session Host) server.
         /// </summary>
-        /// <param name="hServer"></param>
-        /// <param name="pSessionInfo"></param>
-        /// <returns></returns>
+        /// <remarks>If the method returns <see langword="false"/>, an exception is thrown containing the
+        /// relevant Win32 error information. The returned SafeWtsHandle must be disposed to free the associated
+        /// unmanaged resources.</remarks>
+        /// <param name="hServer">A handle to an RD Session Host server. This handle must be opened with appropriate access rights.</param>
+        /// <param name="pSessionInfo">When this method returns, contains a SafeWtsHandle that encapsulates the session information buffer. The
+        /// caller is responsible for releasing the handle when it is no longer needed.</param>
+        /// <returns>A value that is <see langword="true"/> if the session enumeration succeeds; otherwise, <see
+        /// langword="false"/>.</returns>
         internal unsafe static BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
         {
             var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
@@ -91,12 +96,16 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around WTSQueryUserToken to manage error handling.
+        /// Retrieves the primary access token of the user associated with the specified Remote Desktop Services
+        /// session.
         /// </summary>
-        /// <param name="SessionId"></param>
-        /// <param name="phToken"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method throws an exception if the underlying native call fails. The returned
+        /// token can be used to impersonate the user or to launch processes in the user's context.</remarks>
+        /// <param name="SessionId">The identifier of the Remote Desktop Services session for which to retrieve the user token.</param>
+        /// <param name="phToken">When this method returns, contains a handle to the primary token of the user associated with the specified
+        /// session. The caller is responsible for releasing the handle.</param>
+        /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the token was
+        /// retrieved successfully; otherwise, <see langword="false"/>.</returns>
         internal unsafe static BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
         {
             HANDLE phTokenLocal;
