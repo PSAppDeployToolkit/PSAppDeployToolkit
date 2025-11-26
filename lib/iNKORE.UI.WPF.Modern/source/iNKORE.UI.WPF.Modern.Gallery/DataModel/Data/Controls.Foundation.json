@@ -1,0 +1,96 @@
+{
+    // Everything from Windows UI
+    "$schema": "../ControlInfoData.schema.json",
+
+    "IsVisible": false,
+    "Groups":
+    [
+        {
+            "UniqueId": "NewControls",
+            "Title": "Home",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": "",
+            "Items":
+            [
+            ]
+        },
+        {
+            "UniqueId": "Design",
+            "Title": "Design",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": "Design guidance and resources",
+            "Items":
+            [
+                {
+                    "UniqueId": "Iconography",
+                    "Title": "Iconography",
+                    "Subtitle": "Segoe Fluent Icons and MDL2 Assets",
+                    "ImagePath": "ms-appx:///Assets/ControlIcons/DefaultIcon.png",
+                    "ImageIconPath": "ms-appx:///Assets/ControlIcons/DefaultIcon.png",
+                    "Description": "",
+                    "Content": "",
+                    "IncludedInBuild": true,
+                    "IsNew": false,
+                    "IsUpdated": false,
+                    "Docs":
+                    [
+                        {
+                            "Title": "Iconography in Windows 11",
+                            "Uri": "https://learn.microsoft.com/windows/apps/design/signature-experiences/iconography#system-icons"
+                        },
+                        {
+                            "Title": "Segoe Fluent Icons font",
+                            "Uri": "https://learn.microsoft.com/windows/apps/design/style/segoe-fluent-icons-font"
+                        }
+                    ],
+                    "RelatedControls": []
+                },
+                {
+                    "UniqueId": "Typography",
+                    "Title": "Typography",
+                    "Subtitle": "Typography type ramp and system fonts",
+                    "ImagePath": "ms-appx:///Assets/ControlIcons/DefaultIcon.png",
+                    "ImageIconPath": "ms-appx:///Assets/ControlIcons/DefaultIcon.png",
+                    "Description": "",
+                    "Content": "",
+                    "IncludedInBuild": true,
+                    "IsNew": false,
+                    "IsUpdated": false,
+                    "Docs":
+                    [
+                        {
+                            "Title": "Typography in Windows Apps",
+                            "Uri": "https://learn.microsoft.com/windows/apps/design/style/typography"
+                        },
+                        {
+                            "Title": "XAML theme resources",
+                            "Uri": "https://learn.microsoft.com/windows/apps/design/style/xaml-theme-resources#the-xaml-type-ramp"
+                        },
+                        {
+                            "Title": "Typography in Windows 11",
+                            "Uri": "https://learn.microsoft.com/windows/apps/design/signature-experiences/typography"
+                        }
+                    ],
+                    "RelatedControls":
+                    [
+                    ]
+                }
+            ]
+        },
+        {
+            "UniqueId": "AllControls",
+            "Title": "All controls",
+            "Subtitle": "",
+            "ImagePath": "",
+            "ImageIconPath": "",
+            "Description": "",
+            "Items":
+            [
+            ]
+        }
+    ]
+}

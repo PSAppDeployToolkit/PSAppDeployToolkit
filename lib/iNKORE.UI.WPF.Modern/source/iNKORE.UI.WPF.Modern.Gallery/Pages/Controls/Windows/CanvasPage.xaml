@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.CanvasPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -20,7 +20,8 @@
                     Width="140"
                     Height="140"
                     VerticalAlignment="Top"
-                    Background="Gray">
+                    Background="Gray"
+                    HorizontalAlignment="Left">
                     <Canvas.Resources>
                         <Style TargetType="Rectangle">
                             <Setter Property="Height" Value="40" />

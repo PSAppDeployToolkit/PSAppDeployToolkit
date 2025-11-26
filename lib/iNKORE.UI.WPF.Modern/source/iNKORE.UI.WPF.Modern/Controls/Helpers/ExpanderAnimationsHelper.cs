@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Media;
@@ -22,19 +21,7 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
             "ToAnimateControlName",
             typeof(string),
             typeof(ExpanderAnimationsHelper),
-            new PropertyMetadata("ExpanderContent", OnToAnimateControlNameChanged));
-
-        private static void OnToAnimateControlNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var handler = d.GetValue(ExpansionHandlerProperty);
-
-            if (handler is not ExpanderExpansionBaseHandler baseHandler)
-            {
-                return;
-            }
-
-            baseHandler.UpdateToAnimateControl(e.NewValue as string);
-        }
+            new PropertyMetadata("ExpanderContent"));
 
         #endregion
 
@@ -90,183 +77,76 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
                 return;
             }
 
-            var expandDirectionDescriptor = DependencyPropertyDescriptor.FromName(
-                nameof(Expander.ExpandDirection),
-                typeof(Expander),
-                typeof(Expander));
-
             if (e.NewValue is not true)
             {
-                expandDirectionDescriptor?.RemoveValueChanged(expander, OnExpandDirectionChanged);
-                expander.Expanded -= OnExpanderExpanded;
-                expander.Collapsed -= OnExpanderCollapsed;
-                expander.ClearValue(ExpansionHandlerProperty);
+                expander.Expanded -= OnExpanderExpandedOrCollapsed;
+                expander.Collapsed -= OnExpanderExpandedOrCollapsed;
                 return;
             }
 
-            OnExpandDirectionChanged(expander, null);
-            expandDirectionDescriptor?.AddValueChanged(expander, OnExpandDirectionChanged);
-            expander.Expanded += OnExpanderExpanded;
-            expander.Collapsed += OnExpanderCollapsed;
+            expander.Expanded += OnExpanderExpandedOrCollapsed;
+            expander.Collapsed += OnExpanderExpandedOrCollapsed;
+
+            if (expander.IsLoaded)
+            {
+                RunExpanderAnimation(expander);
+            }
+            else
+            {
+                expander.Loaded += TriggerExpandAnimationOnLoad;
+            }
+
+            void TriggerExpandAnimationOnLoad(object sender, RoutedEventArgs routedEventArgs)
+            {
+                RunExpanderAnimation(expander);
+                expander.Loaded -= TriggerExpandAnimationOnLoad;
+            }
         }
 
-        private static void OnExpanderExpanded(object sender, RoutedEventArgs e)
+        private static void OnExpanderExpandedOrCollapsed(object sender, RoutedEventArgs e)
         {
             if (sender is not Expander expander)
             {
                 return;
             }
 
-            if (GetExpansionHandler(expander) is not { } handler)
-            {
-                return;
-            }
-
-            var animationDuration = GetExpandAnimationDuration(expander);
-            handler.Handle(animationDuration);
-        }
-
-        private static void OnExpanderCollapsed(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Expander expander)
-            {
-                return;
-            }
-
-            if (GetExpansionHandler(expander) is not { } handler)
-            {
-                return;
-            }
-
-            var animationDuration = GetCollapseAnimationDuration(expander);
-            handler.Handle(animationDuration);
-        }
-
-        private static void OnExpandDirectionChanged(object sender, EventArgs e)
-        {
-            if (sender is not Expander expander)
-            {
-                return;
-            }
-
-            var toAnimateControlName = GetToAnimateControlName(expander);
-            ExpanderExpansionBaseHandler expansionHandler = expander.ExpandDirection switch
-            {
-                ExpandDirection.Up or ExpandDirection.Down => new ExpanderVerticalExpansionHandler(expander,
-                    toAnimateControlName),
-                _ => new ExpanderHorizontalExpansionHandler(expander, toAnimateControlName)
-            };
-
-            expander.SetValue(ExpansionHandlerProperty, expansionHandler);
+            RunExpanderAnimation(expander);
         }
 
         #endregion
 
-        public static ExpanderExpansionBaseHandler GetExpansionHandler(Expander element) =>
-            (ExpanderExpansionBaseHandler)element.GetValue(ExpansionHandlerProperty);
-
-        public static readonly DependencyProperty ExpansionHandlerProperty = DependencyProperty.RegisterAttached(
-            "ExpansionHandler",
-            typeof(ExpanderExpansionBaseHandler),
-            typeof(ExpanderAnimationsHelper));
-    }
-
-    public abstract class ExpanderExpansionBaseHandler
-    {
-        protected readonly Expander Expander;
-        private string _toAnimateTemplateControlName;
-        protected FrameworkElement ToAnimateControl;
-        protected FrameworkElement ContentControl;
-
-        protected ExpanderExpansionBaseHandler(Expander expander, string toAnimateTemplateControlName)
+        private static void RunExpanderAnimation(Expander expander)
         {
-            Expander = expander;
-            _toAnimateTemplateControlName = toAnimateTemplateControlName;
-
-            if (expander.IsLoaded)
+            if (expander.IsExpanded)
             {
-                FindAnimationControls();
+                AnimateExpand(expander);
             }
             else
             {
-                expander.Loaded += OnLoaded;
+                AnimateCollapse(expander);
             }
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private static void AnimateExpand(Expander expander)
         {
-            FindAnimationControls();
-            Expander.Loaded -= OnLoaded;
-        }
+            var toAnimateControl = GetToAnimateControl(expander);
+            toAnimateControl.BeginAnimation(UIElement.VisibilityProperty, null);
+            UpdateLayout(toAnimateControl);
 
-        private void FindAnimationControls()
-        {
-            FindToAnimateControl();
-            ContentControl = LogicalTreeHelper.GetChildren(Expander).OfType<FrameworkElement>().LastOrDefault();
-        }
-
-        private void FindToAnimateControl()
-        {
-            ToAnimateControl =
-                Expander?.Template?.FindName(_toAnimateTemplateControlName, Expander) as FrameworkElement;
-        }
-
-        public void UpdateToAnimateControl(string newToAnimateControlName)
-        {
-            _toAnimateTemplateControlName = newToAnimateControlName;
-            FindToAnimateControl();
-        }
-
-        protected abstract DependencyProperty GetToAnimateProperty();
-        protected abstract double GetAnimationToValue();
-
-        public void Handle(TimeSpan animationDuration)
-        {
-            if (ToAnimateControl is null || ContentControl is null || Expander is null)
+            if (toAnimateControl.RenderTransform is not TranslateTransform translateTransform)
             {
-                return;
+                toAnimateControl.RenderTransform = translateTransform = new TranslateTransform();
             }
 
-            var correctionFactor = Expander.ExpandDirection switch
-            {
-                ExpandDirection.Down or ExpandDirection.Left => -1,
-                _ => 1
-            };
-
-            if (Expander.IsExpanded)
-            {
-                AnimateExpand(animationDuration, correctionFactor);
-            }
-            else
-            {
-                AnimateCollapse(animationDuration, correctionFactor);
-            }
+            var (animationProperty, originValue) = GetToAnimatePropertyAndValue(toAnimateControl, expander.ExpandDirection);
+            RunTranslationAnimation(GetExpandAnimationDuration(expander), translateTransform, animationProperty, 0, originValue);
         }
 
-        private void AnimateExpand(TimeSpan animationDuration, int correctionFactor)
+        private static void AnimateCollapse(Expander expander)
         {
-            ToAnimateControl.BeginAnimation(UIElement.VisibilityProperty, null);
-            ToAnimateControl.Visibility = Visibility.Visible;
+            var toAnimateControl = GetToAnimateControl(expander);
+            var animationDuration = GetCollapseAnimationDuration(expander);
 
-            UpdateLayout(ContentControl);
-
-            if (ToAnimateControl.RenderTransform is not TranslateTransform translateTransform)
-            {
-                ToAnimateControl.RenderTransform = translateTransform = new TranslateTransform();
-            }
-
-            var animationProperty = GetToAnimateProperty();
-            if (!translateTransform.IsSealed)
-            {
-                //this will only work before any animation is applied
-                translateTransform.SetValue(animationProperty, correctionFactor * GetAnimationToValue());
-            }
-
-            RunTranslationAnimation(animationDuration, translateTransform, animationProperty, 0);
-        }
-
-        private void AnimateCollapse(TimeSpan animationDuration, int correctionFactor)
-        {
             var visibilityAnimation = new ObjectAnimationUsingKeyFrames
             {
                 KeyFrames =
@@ -279,62 +159,73 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
                 ]
             };
 
-            UpdateLayout(ContentControl);
+            UpdateLayout(toAnimateControl);
 
-            if (ToAnimateControl.RenderTransform is not TranslateTransform translateTransform)
+            if (toAnimateControl.RenderTransform is not TranslateTransform translateTransform)
             {
-                ToAnimateControl.RenderTransform = translateTransform = new TranslateTransform();
+                toAnimateControl.RenderTransform = translateTransform = new TranslateTransform();
             }
 
-            ToAnimateControl.BeginAnimation(UIElement.VisibilityProperty, visibilityAnimation);
-            RunTranslationAnimation(animationDuration, translateTransform, GetToAnimateProperty(),
-                correctionFactor * GetAnimationToValue());
+            var (animationProperty, toValue) = GetToAnimatePropertyAndValue(toAnimateControl, expander.ExpandDirection);
+            
+            toAnimateControl.BeginAnimation(UIElement.VisibilityProperty, visibilityAnimation);
+            RunTranslationAnimation(animationDuration, translateTransform, animationProperty,
+                toValue);
         }
 
-        protected static void RunTranslationAnimation(
+        private static (DependencyProperty, double) GetToAnimatePropertyAndValue(FrameworkElement toAnimateControl,
+            ExpandDirection direction)
+        {
+            var (toAnimateProp, toResetProp, toValue) = direction switch
+            {
+                ExpandDirection.Down => (TranslateTransform.YProperty, TranslateTransform.XProperty, -toAnimateControl.ActualHeight),
+                ExpandDirection.Up => (TranslateTransform.YProperty, TranslateTransform.XProperty, toAnimateControl.ActualHeight),
+                ExpandDirection.Left => (TranslateTransform.XProperty, TranslateTransform.YProperty, toAnimateControl.ActualWidth),
+                ExpandDirection.Right => (TranslateTransform.XProperty, TranslateTransform.YProperty, -toAnimateControl.ActualWidth),
+            };
+
+            toAnimateControl.RenderTransform.BeginAnimation(toResetProp, null);
+            return (toAnimateProp, toValue);
+        }
+
+        private static void RunTranslationAnimation(
             TimeSpan animationDuration,
             TranslateTransform translateTransform,
             DependencyProperty toAnimateProperty,
-            double targetValue)
+            double targetValue,
+            double? fromValue = null)
         {
-            var yAnimation = new DoubleAnimationUsingKeyFrames
+            var keyFrames = new DoubleKeyFrameCollection
             {
-                KeyFrames = new DoubleKeyFrameCollection
+                new SplineDoubleKeyFrame
                 {
-                    new SplineDoubleKeyFrame
-                    {
-                        KeySpline = new KeySpline(0, 0, 0, 1),
-                        KeyTime = animationDuration,
-                        Value = targetValue
-                    },
+                    KeySpline = new KeySpline(0, 0, 0, 1),
+                    KeyTime = animationDuration,
+                    Value = targetValue
                 },
+            };
 
+            if (fromValue is not null)
+            {
+                keyFrames.Add(new DiscreteDoubleKeyFrame(fromValue.Value, KeyTime.FromPercent(0)));
+            }
+
+            var animation = new DoubleAnimationUsingKeyFrames
+            {
+                KeyFrames = keyFrames,
                 Duration = animationDuration
             };
 
-            translateTransform.BeginAnimation(toAnimateProperty, yAnimation);
+            translateTransform.BeginAnimation(toAnimateProperty, animation);
         }
 
-        protected static void UpdateLayout(FrameworkElement contentControl)
+        private static void UpdateLayout(FrameworkElement contentControl)
         {
-            //update content measures
             contentControl.Measure(new Size(contentControl.MaxWidth, contentControl.MaxHeight));
             contentControl.UpdateLayout();
         }
-    }
 
-    public sealed class ExpanderHorizontalExpansionHandler(Expander expander, string toAnimateTemplateControlName)
-        : ExpanderExpansionBaseHandler(expander, toAnimateTemplateControlName)
-    {
-        protected override DependencyProperty GetToAnimateProperty() => TranslateTransform.XProperty;
-        protected override double GetAnimationToValue() => ContentControl.ActualWidth;
-    }
-
-    public sealed class ExpanderVerticalExpansionHandler(Expander expander, string toAnimateTemplateControlName)
-        : ExpanderExpansionBaseHandler(expander, toAnimateTemplateControlName)
-    {
-        protected override DependencyProperty GetToAnimateProperty() => TranslateTransform.YProperty;
-
-        protected override double GetAnimationToValue() => ContentControl.ActualHeight;
+        private static FrameworkElement GetToAnimateControl(Expander expander) =>
+            expander.Template?.FindName(GetToAnimateControlName(expander), expander) as FrameworkElement;
     }
 }

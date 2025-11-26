@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +57,14 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         Height=""50""
         ui:RelativePanel.AlignRightWithPanel=""True""
         Fill=""Green"" />
+    <Rectangle
+        x:Name=""Rectangle4""
+        Width=""50""
+        Height=""50""
+        Fill=""Yellow""
+        ui:RelativePanel.AlignHorizontalCenterWith=""Rectangle3""
+        ui:RelativePanel.Below=""Rectangle3"" 
+        Margin=""0,8,0,0"" />
 </ui:RelativePanel>
 ";
 

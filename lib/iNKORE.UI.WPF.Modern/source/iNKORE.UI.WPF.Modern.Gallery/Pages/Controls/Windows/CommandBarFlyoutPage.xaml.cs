@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
 using System;
 using System.Collections.Generic;
@@ -37,18 +37,22 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 
         private void ShowMenu(bool isTransient)
         {
+            CommandBarFlyout1.ShowMode = isTransient ? FlyoutShowMode.Transient : FlyoutShowMode.Standard;
             CommandBarFlyout1.ShowAt(Image1);
         }
 
         private void MyImageButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
-            // always show a context menu in standard mode
+            // Show a context menu in standard mode
+            // Focus will move to the menu
             ShowMenu(false);
         }
 
         private void MyImageButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowMenu((sender as Button).IsMouseOver);
+            // Show a context menu in transient mode
+            // Focus will not move to the menu
+            ShowMenu(true);
         }
 
         #region Example Code
@@ -67,20 +71,25 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             Label=""Share""
             ToolTipService.ToolTip=""Share"">
             <ui:AppBarButton.Icon>
-                <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Save}}""/>
+                <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Share}}""/>
             </ui:AppBarButton.Icon>
-
         </ui:AppBarButton>
         <ui:AppBarButton
             Click=""OnElementClicked""
-            Icon=""Save""
             Label=""Save""
-            ToolTipService.ToolTip=""Save"" />
+            ToolTipService.ToolTip=""Save"">
+            <ui:AppBarButton.Icon>
+                <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Save}}""/>
+            </ui:AppBarButton.Icon>
+        </ui:AppBarButton>
         <ui:AppBarButton
             Click=""OnElementClicked""
-            Icon=""Delete""
             Label=""Delete""
-            ToolTipService.ToolTip=""Delete"" />
+            ToolTipService.ToolTip=""Delete"">
+            <ui:AppBarButton.Icon>
+                <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Delete}}""/>
+            </ui:AppBarButton.Icon>
+        </ui:AppBarButton>
         <ui:CommandBarFlyout.SecondaryCommands>
             <ui:AppBarButton Click=""OnElementClicked"" Label=""Resize"" />
             <ui:AppBarButton Click=""OnElementClicked"" Label=""Move"" />
@@ -117,18 +126,22 @@ private void OnElementClicked(object sender, RoutedEventArgs e)
 
 private void ShowMenu(bool isTransient)
 {{
+    CommandBarFlyout1.ShowMode = isTransient ? FlyoutShowMode.Transient : FlyoutShowMode.Standard;
     CommandBarFlyout1.ShowAt(Image1);
 }}
 
 private void MyImageButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
 {{
-    // always show a context menu in standard mode
+    // Show a context menu in standard mode
+    // Focus will move to the menu
     ShowMenu(false);
 }}
 
 private void MyImageButton_Click(object sender, RoutedEventArgs e)
 {{
-    ShowMenu((sender as Button).IsMouseOver);
+    // Show a context menu in transient mode
+    // Focus will not move to the menu
+    ShowMenu(true);
 }}
 ";
 

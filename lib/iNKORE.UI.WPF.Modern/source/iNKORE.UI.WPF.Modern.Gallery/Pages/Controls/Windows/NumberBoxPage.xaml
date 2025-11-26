@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.NumberBoxPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -28,7 +28,8 @@
 
             <local:ControlExample.Options>
                 <ikw:SimpleStackPanel Style="{StaticResource OptionsPanelStyle}">
-                    <ui:RadioButtons Header="SpinButton Placement" 
+                    <ui:RadioButtons Header="SpinButton Placement"
+                                     SelectedIndex="0" 
                                      SelectedItem="{Binding ElementName=NumberBoxSpinButtonPlacementExample, Path=SpinButtonPlacementMode}"
                                      SelectionChanged="RadioButtons_SelectionChanged">
                         <ui:NumberBoxSpinButtonPlacementMode>Inline</ui:NumberBoxSpinButtonPlacementMode>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace iNKORE.UI.WPF.Modern
 {
@@ -362,5 +363,12 @@ namespace iNKORE.UI.WPF.Modern
         public static readonly string ToolTipMaxWidthKey = "ToolTipMaxWidth";
         public static readonly string TreeViewItemPillMinScaleKey = "TreeViewItemPillMinScale";
         public static readonly string TreeViewItemScaleAnimationDurationKey = "TreeViewItemScaleAnimationDuration";
+
+        public static readonly string ExpandAnimationDurationKey = "ExpandAnimationDuration";
+        public static readonly string CollapseAnimationDurationKey = "CollapseAnimationDuration";
+
+        public static readonly string SettingsExpanderChevronToolTipKey = "SettingsExpanderChevronToolTip";
+        public static readonly string SettingsExpanderHeaderPaddingKey = "SettingsExpanderHeaderPadding";
+        public static readonly string SettingsExpanderItemPaddingKey = "SettingsExpanderItemPadding";
     }
 }

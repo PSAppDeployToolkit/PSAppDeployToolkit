@@ -1,13 +1,14 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows; // for TestContentDialog
 using SamplesCommon;
 using System;
 using System.Windows;
 
-namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
+namespace iNKORE.UI.WPF.Modern.Gallery.Samples
 {
-    public partial class ContentDialogTestWindow : Window
+    public partial class SampleContentDialogWindow : Window
     {
-        public ContentDialogTestWindow()
+        public SampleContentDialogWindow()
         {
             InitializeComponent();
         }

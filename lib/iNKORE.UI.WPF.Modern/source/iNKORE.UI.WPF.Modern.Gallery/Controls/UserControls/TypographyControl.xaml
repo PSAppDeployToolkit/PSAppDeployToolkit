@@ -1,0 +1,157 @@
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<UserControl
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Controls.UserControls.TypographyControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Controls.UserControls"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+    <UserControl.Template>
+        <ControlTemplate TargetType="UserControl">
+            <ContentPresenter />
+        </ControlTemplate>
+    </UserControl.Template>
+
+    <Grid MinHeight="68" Background="Transparent">
+        <Border
+            HorizontalAlignment="Stretch"
+            Background="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Background}"
+            CornerRadius="{DynamicResource ControlCornerRadius}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="272" />
+                    <ColumnDefinition Width="136" />
+                    <ColumnDefinition Width="112" />
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="540" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Margin="16,12,0,12"
+                    VerticalAlignment="Center"
+                    Style="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ExampleStyle}"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Example}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="0,12,0,12"
+                    VerticalAlignment="Center"
+                    Style="{DynamicResource CaptionTextBlockStyle}"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=VariableFont}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="0,12,0,12"
+                    VerticalAlignment="Center"
+                    Style="{DynamicResource CaptionTextBlockStyle}"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=SizeLineHeight}" />
+                <TextBox
+                    Grid.Column="3"
+                    Margin="-10,12,0,12"
+                    FontFamily="Consolas"
+                    FontSize="{DynamicResource CaptionTextBlockStyle.FontSize}"
+                    IsReadOnly="True"
+                    BorderThickness="0"
+                    Background="Transparent"
+                    IsReadOnlyCaretVisible="False"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    TextAlignment="Left"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    HorizontalScrollBarVisibility="Hidden"
+                    TextWrapping="NoWrap"
+                    MinWidth="120"
+                    Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ResourceName}" />
+                <TextBox
+                    Grid.Column="5"
+                    Margin="-10,12,0,12"
+                    FontFamily="Consolas"
+                    FontSize="{DynamicResource CaptionTextBlockStyle.FontSize}"
+                    IsReadOnly="True"
+                    BorderThickness="0"
+                    Background="Transparent"
+                    IsReadOnlyCaretVisible="False"
+                    Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorPrimaryBrushKey}}"
+                    TextAlignment="Left"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    HorizontalScrollBarVisibility="Hidden"
+                    TextWrapping="NoWrap"
+                    MinWidth="120"
+                    Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Usage}" />
+                <Button
+                    x:Name="CopyToClipboardButton"
+                    Grid.Column="4"
+                    Margin="4,14,8,12"
+                    Padding="6"
+                    Click="CopyToClipboardButton_Click"
+                    AutomationProperties.Name="Copy resource name"
+                    ToolTipService.ToolTip="Copy to clipboard">
+                    <Grid>
+                        <ui:FontIcon x:Name="FontIcon_CopyButton_Copy" FontSize="16" 
+                                     Icon="{x:Static ui:SegoeFluentIcons.Copy}" RenderTransformOrigin="0.5 0.5">
+                            <FrameworkElement.RenderTransform>
+                                <ScaleTransform x:Name="ScaleTransform_CopyButton_Copy"
+                                                ScaleX="1" ScaleY="{Binding ScaleX, RelativeSource={RelativeSource Self}}"/>
+                            </FrameworkElement.RenderTransform>
+                        </ui:FontIcon>
+                        <ui:FontIcon x:Name="FontIcon_CopyButton_Success" FontSize="16" 
+                                     Icon="{x:Static ui:SegoeFluentIcons.CheckMark}" RenderTransformOrigin="0.5 0.5">
+                            <FrameworkElement.RenderTransform>
+                                <ScaleTransform x:Name="ScaleTransform_CopyButton_Success"
+                                                ScaleX="0" ScaleY="{Binding ScaleX, RelativeSource={RelativeSource Self}}"/>
+                            </FrameworkElement.RenderTransform>
+                        </ui:FontIcon>
+                    </Grid>
+                </Button>
+            </Grid>
+        </Border>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ConfirmDialogGroups">
+                <VisualState x:Name="ConfirmationDialogHidden">
+                    <Storyboard>
+                        <DoubleAnimation BeginTime="00:00:00:0.15" Duration="00:00:00:0.15" To="0" 
+                                 Storyboard.TargetName="FontIcon_CopyButton_Success"
+                                 Storyboard.TargetProperty="Opacity"/>
+
+                        <DoubleAnimation Duration="00:00:00:0" To="1" 
+                                 Storyboard.TargetName="ScaleTransform_CopyButton_Copy"
+                                 Storyboard.TargetProperty="ScaleX"/>
+                        <DoubleAnimation BeginTime="00:00:00:0.15" Duration="00:00:00:0.15" To="1" 
+                                 Storyboard.TargetName="FontIcon_CopyButton_Copy"
+                                 Storyboard.TargetProperty="Opacity"/>
+                    </Storyboard>
+                </VisualState>
+                <VisualState x:Name="ConfirmationDialogVisible">
+                    <Storyboard>
+                        <DoubleAnimation Duration="00:00:00:0.15" To="0" 
+                                 Storyboard.TargetName="ScaleTransform_CopyButton_Copy"
+                                 Storyboard.TargetProperty="ScaleX"/>
+                        <DoubleAnimation BeginTime="00:00:00:0.1" Duration="00:00:00:0.01" To="0" 
+                                 Storyboard.TargetName="FontIcon_CopyButton_Copy"
+                                 Storyboard.TargetProperty="Opacity"/>
+
+                        <DoubleAnimation BeginTime="00:00:00:0.15" Duration="00:00:00:0.15" To="1" 
+                                 Storyboard.TargetName="ScaleTransform_CopyButton_Success"
+                                 Storyboard.TargetProperty="ScaleX">
+                            <DoubleAnimation.EasingFunction>
+                                <BackEase EasingMode="EaseOut" Amplitude="0.2"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation BeginTime="00:00:00:0.15" Duration="00:00:00:0.015" To="1" 
+                                 Storyboard.TargetName="FontIcon_CopyButton_Success"
+                                 Storyboard.TargetProperty="Opacity"/>
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

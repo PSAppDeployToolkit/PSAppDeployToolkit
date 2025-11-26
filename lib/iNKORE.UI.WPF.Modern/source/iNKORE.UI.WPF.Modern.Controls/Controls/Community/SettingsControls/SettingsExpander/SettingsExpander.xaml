@@ -3,6 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:chelper="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Helpers;assembly=iNKORE.UI.WPF.Modern"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:converters="clr-namespace:iNKORE.UI.WPF.Modern.Common.Converters;assembly=iNKORE.UI.WPF.Modern"
+    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common;assembly=iNKORE.UI.WPF.Modern"
     xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
@@ -146,10 +148,6 @@
     <ikw:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="Left" />
 
     <ikw:SizeToRectConverter x:Key="SizeToRectConverter" />
-
-    <sys:TimeSpan x:Key="ExpandAnimationDuration">0:0:0.333</sys:TimeSpan>
-    <sys:TimeSpan x:Key="CollapseAnimationDuration">0:0:0.167</sys:TimeSpan>
-
     <Style x:Key="SettingsExpanderExpanderStyle" TargetType="Expander">
         <Setter Property="Background" Value="{DynamicResource ExpanderContentBackground}" />
         <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
@@ -160,10 +158,9 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="ui:ControlHelper.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-        <Setter Property="chelper:ExpanderAnimationsHelper.CollapseAnimationDuration" Value="{DynamicResource CollapseAnimationDuration}" />
-        <Setter Property="chelper:ExpanderAnimationsHelper.ExpandAnimationDuration" Value="{DynamicResource ExpandAnimationDuration}" />
-        <Setter Property="chelper:ExpanderAnimationsHelper.ToAnimateControlName" Value="ExpanderContent" />
         <Setter Property="chelper:ExpanderAnimationsHelper.IsEnabled" Value="True" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.ExpandAnimationDuration" Value="{DynamicResource ExpandAnimationDuration}" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.CollapseAnimationDuration" Value="{DynamicResource CollapseAnimationDuration}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Expander">
@@ -174,27 +171,8 @@
                         </Grid.RowDefinitions>
 
                         <!--  The clip is a composition clip applied in code  -->
-                        <Border x:Name="ExpanderContentClip" Grid.Row="1">
-
-                            <Border.Clip>
-                                <RectangleGeometry>
-                                    <RectangleGeometry.Rect>
-                                        <MultiBinding Converter="{StaticResource SizeToRectConverter}">
-                                            <Binding Source="0" />
-                                            <Binding Source="0" />
-                                            <Binding
-                                                Mode="OneWay"
-                                                Path="ActualWidth"
-                                                RelativeSource="{RelativeSource Mode=TemplatedParent}" />
-                                            <Binding
-                                                ElementName="ContentPresenter"
-                                                Mode="OneWay"
-                                                Path="ActualHeight" />
-                                        </MultiBinding>
-                                    </RectangleGeometry.Rect>
-                                </RectangleGeometry>
-                            </Border.Clip>
-
+                        <ikw:ClippedContent x:Name="ExpanderContentClip" Grid.Row="1"
+                                            ClipToBounds="True">
                             <ikw:ClippedContent
                                 x:Name="ExpanderContent"
                                 MinHeight="{DynamicResource SettingsExpanderContentMinHeight}"
@@ -204,11 +182,11 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
                                 CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius,
-                                                               Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                                Visibility="Collapsed">
+                                                               Converter={StaticResource BottomCornerRadiusFilterConverter}}">
                                 <FrameworkElement.RenderTransform>
                                     <TranslateTransform x:Name="ExpanderContentTranslation" />
                                 </FrameworkElement.RenderTransform>
+                                
                                 <ui:ContentPresenterEx
                                     x:Name="ContentPresenter"
                                     Margin="0,-2,0,0"
@@ -218,7 +196,7 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
                             </ikw:ClippedContent>
-                        </Border>
+                        </ikw:ClippedContent>
 
                         <ToggleButton x:Name="ExpanderHeader"
                                       MinHeight="{TemplateBinding MinHeight}"
@@ -238,10 +216,11 @@
                                       IsEnabled="{TemplateBinding IsEnabled}"
                                       IsTabStop="True"
                                       Style="{StaticResource SettingsExpanderHeaderDownStyle}"
-                                      Tag="{TemplateBinding chelper:ControlHelper.CornerRadius}" />
+                                      Tag="{TemplateBinding chelper:ControlHelper.CornerRadius}"/>
                     </Grid>
+                    
                     <ControlTemplate.Triggers>
-                        <MultiTrigger>
+                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsExpanded" Value="true" />
                                 <Condition Property="ExpandDirection" Value="Down" />
@@ -277,6 +256,7 @@
                                 <Setter TargetName="ExpanderHeader" Property="chelper:ControlHelper.CornerRadius" Value="{Binding Tag, ElementName=ExpanderHeader, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
                             </MultiTrigger.Setters>
                         </MultiTrigger>
+                        
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

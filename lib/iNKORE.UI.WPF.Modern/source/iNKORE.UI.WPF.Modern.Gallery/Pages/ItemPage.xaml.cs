@@ -28,7 +28,7 @@ using iNKORE.UI.WPF.Helpers;
 namespace iNKORE.UI.WPF.Modern.Gallery.Pages
 {
     /// <summary>
-    /// ItemPage.xaml 的交互逻辑
+    /// 
     /// </summary>
     public partial class ItemPage : Page
     {

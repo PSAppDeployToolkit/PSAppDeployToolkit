@@ -29,15 +29,8 @@ namespace iNKORE.UI.WPF.Modern.Common.IconKeys
 
         public static FontIconData CreateIcon(int chara, FluentSystemIconVariants variant)
         {
-            return CreateIcon(ToGlyph(chara), variant);
+            return CreateIcon(FontIconData.ToGlyph(chara), variant);
         }
-
-        public static string ToGlyph(int chara)
-        {
-            return char.ConvertFromUtf32(chara);
-        }
-
-
     }
 
     public enum FluentSystemIconVariants

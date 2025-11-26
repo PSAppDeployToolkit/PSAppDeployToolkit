@@ -21,6 +21,7 @@
                         "type": "string",
                         "description": "Title appears on the overview card and control page"
                     },
+
                     "Subtitle":
                     {
                         "type": "string",
@@ -160,6 +161,11 @@
                     "Items"
                 ]
             }
+        },
+
+        "IsVisible":
+        {
+            "type": "boolean"
         }
     },
 

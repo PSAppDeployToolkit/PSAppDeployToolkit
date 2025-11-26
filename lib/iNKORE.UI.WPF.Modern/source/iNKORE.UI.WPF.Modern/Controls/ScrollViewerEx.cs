@@ -117,6 +117,23 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
         #endregion
 
+        #region IsScrollAnimationEnabled
+
+        public static readonly DependencyProperty IsScrollAnimationEnabledProperty =
+            DependencyProperty.Register(
+                nameof(IsScrollAnimationEnabled),
+                typeof(bool),
+                typeof(ScrollViewerEx),
+                new PropertyMetadata(true));
+
+        public bool IsScrollAnimationEnabled
+        {
+            get => (bool)GetValue(IsScrollAnimationEnabledProperty);
+            set => SetValue(IsScrollAnimationEnabledProperty, value);
+        }
+
+        #endregion
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             LastVerticalLocation = VerticalOffset;
@@ -179,17 +196,22 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
                 ScrollToVerticalOffset(LastVerticalLocation);
 
-                double scale = Math.Abs((LastVerticalLocation - newOffset) / WheelChange);
+                if (IsScrollAnimationEnabled)
+                {
+                    double scale = Math.Abs((LastVerticalLocation - newOffset) / WheelChange);
 
-                AnimateScroll(newOffset, Direction, scale);
+                    AnimateScroll(newOffset, Direction, scale);
+                }
+                else
+                {
+                    Scroll(newOffset, Direction);
+                }
+
                 LastVerticalLocation = newOffset;
             }
             else
             {
                 if (this.ScrollableWidth > 0)
-                {
-                    e.Handled = true;
-                }
                 {
                     e.Handled = true;
                 }
@@ -214,12 +236,19 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
                 ScrollToHorizontalOffset(LastHorizontalLocation);
 
-                double scale = Math.Abs((LastHorizontalLocation - newOffset) / WheelChange);
+                if (IsScrollAnimationEnabled)
+                {
+                    double scale = Math.Abs((LastHorizontalLocation - newOffset) / WheelChange);
 
-                AnimateScroll(newOffset, Direction, scale);
+                    AnimateScroll(newOffset, Direction, scale);
+                }
+                else
+                {
+                    Scroll(newOffset, Direction);
+                }
+
                 LastHorizontalLocation = newOffset;
             }
-
         }
 
         /// <inheritdoc/>
@@ -286,14 +315,28 @@ namespace iNKORE.UI.WPF.Modern.Controls
                 if (horizontalOffset.HasValue)
                 {
                     ScrollToHorizontalOffset(LastHorizontalLocation);
-                    AnimateScroll(Math.Min(ScrollableWidth, horizontalOffset.Value), Orientation.Horizontal, 1);
+                    if (IsScrollAnimationEnabled)
+                    {
+                        AnimateScroll(Math.Min(ScrollableWidth, horizontalOffset.Value), Orientation.Horizontal, 1);
+                    }
+                    else
+                    {
+                        Scroll(Math.Min(ScrollableWidth, horizontalOffset.Value), Orientation.Horizontal);
+                    }
                     LastHorizontalLocation = horizontalOffset.Value;
                 }
 
                 if (verticalOffset.HasValue)
                 {
                     ScrollToVerticalOffset(LastVerticalLocation);
-                    AnimateScroll(Math.Min(ScrollableHeight, verticalOffset.Value), Orientation.Vertical, 1);
+                    if (IsScrollAnimationEnabled)
+                    {
+                        AnimateScroll(Math.Min(ScrollableHeight, verticalOffset.Value), Orientation.Vertical, 1);
+                    }
+                    else
+                    {
+                        Scroll(Math.Min(ScrollableHeight, verticalOffset.Value), Orientation.Vertical);
+                    }
                     LastVerticalLocation = verticalOffset.Value;
                 }
             }
@@ -331,6 +374,20 @@ namespace iNKORE.UI.WPF.Modern.Controls
             keyFramesAnimation.KeyFrames.Add(new DiscreteBooleanKeyFrame(true, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(0))));
             keyFramesAnimation.KeyFrames.Add(new DiscreteBooleanKeyFrame(false, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(400 * Scale + 1))));
             BeginAnimation(ScrollViewerBehavior.IsAnimatingProperty, keyFramesAnimation);
+        }
+
+        private void Scroll(double ToValue, Orientation Direction)
+        {
+            if (Direction == Orientation.Vertical)
+            {
+                ScrollToVerticalOffset(ToValue);
+            }
+            else
+            {
+                ScrollToHorizontalOffset(ToValue);
+            }
+
+            ScrollViewerBehavior.SetIsAnimating(this, false);
         }
 
         private void UpdateVisualState(bool useTransitions = true)

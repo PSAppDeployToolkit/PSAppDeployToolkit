@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\source\Inkore.UI.WPF.Modern.Controls\iNKORE.UI.WPF.Modern.Controls.csproj" />
+    <ProjectReference Include="..\..\source\iNKORE.UI.WPF.Modern.Controls\iNKORE.UI.WPF.Modern.Controls.csproj" />
     <ProjectReference Include="..\..\source\Inkore.UI.WPF.Modern\iNKORE.UI.WPF.Modern.csproj" />
   </ItemGroup>
 

@@ -95,15 +95,6 @@ namespace iNKORE.UI.WPF.Modern
         public static readonly string BaseWindowStyleKey = "BaseWindowStyle";
         public static readonly string DefaultWindowStyleKey = "DefaultWindowStyle";
 
-        public static readonly string BaseTextBlockStyleKey = "BaseTextBlockStyle";
-        public static readonly string HeaderTextBlockStyleKey = "HeaderTextBlockStyle";
-        public static readonly string SubheaderTextBlockStyleKey = "SubheaderTextBlockStyle";
-        public static readonly string TitleTextBlockStyleKey = "TitleTextBlockStyle";
-        public static readonly string SubtitleTextBlockStyleKey = "SubtitleTextBlockStyle";
-        public static readonly string BodyTextBlockStyleKey = "BodyTextBlockStyle";
-        public static readonly string CaptionTextBlockStyleKey = "CaptionTextBlockStyle";
-        public static readonly string DefaultTextBoxStyleKey = "DefaultTextBoxStyle";
-
         public static readonly string DefaultTabItemStyleKey = "DefaultTabItemStyle";
         public static readonly string DefaultTabControlStyleKey = "DefaultTabControlStyle";
         public static readonly string DefaultSliderStyleKey = "DefaultSliderStyle";
@@ -156,5 +147,22 @@ namespace iNKORE.UI.WPF.Modern
 
         #endregion
 
+
+
+        #region TextStyles.xaml
+
+        public static readonly string BaseTextBlockStyleKey = "BaseTextBlockStyle";
+        public static readonly string HeaderTextBlockStyleKey = "HeaderTextBlockStyle";
+        public static readonly string SubheaderTextBlockStyleKey = "SubheaderTextBlockStyle";
+        public static readonly string TitleTextBlockStyleKey = "TitleTextBlockStyle";
+        public static readonly string TitleLargeTextBlockStyleKey = "TitleLargeTextBlockStyle";
+        public static readonly string SubtitleTextBlockStyleKey = "SubtitleTextBlockStyle";
+        public static readonly string BodyTextBlockStyleKey = "BodyTextBlockStyle";
+        public static readonly string BodyStrongTextBlockStyleKey = "BodyStrongTextBlockStyle";
+        public static readonly string CaptionTextBlockStyleKey = "CaptionTextBlockStyle";
+        public static readonly string DefaultTextBoxStyleKey = "DefaultTextBoxStyle";
+        public static readonly string DisplayTextBlockStyleKey = "DisplayTextBlockStyle";
+
+        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -36,6 +36,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Extended
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            RadioButtons_DefaultBackdropStyle.SelectedItem = MessageBox.DefaultBackdropType;
             UpdateExampleCode();
         }
 

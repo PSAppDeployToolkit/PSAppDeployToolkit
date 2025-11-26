@@ -1,4 +1,4 @@
-﻿<local:ItemsPageBase
+<local:ItemsPageBase
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.SearchResultsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,10 +15,51 @@
         <ResourceDictionary Source="/Themes/ItemTemplates.xaml" />
     </local:ItemsPageBase.Resources>
 
-    <Grid Background="{DynamicResource HomePageBackgroundBrush}">
+    <Grid x:Name="LayoutRoot" Background="{DynamicResource HomePageBackgroundBrush}">
+
+        <VisualStateManager.VisualStateGroups>
+          <VisualStateGroup x:Name="ResultStates">
+            <VisualState x:Name="ResultsFound">
+              <Storyboard>
+                <ObjectAnimationUsingKeyFrames
+                    Storyboard.TargetName="resultsNavView"
+                    Storyboard.TargetProperty="Visibility">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                      Value="{x:Static Visibility.Visible}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames
+                    Storyboard.TargetName="noResultsTextBlock"
+                    Storyboard.TargetProperty="Visibility">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                      Value="{x:Static Visibility.Collapsed}" />
+                </ObjectAnimationUsingKeyFrames>
+              </Storyboard>
+            </VisualState>
+
+            <VisualState x:Name="NoResultsFound">
+              <Storyboard>
+                <ObjectAnimationUsingKeyFrames
+                    Storyboard.TargetName="resultsNavView"
+                    Storyboard.TargetProperty="Visibility">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                      Value="{x:Static Visibility.Collapsed}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames
+                    Storyboard.TargetName="noResultsTextBlock"
+                    Storyboard.TargetProperty="Visibility">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                      Value="{x:Static Visibility.Visible}" />
+                </ObjectAnimationUsingKeyFrames>
+              </Storyboard>
+            </VisualState>
+
+          </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <ui:NavigationView
             x:Name="resultsNavView"
-            Margin="12,0,0,0"
+            Margin="0,24,0,0"
+            IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
             Loaded="OnResultsNavViewLoaded"
             MenuItemsSource="{Binding Filters, Mode=OneWay}"
@@ -32,9 +73,11 @@
                     AutomationProperties.AutomationId="ResultsGridView"
                     AutomationProperties.Name="Search Results"
                     IsItemClickEnabled="True"
+                    SelectionMode="Single"
                     IsSelectionEnabled="False"
+                    IsMultiSelectCheckBoxEnabled="False"
                     ItemClick="OnItemGridViewItemClick"
-                    ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                    ItemContainerStyle="{StaticResource NoSelectionVisualGridViewItemStyle}"
                     ItemTemplate="{StaticResource ControlItemTemplate}"
                     ItemsSource="{Binding SelectedItem.Items, ElementName=resultsNavView, Mode=OneWay}"
                     KeyDown="OnItemGridViewKeyDown"

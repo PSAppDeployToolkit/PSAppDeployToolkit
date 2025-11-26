@@ -15,12 +15,12 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
-namespace iNKORE.UI.WPF.Modern.Gallery.SamplePages
+namespace iNKORE.UI.WPF.Modern.Gallery.Samples
 {
     /// <summary>
-    /// SampleStandardSizingPage.xaml 的交互逻辑
+    /// SampleCompactSizingPage.xaml 的交互逻辑
     /// </summary>
-    public partial class SampleStandardSizingPage : Page
+    public partial class SampleCompactSizingPage : Page
     {
         public TextBox FirstName => firstName;
         public TextBox LastName => lastName;
@@ -28,12 +28,12 @@ namespace iNKORE.UI.WPF.Modern.Gallery.SamplePages
         public PasswordBox ConfirmPassword => confirmPassword;
         public DatePicker ChosenDate => chosenDate;
 
-        public SampleStandardSizingPage()
+        public SampleCompactSizingPage()
         {
             InitializeComponent();
         }
 
-        public void CopyState(SampleCompactSizingPage page)
+        public void CopyState(SampleStandardSizingPage page)
         {
             FirstName.Text = page.FirstName.Text;
             LastName.Text = page.LastName.Text;
@@ -44,24 +44,32 @@ namespace iNKORE.UI.WPF.Modern.Gallery.SamplePages
 
         public static string CodeXaml => $@"
 <ui:Page
-    x:Class=""iNKORE.UI.WPF.Modern.Gallery.SamplePages.SampleStandardSizingPage""
+    x:Class=""iNKORE.UI.WPF.Modern.Gallery.Samples.SampleCompactSizingPage""
     xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
     xmlns:d=""http://schemas.microsoft.com/expression/blend/2008""
-    xmlns:local=""clr-namespace:iNKORE.UI.WPF.Modern.Gallery.SamplePages""
+    xmlns:local=""clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Samples""
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
-    xmlns:ikw=""http://schemas.inkore.net/lib/ui/wpf""
     xmlns:ui=""http://schemas.inkore.net/lib/ui/wpf/modern"" 
-    Title=""SampleStandardSizingPage""
+    xmlns:ikw=""http://schemas.inkore.net/lib/ui/wpf""
+    Title=""SampleCompactSizingPage""
     d:DesignHeight=""450""
     d:DesignWidth=""800""
     mc:Ignorable=""d"">
+    <Page.Resources>
+        <ResourceDictionary Source=""pack://application:,,,/iNKORE.UI.WPF.Modern;component/Themes/DensityStyles/Compact.xaml"" />
+    </Page.Resources>
+
     <Grid Background=""{{DynamicResource ApplicationPageBackgroundThemeBrush}}"">
-        <ikw:SimpleStackPanel x:Name=""CompactPanel"" Spacing=""16"">
+        <ikw:SimpleStackPanel Spacing=""8"">
+            <ikw:SimpleStackPanel.Resources>
+                <Thickness x:Key=""TextBoxTopHeaderMargin"">0,2,0,2</Thickness>
+                <Thickness x:Key=""PasswordBoxTopHeaderMargin"">0,2,0,2</Thickness>
+            </ikw:SimpleStackPanel.Resources>
             <TextBlock
                 x:Name=""HeaderBlock""
                 FontSize=""18""
-                Text=""Standard Size"" />
+                Text=""Compact Size"" />
             <TextBox x:Name=""firstName"" ui:ControlHelper.Header=""First Name:"" />
             <TextBox x:Name=""lastName"" ui:ControlHelper.Header=""Last Name:"" />
             <PasswordBox x:Name=""password"" ui:ControlHelper.Header=""Password:"" />

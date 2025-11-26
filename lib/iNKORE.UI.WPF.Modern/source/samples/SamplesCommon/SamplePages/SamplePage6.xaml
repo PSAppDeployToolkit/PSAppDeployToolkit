@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="SamplesCommon.SamplePages.SamplePage6"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <ScrollViewer>
-        <Grid Background="{DynamicResource ApplicationPageBackgroundThemeBrush}">
+        <Grid>
             <Grid.Resources>
                 <sys:Double x:Key="TileHeight">150</sys:Double>
             </Grid.Resources>

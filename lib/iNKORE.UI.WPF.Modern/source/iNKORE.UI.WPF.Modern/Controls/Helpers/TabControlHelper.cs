@@ -302,23 +302,50 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
 
         #endregion
 
-        #region TabControlHelperEvents
+
+        #region TabCloseRequestedEvent
 
         /// <summary>
-        /// Identifies the TabControlHelperEvents dependency property.
+        /// The event is raised when a tab's close button is clicked.
+        /// 
         /// </summary>
-        public static readonly DependencyProperty TabControlHelperEventsProperty = DependencyProperty.RegisterAttached(
-            "TabControlHelperEvents",
-            typeof(TabControlHelperEvents),
-            typeof(TabControlHelper),
-            new PropertyMetadata(new TabControlHelperEvents()));
+        public static readonly RoutedEvent TabCloseRequestedEvent = EventManager.RegisterRoutedEvent(
+            "TabCloseRequested",
+            RoutingStrategy.Direct,
+            typeof(EventHandler<TabViewTabCloseRequestedEventArgs>),
+            typeof(TabControlHelper));
 
-        public static TabControlHelperEvents GetTabControlHelperEvents(TabControl element)
+        public static void AddTabCloseRequestedHandler(TabControl tabControl, EventHandler<TabViewTabCloseRequestedEventArgs> handler)
         {
-            return (TabControlHelperEvents)element.GetValue(TabControlHelperEventsProperty);
+            tabControl.AddHandler(TabCloseRequestedEvent, handler);
+        }
+        public static void RemoveTabCloseRequestedHandler(TabControl tabControl, EventHandler<TabViewTabCloseRequestedEventArgs> handler)
+        {
+            tabControl.RemoveHandler(TabCloseRequestedEvent, handler);
         }
 
         #endregion
+
+        #region AddTabButtonClickEvent
+
+        public static readonly RoutedEvent AddTabButtonClickEvent = EventManager.RegisterRoutedEvent(
+            "AddTabButtonClick",
+            RoutingStrategy.Direct,
+            typeof(RoutedEventHandler),
+            typeof(TabControlHelper));
+
+        public static void AddAddTabButtonClickHandler(TabControl tabControl, RoutedEventHandler handler)
+        {
+            tabControl.AddHandler(AddTabButtonClickEvent, handler);
+        }
+
+        public static void RemoveAddTabButtonClickHandler(TabControl tabControl, RoutedEventHandler handler)
+        {
+            tabControl.RemoveHandler(AddTabButtonClickEvent, handler);
+        }
+
+        #endregion
+
 
         #region AddTabButtonCommand
 
@@ -393,7 +420,8 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
             {
                 void OnAddButtonClick(object sender, RoutedEventArgs e)
                 {
-                    GetTabControlHelperEvents(TabControl).AddTabButtonClick?.Invoke(TabControl, e);
+                    RoutedEventArgs args = new RoutedEventArgs(AddTabButtonClickEvent, TabControl);
+                    TabControl.RaiseEvent(args);
                 }
                 AddButton.Click += OnAddButtonClick;
             }
@@ -439,10 +467,11 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
         Always = 2,
     }
 
+
     /// <summary>
     /// Provides data for a tab close event.
     /// </summary>
-    public sealed class TabViewTabCloseRequestedEventArgs
+    public class TabViewTabCloseRequestedEventArgs : RoutedEventArgs
     {
         /// <summary>
         /// Gets a value that represents the data context for the tab in which a close is being requested.
@@ -454,26 +483,11 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
         /// </summary>
         public TabItem Tab { get; private set; }
 
-        internal TabViewTabCloseRequestedEventArgs(object item, TabItem tab)
+        internal TabViewTabCloseRequestedEventArgs(RoutedEvent routedEvent, object item, TabItem tab)
+            : base(routedEvent)
         {
             Item = item;
             Tab = tab;
         }
-    }
-
-    /// <summary>
-    /// Events for TabControlHelper.
-    /// </summary>
-    public class TabControlHelperEvents
-    {
-        /// <summary>
-        /// Occurs when the add (+) tab button has been clicked.
-        /// </summary>
-        public TypedEventHandler<TabControl, object> AddTabButtonClick;
-
-        /// <summary>
-        /// Raised when the user attempts to close a Tab via clicking the x-to-close button, CTRL+F4, or mousewheel.
-        /// </summary>
-        public TypedEventHandler<TabControl, TabViewTabCloseRequestedEventArgs> TabCloseRequested;
     }
 }

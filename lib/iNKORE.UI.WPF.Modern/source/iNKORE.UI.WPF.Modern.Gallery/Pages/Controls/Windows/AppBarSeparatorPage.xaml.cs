@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Common.IconKeys;
+using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows;
 using System.Windows.Controls;
@@ -55,7 +55,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             }
             else
             {
-                Control1.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
+                Control1.DefaultLabelPosition = CommandBarDefaultLabelPosition.Bottom;
             }
 
             UpdateExampleCode();

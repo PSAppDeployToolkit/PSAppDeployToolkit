@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,6 +47,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery
         private bool _isKeyboardConnected;
         private NavigationViewItem _allControlsMenuItem;
         private NavigationViewItem _newControlsMenuItem;
+        private NavigationViewItem _designMenuItem;
 
         public static NavigationRootPage GetForElement(object obj)
         {
@@ -153,12 +154,19 @@ namespace iNKORE.UI.WPF.Modern.Gallery
 
         private void AddNavigationMenuItems()
         {
+            // Get the Design item from XAML
+            _designMenuItem = DesignItem;
+
             foreach(var realm in ControlInfoDataSource.Instance.Realms)
             {
-                NavigationViewControl.MenuItems.Add(new NavigationViewItemHeader() { Content = realm.Title.ToUpper() });
+                var isRealmVisible = realm.IsVisible;
+
+                if (isRealmVisible) NavigationViewControl.MenuItems.Add(new NavigationViewItemHeader() { Content = realm.Title.ToUpper() });
 
                 foreach (var group in realm.Groups.OrderBy(i => i.Title))
                 {
+                    var isGroupVisible = realm.IsVisible && true; // Implement group-level visibility if needed
+
                     var itemGroup = new NavigationViewItem() { Content = group.Title, Tag = group.UniqueId, DataContext = group, Icon = GetIcon(group.ImageIconPath) };
 
                     var groupMenuFlyoutItem = new MenuItem() { Header = $"Copy Link to {group.Title} Samples", Icon = new FontIcon() { Glyph = "\uE8C8", FontSize = 16 }, Tag = group };
@@ -179,7 +187,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery
                         AutomationProperties.SetName(itemInGroup, item.Title);
                     }
 
-                    NavigationViewControl.MenuItems.Add(itemGroup);
+                    if (isGroupVisible) NavigationViewControl.MenuItems.Add(itemGroup);
 
                     if (group.UniqueId == "AllControls")
                     {
@@ -192,14 +200,18 @@ namespace iNKORE.UI.WPF.Modern.Gallery
                 }
             }
 
-            // Move "What's New" and "All Controls" to the top of the NavigationView
+            // Move "What's New", "Design", and "All Controls" to the top of the NavigationView
             NavigationViewControl.MenuItems.Remove(_allControlsMenuItem);
             NavigationViewControl.MenuItems.Remove(_newControlsMenuItem);
+            NavigationViewControl.MenuItems.Remove(_designMenuItem);
+            
+            // Insert in order: Home, Design, All Controls
             NavigationViewControl.MenuItems.Insert(0, _allControlsMenuItem);
+            NavigationViewControl.MenuItems.Insert(0, _designMenuItem);
             NavigationViewControl.MenuItems.Insert(0, _newControlsMenuItem);
 
-            // Separate the All/New items from the rest of the categories.
-            NavigationViewControl.MenuItems.Insert(2, new NavigationViewItemSeparator());
+            // Separate the top-level items from the rest of the categories.
+            NavigationViewControl.MenuItems.Insert(3, new NavigationViewItemSeparator());
 
             _newControlsMenuItem.Loaded += OnNewControlsMenuItemLoaded;
             NavigationViewControl.SelectedItem = _newControlsMenuItem;
@@ -279,6 +291,41 @@ namespace iNKORE.UI.WPF.Modern.Gallery
                     _lastItem = item;
                     rootFrame.Navigate(item);
                 }
+                else if (selectedItem?.Tag?.ToString() == "Iconography")
+                {
+                    var iconographyId = "Iconography";
+                    if (_lastItem?.ToString() == iconographyId) return;
+                    _lastItem = iconographyId;
+
+                    // Find Iconography item from the data source
+                    var iconographyItem = ControlInfoDataSource.Instance.Realms
+                        .SelectMany(r => r.Groups)
+                        .SelectMany(g => g.Items)
+                        .FirstOrDefault(i => i.UniqueId == "Iconography");
+
+                    if (iconographyItem != null)
+                    {
+                        rootFrame.Navigate(ItemPage.Create(iconographyItem));
+                    }
+                }
+                else if (selectedItem?.Tag?.ToString() == "Typography")
+                {
+                    // Handle Typography navigation
+                    var typographyId = "Typography";
+                    if (_lastItem?.ToString() == typographyId) return;
+                    _lastItem = typographyId;
+
+                    // Find Typography item from the data source
+                    var typographyItem = ControlInfoDataSource.Instance.Realms
+                        .SelectMany(r => r.Groups)
+                        .SelectMany(g => g.Items)
+                        .FirstOrDefault(i => i.UniqueId == "Typography");
+
+                    if (typographyItem != null)
+                    {
+                        rootFrame.Navigate(ItemPage.Create(typographyItem));
+                    }
+                }
                 else
                 {
                     if (selectedItem.DataContext is ControlInfoDataGroup)
@@ -308,7 +355,8 @@ namespace iNKORE.UI.WPF.Modern.Gallery
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
         {
             if (rootFrame.SourcePageType == typeof(AllControlsPage) ||
-                rootFrame.SourcePageType == typeof(NewControlsPage))
+                rootFrame.SourcePageType == typeof(NewControlsPage) ||
+                rootFrame.SourcePageType == typeof(SearchResultsPage))
             {
                 NavigationViewControl.AlwaysShowHeader = false;
             }

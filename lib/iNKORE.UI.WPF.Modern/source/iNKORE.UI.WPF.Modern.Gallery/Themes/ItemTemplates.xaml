@@ -4,6 +4,21 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern">
+
+    <Style TargetType="ui:GridViewItem" x:Key="NoSelectionVisualGridViewItemStyle" BasedOn="{StaticResource GridViewItemStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ui:GridViewItem">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <DataTemplate x:Key="ControlItemTemplate">
         <UserControl>
             <Border

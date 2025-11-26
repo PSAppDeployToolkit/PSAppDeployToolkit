@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Windows;
 
@@ -76,7 +76,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         <TextBox ui:ControlHelper.Header=""PrimaryButtonText"" Text=""{{Binding ElementName=dialog, Path=PrimaryButtonText, UpdateSourceTrigger=PropertyChanged}}"" />
         <TextBox ui:ControlHelper.Header=""SecondaryButtonText"" Text=""{{Binding ElementName=dialog, Path=SecondaryButtonText, UpdateSourceTrigger=PropertyChanged}}"" />
         <TextBox ui:ControlHelper.Header=""CloseButtonText"" Text=""{{Binding ElementName=dialog, Path=CloseButtonText, UpdateSourceTrigger=PropertyChanged}}"" />
-        <ComboBox
+        <ComboBox HorizontalAlignment=""Stretch""
             ui:ControlHelper.Header=""DefaultButton""
             ItemsSource=""{{Binding Source={{x:Type ui:ContentDialogButton}}, Converter={{StaticResource EnumValuesConverter}}}}""
             SelectedItem=""{{Binding ElementName=dialog, Path=DefaultButton}}"" />

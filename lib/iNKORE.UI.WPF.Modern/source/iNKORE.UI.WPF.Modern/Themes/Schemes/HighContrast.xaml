@@ -1684,7 +1684,7 @@
     <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="{m:ThemeResource SystemColorHighlightTextColor}" />
 
     <m:StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-
+    
     <m:StaticResource x:Key="TopNavigationViewItemForeground" ResourceKey="NavigationViewItemForeground" />
     <m:StaticResource x:Key="TopNavigationViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <m:StaticResource x:Key="TopNavigationViewItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -1692,13 +1692,13 @@
     <m:StaticResource x:Key="TopNavigationViewItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <m:StaticResource x:Key="TopNavigationViewItemForegroundSelectedPointerOver" ResourceKey="NavigationViewItemForeground" />
     <m:StaticResource x:Key="TopNavigationViewItemForegroundSelectedPressed" ResourceKey="NavigationViewItemForeground" />
-    <m:StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
-    <m:StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-    <m:StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SystemControlHighlightAccentBrush" />
-    <m:StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
-    <m:StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-
-    <m:StaticResource x:Key="TopNavigationViewItemSeparatorForeground" ResourceKey="SystemControlForegroundBaseLowBrush" />
+    <m:StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
+    <m:StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
+    <m:StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
+    <m:StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+    <m:StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+    
+    <m:StaticResource x:Key="TopNavigationViewItemSeparatorForeground" ResourceKey="SystemColorWindowTextColorBrush" />
 
     <m:StaticResource x:Key="NavigationViewButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
     <m:StaticResource x:Key="NavigationViewButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />

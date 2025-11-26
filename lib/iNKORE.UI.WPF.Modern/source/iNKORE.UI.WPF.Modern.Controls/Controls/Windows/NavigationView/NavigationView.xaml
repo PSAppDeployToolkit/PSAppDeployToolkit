@@ -308,18 +308,19 @@
                                     <RowDefinition x:Name="IconRow" Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <ui:ContentPresenterEx
-                                    x:Name="IconBox"
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Height="16"
-                                    Width="16"
-                                    Margin="0"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center" 
-                                    Content="{TemplateBinding Icon}"
-                                    Foreground="{TemplateBinding Foreground}" ClipToBounds="False">
-                                </ui:ContentPresenterEx>
+                                <Viewbox x:Name="IconBox" Height="16" Width="16" Margin="12,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <ui:ContentPresenterEx
+                                        x:Name="Icon"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Height="16"
+                                        Width="16"
+                                        Margin="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" 
+                                        Content="{TemplateBinding Icon}"
+                                        Foreground="{TemplateBinding Foreground}" ClipToBounds="False"/>
+                                </Viewbox>
                                 <ContentPresenter
                                     x:Name="InfoBadgePresenter"
                                     Grid.Column="2"
@@ -352,30 +353,30 @@
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="PointerOver">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundPointerOver}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundPointerOver}" />
-                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="Pressed">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundPressed}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundPressed}" />
-                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="Selected">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundSelected}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundSelected}" />
-                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelected}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelected}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="PointerOverSelected">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundSelectedPointerOver}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundSelectedPointerOver}" />
-                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="PressedSelected">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundSelectedPressed}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundSelectedPressed}" />
-                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
                         </Trigger>
                         <Trigger SourceName="DisabledStatesListener" Property="CurrentStateName" Value="Disabled">
-                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundDisabled}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundDisabled}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -391,6 +392,7 @@
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
                     <Border
                         x:Name="LayoutRoot"
+                        Margin="{DynamicResource NavigationViewItemButtonMargin}"
                         Background="{TemplateBinding Background}"
                         CornerRadius="{TemplateBinding CornerRadius}">
                         <Border.Resources>
@@ -552,32 +554,35 @@
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundPointerOver}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundPointerOver}" />
                             <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPointerOver}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="Pressed">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundPressed}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundPressed}" />
                             <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundPressed}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="Selected">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundSelected}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundSelected}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelected}" />
+                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelected}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelected}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="PointerOverSelected">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundSelectedPointerOver}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundSelectedPointerOver}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelectedPointerOver}" />
+                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelectedPointerOver}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelectedPointerOver}" />
                         </Trigger>
                         <Trigger SourceName="PointerStatesListener" Property="CurrentStateName" Value="PressedSelected">
                             <Setter TargetName="LayoutRoot" Property="Background" Value="{DynamicResource TopNavigationViewItemBackgroundSelectedPressed}" />
                             <Setter TargetName="PointerRectangle" Property="Fill" Value="{DynamicResource NavigationViewItemBackgroundSelectedPressed}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelectedPressed}" />
+                            <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelectedPressed}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundSelectedPressed}" />
                         </Trigger>
                         <Trigger SourceName="DisabledStatesListener" Property="CurrentStateName" Value="Disabled">
                             <Setter TargetName="IconBox" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundDisabled}" />
-                            <Setter Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundDisabled}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource TopNavigationViewItemForegroundDisabled}" />
                         </Trigger>
                         <Trigger SourceName="NavigationViewIconPositionStatesListener" Property="CurrentStateName" Value="IconOnly">
                             <Setter TargetName="LayoutRoot" Property="Width" Value="36" />

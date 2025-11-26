@@ -1,9 +1,10 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 
 namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
@@ -18,28 +19,35 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         private void ExpandDirectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string expandDirection = e.AddedItems[0].ToString();
+            var targetExpander = (sender as FrameworkElement)?.Tag as Expander;
+            var headerRotate = ((targetExpander?.Header as Border)?.Child as TextBlock)?.LayoutTransform as RotateTransform;
+            if (targetExpander == null) return;
 
             switch (expandDirection)
             {
                 case "Down":
                 default:
-                    Expander1.ExpandDirection = ExpandDirection.Down;
-                    Expander1.VerticalAlignment = VerticalAlignment.Top;
+                    targetExpander.ExpandDirection = ExpandDirection.Down;
+                    targetExpander.VerticalAlignment = VerticalAlignment.Top;
+                    if (headerRotate != null) headerRotate.Angle = 0;
                     break;
 
                 case "Up":
-                    Expander1.ExpandDirection = ExpandDirection.Up;
-                    Expander1.VerticalAlignment = VerticalAlignment.Bottom;
+                    targetExpander.ExpandDirection = ExpandDirection.Up;
+                    targetExpander.VerticalAlignment = VerticalAlignment.Bottom;
+                    if (headerRotate != null) headerRotate.Angle = 0;
                     break;
 
                 case "Left":
-                    Expander1.ExpandDirection = ExpandDirection.Left;
-                    Expander1.HorizontalAlignment = HorizontalAlignment.Right;
+                    targetExpander.ExpandDirection = ExpandDirection.Left;
+                    targetExpander.HorizontalAlignment = HorizontalAlignment.Right;
+                    if (headerRotate != null) headerRotate.Angle = 90;
                     break;
 
                 case "Right":
-                    Expander1.ExpandDirection = ExpandDirection.Right;
-                    Expander1.HorizontalAlignment = HorizontalAlignment.Left;
+                    targetExpander.ExpandDirection = ExpandDirection.Right;
+                    targetExpander.HorizontalAlignment = HorizontalAlignment.Left;
+                    if (headerRotate != null) headerRotate.Angle = 90;
                     break;
             }
 
@@ -51,6 +59,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            // Setup bindings for Example 1
             ControlExampleSubstitution Substitution1 = new ControlExampleSubstitution
             {
                 Key = "IsExpanded",
@@ -67,7 +76,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             };
             BindingOperations.SetBinding(Substitution2, ControlExampleSubstitution.ValueProperty, new Binding
             {
-                Source = ExpandDirectionComboBox,
+                Source = Expander1DirectionComboBox,
                 Path = new PropertyPath("SelectedValue"),
             });
 
@@ -107,15 +116,28 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             Example4.Xaml = Example4Xaml;
         }
 
-        public string Example1Xaml => $@"
+        public string Example1Xaml => RotateTransform_Example1Text.Angle == 0 ? $@"
 <Expander x:Name=""Expander1""
+    Style=""{{StaticResource {{x:Static ui:ThemeKeys.ExpanderCardStyleKey}}}}""
     Content=""This is in the content""
     ExpandDirection=""{Expander1.ExpandDirection.ToString()}""
     Header=""This text is in the header"" />
+" : $@"
+<Expander x:Name=""Expander1"" VerticalAlignment=""Top""
+    Content=""This is in the content""
+    ExpandDirection=""Down"" IsExpanded=""False"">
+    <Expander.Header>
+        <TextBlock Text=""This text is in the header"" FontWeight=""Bold"">
+            <TextBlock.LayoutTransform>
+                <RotateTransform Angle=""{RotateTransform_Example1Text.Angle}""/>
+            </TextBlock.LayoutTransform>
+        </TextBlock>
+    </Expander.Header>
+</Expander>
 ";
 
         public string Example2Xaml => $@"
-<Expander x:Name=""Expander2"">
+<Expander x:Name=""Expander2"" Style=""{{StaticResource {{x:Static ui:ThemeKeys.ExpanderCardStyleKey}}}}"">
     <Expander.Header>
         <ToggleButton Content=""This is a ToggleButton in the header"" />
     </Expander.Header>
@@ -128,7 +150,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 ";
 
             public string Example3Xaml => $@"
-<Expander>
+<Expander Style=""{{StaticResource {{x:Static ui:ThemeKeys.ExpanderCardStyleKey}}}}"">
     <Expander.Header>
         <ToggleButton HorizontalAlignment=""Center"" Content=""This ToggleButton is centered"" />
     </Expander.Header>
@@ -139,9 +161,10 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 ";
 
         public string Example4Xaml => $@"
-<Expander ExpandDirection=""Down""
-    Style=""{{StaticResource {{x:Static ui:ThemeKeys.ExpanderCardStyleKey}}}}""
+<Expander x:Name=""Expander4""
     Content=""This is in the content""
+    Style=""{{StaticResource {{x:Static ui:ThemeKeys.ExpanderCardStyleKey}}}}""
+    ExpandDirection=""{Expander4.ExpandDirection.ToString()}""
     Header=""This text is in the header"" />
 ";
 

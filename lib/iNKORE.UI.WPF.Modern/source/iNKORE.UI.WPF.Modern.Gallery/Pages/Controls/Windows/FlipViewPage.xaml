@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.FlipViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -17,7 +17,7 @@
             ExampleHeight="Auto"
             HeaderText="A simple FlipView with items declared inline.">
             <local:ControlExample.Example>
-                <ui:FlipView Height="270" MaxWidth="400">
+                <ui:FlipView Height="270" MaxWidth="400" HorizontalAlignment="Left">
                     <Image AutomationProperties.Name="Cliff" Source="/Assets/SampleMedia/cliff.jpg" />
                     <Image AutomationProperties.Name="Grapes" Source="/Assets/SampleMedia/grapes.jpg" />
                     <Image AutomationProperties.Name="Rainier" Source="/Assets/SampleMedia/rainier.jpg" />
@@ -30,7 +30,9 @@
             <local:ControlExample.Example>
                 <ui:FlipView
                     Height="180"
+                    Width="400"
                     MaxWidth="400"
+                    HorizontalAlignment="Left"
                     BorderBrush="Black"
                     BorderThickness="1"
                     ItemsSource="{Binding Items, Mode=OneWay}">
@@ -66,7 +68,7 @@
         </local:ControlExample>
         <local:ControlExample x:Name="Example3" HeaderText="Vertical FlipView">
             <local:ControlExample.Example>
-                <ui:FlipView Height="270" MaxWidth="400" Orientation="Vertical">
+                <ui:FlipView Height="270" MaxWidth="400" Orientation="Vertical" HorizontalAlignment="Left">
                     <Image AutomationProperties.Name="Cliff" Source="/Assets/SampleMedia/cliff.jpg" />
                     <Image AutomationProperties.Name="Grapes" Source="/Assets/SampleMedia/grapes.jpg" />
                     <Image AutomationProperties.Name="Rainier" Source="/Assets/SampleMedia/rainier.jpg" />
