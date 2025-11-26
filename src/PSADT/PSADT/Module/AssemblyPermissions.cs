@@ -53,11 +53,18 @@ namespace PSADT.Module
                 }
                 if (!path.Exists)
                 {
-                    throw new FileNotFoundException($"The file [{path.FullName}] does not exist.", path.FullName);
+                    throw new FileNotFoundException($"The system could not find file [{path.FullName}] as it does not exist.", path.FullName);
                 }
-                if (null != hPrimaryToken ? FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions))
+                try
                 {
-                    continue;
+                    if (null != hPrimaryToken ? FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions))
+                    {
+                        continue;
+                    }
+                }
+                catch (FileNotFoundException ex)
+                {
+                    throw new FileNotFoundException($"The Win32 API call could not find file [{path.FullName}] as it does not exist.", path.FullName, ex);
                 }
                 FileSecurity fileSecurity = FileSystemAclExtensions.GetAccessControl(path, AccessControlSections.Access);
                 fileSecurity.AddAccessRule(fileSystemAccessRule);
