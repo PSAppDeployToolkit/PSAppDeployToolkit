@@ -235,4 +235,16 @@
     <value>On</value>
     <comment>Default text for "On" for ToggleSwitch.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltipWithKA" xml:space="preserve">
+    <value>Close tab (Ctrl + F4)</value>
+  </data>
+  <data name="TabViewAddButtonTooltip" xml:space="preserve">
+    <value>Add new tab</value>
+  </data>
+  <data name="TabViewScrollIncreaseButtonTooltip" xml:space="preserve">
+    <value>Scroll tab list forward</value>
+  </data>
+  <data name="TabViewScrollDecreaseButtonTooltip" xml:space="preserve">
+    <value>Scroll tab list backward</value>
+  </data>
 </root>

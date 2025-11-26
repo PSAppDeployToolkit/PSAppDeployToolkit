@@ -16,6 +16,8 @@
             <ikw:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="Right" />
             <ikw:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="Bottom" />
             <ikw:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="Left" />
+            <chelper:TabItemHeaderConverter x:Key="TabItemHeaderConverter"/>
+            <converters:LocalizeConverter x:Key="TabControlLocalizationConverter" ControlType="{x:Type chelper:TabControlHelper}"/>
         </ResourceDictionary>
     </ResourceDictionary.MergedDictionaries>
 
@@ -280,8 +282,7 @@
                             Foreground="{DynamicResource TabViewItemHeaderForeground}"
                             RecognizesAccessKey="True"
                             SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                        <Button
-                            x:Name="CloseButton"
+                        <Button x:Name="CloseButton"
                             Grid.Column="2"
                             Margin="{DynamicResource TabViewItemHeaderCloseMargin}"
                             Command="{TemplateBinding chelper:TabItemHelper.CloseTabButtonCommand}"
@@ -290,8 +291,7 @@
                             Style="{StaticResource TabViewCloseButtonStyle}"
                             Visibility="Collapsed">
                             <Button.InputBindings>
-                                <KeyBinding
-                                    Key="F4"
+                                <KeyBinding Key="F4"
                                     Command="{TemplateBinding chelper:TabItemHelper.CloseTabButtonCommand}"
                                     Modifiers="Ctrl" />
                             </Button.InputBindings>
@@ -356,14 +356,14 @@
             </Trigger>
             <MultiTrigger>
                 <MultiTrigger.Conditions>
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="Auto" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
             </MultiTrigger>
             <MultiTrigger>
                 <MultiTrigger.Conditions>
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="Always" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
@@ -371,7 +371,7 @@
             <MultiTrigger>
                 <MultiTrigger.Conditions>
                     <Condition Property="IsMouseOver" Value="True" />
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="OnPointerOver" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
@@ -379,7 +379,7 @@
             <MultiTrigger>
                 <MultiTrigger.Conditions>
                     <Condition Property="IsSelected" Value="True" />
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="OnPointerOver" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
@@ -518,14 +518,14 @@
             </Trigger>
             <MultiTrigger>
                 <MultiTrigger.Conditions>
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="Auto" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
             </MultiTrigger>
             <MultiTrigger>
                 <MultiTrigger.Conditions>
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="Always" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
@@ -533,7 +533,7 @@
             <MultiTrigger>
                 <MultiTrigger.Conditions>
                     <Condition Property="IsMouseOver" Value="True" />
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="OnPointerOver" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
@@ -541,7 +541,7 @@
             <MultiTrigger>
                 <MultiTrigger.Conditions>
                     <Condition Property="IsSelected" Value="True" />
-                    <Condition Property="chelper:TabItemHelper.IsAddTabButtonVisible" Value="True" />
+                    <Condition Property="chelper:TabItemHelper.IsClosable" Value="True" />
                     <Condition Property="chelper:TabItemHelper.CloseButtonOverlayMode" Value="OnPointerOver" />
                 </MultiTrigger.Conditions>
                 <Setter TargetName="CloseButton" Property="Visibility" Value="Visible" />
@@ -634,6 +634,7 @@
                             Content="&#xF264;"
                             Delay="50"
                             IsEnabled="False"
+                            ToolTip="{Binding Source={x:Static common:ResourceAccessor.SR_TabViewScrollDecreaseButtonTooltip}, Converter={StaticResource TabControlLocalizationConverter}, Mode=OneWay}"
                             Style="{StaticResource TabViewScrollButtonStyle}" />
                     </Border>
                     <primitives:PivotHeaderScrollViewer
@@ -670,6 +671,7 @@
                             Content="&#xF268;"
                             Delay="50"
                             IsEnabled="False"
+                            ToolTip="{Binding Source={x:Static common:ResourceAccessor.SR_TabViewScrollIncreaseButtonTooltip}, Converter={StaticResource TabControlLocalizationConverter}, Mode=OneWay}"
                             Style="{StaticResource TabViewScrollButtonStyle}" />
                     </Border>
                     <Border
@@ -692,6 +694,7 @@
                             Command="{TemplateBinding chelper:TabControlHelper.AddTabButtonCommand}"
                             CommandParameter="{TemplateBinding chelper:TabControlHelper.AddTabButtonCommandParameter}"
                             Content="&#xF10A;"
+                            ToolTip="{Binding Source={x:Static common:ResourceAccessor.SR_TabViewAddButtonTooltip}, Converter={StaticResource TabControlLocalizationConverter}, Mode=OneWay}"
                             Style="{StaticResource TabViewButtonStyle}" />
                     </Border>
                 </Grid>
@@ -829,6 +832,7 @@
                             Command="{TemplateBinding chelper:TabControlHelper.AddTabButtonCommand}"
                             CommandParameter="{TemplateBinding chelper:TabControlHelper.AddTabButtonCommandParameter}"
                             Content="&#xF10A;"
+                            ToolTip="{Binding Source={x:Static common:ResourceAccessor.SR_TabViewAddButtonTooltip}, Converter={StaticResource TabControlLocalizationConverter}, Mode=OneWay}"
                             Style="{StaticResource TabViewButtonStyle}" />
                     </Border>
                 </Grid>

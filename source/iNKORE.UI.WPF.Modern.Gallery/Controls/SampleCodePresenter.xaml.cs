@@ -1,4 +1,4 @@
-﻿using ColorCodeStandard;
+using ColorCodeStandard;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
@@ -72,6 +72,29 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Controls
             CodePresenter.TextArea.SelectionBorder = new Pen(Brushes.Transparent, 0);
             CodePresenter.TextArea.SelectionCornerRadius = 0;
             CodePresenter.TextArea.SetResourceReference(TextArea.SelectionBrushProperty, ThemeKeys.TextControlSelectionHighlightColorKey);
+
+            // Ensure caret never shows (keep selection & copy)
+            HideCaretPermanently();
+            CodePresenter.TextArea.GotFocus += (s,e)=> HideCaretPermanently();
+            CodePresenter.TextArea.TextView.VisualLinesChanged += (s,e)=> HideCaretPermanently();
+        }
+
+        private void HideCaretPermanently()
+        {
+            // Make sure the editor can still be clicked for selection but caret invisible.
+            var caret = CodePresenter.TextArea.Caret;
+            caret.CaretBrush = Brushes.Transparent;
+            // keep focus off the editor so IME/caret logic does not repaint a visible caret
+            if (CodePresenter.IsFocused)
+            {
+                // Move focus to parent container (still allows mouse selection highlight within AvalonEdit)
+                var parent = (DependencyObject)CodePresenter.Parent;
+                while (parent != null && parent is not Control)
+                {
+                    parent = LogicalTreeHelper.GetParent(parent);
+                }
+                (parent as Control)?.Focusable.Equals(true);
+            }
         }
 
         private static void OnSubstitutionsPropertyChanged(DependencyObject target, DependencyPropertyChangedEventArgs args)
@@ -118,6 +141,33 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Controls
             SampleHeader.Text = IsCSharpSample ? "C#" : "XAML";
 
             FixAvalonEditScrolling();
+
+            try
+            {
+                if (CodePresenter?.ContextMenu != null)
+                {
+                    // Adjust context menu to only show 'Copy' if there is a selection
+                    CodePresenter.ContextMenu.Opened += (s, args) =>
+                    {
+                        var hasSelection = CodePresenter?.SelectionLength > 0;
+                        foreach (var mi in CodePresenter.ContextMenu.Items.OfType<MenuItem>())
+                        {
+                            if (mi.Command == ApplicationCommands.Copy)
+                            {
+                                mi.Visibility = hasSelection == true ? Visibility.Visible : Visibility.Collapsed;
+                            }
+                            else if (mi.Command == ApplicationCommands.SelectAll)
+                            {
+                                mi.Visibility = Visibility.Visible;
+                            }
+                        }
+                    };
+                }
+            }
+            catch
+            {
+                // Exception can happen if the localization resources are not loaded, ignore it.
+            }
         }
 
         private void CodePresenter_Loaded(object sender, RoutedEventArgs e)

@@ -648,6 +648,7 @@
         BasedOn="{StaticResource DefaultListViewItemStyle}"
         TargetType="ListViewItem">
         <Setter Property="Padding" Value="6,0" />
+        <Setter Property="Margin" Value="0,4" />
         <Setter Property="Background" Value="{DynamicResource GridViewItemBackground}" />
         <Setter Property="Foreground" Value="{DynamicResource GridViewItemForeground}" />
         <Setter Property="MinWidth" Value="{DynamicResource GridViewItemMinWidth}" />
@@ -655,20 +656,14 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListViewItem">
-                    <Border
-                        x:Name="LayoutRoot"
-                        Margin="0,4"
-                        chelper:PressHelper.IsEnabled="True"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
+                    <Border x:Name="LayoutRoot" chelper:PressHelper.IsEnabled="True"
+                        Margin="{TemplateBinding Margin}" Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius}"
                         SnapsToDevicePixels="true">
                         <Grid>
-                            <Rectangle
-                                x:Name="PressedBackground"
-                                Width="3.5"
-                                Margin="0,10"
+                            <Rectangle x:Name="PressedBackground"
+                                Width="3.5" Margin="0,10"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Stretch"
                                 Fill="{DynamicResource GridViewItemSelectedBorderBrush}"
@@ -680,8 +675,7 @@
                                     <ScaleTransform x:Name="PillTransform" ScaleY="1" />
                                 </Rectangle.RenderTransform>
                             </Rectangle>
-                            <GridViewRowPresenter
-                                x:Name="ContentPresenter"
+                            <GridViewRowPresenter x:Name="ContentPresenter"
                                 Margin="{TemplateBinding Padding}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />

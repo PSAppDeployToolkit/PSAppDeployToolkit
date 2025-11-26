@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.AppBarSeparatorPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,7 +14,7 @@
         <local:ControlExample x:Name="Example1" HeaderText="AppBarButtons separated by AppBarSeparators.">
             <local:ControlExample.Example>
                 <ui:ScrollViewerEx HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                    <ui:CommandBar x:Name="Control1">
+                    <ui:CommandBar x:Name="Control1" HorizontalAlignment="Left" DefaultLabelPosition="Bottom">
                         <ui:CommandBar.PrimaryCommands>
                             <ui:AppBarButton Label="Attach Camera" >
                                 <ui:AppBarButton.Icon>

@@ -1,24 +1,23 @@
-﻿<Window
-    x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ContentDialogTestWindow"
+<Window
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Samples.SampleContentDialogWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
-    Title="Content Dialog Test Window"
-    Width="800"
-    Height="640"
+    Title="Content Dialog Sample Window"
+    ui:TitleBar.IsIconVisible="True"
     ui:WindowHelper.UseModernWindowStyle="True"
-    Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
+    ui:WindowHelper.SystemBackdropType="Mica"
     mc:Ignorable="d">
     <Grid>
         <ikw:SimpleStackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="12">
-            <Button Click="ShowDialogInThisWindow" Content="Show content dialog in this window" />
-            <Button Click="ShowDialogInMainWindow" Content="Show content dialog in main window" />
+            <Button Click="ShowDialogInThisWindow" HorizontalAlignment="Stretch" Content="Show content dialog in this window" />
+            <Button Click="ShowDialogInMainWindow" HorizontalAlignment="Stretch" Content="Show content dialog in main window" />
         </ikw:SimpleStackPanel>
     </Grid>
 </Window>

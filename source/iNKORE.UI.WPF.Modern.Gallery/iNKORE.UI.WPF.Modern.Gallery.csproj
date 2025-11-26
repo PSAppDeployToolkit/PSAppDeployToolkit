@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -68,6 +68,7 @@
     <None Remove="DataModel\ControlInfoData.json" />
     <None Remove="DataModel\Data\Controls.Community.json" />
     <None Remove="DataModel\Data\Controls.Extended.json" />
+    <None Remove="DataModel\Data\Controls.Foundation.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -96,6 +97,7 @@
     </Content>
     <Resource Include="DataModel\Data\Controls.Community.json" />
     <Resource Include="DataModel\Data\Controls.Extended.json" />
+    <Resource Include="DataModel\Data\Controls.Foundation.json" />
     <Resource Include="DataModel\Data\Controls.Windows.json" />
   </ItemGroup>
 

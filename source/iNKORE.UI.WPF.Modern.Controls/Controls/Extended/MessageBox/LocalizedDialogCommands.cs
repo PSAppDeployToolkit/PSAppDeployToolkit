@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace iNKORE.UI.WPF.Modern.Controls
@@ -6,9 +7,38 @@ namespace iNKORE.UI.WPF.Modern.Controls
 {
     internal static class LocalizedDialogCommands
     {
+        /// <summary>
+        /// Fallback display strings for standard dialog box commands
+        /// when localized resources are unavailable or the native API call fails.
+        /// </summary>
+        internal static readonly Dictionary<DialogBoxCommand, string> FallbackStrings = new()
+        {
+            { DialogBoxCommand.IDOK, "OK" },
+            { DialogBoxCommand.IDCANCEL, "Cancel" },
+            { DialogBoxCommand.IDABORT, "Abort" },
+            { DialogBoxCommand.IDRETRY, "Retry" },
+            { DialogBoxCommand.IDIGNORE, "Ignore" },
+            { DialogBoxCommand.IDYES, "Yes" },
+            { DialogBoxCommand.IDNO, "No" },
+            { DialogBoxCommand.IDCLOSE, "Close" },
+            { DialogBoxCommand.IDHELP, "Help" },
+            { DialogBoxCommand.IDTRYAGAIN, "Try Again" },
+            { DialogBoxCommand.IDCONTINUE, "Continue" }
+        };
+
         public static string GetString(DialogBoxCommand command)
         {
-            return Marshal.PtrToStringAuto(MB_GetString((int)command))?.Replace("&", "")!; //return Marshal.PtrToStringAuto(MB_GetString((int)command))?.TrimStart('&')!;
+            try
+            {
+                //return Marshal.PtrToStringAuto(MB_GetString((int)command))?.TrimStart('&')!;
+                return Marshal.PtrToStringAuto(MB_GetString((int)command))?.Replace("&", "")!;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return FallbackStrings.TryGetValue(command, out var value)
+                    ? value
+                    : command.ToString();
+            }
         }
 
         /// <summary>

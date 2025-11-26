@@ -1,6 +1,6 @@
 ﻿using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Media.Animation;
-using iNKORE.UI.WPF.Modern.Gallery.SamplePages;
+using iNKORE.UI.WPF.Modern.Gallery.Samples;
 using System.Threading.Tasks;
 using System.Windows;
 

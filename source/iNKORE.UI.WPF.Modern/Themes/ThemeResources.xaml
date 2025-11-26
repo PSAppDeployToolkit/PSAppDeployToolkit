@@ -36,7 +36,7 @@
     <Thickness x:Key="ButtonPadding">11,5,11,5</Thickness>
 
     <!--  Resources for CalendarDatePicker  -->
-    <Thickness x:Key="CalendarDatePickerTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="CalendarDatePickerTopHeaderMargin">0,0,0,8</Thickness>
 
     <!--  Resources for CheckBox  -->
     <sys:Double x:Key="CheckBoxBorderThickness">1</sys:Double>
@@ -512,7 +512,7 @@
     <sys:Double x:Key="TextBoxIconFontSize">12</sys:Double>
 
     <!--  Resources for TimePicker  -->
-    <Thickness x:Key="TimePickerTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="TimePickerTopHeaderMargin">0,0,0,8</Thickness>
     <sys:Double x:Key="TimePickerFlyoutPresenterHighlightHeight">40</sys:Double>
     <sys:Double x:Key="TimePickerFlyoutPresenterAcceptDismissHostGridHeight">41</sys:Double>
     <sys:Double x:Key="TimePickerThemeMinWidth">242</sys:Double>
@@ -536,7 +536,7 @@
     
     <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
     <Thickness x:Key="DatePickerBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
     <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,3,0,6</Thickness>
     <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
@@ -575,6 +575,10 @@
     <!--  Resources for TreeView  -->
     <sys:Double x:Key="TreeViewItemPillMinScale">0.625</sys:Double>
     <KeyTime x:Key="TreeViewItemScaleAnimationDuration">00:00:00.167</KeyTime>
+
+    <!-- Resources for expander animation-->
+    <sys:TimeSpan x:Key="ExpandAnimationDuration">0:0:0.333</sys:TimeSpan>
+    <sys:TimeSpan x:Key="CollapseAnimationDuration">0:0:0.167</sys:TimeSpan>
 
     <sys:String x:Key="SettingsExpanderChevronToolTip">Show all settings</sys:String>
     <Thickness x:Key="SettingsExpanderHeaderPadding">16,16,4,16</Thickness>

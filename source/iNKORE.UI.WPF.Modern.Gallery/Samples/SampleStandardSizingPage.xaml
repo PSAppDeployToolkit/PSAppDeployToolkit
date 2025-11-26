@@ -1,9 +1,9 @@
 ﻿<ui:Page
-    x:Class="iNKORE.UI.WPF.Modern.Gallery.SamplePages.SampleStandardSizingPage"
+    x:Class="iNKORE.UI.WPF.Modern.Gallery.Samples.SampleStandardSizingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.SamplePages"
+    xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery.Samples"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern" xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     Title="SampleStandardSizingPage"

@@ -5,17 +5,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using iNKORE.UI.WPF.Modern.Common;
+using iNKORE.UI.WPF.Modern.Native;
 
 namespace iNKORE.UI.WPF.Modern.Controls
 {
@@ -1029,30 +1030,134 @@ namespace iNKORE.UI.WPF.Modern.Controls
         {
             base.OnKeyDown(e);
 
-            var isHorizontal = Orientation == Orientation.Horizontal;
-            var isVertical = Orientation == Orientation.Vertical;
-            var canGoPrev = (e.Key == Key.Left && isHorizontal && backButton != null && backButton.IsEnabled)
-                            || (e.Key == Key.Up && isVertical && upButton != null && upButton.IsEnabled);
-            var canGoNext = (e.Key == Key.Right && isHorizontal && forwardButton != null && forwardButton.IsEnabled)
-                            || (e.Key == Key.Down && isVertical && downButton != null && downButton.IsEnabled);
+            var canGoPrev = e.Key is Key.Left or Key.Up &&
+                            (backButton?.IsEnabled is true || upButton?.IsEnabled is true);
+            var canGoNext = e.Key is Key.Right or Key.Down &&
+                            (forwardButton?.IsEnabled is true || downButton?.IsEnabled is true);
 
             if (canGoPrev)
             {
                 GoBack();
                 e.Handled = true;
-                Focus();
+                EnsureFocusVisual();
             }
             else if (canGoNext)
             {
                 GoForward();
                 e.Handled = true;
-                Focus();
+                EnsureFocusVisual();
             }
         }
+
+        private void EnsureFocusVisual()
+        {
+            if (IsKeyboardFocused && !IsFocusVisualAdded())
+            {
+                Keyboard.ClearFocus();
+            }
+
+            Focus();
+            bool IsFocusVisualAdded() => AdornerLayer.GetAdornerLayer(this)?.GetAdorners(this)?.Length is > 0;
+        }
+
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
+            FocusWithNoVisuals();
+        }
+
+        private void MonitorHorizontalWheel()
+        {
+            var source = PresentationSource.FromVisual(this);
+            ((HwndSource)source)?.AddHook(Hook);
+        }
+
+        private IntPtr Hook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            switch (msg)
+            {
+                case (int)User32.WM.MOUSEHWHEEL:
+                    if (handled ||
+                        !IsMouseOver ||
+                        (Keyboard.Modifiers & ModifierKeys.Control) is ModifierKeys.Control ||
+                        Orientation is not Orientation.Horizontal)
+                    {
+                        return IntPtr.Zero;
+                    }
+
+                    var tilt = (short)((wParam.ToInt64() >> 16) & 0xFFFF);
+                    HandleWheelChange(-tilt);
+                    
+                    handled = true;
+                    return (IntPtr)1;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        private int _lastScrollWheelDelta;
+        private long _lastScrollWheelTick;
+        private const long ScrollWheelDelayTicks = 200; //200ms
+
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+           
+            if (e.Handled || 
+                (Environment.TickCount - _lastScrollWheelTick > ScrollWheelDelayTicks && IsTryingToGoBeyondEnd(e.Delta)) ||
+                (Keyboard.Modifiers & ModifierKeys.Control) is ModifierKeys.Control || 
+                (!SourceIsMouseWheel(e.Delta) && Orientation is Orientation.Horizontal))
+            {
+                return;
+            }
+            
+            HandleWheelChange(e.Delta);
+            e.Handled = true;
+            
+            //Mouse sends multiples of 120
+            static bool SourceIsMouseWheel(int delta) => delta % 120 is 0;
+
+            bool IsTryingToGoBeyondEnd(int delta) => (SelectedIndex >= Items.Count - 1 && delta < 0) ||
+                                                     (SelectedIndex is 0 && delta > 0);
+        }
+        
+        private void HandleWheelChange(int delta)
+        {
+            FocusWithNoVisuals();
+
+            var canFlip = false;
+            var currentTick = Environment.TickCount;
+
+            if ((delta < 0 && _lastScrollWheelDelta >= 0) ||
+                (delta > 0 && _lastScrollWheelDelta <= 0) || 
+                currentTick - _lastScrollWheelTick > ScrollWheelDelayTicks)
+            {
+                canFlip = true;
+            }
+
+            _lastScrollWheelTick = currentTick;
+
+            if (!canFlip)
+            {
+                return;
+            }
+
+            if (delta < 0)
+            {
+                GoForward();
+            }
+            else
+            {
+                GoBack();
+            }
+
+            _lastScrollWheelDelta = delta;
+        }
+
+        private void FocusWithNoVisuals()
+        {
+            Keyboard.ClearFocus();
             Focus();
         }
 
@@ -1243,6 +1348,7 @@ namespace iNKORE.UI.WPF.Modern.Controls
 
             ShowBanner();
 
+            MonitorHorizontalWheel();
             loaded = true;
         }
 

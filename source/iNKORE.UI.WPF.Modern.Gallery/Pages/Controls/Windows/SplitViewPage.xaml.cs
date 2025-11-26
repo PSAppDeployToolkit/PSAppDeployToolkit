@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -72,19 +72,13 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 
         private void displayModeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!this.IsLoaded) return;
-
-            splitView.DisplayMode = (SplitViewDisplayMode)Enum.Parse(typeof(SplitViewDisplayMode), (e.AddedItems[0] as ComboBoxItem).Content.ToString());
+            //if (!this.IsLoaded) return;
 
             UpdateExampleCode();
         }
 
         private void paneBackgroundCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var colorString = (e.AddedItems[0] as ComboBoxItem).Content.ToString();
-
-            VisualStateManager.GoToElementState((FrameworkElement)Content, colorString, false);
-
             UpdateExampleCode();
         }
 
@@ -149,18 +143,9 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
                 Grid.Row=""1"" Margin=""0,12,0,0""
                 VerticalAlignment=""Stretch""
                 IsItemClickEnabled=""True""
-                IsSelectionEnabled=""False""
                 ItemClick=""NavLinksList_ItemClick""
                 ItemTemplate=""{{StaticResource NavLinkItemTemplate}}""
                 ItemsSource=""{{Binding NavLinks}}"" />
-            <StackPanel Grid.Row=""2""
-                Margin=""14,24,0,24""
-                Orientation=""Horizontal"">
-                <ui:FontIcon Icon=""{{x:Static ui:SegoeFluentIcons.Settings}}"" />
-                <TextBlock Margin=""24,0,0,0""
-                    VerticalAlignment=""Center""
-                    Text=""Settings"" />
-            </StackPanel>
         </Grid>
     </ui:SplitView.Pane>
     <Grid>

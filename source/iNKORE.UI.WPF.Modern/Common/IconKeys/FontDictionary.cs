@@ -51,5 +51,30 @@ namespace iNKORE.UI.WPF.Modern.Common.IconKeys
             _glyph = glyph;
             _fontFamily = family;
         }
+
+        public static string ToGlyph(int chara)
+        {
+            return char.ConvertFromUtf32(chara);
+        }
+
+        public static int ToUtf32(string glyph)
+        {
+            if (string.IsNullOrEmpty(glyph))
+                throw new ArgumentException("Input glyph cannot be null or empty.");
+
+            if (glyph.Length == 1)
+            {
+                return char.ConvertToUtf32(glyph, 0);
+            }
+            else if (glyph.Length == 2 && char.IsSurrogatePair(glyph[0], glyph[1]))
+            {
+                return char.ConvertToUtf32(glyph, 0);
+            }
+            else
+            {
+                throw new ArgumentException("Input glyph must be a single character or a valid surrogate pair.");
+            }
+        }
+
     }
 }

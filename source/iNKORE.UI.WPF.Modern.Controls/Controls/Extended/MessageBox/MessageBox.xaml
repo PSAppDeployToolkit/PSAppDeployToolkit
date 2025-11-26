@@ -18,6 +18,7 @@
         <!--<Setter Property="BorderBrush" Value="Transparent" />-->
         <Setter Property="IsTabStop" Value="False" />
         <!--<Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />-->
+        <Setter Property="ShowInTaskbar" Value="False" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="OKButtonStyle" Value="{DynamicResource DefaultButtonStyle}" />
         <Setter Property="YesButtonStyle" Value="{DynamicResource DefaultButtonStyle}" />

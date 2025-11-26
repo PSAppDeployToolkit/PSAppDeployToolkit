@@ -185,7 +185,9 @@
                                 Margin="0,0,0,12"
                                 Style="{StaticResource SubtitleTextBlockStyle}"
                                 Text="{x:Static str:Resources.FeedbackHeader_Text}" />
-                            <ui:HyperlinkButton NavigateUri="https://github.com/microsoft/Xaml-Controls-Gallery/issues/new/choose" ToolTipService.ToolTip="https://github.com/microsoft/Xaml-Controls-Gallery/issues/new/choose">
+                            <ui:HyperlinkButton 
+                                NavigateUri="https://github.com/iNKORE-NET/UI.WPF.Modern/issues/new/choose" 
+                                ToolTipService.ToolTip="https://github.com/iNKORE-NET/UI.WPF.Modern/issues/new/choose">
                                 <TextBlock Text="{x:Static str:Resources.FeedbackLink_Text}" />
                             </ui:HyperlinkButton>
                         </StackPanel>

@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -80,7 +80,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 
         private void OpenNewWindow(object sender, RoutedEventArgs e)
         {
-            var window = new ContentDialogTestWindow();
+            var window = new iNKORE.UI.WPF.Modern.Gallery.Samples.SampleContentDialogWindow();
             ThemeManager.SetRequestedTheme(window, ThemeManager.GetActualTheme(this));
             window.Show();
         }

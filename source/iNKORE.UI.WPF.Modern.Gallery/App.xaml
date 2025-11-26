@@ -30,6 +30,7 @@
                             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
                             <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="{StaticResource SystemAltHighColor}" />
                             <StaticResource x:Key="ControlExampleDisplayBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                            <StaticResource x:Key="GalleryBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
                         </ResourceDictionary>
 
                         <ResourceDictionary x:Key="Dark" ui:ThemeDictionary.Key="Dark">
@@ -47,6 +48,7 @@
                             <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="#FF282828" />
                             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
                             <StaticResource x:Key="ControlExampleDisplayBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                            <StaticResource x:Key="GalleryBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
                         </ResourceDictionary>
 
                         <ResourceDictionary x:Key="HighContrast" ui:ThemeDictionary.Key="HighContrast">
@@ -60,6 +62,7 @@
                             <SolidColorBrush x:Key="SearchBoxBorderBrush" Color="{DynamicResource SystemColorWindowTextColor}" />
                             <SolidColorBrush x:Key="ControlExampleDisplayBrush" Color="{DynamicResource SystemColorWindowColor}" />
                             <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="{DynamicResource SystemColorWindowTextColor}" />
+                            <SolidColorBrush x:Key="GalleryBorderBrush" Color="{DynamicResource SystemColorWindowColor}" />
                         </ResourceDictionary>
                     </ui:ThemeResources.ThemeDictionaries>
                 </ui:ThemeResources>
@@ -109,7 +112,7 @@
                 <Style.Resources>
                     <Thickness x:Key="ContentDialogContentMargin">24,0,24,0</Thickness>
                     <Thickness x:Key="ContentDialogContentScrollViewerMargin">-24,0,-24,0</Thickness>
-                    <Thickness x:Key="ContentDialogTitleMargin">24,0,24,12</Thickness>
+                    <Thickness x:Key="ContentDialogTitleMargin">0,0,24,12</Thickness>
                 </Style.Resources>
             </Style>
 

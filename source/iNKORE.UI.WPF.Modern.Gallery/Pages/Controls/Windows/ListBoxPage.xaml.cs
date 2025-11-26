@@ -1,4 +1,4 @@
-﻿//*********************************************************
+//*********************************************************
 //
 // Copyright (c) Microsoft. All rights reserved.
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -73,7 +73,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         }
 
         public string Example1Xaml => $@"
-<ListBox x:Name=""ListBox1"">
+<ListBox SelectionChanged=""ColorListBox_SelectionChanged"" MinWidth=""200"">
     <sys:String>Blue</sys:String>
     <sys:String>Green</sys:String>
     <sys:String>Red</sys:String>

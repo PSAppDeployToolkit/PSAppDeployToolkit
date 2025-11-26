@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ToggleSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,7 +18,7 @@
                 <ui:ToggleSwitch x:Name="toggleSwitch"
                     Header="Toggle work" IsOn="True"
                     OffContent="Do work" OnContent="Working" VerticalAlignment="Top" />
-                <ui:ProgressRing Width="64" Height="64" IsActive="{Binding IsOn, ElementName=toggleSwitch}" />
+                <ui:ProgressRing Width="32" IsActive="{Binding IsOn, ElementName=toggleSwitch}" />
             </StackPanel>
 
             <local:ControlExample.Options>

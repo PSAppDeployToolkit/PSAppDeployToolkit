@@ -1,4 +1,4 @@
-﻿<ui:ContentDialog
+<ui:ContentDialog
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.TestContentDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -29,14 +29,14 @@
         <TextBox ui:ControlHelper.Header="PrimaryButtonText" Text="{Binding ElementName=dialog, Path=PrimaryButtonText, UpdateSourceTrigger=PropertyChanged}" />
         <TextBox ui:ControlHelper.Header="SecondaryButtonText" Text="{Binding ElementName=dialog, Path=SecondaryButtonText, UpdateSourceTrigger=PropertyChanged}" />
         <TextBox ui:ControlHelper.Header="CloseButtonText" Text="{Binding ElementName=dialog, Path=CloseButtonText, UpdateSourceTrigger=PropertyChanged}" />
-        <ComboBox
+        <ComboBox HorizontalAlignment="Stretch"
             ui:ControlHelper.Header="DefaultButton"
             ItemsSource="{Binding Source={x:Type ui:ContentDialogButton}, Converter={StaticResource EnumValuesConverter}}"
             SelectedItem="{Binding ElementName=dialog, Path=DefaultButton}" />
         <CheckBox Content="FullSizeDesired" IsChecked="{Binding ElementName=dialog, Path=FullSizeDesired}" />
         <CheckBox Content="IsShadowEnabled" IsChecked="{Binding ElementName=dialog, Path=IsShadowEnabled}" />
         <StackPanel>
-            <Button Click="TryOpenAnother" Content="Try to open another ContentDialog" />
+            <ui:HyperlinkButton Click="TryOpenAnother" Content="Try to open another ContentDialog" />
             <TextBlock
                 x:Name="ErrorText"
                 Margin="0,8,0,0"

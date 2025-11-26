@@ -11,26 +11,21 @@
         ui:WindowHelper.UseModernWindowStyle="True"
         Loaded="Window_Loaded" Background="{DynamicResource {x:Static ui:ThemeKeys.AcrylicBackgroundFillColorDefaultBrushKey}}">
     <Canvas>
-
-        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="50" Canvas.Top="34" VerticalScrollBarVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Button x:Name="Button_MessageBox" Click="Button_MessageBox_Click" Height="1000">
-                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
-            </Button>
-        </ui:ScrollViewerEx>
-        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="367" Canvas.Top="34" VerticalScrollBarVisibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Center">
-            <Button x:Name="Button_MessageBox1" Click="Button_MessageBox_Click" Height="1000">
-                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
-            </Button>
-        </ui:ScrollViewerEx>
-        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="51" Canvas.Top="253" VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Button x:Name="Button_MessageBox2" Click="Button_MessageBox_Click" Height="1000">
-                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
-            </Button>
-        </ui:ScrollViewerEx>
-        <ui:ScrollViewerEx Height="198" Width="229" Canvas.Left="368" Canvas.Top="256" VerticalScrollBarVisibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Button x:Name="Button_MessageBox3" Click="Button_MessageBox_Click" Height="40">
-                <ui:IconAndText Icon="{x:Static ui:SegoeFluentIcons.Message}" Content="MessageBox Test"/>
-            </Button>
-        </ui:ScrollViewerEx>
+        <ikw:SimpleStackPanel Height="259" Width="678">
+            <Expander Style="{StaticResource {x:Static ui:ThemeKeys.ExpanderCardStyleKey}}" Header="Welcome">
+                <Expander.Content>
+                    <Grid HorizontalAlignment="Stretch" Background="Red">
+                        <TextBlock HorizontalAlignment="Right">Test</TextBlock>
+                    </Grid>
+                </Expander.Content>
+            </Expander>
+            <Expander Style="{StaticResource {x:Static ui:ThemeKeys.ExpanderCardStyleKey}}" Header="Welcome" HorizontalAlignment="Stretch">
+                <Expander.Content>
+                    <Grid HorizontalAlignment="Stretch" Background="Red">
+                        <TextBlock HorizontalAlignment="Right">Test</TextBlock>
+                    </Grid>
+                </Expander.Content>
+            </Expander>
+        </ikw:SimpleStackPanel>
     </Canvas>
 </Window>

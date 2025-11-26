@@ -817,8 +817,11 @@ namespace iNKORE.UI.WPF.Modern.Controls
         {
             if (m_adornerLayer != null)
             {
-                RestoreKeyboardNavigation(m_adorner.AdornedElement);
-                m_adornerLayer.Remove(m_adorner);
+                if (m_adorner != null)
+                {
+                    RestoreKeyboardNavigation(m_adorner.AdornedElement);
+                    m_adornerLayer.Remove(m_adorner);
+                }
                 m_adornerLayer = null;
             }
 

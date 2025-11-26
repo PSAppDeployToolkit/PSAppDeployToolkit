@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Gallery"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern" xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     Title="ScrollViewer Page"
     d:DesignWidth="800"
     mc:Ignorable="d"
@@ -25,36 +25,39 @@
                 Height="266"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
+                IsScrollAnimationEnabled="{Binding ElementName=CheckBox_Example1_IsScrollAnimationEnabled, Path=IsChecked, Mode=OneWay}"
                 HorizontalScrollBarVisibility="{Binding ElementName=hsbvCombo, Path=SelectedItem.Content, Mode=OneWay}"
                 VerticalScrollBarVisibility="{Binding ElementName=vsbvCombo, Path=SelectedItem.Content, Mode=OneWay}" >
                 <Grid>
-                    <Image
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="cliff"
-                        Source="/Assets/SampleMedia/cliff.jpg"
-                        Stretch="None" />
+                    <Image Source="/Assets/SampleMedia/cliff.jpg"
+                        AutomationProperties.Name="cliff" Stretch="None" />
                 </Grid>
             </ui:ScrollViewerEx>
 
             <local:ControlExample.Options>
-                <Grid MinWidth="200">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <ikw:SimpleStackPanel MinWidth="200" Spacing="16">
+                    <ikw:SimpleStackPanel>
+                        <CheckBox x:Name="CheckBox_Example1_IsScrollAnimationEnabled" Content="IsScrollAnimationEnabled" 
+                            IsChecked="True" HorizontalAlignment="Stretch" Click="CheckBox_Example1_IsScrollAnimationEnabled_Click"/>
+                    </ikw:SimpleStackPanel>
 
-                    <!-- ZoomMode
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- ZoomMode
                     <TextBlock Grid.Row="0" VerticalAlignment="Center" Text="ZoomMode" />
                     <ComboBox x:Name="cmbZoomMode"
                             Grid.Row="0" Grid.Column="1"
@@ -63,7 +66,7 @@
                         <ComboBoxItem>Enabled</ComboBoxItem>
                         <ComboBoxItem>Disabled</ComboBoxItem>
                     </ComboBox> -->
-                    <!-- ZoomNumberBox
+                        <!-- ZoomNumberBox
                     <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="ZoomFactor" Margin="0,8,0,0"/>
                     <ui:NumberBox x:Name="ZoomNumberBox"
                         Grid.Row="1" Grid.Column="1"
@@ -76,7 +79,7 @@
                         ValueChanged="ZoomNumberBox_ValueChanged"
                         Width="120"
                         Margin="0,8,0,0"/> -->
-                    <!-- ScrollMode
+                        <!-- ScrollMode
                     <TextBlock Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Text="ScrollMode" Margin="0,8,0,0"/>
                     <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Horizontal" Margin="0,8,0,0"/>
                     <ComboBox x:Name="cmbHorizontalScrollMode"
@@ -98,32 +101,33 @@
                         <ComboBoxItem>Disabled</ComboBoxItem>
                         <ComboBoxItem>Auto</ComboBoxItem>
                     </ComboBox> -->
-                    <TextBlock Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Center" Text="ScrollbarVisibility" Margin="0,0,0,0" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="6" Margin="0,8,10,0" VerticalAlignment="Center" Text="Horizontal"/>
-                    <ComboBox x:Name="hsbvCombo"
+                        <TextBlock Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Center" Text="ScrollbarVisibility" Margin="0,0,0,8" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="6" Margin="0,12,10,12" VerticalAlignment="Center" Text="Horizontal"/>
+                        <ComboBox x:Name="hsbvCombo"
                             Grid.Row="6" Grid.Column="1"
                             HorizontalAlignment="Stretch"
                             SelectedIndex="0"
                             SelectionChanged="hsbvCombo_SelectionChanged_1"
-                            Margin="12,16,0,0">
-                        <ComboBoxItem Content="Auto"/>
-                        <ComboBoxItem Content="Visible"/>
-                        <ComboBoxItem Content="Hidden"/>
-                        <ComboBoxItem Content="Disabled"/>
-                    </ComboBox>
-                    <TextBlock Grid.Row="7" Margin="0,8,10,0" VerticalAlignment="Center" Text="Vertical"/>
-                    <ComboBox x:Name="vsbvCombo"
+                            Margin="0,0,0,0" VerticalAlignment="Center">
+                            <ComboBoxItem Content="Auto"/>
+                            <ComboBoxItem Content="Visible"/>
+                            <ComboBoxItem Content="Hidden"/>
+                            <ComboBoxItem Content="Disabled"/>
+                        </ComboBox>
+                        <TextBlock Grid.Row="7" Margin="0,12,10,12" VerticalAlignment="Center" Text="Vertical"/>
+                        <ComboBox x:Name="vsbvCombo"
                             Grid.Row="7" Grid.Column="1"
-                            Margin="12,16,0,0"
+                            Margin="0,0,0,0"
                             HorizontalAlignment="Stretch"
                             SelectionChanged="vsbvCombo_SelectionChanged_1"
-                            SelectedIndex="0">
-                        <ComboBoxItem Content="Auto"/>
-                        <ComboBoxItem Content="Visible"/>
-                        <ComboBoxItem Content="Hidden"/>
-                        <ComboBoxItem Content="Disabled"/>
-                    </ComboBox>
-                </Grid>
+                            SelectedIndex="0" VerticalAlignment="Center">
+                            <ComboBoxItem Content="Auto"/>
+                            <ComboBoxItem Content="Visible"/>
+                            <ComboBoxItem Content="Hidden"/>
+                            <ComboBoxItem Content="Disabled"/>
+                        </ComboBox>
+                    </Grid>
+                </ikw:SimpleStackPanel>
             </local:ControlExample.Options>
         </local:ControlExample>
     </StackPanel>

@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.TabViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
-    mc:Ignorable="d">
+    mc:Ignorable="d" d:DesignWidth="907.31">
 
     <Page.Resources>
         <Style BasedOn="{StaticResource DefaultTabControlStyle}" TargetType="TabControl">
@@ -18,7 +18,7 @@
 
     <ikw:SimpleStackPanel>
         <local:ControlExample x:Name="Example1" HeaderText="A basic TabControl">
-            <TabControl x:Name="tabControl">
+            <TabControl x:Name="tabControl" ui:TabControlHelper.TabCloseRequested="tabControl_TabCloseRequested">
                 <ui:TabControlHelper.TabStripHeader>
                     <Button
                         HorizontalAlignment="Stretch"
@@ -38,16 +38,59 @@
             </TabControl>
 
             <local:ControlExample.Options>
-                <ikw:SimpleStackPanel Style="{StaticResource OptionsPanelStyle}">
+                <ikw:SimpleStackPanel Style="{StaticResource OptionsPanelStyle}" Spacing="0">
                     <ui:RadioButtons
                         Header="TabStripPlacement"
                         ItemsSource="{Binding Source={x:Type Dock}, Converter={StaticResource EnumValuesConverter}}"
                         SelectedItem="{Binding ElementName=tabControl, Path=TabStripPlacement}"
                         SelectionChanged="RadioButtons_SelectionChanged"/>
-                    <CheckBox x:Name="ShowHeaderAndFooterCheckBox" Content="Show header and footer" 
-                        Click="ShowHeaderAndFooterCheckBox_Click"/>
+                    
+                    <CheckBox x:Name="ShowHeaderAndFooterCheckBox" Content="Header &amp; Footer" 
+                        Click="ShowHeaderAndFooterCheckBox_Click" Margin="0,12,0,0"/>
+                    <CheckBox x:Name="IsClosableCheckBox" Content="IsClosable" 
+                        Click="IsClosableCheckBox_Click" IsChecked="True"/>
+
                 </ikw:SimpleStackPanel>
             </local:ControlExample.Options>
+        </local:ControlExample>
+
+        <local:ControlExample x:Name="Example3" HeaderText="Custom content in TabStripHeader and TabStripFooter">
+            <local:ControlExample.Example>
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,12"
+                        Text="You can put any content in the TabStripHeader and TabStripFooter areas"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Margin="0,0,0,12"
+                        Text="If your TabView is used inside the app's titlebar area, use the TabStripFooter to specify a custom drag region"
+                        TextWrapping="Wrap" />
+                    <!-- <TextBlock
+                        Margin="0,0,0,24"
+                        Text="See TabViewWindowingSamplePage.xaml and *.cs files to see the complete code"
+                        TextWrapping="Wrap" /> -->
+
+                    <TabControl MinHeight="475"
+                        Loaded="TabView_Loaded"
+                        SelectedIndex="0" ui:TabControlHelper.TabCloseRequested="tabControl_TabCloseRequested">
+                        <ui:TabControlHelper.TabStripHeader>
+                            <TextBlock
+                                Margin="8,6"
+                                VerticalAlignment="Center"
+                                Style="{DynamicResource BaseTextBlockStyle}"
+                                Text="TabStripHeader Content" />
+                        </ui:TabControlHelper.TabStripHeader>
+                        <ui:TabControlHelper.TabStripFooter>
+                            <TextBlock
+                                Margin="6"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Style="{DynamicResource BaseTextBlockStyle}"
+                                Text="TabStripFooter Content" />
+                        </ui:TabControlHelper.TabStripFooter>
+                    </TabControl>
+                </StackPanel>
+            </local:ControlExample.Example>
         </local:ControlExample>
 
         <local:ControlExample x:Name="Example2" HeaderText="TabControl with color tab icons">
@@ -62,7 +105,9 @@
                         x:Name="TabView4"
                         MinWidth="490"
                         MinHeight="0"
-                        SelectedIndex="0">
+                        SelectedIndex="0"
+                        ui:TabControlHelper.IsAddTabButtonVisible="False"
+                        ui:TabControlHelper.TabCloseRequested="tabControl_TabCloseRequested">
                         <TabControl.Items>
                             <TabItem Header="CMD Prompt">
                                 <ui:TabItemHelper.Icon>
@@ -85,41 +130,9 @@
             </local:ControlExample.Example>
         </local:ControlExample>
 
-        <local:ControlExample x:Name="Example3" HeaderText="You can put custom content in TabStripHeader and TabStripFooter">
-            <local:ControlExample.Example>
-                <StackPanel>
-                    <TextBlock
-                        Margin="0,0,0,24"
-                        Text="You can put any content in the TabStripHeader and TabStripFooter areas"
-                        TextWrapping="Wrap" />
-
-                    <TabControl
-                        MinHeight="475"
-                        Margin="-12"
-                        Loaded="TabView_Loaded"
-                        SelectedIndex="0">
-                        <ui:TabControlHelper.TabStripHeader>
-                            <TextBlock
-                                Margin="8,6"
-                                VerticalAlignment="Center"
-                                Style="{DynamicResource BaseTextBlockStyle}"
-                                Text="TabStripHeader Content" />
-                        </ui:TabControlHelper.TabStripHeader>
-                        <ui:TabControlHelper.TabStripFooter>
-                            <TextBlock
-                                Margin="6"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Style="{DynamicResource BaseTextBlockStyle}"
-                                Text="TabStripFooter Content" />
-                        </ui:TabControlHelper.TabStripFooter>
-                    </TabControl>
-                </StackPanel>
-            </local:ControlExample.Example>
-        </local:ControlExample>
-
         <local:ControlExample x:Name="Example4" HeaderText="A TabControl with accent colored TabStrip background">
-            <TabControl x:Name="tabControl3" ui:ThemeManager.HasThemeResources="True">
+            <TabControl x:Name="tabControl3" ui:ThemeManager.HasThemeResources="True"
+                ui:TabControlHelper.TabCloseRequested="tabControl_TabCloseRequested">
                 <TabControl.Resources>
                     <ui:ResourceDictionaryEx>
                         <ui:ResourceDictionaryEx.ThemeDictionaries>
@@ -135,8 +148,10 @@
             </TabControl>
         </local:ControlExample>
 
+        
         <local:ControlExample x:Name="Example5" HeaderText="A TabControl with customized headers">
-            <TabControl x:Name="tabControl2">
+            <TabControl x:Name="tabControl2"
+                ui:TabControlHelper.TabCloseRequested="tabControl_TabCloseRequested">
                 <TabControl.Resources>
                     <sys:Double x:Key="TabViewItemHeaderFontSize">24</sys:Double>
                     <sys:Double x:Key="TabViewItemHeaderIconSize">32</sys:Double>
@@ -148,5 +163,64 @@
                 </TabControl.ItemContainerStyle>
             </TabControl>
         </local:ControlExample>
+
+        <local:ControlExample x:Name="Example6" HeaderText="A TabControl with closing handler">
+            <ikw:SimpleStackPanel>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,12">
+                    The <Bold>TabControl</Bold> comes with a close button. To handle the close request,
+                    subscribe to the <Bold>TabCloseRequested</Bold> event. In the event handler, you should
+                    remove the tab from the TabControl's Items collection to close it if desired.
+                    Feel free to implement custom logic such as confirmation dialogs or saving states.
+                    <LineBreak/><LineBreak/>
+                    You can set <Bold>TabItem.(ui:TabItemHelper.IsClosable)</Bold> attached property to <Bold>False</Bold> to hide and disable
+                    the close button for specific tabs (or all tabs).
+                </TextBlock>
+                
+                <TabControl x:Name="tabControl6" MinHeight="160"
+                    ui:TabControlHelper.TabCloseRequested="tabControl6_TabCloseRequested">
+                    <TabItem x:Name="TabItem_Example6_Tab1" Header="Closable 1">
+                        <TextBlock TextWrapping="Wrap" Margin="12">
+                            This tab can be closed normally by clicking the close button. When the close button is clicked,
+                            codebehind will handle the <Bold>TabCloseRequested</Bold> event and remove this tab from the TabControl's
+                            Items collection.
+                        </TextBlock>
+                    </TabItem>
+                    <TabItem x:Name="TabItem_Example6_Tab2" Header="Closable 2">
+                        <TextBlock TextWrapping="Wrap" Margin="12">
+                            This tab can be closed normally by clicking the close button. When the close button is clicked,
+                            codebehind will handle the <Bold>TabCloseRequested</Bold> event and remove this tab from the TabControl's
+                            Items collection.
+                        </TextBlock>
+                    </TabItem>
+                    <TabItem x:Name="TabItem_Example6_Tab3" Header="Confirm To Close" Tag="ConfirmClose">
+                        <TextBlock TextWrapping="Wrap" Margin="12">
+                            This tab requires confirmation before closing. When the close button is clicked,
+                            the <Bold>TabItemCloseRequest</Bold> event is handled in codebehind, prompting the user
+                            with a confirmation dialog. If the user confirms, the tab is closed; otherwise, the event 
+                            handler will not do anything, leaving the tab open.
+                        </TextBlock>
+                    </TabItem>
+                    <TabItem x:Name="TabItem_Example6_Tab4" Header="DON'T TOUCH ME!" Tag="NiceTry">
+                        <TextBlock TextWrapping="Wrap" Margin="12">
+                            This tab cannot be closed. When the close button is clicked, the <Bold>TabItemCloseRequest</Bold>
+                            handler doesn't do anything, preventing the tab from being closed.
+                        </TextBlock>
+                    </TabItem>
+                    <TabItem x:Name="TabItem_Example6_Tab5" Header="Unclosable (nobutt) "
+                        ui:TabItemHelper.IsClosable="False">
+                        <TextBlock TextWrapping="Wrap" Margin="12">
+                            This tab cannot be closed because the close button is hidden and disabled by setting
+                            <Bold>ui:TabItemHelper.IsClosable</Bold> attached property to <Bold>False</Bold>,
+                            thus, the close button is not shown.
+                        </TextBlock>
+                    </TabItem>
+
+                </TabControl>
+
+                <Button x:Name="Button_Example6_ResetTabs" Content="Reset Tabs" Click="Button_Example6_ResetTabs_Click" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+
+            </ikw:SimpleStackPanel>
+        </local:ControlExample>
+
     </ikw:SimpleStackPanel>
 </ui:Page>

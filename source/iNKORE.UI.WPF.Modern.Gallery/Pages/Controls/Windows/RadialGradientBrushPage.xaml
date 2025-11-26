@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.RadialGradientBrushPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -23,7 +23,7 @@
                 <ui:BindingProxy x:Key="OriginYSlider" Value="{x:Reference OriginYSlider}" />
             </local:ControlExample.Resources>
             <StackPanel
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <Rectangle

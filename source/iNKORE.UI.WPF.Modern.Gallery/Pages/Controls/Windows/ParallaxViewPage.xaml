@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ParallaxViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -20,8 +20,8 @@
                 <Grid>
                     <ui:ParallaxView
                         x:Name="parallaxView"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
                         Source="{Binding ElementName=listView}"
                         VerticalShift="500">
                         <Image Source="/Assets/SampleMedia/cliff.jpg" Stretch="UniformToFill" />
@@ -44,10 +44,60 @@
                                 VerticalAlignment="Center"
                                 FontSize="28"
                                 Foreground="White"
-                                Text="Scroll the list to see parallaxing of images"
+                                Text="Scroll the list to see parallaxing of image"
                                 TextWrapping="Wrap" />
                         </ui:ListView.Header>
                     </ui:ListView>
+                </Grid>
+            </local:ControlExample.Example>
+        </local:ControlExample>
+        <local:ControlExample
+            x:Name="Example2"
+            Height="750"
+            HeaderText="Parallax with a ScrollViewer">
+            <local:ControlExample.Example>
+                <Grid>
+                    <ui:ParallaxView
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Source="{Binding ElementName=scrollViewer}"
+                        VerticalShift="500">
+                        <Image Source="/Assets/SampleMedia/cliff.jpg" Stretch="UniformToFill" />
+                    </ui:ParallaxView>
+                    <TextBlock
+                        MaxWidth="280"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        FontSize="28"
+                        Foreground="White"
+                        Text="Scroll the rectangles to see parallaxing of image"
+                        TextWrapping="Wrap" />
+                    <ui:ScrollViewerEx
+                        x:Name="scrollViewer"
+                        Width="150"
+                        HorizontalAlignment="Left">
+                        <StackPanel>
+                            <Rectangle Height="150" Fill="AliceBlue" />
+                            <Rectangle Height="150" Fill="AntiqueWhite" />
+                            <Rectangle Height="150" Fill="Aqua" />
+                            <Rectangle Height="150" Fill="Aquamarine" />
+                            <Rectangle Height="150" Fill="Azure" />
+                            <Rectangle Height="150" Fill="Beige" />
+                            <Rectangle Height="150" Fill="Bisque" />
+                            <Rectangle Height="150" Fill="BlanchedAlmond" />
+                            <Rectangle Height="150" Fill="BlueViolet" />
+                            <Rectangle Height="150" Fill="Brown" />
+                            <Rectangle Height="150" Fill="BurlyWood" />
+                            <Rectangle Height="150" Fill="CadetBlue" />
+                            <Rectangle Height="150" Fill="Chartreuse" />
+                            <Rectangle Height="150" Fill="Chocolate" />
+                            <Rectangle Height="150" Fill="Coral" />
+                            <Rectangle Height="150" Fill="CornflowerBlue" />
+                            <Rectangle Height="150" Fill="Cornsilk" />
+                            <Rectangle Height="150" Fill="Crimson" />
+                            <Rectangle Height="150" Fill="Cyan" />
+                        </StackPanel>
+                    </ui:ScrollViewerEx>
                 </Grid>
             </local:ControlExample.Example>
         </local:ControlExample>

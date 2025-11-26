@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.CommandBarFlyoutPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,23 +14,28 @@
         <ui:CommandBarFlyout x:Key="CommandBarFlyout1" Placement="RightEdgeAlignedTop">
             <ui:AppBarButton
                 Click="OnElementClicked"
-                Label="Share"
+                Label="Share" 
                 ToolTipService.ToolTip="Share">
                 <ui:AppBarButton.Icon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Save}"/>
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Share}"/>
                 </ui:AppBarButton.Icon>
-
             </ui:AppBarButton>
             <ui:AppBarButton
                 Click="OnElementClicked"
-                Icon="Save"
                 Label="Save"
-                ToolTipService.ToolTip="Save" />
+                ToolTipService.ToolTip="Save">
+                <ui:AppBarButton.Icon>
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Save}"/>
+                </ui:AppBarButton.Icon>
+            </ui:AppBarButton>
             <ui:AppBarButton
                 Click="OnElementClicked"
-                Icon="Delete"
                 Label="Delete"
-                ToolTipService.ToolTip="Delete" />
+                ToolTipService.ToolTip="Delete">
+                <ui:AppBarButton.Icon>
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Delete}"/>
+                </ui:AppBarButton.Icon>
+            </ui:AppBarButton>
             <ui:CommandBarFlyout.SecondaryCommands>
                 <ui:AppBarButton Click="OnElementClicked" Label="Resize" />
                 <ui:AppBarButton Click="OnElementClicked" Label="Move" />

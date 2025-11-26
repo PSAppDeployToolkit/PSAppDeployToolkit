@@ -19,12 +19,7 @@ namespace iNKORE.UI.WPF.Modern.Common.IconKeys
 
         public static FontIconData CreateIcon(int chara, bool forceFluent = false)
         {
-            return CreateIcon(ToGlyph(chara), forceFluent);
-        }
-
-        public static string ToGlyph(int chara)
-        {
-            return char.ConvertFromUtf32(chara);
+            return CreateIcon(FontIconData.ToGlyph(chara), forceFluent);
         }
     }
 }

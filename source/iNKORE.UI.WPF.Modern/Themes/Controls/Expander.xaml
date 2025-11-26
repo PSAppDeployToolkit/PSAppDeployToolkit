@@ -3,12 +3,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:iNKORE.UI.WPF.Modern.Controls"
-    xmlns:primitives="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Primitives"
     xmlns:converters="clr-namespace:iNKORE.UI.WPF.Modern.Common.Converters"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:chelper="clr-namespace:iNKORE.UI.WPF.Modern.Controls.Helpers"
-    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
-    xmlns:common="clr-namespace:iNKORE.UI.WPF.Modern.Common">
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary>
             <ikw:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="Top" />
@@ -536,6 +533,9 @@
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.IsEnabled" Value="True" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.ExpandAnimationDuration" Value="{DynamicResource ExpandAnimationDuration}" />
+        <Setter Property="chelper:ExpanderAnimationsHelper.CollapseAnimationDuration" Value="{DynamicResource CollapseAnimationDuration}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Expander">
@@ -561,8 +561,10 @@
                             Style="{DynamicResource ExpanderCardHeaderDownStyle}"
                             Tag="{TemplateBinding chelper:ControlHelper.CornerRadius}" />
                         <!--  The clip is a composition clip applied in code  -->
-                        <Border x:Name="ExpanderContentClip" DockPanel.Dock="Bottom">
-                            <Border
+                        <ikw:ClippedContent x:Name="ExpanderContentClip" DockPanel.Dock="Bottom"
+                                            ClipToBounds="True">
+                            
+                            <ikw:ClippedContent
                                 x:Name="ExpanderContent"
                                 
                                 Padding="{TemplateBinding Padding}"
@@ -572,8 +574,11 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{DynamicResource ExpanderContentDownBorderThickness}"
                                 CornerRadius="{TemplateBinding chelper:ControlHelper.CornerRadius,
-                                                               Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                                Visibility="Collapsed"><!--MinHeight="{TemplateBinding MinHeight}"-->
+                                                               Converter={StaticResource BottomCornerRadiusFilterConverter}}">
+                                <!--MinHeight="{TemplateBinding MinHeight}"-->
+                                <FrameworkElement.RenderTransform>
+                                    <TranslateTransform  x:Name="ExpanderContentTranslation" />
+                                </FrameworkElement.RenderTransform>
                                 
                                 <ContentPresenter
                                     x:Name="ExpandSite"
@@ -581,13 +586,10 @@
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                     Focusable="false" />
-                            </Border>
-                        </Border>
+                            </ikw:ClippedContent>
+                        </ikw:ClippedContent>
                     </DockPanel>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsExpanded" Value="true">
-                            <Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible" />
-                        </Trigger>
                         <Trigger Property="ExpandDirection" Value="Right">
                             <Setter TargetName="ExpanderHeader" Property="Style" Value="{DynamicResource ExpanderCardRightHeaderRightStyle}" />
                             <Setter TargetName="ExpanderHeader" Property="Padding" Value="{DynamicResource ExpanderHeaderVerticalPadding}" />
@@ -618,8 +620,7 @@
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Foreground" Value="{DynamicResource SystemControlDisabledBaseMediumLowBrush}" />
                         </Trigger>
-
-                        <MultiTrigger>
+                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsExpanded" Value="true" />
                                 <Condition Property="ExpandDirection" Value="Down" />
@@ -655,6 +656,7 @@
                                 <Setter TargetName="ExpanderHeader" Property="chelper:ControlHelper.CornerRadius" Value="{Binding Tag, ElementName=ExpanderHeader, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
                             </MultiTrigger.Setters>
                         </MultiTrigger>
+                        
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -816,7 +818,7 @@
                             </Grid>
                             <ContentPresenter
                                 Grid.Row="1"
-                                Margin="0,4,0,0"
+                                Margin="0,8,0,0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Top"
                                 RecognizesAccessKey="True"
@@ -878,9 +880,8 @@
                                     SnapsToDevicePixels="false"
                                     Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
                             </Grid>
-                            <ContentPresenter
-                                Grid.Row="1"
-                                Margin="0,4,0,0"
+                            <ContentPresenter Grid.Row="1"
+                                Margin="0,8,0,0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Top"
                                 RecognizesAccessKey="True"

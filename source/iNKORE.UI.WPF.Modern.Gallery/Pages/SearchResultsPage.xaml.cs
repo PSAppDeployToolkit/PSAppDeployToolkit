@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Helpers;
 using iNKORE.UI.WPF.Modern.Gallery.DataModel;
 using System;
@@ -56,7 +56,8 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            NavigationRootPage.Current.NavigationView.Header = "Search";
+            NavigationRootPage.Current.NavigationView.Header = string.Empty;
+            //NavigationRootPage.Current.NavigationView.Header = "Search";
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -68,7 +69,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
 
         private void OnResultsNavViewLoaded(object sender, RoutedEventArgs e)
         {
-            resultsNavView.Focus();
+            //resultsNavView.Focus();
         }
 
         private void OnResultsNavViewSelectionChanged(object sender, NavigationViewSelectionChangedEventArgs e)
@@ -119,13 +120,17 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
 
                 if (filterList.Count == 0)
                 {
-                    // Display informational text when there are no search results.
-                    VisualStateManager.GoToState(this, "NoResultsFound", false);
+                    resultsNavView.Visibility = Visibility.Collapsed;
+                    noResultsTextBlock.Visibility = Visibility.Visible;
+                    // Optionally, set focus as before
                     var textbox = NavigationRootPage.GetForElement(this)?.PageHeader?.FindDescendants<AutoSuggestBox>().FirstOrDefault();
                     textbox?.Focus();
                 }
                 else
                 {
+                    resultsNavView.Visibility = Visibility.Visible;
+                    noResultsTextBlock.Visibility = Visibility.Collapsed;
+
                     // When there are search results, set Filters
                     var allControls = filterList.SelectMany(s => s.Items).ToList();
                     filterList.Insert(0, new Filter("All", allControls.Count, allControls, true));
@@ -144,7 +149,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages
                         resultsNavView.SelectedItem = Filters.FirstOrDefault();
                     }
 
-                    VisualStateManager.GoToState(this, "ResultsFound", false);
+                    VisualStateManager.GoToState(LayoutRoot, "ResultsFound", false);
                 }
             }
         }

@@ -93,6 +93,12 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
             UpdateExampleCode();
         }
 
+        private void CheckBox_Example1_IsScrollAnimationEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateExampleCode();
+        }
+
+
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (Grid.GetColumnSpan(Control1) == 1)
@@ -122,7 +128,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 
         public string Example1Xaml => $@"
 <ui:ScrollViewerEx x:Name=""Control1"" Width=""{400}"" Height=""{266}""
-    VerticalAlignment=""Top"" HorizontalAlignment=""Left""       
+    VerticalAlignment=""Top"" HorizontalAlignment=""Left"" IsScrollAnimationEnabled=""{CheckBox_Example1_IsScrollAnimationEnabled.IsChecked}""       
     HorizontalScrollBarVisibility=""{((ComboBoxItem)hsbvCombo.SelectedItem).Content}"" VerticalScrollBarVisibility=""{((ComboBoxItem)vsbvCombo.SelectedItem).Content}"">
     <Image Source=""/Assets/SampleMedia/cliff.jpg"" AutomationProperties.Name=""cliff"" 
         HorizontalAlignment=""Center"" VerticalAlignment=""Center"" Stretch=""None"" />  
@@ -130,5 +136,6 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
 ";
 
         #endregion
+
     }
 }

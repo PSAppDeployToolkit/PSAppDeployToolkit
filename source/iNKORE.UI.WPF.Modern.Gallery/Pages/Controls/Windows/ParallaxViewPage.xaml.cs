@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern.Gallery.DataModel;
+using iNKORE.UI.WPF.Modern.Gallery.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,13 +42,14 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
         public void UpdateExampleCode()
         {
             Example1.Xaml = Example1Xaml;
+            Example2.Xaml = Example2Xaml;
         }
 
         public string Example1Xaml => $@"
 <Grid>
     <ui:ParallaxView x:Name=""parallaxView""
-        HorizontalAlignment=""Left""
-        VerticalAlignment=""Top""
+        HorizontalAlignment=""Stretch""
+        VerticalAlignment=""Stretch""
         Source=""{{Binding ElementName=listView}}""
         VerticalShift=""500"">
         <Image Source=""/Assets/SampleMedia/cliff.jpg"" Stretch=""UniformToFill"" />
@@ -73,6 +74,33 @@ namespace iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows
                 TextWrapping=""Wrap"" />
         </ui:ListView.Header>
     </ui:ListView>
+</Grid>
+";
+
+        public string Example2Xaml => $@"
+<Grid>
+    <ui:ParallaxView
+        HorizontalAlignment=""Stretch""
+        VerticalAlignment=""Stretch""
+        Source=""{{Binding ElementName=scrollViewer}}""
+        VerticalShift=""500"">
+        <Image Source=""/Assets/SampleMedia/cliff.jpg"" Stretch=""UniformToFill"" />
+    </ui:ParallaxView>
+    <TextBlock
+        MaxWidth=""280""
+        HorizontalAlignment=""Center""
+        VerticalAlignment=""Top""
+        FontSize=""28""
+        Foreground=""White""
+        Text=""Scroll the rectangles to see parallaxing of image""
+        TextWrapping=""Wrap"" />
+    <ui:ScrollViewerEx x:Name=""scrollViewer"" Width=""150"" HorizontalAlignment=""Left"">
+        <StackPanel>
+            <Rectangle Height=""150"" Fill=""AliceBlue"" />
+            <!-- ... -->
+            <Rectangle Height=""150"" Fill=""Cyan"" />
+        </StackPanel>
+    </ui:ScrollViewerEx>
 </Grid>
 ";
 

@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.PipsPagerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -13,11 +13,12 @@
     <StackPanel>
         <local:ControlExample x:Name="Example1" HeaderText="PipsPager integrated with a FlipView">
             <local:ControlExample.Example>
-                <StackPanel>
+                <StackPanel HorizontalAlignment="Left">
                     <ui:FlipView
                         x:Name="Gallery"
                         Height="270"
                         MaxWidth="400"
+                        HorizontalAlignment="Center"
                         ItemsSource="{Binding}">
                         <ui:FlipView.ItemTemplate>
                             <DataTemplate>

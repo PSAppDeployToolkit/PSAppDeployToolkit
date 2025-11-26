@@ -1,4 +1,4 @@
-﻿<ui:Page
+<ui:Page
     x:Class="iNKORE.UI.WPF.Modern.Gallery.Pages.Controls.Windows.ProgressBarPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,13 +15,15 @@
                 Width="130"
                 Margin="10,10,0,0"
                 VerticalAlignment="Top"
+                HorizontalAlignment="Left"
                 IsIndeterminate="True"
                 ShowError="{Binding IsChecked, ElementName=ErrorRB}"
                 ShowPaused="{Binding IsChecked, ElementName=PausedRB}" />
 
             <local:ControlExample.Options>
                 <StackPanel>
-                    <RadioButton
+                    <TextBlock Text="Progress state" Margin="0,0,0,8" />
+                    <RadioButton 
                         x:Name="RunningRB"
                         Content="Running"
                         GroupName="ProgressState"
@@ -68,7 +70,7 @@
             </StackPanel>
         </local:ControlExample>
 
-        <local:ControlExample x:Name="Example3" VerticalContentAlignment="Center" HeaderText="An indeterminate progress ring.">
+        <local:ControlExample x:Name="Example3" VerticalContentAlignment="Center" HeaderText="An indeterminate progress ring." Visibility="Collapsed">
             <ui:ProgressRing x:Name="ProgressRing1"
                 Width="60"
                 Height="60"

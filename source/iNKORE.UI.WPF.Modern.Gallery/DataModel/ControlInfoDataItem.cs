@@ -117,6 +117,8 @@ namespace iNKORE.UI.WPF.Modern.Gallery.DataModel
         public string UniqueId { get; set; }
         public string Title { get; set; }
 
+        public bool IsVisible { get; set; } = true;
+
         public ObservableCollection<ControlInfoDataGroup> Groups { get; set; }
 
         public ControlInfoDataRealm()
@@ -240,7 +242,7 @@ namespace iNKORE.UI.WPF.Modern.Gallery.DataModel
                 }
             }
 
-            var realmNames = new string[] { "Windows", "Community", "Extended" };
+            var realmNames = new string[] { "Windows", "Community", "Extended", "Foundation" };
 
             foreach (var realmName in realmNames)
             {
@@ -258,6 +260,14 @@ namespace iNKORE.UI.WPF.Modern.Gallery.DataModel
 
                 JsonDocument jsonDocument = JsonDocument.Parse(jsonText, new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
                 JsonElement jsonArray = jsonDocument.RootElement.GetProperty("Groups");
+
+                if (jsonDocument.RootElement.TryGetProperty("IsVisible", out JsonElement isVisibleElement))
+                {
+                    realm.IsVisible = isVisibleElement.GetBoolean();
+                }
+
+                // Set IsVisible property from JSON
+
 
                 lock (_lock)
                 {
