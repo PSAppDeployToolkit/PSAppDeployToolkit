@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
@@ -120,10 +119,8 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID associated with the specified process.</returns>
         public static string GetApplicationUserModelId(Process process)
         {
-            using (SafeProcessHandle hProcess = new(process.Handle, false))
-            {
-                return GetApplicationUserModelId(hProcess);
-            }
+            using var hProcess = process.SafeHandle;
+            return GetApplicationUserModelId(hProcess);
         }
 
         /// <summary>
