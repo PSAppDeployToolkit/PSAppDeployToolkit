@@ -337,6 +337,11 @@ namespace PSADT.UserInterface
             // Initialize the WPF application if necessary, otherwise just invoke the callback.
             if (!appInitialized.IsSet)
             {
+                // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
+                // We only need to do this once when the app is first initialized.
+                ShellUtilities.RefreshDesktop();
+
+                // Create and start the WPF application thread.
                 appThread = new(() =>
                 {
                     app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };

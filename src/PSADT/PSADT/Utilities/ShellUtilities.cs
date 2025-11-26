@@ -18,14 +18,21 @@ namespace PSADT.Utilities
     public static class ShellUtilities
     {
         /// <summary>
+        /// Notifies the system that file associations have changed and refreshes the desktop environment.
+        /// </summary>
+        /// <remarks>Call this method after making changes to file associations or related system settings
+        /// to ensure that the desktop and shell reflect the updates. This method triggers a system-wide notification,
+        /// which may cause open Explorer windows and desktop icons to refresh.</remarks>
+        internal static void RefreshDesktop() => Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
+
+        /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
         internal static void RefreshDesktopAndEnvironmentVariables()
         {
             // Update desktop icons using SHChangeNotify, then notify all top-level windows that the environment variables have changed.
-            using var lpString = SafeHGlobalHandle.StringToUni("Environment");
-            Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
+            RefreshDesktop(); using var lpString = SafeHGlobalHandle.StringToUni("Environment");
             User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, SafeMemoryHandle.Null, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
             User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, lpString, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
         }
