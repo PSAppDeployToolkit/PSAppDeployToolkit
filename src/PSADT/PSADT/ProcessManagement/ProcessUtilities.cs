@@ -341,35 +341,36 @@ namespace PSADT.ProcessManagement
             Span<byte> imageNamePtr = stackalloc byte[processIdInfo.ImageName.MaximumLength + 2]; imageNamePtr.Clear();
 
             // Assign the ImageName buffer and perform the query again.
-            string imagePath;
+            char[] imageNameCharArray;
             unsafe
             {
                 fixed (byte* pImageName = imageNamePtr)
                 {
                     processIdInfo.ImageName.Buffer = (char*)pImageName;
                     NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imagePath = processIdInfo.ImageName.Buffer.ToString().TrimRemoveNull();
+                    imageNameCharArray = processIdInfo.ImageName.Buffer.AsSpan().ToArray();
                     processIdInfo.ImageName.Buffer = null;
                 }
             }
 
             // Validate we received something valid from the buffer. This function is known to return garbage.
-            if (!imagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            var imageName = new string(imageNameCharArray).TrimRemoveNull();
+            if (!imageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imagePath}].");
+                throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imageName}]. Raw char values: [{string.Join(", ", imageNameCharArray)}]");
             }
 
             // If we have a lookup table, replace the NT path with the drive letter before returning.
             if (ntPathLookupTable is not null)
             {
-                var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                var ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                 if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
                 {
-                    throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imagePath}].");
+                    throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imageName}].");
                 }
-                return imagePath.Replace(ntDeviceName, driveLetter);
+                return imageName.Replace(ntDeviceName, driveLetter);
             }
-            return imagePath;
+            return imageName;
         }
 
         /// <summary>
