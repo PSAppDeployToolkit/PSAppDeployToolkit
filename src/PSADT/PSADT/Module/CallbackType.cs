@@ -26,6 +26,11 @@
         PostOpen,
 
         /// <summary>
+        /// The callback is executed when a user defers the active deployment.
+        /// </summary>
+        OnDefer,
+
+        /// <summary>
         /// The callback is executed before the deployment session is closed.
         /// </summary>
         PreClose,

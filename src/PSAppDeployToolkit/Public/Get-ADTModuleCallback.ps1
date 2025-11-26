@@ -21,6 +21,7 @@ function Get-ADTModuleCallback
         * OnStart (The callback is executed before the first deployment session is opened)
         * PreOpen (The callback is executed before a deployment session is opened)
         * PostOpen (The callback is executed after a deployment session is opened)
+        * OnDefer (The callback is executed when a user defers the active deployment)
         * PreClose (The callback is executed before the deployment session is closed)
         * PostClose (The callback is executed after the deployment session is closed)
         * OnFinish (The callback is executed before the last deployment session is closed)

@@ -1221,6 +1221,10 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
+                                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnDefer)))
+                                {
+                                    & $callback
+                                }
                                 $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                             }
                             return
