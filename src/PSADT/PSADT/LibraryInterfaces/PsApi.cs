@@ -26,28 +26,22 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal unsafe static BOOL EnumProcessModules(SafeHandle hProcess, Span<byte> lphModule, out uint lpcbNeeded)
         {
-            fixed (uint* pcbNeeded = &lpcbNeeded)
+            bool hProcessAddRef = false;
+            try
             {
-                bool hProcessAddRef = false;
-                try
+                hProcess.DangerousAddRef(ref hProcessAddRef);
+                var res = PInvoke.EnumProcessModules(hProcess, lphModule, out lpcbNeeded);
+                if (!res)
                 {
-                    hProcess.DangerousAddRef(ref hProcessAddRef);
-                    fixed (byte* pLphModule = lphModule)
-                    {
-                        var res = PInvoke.EnumProcessModules((HANDLE)hProcess.DangerousGetHandle(), (HMODULE*)pLphModule, (uint)lphModule.Length, pcbNeeded);
-                        if (!res)
-                        {
-                            throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                        }
-                        return res;
-                    }
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                finally
+                return res;
+            }
+            finally
+            {
+                if (hProcessAddRef)
                 {
-                    if (hProcessAddRef)
-                    {
-                        hProcess.DangerousRelease();
-                    }
+                    hProcess.DangerousRelease();
                 }
             }
         }

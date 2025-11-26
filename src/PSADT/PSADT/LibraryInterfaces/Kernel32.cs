@@ -811,7 +811,7 @@ namespace PSADT.LibraryInterfaces
             try
             {
                 lpAttributeList.DangerousAddRef(ref lpAttributeListAddRef);
-                var res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)lpAttributeList.DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue.IsEmpty ? new byte[lpValue.Length] : lpPreviousValue, lpReturnSize);
+                var res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)lpAttributeList.DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
                 if (!res)
                 {
                     throw new Win32Exception();
