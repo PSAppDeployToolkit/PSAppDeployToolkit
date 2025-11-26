@@ -39,7 +39,6 @@ namespace PSADT.Module
         /// <param name="callerSessionState">The caller session state.</param>
         public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, SessionState? callerSessionState = null)
         {
-            int deferExitCode = 1602;
             try
             {
                 #region Initialization
@@ -57,7 +56,6 @@ namespace PSADT.Module
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
                 var moduleSessionState = ModuleDatabase.GetSessionState();
                 bool writtenDivider = false; _ = _installPhase;
-                deferExitCode = (int)configUI["DeferExitCode"]!;
                 bool forceProcessDetection = false;
 
                 // Pre-cache reused environment variables.
@@ -70,6 +68,16 @@ namespace PSADT.Module
                 var envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
                 var processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;
                 var isAdmin = (bool)adtEnv["IsAdmin"]!;
+
+                // Set up constant values for the lifetime of the deployment session.
+                DefaultExitCode = (int)configUI["DefaultExitCode"]!;
+                DeferExitCode = (int)configUI["DeferExitCode"]!;
+                CompressLogs = (bool)configToolkit["CompressLogs"]!;
+                ConfigLogPath = (string)configToolkit["LogPath"]!;
+                LogMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                LogStyle = (LogStyle)Enum.Parse(typeof(LogStyle), (string)configToolkit["LogStyle"]!);
+                LogWriteToHost = (bool)configToolkit["LogWriteToHost"]!;
+                LogHostOutputToStdStreams = (bool)configToolkit["LogHostOutputToStdStreams"]!;
 
                 // Set up other variable values based on incoming dictionary.
                 if (parameters is not null && parameters.Count > 0)
@@ -965,7 +973,7 @@ namespace PSADT.Module
             catch (NotSupportedException ex)
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
-                SetExitCode(deferExitCode); Close();
+                SetExitCode(DeferExitCode); Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -1056,15 +1064,12 @@ namespace PSADT.Module
             WriteLogDivider();
             Settings |= DeploymentSettings.Disposed;
 
-            // Extrapolate the Toolkit options from the config hashtable.
-            var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
-
             // Compress log files if configured to do so.
-            if ((bool)configToolkit["CompressLogs"]!)
+            if (CompressLogs)
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
                 string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
-                var destArchiveFilePath = Directory.CreateDirectory((string)configToolkit["LogPath"]!);
+                var destArchiveFilePath = Directory.CreateDirectory(ConfigLogPath);
                 try
                 {
                     // Get all archive files sorted by last write time.
@@ -1072,11 +1077,10 @@ namespace PSADT.Module
                     destArchiveFileName = string.Format(destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
 
                     // Keep only the max number of archive files
-                    var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
                     int archiveFilesCount = archiveFiles.Count();
-                    if (archiveFilesCount > logMaxHistory)
+                    if (archiveFilesCount > LogMaxHistory)
                     {
-                        foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - logMaxHistory))
+                        foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - LogMaxHistory))
                         {
                             file.Delete();
                         }
@@ -1101,14 +1105,13 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="writeHost"></param>
         /// <returns></returns>
-        private static HostLogStream GetHostLogStreamMode(bool? writeHost = null)
+        private HostLogStream GetHostLogStreamMode(bool? writeHost = null)
         {
-            var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
-            if ((writeHost is not null && !writeHost.Value) || !(bool)configToolkit["LogWriteToHost"]!)
+            if ((writeHost is not null && !writeHost.Value) || !LogWriteToHost)
             {
                 return HostLogStream.None;
             }
-            else if ((bool)configToolkit["LogHostOutputToStdStreams"]!)
+            else if (LogHostOutputToStdStreams)
             {
                 return HostLogStream.Console;
             }
@@ -1128,11 +1131,11 @@ namespace PSADT.Module
         /// <param name="scriptSection">The script section.</param>
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
-        /// <param name="logType">The type of log.</param>
+        /// <param name="logStyle">The type of log.</param>
         /// <param name="hostLogStream">What stream to write the message to.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logType = null, HostLogStream? hostLogStream = null)
+        public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStream? hostLogStream = null)
         {
-            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream ?? GetHostLogStreamMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logType);
+            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream ?? GetHostLogStreamMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
             LogBuffer.AddRange(logEntries);
             return logEntries;
         }
@@ -1345,9 +1348,7 @@ namespace PSADT.Module
         /// <returns>The deployment status.</returns>
         public DeploymentStatus GetDeploymentStatus()
         {
-            // Extrapolate the UI options from the config hashtable.
-            var configUI = (Hashtable)ModuleDatabase.GetConfig()["UI"]!;
-            if ((ExitCode == (int)configUI["DefaultExitCode"]!) || (ExitCode == (int)configUI["DeferExitCode"]!))
+            if ((ExitCode == DefaultExitCode) || (ExitCode == DeferExitCode))
             {
                 return DeploymentStatus.FastRetry;
             }
@@ -1422,14 +1423,49 @@ namespace PSADT.Module
         private static readonly ReadOnlyCollection<string> DriveLetters = new([@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"]);
 
         /// <summary>
+        /// The default exit code to exit out with in the event of an error.
+        /// </summary>
+        private readonly int DefaultExitCode = 1618;
+
+        /// <summary>
+        /// The default exit code used when the user defers a deployment.
+        /// </summary>
+        private readonly int DeferExitCode = 1602;
+
+        /// <summary>
+        /// Indicates whether log files should be compressed upon session closure.
+        /// </summary>
+        private readonly bool CompressLogs;
+
+        /// <summary>
+        /// The log path as specified in the configuration.
+        /// </summary>
+        private readonly string ConfigLogPath;
+
+        /// <summary>
+        /// Specifies the maximum number of log entries to retain in history.
+        /// </summary>
+        private readonly int LogMaxHistory;
+
+        /// <summary>
+        /// Specifies the style to use for log output.
+        /// </summary>
+        private readonly LogStyle LogStyle;
+
+        /// <summary>
+        /// Specifies whether to write log entries to the host.
+        /// </summary>
+        private readonly bool LogWriteToHost;
+
+        /// <summary>
+        /// Specifies whether to write log entries to the standard streams.
+        /// </summary>
+        private readonly bool LogHostOutputToStdStreams;
+
+        /// <summary>
         /// Buffer for log entries.
         /// </summary>
         private readonly List<LogEntry> LogBuffer = [];
-
-        /// <summary>
-        /// Bitfield with settings for this deployment.
-        /// </summary>
-        private DeploymentSettings Settings;
 
         /// <summary>
         /// Gets the caller's SessionState from value that was supplied during object instantiation.
@@ -1455,6 +1491,11 @@ namespace PSADT.Module
         /// Gets the registry path used for getting/setting deferral information.
         /// </summary>
         private readonly string RegKeyDeferHistory;
+
+        /// <summary>
+        /// Bitfield with settings for this deployment.
+        /// </summary>
+        private DeploymentSettings Settings;
 
         /// <summary>
         /// Gets the deployment session's closing exit code.

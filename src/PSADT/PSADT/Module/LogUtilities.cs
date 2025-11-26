@@ -34,8 +34,8 @@ namespace PSADT.Module
         /// <param name="scriptSection">The script section.</param>
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
-        /// <param name="logType">The type of log.</param>
-        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logType = null)
+        /// <param name="logStyle">The type of log.</param>
+        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -82,15 +82,15 @@ namespace PSADT.Module
             }
 
             // Set up default values if not specified and build out the log entries.
-            if (canLogToDisk && !logType.HasValue)
+            if (canLogToDisk && !logStyle.HasValue)
             {
                 if (Enum.TryParse<LogStyle>((string)configToolkit?["LogStyle"]!, out var configStyle))
                 {
-                    logType = configStyle;
+                    logStyle = configStyle;
                 }
                 else
                 {
-                    logType = LogStyle.CMTrace;
+                    logStyle = LogStyle.CMTrace;
                 }
             }
             if (severity is null)
@@ -115,7 +115,7 @@ namespace PSADT.Module
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding);
-                logFileWriter.WriteLine(string.Join(Environment.NewLine, logType!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
+                logFileWriter.WriteLine(string.Join(Environment.NewLine, logStyle!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
             }
 
             // Write out all messages to host if configured/permitted to do so.
