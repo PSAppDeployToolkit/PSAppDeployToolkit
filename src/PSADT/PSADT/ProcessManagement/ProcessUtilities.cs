@@ -329,51 +329,50 @@ namespace PSADT.ProcessManagement
         {
             // Set up initial buffer that we need to query the process information.
             var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)process.Id };
-            var processIdInfoSize = Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
+            var processIdInfoSize = Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>(); char[] imageNameCharArray;
             using (var processIdInfoPtr = SafeHGlobalHandle.Alloc(processIdInfoSize).FromStructure(processIdInfo, false))
             {
                 // Perform initial query so we can reallocate with the required length.
                 NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
                 processIdInfo = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
-                using (var imageNamePtr = SafeHGlobalHandle.Alloc(processIdInfo.ImageName.MaximumLength))
+                using var imageNamePtr = SafeHGlobalHandle.Alloc(processIdInfo.ImageName.MaximumLength + 2);
+                bool imageNamePtrAddRef = false;
+                try
                 {
-                    bool imageNamePtrAddRef = false;
-                    try
+                    // Assign the ImageName buffer and perform the query again.
+                    imageNamePtr.DangerousAddRef(ref imageNamePtrAddRef);
+                    processIdInfo.ImageName.Buffer = new(imageNamePtr.DangerousGetHandle());
+                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
+                    imageNameCharArray = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.AsSpan().ToArray();
+                    processIdInfo.ImageName.Buffer = null;
+                }
+                finally
+                {
+                    if (imageNamePtrAddRef)
                     {
-                        // Assign the ImageName buffer and perform the query again.
-                        imageNamePtr.DangerousAddRef(ref imageNamePtrAddRef);
-                        processIdInfo.ImageName.Buffer = new(imageNamePtr.DangerousGetHandle());
-                        NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
-                        var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
-                        processIdInfo.ImageName.Buffer = null;
-
-                        // Validate we received something valid from the buffer. This function is known to return garbage.
-                        if (!imagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imagePath}].");
-                        }
-
-                        // If we have a lookup table, replace the NT path with the drive letter before returning.
-                        if (ntPathLookupTable != null)
-                        {
-                            var ntDeviceName = $@"\{string.Join(@"\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                            if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
-                            {
-                                throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imagePath}].");
-                            }
-                            return imagePath.Replace(ntDeviceName, driveLetter);
-                        }
-                        return imagePath;
-                    }
-                    finally
-                    {
-                        if (imageNamePtrAddRef)
-                        {
-                            imageNamePtr.DangerousRelease();
-                        }
+                        imageNamePtr.DangerousRelease();
                     }
                 }
             }
+
+            // Validate we received something valid from the buffer. This function is known to return garbage.
+            var imageName = new string(imageNameCharArray).TrimRemoveNull();
+            if (!imageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imageName}]. Raw char values: [{string.Join(", ", imageNameCharArray)}]");
+            }
+
+            // If we have a lookup table, replace the NT path with the drive letter before returning.
+            if (ntPathLookupTable != null)
+            {
+                var ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
+                {
+                    throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imageName}].");
+                }
+                return imageName.Replace(ntDeviceName, driveLetter);
+            }
+            return imageName;
         }
 
         /// <summary>
