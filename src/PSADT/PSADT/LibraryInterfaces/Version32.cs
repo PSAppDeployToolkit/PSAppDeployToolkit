@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using PSADT.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -61,26 +60,17 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the specified version-information value is successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the version-information value cannot be queried.</exception>
-        internal unsafe static BOOL VerQueryValue(SafeHGlobalHandle pBlock, string lpSubBlock, out IntPtr lplpBuffer, out uint puLen)
+        internal unsafe static BOOL VerQueryValue(ReadOnlySpan<byte> pBlock, string lpSubBlock, out IntPtr lplpBuffer, out uint puLen)
         {
-            bool pBlockAddRef = false;
-            try
+            fixed (byte* pBlockPtr = pBlock)
             {
-                pBlock.DangerousAddRef(ref pBlockAddRef);
-                var res = PInvoke.VerQueryValue(pBlock.DangerousGetHandle().ToPointer(), lpSubBlock, out var lplpBufferLocal, out puLen);
+                var res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out var lplpBufferLocal, out puLen);
                 if (!res)
                 {
                     throw new InvalidOperationException($"Failed to query [{lpSubBlock}] version value.");
                 }
                 lplpBuffer = (IntPtr)lplpBufferLocal;
                 return res;
-            }
-            finally
-            {
-                if (pBlockAddRef)
-                {
-                    pBlock.DangerousRelease();
-                }
             }
         }
     }

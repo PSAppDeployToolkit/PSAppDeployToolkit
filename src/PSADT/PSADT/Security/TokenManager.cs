@@ -1,9 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.SafeHandles;
 using Windows.Win32.Security;
 
 namespace PSADT.Security
@@ -21,9 +22,10 @@ namespace PSADT.Security
         /// typically indicate that the process is running with administrative privileges.</returns>
         internal static bool IsTokenElevated(SafeHandle tokenHandle)
         {
-            using var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_ELEVATION>());
+            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_ELEVATION>()];
             AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
-            return buffer.ToStructure<TOKEN_ELEVATION>().TokenIsElevated != 0;
+            ref var tokenElevation = ref Unsafe.As<byte, TOKEN_ELEVATION>(ref MemoryMarshal.GetReference(buffer));
+            return tokenElevation.TokenIsElevated != 0;
         }
 
         /// <summary>
@@ -37,9 +39,10 @@ namespace PSADT.Security
         /// handle.</returns>
         internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
         {
-            using var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>());
+            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_LINKED_TOKEN>()];
             AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-            return new(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken, true);
+            ref var tokenLinkedToken = ref Unsafe.As<byte, TOKEN_LINKED_TOKEN>(ref MemoryMarshal.GetReference(buffer));
+            return new(tokenLinkedToken.LinkedToken, true);
         }
 
         /// <summary>
@@ -103,12 +106,14 @@ namespace PSADT.Security
         /// <returns>A <see cref="SecurityIdentifier"/> object representing the SID associated with the specified token handle.</returns>
         internal static SecurityIdentifier GetTokenSid(SafeHandle tokenHandle)
         {
-            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, SafeMemoryHandle.Null, out var returnLength);
-            using (var buffer = SafeHGlobalHandle.Alloc((int)returnLength))
-            {
-                AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
-                return buffer.ToStructure<TOKEN_USER>().User.Sid.ToSecurityIdentifier();
-            }
+            // Get the required buffer size and allocate it.
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, null, out var returnLength);
+            Span<byte> buffer = stackalloc byte[(int)returnLength];
+
+            // Now grab the token's SID as requested.
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
+            ref var tokenUser = ref Unsafe.As<byte, TOKEN_USER>(ref MemoryMarshal.GetReference(buffer));
+            return tokenUser.User.Sid.ToSecurityIdentifier();
         }
 
         /// <summary>
@@ -121,9 +126,9 @@ namespace PSADT.Security
         /// <returns>The session ID as an unsigned integer.</returns>
         internal static uint GetTokenSessionId(SafeHandle tokenHandle)
         {
-            using var buffer = SafeHGlobalHandle.Alloc(sizeof(uint));
+            Span<byte> buffer = stackalloc byte[sizeof(uint)];
             AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
-            return buffer.ToStructure<uint>();
+            return Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(buffer));
         }
     }
 }

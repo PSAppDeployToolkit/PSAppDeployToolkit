@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Runspaces;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
@@ -216,7 +217,8 @@ namespace PSADT.ProcessManagement
             using var svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
             AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
-            if (MemoryMarshal.Read<SERVICE_STATUS_PROCESS>(buffer).dwProcessId is uint dwProcessId && dwProcessId == 0)
+            ref var serviceStatus = ref Unsafe.As<byte, SERVICE_STATUS_PROCESS>(ref MemoryMarshal.GetReference(buffer));
+            if (serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0)
             {
                 throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.");
             }

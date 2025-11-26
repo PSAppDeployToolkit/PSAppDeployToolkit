@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -66,36 +66,37 @@ namespace PSADT.Security
             }
 
             // Get the size of the buffer required to hold the token privileges.
-            AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, SafeMemoryHandle.Null, out var returnLength);
-            using (var buffer = SafeHGlobalHandle.Alloc((int)returnLength))
+            AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, null, out var returnLength);
+            Span<byte> buffer = stackalloc byte[(int)returnLength];
+
+            // Retrieve the token privileges and filter them based on the specified attributes before returning them.
+            AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
+            ref var tokenPrivileges = ref Unsafe.As<byte, TOKEN_PRIVILEGES>(ref MemoryMarshal.GetReference(buffer));
+            var privilegeCount = tokenPrivileges.PrivilegeCount;
+            var bufferOffset = sizeof(uint);
+            var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
+            Span<char> charSpan = stackalloc char[(int)PInvoke.MAX_PATH];
+            List<SE_PRIVILEGE> privileges = [];
+            if (attributes is not null)
             {
-                // Retrieve the token privileges and filter them based on the specified attributes before returning them.
-                AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
-                var privilegeCount = buffer.ToStructure<TOKEN_PRIVILEGES>().PrivilegeCount;
-                var bufferOffset = sizeof(uint);
-                var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
-                Span<char> charSpan = stackalloc char[(int)PInvoke.MAX_PATH];
-                List<SE_PRIVILEGE> privileges = [];
-                if (attributes is not null)
+                for (int i = 0; i < privilegeCount; i++)
                 {
-                    for (int i = 0; i < privilegeCount; i++)
+                    ref var attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
+                    if ((attr.Attributes & attributes) == attributes)
                     {
-                        var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
-                        if ((attr.Attributes & attributes) == attributes)
-                        {
-                            privileges.Add(GetPrivilege(attr, charSpan));
-                        }
+                        privileges.Add(GetPrivilege(in attr, charSpan));
                     }
                 }
-                else
-                {
-                    for (int i = 0; i < privilegeCount; i++)
-                    {
-                        privileges.Add(GetPrivilege(buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i)), charSpan));
-                    }
-                }
-                return privileges.OrderBy(static p => p).ToList().AsReadOnly();
             }
+            else
+            {
+                for (int i = 0; i < privilegeCount; i++)
+                {
+                    ref var attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
+                    privileges.Add(GetPrivilege(in attr, charSpan));
+                }
+            }
+            return privileges.OrderBy(static p => p).ToList().AsReadOnly();
         }
 
         /// <summary>

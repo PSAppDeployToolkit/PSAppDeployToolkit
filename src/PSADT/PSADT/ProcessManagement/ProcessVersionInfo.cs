@@ -91,7 +91,7 @@ namespace PSADT.ProcessManagement
             Process = process;
 
             // Get the main module base address and read the version resource from memory.
-            SafeHGlobalHandle versionResource;
+            ReadOnlySpan<byte> versionResource;
             using (var processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
             {
                 try
@@ -105,51 +105,48 @@ namespace PSADT.ProcessManagement
             }
 
             // If we got a valid version resource, parse it.
-            using (versionResource)
+            // Read the version information from the resource.
+            Version32.VerQueryValue(versionResource, @"\", out var fixedInfoPtr, out _);
+            FixedFileInfo = Marshal.PtrToStructure<VS_FIXEDFILEINFO>(fixedInfoPtr);
+            FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
+            FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
+            FileBuildPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionLS);
+            FilePrivatePart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionLS);
+            ProductMajorPart = PInvoke.HIWORD(FixedFileInfo.dwProductVersionMS);
+            ProductMinorPart = PInvoke.LOWORD(FixedFileInfo.dwProductVersionMS);
+            ProductBuildPart = PInvoke.HIWORD(FixedFileInfo.dwProductVersionLS);
+            ProductPrivatePart = PInvoke.LOWORD(FixedFileInfo.dwProductVersionLS);
+            FileVersionRaw = new(FileMajorPart, FileMinorPart, FileBuildPart, FilePrivatePart);
+            ProductVersionRaw = new(ProductMajorPart, ProductMinorPart, ProductBuildPart, ProductPrivatePart);
+
+            // Set the flags based on the fixed file info.
+            IsDebug = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
+            IsPatched = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED) != 0;
+            IsPrivateBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD) != 0;
+            IsPreRelease = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE) != 0;
+            IsSpecialBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD) != 0;
+
+            // Read the version resource strings.
+            var codepageTable = GetTranslationTableCombinations(versionResource);
+            Language = GetFileVersionLanguage(codepageTable[0]); bool success = false;
+            foreach (var codepage in codepageTable)
             {
-                // Read the version information from the resource.
-                Version32.VerQueryValue(versionResource, @"\", out var fixedInfoPtr, out _);
-                FixedFileInfo = Marshal.PtrToStructure<VS_FIXEDFILEINFO>(fixedInfoPtr);
-                FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
-                FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
-                FileBuildPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionLS);
-                FilePrivatePart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionLS);
-                ProductMajorPart = PInvoke.HIWORD(FixedFileInfo.dwProductVersionMS);
-                ProductMinorPart = PInvoke.LOWORD(FixedFileInfo.dwProductVersionMS);
-                ProductBuildPart = PInvoke.HIWORD(FixedFileInfo.dwProductVersionLS);
-                ProductPrivatePart = PInvoke.LOWORD(FixedFileInfo.dwProductVersionLS);
-                FileVersionRaw = new(FileMajorPart, FileMinorPart, FileBuildPart, FilePrivatePart);
-                ProductVersionRaw = new(ProductMajorPart, ProductMinorPart, ProductBuildPart, ProductPrivatePart);
-
-                // Set the flags based on the fixed file info.
-                IsDebug = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
-                IsPatched = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED) != 0;
-                IsPrivateBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD) != 0;
-                IsPreRelease = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE) != 0;
-                IsSpecialBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD) != 0;
-
-                // Read the version resource strings.
-                var codepageTable = GetTranslationTableCombinations(versionResource).ToList();
-                Language = GetFileVersionLanguage(versionResource, codepageTable[0]); bool success = false;
-                foreach (var codepage in codepageTable)
+                // Exit loop if we successfully retrieved at least one string.
+                Comments = GetFileVersionString(versionResource, codepage, "Comments", ref success);
+                CompanyName = GetFileVersionString(versionResource, codepage, "CompanyName", ref success);
+                FileDescription = GetFileVersionString(versionResource, codepage, "FileDescription", ref success);
+                FileVersion = GetFileVersionString(versionResource, codepage, "FileVersion", ref success);
+                InternalName = GetFileVersionString(versionResource, codepage, "InternalName", ref success);
+                LegalCopyright = GetFileVersionString(versionResource, codepage, "LegalCopyright", ref success);
+                LegalTrademarks = GetFileVersionString(versionResource, codepage, "LegalTrademarks", ref success);
+                OriginalFilename = GetFileVersionString(versionResource, codepage, "OriginalFilename", ref success);
+                PrivateBuild = GetFileVersionString(versionResource, codepage, "PrivateBuild", ref success);
+                ProductName = GetFileVersionString(versionResource, codepage, "ProductName", ref success);
+                ProductVersion = GetFileVersionString(versionResource, codepage, "ProductVersion", ref success);
+                SpecialBuild = GetFileVersionString(versionResource, codepage, "SpecialBuild", ref success);
+                if (success)
                 {
-                    // Exit loop if we successfully retrieved at least one string.
-                    Comments = GetFileVersionString(versionResource, codepage, "Comments", ref success);
-                    CompanyName = GetFileVersionString(versionResource, codepage, "CompanyName", ref success);
-                    FileDescription = GetFileVersionString(versionResource, codepage, "FileDescription", ref success);
-                    FileVersion = GetFileVersionString(versionResource, codepage, "FileVersion", ref success);
-                    InternalName = GetFileVersionString(versionResource, codepage, "InternalName", ref success);
-                    LegalCopyright = GetFileVersionString(versionResource, codepage, "LegalCopyright", ref success);
-                    LegalTrademarks = GetFileVersionString(versionResource, codepage, "LegalTrademarks", ref success);
-                    OriginalFilename = GetFileVersionString(versionResource, codepage, "OriginalFilename", ref success);
-                    PrivateBuild = GetFileVersionString(versionResource, codepage, "PrivateBuild", ref success);
-                    ProductName = GetFileVersionString(versionResource, codepage, "ProductName", ref success);
-                    ProductVersion = GetFileVersionString(versionResource, codepage, "ProductVersion", ref success);
-                    SpecialBuild = GetFileVersionString(versionResource, codepage, "SpecialBuild", ref success);
-                    if (success)
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -170,7 +167,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the version resource from the process memory.
         /// </summary>
-        private static SafeHGlobalHandle ReadVersionResource(SafeFileHandle processHandle, in MODULEINFO moduleInfo)
+        private static byte[] ReadVersionResource(SafeFileHandle processHandle, in MODULEINFO moduleInfo)
         {
             // Read the DOS header to make sure we have a valid PE header.
             IntPtr baseAddress; unsafe { baseAddress = (IntPtr)moduleInfo.lpBaseOfDll; }
@@ -225,7 +222,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Navigates the resource directory structure to find the version resource.
         /// </summary>
-        private static SafeHGlobalHandle FindVersionResource(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress)
+        private static byte[] FindVersionResource(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress)
         {
             // Read the resource directory
             var resourceDir = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY>(processHandle, resourceDirectoryAddress);
@@ -248,7 +245,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the actual version resource data.
         /// </summary>
-        private static SafeHGlobalHandle ReadVersionResourceData(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress, uint offsetToData)
+        private static byte[] ReadVersionResourceData(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress, uint offsetToData)
         {
             // Navigate through the directory levels using a do/while loop.
             var currentOffsetToData = offsetToData;
@@ -267,8 +264,8 @@ namespace PSADT.ProcessManagement
             var dataEntry = ReadProcessMemory<IMAGE_RESOURCE_DATA_ENTRY>(processHandle, dataEntryAddress);
             if (dataEntry.Size > 0)
             {
-                var buffer = SafeHGlobalHandle.Alloc((int)dataEntry.Size);
-                Kernel32.ReadProcessMemory(processHandle, baseAddress + (int)dataEntry.OffsetToData, buffer, out _);
+                var buffer = new byte[(int)dataEntry.Size];
+                Kernel32.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
                 return buffer;
             }
             throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{dataEntryAddress.ToInt64():X}");
@@ -277,21 +274,23 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets language/codepage combinations from the Translation table.
         /// </summary>
-        private static IEnumerable<string> GetTranslationTableCombinations(SafeHGlobalHandle versionResource)
+        private static ReadOnlyCollection<string> GetTranslationTableCombinations(ReadOnlySpan<byte> versionResource)
         {
             // Return any translation pairs found in the version resource.
+            List<string> translationCombinations = [];
             Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out var translationPtr, out var translationLength);
             var langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
-                yield return Marshal.PtrToStructure<Version32.LANGANDCODEPAGE>(IntPtr.Add(translationPtr, i * langAndCodepageSize)).ToTranslationTableString();
+                translationCombinations.Add(Marshal.PtrToStructure<Version32.LANGANDCODEPAGE>(IntPtr.Add(translationPtr, i * langAndCodepageSize)).ToTranslationTableString());
             }
 
             // Add some common fallback combinations that are known to work in many cases.
             // These are based on common language/codepage pairs used in version resources.
-            yield return "040904B0";
-            yield return "040904E4";
-            yield return "04090000";
+            translationCombinations.Add("040904B0");
+            translationCombinations.Add("040904E4");
+            translationCombinations.Add("04090000");
+            return translationCombinations.Distinct().ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -299,11 +298,10 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>The method uses the high-order word of the codepage to determine the language
         /// name.</remarks>
-        /// <param name="versionResource">A handle to the version resource containing the language information.</param>
         /// <param name="codepage">A string representing the codepage, which is used to identify the language.</param>
         /// <returns>A string containing the language name if the codepage is valid and the language can be determined;
         /// otherwise, <see langword="null"/>.</returns>
-        private static string? GetFileVersionLanguage(SafeHGlobalHandle versionResource, string codepage)
+        private static string? GetFileVersionLanguage(string codepage)
         {
             Span<char> szLang = stackalloc char[(int)PInvoke.MAX_PATH];
             var len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber)), szLang);
@@ -326,7 +324,7 @@ namespace PSADT.ProcessManagement
         /// <param name="name">The name of the version information to query.</param>
         /// <param name="success">A reference boolean that indicates whether the retrieval was successful.</param>
         /// <returns>A string containing the version information if found and not empty; otherwise, <see langword="null"/>.</returns>
-        private static string? GetFileVersionString(SafeHGlobalHandle versionResource, string codepage, string name, ref bool success)
+        private static string? GetFileVersionString(ReadOnlySpan<byte> versionResource, string codepage, string name, ref bool success)
         {
             // Attempt to query the version resource for the specified name.
             try
@@ -353,9 +351,9 @@ namespace PSADT.ProcessManagement
         /// </summary>
         private static T ReadProcessMemory<T>(SafeFileHandle processHandle, IntPtr address) where T : struct
         {
-            using var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<T>());
+            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
             Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);
-            return buffer.ToStructure<T>();
+            return MemoryMarshal.Read<T>(buffer);
         }
 
         /// <summary>
