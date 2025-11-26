@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
@@ -18,8 +16,15 @@ using Windows.Win32.System.Threading;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// CsWin32 P/Invoke wrappers for the ntdll.dll library.
+    /// Provides managed wrappers and supporting types for selected native Windows NT system calls and structures from
+    /// ntdll.dll.
     /// </summary>
+    /// <remarks>The NtDll class exposes low-level interop methods for advanced scenarios that require direct
+    /// access to Windows NT kernel APIs, such as querying system information, manipulating handles, and creating or
+    /// terminating threads. These methods are intended for use by experienced developers who need fine-grained control
+    /// over system resources. Improper use of these APIs can lead to resource leaks, security vulnerabilities, or
+    /// system instability. All methods in this class require careful management of handles and memory buffers, and may
+    /// throw exceptions for certain error conditions.</remarks>
     public static class NtDll
     {
         /// <summary>
@@ -240,119 +245,139 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Gets the version info of the current operating system from the kernel.
+        /// Retrieves version information about the currently running Windows operating system.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method throws an exception if the underlying native call fails. The output
+        /// parameter is always initialized before the native call is made.</remarks>
+        /// <param name="lpVersionInformation">When this method returns, contains an OSVERSIONINFOEXW structure that receives the operating system version
+        /// information. The structure's dwOSVersionInfoSize field is initialized automatically.</param>
+        /// <returns>A value of type NTSTATUS indicating the result of the operation. Returns STATUS_SUCCESS if the version
+        /// information was retrieved successfully.</returns>
         internal unsafe static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
             lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
-            NTSTATUS res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref lpVersionInformation));
-            if (res != NTSTATUS.STATUS_SUCCESS)
+            fixed (OSVERSIONINFOEXW* lpVersionInformationLocal = &lpVersionInformation)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                NTSTATUS res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)lpVersionInformationLocal);
+                if (res != NTSTATUS.STATUS_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>
-        /// Queries system information from the kernel.
+        /// Retrieves system information for the specified information class by calling the native
+        /// NtQuerySystemInformation function.
         /// </summary>
-        /// <param name="SystemInformationClass"></param>
-        /// <param name="SystemInformation"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, SafeMemoryHandle SystemInformation, out int ReturnLength)
+        /// <remarks>If the buffer specified by SystemInformation is too small to hold the requested data,
+        /// the method returns STATUS_INFO_LENGTH_MISMATCH and sets ReturnLength to the required buffer size. The caller
+        /// can then allocate a larger buffer and retry the operation. This method throws an exception for NTSTATUS
+        /// values other than STATUS_SUCCESS and STATUS_INFO_LENGTH_MISMATCH.</remarks>
+        /// <param name="SystemInformationClass">The type of system information to be queried. This value determines the structure and content of the data
+        /// returned in the SystemInformation buffer.</param>
+        /// <param name="SystemInformation">A buffer that receives the requested system information. The buffer must be large enough to hold the data
+        /// for the specified information class and cannot be empty.</param>
+        /// <param name="ReturnLength">When this method returns, contains the number of bytes written to the SystemInformation buffer or the number
+        /// of bytes required if the buffer is too small.</param>
+        /// <returns>An NTSTATUS code indicating the result of the operation. Returns STATUS_SUCCESS if successful, or
+        /// STATUS_INFO_LENGTH_MISMATCH if the buffer is too small.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if SystemInformation is empty.</exception>
+        internal unsafe static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength)
         {
-            if (SystemInformation is null || SystemInformation.IsClosed || SystemInformation.IsInvalid)
+            if (SystemInformation.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(SystemInformation));
             }
-
             [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
-            bool SystemInformationAddRef = false;
-            try
+            static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, void* SystemInformation, uint SystemInformationLength, out uint ReturnLength);
+            fixed (byte* SystemInformationLocal = SystemInformation)
             {
-                SystemInformation.DangerousAddRef(ref SystemInformationAddRef);
-                var res = NtQuerySystemInformation(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
+                var res = NtQuerySystemInformation(SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, out ReturnLength);
                 if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
                 }
                 return res;
             }
-            finally
-            {
-                if (SystemInformationAddRef)
-                {
-                    SystemInformation.DangerousRelease();
-                }
-            }
         }
 
         /// <summary>
-        /// Queries an object for information.
+        /// Queries information about the specified object handle by invoking the native NtQueryObject function.
         /// </summary>
-        /// <param name="Handle"></param>
-        /// <param name="ObjectInformationClass"></param>
-        /// <param name="ObjectInformation"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, SafeHGlobalHandle ObjectInformation, out int ReturnLength)
+        /// <remarks>This method is a managed wrapper for the native NtQueryObject function in ntdll.dll.
+        /// The caller is responsible for providing a buffer of sufficient size in ObjectInformation. If the buffer is
+        /// too small, the required size is returned in ReturnLength.</remarks>
+        /// <param name="Handle">A SafeHandle representing the object to query. The handle must be valid and not closed.</param>
+        /// <param name="ObjectInformationClass">The type of information to retrieve about the object, specified as an OBJECT_INFORMATION_CLASS value.</param>
+        /// <param name="ObjectInformation">A span of bytes that receives the requested information. Must not be empty.</param>
+        /// <param name="ReturnLength">When this method returns, contains the number of bytes written to ObjectInformation or required to store the
+        /// information, depending on the operation.</param>
+        /// <returns>An NTSTATUS value indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, an
+        /// error code is returned.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if Handle is null or closed, or if ObjectInformation is empty.</exception>
+        internal unsafe static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out int ReturnLength)
         {
-            if (ObjectInformation is null || ObjectInformation.IsClosed || ObjectInformation.IsInvalid)
+            if (ObjectInformation.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(ObjectInformation));
             }
-            if (Handle is null || Handle.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(Handle));
-            }
-
             [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
-            bool ObjectInformationAddRef = false;
+            static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, void* ObjectInformation, int ObjectInformationLength, out int ReturnLength);
             bool HandleAddRef = false;
             try
             {
-                ObjectInformation.DangerousAddRef(ref ObjectInformationAddRef);
-                Handle.DangerousAddRef(ref HandleAddRef);
-                var res = NtQueryObject(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), ObjectInformation.Length, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && !ObjectInformation.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+                Handle?.DangerousAddRef(ref HandleAddRef);
+                fixed (byte* ObjectInformationLocal = ObjectInformation)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    var res = NtQueryObject(Handle?.DangerousGetHandle() ?? IntPtr.Zero, ObjectInformationClass, ObjectInformationLocal, ObjectInformation.Length, out ReturnLength);
+                    if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    }
+                    return res;
                 }
-                return res;
             }
             finally
             {
-                if (ObjectInformationAddRef)
-                {
-                    ObjectInformation.DangerousRelease();
-                }
                 if (HandleAddRef)
                 {
-                    Handle.DangerousRelease();
+                    Handle?.DangerousRelease();
                 }
             }
         }
 
         /// <summary>
-        /// Creates a thread in the specified process.
+        /// Creates a new thread in the specified process using the native NtCreateThreadEx system call.
         /// </summary>
-        /// <param name="threadHandle"></param>
-        /// <param name="desiredAccess"></param>
-        /// <param name="objectAttributes"></param>
-        /// <param name="processHandle"></param>
-        /// <param name="startAddress"></param>
-        /// <param name="parameter"></param>
-        /// <param name="createFlags"></param>
-        /// <param name="zeroBits"></param>
-        /// <param name="stackSize"></param>
-        /// <param name="maximumStackSize"></param>
-        /// <param name="attributeList"></param>
-        /// <returns></returns>
+        /// <remarks>This method is intended for advanced scenarios that require direct interaction with
+        /// the Windows native thread creation API. The caller is responsible for ensuring that all parameters,
+        /// especially handles and memory addresses, are valid and appropriate for the target process. Improper use may
+        /// result in process instability or security risks.</remarks>
+        /// <param name="threadHandle">When this method returns, contains a SafeThreadHandle representing the newly created thread. This parameter
+        /// is passed uninitialized.</param>
+        /// <param name="desiredAccess">The access rights requested for the new thread. Specify a combination of THREAD_ACCESS_RIGHTS flags that
+        /// determine the permitted operations on the thread.</param>
+        /// <param name="objectAttributes">A pointer to an OBJECT_ATTRIBUTES structure that specifies object attributes for the thread, or IntPtr.Zero
+        /// to use default attributes.</param>
+        /// <param name="processHandle">A SafeProcessHandle representing the process in which to create the thread. The handle must have appropriate
+        /// access rights for thread creation and must not be null or closed.</param>
+        /// <param name="startAddress">A SafeVirtualAllocHandle specifying the starting address of the thread routine in the target process. This
+        /// handle must not be null, closed, or invalid.</param>
+        /// <param name="parameter">A pointer to a variable to be passed as a parameter to the thread routine, or IntPtr.Zero if no parameter is
+        /// required.</param>
+        /// <param name="createFlags">Flags that control the creation of the thread. This value can be zero or a combination of thread creation
+        /// flags as defined by the native API.</param>
+        /// <param name="zeroBits">The number of high-order address bits that must be zero in the stack's base address. Typically set to zero.</param>
+        /// <param name="stackSize">The initial size, in bytes, of the stack for the new thread. If zero, the default stack size for the
+        /// executable is used.</param>
+        /// <param name="maximumStackSize">The maximum size, in bytes, of the stack for the new thread. If zero, the default maximum is used.</param>
+        /// <param name="attributeList">A pointer to a list of attributes for the new thread, or IntPtr.Zero if no additional attributes are
+        /// required.</param>
+        /// <returns>An NTSTATUS code indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, the
+        /// code specifies the error.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if processHandle is null or closed, or if startAddress is null, closed, or invalid.</exception>
         internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, SafeProcessHandle processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
         {
             if (startAddress is null || startAddress.IsClosed || startAddress.IsInvalid)
@@ -363,7 +388,6 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(processHandle));
             }
-
             [DllImport("ntdll.dll", ExactSpelling = true)]
             static extern NTSTATUS NtCreateThreadEx(out IntPtr threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
             bool startAddressAddRef = false;
@@ -394,25 +418,29 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Terminates a thread.
+        /// Terminates the specified thread and sets its exit status code.
         /// </summary>
-        /// <param name="threadHandle"></param>
-        /// <param name="exitStatus"></param>
-        /// <returns></returns>
-        internal static NTSTATUS NtTerminateThread(SafeThreadHandle threadHandle, NTSTATUS exitStatus)
+        /// <remarks>This method wraps the native NtTerminateThread function from ntdll.dll. Terminating a
+        /// thread can lead to resource leaks or inconsistent program state if not used carefully. Use this method only
+        /// when it is necessary to forcibly terminate a thread.</remarks>
+        /// <param name="threadHandle">A handle to the thread to be terminated. The handle must be valid and not closed.</param>
+        /// <param name="exitStatus">The exit status code to assign to the thread being terminated.</param>
+        /// <returns>An NTSTATUS value indicating the result of the operation. Returns STATUS_SUCCESS if the thread was
+        /// terminated successfully; otherwise, returns an error code.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if threadHandle is null or has already been closed.</exception>
+        internal static NTSTATUS NtTerminateThread(SafeThreadHandle threadHandle, in NTSTATUS exitStatus)
         {
             if (threadHandle is null || threadHandle.IsClosed)
             {
                 throw new ArgumentNullException(nameof(threadHandle));
             }
-
             [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, NTSTATUS exitStatus);
+            static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, in NTSTATUS exitStatus);
             bool threadHandleAddRef = false;
             try
             {
                 threadHandle.DangerousAddRef(ref threadHandleAddRef);
-                var res = NtTerminateThread(threadHandle.DangerousGetHandle(), exitStatus);
+                var res = NtTerminateThread(threadHandle.DangerousGetHandle(), in exitStatus);
                 if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -429,33 +457,40 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Queries information about a specified process.
+        /// Retrieves information about the specified process by querying the native Windows NT API.
         /// </summary>
-        /// <param name="ProcessHandle"></param>
-        /// <param name="ProcessInformationClass"></param>
-        /// <param name="ProcessInformation"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        internal unsafe static NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, SafeMemoryHandle ProcessInformation, out uint ReturnLength)
+        /// <remarks>This method is a low-level interop call to the Windows NT kernel and is intended for
+        /// advanced scenarios. The caller is responsible for ensuring that the ProcessInformation buffer is
+        /// appropriately sized for the requested information class. Incorrect usage may result in partial or invalid
+        /// data. This method may throw exceptions for certain NTSTATUS error codes.</remarks>
+        /// <param name="ProcessHandle">A handle to the process to be queried. The handle must have appropriate access rights for the requested
+        /// information.</param>
+        /// <param name="ProcessInformationClass">The type of process information to retrieve. Specifies the class of information to be queried.</param>
+        /// <param name="ProcessInformation">A span of bytes that receives the requested process information. The format and required size depend on the
+        /// value of the ProcessInformationClass parameter. Must not be empty.</param>
+        /// <param name="ReturnLength">When this method returns, contains the number of bytes written to ProcessInformation or, if the buffer was
+        /// too small, the number of bytes required.</param>
+        /// <returns>An NTSTATUS code that indicates the result of the operation. STATUS_SUCCESS indicates success;
+        /// STATUS_INFO_LENGTH_MISMATCH indicates that the buffer was too small.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null, closed, or invalid, or if ProcessInformation is empty.</exception>
+        internal unsafe static NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, Span<byte> ProcessInformation, out uint ReturnLength)
         {
-            if (ProcessHandle is null || ProcessHandle.IsClosed || ProcessHandle.IsInvalid)
+            if (ProcessHandle is null || ProcessHandle.IsClosed)
             {
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
-            if (ProcessInformation is null || ProcessInformation.IsClosed)
+            if (ProcessInformation.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(ProcessInformation));
             }
-
             bool ProcessHandleAddRef = false;
-            bool ProcessInformationAddRef = false;
             try
             {
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                ProcessInformation.DangerousAddRef(ref ProcessInformationAddRef);
+                fixed (byte* ProcessInformationLocal = ProcessInformation)
                 fixed (uint* ReturnLengthLocal = &ReturnLength)
                 {
-                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformation.DangerousGetHandle().ToPointer(), (uint)ProcessInformation.Length, ReturnLengthLocal);
+                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
                     if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -468,46 +503,6 @@ namespace PSADT.LibraryInterfaces
                 if (ProcessHandleAddRef)
                 {
                     ProcessHandle.DangerousRelease();
-                }
-                if (ProcessInformationAddRef)
-                {
-                    ProcessInformation.DangerousRelease();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Retrieves basic information about a specified process.
-        /// </summary>
-        /// <remarks>This method wraps the native NtQueryInformationProcess function and provides a
-        /// managed interface for querying process information.</remarks>
-        /// <param name="processHandle">A handle to the process for which information is being queried. The handle must have the necessary access
-        /// rights.</param>
-        /// <param name="processInformation">When the method returns, contains a <see cref="PROCESS_BASIC_INFORMATION"/> structure with basic information
-        /// about the process.</param>
-        /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. Returns <see
-        /// cref="NTSTATUS.STATUS_SUCCESS"/> if the operation succeeds.</returns>
-        internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle processHandle, out PROCESS_BASIC_INFORMATION processInformation)
-        {
-            bool processHandleAddRef = false;
-            try
-            {
-                fixed (PROCESS_BASIC_INFORMATION* processInformationLocal = &processInformation)
-                {
-                    processHandle.DangerousAddRef(ref processHandleAddRef); uint returnLength = 0;
-                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)processHandle.DangerousGetHandle(), PROCESSINFOCLASS.ProcessBasicInformation, processInformationLocal, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref returnLength);
-                    if (res != NTSTATUS.STATUS_SUCCESS)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                    }
-                    return res;
-                }
-            }
-            finally
-            {
-                if (processHandleAddRef)
-                {
-                    processHandle.DangerousRelease();
                 }
             }
         }
