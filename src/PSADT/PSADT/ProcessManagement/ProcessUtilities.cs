@@ -194,7 +194,8 @@ namespace PSADT.ProcessManagement
                     NTAccount? username = null;
                     if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
                     {
-                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
+                        using var processSafeHandle = process.SafeHandle;
+                        AdvApi32.OpenProcessToken(processSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
                         using (hToken)
                         {
                             username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
