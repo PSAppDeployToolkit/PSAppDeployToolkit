@@ -217,12 +217,24 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         private unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, void* lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
-            var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength);
-            if (!res)
+            bool hJobAddRef = false;
+            try
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                hJob.DangerousAddRef(ref hJobAddRef);
+                var res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
+            finally
+            {
+                if (hJobAddRef)
+                {
+                    hJob.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
@@ -601,29 +613,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpReturnLength">When this method returns, contains the size of the data returned in the <paramref
         /// name="lpJobObjectInformation"/> buffer, in bytes.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, SafeHGlobalHandle lpJobObjectInformation, out uint lpReturnLength)
+        internal static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, Span<byte> lpJobObjectInformation, out uint lpReturnLength)
         {
-            bool lpJobObjectInformationAddRef = false;
-            try
+            var res = PInvoke.QueryInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, out lpReturnLength);
+            if (!res)
             {
-                lpJobObjectInformation.DangerousAddRef(ref lpJobObjectInformationAddRef);
-                fixed (uint* pReturnLength = &lpReturnLength)
-                {
-                    var res = PInvoke.QueryInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation.DangerousGetHandle().ToPointer(), (uint)lpJobObjectInformation.Length, pReturnLength);
-                    if (!res)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                    }
-                    return res;
-                }
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            finally
-            {
-                if (lpJobObjectInformationAddRef)
-                {
-                    lpJobObjectInformation.DangerousRelease();
-                }
-            }
+            return res;
         }
 
         /// <summary>
@@ -680,27 +677,21 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpReturnSize">A pointer to a variable that receives the size of the attribute value. This parameter can be <see
         /// langword="null"/> if the size is not required.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL UpdateProcThreadAttribute(SafeProcThreadAttributeListHandle lpAttributeList, PROC_THREAD_ATTRIBUTE Attribute, SafeHGlobalHandle lpValue, IntPtr? lpPreviousValue = null, nuint? lpReturnSize = null)
+        internal static BOOL UpdateProcThreadAttribute(SafeProcThreadAttributeListHandle lpAttributeList, PROC_THREAD_ATTRIBUTE Attribute, ReadOnlySpan<byte> lpValue, Span<byte> lpPreviousValue = default, nuint? lpReturnSize = null)
         {
             bool lpAttributeListAddRef = false;
-            bool lpValueAddRef = false;
             try
             {
                 lpAttributeList.DangerousAddRef(ref lpAttributeListAddRef);
-                lpValue.DangerousAddRef(ref lpValueAddRef);
-                var res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)lpAttributeList.DangerousGetHandle(), 0, (nuint)Attribute, lpValue.DangerousGetHandle().ToPointer(), (nuint)lpValue.Length, lpPreviousValue.HasValue && lpPreviousValue.Value != IntPtr.Zero ? lpPreviousValue.Value.ToPointer() : null, lpReturnSize);
+                var res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)lpAttributeList.DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue.IsEmpty ? new byte[lpValue.Length] : lpPreviousValue, lpReturnSize);
                 if (!res)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    throw new Win32Exception();
                 }
                 return res;
             }
             finally
             {
-                if (lpValueAddRef)
-                {
-                    lpValue.DangerousRelease();
-                }
                 if (lpAttributeListAddRef)
                 {
                     lpAttributeList.DangerousRelease();
@@ -722,29 +713,14 @@ namespace PSADT.LibraryInterfaces
         /// parameter can be null.</param>
         /// <returns>A <see cref="BOOL"/> indicating whether the operation succeeded.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer was too small and the value was truncated.</exception>
-        internal unsafe static BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, SafeMemoryHandle lpBuffer, out nuint lpNumberOfBytesRead)
+        internal unsafe static BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, Span<byte> lpBuffer, out nuint lpNumberOfBytesRead)
         {
-            bool lpBufferAddRef = false;
-            fixed (nuint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+            var res = PInvoke.ReadProcessMemory(hProcess, lpBaseAddress.ToPointer(), lpBuffer, out lpNumberOfBytesRead);
+            if (!res)
             {
-                try
-                {
-                    lpBuffer.DangerousAddRef(ref lpBufferAddRef);
-                    var res = PInvoke.ReadProcessMemory(hProcess, lpBaseAddress.ToPointer(), lpBuffer.DangerousGetHandle().ToPointer(), (nuint)lpBuffer.Length, pNumberOfBytesRead);
-                    if (!res)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                    }
-                    return res;
-                }
-                finally
-                {
-                    if (lpBufferAddRef)
-                    {
-                        lpBuffer.DangerousRelease();
-                    }
-                }
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -793,14 +769,17 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwCompletionKey"></param>
         /// <param name="lpOverlapped"></param>
         /// <returns></returns>
-        internal static BOOL PostQueuedCompletionStatus(SafeHandle CompletionPort, uint dwNumberOfBytesTransferred, nuint dwCompletionKey, NativeOverlapped? lpOverlapped)
+        internal unsafe static BOOL PostQueuedCompletionStatus(SafeHandle CompletionPort, uint dwNumberOfBytesTransferred, nuint dwCompletionKey, in NativeOverlapped lpOverlapped = default)
         {
-            var res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, lpOverlapped);
-            if (!res)
+            fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, pOverlapped);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>
