@@ -25,7 +25,7 @@ function Write-ADTLogEntry
     .PARAMETER ScriptSection
         The heading for the portion of the script that is being executed.
 
-    .PARAMETER LogType
+    .PARAMETER LogStyle
         Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
 
     .PARAMETER LogFileDirectory
@@ -96,7 +96,8 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.LogStyle]$LogType,
+        [Alias('LogType')]
+        [PSADT.Module.LogStyle]$LogStyle,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -165,13 +166,13 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
-                $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
+                $(if ($PSBoundParameters.ContainsKey('LogStyle')) { $LogStyle }),
                 $HostLogStream
             )
         }
         elseif (!$DebugMessage)
         {
-            if ($PSBoundParameters.ContainsKey('LogFileDirectory') -and $PSBoundParameters.ContainsKey('LogFileName') -and !$PSBoundParameters.ContainsKey('LogType') -and !(Test-ADTModuleInitialized))
+            if ($PSBoundParameters.ContainsKey('LogFileDirectory') -and $PSBoundParameters.ContainsKey('LogFileName') -and !$PSBoundParameters.ContainsKey('LogStyle') -and !(Test-ADTModuleInitialized))
             {
                 Initialize-ADTModule
             }
@@ -184,7 +185,7 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
-                $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType })
+                $(if ($PSBoundParameters.ContainsKey('LogStyle')) { $LogStyle })
             )
         }
         if ($PassThru -and $logEntries)
