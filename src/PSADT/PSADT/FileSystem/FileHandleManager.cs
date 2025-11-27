@@ -147,7 +147,7 @@ namespace PSADT.FileSystem
                     objectName = GetObjectName(currentProcessHandle, fileDupHandle);
                 }
 
-                // Skip to next iteration if the handle doesn't meet our criteria
+                // Skip to next iteration if the handle doesn't meet our criteria.
                 if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
                 {
                     return;
