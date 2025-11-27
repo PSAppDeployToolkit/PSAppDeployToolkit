@@ -271,8 +271,8 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
         public static Process GetParentProcess(Process proc)
         {
-            using var hProcess = proc.SafeHandle;
-            return GetParentProcess(hProcess);
+            // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
+            return GetParentProcess(proc.SafeHandle);
         }
 
         /// <summary>
