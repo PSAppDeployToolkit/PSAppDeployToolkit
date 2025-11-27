@@ -182,6 +182,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
 
             // Resume the dialog now that we've applied any options.
+            DialogResult = CloseAppsDialogResult.Timeout;
             this.flowLayoutPanelDialog.ResumeLayout(false);
             this.flowLayoutPanelDialog.PerformLayout();
             this.flowLayoutPanelBase.ResumeLayout(false);
