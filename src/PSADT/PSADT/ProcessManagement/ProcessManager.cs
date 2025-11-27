@@ -339,10 +339,9 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Spin until complete or cancelled.
-                bool disposeJob = true;
+                bool disposeJob = true; int? exitCode = null;
                 try
                 {
-                    int exitCode;
                     if (assignProcessToJob)
                     {
                         while (true)
@@ -376,7 +375,7 @@ namespace PSADT.ProcessManagement
                         await Task.WhenAll(hStdOutTask, hStdErrTask);
                         exitCode = process.ExitCode;
                     }
-                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved));
+                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode.Value, stdout, stderr, interleaved));
                 }
                 catch (Exception ex)
                 {
@@ -384,12 +383,20 @@ namespace PSADT.ProcessManagement
                 }
                 finally
                 {
-                    ctr.Dispose(); hProcess.Dispose();
+                    // Only dispose of the handle when we don't own it or the process has already closed.
+                    ctr.Dispose(); if (!launchInfo.UseShellExecute || (exitCode.HasValue && exitCode.Value != TimeoutExitCode))
+                    {
+                        hProcess.Dispose();
+                    }
+
+                    // We're no longer monitoring the process's state, so we can release the completion port.
                     if (iocpAddRef)
                     {
                         iocp.DangerousRelease();
                     }
                     iocp.Dispose();
+
+                    // We only dispose of the job if the process has closed or if we're killing all child processes along with the parent.
                     if (disposeJob)
                     {
                         job.Dispose();

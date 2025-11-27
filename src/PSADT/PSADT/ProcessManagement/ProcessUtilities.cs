@@ -194,8 +194,8 @@ namespace PSADT.ProcessManagement
                     NTAccount? username = null;
                     if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
                     {
-                        using var processSafeHandle = process.SafeHandle;
-                        AdvApi32.OpenProcessToken(processSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
+                        // We're caching the process, so don't dispose of its SafeHande as .NET caches it also...
+                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
                         using (hToken)
                         {
                             username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
@@ -275,8 +275,8 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
         public static Process GetParentProcess(Process proc)
         {
-            using var hProcess = proc.SafeHandle;
-            return GetParentProcess(hProcess);
+            // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
+            return GetParentProcess(proc.SafeHandle);
         }
 
         /// <summary>
