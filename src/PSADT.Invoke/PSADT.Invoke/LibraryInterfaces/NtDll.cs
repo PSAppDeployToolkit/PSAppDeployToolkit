@@ -10,8 +10,12 @@ namespace PSADT.Invoke.LibraryInterfaces
     internal static class NtDll
     {
         /// <summary>
-        /// Contains information for a given process handle.
+        /// Contains basic information about a process, as returned by native Windows API calls.
         /// </summary>
+        /// <remarks>This structure is typically used with low-level Windows APIs to retrieve process
+        /// details such as the process identifier and parent process identifier. It is intended for advanced scenarios
+        /// involving interop with native code and is not commonly used in standard .NET application
+        /// development.</remarks>
         [StructLayout(LayoutKind.Sequential)]
         internal struct PROCESS_BASIC_INFORMATION
         {
@@ -24,12 +28,18 @@ namespace PSADT.Invoke.LibraryInterfaces
         }
 
         /// <summary>
-        /// Retrieves information about a process.
+        /// Retrieves basic information about the specified process using the native NtQueryInformationProcess API.
         /// </summary>
-        /// <param name="processHandle"></param>
-        /// <param name="processInformation"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method wraps the native NtQueryInformationProcess function to obtain basic
+        /// process information, such as the process ID and parent process ID. The method converts NTSTATUS error codes
+        /// to Win32 error codes for exception handling.</remarks>
+        /// <param name="processHandle">A handle to the process for which information is to be retrieved. The handle must have appropriate access
+        /// rights, such as PROCESS_QUERY_INFORMATION.</param>
+        /// <param name="processInformation">When this method returns, contains a PROCESS_BASIC_INFORMATION structure with information about the
+        /// specified process.</param>
+        /// <returns>An NTSTATUS code indicating the result of the operation. A value of 0 indicates success.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying NtQueryInformationProcess call fails. The exception's error code corresponds to the
+        /// converted NTSTATUS value.</exception>
         internal static int NtQueryInformationProcess(IntPtr processHandle, out PROCESS_BASIC_INFORMATION processInformation)
         {
             // Import the NtQueryInformationProcess function from ntdll.dll.
@@ -52,8 +62,13 @@ namespace PSADT.Invoke.LibraryInterfaces
         }
 
         /// <summary>
-        /// Process information classes for querying and setting process information.
+        /// Specifies the types of process information that can be queried or set using native Windows API calls.
         /// </summary>
+        /// <remarks>This enumeration is typically used with low-level Windows functions such as
+        /// NtQueryInformationProcess to indicate which class of information to retrieve or modify for a process. The
+        /// available values correspond to specific structures or data returned by the operating system. This API is
+        /// intended for advanced scenarios and may require platform invocation (P/Invoke) to use from managed
+        /// code.</remarks>
         private enum PROCESSINFOCLASS : int
         {
             /// <summary>

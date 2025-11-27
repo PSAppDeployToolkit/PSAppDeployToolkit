@@ -6,14 +6,19 @@ using PSADT.Invoke.LibraryInterfaces;
 namespace PSADT.Invoke.Utilities
 {
     /// <summary>
-    /// Utility class for working with Process objects.
+    /// Provides utility methods for working with operating system processes.
     /// </summary>
     internal static class ProcessUtilities
     {
         /// <summary>
-        /// Gets a list of all parent processes of this one.
+        /// Retrieves a read-only collection containing the parent processes of the current process, ordered from
+        /// immediate parent up the process hierarchy.
         /// </summary>
-        /// <returns>An list of instances of the Process class.</returns>
+        /// <remarks>The returned collection does not include the current process itself. The order of the
+        /// collection starts with the immediate parent and proceeds up the process tree. If a parent process cannot be
+        /// accessed or does not exist, the collection may be truncated.</remarks>
+        /// <returns>A read-only collection of <see cref="System.Diagnostics.Process"/> objects representing the parent processes
+        /// of the current process. The collection is empty if no parent processes can be determined.</returns>
         internal static ReadOnlyCollection<Process> GetParentProcesses()
         {
             // Internal method to get the parent process of a given process.

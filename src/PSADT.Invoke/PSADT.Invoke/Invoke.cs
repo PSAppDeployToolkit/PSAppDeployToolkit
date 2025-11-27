@@ -10,14 +10,29 @@ using PSADT.Invoke.Utilities;
 namespace PSADT.Invoke
 {
     /// <summary>
-    /// A utility class to invoke a PowerShell script.
+    /// Provides the application entry point and supporting methods for launching a PowerShell deployment script with
+    /// configurable command-line arguments, debug support, and environment preparation.
     /// </summary>
+    /// <remarks>This class is responsible for orchestrating the invocation of a PowerShell-based deployment
+    /// script, including argument parsing, debug mode management, and process execution. It handles special
+    /// command-line options such as "/Debug", "/32", and "/Core" to control script execution behavior and environment.
+    /// Debug mode enables additional diagnostic output and console interaction. The class also manages error handling
+    /// and exit codes to signal specific failure scenarios to callers.</remarks>
     internal static class Program
     {
         /// <summary>
-        /// The entry point for the application.
+        /// Serves as the application entry point, launching the PowerShell deployment script with the specified
+        /// command-line arguments.
         /// </summary>
-        /// <param name="argv"></param>
+        /// <remarks>If debug mode is enabled via command-line arguments, additional diagnostic output is
+        /// written to the console, and standard output and error streams from the PowerShell process are redirected. In
+        /// the event of a critical error outside of debug mode, the process terminates immediately using
+        /// Environment.FailFast. Exit codes 60010 and 60011 indicate specific failure scenarios during preparation or
+        /// script launch, respectively.</remarks>
+        /// <param name="argv">An array of command-line arguments to configure the deployment process and script invocation. Arguments may
+        /// include options such as debug mode or script paths.</param>
+        /// <returns>An integer exit code indicating the result of the deployment operation. Returns 0 for success, or a nonzero
+        /// value if an error occurs.</returns>
         private static int Main(string[] argv)
         {
             // Configure debug mode if /Debug is specified.
@@ -114,10 +129,13 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Writes a debug message to the log file and optionally displays an error message.
+        /// Writes a debug message to the console output or error stream when debug mode is enabled.
         /// </summary>
-        /// <param name="debugMessage"></param>
-        /// <param name="isError"></param>
+        /// <remarks>This method has no effect if debug mode is not enabled. When isError is set to true,
+        /// the message is written to the error stream with red text to indicate an error condition.</remarks>
+        /// <param name="debugMessage">The message to write to the console. This value is displayed only if debug mode is active.</param>
+        /// <param name="isError">true to write the message to the error stream in red; otherwise, false to write to the standard output. The
+        /// default is false.</param>
         private static void WriteDebugMessage(string debugMessage, bool isError = false)
         {
             // Log only when we're in debug mode.
@@ -137,9 +155,12 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Configures the debug mode based on the command line arguments.
+        /// Enables debug mode if the "/Debug" command-line argument is present and removes it from the argument list.
         /// </summary>
-        /// <param name="cliArguments"></param>
+        /// <remarks>Debug mode is enabled only if the application is running in an interactive user
+        /// environment. This method modifies the provided argument list by removing all instances of the "/Debug"
+        /// argument, regardless of case.</remarks>
+        /// <param name="cliArguments">The list of command-line arguments to inspect and modify. Cannot be null.</param>
         private static void ConfigureDebugMode(List<string> cliArguments)
         {
             if (cliArguments.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
@@ -153,8 +174,11 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Pauses the console and waits for a key press to exit.
+        /// Closes the debug console window and waits for a key press before exiting the application.
         /// </summary>
+        /// <remarks>This method is intended for use in debugging scenarios where a console window is
+        /// attached to the application. It prompts the user to press any key before releasing the console, allowing
+        /// time to review output before the window closes.</remarks>
         private static void CloseDebugMode()
         {
             Console.WriteLine("\nPress any key to exit...");
@@ -170,12 +194,20 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Gets the path to the PowerShell executable.
+        /// Determines the appropriate PowerShell executable path based on the specified command-line arguments.
         /// </summary>
-        /// <param name="cliArguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>If neither "/32" nor "/Core" is specified, and the parent process is PowerShell Core,
+        /// the method returns the path of the parent process's executable. The method modifies <paramref
+        /// name="cliArguments"/> by removing any recognized mode arguments to prevent them from being passed to the
+        /// PowerShell script.</remarks>
+        /// <param name="cliArguments">A list of command-line arguments that may include PowerShell mode specifiers such as "/32" for x86 mode or
+        /// "/Core" for PowerShell Core. The list is modified to remove any recognized mode arguments.</param>
+        /// <returns>The full file system path to the selected PowerShell executable. Returns the path for PowerShell Core if
+        /// "/Core" is specified, the x86 Windows PowerShell path if "/32" is specified, or the default PowerShell path
+        /// otherwise.</returns>
+        /// <exception cref="ArgumentException">Thrown if both "/32" and "/Core" arguments are present in <paramref name="cliArguments"/>, as this
+        /// combination is not supported.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the "/Core" argument is specified but PowerShell Core is not found on the system.</exception>
         private static string GetPowerShellPath(List<string> cliArguments)
         {
             // Confirm /32 and /Core both haven't been passed as it's not supported.
@@ -226,12 +258,20 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
-        /// Gets the arguments to pass to PowerShell.
+        /// Builds the full argument string to invoke PowerShell with the specified script and command-line arguments,
+        /// ensuring correct handling of script file resolution and exit codes.
         /// </summary>
-        /// <param name="cliArguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
+        /// <remarks>This method enforces the use of the -File parameter (or direct script file reference)
+        /// instead of -Command to ensure compatibility with PowerShell 3.0 and higher, particularly for correct exit
+        /// code propagation. The returned argument string wraps script invocation in a try/catch block to preserve
+        /// error handling semantics.</remarks>
+        /// <param name="cliArguments">The list of command-line arguments to be passed to the PowerShell script. Must not include the -Command
+        /// parameter. The list may be modified by this method.</param>
+        /// <returns>A string containing the complete set of arguments to be supplied to PowerShell.exe, including the script
+        /// path and any additional arguments.</returns>
+        /// <exception cref="ArgumentException">Thrown if the -Command parameter is present in the <paramref name="cliArguments"/> list. Use the -File
+        /// parameter instead to ensure proper exit code handling.</exception>
+        /// <exception cref="FileNotFoundException">Thrown if the specified PowerShell script file cannot be found at the resolved path.</exception>
         private static string GetPowerShellArguments(List<string> cliArguments)
         {
             // Check for the App Deploy Script file being specified.
