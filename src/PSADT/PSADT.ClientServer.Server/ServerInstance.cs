@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -64,7 +66,7 @@ namespace PSADT.ClientServer
             {
                 _clientProcess = ProcessManager.LaunchAsync(new(
                     _assemblyLocation,
-                    new(["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()]),
+                    ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
                     Environment.SystemDirectory,
                     RunAsActiveUser,
                     UseLinkedAdminToken,
@@ -205,10 +207,10 @@ namespace PSADT.ClientServer
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be closed. If <paramref
         /// name="closeProcesses"/> is <see langword="null"/>, no specific processes will be targeted.</param>
         /// <returns><see langword="true"/> if the dialog was successfully initialized; otherwise, <see langword="false"/>.</returns>
-        public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
+        public bool InitCloseAppsDialog(IReadOnlyList<ProcessDefinition>? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke<bool>($"InitCloseAppsDialog{(closeProcesses is not null ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(closeProcesses)}" : null)}");
+            return Invoke<bool>($"InitCloseAppsDialog{(closeProcesses is not null ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(new ReadOnlyCollection<ProcessDefinition>(closeProcesses.ToImmutableArray()))}" : null)}");
         }
 
         /// <summary>
@@ -397,10 +399,10 @@ namespace PSADT.ClientServer
         /// preferences.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the windows that match the
         /// specified filters. If no filters are provided, all windows are included in the result.</returns>
-        public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
+        public ISet<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            return Invoke<ReadOnlyCollection<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
+            return Invoke<FrozenSet<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>

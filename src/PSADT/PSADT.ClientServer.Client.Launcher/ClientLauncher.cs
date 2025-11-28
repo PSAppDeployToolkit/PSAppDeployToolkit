@@ -21,7 +21,7 @@ namespace PSADT.ClientServer
             // Set up a new process to run the main application.
             try
             {
-                return ProcessManager.LaunchAsync(new(typeof(ClientLauncher).Assembly.Location.Replace(".Launcher.exe", ".exe"), argv.Length > 0 ? new(argv) : null, Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))!.Task.GetAwaiter().GetResult().ExitCode;
+                return ProcessManager.LaunchAsync(new(typeof(ClientLauncher).Assembly.Location.Replace(".Launcher.exe", ".exe"), argv.Length > 0 ? argv : null, Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))!.Task.GetAwaiter().GetResult().ExitCode;
             }
             catch (Win32Exception ex)
             {

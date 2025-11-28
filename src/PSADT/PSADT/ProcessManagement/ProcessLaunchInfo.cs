@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -41,7 +43,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentException"></exception>
         public ProcessLaunchInfo(
             string filePath,
-            ReadOnlyCollection<string>? argumentList = null,
+            IReadOnlyList<string>? argumentList = null,
             string? workingDirectory = null,
             RunAsActiveUser? runAsActiveUser = null,
             bool useLinkedAdminToken = false,
@@ -85,7 +87,7 @@ namespace PSADT.ProcessManagement
             }
             if (argumentList is not null && argumentList.Count > 0)
             {
-                ArgumentList = argumentList;
+                ArgumentList = new ReadOnlyCollection<string>(argumentList.ToImmutableArray());
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
@@ -135,13 +137,13 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly ReadOnlyDictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD>
-        {
-            { System.Diagnostics.ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
-            { System.Diagnostics.ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
-            { System.Diagnostics.ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
-            { System.Diagnostics.ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED }
-        });
+        private static readonly FrozenDictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = FrozenDictionary.Create<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD>(
+        [
+            new(System.Diagnostics.ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL),
+            new(System.Diagnostics.ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE),
+            new(System.Diagnostics.ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED),
+            new(System.Diagnostics.ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED),
+        ]);
 
         /// <summary>
         /// Gets the file path of the process to launch.

@@ -56,14 +56,14 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     ps.Runspace = this.runspace;
                     this.comboBox.Items.Clear();
-                    this.comboBox.Items.AddRange(ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1") == om.Name && im.Guid == om.Guid && im.Version == om.Version)).ToArray());
+                    this.comboBox.Items.AddRange([.. ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1") == om.Name && im.Guid == om.Guid && im.Version == om.Version))]);
                 }
 
                 // Set up the ComboBox event handler.
                 this.comboBox.SelectedIndexChanged += (sender, e) =>
                 {
                     // Update the listbox with the commands from the selected module.
-                    this.listBox.Items.Clear(); this.listBox.Items.AddRange(((PSModuleInfo)this.comboBox.SelectedItem!).ExportedCommands.Keys.ToArray());
+                    this.listBox.Items.Clear(); this.listBox.Items.AddRange([.. ((PSModuleInfo)this.comboBox.SelectedItem!).ExportedCommands.Keys]);
                 };
 
                 // Set up the ListBox event handler.

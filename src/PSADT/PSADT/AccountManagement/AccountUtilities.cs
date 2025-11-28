@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.DirectoryServices;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -49,16 +49,17 @@ namespace PSADT.AccountManagement
             }
 
             // Initialize the lookup table for well-known SIDs, skipping ones that don't construct.
-            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
-            foreach (WellKnownSidType wellKnownSid in typeof(WellKnownSidType).GetEnumValues())
+            var wellKnownSidTypes = typeof(WellKnownSidType).GetEnumValues();
+            var wellKnownSids = new Dictionary<WellKnownSidType, SecurityIdentifier>(wellKnownSidTypes.Length);
+            foreach (WellKnownSidType wellKnownSidType in wellKnownSidTypes)
             {
-                if (wellKnownSids.ContainsKey(wellKnownSid) || wellKnownSid == WellKnownSidType.LogonIdsSid || (int)wellKnownSid == 80 || (int)wellKnownSid == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
+                if (wellKnownSids.ContainsKey(wellKnownSidType) || wellKnownSidType == WellKnownSidType.LogonIdsSid || (int)wellKnownSidType == 80 || (int)wellKnownSidType == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
                 {
                     continue;
                 }
-                wellKnownSids.Add(wellKnownSid, new(wellKnownSid, LocalAccountDomainSid));
+                wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
             }
-            WellKnownSidLookupTable = new(wellKnownSids);
+            WellKnownSidLookupTable = wellKnownSids.ToFrozenDictionary();
 
             // Determine if the caller is the local system account.
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
@@ -207,6 +208,6 @@ namespace PSADT.AccountManagement
         /// <remarks>This dictionary provides a lookup table for well-known security identifiers (SIDs)
         /// based on their type. It is intended to facilitate quick access to predefined SIDs commonly used in
         /// security-related operations.</remarks>
-        private static readonly ReadOnlyDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
+        private static readonly FrozenDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 
@@ -23,11 +24,11 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessFilter">An optional array of strings specifying parent process names to filter. If <see langword="null"/>, no
         /// filtering is applied based on parent processes.</param>
         [JsonConstructor]
-        public WindowInfoOptions(ReadOnlyCollection<string>? windowTitleFilter = null, ReadOnlyCollection<nint>? windowHandleFilter = null, ReadOnlyCollection<string>? parentProcessFilter = null)
+        public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
         {
-            WindowTitleFilter = windowTitleFilter;
-            WindowHandleFilter = windowHandleFilter;
-            ParentProcessFilter = parentProcessFilter;
+            WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>(windowTitleFilter.ToImmutableArray()) : null;
+            WindowHandleFilter = windowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>(windowHandleFilter.ToImmutableArray()) : null;
+            ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>(parentProcessFilter.ToImmutableArray()) : null;
         }
 
         /// <summary>

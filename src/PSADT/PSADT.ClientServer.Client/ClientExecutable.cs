@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -173,9 +175,9 @@ namespace PSADT.ClientServer
         /// application with an exit code indicating invalid arguments.</remarks>
         /// <param name="argv">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-') and
         /// followed by its corresponding value as a separate argument.</param>
-        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
+        /// <returns>A <see cref="FrozenDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
         /// arguments.</returns>
-        private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
+        private static FrozenDictionary<string, string> ArgvToDictionary(string[] argv)
         {
             // Loop through arguments and match argument names to their values.
             Dictionary<string, string> arguments = [];
@@ -219,7 +221,7 @@ namespace PSADT.ClientServer
             }
 
             // This data should never change once read, so return read-only.
-            return new(arguments);
+            return arguments.ToFrozenDictionary();
         }
 
         /// <summary>
@@ -231,7 +233,7 @@ namespace PSADT.ClientServer
         /// appropriate exit code.</remarks>
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
         /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
-        private static void EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
+        private static void EnterClientServerMode(FrozenDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
             if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || outputPipeHandle is null || string.IsNullOrWhiteSpace(outputPipeHandle))
@@ -526,8 +528,7 @@ namespace PSADT.ClientServer
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
                 // Set up the required variables.
-                ReadOnlyCollection<string> command = argv.SkipWhile(static arg => !File.Exists(arg)).ToList().AsReadOnly();
-                var filePath = command[0]; var argumentList = command.Count > 1 ? command.Skip(1).ToList().AsReadOnly() : null;
+                ImmutableArray<string> command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; var filePath = command[0];
                 var ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 var fileName = Path.GetFileName(filePath); var ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
 
@@ -536,7 +537,7 @@ namespace PSADT.ClientServer
                 ProcessHandle? handle;
                 try
                 {
-                    handle = ProcessManager.LaunchAsync(new(filePath, argumentList, Path.GetDirectoryName(filePath)));
+                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1).ToImmutableArray() : null, Path.GetDirectoryName(filePath)));
                 }
                 finally
                 {
@@ -827,7 +828,7 @@ namespace PSADT.ClientServer
                             {
                                 // Start spinning.
                                 Stopwatch promptToCloseStopwatch = new();
-                                IReadOnlyList<WindowInfo> openWindow;
+                                FrozenSet<WindowInfo> openWindow;
                                 do
                                 {
                                     openWindow = WindowUtilities.GetProcessWindowInfo(null, [window.WindowHandle], null);

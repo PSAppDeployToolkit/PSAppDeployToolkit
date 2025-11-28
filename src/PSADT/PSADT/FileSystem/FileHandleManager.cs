@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,11 +12,11 @@ using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
+using Windows.Wdk.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Memory;
 using Windows.Win32.System.Threading;
-using Windows.Wdk.Foundation;
 
 namespace PSADT.FileSystem
 {
@@ -66,7 +66,7 @@ namespace PSADT.FileSystem
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
-            ObjectTypeLookupTable = new(typeTable);
+            ObjectTypeLookupTable = typeTable.ToFrozenDictionary();
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <returns></returns>
-        public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
+        public static ISet<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Query the system for the required buffer size for handle information.
             var handleEntryExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
@@ -160,14 +160,14 @@ namespace PSADT.FileSystem
                     openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                 }
             });
-            return openHandles.ToList().AsReadOnly();
+            return openHandles.ToFrozenSet();
         }
 
         /// <summary>
         /// Retrieves a list of open handles for the system.
         /// </summary>
         /// <returns></returns>
-        public static IReadOnlyList<FileHandleInfo> GetOpenHandles() => GetOpenHandles(null);
+        public static ISet<FileHandleInfo> GetOpenHandles() => GetOpenHandles(null);
 
         /// <summary>
         /// Closes the specified handles.
@@ -392,14 +392,14 @@ namespace PSADT.FileSystem
                     throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
             }
             var mem = SafeVirtualAllocHandle.Alloc(shellcode.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            mem.Write(shellcode.ToArray());
+            mem.Write([.. shellcode]);
             return mem;
         }
 
         /// <summary>
         /// The lookup table of object types.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
+        private static readonly FrozenDictionary<ushort, string> ObjectTypeLookupTable;
 
         /// <summary>
         /// Represents the function pointer for the NtQueryObject native API method.

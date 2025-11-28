@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -48,7 +50,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Inline lambda to get the command line from the given process.
-            static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
+            static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, FrozenDictionary<string, string> ntPathLookupTable)
             {
                 // Get the command line from the cache if we have it.
                 if (processArgvMap.TryGetValue(process, out var argv))
@@ -74,7 +76,7 @@ namespace PSADT.ProcessManagement
                 // Convert the command line into an argument array.
                 if (commandLine is not null)
                 {
-                    argv = CommandLineUtilities.CommandLineToArgumentList(commandLine).ToArray();
+                    argv = [.. CommandLineUtilities.CommandLineToArgumentList(commandLine)];
                 }
 
                 // If we couldn't get the command line or the file path is malformed, try and get the process's image name.
@@ -88,7 +90,7 @@ namespace PSADT.ProcessManagement
                     {
                         if (!Path.GetExtension(argv[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            argv = (new[] { GetProcessImageName(process, ntPathLookupTable) }).Concat(argv).ToArray();
+                            argv = [.. (new[] { GetProcessImageName(process, ntPathLookupTable) }).Concat(argv)];
                         }
                         else if (!Path.IsPathRooted(argv[0]) || !File.Exists(argv[0]))
                         {
@@ -212,7 +214,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return an ordered list of running processes to the caller.
-            return runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+            return new ReadOnlyCollection<RunningProcess>(runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToImmutableArray());
         }
 
         /// <summary>
@@ -291,8 +293,8 @@ namespace PSADT.ProcessManagement
         /// will be empty.</returns>
         public static IReadOnlyList<Process> GetParentProcesses()
         {
+            var procs = ImmutableArray.CreateBuilder<Process>();
             var proc = Process.GetCurrentProcess();
-            List<Process> procs = [];
             while (true)
             {
                 try
@@ -308,7 +310,7 @@ namespace PSADT.ProcessManagement
                     break;
                 }
             }
-            return procs.AsReadOnly();
+            return new ReadOnlyCollection<Process>(procs.ToImmutable());
         }
 
         /// <summary>
@@ -342,7 +344,7 @@ namespace PSADT.ProcessManagement
         /// <param name="process"></param>
         /// <param name="ntPathLookupTable"></param>
         /// <returns></returns>
-        internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        internal static string GetProcessImageName(Process process, FrozenDictionary<string, string>? ntPathLookupTable = null)
         {
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
             Span<byte> processIdInfoPtr = stackalloc byte[Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>()]; processIdInfoPtr.Clear();
@@ -361,7 +363,7 @@ namespace PSADT.ProcessManagement
                 {
                     processIdInfo.ImageName.Buffer = (char*)pImageName;
                     NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageNameCharArray = processIdInfo.ImageName.Buffer.AsSpan().ToArray();
+                    imageNameCharArray = [.. processIdInfo.ImageName.Buffer.AsSpan()];
                     processIdInfo.ImageName.Buffer = null;
                 }
             }
