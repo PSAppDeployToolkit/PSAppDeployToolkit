@@ -365,17 +365,13 @@ namespace PSADT.LibraryInterfaces
         /// process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentNullException">Thrown if lpEnvironment is null or has been closed.</exception>
-        internal unsafe static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpEnvironment is null || lpEnvironment.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(lpEnvironment));
-            }
             bool lpEnvironmentAddRef = false;
             try
             {
-                lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -386,7 +382,7 @@ namespace PSADT.LibraryInterfaces
             {
                 if (lpEnvironmentAddRef)
                 {
-                    lpEnvironment.DangerousRelease();
+                    lpEnvironment?.DangerousRelease();
                 }
             }
         }

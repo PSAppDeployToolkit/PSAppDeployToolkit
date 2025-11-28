@@ -296,17 +296,13 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation">When the method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns><see langword="true"/> if the process is successfully created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
-        internal unsafe static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpEnvironment is null || lpEnvironment.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(lpEnvironment));
-            }
             bool lpEnvironmentAddRef = false;
             try
             {
-                lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                var res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -317,7 +313,7 @@ namespace PSADT.LibraryInterfaces
             {
                 if (lpEnvironmentAddRef)
                 {
-                    lpEnvironment.DangerousRelease();
+                    lpEnvironment?.DangerousRelease();
                 }
             }
         }
@@ -349,17 +345,13 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A value indicating whether the process was created successfully. Returns <see langword="true"/> if the
         /// process was created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
-        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpEnvironment is null || lpEnvironment.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(lpEnvironment));
-            }
             bool lpEnvironmentAddRef = false;
             try
             {
-                lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -370,7 +362,7 @@ namespace PSADT.LibraryInterfaces
             {
                 if (lpEnvironmentAddRef)
                 {
-                    lpEnvironment.DangerousRelease();
+                    lpEnvironment?.DangerousRelease();
                 }
             }
         }
@@ -405,7 +397,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation">When this method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
-        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
@@ -423,8 +415,8 @@ namespace PSADT.LibraryInterfaces
                     SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                     PWSTR wstrlpCommandLine = plpCommandLine;
                     hToken.DangerousAddRef(ref hTokenAddRef);
-                    lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
-                    var res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                    lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                    var res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                     if (!res)
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -437,7 +429,7 @@ namespace PSADT.LibraryInterfaces
             {
                 if (lpEnvironmentAddRef)
                 {
-                    lpEnvironment.DangerousRelease();
+                    lpEnvironment?.DangerousRelease();
                 }
                 if (hTokenAddRef)
                 {

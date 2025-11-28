@@ -193,11 +193,5 @@ namespace PSADT.SafeHandles
         /// Gets the size of the allocated memory block.
         /// </summary>
         internal int Length { get; private protected set; }
-
-        /// <summary>
-        /// Represents a null safe handle for memory.
-        /// This is a bit cheeky, but it works.
-        /// </summary>
-        internal static readonly SafeMemoryHandle Null = new SafeWtsHandle(IntPtr.Zero, 0, false);
     }
 }
