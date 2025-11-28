@@ -177,7 +177,7 @@ function Install-ADTDeployment
     ## Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
     {
-        Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
+        Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -NoWait
     }
 }
 
