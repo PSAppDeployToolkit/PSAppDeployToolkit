@@ -23,7 +23,7 @@ function Get-ADTCommandTable
     .OUTPUTS
         System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]
 
-        Returns PSAppDeployTookit's safe command lookup table as a ReadOnlyDictionary.
+        Returns PSAppDeployTookit's safe command lookup table as an immutable dictionary.
 
     .EXAMPLE
         Get-ADTCommandTable
@@ -53,5 +53,5 @@ function Get-ADTCommandTable
     }
 
     # Return the output as a read-only dictionary to the caller.
-    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($output)
+    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]][System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary($output, $null)
 }

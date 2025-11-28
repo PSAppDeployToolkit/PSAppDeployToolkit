@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using PSADT.Extensions;
 
@@ -20,7 +22,7 @@ namespace PSADT.Utilities
         /// <param name="value">The collection of strings to process. Each string represents a line.</param>
         /// <returns>An <see cref="IEnumerable{T}"/> of strings with leading and trailing white-space lines removed. The order of
         /// the remaining lines is preserved.</returns>
-        public static IReadOnlyList<string> TrimLeadingTrailingLines(IEnumerable<string> value) => value is not null ? value.Select(static s => s.TrimEndRemoveNull()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly() : throw new ArgumentNullException("The input collection cannot be null.", (Exception?)null);
+        public static IReadOnlyList<string> TrimLeadingTrailingLines(IEnumerable<string> value) => value is not null ? new ReadOnlyCollection<string>(value.Select(static s => s.TrimEndRemoveNull()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToImmutableArray()) : throw new ArgumentNullException("The input collection cannot be null.", (Exception?)null);
 
         /// <summary>
         /// Trims leading and trailing empty lines from the specified string.

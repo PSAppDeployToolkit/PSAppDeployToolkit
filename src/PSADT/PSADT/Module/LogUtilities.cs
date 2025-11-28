@@ -1,14 +1,16 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text;
+using System.Text.RegularExpressions;
 using PSADT.Extensions;
 
 namespace PSADT.Module
@@ -45,7 +47,7 @@ namespace PSADT.Module
             Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
             if (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!)
             {
-                return new ReadOnlyCollection<LogEntry>([]);
+                return new ReadOnlyCollection<LogEntry>(ImmutableArray<LogEntry>.Empty);
             }
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
@@ -109,7 +111,7 @@ namespace PSADT.Module
             {
                 scriptSection = null;
             }
-            var logEntries = message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource)).ToList().AsReadOnly();
+            ImmutableArray<LogEntry> logEntries = [.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource))];
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
@@ -147,19 +149,18 @@ namespace PSADT.Module
                     ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream == HostLogStream.Verbose);
                 }
             }
-            return logEntries;
+            return new ReadOnlyCollection<LogEntry>(logEntries);
         }
 
         /// <summary>
         /// Gets the log severity colors.
         /// </summary>
-        private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
-        [
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
-            new(new Dictionary<string, ConsoleColor> {}),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } })
-        ]);
+        private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(ImmutableArray.Create([
+            FrozenDictionary.Create<string, ConsoleColor>([new("ForegroundColor", ConsoleColor.Green), new("BackgroundColor", ConsoleColor.Black)]),
+            FrozenDictionary.Create<string, ConsoleColor>([]),
+            FrozenDictionary.Create<string, ConsoleColor>([new("ForegroundColor", ConsoleColor.Yellow), new("BackgroundColor", ConsoleColor.Black)]),
+            FrozenDictionary.Create<string, ConsoleColor>([new("ForegroundColor", ConsoleColor.Red), new("BackgroundColor", ConsoleColor.Black)]),
+        ]));
 
         /// <summary>
         /// Gets the session's default log file encoding.

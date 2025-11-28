@@ -92,7 +92,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (state.RunningProcessService is not null)
                 {
                     // Get the current running apps and amend the form accordingly.
-                    var runningApps = (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
+                    string[] runningApps = [.. (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
                     if (runningApps.Length > 0)
                     {
                         this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
@@ -331,7 +331,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.richTextBoxCloseProcesses.Lines = null;
                 if (e.ProcessesToClose.Count > 0)
                 {
-                    var runningApps = e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
+                    string[] runningApps = [.. e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
                     if (logWriter is not null)
                     {
                         logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");

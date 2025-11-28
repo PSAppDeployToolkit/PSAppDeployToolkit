@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 
 namespace PSADT.Types
@@ -33,8 +34,8 @@ namespace PSADT.Types
             bool? isIntuneClientRebootPending,
             bool isAppVRebootPending,
             bool? isFileRenameRebootPending,
-            string[]? pendingFileRenameOperations,
-            ReadOnlyCollection<string> errorMsg)
+            IReadOnlyList<string>? pendingFileRenameOperations,
+            IReadOnlyList<string> errorMsg)
         {
             ComputerName = !string.IsNullOrWhiteSpace(computerName) ? computerName : throw new ArgumentNullException("Computer name cannot be null or empty.", (Exception?)null);
             LastBootUpTime = lastBootUpTime;
@@ -45,8 +46,8 @@ namespace PSADT.Types
             IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations ?? []);
-            ErrorMsg = errorMsg;
+            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations?.Count > 0 ? pendingFileRenameOperations.ToImmutableArray() : ImmutableArray<string>.Empty);
+            ErrorMsg = new ReadOnlyCollection<string>(errorMsg.ToImmutableArray());
         }
 
         /// <summary>

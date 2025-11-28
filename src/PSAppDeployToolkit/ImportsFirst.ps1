@@ -175,12 +175,9 @@ try
     # Remove any previous functions that may have been defined.
     if ($Module.Compiled)
     {
-        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | . {
-            begin
-            {
-                $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
-                $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
-            }
+        $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
+        $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
+        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
             process
             {
                 if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
@@ -192,13 +189,10 @@ try
                     $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.Name.Split(':')[-1])")
                 }
             }
-            end
-            {
-                New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
-                New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
-                Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-            }
         }
+        New-Variable -Name FunctionPaths -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.String[]]$FunctionPaths))) -Force
+        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.String[]]$PrivateFuncs))) -Force
+        Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     }
 }
 catch

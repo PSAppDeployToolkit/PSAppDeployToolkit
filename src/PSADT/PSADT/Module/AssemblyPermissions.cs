@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -90,6 +90,6 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = Directory.GetFiles(Path.GetDirectoryName(typeof(AssemblyPermissions).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToList().AsReadOnly();
+        private static readonly FrozenSet<FileInfo> _assemblies = Directory.GetFiles(Path.GetDirectoryName(typeof(AssemblyPermissions).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToFrozenSet();
     }
 }
