@@ -143,10 +143,15 @@ namespace PSADT.Module
                     }
                     Console.ResetColor();
                 }
-                else
+                else if (hostLogStream != HostLogStream.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream == HostLogStream.Verbose);
+                    ModuleDatabase.InvokeScript(WriteHostDelegate, conOutput, sevCols);
+                }
+                else
+                {
+                    // Write the host output to PowerShell's VerboseStream.
+                    ModuleDatabase.InvokeScript(WriteVerboseDelegate, conOutput);
                 }
             }
             return new ReadOnlyCollection<LogEntry>(logEntries);
@@ -168,9 +173,14 @@ namespace PSADT.Module
         internal static readonly UTF8Encoding LogEncoding = new(true);
 
         /// <summary>
-        /// Gets the Write-LogEntry delegate script block.
+        /// Gets the Write-Host delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Verbose:($args[3])");
+        private static readonly ScriptBlock WriteHostDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-Host' @colours");
+
+        /// <summary>
+        /// Gets the Write-Verbose delegate script block.
+        /// </summary>
+        private static readonly ScriptBlock WriteVerboseDelegate = ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Write-Verbose'");
 
         /// <summary>
         /// Represents a compiled regular expression used to match specific caller commands.

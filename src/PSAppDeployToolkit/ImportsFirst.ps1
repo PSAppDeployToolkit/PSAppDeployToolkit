@@ -169,6 +169,17 @@ try
                     Add-Type -LiteralPath $PSScriptRoot\lib\System.IO.FileSystem.AccessControl.dll
                 }
             }
+            if (!('System.Collections.Immutable.ImmutableArray' -as [System.Type]))
+            {
+                if ($isNetworkLocation)
+                {
+                    [System.Reflection.Assembly]::UnsafeLoadFrom("$PSScriptRoot\lib\System.Collections.Immutable.dll")
+                }
+                else
+                {
+                    Add-Type -LiteralPath $PSScriptRoot\lib\System.Collections.Immutable.dll
+                }
+            }
         }
     }
 
