@@ -478,10 +478,6 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
-            if (ProcessInformation.IsEmpty)
-            {
-                throw new ArgumentNullException(nameof(ProcessInformation));
-            }
             bool ProcessHandleAddRef = false;
             try
             {
