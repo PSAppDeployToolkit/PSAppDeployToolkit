@@ -20,6 +20,7 @@ CreateJobObjectW
 CreateProcessAsUserW
 CreateProcessW
 CreateProcessWithTokenW
+DefineDosDevice
 DestroyEnvironmentBlock
 DuplicateHandle
 DuplicateTokenEx

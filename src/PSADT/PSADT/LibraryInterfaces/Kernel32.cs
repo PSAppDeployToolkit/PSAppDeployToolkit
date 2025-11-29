@@ -972,5 +972,29 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Defines, modifies, or deletes a symbolic link (DOS device name) in the system's device namespace.
+        /// </summary>
+        /// <remarks>This method wraps the Windows DefineDosDevice API and throws an exception if the
+        /// operation fails. Use the appropriate flags to control the behavior of the symbolic link. Administrative
+        /// privileges may be required to modify certain device mappings.</remarks>
+        /// <param name="dwFlags">A combination of flags that specify the operation to perform and how the symbolic link is handled. These
+        /// flags determine whether to create, modify, or remove the mapping, and may affect how the target path is
+        /// interpreted.</param>
+        /// <param name="lpDeviceName">The name of the DOS device (symbolic link) to define, modify, or delete. This value cannot be null or empty.</param>
+        /// <param name="lpTargetPath">The target path for the symbolic link. This parameter is required when creating or modifying a mapping, and
+        /// should be null when deleting a mapping.</param>
+        /// <returns>A value indicating whether the operation succeeded. Returns <see langword="true"/> if the symbolic link was
+        /// defined, modified, or deleted successfully; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS dwFlags, string lpDeviceName, string? lpTargetPath)
+        {
+            var res = PInvoke.DefineDosDevice(dwFlags, lpDeviceName, lpTargetPath);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
     }
 }
