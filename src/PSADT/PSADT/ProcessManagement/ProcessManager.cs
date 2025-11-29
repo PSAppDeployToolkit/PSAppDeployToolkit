@@ -787,16 +787,16 @@ namespace PSADT.ProcessManagement
         /// <remarks>This dictionary contains predefined error messages for various statuses encountered
         /// when attempting to create a process using a token. It is used to provide descriptive error messages based on
         /// the status code returned by the operation.</remarks>
-        private static readonly FrozenDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = FrozenDictionary.Create<CreateProcessUsingTokenStatus, string>(
-        [
-            new(CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege, "The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege."),
-            new(CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege."),
-            new(CreateProcessUsingTokenStatus.JobBreakawayNotPermitted, "The calling process is part of a job that does not allow breakaway."),
-            new(CreateProcessUsingTokenStatus.SeTcbPrivilege, "The calling process does not have the necessary SeTcbPrivilege privilege."),
-            new(CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege."),
-            new(CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found."),
-            new(CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled."),
-        ]);
+        private static readonly FrozenDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = FrozenDictionary.ToFrozenDictionary(new Dictionary<CreateProcessUsingTokenStatus, string>()
+        {
+            { CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege, "The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege." },
+            { CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege." },
+            { CreateProcessUsingTokenStatus.JobBreakawayNotPermitted, "The calling process is part of a job that does not allow breakaway." },
+            { CreateProcessUsingTokenStatus.SeTcbPrivilege, "The calling process does not have the necessary SeTcbPrivilege privilege." },
+            { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege." },
+            { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
+            { CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled." },
+        });
 
         /// <summary>
         /// Represents a compiled, culture-invariant regular expression used to match environment variable patterns.

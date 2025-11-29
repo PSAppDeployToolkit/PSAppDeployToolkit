@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -363,25 +364,25 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly FrozenDictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>> dialogDispatcher = FrozenDictionary.Create<DialogStyle, FrozenDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>>(
-        [
-            new(DialogStyle.Classic, FrozenDictionary.Create<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>(
-            [
-                new(DialogType.CloseAppsDialog, (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!)),
-                new(DialogType.CustomDialog, (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options)),
-                new(DialogType.InputDialog, (options, state) => new Dialogs.Classic.InputDialog((InputDialogOptions)options)),
-                new(DialogType.ProgressDialog, (options, state) => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options)),
-                new(DialogType.RestartDialog, (options, state) => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options)),
-            ])),
-            new(DialogStyle.Fluent, FrozenDictionary.Create<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>(
-            [
-                new(DialogType.CloseAppsDialog, (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!)),
-                new(DialogType.CustomDialog, (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options)),
-                new(DialogType.InputDialog, (options, state) => new Dialogs.Fluent.InputDialog((InputDialogOptions)options)),
-                new(DialogType.ProgressDialog, (options, state) => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options)),
-                new(DialogType.RestartDialog, (options, state) => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options)),
-            ])),
-        ]);
+        private static readonly FrozenDictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>> dialogDispatcher = FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>>()
+        {
+            { DialogStyle.Classic, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>()
+            {
+                { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CustomDialog, (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, (options, state) => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ProgressDialog, (options, state) => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, (options, state) => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
+            })},
+            { DialogStyle.Fluent, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>()
+            {
+                { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CustomDialog, (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, (options, state) => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ProgressDialog, (options, state) => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, (options, state) => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
+            })},
+        });
 
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.

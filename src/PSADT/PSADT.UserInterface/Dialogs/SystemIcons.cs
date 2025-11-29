@@ -75,19 +75,19 @@ namespace PSADT.UserInterface.Dialogs
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
-            SystemIconLookupTable = FrozenDictionary.Create<DialogSystemIcon, Bitmap>(
-            [
-                new(DialogSystemIcon.Application, icons[SHSTOCKICONID.SIID_APPLICATION]),
-                new(DialogSystemIcon.Asterisk, icons[SHSTOCKICONID.SIID_INFO]),
-                new(DialogSystemIcon.Error, icons[SHSTOCKICONID.SIID_ERROR]),
-                new(DialogSystemIcon.Exclamation, icons[SHSTOCKICONID.SIID_WARNING]),
-                new(DialogSystemIcon.Hand, icons[SHSTOCKICONID.SIID_ERROR]),
-                new(DialogSystemIcon.Information, icons[SHSTOCKICONID.SIID_INFO]),
-                new(DialogSystemIcon.Question, icons[SHSTOCKICONID.SIID_HELP]),
-                new(DialogSystemIcon.Shield, icons[SHSTOCKICONID.SIID_SHIELD]),
-                new(DialogSystemIcon.Warning, icons[SHSTOCKICONID.SIID_WARNING]),
-                new(DialogSystemIcon.WinLogo, icons[SHSTOCKICONID.SIID_APPLICATION]),
-            ]);
+            SystemIconLookupTable = FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogSystemIcon, Bitmap>()
+            {
+                { DialogSystemIcon.Application, icons[SHSTOCKICONID.SIID_APPLICATION] },
+                { DialogSystemIcon.Asterisk, icons[SHSTOCKICONID.SIID_INFO] },
+                { DialogSystemIcon.Error, icons[SHSTOCKICONID.SIID_ERROR] },
+                { DialogSystemIcon.Exclamation, icons[SHSTOCKICONID.SIID_WARNING] },
+                { DialogSystemIcon.Hand, icons[SHSTOCKICONID.SIID_ERROR] },
+                { DialogSystemIcon.Information, icons[SHSTOCKICONID.SIID_INFO] },
+                { DialogSystemIcon.Question, icons[SHSTOCKICONID.SIID_HELP] },
+                { DialogSystemIcon.Shield, icons[SHSTOCKICONID.SIID_SHIELD] },
+                { DialogSystemIcon.Warning, icons[SHSTOCKICONID.SIID_WARNING] },
+                { DialogSystemIcon.WinLogo, icons[SHSTOCKICONID.SIID_APPLICATION] },
+            });
         }
 
         /// <summary>
