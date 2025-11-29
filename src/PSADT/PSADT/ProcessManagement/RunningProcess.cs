@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
@@ -17,17 +19,14 @@ namespace PSADT.ProcessManagement
         /// <param name="process"></param>
         /// <param name="description"></param>
         /// <param name="fileName"></param>
-        /// <param name="arguments"></param>
+        /// <param name="argumentList"></param>
         /// <param name="username"></param>
-        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string> arguments, NTAccount? username)
+        internal RunningProcess(Process process, string description, string fileName, IEnumerable<string> argumentList, NTAccount? username)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
             FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
-            if (arguments.Where(static a => !string.IsNullOrWhiteSpace(a)) is var argv && argv.Any())
-            {
-                Arguments = CommandLineUtilities.ArgumentListToCommandLine(argv);
-            }
+            ArgumentList = new ReadOnlyCollection<string>(argumentList.Where(static a => !string.IsNullOrWhiteSpace(a)).ToImmutableArray());
             if (username is not null)
             {
                 Username = username;
@@ -52,7 +51,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the arguments passed to the running process.
         /// </summary>
-        public readonly string? Arguments;
+        public readonly IReadOnlyList<string> ArgumentList;
 
         /// <summary>
         /// Represents the username associated with a Windows NT account.
