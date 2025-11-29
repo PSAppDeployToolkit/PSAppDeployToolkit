@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -97,7 +96,7 @@ namespace PSADT.Security
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }
-            return new ReadOnlyCollection<SE_PRIVILEGE>(privileges.OrderBy(static p => p).ToImmutableArray());
+            return new ReadOnlyCollection<SE_PRIVILEGE>(privileges.OrderBy(static p => p).ToArray());
         }
 
         /// <summary>

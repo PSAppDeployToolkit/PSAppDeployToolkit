@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -432,9 +432,9 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>The method returns a snapshot of the environment variables at the time of the call.
         /// Subsequent changes to the environment variables will not be reflected in the returned dictionary.</remarks>
-        /// <returns>A <see cref="FrozenDictionary{TKey, TValue}"/> where the keys are the names of the environment variables
+        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are the names of the environment variables
         /// and the values are their corresponding values as strings.</returns>
-        private static FrozenDictionary<string, string> GetCallerEnvironmentDictionary() => Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToFrozenDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!);
+        private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary() => new(Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
 
         /// <summary>
         /// Converts a native environment block into a read-only dictionary of environment variables.
@@ -448,7 +448,7 @@ namespace PSADT.ProcessManagement
         /// case-insensitive.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="environmentBlock"/> is invalid, empty, or contains entries that are not in the
         /// expected "Name=Value" format.</exception>
-        private static FrozenDictionary<string, string> EnvironmentBlockToDictionary(SafeEnvironmentBlockHandle environmentBlock)
+        private static ReadOnlyDictionary<string, string> EnvironmentBlockToDictionary(SafeEnvironmentBlockHandle environmentBlock)
         {
             if (environmentBlock.IsInvalid)
             {
@@ -484,7 +484,7 @@ namespace PSADT.ProcessManagement
                 {
                     throw new ArgumentException("The environment block is empty.", nameof(environmentBlock));
                 }
-                return envDict.ToFrozenDictionary();
+                return new(envDict);
             }
             finally
             {
@@ -510,7 +510,7 @@ namespace PSADT.ProcessManagement
         /// Placeholders that cannot be resolved are left unchanged.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
         /// if <paramref name="environment"/> is invalid.</exception>
-        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, FrozenDictionary<string, string> environment)
+        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -540,7 +540,7 @@ namespace PSADT.ProcessManagement
         /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, FrozenDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string commandLine, out string? workingDirectory)
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string commandLine, out string? workingDirectory)
         {
             if (environmentDictionary is not null)
             {
@@ -787,7 +787,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>This dictionary contains predefined error messages for various statuses encountered
         /// when attempting to create a process using a token. It is used to provide descriptive error messages based on
         /// the status code returned by the operation.</remarks>
-        private static readonly FrozenDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = FrozenDictionary.ToFrozenDictionary(new Dictionary<CreateProcessUsingTokenStatus, string>()
+        private static readonly ReadOnlyDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = new(new Dictionary<CreateProcessUsingTokenStatus, string>()
         {
             { CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege, "The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege." },
             { CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege." },

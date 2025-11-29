@@ -169,17 +169,6 @@ try
                     Add-Type -LiteralPath $PSScriptRoot\lib\System.IO.FileSystem.AccessControl.dll
                 }
             }
-            if (!('System.Collections.Immutable.ImmutableArray' -as [System.Type]))
-            {
-                if ($isNetworkLocation)
-                {
-                    [System.Reflection.Assembly]::UnsafeLoadFrom("$PSScriptRoot\lib\System.Collections.Immutable.dll")
-                }
-                else
-                {
-                    Add-Type -LiteralPath $PSScriptRoot\lib\System.Collections.Immutable.dll
-                }
-            }
         }
     }
 
@@ -201,8 +190,8 @@ try
                 }
             }
         }
-        New-Variable -Name FunctionPaths -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.String[]]$FunctionPaths))) -Force
-        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.String[]]$PrivateFuncs))) -Force
+        New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
+        New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
         Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     }
 }

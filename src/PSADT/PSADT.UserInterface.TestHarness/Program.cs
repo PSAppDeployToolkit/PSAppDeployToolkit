@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
@@ -50,7 +49,7 @@ namespace PSADT.UserInterface.TestHarness
             bool dialogAllowMove = false;
             DeploymentType deploymentType = DeploymentType.Install;
 
-            ReadOnlyCollection<ProcessDefinition> appsToClose = new(ImmutableArray.Create<ProcessDefinition>(
+            ReadOnlyCollection<ProcessDefinition> appsToClose = new(
             [
                 new("remotedesktopmanager", "Remote Desktop Manager"),
                 new("chrome", "Google Chrome"),
@@ -70,7 +69,7 @@ namespace PSADT.UserInterface.TestHarness
                 new("notepad", "Windows Notepad"),
                 new("regedit", "Windows Registry Editor"),
                 new("taskmgr", "Windows Task Manager")
-            ]));
+            ]);
 
             TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
 

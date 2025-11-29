@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.DirectoryServices;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -59,7 +59,7 @@ namespace PSADT.AccountManagement
                 }
                 wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
             }
-            WellKnownSidLookupTable = wellKnownSids.ToFrozenDictionary();
+            WellKnownSidLookupTable = new(wellKnownSids);
 
             // Determine if the caller is the local system account.
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
@@ -208,6 +208,6 @@ namespace PSADT.AccountManagement
         /// <remarks>This dictionary provides a lookup table for well-known security identifiers (SIDs)
         /// based on their type. It is intended to facilitate quick access to predefined SIDs commonly used in
         /// security-related operations.</remarks>
-        private static readonly FrozenDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
+        private static readonly ReadOnlyDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
     }
 }

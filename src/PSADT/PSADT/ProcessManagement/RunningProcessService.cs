@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +76,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Raise the event if the list of processes to close has changed.
-                ReadOnlyCollection<string> processDescs = new(_processesToClose.Select(runningProcess => runningProcess.Description).ToImmutableArray());
+                ReadOnlyCollection<string> processDescs = new(_processesToClose.Select(runningProcess => runningProcess.Description).ToArray());
                 if (!_lastProcessDescriptions.SequenceEqual(processDescs))
                 {
                     _lastProcessDescriptions = processDescs;
@@ -104,7 +103,7 @@ namespace PSADT.ProcessManagement
         {
             // Update the list of running processes.
             _runningProcesses = ProcessUtilities.GetRunningProcesses(_processDefinitions);
-            _processesToClose = new ReadOnlyCollection<ProcessToClose>(_runningProcesses.GroupBy(p => p.Description).Select(p => new ProcessToClose(p.First())).ToImmutableArray());
+            _processesToClose = new ReadOnlyCollection<ProcessToClose>(_runningProcesses.GroupBy(p => p.Description).Select(p => new ProcessToClose(p.First())).ToArray());
         }
 
         /// <summary>
@@ -225,7 +224,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The caller's specified process definitions.
         /// </summary>
-        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = processDefinitions?.Count > 0 ? new(processDefinitions.ToImmutableArray()) : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = processDefinitions?.Count > 0 ? new(processDefinitions.ToArray()) : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
 
         /// <summary>
         /// The interval at which to poll for running processes.

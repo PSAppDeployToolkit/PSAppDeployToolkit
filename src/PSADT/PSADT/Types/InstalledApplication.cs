@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -76,7 +75,7 @@ namespace PSADT.Types
                 UninstallStringFilePath = new(argumentList[0]);
                 if (argumentList.Count > 1)
                 {
-                    UninstallStringArgumentList = new ReadOnlyCollection<string>(argumentList.Skip(1).ToImmutableArray());
+                    UninstallStringArgumentList = new ReadOnlyCollection<string>(argumentList.Skip(1).ToArray());
                 }
             }
             if (QuietUninstallString is not null)
@@ -85,7 +84,7 @@ namespace PSADT.Types
                 QuietUninstallStringFilePath = new(argumentList[0]);
                 if (argumentList.Count > 1)
                 {
-                    QuietUninstallStringArgumentList = new ReadOnlyCollection<string>(argumentList.Skip(1).ToImmutableArray());
+                    QuietUninstallStringArgumentList = new ReadOnlyCollection<string>(argumentList.Skip(1).ToArray());
                 }
             }
         }

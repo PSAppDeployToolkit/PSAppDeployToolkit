@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace PSADT.Types
 {
@@ -46,8 +46,8 @@ namespace PSADT.Types
             IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations?.Count > 0 ? pendingFileRenameOperations.ToImmutableArray() : ImmutableArray<string>.Empty);
-            ErrorMsg = new ReadOnlyCollection<string>(errorMsg.ToImmutableArray());
+            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations?.Count > 0 ? pendingFileRenameOperations.ToArray() : []);
+            ErrorMsg = new ReadOnlyCollection<string>(errorMsg.ToArray());
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace PSADT.WindowManagement
@@ -26,9 +26,9 @@ namespace PSADT.WindowManagement
         [JsonConstructor]
         public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
         {
-            WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>(windowTitleFilter.ToImmutableArray()) : null;
-            WindowHandleFilter = windowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>(windowHandleFilter.ToImmutableArray()) : null;
-            ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>(parentProcessFilter.ToImmutableArray()) : null;
+            WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>(windowTitleFilter.ToArray()) : null;
+            WindowHandleFilter = windowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>(windowHandleFilter.ToArray()) : null;
+            ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>(parentProcessFilter.ToArray()) : null;
         }
 
         /// <summary>

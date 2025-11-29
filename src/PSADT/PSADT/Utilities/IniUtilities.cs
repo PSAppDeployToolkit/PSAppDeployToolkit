@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
@@ -101,7 +100,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = new char[65536];
             var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-            return new ReadOnlyCollection<string>(buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToImmutableArray());
+            return new(buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToArray());
         }
 
         /// <summary>
