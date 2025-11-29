@@ -161,10 +161,10 @@ namespace PSADT.Module
         /// Gets the log severity colors.
         /// </summary>
         private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(ImmutableArray.Create([
-            FrozenDictionary.Create<string, ConsoleColor>([new("ForegroundColor", ConsoleColor.Green), new("BackgroundColor", ConsoleColor.Black)]),
-            FrozenDictionary.Create<string, ConsoleColor>([]),
-            FrozenDictionary.Create<string, ConsoleColor>([new("ForegroundColor", ConsoleColor.Yellow), new("BackgroundColor", ConsoleColor.Black)]),
-            FrozenDictionary.Create<string, ConsoleColor>([new("ForegroundColor", ConsoleColor.Red), new("BackgroundColor", ConsoleColor.Black)]),
+            new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }.ToFrozenDictionary(),
+            new Dictionary<string, ConsoleColor>() { }.ToFrozenDictionary(),
+            new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }.ToFrozenDictionary(),
+            new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } }.ToFrozenDictionary(),
         ]));
 
         /// <summary>

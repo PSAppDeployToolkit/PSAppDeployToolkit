@@ -157,7 +157,7 @@ try
 
         end
         {
-            # Load in FileSystemAclExtensions if it's not available (i.e. Windows PowerShell).
+            # Load in a number of assemblies if they're not available (i.e. Windows PowerShell).
             if (!('System.IO.FileSystemAclExtensions' -as [System.Type]))
             {
                 if ($isNetworkLocation)

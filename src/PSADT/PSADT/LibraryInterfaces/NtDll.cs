@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
@@ -505,11 +506,11 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
-        internal static FrozenDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = FrozenDictionary.Create<OBJECT_INFORMATION_CLASS, int>(
-        [
-            new(OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>()),
-            new(OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>()),
-            new(OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf<OBJECT_TYPES_INFORMATION>())
-        ]);
+        internal static FrozenDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<OBJECT_INFORMATION_CLASS, int>()
+        {
+            { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
+            { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
+            { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf < OBJECT_TYPES_INFORMATION >() }
+        });
     }
 }

@@ -118,12 +118,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonRight.Visibility = Visibility.Collapsed;
 
             // Set up everything related to the dialog icon.
-            _dialogBitmapCache = FrozenDictionary.Create<ApplicationTheme, BitmapSource>(
-            [
-                new(ApplicationTheme.Light, GetIcon(options.AppIconImage)),
-                new(ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage)),
+            _dialogBitmapCache = FrozenDictionary.ToFrozenDictionary(new Dictionary<ApplicationTheme, BitmapSource>()
+            {
+                { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
+                { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage) },
 
-            ]);
+            });
             ThemeManager.AddActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
             SetDialogIcon();
 
