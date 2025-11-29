@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -66,7 +66,7 @@ namespace PSADT.FileSystem
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
-            ObjectTypeLookupTable = typeTable.ToFrozenDictionary();
+            ObjectTypeLookupTable = new(typeTable);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <returns></returns>
-        public static ISet<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Query the system for the required buffer size for handle information.
             var handleEntryExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
@@ -160,14 +160,14 @@ namespace PSADT.FileSystem
                     openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                 }
             });
-            return openHandles.ToFrozenSet();
+            return new ReadOnlyCollection<FileHandleInfo>(openHandles.ToArray());
         }
 
         /// <summary>
         /// Retrieves a list of open handles for the system.
         /// </summary>
         /// <returns></returns>
-        public static ISet<FileHandleInfo> GetOpenHandles() => GetOpenHandles(null);
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles() => GetOpenHandles(null);
 
         /// <summary>
         /// Closes the specified handles.
@@ -399,7 +399,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The lookup table of object types.
         /// </summary>
-        private static readonly FrozenDictionary<ushort, string> ObjectTypeLookupTable;
+        private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
 
         /// <summary>
         /// Represents the function pointer for the NtQueryObject native API method.

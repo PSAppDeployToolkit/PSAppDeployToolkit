@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
@@ -111,7 +110,7 @@ namespace PSADT.ProcessManagement
         private static ReadOnlyCollection<string> CommandLineToArgumentListStrict(ReadOnlySpan<char> commandLine)
         {
             // Build the argument list from the command line span and return it.
-            var arguments = ImmutableArray.CreateBuilder<string>(); int position = 0;
+            List<string> arguments = []; int position = 0;
             while (position < commandLine.Length)
             {
                 SkipWhitespace(commandLine, ref position);
@@ -121,7 +120,7 @@ namespace PSADT.ProcessManagement
                 }
                 arguments.Add(ParseSingleArgument(commandLine, ref position));
             }
-            return new(arguments.ToImmutable());
+            return arguments.AsReadOnly();
         }
 
         /// <summary>
@@ -132,7 +131,7 @@ namespace PSADT.ProcessManagement
         private static ReadOnlyCollection<string> CommandLineToArgumentListEnhanced(ReadOnlySpan<char> commandLine)
         {
             // Build the argument list from the command line span and return it.
-            var arguments = ImmutableArray.CreateBuilder<string>(); int position = 0;
+            List<string> arguments = []; int position = 0;
             while (position < commandLine.Length)
             {
                 // Check for key=value patterns first - these should be parsed with special handling.
@@ -155,7 +154,7 @@ namespace PSADT.ProcessManagement
                     arguments.Add(ConvertPosixPathToWindows(ParseSingleArgument(commandLine, ref position)));
                 }
             }
-            return new(arguments.ToImmutable());
+            return arguments.AsReadOnly();
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
@@ -14,7 +14,7 @@ namespace PSADT.WindowManagement
         /// Enumerates all top-level windows on the screen.
         /// </summary>
         /// <returns>A list of window handles.</returns>
-        internal static FrozenSet<HWND> EnumWindows()
+        internal static ReadOnlyCollection<HWND> EnumWindows()
         {
             List<HWND> windows = [];
             User32.EnumWindows((hWnd, lParam) =>
@@ -25,7 +25,7 @@ namespace PSADT.WindowManagement
                 }
                 return true;
             }, IntPtr.Zero);
-            return windows.ToFrozenSet();
+            return windows.AsReadOnly();
         }
 
         /// <summary>

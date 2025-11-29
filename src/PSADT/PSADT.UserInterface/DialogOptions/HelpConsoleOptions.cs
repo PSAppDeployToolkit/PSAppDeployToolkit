@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.PowerShell;
@@ -34,7 +33,7 @@ namespace PSADT.UserInterface.DialogOptions
 
             // The hashtable was correctly defined, assign the remaining values.
             ExecutionPolicy = executionPolicy;
-            ModuleData = new(modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } }).ToImmutableArray());
+            ModuleData = new(modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } }).ToArray());
         }
 
         /// <summary>
@@ -64,7 +63,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// cref="ModuleSpecification"/> instances. This property provides a snapshot of the module specifications at
         /// the time of access.</remarks>
         [JsonIgnore]
-        public IReadOnlyList<ModuleSpecification> Modules => new ReadOnlyCollection<ModuleSpecification>(ModuleData.Select(static m => new ModuleSpecification(m)).ToImmutableArray());
+        public IReadOnlyList<ModuleSpecification> Modules => new ReadOnlyCollection<ModuleSpecification>(ModuleData.Select(static m => new ModuleSpecification(m)).ToArray());
 
         /// <summary>
         /// Represents a collection of module data.

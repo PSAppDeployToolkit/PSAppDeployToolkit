@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
@@ -23,7 +23,7 @@ namespace PSADT.FileSystem
         /// Returns a lookup table for NT paths to drive letters.
         /// </summary>
         /// <returns></returns>
-        internal static FrozenDictionary<string, string> GetNtPathLookupTable()
+        internal static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
         {
             var lookupTable = new Dictionary<string, string> { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
@@ -48,7 +48,7 @@ namespace PSADT.FileSystem
                 }
                 targetPath.Clear();
             }
-            return lookupTable.ToFrozenDictionary();
+            return new(lookupTable);
         }
 
         /// <summary>

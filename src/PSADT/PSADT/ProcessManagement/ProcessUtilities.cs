@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -50,7 +48,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Inline lambda to get the command line from the given process.
-            static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, FrozenDictionary<string, string> ntPathLookupTable)
+            static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
                 // Get the command line from the cache if we have it.
                 if (processArgvMap.TryGetValue(process, out var argv))
@@ -214,7 +212,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return an ordered list of running processes to the caller.
-            return new ReadOnlyCollection<RunningProcess>(runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToImmutableArray());
+            return new ReadOnlyCollection<RunningProcess>(runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToArray());
         }
 
         /// <summary>
@@ -293,7 +291,7 @@ namespace PSADT.ProcessManagement
         /// will be empty.</returns>
         public static IReadOnlyList<Process> GetParentProcesses()
         {
-            var procs = ImmutableArray.CreateBuilder<Process>();
+            List<Process> procs = [];
             var proc = Process.GetCurrentProcess();
             while (true)
             {
@@ -310,7 +308,7 @@ namespace PSADT.ProcessManagement
                     break;
                 }
             }
-            return new ReadOnlyCollection<Process>(procs.ToImmutable());
+            return procs.AsReadOnly();
         }
 
         /// <summary>
@@ -344,7 +342,7 @@ namespace PSADT.ProcessManagement
         /// <param name="process"></param>
         /// <param name="ntPathLookupTable"></param>
         /// <returns></returns>
-        internal static string GetProcessImageName(Process process, FrozenDictionary<string, string>? ntPathLookupTable = null)
+        internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
             Span<byte> processIdInfoPtr = stackalloc byte[Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>()]; processIdInfoPtr.Clear();

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using PSADT.Utilities;
 
 namespace PSADT.ProcessManagement
@@ -38,9 +38,9 @@ namespace PSADT.ProcessManagement
         /// <param name="interleaved">The interleaved output of the process.</param>
         public ProcessResult(int exitCode, IReadOnlyList<string> stdOut, IReadOnlyList<string> stdErr, IReadOnlyList<string> interleaved) : this(exitCode)
         {
-            StdOut = new ReadOnlyCollection<string>(MiscUtilities.TrimLeadingTrailingLines(stdOut).ToImmutableArray());
-            StdErr = new ReadOnlyCollection<string>(MiscUtilities.TrimLeadingTrailingLines(stdErr).ToImmutableArray());
-            Interleaved = new ReadOnlyCollection<string>(MiscUtilities.TrimLeadingTrailingLines(interleaved).ToImmutableArray());
+            StdOut = new ReadOnlyCollection<string>(MiscUtilities.TrimLeadingTrailingLines(stdOut).ToArray());
+            StdErr = new ReadOnlyCollection<string>(MiscUtilities.TrimLeadingTrailingLines(stdErr).ToArray());
+            Interleaved = new ReadOnlyCollection<string>(MiscUtilities.TrimLeadingTrailingLines(interleaved).ToArray());
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Security.Principal;
 using Microsoft.Win32;
@@ -31,11 +30,11 @@ namespace PSADT.AccountManagement
             using var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
             if (datastore is null)
             {
-                return new ReadOnlyCollection<GroupPolicyAccountInfo>(ImmutableList<GroupPolicyAccountInfo>.Empty);
+                return new ReadOnlyCollection<GroupPolicyAccountInfo>([]);
             }
 
             // Create list to hold the account information and process each found SID, returning the accumulated results.
-            var accountInfoList = ImmutableArray.CreateBuilder<GroupPolicyAccountInfo>();
+            List<GroupPolicyAccountInfo> accountInfoList = [];
             foreach (var sid in datastore.GetSubKeyNames())
             {
                 // Skip over anything that's not a proper SID.
@@ -62,7 +61,7 @@ namespace PSADT.AccountManagement
                     }
                 }
             }
-            return new ReadOnlyCollection<GroupPolicyAccountInfo>(accountInfoList.ToImmutable());
+            return accountInfoList.AsReadOnly();
         }
 
         /// <summary>

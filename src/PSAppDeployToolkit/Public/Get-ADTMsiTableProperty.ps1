@@ -214,7 +214,7 @@ function Get-ADTMsiTableProperty
                 # We also can't use a pscustomobject accelerator here as the MSI may have the same keys with different casing, necessitating the use of a dictionary for storage.
                 if ($TableProperties.Count)
                 {
-                    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary($TableProperties, $null)
+                    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]::new($TableProperties)
                 }
             }
             catch

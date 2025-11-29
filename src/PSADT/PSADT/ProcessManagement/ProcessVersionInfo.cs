@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -51,7 +49,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
         /// resolve paths within the process's version information.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
-        internal static ProcessVersionInfo GetVersionInfo(Process process, FrozenDictionary<string, string> ntPathLookupTable) => new(process, null, ntPathLookupTable);
+        internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable) => new(process, null, ntPathLookupTable);
 
         /// <summary>
         /// Retrieves version information for a specified process and file path.
@@ -73,7 +71,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary for resolving NT paths to user-friendly paths. If <see langword="null"/>, a default lookup table will be used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
-        private ProcessVersionInfo(Process process, string? filePath, FrozenDictionary<string, string>? ntPathLookupTable)
+        private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
             // Validate the input process.
             if (process is null)
@@ -292,7 +290,7 @@ namespace PSADT.ProcessManagement
             translationCombinations.Add("040904B0");
             translationCombinations.Add("040904E4");
             translationCombinations.Add("04090000");
-            return new(translationCombinations.Distinct().ToImmutableArray());
+            return new(translationCombinations.Distinct().ToArray());
         }
 
         /// <summary>

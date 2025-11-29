@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -26,7 +25,7 @@ namespace PSADT.ProcessManagement
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
             FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
-            ArgumentList = new ReadOnlyCollection<string>(argumentList.Where(static a => !string.IsNullOrWhiteSpace(a)).ToImmutableArray());
+            ArgumentList = new ReadOnlyCollection<string>(argumentList.Where(static a => !string.IsNullOrWhiteSpace(a)).ToArray());
             if (username is not null)
             {
                 Username = username;

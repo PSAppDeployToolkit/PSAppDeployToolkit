@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -210,7 +209,7 @@ namespace PSADT.ClientServer
         public bool InitCloseAppsDialog(IReadOnlyList<ProcessDefinition>? closeProcesses)
         {
             _logSource = "Show-ADTInstallationWelcome";
-            return Invoke<bool>($"InitCloseAppsDialog{(closeProcesses is not null ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(new ReadOnlyCollection<ProcessDefinition>(closeProcesses.ToImmutableArray()))}" : null)}");
+            return Invoke<bool>($"InitCloseAppsDialog{(closeProcesses is not null ? $"{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(new ReadOnlyCollection<ProcessDefinition>(closeProcesses.ToArray()))}" : null)}");
         }
 
         /// <summary>
@@ -399,10 +398,10 @@ namespace PSADT.ClientServer
         /// preferences.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the windows that match the
         /// specified filters. If no filters are provided, all windows are included in the result.</returns>
-        public ISet<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
+        public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            return Invoke<FrozenSet<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
+            return Invoke<ReadOnlyCollection<WindowInfo>>($"GetProcessWindowInfo{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(options)}");
         }
 
         /// <summary>

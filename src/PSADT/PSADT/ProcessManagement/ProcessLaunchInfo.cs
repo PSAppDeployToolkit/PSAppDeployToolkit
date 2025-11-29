@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using PSADT.LibraryInterfaces;
@@ -43,7 +42,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentException"></exception>
         public ProcessLaunchInfo(
             string filePath,
-            IReadOnlyList<string>? argumentList = null,
+            IEnumerable<string>? argumentList = null,
             string? workingDirectory = null,
             RunAsActiveUser? runAsActiveUser = null,
             bool useLinkedAdminToken = false,
@@ -85,9 +84,9 @@ namespace PSADT.ProcessManagement
             {
                 WorkingDirectory = workingDirectory!.Trim();
             }
-            if (argumentList is not null && argumentList.Count > 0)
+            if (argumentList?.Any() == true)
             {
-                ArgumentList = new ReadOnlyCollection<string>(argumentList.ToImmutableArray());
+                ArgumentList = new ReadOnlyCollection<string>(argumentList.ToArray());
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
@@ -137,7 +136,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly FrozenDictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = FrozenDictionary.ToFrozenDictionary(new Dictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD>()
+        private static readonly ReadOnlyDictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD>()
         {
             { System.Diagnostics.ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
             { System.Diagnostics.ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },

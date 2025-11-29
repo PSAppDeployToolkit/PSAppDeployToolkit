@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -28,7 +27,7 @@ namespace PSADT.WindowManagement
         /// names match one or more of the specified names will be included.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the visible windows that match
         /// the specified filters. If no filters are provided, all visible windows are included.</returns>
-        internal static FrozenSet<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
         {
             // Get the list of processes based on the provided filters.
             var processes = windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
@@ -71,7 +70,7 @@ namespace PSADT.WindowManagement
             }
 
             // Return the list of window information.
-            return windowInfos.ToFrozenSet();
+            return windowInfos.AsReadOnly();
         }
 
         /// <summary>
@@ -84,6 +83,6 @@ namespace PSADT.WindowManagement
         /// parent process filters.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects representing the windows that match the specified
         /// filters. The list will be empty if no windows match the criteria.</returns>
-        internal static FrozenSet<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options) => GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter);
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options) => GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter);
     }
 }

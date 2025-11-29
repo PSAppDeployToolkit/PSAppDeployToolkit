@@ -16,8 +16,10 @@ function Private:New-ADTEnvironmentTable
         [System.Collections.IDictionary]$AdditionalEnvironmentVariables
     )
 
-    ## Variables: Toolkit Info
+    # Perform initial setup.
     $variables = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+
+    ## Variables: Toolkit Info
     $variables.Add('appDeployToolkitName', $MyInvocation.MyCommand.Module.Name)
     $variables.Add('appDeployToolkitPath', $MyInvocation.MyCommand.Module.ModuleBase)
     $variables.Add('appDeployMainScriptVersion', $MyInvocation.MyCommand.Module.Version)
@@ -51,7 +53,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envHomePath', [System.Environment]::GetEnvironmentVariable('HOMEPATH'))
     $variables.Add('envHomeShare', [System.Environment]::GetEnvironmentVariable('HOMESHARE'))
     $variables.Add('envLocalAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData))
-    $variables.Add('envLogicalDrives', [System.Collections.Generic.IReadOnlyList[System.String]][System.Collections.ObjectModel.ReadOnlyCollection[System.String]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.Environment]::GetLogicalDrives())))
+    $variables.Add('envLogicalDrives', [System.Collections.Generic.IReadOnlyList[System.String]][System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.Environment]::GetLogicalDrives())
     $variables.Add('envProgramData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envPublic', [System.Environment]::GetEnvironmentVariable('PUBLIC'))
     $variables.Add('envSystemDrive', [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory).TrimEnd('\'))
@@ -296,10 +298,10 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
-    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]]::new([System.Collections.Immutable.ImmutableArray]::Create([PSADT.TerminalServices.SessionInfo[]](Get-ADTLoggedOnUser 4>$null))))
+    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionInfo[]](Get-ADTLoggedOnUser 4>$null))
     if ($variables.LoggedOnUserSessions)
     {
-        $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)))
+        $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
         $variables.Add('CurrentLoggedOnUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
         $variables.Add('CurrentConsoleUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
         $variables.Add('LoggedOnUserSessionsText', ($($variables.LoggedOnUserSessions) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
@@ -322,7 +324,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('runasUserProfile', $(if ($variables.userProfileName) { Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore }))
 
     ## Variables: Invalid FileName Characters
-    $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]]::new([System.Collections.Immutable.ImmutableArray]::Create([System.IO.Path]::GetInvalidFileNameChars())))
+    $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]][System.IO.Path]::GetInvalidFileNameChars())
     $variables.Add('invalidFileNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.Management.Automation.Language.NullString]::Value, $variables.invalidFileNameChars)))]", [System.Text.RegularExpressions.RegexOptions]::Compiled))
 
     ## Variables: RegEx Patterns
@@ -339,5 +341,5 @@ function Private:New-ADTEnvironmentTable
     }
 
     # Return variables for use within the module.
-    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.Frozen.FrozenDictionary]::ToFrozenDictionary($variables, $null)
+    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$variables
 }

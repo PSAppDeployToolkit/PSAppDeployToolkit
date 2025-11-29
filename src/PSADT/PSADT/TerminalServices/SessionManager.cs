@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -40,7 +38,7 @@ namespace PSADT.TerminalServices
                 int objLength = Marshal.SizeOf<WTS_SESSION_INFOW>();
                 int objCount = pSessionInfo.Length / objLength;
                 var pSessionInfoSpan = pSessionInfo.AsSpan();
-                var sessions = ImmutableArray.CreateBuilder<SessionInfo>(objCount);
+                var sessions = new List<SessionInfo>(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
                     ref var session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan.Slice(objLength * i)));
@@ -49,7 +47,7 @@ namespace PSADT.TerminalServices
                         sessions.Add(sessionInfo);
                     }
                 }
-                return new ReadOnlyCollection<SessionInfo>(sessions.ToImmutable());
+                return sessions.AsReadOnly();
             }
         }
 

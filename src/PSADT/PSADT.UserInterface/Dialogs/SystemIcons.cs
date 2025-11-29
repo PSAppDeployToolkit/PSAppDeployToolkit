@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using PSADT.LibraryInterfaces;
@@ -75,7 +74,7 @@ namespace PSADT.UserInterface.Dialogs
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
-            SystemIconLookupTable = FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogSystemIcon, Bitmap>()
+            SystemIconLookupTable = new(new Dictionary<DialogSystemIcon, Bitmap>()
             {
                 { DialogSystemIcon.Application, icons[SHSTOCKICONID.SIID_APPLICATION] },
                 { DialogSystemIcon.Asterisk, icons[SHSTOCKICONID.SIID_INFO] },
@@ -109,6 +108,6 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        private static readonly FrozenDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable;
+        private static readonly ReadOnlyDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable;
     }
 }
