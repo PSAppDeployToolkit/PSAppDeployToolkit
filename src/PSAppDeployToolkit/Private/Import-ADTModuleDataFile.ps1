@@ -71,7 +71,7 @@ function Private:Import-ADTModuleDataFile
     }
 
     # Establish directory paths for the specified input.
-    $moduleDirectory = $Script:ADT.Directories.Defaults.([System.IO.Path]::GetFileNameWithoutExtension($FileName))
+    $moduleDirectory = $Script:ADT.Directories.Defaults.([System.Globalization.CultureInfo]::InvariantCulture.TextInfo.ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName)))
     $callerDirectory = $BaseDirectory
 
     # If we're running a release module, ensure the psd1 files haven't been tampered with.

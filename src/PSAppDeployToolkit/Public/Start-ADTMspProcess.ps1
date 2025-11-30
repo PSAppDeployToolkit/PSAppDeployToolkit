@@ -148,22 +148,9 @@ function Start-ADTMspProcess
                     throw (New-ADTErrorRecord @naerParams)
                 }
 
-                # Create a Windows Installer object and open the database in read-only mode.
+                # Check the underlying product is installed before proceeding.
                 Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
-                [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
-                [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
-
-                # Get the SummaryInformation from the Windows Installer database and store all product codes found.
-                [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                $AllTargetedProductCodes = Get-ADTApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
-
-                # Free our COM objects.
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Database)
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Installer)
-
-                # If the application is installed, patch it.
-                if ($AllTargetedProductCodes)
+                if (Get-ADTApplication -ProductCode ([PSADT.Utilities.MsiUtilities]::GetMspSupportedProductCodes($mspFile)))
                 {
                     Start-ADTMsiProcess -Action Patch @PSBoundParameters
                 }

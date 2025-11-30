@@ -116,11 +116,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lParam">An optional string value to be passed to the callback function. Can be <see langword="null"/>.</param>
         /// <returns>A nonzero value if the function succeeds; otherwise, zero. If the callback function returns <see
         /// langword="false"/>, the enumeration stops and the return value is zero.</returns>
-        internal unsafe static BOOL EnumWindows(WNDENUMPROC lpEnumFunc, string? lParam)
+        internal static BOOL EnumWindows(WNDENUMPROC lpEnumFunc, string? lParam)
         {
-            fixed (char* lParamPtr = lParam)
+            unsafe
             {
-                return EnumWindows(lpEnumFunc, (IntPtr)lParamPtr);
+                fixed (char* lParamPtr = lParam)
+                {
+                    return EnumWindows(lpEnumFunc, (IntPtr)lParamPtr);
+                }
             }
         }
 
@@ -278,7 +281,7 @@ namespace PSADT.LibraryInterfaces
         /// message is processed before the timeout elapses.</param>
         /// <returns>The result code from the SendMessageTimeout operation. If the message is processed successfully, the return
         /// value is nonzero.</returns>
-        internal unsafe static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
             var res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam, fuFlags, uTimeout, out lpdwResult);
             if (res == default)
@@ -305,12 +308,15 @@ namespace PSADT.LibraryInterfaces
         /// uninitialized.</param>
         /// <returns>A value of type LRESULT that indicates the result of the message processing. If the function fails, the
         /// return value is zero.</returns>
-        internal unsafe static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
-            fixed (char* wParamPtr = wParam)
-            fixed (char* lParamPtr = lParam)
+            unsafe
             {
-                return SendMessageTimeout(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr, fuFlags, uTimeout, out lpdwResult);
+                fixed (char* wParamPtr = wParam)
+                fixed (char* lParamPtr = lParam)
+                {
+                    return SendMessageTimeout(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr, fuFlags, uTimeout, out lpdwResult);
+                }
             }
         }
 
@@ -366,12 +372,15 @@ namespace PSADT.LibraryInterfaces
         /// <param name="wParam">The string value to be passed as the wParam parameter of the message. Can be null.</param>
         /// <param name="lParam">The string value to be passed as the lParam parameter of the message. Can be null.</param>
         /// <returns>A value of type LRESULT that contains the result of processing the message by the target window.</returns>
-        internal unsafe static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
+        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
         {
-            fixed (char* wParamPtr = wParam)
-            fixed (char* lParamPtr = lParam)
+            unsafe
             {
-                return SendMessage(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr);
+                fixed (char* wParamPtr = wParam)
+                fixed (char* lParamPtr = lParam)
+                {
+                    return SendMessage(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr);
+                }
             }
         }
 

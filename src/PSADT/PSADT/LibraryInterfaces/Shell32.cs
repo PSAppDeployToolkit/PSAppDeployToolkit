@@ -128,7 +128,13 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwItem2">A pointer to a second item or structure relevant to the event, as defined by the event type and flags. The
         /// interpretation depends on the values of wEventId and uFlags. This parameter is optional and may be
         /// IntPtr.Zero if not required.</param>
-        internal unsafe static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] IntPtr dwItem1, [Optional] IntPtr dwItem2) => PInvoke.SHChangeNotify(wEventId, uFlags, dwItem1.ToPointer(), dwItem2.ToPointer());
+        internal static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] IntPtr dwItem1, [Optional] IntPtr dwItem2)
+        {
+            unsafe
+            {
+                PInvoke.SHChangeNotify(wEventId, uFlags, dwItem1.ToPointer(), dwItem2.ToPointer());
+            }
+        }
 
         /// <summary>
         /// Retrieves information about a file or folder, such as its icon, display name, and type, using the Windows

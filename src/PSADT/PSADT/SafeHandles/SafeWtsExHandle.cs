@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.Utilities;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.System.RemoteDesktop;
 
 namespace PSADT.SafeHandles
@@ -16,13 +17,17 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override unsafe bool ReleaseHandle()
+        protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
-            var res = PInvoke.WTSFreeMemoryEx(type, handle.ToPointer(), (uint)(Length / WtsTypeClassSizes[(int)type]));
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.WTSFreeMemoryEx(type, handle.ToPointer(), (uint)(Length / WtsTypeClassSizes[(int)type]));
+            }
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();

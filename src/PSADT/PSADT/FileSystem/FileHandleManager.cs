@@ -12,11 +12,11 @@ using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
+using Windows.Wdk.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Memory;
 using Windows.Win32.System.Threading;
-using Windows.Wdk.Foundation;
 
 namespace PSADT.FileSystem
 {
@@ -147,7 +147,7 @@ namespace PSADT.FileSystem
                     objectName = GetObjectName(currentProcessHandle, fileDupHandle);
                 }
 
-                // Skip to next iteration if the handle doesn't meet our criteria.
+                // Skip to next iteration if the handle doesn't meet our criteria
                 if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
                 {
                     return;
@@ -160,7 +160,7 @@ namespace PSADT.FileSystem
                     openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                 }
             });
-            return openHandles.ToList().AsReadOnly();
+            return new ReadOnlyCollection<FileHandleInfo>(openHandles.ToArray());
         }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace PSADT.FileSystem
                     throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
             }
             var mem = SafeVirtualAllocHandle.Alloc(shellcode.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            mem.Write(shellcode.ToArray());
+            mem.Write([.. shellcode]);
             return mem;
         }
 

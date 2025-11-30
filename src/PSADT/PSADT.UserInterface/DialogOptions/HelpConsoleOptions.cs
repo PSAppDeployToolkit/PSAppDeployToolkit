@@ -26,14 +26,14 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("ExecutionPolicy value is null or invalid.", (Exception?)null);
             }
-            if (options["Modules"] is not ReadOnlyCollection<ModuleSpecification> modules || modules.Count == 0 || modules.Any(static m => string.IsNullOrWhiteSpace(m.Name) || m.Guid is null || m.Version is null))
+            if (options["Modules"] is not IReadOnlyList<ModuleSpecification> modules || modules.Count == 0 || modules.Any(static m => string.IsNullOrWhiteSpace(m.Name) || m.Guid is null || m.Version is null))
             {
                 throw new ArgumentNullException("Modules value is null or invalid.", (Exception?)null);
             }
 
             // The hashtable was correctly defined, assign the remaining values.
             ExecutionPolicy = executionPolicy;
-            ModuleData = modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } }).ToList().AsReadOnly();
+            ModuleData = new(modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } }).ToArray());
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// cref="ModuleSpecification"/> instances. This property provides a snapshot of the module specifications at
         /// the time of access.</remarks>
         [JsonIgnore]
-        public IReadOnlyList<ModuleSpecification> Modules => ModuleData.Select(static m => new ModuleSpecification(m)).ToList().AsReadOnly();
+        public IReadOnlyList<ModuleSpecification> Modules => new ReadOnlyCollection<ModuleSpecification>(ModuleData.Select(static m => new ModuleSpecification(m)).ToArray());
 
         /// <summary>
         /// Represents a collection of module data.

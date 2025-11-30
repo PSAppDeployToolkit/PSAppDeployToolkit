@@ -49,7 +49,7 @@ function Show-ADTHelpConsole
     # Set up all the options needed for the HelpConsole dialog.
     [PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$options = @{
         ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy](Get-ExecutionPolicy)
-        Modules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]][Microsoft.PowerShell.Commands.ModuleSpecification[]]$(Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
+        Modules = [Microsoft.PowerShell.Commands.ModuleSpecification[]]$(Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
                 process
                 {
                     return @{

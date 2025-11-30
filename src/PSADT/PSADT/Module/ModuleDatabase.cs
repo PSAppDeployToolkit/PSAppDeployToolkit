@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 
@@ -107,7 +107,7 @@ namespace PSADT.Module
         /// <param name="scriptBlock"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        internal static Collection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args) => _sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args);
+        internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args) => new(_sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args));
 
         /// <summary>
         /// Represents the PSAppDeployToolkit module's internal database.

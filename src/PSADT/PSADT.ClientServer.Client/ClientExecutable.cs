@@ -526,8 +526,7 @@ namespace PSADT.ClientServer
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
                 // Set up the required variables.
-                ReadOnlyCollection<string> command = argv.SkipWhile(static arg => !File.Exists(arg)).ToList().AsReadOnly();
-                var filePath = command[0]; var argumentList = command.Count > 1 ? command.Skip(1).ToList().AsReadOnly() : null;
+                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; var filePath = command[0];
                 var ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 var fileName = Path.GetFileName(filePath); var ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
 
@@ -536,7 +535,7 @@ namespace PSADT.ClientServer
                 ProcessHandle? handle;
                 try
                 {
-                    handle = ProcessManager.LaunchAsync(new(filePath, argumentList, Path.GetDirectoryName(filePath)));
+                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Path.GetDirectoryName(filePath)));
                 }
                 finally
                 {
@@ -827,7 +826,7 @@ namespace PSADT.ClientServer
                             {
                                 // Start spinning.
                                 Stopwatch promptToCloseStopwatch = new();
-                                IReadOnlyList<WindowInfo> openWindow;
+                                ReadOnlyCollection<WindowInfo> openWindow;
                                 do
                                 {
                                     openWindow = WindowUtilities.GetProcessWindowInfo(null, [window.WindowHandle], null);

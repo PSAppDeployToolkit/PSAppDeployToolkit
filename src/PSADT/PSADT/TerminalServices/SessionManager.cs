@@ -35,9 +35,10 @@ namespace PSADT.TerminalServices
             WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo);
             using (pSessionInfo)
             {
-                List<SessionInfo> sessions = [];
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFOW>();
+                int objCount = pSessionInfo.Length / objLength;
                 var pSessionInfoSpan = pSessionInfo.AsSpan();
-                int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
+                var sessions = new List<SessionInfo>(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
                     ref var session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan.Slice(objLength * i)));
@@ -134,7 +135,7 @@ namespace PSADT.TerminalServices
                     {
                         RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
-                        ProcessLaunchInfo args = new(clientServerPath, new(["/GetLastInputTime"]), Environment.SystemDirectory, user, createNoWindow: true);
+                        ProcessLaunchInfo args = new(clientServerPath, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
                         idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0]));
                     }
                     catch

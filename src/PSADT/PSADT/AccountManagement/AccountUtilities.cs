@@ -49,14 +49,15 @@ namespace PSADT.AccountManagement
             }
 
             // Initialize the lookup table for well-known SIDs, skipping ones that don't construct.
-            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = [];
-            foreach (WellKnownSidType wellKnownSid in typeof(WellKnownSidType).GetEnumValues())
+            var wellKnownSidTypes = typeof(WellKnownSidType).GetEnumValues();
+            var wellKnownSids = new Dictionary<WellKnownSidType, SecurityIdentifier>(wellKnownSidTypes.Length);
+            foreach (WellKnownSidType wellKnownSidType in wellKnownSidTypes)
             {
-                if (wellKnownSids.ContainsKey(wellKnownSid) || wellKnownSid == WellKnownSidType.LogonIdsSid || (int)wellKnownSid == 80 || (int)wellKnownSid == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
+                if (wellKnownSids.ContainsKey(wellKnownSidType) || wellKnownSidType == WellKnownSidType.LogonIdsSid || (int)wellKnownSidType == 80 || (int)wellKnownSidType == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
                 {
                     continue;
                 }
-                wellKnownSids.Add(wellKnownSid, new(wellKnownSid, LocalAccountDomainSid));
+                wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
             }
             WellKnownSidLookupTable = new(wellKnownSids);
 

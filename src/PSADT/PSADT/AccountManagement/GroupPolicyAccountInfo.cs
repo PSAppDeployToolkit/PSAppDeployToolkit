@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Security.Principal;
 using Microsoft.Win32;
 
@@ -27,13 +28,13 @@ namespace PSADT.AccountManagement
         {
             // Confirm we have a Group Policy Data Store to work with.
             using var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
-            List<GroupPolicyAccountInfo> accountInfoList = [];
             if (datastore is null)
             {
-                return accountInfoList.AsReadOnly();
+                return new ReadOnlyCollection<GroupPolicyAccountInfo>([]);
             }
 
             // Create list to hold the account information and process each found SID, returning the accumulated results.
+            List<GroupPolicyAccountInfo> accountInfoList = [];
             foreach (var sid in datastore.GetSubKeyNames())
             {
                 // Skip over anything that's not a proper SID.

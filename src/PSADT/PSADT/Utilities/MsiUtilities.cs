@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
@@ -25,6 +28,35 @@ namespace PSADT.Utilities
             var msiMsgString = bufspan.Slice(0, len).ToString().TrimRemoveNull();
             return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
         }
+
+        /// <summary>
+        /// Retrieves the list of product codes supported by the specified Windows Installer patch package (MSP file).
+        /// </summary>
+        /// <remarks>The returned product codes indicate which products the patch can be applied to. This
+        /// method does not validate the existence or format of the specified file; callers should ensure that the path
+        /// points to a valid MSP file.</remarks>
+        /// <param name="szDatabasePath">The file path to the patch package (MSP) database. Cannot be null or empty.</param>
+        /// <returns>A string containing the supported product codes, separated by semicolons. Returns an empty string if no
+        /// product codes are found.</returns>
+        public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
+        {
+            // Open the patch file as a database.
+            Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out var hDatabase);
+            using (hDatabase)
+            {
+                // Get the summary information from the database.
+                Msi.MsiGetSummaryInformation(szDatabasePath, 0, out var hSummaryInfo);
+                using (hSummaryInfo)
+                {
+                    // Determine the size of the buffer we need.
+                    Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
+                    Span<char> bufSpan = stackalloc char[(int)requiredSize];
+
+                    // Grab the supported product codes and return them to the caller.
+                    Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
+                    return new ReadOnlyCollection<Guid>(bufSpan.ToString().TrimRemoveNull().Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g)).ToArray());
+                }
+            }
+        }
     }
 }
-

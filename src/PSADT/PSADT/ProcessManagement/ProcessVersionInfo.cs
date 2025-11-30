@@ -290,7 +290,7 @@ namespace PSADT.ProcessManagement
             translationCombinations.Add("040904B0");
             translationCombinations.Add("040904E4");
             translationCombinations.Add("04090000");
-            return translationCombinations.Distinct().ToList().AsReadOnly();
+            return new(translationCombinations.Distinct().ToArray());
         }
 
         /// <summary>

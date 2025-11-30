@@ -10,7 +10,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    internal sealed class RunningProcessService(ReadOnlyCollection<ProcessDefinition> processDefinitions) : IDisposable
+    internal sealed class RunningProcessService(IReadOnlyList<ProcessDefinition> processDefinitions) : IDisposable
     {
         /// <summary>
         /// Starts the polling task to check for running processes.
@@ -76,7 +76,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Raise the event if the list of processes to close has changed.
-                var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+                ReadOnlyCollection<string> processDescs = new(_processesToClose.Select(runningProcess => runningProcess.Description).ToArray());
                 if (!_lastProcessDescriptions.SequenceEqual(processDescs))
                 {
                     _lastProcessDescriptions = processDescs;
@@ -103,7 +103,7 @@ namespace PSADT.ProcessManagement
         {
             // Update the list of running processes.
             _runningProcesses = ProcessUtilities.GetRunningProcesses(_processDefinitions);
-            _processesToClose = _runningProcesses.GroupBy(p => p.Description).Select(p => new ProcessToClose(p.First())).ToList().AsReadOnly();
+            _processesToClose = new ReadOnlyCollection<ProcessToClose>(_runningProcesses.GroupBy(p => p.Description).Select(p => new ProcessToClose(p.First())).ToArray());
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The caller's specified process definitions.
         /// </summary>
-        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = processDefinitions is not null && processDefinitions.Count > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = processDefinitions?.Count > 0 ? new(processDefinitions.ToArray()) : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
 
         /// <summary>
         /// The interval at which to poll for running processes.

@@ -96,7 +96,7 @@ namespace PSADT.Security
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }
-            return privileges.OrderBy(static p => p).ToList().AsReadOnly();
+            return new ReadOnlyCollection<SE_PRIVILEGE>(privileges.OrderBy(static p => p).ToArray());
         }
 
         /// <summary>
@@ -109,13 +109,11 @@ namespace PSADT.Security
         /// available, the collection will be empty.</returns>
         internal static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges()
         {
-            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using var cProcessSafeHandle = Kernel32.GetCurrentProcess();
+            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+            using (hProcessToken)
             {
-                AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
-                using (hProcessToken)
-                {
-                    return GetPrivileges(hProcessToken);
-                }
+                return GetPrivileges(hProcessToken);
             }
         }
 

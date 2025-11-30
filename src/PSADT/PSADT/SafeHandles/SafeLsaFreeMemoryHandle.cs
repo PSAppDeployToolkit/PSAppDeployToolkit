@@ -20,13 +20,17 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override unsafe bool ReleaseHandle()
+        protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
-            var res = PInvoke.LsaFreeMemory(handle.ToPointer());
+            NTSTATUS res;
+            unsafe
+            {
+                res = PInvoke.LsaFreeMemory(handle.ToPointer());
+            }
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
                 throw new Win32Exception((int)PInvoke.LsaNtStatusToWinError(res));

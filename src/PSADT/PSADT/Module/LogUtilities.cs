@@ -1,14 +1,14 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text;
+using System.Text.RegularExpressions;
 using PSADT.Extensions;
 
 namespace PSADT.Module
@@ -109,7 +109,7 @@ namespace PSADT.Module
             {
                 scriptSection = null;
             }
-            var logEntries = message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource)).ToList().AsReadOnly();
+            ReadOnlyCollection<LogEntry> logEntries = new(message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource)).ToArray());
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
@@ -141,10 +141,15 @@ namespace PSADT.Module
                     }
                     Console.ResetColor();
                 }
-                else
+                else if (hostLogStream != HostLogStream.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream == HostLogStream.Verbose);
+                    ModuleDatabase.InvokeScript(WriteHostDelegate, conOutput, sevCols);
+                }
+                else
+                {
+                    // Write the host output to PowerShell's VerboseStream.
+                    ModuleDatabase.InvokeScript(WriteVerboseDelegate, conOutput);
                 }
             }
             return logEntries;
@@ -155,10 +160,10 @@ namespace PSADT.Module
         /// </summary>
         private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
-            new(new Dictionary<string, ConsoleColor> {}),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } })
+            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
+            new(new Dictionary<string, ConsoleColor>() { }),
+            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
+            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } }),
         ]);
 
         /// <summary>
@@ -167,9 +172,14 @@ namespace PSADT.Module
         internal static readonly UTF8Encoding LogEncoding = new(true);
 
         /// <summary>
-        /// Gets the Write-LogEntry delegate script block.
+        /// Gets the Write-Host delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Verbose:($args[3])");
+        private static readonly ScriptBlock WriteHostDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-Host' @colours");
+
+        /// <summary>
+        /// Gets the Write-Verbose delegate script block.
+        /// </summary>
+        private static readonly ScriptBlock WriteVerboseDelegate = ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Write-Verbose'");
 
         /// <summary>
         /// Represents a compiled regular expression used to match specific caller commands.

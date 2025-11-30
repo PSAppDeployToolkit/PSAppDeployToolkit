@@ -17,9 +17,11 @@ using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
+using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
 using PSADT.Utilities;
+using Windows.Win32.Storage.FileSystem;
 
 namespace PSADT.Module
 {
@@ -164,19 +166,19 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appSuccessExitCodes = new((int[])paramValue);
+                        _appSuccessExitCodes = new(((int[])paramValue).ToArray());
                     }
                     if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appRebootExitCodes = new((int[])paramValue);
+                        _appRebootExitCodes = new(((int[])paramValue).ToArray());
                     }
                     if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
                     {
-                        _appProcessesToClose = new((ProcessDefinition[])paramValue);
+                        _appProcessesToClose = new(((ProcessDefinition[])paramValue).ToArray());
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
-                        _scriptDirectory = new((string[])paramValue);
+                        _scriptDirectory = new(((string[])paramValue).ToArray());
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
@@ -196,7 +198,7 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
                     {
-                        _defaultMspFiles = new((string[])paramValue);
+                        _defaultMspFiles = new(((string[])paramValue).ToArray());
                     }
                     if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -279,7 +281,7 @@ namespace PSADT.Module
                         if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
-                            ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, _dirFiles);
+                            Kernel32.DefineDosDevice(0, availLetter, _dirFiles);
                             _dirFiles = DirFilesSubstDrive = availLetter;
                         }
                         WriteLogEntry($"Using [{_dirFiles}] as the base DirFiles directory.");
@@ -347,14 +349,14 @@ namespace PSADT.Module
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
                         if (_defaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase)).ToArray() is string[] mspFiles) && (mspFiles.Length > 0))
+                            if (!string.IsNullOrWhiteSpace(_dirFiles))
                             {
-                                _defaultMspFiles = new(mspFiles);
+                                _defaultMspFiles = new(Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase)).ToArray());
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && (null != _defaultMspFiles.FirstOrDefault(static f => !Path.IsPathRooted(f))))
+                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && _defaultMspFiles.Any(static f => !Path.IsPathRooted(f)))
                         {
-                            _defaultMspFiles = _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f).ToList().AsReadOnly();
+                            _defaultMspFiles = new(_defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f).ToArray());
                         }
                         if (_defaultMspFiles.Count > 0)
                         {
@@ -370,7 +372,7 @@ namespace PSADT.Module
                                 var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
                                 if (msiExecList.Any())
                                 {
-                                    _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToList().AsReadOnly();
+                                    _appProcessesToClose = new(_appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToArray());
                                     WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                                 }
                             }
@@ -966,21 +968,30 @@ namespace PSADT.Module
             catch (UnauthorizedAccessException ex)
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
-                SetExitCode(60008); Close();
+                RemoveSubstDrive();
+                DismountWimFiles();
+                SetExitCode(60008);
+                Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
             catch (NotSupportedException ex)
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
-                SetExitCode(DeferExitCode); Close();
+                RemoveSubstDrive();
+                DismountWimFiles();
+                SetExitCode(DeferExitCode);
+                Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
             catch (Exception ex)
             {
                 WriteLogEntry($"Failure occurred while instantiating new deployment session: {ex}", LogSeverity.Error);
-                SetExitCode(60008); Close();
+                RemoveSubstDrive();
+                DismountWimFiles();
+                SetExitCode(60008);
+                Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -1047,24 +1058,13 @@ namespace PSADT.Module
                 adtExitCode = ExitCode;
             }
 
-            // Remove any subst paths if created in the zero-config WIM code.
-            if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
-            {
-                ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Delete"), DirFilesSubstDrive!);
-            }
-
-            // Unmount any stored WIM file entries.
-            if (MountedWimFiles.Count > 0)
-            {
-                MountedWimFiles.Reverse(); ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
-                MountedWimFiles.Clear();
-            }
-
-            // Write out a log divider to indicate the end of logging.
+            // Clean up state and write out a log divider to indicate the end of logging.
+            RemoveSubstDrive();
+            DismountWimFiles();
             WriteLogDivider();
             Settings |= DeploymentSettings.Disposed;
 
-            // Compress log files if configured to do so.
+            // Compress log files if configured to do so before returning the exit code to the caller.
             if (CompressLogs)
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
@@ -1095,8 +1095,6 @@ namespace PSADT.Module
                     WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex}", LogSeverity.Error);
                 }
             }
-
-            // Return the module's cached exit code to the caller.
             return adtExitCode;
         }
 
@@ -1197,6 +1195,37 @@ namespace PSADT.Module
             }
             WriteLogDivider();
             write = true;
+        }
+
+        /// <summary>
+        /// Removes the virtual drive mapping created with the SUBST command for the directory specified by
+        /// DirFilesSubstDrive.
+        /// </summary>
+        /// <remarks>This method undoes a previous drive substitution, making the drive letter unavailable
+        /// for accessing the substituted directory. If DirFilesSubstDrive is null, empty, or consists only of
+        /// white-space characters, no action is taken.</remarks>
+        private void RemoveSubstDrive()
+        {
+            if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
+            {
+                WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
+                Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
+            }
+        }
+
+        /// <summary>
+        /// Dismounts all currently mounted Windows Imaging (WIM) files managed by this instance.
+        /// </summary>
+        /// <remarks>This method processes all mounted WIM files in reverse order and clears the internal
+        /// list after dismounting. It should be called when all operations requiring access to the mounted WIM files
+        /// are complete.</remarks>
+        private void DismountWimFiles()
+        {
+            if (MountedWimFiles.Count > 0)
+            {
+                MountedWimFiles.Reverse(); ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+                MountedWimFiles.Clear();
+            }
         }
 
         /// <summary>

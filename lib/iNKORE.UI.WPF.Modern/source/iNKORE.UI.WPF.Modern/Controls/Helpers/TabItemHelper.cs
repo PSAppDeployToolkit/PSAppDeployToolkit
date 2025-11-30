@@ -148,18 +148,18 @@ namespace iNKORE.UI.WPF.Modern.Controls.Helpers
 
         #region CloseTabButtonCommand
 
-        internal static readonly DependencyProperty CloseTabButtonCommandProperty = DependencyProperty.RegisterAttached(
+        public static readonly DependencyProperty CloseTabButtonCommandProperty = DependencyProperty.RegisterAttached(
             "CloseTabButtonCommand",
             typeof(ICommand),
             typeof(TabItemHelper),
             null);
 
-        internal static ICommand GetCloseTabButtonCommand(TabItem element)
+        public static ICommand GetCloseTabButtonCommand(TabItem element)
         {
             return (ICommand)element.GetValue(CloseTabButtonCommandProperty);
         }
 
-        internal static void SetCloseTabButtonCommand(TabItem tabItem, ICommand value)
+        public static void SetCloseTabButtonCommand(TabItem tabItem, ICommand value)
         {
             tabItem.SetValue(CloseTabButtonCommandProperty, value);
         }

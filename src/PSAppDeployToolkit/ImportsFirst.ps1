@@ -12,7 +12,7 @@ PSAppDeployToolkit is licensed under the GNU LGPLv3 License - © 2025 PSAppDeplo
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 for more details. You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 .LINK
@@ -157,7 +157,7 @@ try
 
         end
         {
-            # Load in FileSystemAclExtensions if it's not available (i.e. Windows PowerShell).
+            # Load in a number of assemblies if they're not available (i.e. Windows PowerShell).
             if (!('System.IO.FileSystemAclExtensions' -as [System.Type]))
             {
                 if ($isNetworkLocation)
@@ -175,12 +175,9 @@ try
     # Remove any previous functions that may have been defined.
     if ($Module.Compiled)
     {
-        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | . {
-            begin
-            {
-                $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
-                $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
-            }
+        $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
+        $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
+        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
             process
             {
                 if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
@@ -192,13 +189,10 @@ try
                     $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.Name.Split(':')[-1])")
                 }
             }
-            end
-            {
-                New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
-                New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
-                Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-            }
         }
+        New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
+        New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
+        Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     }
 }
 catch

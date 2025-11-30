@@ -74,7 +74,7 @@ namespace PSADT.UserInterface.Dialogs
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
-            SystemIconLookupTable = new(new Dictionary<DialogSystemIcon, Bitmap>
+            SystemIconLookupTable = new(new Dictionary<DialogSystemIcon, Bitmap>()
             {
                 { DialogSystemIcon.Application, icons[SHSTOCKICONID.SIID_APPLICATION] },
                 { DialogSystemIcon.Asterisk, icons[SHSTOCKICONID.SIID_INFO] },
