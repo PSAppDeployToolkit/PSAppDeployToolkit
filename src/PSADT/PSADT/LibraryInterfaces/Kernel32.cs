@@ -280,13 +280,17 @@ namespace PSADT.LibraryInterfaces
         /// depend on the value of the JobObjectInformationClass parameter.</param>
         /// <param name="cbJobObjectInformationLength">The size, in bytes, of the information buffer pointed to by lpJobObjectInformation.</param>
         /// <returns>true if the information was set successfully; otherwise, false.</returns>
-        private unsafe static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, void* lpJobObjectInformation, uint cbJobObjectInformationLength)
+        private static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             bool hJobAddRef = false;
             try
             {
                 hJob.DangerousAddRef(ref hJobAddRef);
-                var res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, lpJobObjectInformation, cbJobObjectInformationLength);
+                BOOL res;
+                unsafe
+                {
+                    res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, lpJobObjectInformation.ToPointer(), cbJobObjectInformationLength);
+                }
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -319,7 +323,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (JOBOBJECT_ASSOCIATE_COMPLETION_PORT* pInfo = &lpJobObjectInformation)
                 {
-                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, (IntPtr)pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
                 }
             }
         }
@@ -339,7 +343,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (JOBOBJECT_EXTENDED_LIMIT_INFORMATION* pInfo = &lpJobObjectInformation)
                 {
-                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, (IntPtr)pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
                 }
             }
         }
