@@ -122,7 +122,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
                 { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage) },
-
             });
             ThemeManager.AddActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
             SetDialogIcon();
