@@ -179,7 +179,7 @@ function ConvertTo-ADTNTAccountOrSID
         {
             try
             {
-                [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("$LdapUri$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLowerInvariant())").ObjectSid[0], 0)
+                [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("$LdapUri$([PSADT.DeviceManagement.DeviceUtilities]::GetDomainStatus().DomainOrWorkgroupName.ToLowerInvariant())").ObjectSid[0], 0)
             }
             catch
             {
