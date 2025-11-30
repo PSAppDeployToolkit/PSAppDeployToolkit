@@ -53,7 +53,7 @@ function Private:Get-ADTClientServerUser
     }
     else
     {
-        Get-ADTRunAsActiveUser 4>$null
+        Get-ADTRunAsActiveUser
     }
 
     # Return the calculated RunAsActiveUser if we have one.

@@ -85,7 +85,7 @@ function Initialize-ADTModule
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -InformationAction SilentlyContinue
         $null = $PSBoundParameters.Remove('ScriptDirectory')
     }
 
@@ -160,6 +160,6 @@ function Initialize-ADTModule
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet -InformationAction SilentlyContinue
     }
 }
