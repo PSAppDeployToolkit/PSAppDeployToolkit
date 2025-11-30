@@ -60,18 +60,22 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the specified version-information value is successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the version-information value cannot be queried.</exception>
-        internal unsafe static BOOL VerQueryValue(ReadOnlySpan<byte> pBlock, string lpSubBlock, out IntPtr lplpBuffer, out uint puLen)
+        internal static BOOL VerQueryValue(ReadOnlySpan<byte> pBlock, string lpSubBlock, out IntPtr lplpBuffer, out uint puLen)
         {
-            fixed (byte* pBlockPtr = pBlock)
+            BOOL res;
+            unsafe
             {
-                var res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out var lplpBufferLocal, out puLen);
-                if (!res)
+                fixed (byte* pBlockPtr = pBlock)
                 {
-                    throw new InvalidOperationException($"Failed to query [{lpSubBlock}] version value.");
+                    res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out var lplpBufferLocal, out puLen);
+                    if (!res)
+                    {
+                        throw new InvalidOperationException($"Failed to query [{lpSubBlock}] version value.");
+                    }
+                    lplpBuffer = (IntPtr)lplpBufferLocal;
                 }
-                lplpBuffer = (IntPtr)lplpBufferLocal;
-                return res;
             }
+            return res;
         }
     }
 }

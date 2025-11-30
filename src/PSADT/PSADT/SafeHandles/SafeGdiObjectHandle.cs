@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
 namespace PSADT.SafeHandles
@@ -24,13 +25,17 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override unsafe bool ReleaseHandle()
+        protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
-            var res = PInvoke.DeleteObject((HGDIOBJ)handle);
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.DeleteObject((HGDIOBJ)handle);
+            }
             if (!res)
             {
                 throw new InvalidOperationException("Failed to delete GDI object handle.");

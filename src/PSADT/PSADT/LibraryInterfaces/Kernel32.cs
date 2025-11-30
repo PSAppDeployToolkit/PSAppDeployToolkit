@@ -313,11 +313,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpJobObjectInformation">A structure that specifies the completion port and completion key to associate with the job object.</param>
         /// <returns>A nonzero value if the function succeeds; otherwise, zero. To get extended error information, call
         /// GetLastError.</returns>
-        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, in JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
+        internal static BOOL SetInformationJobObject(SafeHandle hJob, in JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
-            fixed (JOBOBJECT_ASSOCIATE_COMPLETION_PORT* pInfo = &lpJobObjectInformation)
+            unsafe
             {
-                return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+                fixed (JOBOBJECT_ASSOCIATE_COMPLETION_PORT* pInfo = &lpJobObjectInformation)
+                {
+                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+                }
             }
         }
 
@@ -330,11 +333,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hJob">A handle to the job object to be updated. This handle must have the JOB_OBJECT_SET_ATTRIBUTES access right.</param>
         /// <param name="lpJobObjectInformation">A structure that contains the extended limit information to set for the job object.</param>
         /// <returns>A nonzero value if the function succeeds; otherwise, zero.</returns>
-        internal unsafe static BOOL SetInformationJobObject(SafeHandle hJob, in JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
+        internal static BOOL SetInformationJobObject(SafeHandle hJob, in JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation)
         {
-            fixed (JOBOBJECT_EXTENDED_LIMIT_INFORMATION* pInfo = &lpJobObjectInformation)
+            unsafe
             {
-                return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+                fixed (JOBOBJECT_EXTENDED_LIMIT_INFORMATION* pInfo = &lpJobObjectInformation)
+                {
+                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+                }
             }
         }
 
@@ -365,13 +371,17 @@ namespace PSADT.LibraryInterfaces
         /// process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentNullException">Thrown if lpEnvironment is null or has been closed.</exception>
-        internal unsafe static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                BOOL res;
+                unsafe
+                {
+                    res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                }
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -439,14 +449,18 @@ namespace PSADT.LibraryInterfaces
         /// operation was started.</param>
         /// <param name="dwMilliseconds">The number of milliseconds to wait for a completion packet. Specify INFINITE to wait indefinitely.</param>
         /// <returns>true if a completion packet was successfully dequeued; otherwise, false.</returns>
-        internal unsafe static BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out nuint lpOverlapped, uint dwMilliseconds)
+        internal static BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out nuint lpOverlapped, uint dwMilliseconds)
         {
-            var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out var pOverlapped, dwMilliseconds);
-            if (!res)
+            BOOL res;
+            unsafe
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out var pOverlapped, dwMilliseconds);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                lpOverlapped = (nuint)pOverlapped;
             }
-            lpOverlapped = (nuint)pOverlapped;
             return res;
         }
 
@@ -836,9 +850,13 @@ namespace PSADT.LibraryInterfaces
         /// parameter can be null.</param>
         /// <returns>A <see cref="BOOL"/> indicating whether the operation succeeded.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer was too small and the value was truncated.</exception>
-        internal unsafe static BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, Span<byte> lpBuffer, out nuint lpNumberOfBytesRead)
+        internal static BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, Span<byte> lpBuffer, out nuint lpNumberOfBytesRead)
         {
-            var res = PInvoke.ReadProcessMemory(hProcess, lpBaseAddress.ToPointer(), lpBuffer, out lpNumberOfBytesRead);
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.ReadProcessMemory(hProcess, lpBaseAddress.ToPointer(), lpBuffer, out lpNumberOfBytesRead);
+            }
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -884,17 +902,21 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpOverlapped">A reference to a NativeOverlapped structure to be associated with the completion packet, or the default
         /// value if no overlapped structure is required.</param>
         /// <returns>true if the operation succeeds; otherwise, false.</returns>
-        internal unsafe static BOOL PostQueuedCompletionStatus(SafeHandle CompletionPort, uint dwNumberOfBytesTransferred, nuint dwCompletionKey, in NativeOverlapped lpOverlapped = default)
+        internal static BOOL PostQueuedCompletionStatus(SafeHandle CompletionPort, uint dwNumberOfBytesTransferred, nuint dwCompletionKey, in NativeOverlapped lpOverlapped = default)
         {
-            fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
+            BOOL res;
+            unsafe
             {
-                var res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, pOverlapped);
-                if (!res)
+                fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, pOverlapped);
                 }
-                return res;
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>

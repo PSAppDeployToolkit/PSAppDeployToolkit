@@ -12,13 +12,16 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override unsafe bool ReleaseHandle()
+        protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
-            PInvoke.WTSFreeMemory(handle.ToPointer());
+            unsafe
+            {
+                PInvoke.WTSFreeMemory(handle.ToPointer());
+            }
             handle = default;
             return true;
         }

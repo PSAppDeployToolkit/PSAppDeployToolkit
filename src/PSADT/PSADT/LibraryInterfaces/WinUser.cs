@@ -677,9 +677,12 @@ namespace PSADT.LibraryInterfaces
         /// Initializes a new instance of the <see cref="RESOURCE_TYPE"/> class with the specified handle.
         /// </summary>
         /// <param name="value">The handle to be associated with this instance.</param>
-        private unsafe RESOURCE_TYPE(PCWSTR value)
+        private RESOURCE_TYPE(PCWSTR value)
         {
-            Value = (IntPtr)value.Value;
+            unsafe
+            {
+                Value = (IntPtr)value.Value;
+            }
         }
 
         /// <summary>
@@ -695,9 +698,12 @@ namespace PSADT.LibraryInterfaces
         /// Converts a <see cref="RESOURCE_TYPE"/> instance to an <see cref="PCWSTR"/>.
         /// </summary>
         /// <param name="h">The <see cref="RESOURCE_TYPE"/> instance to convert.</param>
-        public unsafe static explicit operator PCWSTR(RESOURCE_TYPE h)
+        public static explicit operator PCWSTR(RESOURCE_TYPE h)
         {
-            return (PCWSTR)h.Value.ToPointer();
+            unsafe
+            {
+                return (PCWSTR)h.Value.ToPointer();
+            }
         }
 
         /// <summary>
@@ -742,9 +748,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h2">The <see cref="RESOURCE_TYPE"/> object to compare, which contains a handle.</param>
         /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
         /// otherwise, <see langword="false"/>.</returns>
-        public unsafe static bool operator !=(PCWSTR h1, RESOURCE_TYPE h2)
+        public static bool operator !=(PCWSTR h1, RESOURCE_TYPE h2)
         {
-            return (IntPtr)h1.Value != h2.Value;
+            unsafe
+            {
+                return (IntPtr)h1.Value != h2.Value;
+            }
         }
 
         /// <summary>
@@ -754,9 +763,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h2">The second resource type to compare, which contains a handle.</param>
         /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
         /// <see langword="false"/>.</returns>
-        public unsafe static bool operator ==(PCWSTR h1, RESOURCE_TYPE h2)
+        public static bool operator ==(PCWSTR h1, RESOURCE_TYPE h2)
         {
-            return (IntPtr)h1.Value == h2.Value;
+            unsafe
+            {
+                return (IntPtr)h1.Value == h2.Value;
+            }
         }
 
         /// <summary>

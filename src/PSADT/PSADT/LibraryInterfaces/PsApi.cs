@@ -24,7 +24,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpcbNeeded">When this method returns, contains the number of bytes required to store all module handles in the lphModule
         /// buffer.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL EnumProcessModules(SafeHandle hProcess, Span<byte> lphModule, out uint lpcbNeeded)
+        internal static BOOL EnumProcessModules(SafeHandle hProcess, Span<byte> lphModule, out uint lpcbNeeded)
         {
             bool hProcessAddRef = false;
             try
@@ -55,27 +55,31 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpmodinfo">When this method returns, contains a <see cref="MODULEINFO"/> structure that receives the module
         /// information.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL GetModuleInformation(SafeHandle hProcess, in HMODULE hModule, out MODULEINFO lpmodinfo)
+        internal static BOOL GetModuleInformation(SafeHandle hProcess, in HMODULE hModule, out MODULEINFO lpmodinfo)
         {
-            fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
+            bool hProcessAddRef = false;
+            try
             {
-                bool hProcessAddRef = false;
-                try
+                hProcess.DangerousAddRef(ref hProcessAddRef);
+                BOOL res;
+                unsafe
                 {
-                    hProcess.DangerousAddRef(ref hProcessAddRef);
-                    var res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Marshal.SizeOf<MODULEINFO>());
-                    if (!res)
+                    fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
                     {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                        res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Marshal.SizeOf<MODULEINFO>());
                     }
-                    return res;
                 }
-                finally
+                if (!res)
                 {
-                    if (hProcessAddRef)
-                    {
-                        hProcess.DangerousRelease();
-                    }
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+            finally
+            {
+                if (hProcessAddRef)
+                {
+                    hProcess.DangerousRelease();
                 }
             }
         }

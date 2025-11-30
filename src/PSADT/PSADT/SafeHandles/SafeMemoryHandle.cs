@@ -147,18 +147,21 @@ namespace PSADT.SafeHandles
         /// <returns>A read-only span of type T that represents the memory region starting at the specified offset.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is negative or greater than the length of the memory region.</exception>
         /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
-        internal unsafe ReadOnlySpan<T> AsSpan<T>(int offset = 0) where T : unmanaged
+        internal ReadOnlySpan<T> AsSpan<T>(int offset = 0) where T : unmanaged
         {
-            int length = (Length - offset) / sizeof(T);
+            int length = (Length - offset) / Marshal.SizeOf<T>();
             if (length < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");
             }
-            if ((Length - offset) % sizeof(T) != 0)
+            if ((Length - offset) % Marshal.SizeOf<T>() != 0)
             {
                 throw new ArgumentException("Offset must be aligned to the size of the type T.", nameof(offset));
             }
-            return new((void*)(handle + offset), length);
+            unsafe
+            {
+                return new((void*)(handle + offset), length);
+            }
         }
 
         /// <summary>
@@ -168,20 +171,29 @@ namespace PSADT.SafeHandles
         /// equal to the length of the memory region.</param>
         /// <returns>A read-only span of bytes beginning at the specified offset and extending to the end of the memory region.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
-        internal unsafe ReadOnlySpan<byte> AsSpan(int offset = 0) 
+        internal ReadOnlySpan<byte> AsSpan(int offset = 0) 
         {
             int length = Length - offset;
             if (length < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");
             }
-            return new((void*)(handle + offset), length);
+            unsafe
+            {
+                return new((void*)(handle + offset), length);
+            }
         }
 
         /// <summary>
         /// Clears the memory block by setting all bytes to zero.
         /// </summary>
-        internal unsafe void Clear() => new Span<byte>(handle.ToPointer(), Length).Clear();
+        internal void Clear()
+        {
+            unsafe
+            {
+                new Span<byte>(handle.ToPointer(), Length).Clear();
+            }
+        }
 
         /// <summary>
         /// Releases the handle and frees the allocated memory.

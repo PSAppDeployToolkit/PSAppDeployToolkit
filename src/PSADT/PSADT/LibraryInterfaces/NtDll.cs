@@ -253,18 +253,22 @@ namespace PSADT.LibraryInterfaces
         /// information. The structure's dwOSVersionInfoSize field is initialized automatically.</param>
         /// <returns>A value of type NTSTATUS indicating the result of the operation. Returns STATUS_SUCCESS if the version
         /// information was retrieved successfully.</returns>
-        internal unsafe static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
+        internal static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
             lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
-            fixed (OSVERSIONINFOEXW* lpVersionInformationLocal = &lpVersionInformation)
+            NTSTATUS res; 
+            unsafe
             {
-                NTSTATUS res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)lpVersionInformationLocal);
-                if (res != NTSTATUS.STATUS_SUCCESS)
+                fixed (OSVERSIONINFOEXW* lpVersionInformationLocal = &lpVersionInformation)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)lpVersionInformationLocal);
                 }
-                return res;
             }
+            if (res != NTSTATUS.STATUS_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -284,23 +288,27 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An NTSTATUS code indicating the result of the operation. Returns STATUS_SUCCESS if successful, or
         /// STATUS_INFO_LENGTH_MISMATCH if the buffer is too small.</returns>
         /// <exception cref="ArgumentNullException">Thrown if SystemInformation is empty.</exception>
-        internal unsafe static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength)
+        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength)
         {
             if (SystemInformation.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(SystemInformation));
             }
-            [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, void* SystemInformation, uint SystemInformationLength, out uint ReturnLength);
-            fixed (byte* SystemInformationLocal = SystemInformation)
+            NTSTATUS res;
+            unsafe
             {
-                var res = NtQuerySystemInformation(SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+                fixed (byte* SystemInformationLocal = SystemInformation)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    [DllImport("ntdll.dll", ExactSpelling = true)]
+                    static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, void* SystemInformation, uint SystemInformationLength, out uint ReturnLength);
+                    res = NtQuerySystemInformation(SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, out ReturnLength);
                 }
-                return res;
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -317,27 +325,31 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An NTSTATUS value indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, an
         /// error code is returned.</returns>
         /// <exception cref="ArgumentNullException">Thrown if Handle is null or closed, or if ObjectInformation is empty.</exception>
-        internal unsafe static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out int ReturnLength)
+        internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out int ReturnLength)
         {
             if (ObjectInformation.IsEmpty)
             {
                 throw new ArgumentNullException(nameof(ObjectInformation));
             }
-            [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, void* ObjectInformation, int ObjectInformationLength, out int ReturnLength);
             bool HandleAddRef = false;
             try
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
-                fixed (byte* ObjectInformationLocal = ObjectInformation)
+                NTSTATUS res;
+                unsafe
                 {
-                    var res = NtQueryObject(Handle?.DangerousGetHandle() ?? IntPtr.Zero, ObjectInformationClass, ObjectInformationLocal, ObjectInformation.Length, out ReturnLength);
-                    if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+                    fixed (byte* ObjectInformationLocal = ObjectInformation)
                     {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                        [DllImport("ntdll.dll", ExactSpelling = true)]
+                        static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, void* ObjectInformation, int ObjectInformationLength, out int ReturnLength);
+                        res = NtQueryObject(Handle?.DangerousGetHandle() ?? IntPtr.Zero, ObjectInformationClass, ObjectInformationLocal, ObjectInformation.Length, out ReturnLength);
                     }
-                    return res;
                 }
+                if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
             }
             finally
             {
@@ -473,7 +485,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An NTSTATUS code that indicates the result of the operation. STATUS_SUCCESS indicates success;
         /// STATUS_INFO_LENGTH_MISMATCH indicates that the buffer was too small.</returns>
         /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null, closed, or invalid, or if ProcessInformation is empty.</exception>
-        internal unsafe static NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, Span<byte> ProcessInformation, out uint ReturnLength)
+        internal static NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, Span<byte> ProcessInformation, out uint ReturnLength)
         {
             if (ProcessHandle is null || ProcessHandle.IsClosed)
             {
@@ -483,16 +495,20 @@ namespace PSADT.LibraryInterfaces
             try
             {
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                fixed (byte* ProcessInformationLocal = ProcessInformation)
-                fixed (uint* ReturnLengthLocal = &ReturnLength)
+                NTSTATUS res;
+                unsafe
                 {
-                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
-                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+                    fixed (byte* ProcessInformationLocal = ProcessInformation)
+                    fixed (uint* ReturnLengthLocal = &ReturnLength)
                     {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                        res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
                     }
-                    return res;
                 }
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
             }
             finally
             {
