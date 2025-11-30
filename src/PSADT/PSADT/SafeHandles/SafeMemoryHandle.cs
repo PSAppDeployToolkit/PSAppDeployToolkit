@@ -168,7 +168,7 @@ namespace PSADT.SafeHandles
         /// equal to the length of the memory region.</param>
         /// <returns>A read-only span of bytes beginning at the specified offset and extending to the end of the memory region.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
-        internal ReadOnlySpan<byte> AsSpan(int offset = 0) 
+        internal ReadOnlySpan<byte> AsSpan(int offset = 0)
         {
             int length = Length - offset;
             if (length < 0)

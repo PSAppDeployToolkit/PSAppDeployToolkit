@@ -256,7 +256,7 @@ namespace PSADT.LibraryInterfaces
         internal static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
             lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
-            NTSTATUS res; 
+            NTSTATUS res;
             unsafe
             {
                 fixed (OSVERSIONINFOEXW* lpVersionInformationLocal = &lpVersionInformation)
