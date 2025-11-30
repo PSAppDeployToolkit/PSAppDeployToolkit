@@ -80,9 +80,8 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
 
     ## Variables: Domain Membership
-    $w32cs = Get-CimInstance -ClassName Win32_ComputerSystem -Verbose:$false
-    $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } } | Select-Object -First 1
-    $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
+    $domainInfo = [PSADT.DeviceManagement.DeviceUtilities]::GetDomainStatus()
+    $variables.Add('IsMachinePartOfDomain', $domainInfo.JoinStatus.Equals([PSADT.LibraryInterfaces.NETSETUP_JOIN_STATUS]::NetSetupDomainName))
     $variables.Add('envMachineWorkgroup', $null)
     $variables.Add('envMachineADDomain', $null)
     $variables.Add('envLogonServer', $null)
@@ -90,11 +89,11 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
     $variables.Add('envUserDNSDomain', ([PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
     $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpperInvariant() }))
-    $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpperInvariant())
+    $variables.Add('envComputerName', [System.Net.Dns]::GetHostName().ToUpperInvariant())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain)
     {
-        $variables.envMachineADDomain = $w32csd.ToLowerInvariant()
+        $variables.envMachineADDomain = $domainInfo.DomainOrWorkgroupName.ToLowerInvariant()
         $variables.envComputerNameFQDN = try
         {
             [System.Net.Dns]::GetHostEntry('localhost').HostName
@@ -131,7 +130,7 @@ function Private:New-ADTEnvironmentTable
     }
     else
     {
-        $variables.envMachineWorkgroup = $w32csd.ToUpperInvariant()
+        $variables.envMachineWorkgroup = $domainInfo.DomainOrWorkgroupName.ToUpperInvariant()
     }
 
     # Get the OS Architecture.
@@ -216,11 +215,12 @@ function Private:New-ADTEnvironmentTable
             }))
 
     ## Variables: Hardware
-    $w32b = Get-CimInstance -ClassName Win32_BIOS -Verbose:$false
-    $w32bVersion = $w32b | Select-Object -ExpandProperty Version -ErrorAction Ignore
-    $w32bSerialNumber = $w32b | Select-Object -ExpandProperty SerialNumber -ErrorAction Ignore
-    $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
-    $variables.Add('envHardwareType', $(if (($w32bVersion -match 'VRTUAL') -or (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*')))
+    $w32bVersion = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.Version
+    $w32bSerialNumber = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.SerialNumber
+    $w32bManufacturer = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.Manufacturer
+    $w32bProductName = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.ProductName
+    $variables.Add('envSystemRAM', [System.Math]::Round([PSADT.DeviceManagement.DeviceUtilities]::GetTotalSystemMemory() / 1GB))
+    $variables.Add('envHardwareType', $(if (($w32bVersion -match 'VRTUAL') -or (($w32bManufacturer -like '*Microsoft*') -and ($w32bProductName -notlike '*Surface*')))
             {
                 'Virtual:Hyper-V'
             }
@@ -232,15 +232,15 @@ function Private:New-ADTEnvironmentTable
             {
                 'Virtual:Xen'
             }
-            elseif (($w32bSerialNumber -like '*VMware*') -or ($w32cs.Manufacturer -like '*VMWare*'))
+            elseif (($w32bSerialNumber -like '*VMware*') -or ($w32bManufacturer -like '*VMWare*'))
             {
                 'Virtual:VMware'
             }
-            elseif (($w32bSerialNumber -like '*Parallels*') -or ($w32cs.Manufacturer -like '*Parallels*'))
+            elseif (($w32bSerialNumber -like '*Parallels*') -or ($w32bManufacturer -like '*Parallels*'))
             {
                 'Virtual:Parallels'
             }
-            elseif ($w32cs.Model -like '*Virtual*')
+            elseif ($w32bProductName -like '*Virtual*')
             {
                 'Virtual'
             }
