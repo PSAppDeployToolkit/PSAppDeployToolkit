@@ -30,19 +30,23 @@ namespace PSADT.LibraryInterfaces
         /// when no longer needed.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the
         /// database was opened successfully.</returns>
-        internal unsafe static WIN32_ERROR MsiOpenDatabase(string szDatabasePath, MSI_PERSISTENCE_MODE szPersist, out MsiCloseHandleSafeHandle phDatabase)
+        internal static WIN32_ERROR MsiOpenDatabase(string szDatabasePath, MSI_PERSISTENCE_MODE szPersist, out MsiCloseHandleSafeHandle phDatabase)
         {
-            fixed (char* pszDatabasePath = szDatabasePath)
+            WIN32_ERROR res;
+            unsafe
             {
                 MSIHANDLE phDatabaseLocal = default;
-                var res = (WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, (PCWSTR)szPersist, &phDatabaseLocal);
+                fixed (char* pszDatabasePath = szDatabasePath)
+                {
+                    res = (WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, (PCWSTR)szPersist, &phDatabaseLocal);
+                }
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                 }
                 phDatabase = new MsiCloseHandleSafeHandle(phDatabaseLocal, true);
-                return res;
             }
+            return res;
         }
 
         /// <summary>

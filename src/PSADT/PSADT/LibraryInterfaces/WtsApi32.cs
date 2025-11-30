@@ -30,25 +30,29 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pProcessInfo">When the method returns, contains a <see cref="SafeWtsExHandle"/> object that holds the enumerated process
         /// information. The caller is responsible for disposing of this handle to release the allocated resources.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL WTSEnumerateProcessesEx(HANDLE hServer, uint pLevel, uint SessionId, out SafeWtsExHandle pProcessInfo)
+        internal static BOOL WTSEnumerateProcessesEx(HANDLE hServer, uint pLevel, uint SessionId, out SafeWtsExHandle pProcessInfo)
         {
-            PWSTR ppProcessInfo; uint pCount;
             if (pLevel > 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(pLevel), "pLevel must be 0 or 1.");
             }
-            var res = PInvoke.WTSEnumerateProcessesEx(hServer, &pLevel, SessionId, &ppProcessInfo, &pCount);
-            if (!res)
+            BOOL res;
+            unsafe
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            if (pLevel > 0)
-            {
-                pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true);
-            }
-            else
-            {
-                pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
+                PWSTR ppProcessInfo; uint pCount;
+                res = PInvoke.WTSEnumerateProcessesEx(hServer, &pLevel, SessionId, &ppProcessInfo, &pCount);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                if (pLevel > 0)
+                {
+                    pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true);
+                }
+                else
+                {
+                    pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
+                }
             }
             return res;
         }
@@ -64,14 +68,18 @@ namespace PSADT.LibraryInterfaces
         /// caller is responsible for releasing the handle when it is no longer needed.</param>
         /// <returns>A value that is <see langword="true"/> if the session enumeration succeeds; otherwise, <see
         /// langword="false"/>.</returns>
-        internal unsafe static BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
+        internal static BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
         {
-            var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
-            if (!res)
+            BOOL res;
+            unsafe
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                pSessionInfo = new((IntPtr)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             }
-            pSessionInfo = new((IntPtr)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             return res;
         }
 
@@ -84,14 +92,18 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pBuffer"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal unsafe static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
+        internal static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
-            var res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out var ppBuffer, out uint bytesReturned);
-            if (!res)
+            BOOL res;
+            unsafe
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out var ppBuffer, out uint bytesReturned);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                pBuffer = new(new(ppBuffer), (int)bytesReturned, true);
             }
-            pBuffer = new(new(ppBuffer), (int)bytesReturned, true);
             return res;
         }
 
@@ -106,15 +118,19 @@ namespace PSADT.LibraryInterfaces
         /// session. The caller is responsible for releasing the handle.</param>
         /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the token was
         /// retrieved successfully; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
+        internal static BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
         {
-            HANDLE phTokenLocal;
-            var res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
-            if (!res)
+            BOOL res;
+            unsafe
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                HANDLE phTokenLocal;
+                res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                phToken = new(phTokenLocal, true);
             }
-            phToken = new(phTokenLocal, true);
             return res;
         }
     }

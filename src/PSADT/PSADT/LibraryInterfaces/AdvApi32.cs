@@ -227,17 +227,21 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength">When this method returns, contains the number of bytes required to store the previous state of the token's
         /// privileges.</param>
         /// <returns>A value indicating whether the operation succeeded. If the function fails, an exception is thrown.</returns>
-        internal unsafe static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState, Span<byte> PreviousState, out uint ReturnLength)
+        internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState, Span<byte> PreviousState, out uint ReturnLength)
         {
-            fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
+            BOOL res;
+            unsafe
             {
-                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength);
-                if (!res)
+                fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength);
                 }
-                return res;
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -248,7 +252,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="NewState">A structure that specifies the privileges to enable or disable for the access token.</param>
         /// <returns>A value that indicates whether the function succeeds. Returns <see langword="true"/> if the operation is
         /// successful; otherwise, <see langword="false"/>.</returns>
-        internal unsafe static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState) => AdjustTokenPrivileges(TokenHandle, false, in NewState, null, out _);
+        internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState) => AdjustTokenPrivileges(TokenHandle, false, in NewState, null, out _);
 
         /// <summary>
         /// Retrieves the name of a privilege specified by a locally unique identifier (LUID) on the specified system.
@@ -296,13 +300,17 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation">When the method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns><see langword="true"/> if the process is successfully created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
-        internal unsafe static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                BOOL res;
+                unsafe
+                {
+                    res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                }
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -345,13 +353,17 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A value indicating whether the process was created successfully. Returns <see langword="true"/> if the
         /// process was created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
-        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                BOOL res;
+                unsafe
+                {
+                    res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                }
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -397,7 +409,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation">When this method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
-        internal unsafe static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
@@ -407,22 +419,24 @@ namespace PSADT.LibraryInterfaces
             bool lpEnvironmentAddRef = false;
             try
             {
-                fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
-                fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
-                fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
+                unsafe
                 {
-                    SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
-                    SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
-                    PWSTR wstrlpCommandLine = plpCommandLine;
-                    hToken.DangerousAddRef(ref hTokenAddRef);
-                    lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                    var res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
-                    if (!res)
+                    fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
+                    fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
+                    fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                     {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
+                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
+                        hToken.DangerousAddRef(ref hTokenAddRef);
+                        lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                        var res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                        if (!res)
+                        {
+                            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                        }
+                        lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                        return res;
                     }
-                    lpCommandLine = lpCommandLine.Slice(0, wstrlpCommandLine.Length);
-                    return res;
                 }
             }
             finally
@@ -532,19 +546,23 @@ namespace PSADT.LibraryInterfaces
         /// for releasing this handle.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation is successful.</returns>
-		internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
+		internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, LocalFreeSafeHandle? OldAcl, out LocalFreeSafeHandle NewAcl)
         {
-            fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
+            bool OldAclAddRef = false;
+            try
             {
-                bool OldAclAddRef = false;
-                ACL* NewAclLocal = null;
-                try
+                if (OldAcl is not null && !OldAcl.IsClosed)
                 {
-                    if (OldAcl is not null && !OldAcl.IsClosed)
+                    OldAcl.DangerousAddRef(ref OldAclAddRef);
+                }
+                unsafe
+                {
+                    ACL* NewAclLocal = null;
+                    WIN32_ERROR res;
+                    fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
                     {
-                        OldAcl.DangerousAddRef(ref OldAclAddRef);
+                        res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
                     }
-                    var res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
                     if (res != WIN32_ERROR.ERROR_SUCCESS)
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -552,12 +570,12 @@ namespace PSADT.LibraryInterfaces
                     NewAcl = new((IntPtr)NewAclLocal, true);
                     return res;
                 }
-                finally
+            }
+            finally
+            {
+                if (OldAclAddRef)
                 {
-                    if (OldAclAddRef)
-                    {
-                        OldAcl?.DangerousRelease();
-                    }
+                    OldAcl?.DangerousRelease();
                 }
             }
         }
@@ -572,7 +590,7 @@ namespace PSADT.LibraryInterfaces
         /// releasing this handle when it is no longer needed.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the ACL was
         /// created successfully; otherwise, returns an error code.</returns>
-        internal unsafe static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl) => SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
+        internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl) => SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
 
         /// <summary>
         /// Sets the security information for a specified object, such as a file, registry key, or other securable
@@ -598,8 +616,12 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null or closed.</exception>
-        internal unsafe static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
+        internal static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
         {
+            if (handle is null || handle.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(handle));
+            }
             bool handleAddRef = false;
             bool psidOwnerAddRef = false;
             bool psidGroupAddRef = false;
@@ -607,28 +629,16 @@ namespace PSADT.LibraryInterfaces
             bool pSaclAddRef = false;
             try
             {
-                if (handle is null || handle.IsClosed)
-                {
-                    throw new ArgumentNullException(nameof(handle));
-                }
-                if (psidOwner is not null && !psidOwner.IsClosed)
-                {
-                    psidOwner.DangerousAddRef(ref psidOwnerAddRef);
-                }
-                if (psidGroup is not null && !psidGroup.IsClosed)
-                {
-                    psidGroup.DangerousAddRef(ref psidGroupAddRef);
-                }
-                if (pDacl is not null && !pDacl.IsClosed)
-                {
-                    pDacl.DangerousAddRef(ref pDaclAddRef);
-                }
-                if (pSacl is not null && !pSacl.IsClosed)
-                {
-                    pSacl.DangerousAddRef(ref pSaclAddRef);
-                }
                 handle.DangerousAddRef(ref handleAddRef);
-                var res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                psidOwner?.DangerousAddRef(ref psidOwnerAddRef);
+                psidGroup?.DangerousAddRef(ref psidGroupAddRef);
+                pDacl?.DangerousAddRef(ref pDaclAddRef);
+                pSacl?.DangerousAddRef(ref pSaclAddRef);
+                WIN32_ERROR res;
+                unsafe
+                {
+                    res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                }
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -684,12 +694,16 @@ namespace PSADT.LibraryInterfaces
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal unsafe static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
+        internal static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
-            fixed (char* pObjectNameLocal = pObjectName)
+            WIN32_ERROR res;
+            unsafe
             {
                 PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSecurityDescriptor = default;
-                var res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor);
+                fixed (char* pObjectNameLocal = pObjectName)
+                {
+                    res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor);
+                }
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -703,8 +717,8 @@ namespace PSADT.LibraryInterfaces
                 ppDacl = pDacl is not null ? new((IntPtr)pDacl, false) : null;
                 ppSacl = pSacl is not null ? new((IntPtr)pSacl, false) : null;
                 ppSecurityDescriptor = new((IntPtr)pSecurityDescriptor, true);
-                return res;
             }
+            return res;
         }
 
         /// <summary>
@@ -762,13 +776,17 @@ namespace PSADT.LibraryInterfaces
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the initialization fails due to a Win32 error, or if the resulting authorization context is
         /// invalid.</exception>
-        internal unsafe static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        internal static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             bool UserSidAddRef = false;
             try
             {
                 UserSid.DangerousAddRef(ref UserSidAddRef);
-                var res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+                BOOL res;
+                unsafe
+                {
+                    res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+                }
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -807,9 +825,13 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
-        internal unsafe static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        internal static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
-            var res = PInvoke.AuthzInitializeContextFromToken((uint)Flags, TokenHandle, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.AuthzInitializeContextFromToken((uint)Flags, TokenHandle, hAuthzResourceManager, pExpirationTime, Identifier, DynamicGroupArgs.ToPointer(), out phAuthzClientContext);
+            }
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -845,13 +867,17 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the access check is successful and the results are valid; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the access check fails or if the results handle is invalid.</exception>
-        internal unsafe static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
+        internal static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
         {
             bool pSecurityDescriptorAddRef = false;
             try
             {
                 pSecurityDescriptor.DangerousAddRef(ref pSecurityDescriptorAddRef);
-                var res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults);
+                BOOL res;
+                unsafe
+                {
+                    res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults);
+                }
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -932,14 +958,18 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. A value of <see
         /// cref="NTSTATUS.STATUS_SUCCESS"/> indicates success.</returns>
         /// <exception cref="Win32Exception">Thrown if the operation fails, wrapping the corresponding Windows error code.</exception>
-        internal unsafe static NTSTATUS LsaQueryInformationPolicy(SafeHandle PolicyHandle, POLICY_INFORMATION_CLASS InformationClass, out SafeLsaFreeMemoryHandle Buffer)
+        internal static NTSTATUS LsaQueryInformationPolicy(SafeHandle PolicyHandle, POLICY_INFORMATION_CLASS InformationClass, out SafeLsaFreeMemoryHandle Buffer)
         {
-            var res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out var BufferLocal);
-            if (res != NTSTATUS.STATUS_SUCCESS)
+            NTSTATUS res;
+            unsafe
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
+                res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out var BufferLocal);
+                if (res != NTSTATUS.STATUS_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
+                }
+                Buffer = new((IntPtr)BufferLocal, true);
             }
-            Buffer = new((IntPtr)BufferLocal, true);
             return res;
         }
     }

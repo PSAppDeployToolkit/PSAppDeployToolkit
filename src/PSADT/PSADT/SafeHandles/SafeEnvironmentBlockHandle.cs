@@ -2,6 +2,7 @@
 using Microsoft.Win32.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace PSADT.SafeHandles
 {
@@ -26,13 +27,17 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override unsafe bool ReleaseHandle()
+        protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
-            var res = PInvoke.DestroyEnvironmentBlock(handle.ToPointer());
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.DestroyEnvironmentBlock(handle.ToPointer());
+            }
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();

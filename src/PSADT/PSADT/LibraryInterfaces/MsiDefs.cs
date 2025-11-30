@@ -143,9 +143,12 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="value">A PCWSTR representing the persistence mode value to assign. Must reference a valid, null-terminated Unicode
         /// string.</param>
-        private unsafe MSI_PERSISTENCE_MODE(PCWSTR value)
+        private MSI_PERSISTENCE_MODE(PCWSTR value)
         {
-            Value = (IntPtr)value.Value;
+            unsafe
+            {
+                Value = (IntPtr)value.Value;
+            }
         }
 
         /// <summary>
@@ -153,7 +156,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="value">The integer value to assign to the persistence mode. This value determines the mode represented by the
         /// instance.</param>
-        private unsafe MSI_PERSISTENCE_MODE(int value)
+        private MSI_PERSISTENCE_MODE(int value)
         {
             Value = (IntPtr)value;
         }
@@ -176,9 +179,12 @@ namespace PSADT.LibraryInterfaces
         /// representation of an MSI_PERSISTENCE_MODE value. The caller is responsible for ensuring that the conversion
         /// is valid in the context of the API being used.</remarks>
         /// <param name="h">The MSI_PERSISTENCE_MODE value to convert.</param>
-        public unsafe static explicit operator PCWSTR(MSI_PERSISTENCE_MODE h)
+        public static explicit operator PCWSTR(MSI_PERSISTENCE_MODE h)
         {
-            return (PCWSTR)h.Value.ToPointer();
+            unsafe
+            {
+                return (PCWSTR)h.Value.ToPointer();
+            }
         }
 
         /// <summary>
@@ -218,9 +224,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h1">The PCWSTR value to compare.</param>
         /// <param name="h2">The MSI_PERSISTENCE_MODE value to compare.</param>
         /// <returns>true if the values are not equal; otherwise, false.</returns>
-        public unsafe static bool operator !=(PCWSTR h1, MSI_PERSISTENCE_MODE h2)
+        public static bool operator !=(PCWSTR h1, MSI_PERSISTENCE_MODE h2)
         {
-            return (IntPtr)h1.Value != h2.Value;
+            unsafe
+            {
+                return (IntPtr)h1.Value != h2.Value;
+            }
         }
 
         /// <summary>
@@ -229,9 +238,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h1">The PCWSTR value to compare.</param>
         /// <param name="h2">The MSI_PERSISTENCE_MODE value to compare.</param>
         /// <returns>true if the underlying values of h1 and h2 are equal; otherwise, false.</returns>
-        public unsafe static bool operator ==(PCWSTR h1, MSI_PERSISTENCE_MODE h2)
+        public static bool operator ==(PCWSTR h1, MSI_PERSISTENCE_MODE h2)
         {
-            return (IntPtr)h1.Value == h2.Value;
+            unsafe
+            {
+                return (IntPtr)h1.Value == h2.Value;
+            }
         }
 
         /// <summary>

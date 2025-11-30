@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using PSADT.Utilities;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.System.Memory;
 
 namespace PSADT.SafeHandles
@@ -20,14 +21,17 @@ namespace PSADT.SafeHandles
         /// <param name="protect"></param>
         /// <returns></returns>
         /// <exception cref="OutOfMemoryException"></exception>
-        internal unsafe static SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
+        internal static SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
         {
-            var handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
-            if (handle is null)
+            unsafe
             {
-                throw new OutOfMemoryException("Failed to allocate memory.");
+                var handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
+                if (handle is null)
+                {
+                    throw new OutOfMemoryException("Failed to allocate memory.");
+                }
+                return new((IntPtr)handle, length, true);
             }
-            return new((IntPtr)handle, length, true);
         }
 
         /// <summary>
@@ -68,14 +72,17 @@ namespace PSADT.SafeHandles
         /// Releases the handle.
         /// </summary>
         /// <returns></returns>
-        protected override unsafe bool ReleaseHandle()
+        protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
-            // We deliberately pass 0 to dwSize as the specification says it must be 0 when dwFreeType is MEM_RELEASE.
-            var res = PInvoke.VirtualFree(handle.ToPointer(), UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.VirtualFree(handle.ToPointer(), UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+            }
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();

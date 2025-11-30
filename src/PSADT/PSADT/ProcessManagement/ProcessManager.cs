@@ -152,7 +152,6 @@ namespace PSADT.ProcessManagement
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                         using var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
                         UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                        using (var lpDesktop = SafeHGlobalHandle.StringToUni(@"winsta0\default"))
                         using (lpEnvironment)
                         {
                             unsafe
