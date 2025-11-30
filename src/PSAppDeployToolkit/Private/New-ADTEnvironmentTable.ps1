@@ -290,13 +290,13 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('IsNetworkServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NetworkServiceSid))
     $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.Groups -contains ([System.Security.Principal.SecurityIdentifier]'S-1-5-6')))
     $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
-    $variables.Add('LocalSystemNTAccount', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName LocalSystemSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
-    $variables.Add('LocalUsersGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinUsersSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
-    $variables.Add('LocalAdministratorsGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinAdministratorsSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
+    $variables.Add('LocalSystemNTAccount', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::LocalSystemSid).Translate([System.Security.Principal.NTAccount]))
+    $variables.Add('LocalUsersGroup', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid).Translate([System.Security.Principal.NTAccount]))
+    $variables.Add('LocalAdministratorsGroup', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid).Translate([System.Security.Principal.NTAccount]))
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
-    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionInfo[]](Get-ADTLoggedOnUser 4>$null))
+    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionManager]::GetSessionInfo())
     if ($variables.LoggedOnUserSessions)
     {
         $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
