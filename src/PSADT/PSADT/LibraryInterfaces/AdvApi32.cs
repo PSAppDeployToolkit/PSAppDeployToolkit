@@ -419,6 +419,7 @@ namespace PSADT.LibraryInterfaces
             bool lpEnvironmentAddRef = false;
             try
             {
+                BOOL res;
                 unsafe
                 {
                     fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
@@ -429,15 +430,15 @@ namespace PSADT.LibraryInterfaces
                         SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                         hToken.DangerousAddRef(ref hTokenAddRef);
                         lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                        var res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                        res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                         if (!res)
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
                         lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
-                        return res;
                     }
                 }
+                return res;
             }
             finally
             {
@@ -555,10 +556,10 @@ namespace PSADT.LibraryInterfaces
                 {
                     OldAcl.DangerousAddRef(ref OldAclAddRef);
                 }
+                WIN32_ERROR res;
                 unsafe
                 {
                     ACL* NewAclLocal = null;
-                    WIN32_ERROR res;
                     fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
                     {
                         res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
@@ -568,8 +569,8 @@ namespace PSADT.LibraryInterfaces
                         throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                     }
                     NewAcl = new((IntPtr)NewAclLocal, true);
-                    return res;
                 }
+                return res;
             }
             finally
             {
