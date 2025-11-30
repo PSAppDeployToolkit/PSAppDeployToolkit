@@ -9,6 +9,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
+using Windows.Win32.System.SystemInformation;
 
 namespace PSADT.DeviceManagement
 {
@@ -139,6 +140,16 @@ namespace PSADT.DeviceManagement
             {
                 return new((NETSETUP_JOIN_STATUS)bufferType, nameBuffer.ToStringUni());
             }
+        }
+
+        /// <summary>
+        /// Retrieves the total amount of physical memory installed on the system, in bytes.
+        /// </summary>
+        /// <returns>The total physical memory, in bytes, available on the system.</returns>
+        public static ulong GetTotalSystemMemory()
+        {
+            _ = Kernel32.GlobalMemoryStatusEx(out MEMORYSTATUSEX lpBuffer);
+            return lpBuffer.ullTotalPhys;
         }
     }
 }

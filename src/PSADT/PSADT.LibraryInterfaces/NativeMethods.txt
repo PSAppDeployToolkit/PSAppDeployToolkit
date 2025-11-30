@@ -63,6 +63,7 @@ GetTokenInformation
 GetWindowText
 GetWindowTextLength
 GetWindowThreadProcessId
+GlobalMemoryStatusEx
 HIWORD
 HKEY_CLASSES_ROOT
 HKEY_CURRENT_CONFIG
