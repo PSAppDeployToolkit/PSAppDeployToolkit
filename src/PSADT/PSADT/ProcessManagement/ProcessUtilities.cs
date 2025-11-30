@@ -291,8 +291,8 @@ namespace PSADT.ProcessManagement
         /// will be empty.</returns>
         public static IReadOnlyList<Process> GetParentProcesses()
         {
-            List<Process> procs = [];
             var proc = Process.GetCurrentProcess();
+            List<Process> procs = [];
             while (true)
             {
                 try

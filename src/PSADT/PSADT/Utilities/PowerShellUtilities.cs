@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
@@ -58,7 +59,7 @@ namespace PSADT.Utilities
         /// <param name="dict">A dictionary of key-value pairs to convert.</param>
         /// <param name="exclusions">An array of keys to exclude from the conversion.</param>
         /// <returns>A string of PowerShell arguments representing the dictionary.</returns>
-        internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, IReadOnlyList<string>? exclusions = null)
+        internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, ReadOnlyCollection<string>? exclusions = null)
         {
             List<string> args = [];
             foreach (var entry in dict)
