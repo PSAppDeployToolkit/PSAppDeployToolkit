@@ -42,6 +42,7 @@ GetDpiForMonitor
 GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
+GetFileType
 GetForegroundWindow
 GetLastInputInfo
 GetModuleInformation
