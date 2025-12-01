@@ -14,6 +14,7 @@ using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Memory;
 using Windows.Win32.System.Threading;
 using Windows.Wdk.Foundation;
@@ -137,6 +138,19 @@ namespace PSADT.FileSystem
                             {
                                 return;
                             }
+                        }
+
+                        // If the duplicated handle isn't a disk handle, skip to the next iteration.
+                        try
+                        {
+                            if (Kernel32.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
+                            {
+                                return;
+                            }
+                        }
+                        catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE || ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_FUNCTION)
+                        {
+                            return;
                         }
 
                         // Get the handle's name to check if it's a hard drive path.

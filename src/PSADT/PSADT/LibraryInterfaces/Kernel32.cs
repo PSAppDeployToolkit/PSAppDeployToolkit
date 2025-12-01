@@ -843,5 +843,23 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Retrieves the type of the specified file or device handle.
+        /// </summary>
+        /// <remarks>If the underlying system call fails, an exception is thrown. This method wraps the
+        /// native GetFileType function and provides error handling for Win32 errors.</remarks>
+        /// <param name="hFile">A safe handle to the file or device whose type is to be determined. The handle must be valid and open.</param>
+        /// <returns>A value of the FILE_TYPE enumeration that indicates the type of the specified handle. Returns
+        /// FILE_TYPE.FILE_TYPE_UNKNOWN if the type cannot be determined and no error occurred.</returns>
+        internal static FILE_TYPE GetFileType(SafeHandle hFile)
+        {
+            var res = PInvoke.GetFileType(hFile);
+            if (res == FILE_TYPE.FILE_TYPE_UNKNOWN && Marshal.GetLastWin32Error() is int lastWin32Error && lastWin32Error != 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastWin32Error);
+            }
+            return res;
+        }
     }
 }
