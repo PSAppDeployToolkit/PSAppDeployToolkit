@@ -11,18 +11,20 @@ namespace PSADT.SafeHandles
         /// Allocates a new <see cref="SafePinnedGCHandle"/> for the specified object, pinning it in memory.
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
-        internal static SafePinnedGCHandle Alloc(object value)
+        internal static SafePinnedGCHandle Alloc(object value, int length)
         {
-            return new(GCHandle.Alloc(value, GCHandleType.Pinned), true);
+            return new(GCHandle.Alloc(value, GCHandleType.Pinned), length, true);
         }
 
         /// <summary>
         /// Constructs a new instance of the <see cref="SafePinnedGCHandle"/> class with the specified <see cref="GCHandle"/>.
         /// </summary>
         /// <param name="handle"></param>
+        /// <param name="length"></param>
         /// <param name="ownsHandle"></param>
-        private SafePinnedGCHandle(GCHandle handle, bool ownsHandle) : base(handle.AddrOfPinnedObject(), 0, ownsHandle)
+        private SafePinnedGCHandle(GCHandle handle, int length, bool ownsHandle) : base(handle.AddrOfPinnedObject(), length, ownsHandle)
         {
             gcHandle = handle;
         }
