@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
-using Microsoft.Win32.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
@@ -11,7 +10,6 @@ using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.SystemInformation;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -356,75 +354,6 @@ namespace PSADT.LibraryInterfaces
                 if (HandleAddRef)
                 {
                     Handle?.DangerousRelease();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Creates a new thread in the specified process using the native NtCreateThreadEx system call.
-        /// </summary>
-        /// <remarks>This method is intended for advanced scenarios that require direct interaction with
-        /// the Windows native thread creation API. The caller is responsible for ensuring that all parameters,
-        /// especially handles and memory addresses, are valid and appropriate for the target process. Improper use may
-        /// result in process instability or security risks.</remarks>
-        /// <param name="threadHandle">When this method returns, contains a SafeThreadHandle representing the newly created thread. This parameter
-        /// is passed uninitialized.</param>
-        /// <param name="desiredAccess">The access rights requested for the new thread. Specify a combination of THREAD_ACCESS_RIGHTS flags that
-        /// determine the permitted operations on the thread.</param>
-        /// <param name="objectAttributes">A pointer to an OBJECT_ATTRIBUTES structure that specifies object attributes for the thread, or IntPtr.Zero
-        /// to use default attributes.</param>
-        /// <param name="processHandle">A SafeProcessHandle representing the process in which to create the thread. The handle must have appropriate
-        /// access rights for thread creation and must not be null or closed.</param>
-        /// <param name="startAddress">A SafeVirtualAllocHandle specifying the starting address of the thread routine in the target process. This
-        /// handle must not be null, closed, or invalid.</param>
-        /// <param name="parameter">A pointer to a variable to be passed as a parameter to the thread routine, or IntPtr.Zero if no parameter is
-        /// required.</param>
-        /// <param name="createFlags">Flags that control the creation of the thread. This value can be zero or a combination of thread creation
-        /// flags as defined by the native API.</param>
-        /// <param name="zeroBits">The number of high-order address bits that must be zero in the stack's base address. Typically set to zero.</param>
-        /// <param name="stackSize">The initial size, in bytes, of the stack for the new thread. If zero, the default stack size for the
-        /// executable is used.</param>
-        /// <param name="maximumStackSize">The maximum size, in bytes, of the stack for the new thread. If zero, the default maximum is used.</param>
-        /// <param name="attributeList">A pointer to a list of attributes for the new thread, or IntPtr.Zero if no additional attributes are
-        /// required.</param>
-        /// <returns>An NTSTATUS code indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, the
-        /// code specifies the error.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if processHandle is null or closed, or if startAddress is null, closed, or invalid.</exception>
-        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, SafeProcessHandle processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
-        {
-            if (startAddress is null || startAddress.IsClosed || startAddress.IsInvalid)
-            {
-                throw new ArgumentNullException(nameof(startAddress));
-            }
-            if (processHandle is null || processHandle.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(processHandle));
-            }
-            [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtCreateThreadEx(out IntPtr threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
-            bool startAddressAddRef = false;
-            bool processHandleAddRef = false;
-            try
-            {
-                startAddress.DangerousAddRef(ref startAddressAddRef);
-                processHandle.DangerousAddRef(ref processHandleAddRef);
-                var res = NtCreateThreadEx(out var hThread, desiredAccess, objectAttributes, processHandle.DangerousGetHandle(), startAddress.DangerousGetHandle(), parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
-                if (res != NTSTATUS.STATUS_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                threadHandle = new(hThread, true);
-                return res;
-            }
-            finally
-            {
-                if (startAddressAddRef)
-                {
-                    startAddress.DangerousRelease();
-                }
-                if (processHandleAddRef)
-                {
-                    processHandle.DangerousRelease();
                 }
             }
         }
