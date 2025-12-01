@@ -151,7 +151,7 @@ namespace PSADT.FileSystem
                         ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer));
                         objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
                     }
-                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_PIPE_NOT_CONNECTED))
+                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
                     {
                         return;
                     }
