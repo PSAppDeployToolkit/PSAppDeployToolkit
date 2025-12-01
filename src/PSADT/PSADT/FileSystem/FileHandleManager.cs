@@ -235,22 +235,15 @@ namespace PSADT.FileSystem
                         NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                     }
 
-                    // Get the exit code of the thread and throw an exception if it failed.
-                    Kernel32.GetExitCodeThread(hThread, out var exitCode);
-                    try
-                    {
-                        if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
-                        {
-                            throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
-                        }
-                    }
-                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_PIPE_NOT_CONNECTED))
+                    // Get the exit code of the thread, returning null under certain conditions or throwing an exception if it failed.
+                    Kernel32.GetExitCodeThread(hThread, out var exitCode); var res = unchecked((NTSTATUS)exitCode);
+                    if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
                     {
                         return null;
                     }
-                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                    if (res != NTSTATUS.STATUS_SUCCESS)
                     {
-                        return null;
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
                     }
                     ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsSpan()));
                     return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
