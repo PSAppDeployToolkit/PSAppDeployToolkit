@@ -22,7 +22,6 @@ using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Security;
-using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -330,7 +329,7 @@ namespace PSADT.ProcessManagement
             Task.Run(async () =>
             {
                 // Set up the cancellation token source and registration if needed.
-                uint timeoutExitCode = ValueTypeConverter<uint>.Convert(TimeoutExitCode);
+                var timeoutExitCode = unchecked((uint)TimeoutExitCode);
                 CancellationTokenRegistration ctr = default;
                 if (launchInfo.CancellationToken is not null)
                 {
@@ -363,7 +362,7 @@ namespace PSADT.ProcessManagement
                             {
                                 await Task.WhenAll(hStdOutTask, hStdErrTask);
                                 Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                exitCode = ValueTypeConverter<int>.Convert(lpExitCode);
+                                exitCode = unchecked((int)lpExitCode);
                                 break;
                             }
                         }
