@@ -207,7 +207,7 @@ namespace PSADT.FileSystem
             {
                 throw new ArgumentNullException(nameof(fileHandle));
             }
-            using var objectBuffer = SafeHGlobalHandle.Alloc(1024);
+            using var objectBuffer = SafePinnedGCHandle.Alloc(new byte[1024], 1024);
             bool objectBufferAddRef = false;
             bool fileHandleAddRef = false;
             try
@@ -241,7 +241,8 @@ namespace PSADT.FileSystem
                     {
                         return null;
                     }
-                    return objectBuffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.TrimRemoveNull();
+                    ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsSpan()));
+                    return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
                 }
             }
             finally
