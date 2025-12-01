@@ -37,7 +37,7 @@ namespace PSADT.TerminalServices
             {
                 int objLength = Marshal.SizeOf<WTS_SESSION_INFOW>();
                 int objCount = pSessionInfo.Length / objLength;
-                var pSessionInfoSpan = pSessionInfo.AsSpan();
+                var pSessionInfoSpan = pSessionInfo.AsReadOnlySpan();
                 var sessions = new List<SessionInfo>(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
@@ -201,7 +201,7 @@ namespace PSADT.TerminalServices
                 WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out var pProcessInfo);
                 using (pProcessInfo)
                 {
-                    var pProcessInfoSpan = pProcessInfo.AsSpan();
+                    var pProcessInfoSpan = pProcessInfo.AsReadOnlySpan();
                     int objLength = Marshal.SizeOf(typeof(WTS_PROCESS_INFOW));
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
