@@ -45,8 +45,7 @@ namespace PSADT.FileSystem
 
             // Read the number of types from the buffer and store the built-out dictionary.
             ref var typesInfo = ref Unsafe.As<byte, NtDll.OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
-            var typesCount = typesInfo.NumberOfTypes;
-            var typeTable = new Dictionary<ushort, string>((int)typesCount);
+            var typesCount = typesInfo.NumberOfTypes; var typeTable = new Dictionary<ushort, string>((int)typesCount);
             var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
             for (uint i = 0; i < typesCount; i++)
             {
@@ -83,9 +82,8 @@ namespace PSADT.FileSystem
             using var objectBuffers = new ThreadLocal<byte[]>(() => new byte[1024], trackAllValues: true);
             using var currentProcessHandle = Kernel32.GetCurrentProcess(); var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
             ref var handleInfo = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
-            var handleCount = handleInfo.NumberOfHandles.ToUInt32();
+            var handleCount = handleInfo.NumberOfHandles.ToUInt32(); ConcurrentBag<FileHandleInfo> openHandles = [];
             var entryOffset = handleInfoExSize;
-            ConcurrentBag<FileHandleInfo> openHandles = [];
             Parallel.For(0, (int)handleCount, i =>
             {
                 // Read the handle information into a structure, skipping over if it's not a file or directory handle.
@@ -146,7 +144,25 @@ namespace PSADT.FileSystem
                 string? objectName;
                 using (fileDupHandle)
                 {
-                    objectName = GetObjectName(fileDupHandle, objectBuffers.Value);
+                    Span<byte> objectBuffer = objectBuffers.Value;
+                    try
+                    {
+                        NtDll.NtQueryObject(fileDupHandle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer, out _);
+                        ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer));
+                        objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
+                    }
+                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_PIPE_NOT_CONNECTED))
+                    {
+                        return;
+                    }
+                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                    {
+                        return;
+                    }
+                    finally
+                    {
+                        objectBuffer.Clear();
+                    }
                 }
 
                 // Skip to next iteration if the handle doesn't meet our criteria.
@@ -192,41 +208,6 @@ namespace PSADT.FileSystem
                 Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
                 localHandle = null;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the name of an object associated with a handle.
-        /// </summary>
-        /// <param name="fileHandle"></param>
-        /// <param name="objectBuffer"></param>
-        /// <returns></returns>
-        private static string? GetObjectName(SafeFileHandle fileHandle, Span<byte> objectBuffer)
-        {
-            // Make sure the provided handle is valid.
-            if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
-            {
-                throw new ArgumentNullException(nameof(fileHandle));
-            }
-
-            // Query the object for its name and return the result.
-            try
-            {
-                NtDll.NtQueryObject(fileHandle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer, out _);
-                ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer));
-                return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
-            }
-            catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_PIPE_NOT_CONNECTED))
-            {
-                return null;
-            }
-            catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-            {
-                return null;
-            }
-            finally
-            {
-                objectBuffer.Clear();
             }
         }
 
