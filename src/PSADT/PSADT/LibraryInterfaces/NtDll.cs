@@ -447,12 +447,12 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(threadHandle));
             }
             [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, in NTSTATUS exitStatus);
+            static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, NTSTATUS exitStatus);
             bool threadHandleAddRef = false;
             try
             {
                 threadHandle.DangerousAddRef(ref threadHandleAddRef);
-                var res = NtTerminateThread(threadHandle.DangerousGetHandle(), in exitStatus);
+                var res = NtTerminateThread(threadHandle.DangerousGetHandle(), exitStatus);
                 if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
