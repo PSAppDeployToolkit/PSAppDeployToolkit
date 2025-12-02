@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using Windows.Win32;
@@ -27,9 +28,9 @@ namespace PSADT.FileSystem
         {
             var lookupTable = new Dictionary<string, string> { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
-            for (char drive = 'A'; drive <= 'Z'; drive++)
+            foreach (string drive in Environment.GetLogicalDrives())
             {
-                var driveLetter = drive + ":";
+                var driveLetter = drive.TrimEnd('\\');
                 try
                 {
                     Kernel32.QueryDosDevice(driveLetter, targetPath);
@@ -38,9 +39,9 @@ namespace PSADT.FileSystem
                 {
                     continue;
                 }
-                foreach (var path in targetPath.ToString().Trim('\0').Trim().Split('\0'))
+                foreach (var path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var ntPath = path.Trim();
+                    var ntPath = path.TrimRemoveNull();
                     if (ntPath.Length > 0 && !lookupTable.ContainsKey(ntPath))
                     {
                         lookupTable.Add(ntPath, driveLetter);
