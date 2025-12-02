@@ -12,7 +12,6 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.Utilities;
-using Windows.Wdk.Foundation;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.Threading;
@@ -32,11 +31,10 @@ namespace PSADT.FileSystem
             // Query the system for the required buffer size for object types information.
             var objectTypesSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
             var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
-            var typesBuffer = new byte[objectTypesSize];
-            Span<byte> typesBufferPtr = typesBuffer;
+            var typesBuffer = new byte[objectTypesSize]; Span<byte> typesBufferPtr = typesBuffer;
 
             // Reallocate the buffer until we get the required size.
-            var status = NtDll.NtQueryObject(null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
+            var status = NtDll.NtQueryObject(null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 typesBuffer = new byte[typesBufferReqLength]; typesBufferPtr = typesBuffer;
@@ -148,7 +146,7 @@ namespace PSADT.FileSystem
                     try
                     {
                         NtDll.NtQueryObject(fileDupHandle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer, out _);
-                        ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer));
+                        ref var objectBufferData = ref Unsafe.As<byte, Windows.Wdk.Foundation.OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer));
                         objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
                     }
                     catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
