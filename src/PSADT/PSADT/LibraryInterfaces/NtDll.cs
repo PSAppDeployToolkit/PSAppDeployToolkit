@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
-using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.System.Threading;
@@ -195,7 +194,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Reserved for future use.
             /// </summary>
-            internal readonly byte ReservedByte;
+            internal readonly sbyte ReservedByte;
 
             /// <summary>
             /// The object type's pool type.
@@ -292,14 +291,13 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(SystemInformation));
             }
+            ReturnLength = 0;
             NTSTATUS res;
             unsafe
             {
                 fixed (byte* SystemInformationLocal = SystemInformation)
                 {
-                    [DllImport("ntdll.dll", ExactSpelling = true)]
-                    static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, void* SystemInformation, uint SystemInformationLength, out uint ReturnLength);
-                    res = NtQuerySystemInformation(SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, out ReturnLength);
+                    res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
                 }
             }
             if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
@@ -323,7 +321,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An NTSTATUS value indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, an
         /// error code is returned.</returns>
         /// <exception cref="ArgumentNullException">Thrown if Handle is null or closed, or if ObjectInformation is empty.</exception>
-        internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out int ReturnLength)
+        internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out uint ReturnLength)
         {
             if (ObjectInformation.IsEmpty)
             {
@@ -333,16 +331,7 @@ namespace PSADT.LibraryInterfaces
             try
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
-                NTSTATUS res;
-                unsafe
-                {
-                    fixed (byte* ObjectInformationLocal = ObjectInformation)
-                    {
-                        [DllImport("ntdll.dll", ExactSpelling = true)]
-                        static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, void* ObjectInformation, int ObjectInformationLength, out int ReturnLength);
-                        res = NtQueryObject(Handle?.DangerousGetHandle() ?? IntPtr.Zero, ObjectInformationClass, ObjectInformationLocal, ObjectInformation.Length, out ReturnLength);
-                    }
-                }
+                NTSTATUS res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
                 if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -354,45 +343,6 @@ namespace PSADT.LibraryInterfaces
                 if (HandleAddRef)
                 {
                     Handle?.DangerousRelease();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Terminates the specified thread and sets its exit status code.
-        /// </summary>
-        /// <remarks>This method wraps the native NtTerminateThread function from ntdll.dll. Terminating a
-        /// thread can lead to resource leaks or inconsistent program state if not used carefully. Use this method only
-        /// when it is necessary to forcibly terminate a thread.</remarks>
-        /// <param name="threadHandle">A handle to the thread to be terminated. The handle must be valid and not closed.</param>
-        /// <param name="exitStatus">The exit status code to assign to the thread being terminated.</param>
-        /// <returns>An NTSTATUS value indicating the result of the operation. Returns STATUS_SUCCESS if the thread was
-        /// terminated successfully; otherwise, returns an error code.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if threadHandle is null or has already been closed.</exception>
-        internal static NTSTATUS NtTerminateThread(SafeThreadHandle threadHandle, in NTSTATUS exitStatus)
-        {
-            if (threadHandle is null || threadHandle.IsClosed)
-            {
-                throw new ArgumentNullException(nameof(threadHandle));
-            }
-            [DllImport("ntdll.dll", ExactSpelling = true)]
-            static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, NTSTATUS exitStatus);
-            bool threadHandleAddRef = false;
-            try
-            {
-                threadHandle.DangerousAddRef(ref threadHandleAddRef);
-                var res = NtTerminateThread(threadHandle.DangerousGetHandle(), exitStatus);
-                if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
-            }
-            finally
-            {
-                if (threadHandleAddRef)
-                {
-                    threadHandle.DangerousRelease();
                 }
             }
         }

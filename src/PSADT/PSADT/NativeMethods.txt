@@ -158,6 +158,8 @@ MsiGetSummaryInformation
 MsiOpenDatabase
 MsiSummaryInfoGetProperty
 NtQueryInformationProcess
+NtQueryObject
+NtQuerySystemInformation
 OBJECT_ATTRIBUTE_FLAGS
 OBJECT_NAME_INFORMATION
 OOBEComplete
