@@ -34,7 +34,7 @@ namespace PSADT.FileSystem
             static T ReadStruct<T>(BinaryReader reader) where T : struct
             {
                 var length = Marshal.SizeOf<T>(); using var handle = SafePinnedGCHandle.Alloc(reader.ReadBytes(length), length);
-                return handle.ToStructure<T>();
+                return handle.AsStructure<T>();
             }
 
             // Read the DOS header and check for the PE signature.

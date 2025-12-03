@@ -107,7 +107,7 @@ namespace PSADT.ProcessManagement
             // If we got a valid version resource, parse it.
             // Read the version information from the resource.
             Version32.VerQueryValue(versionResource, @"\", out var fixedInfoPtr, out _);
-            FixedFileInfo = Marshal.PtrToStructure<VS_FIXEDFILEINFO>(fixedInfoPtr);
+            FixedFileInfo = fixedInfoPtr.AsStructure<VS_FIXEDFILEINFO>();
             FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
             FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
             FileBuildPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionLS);
@@ -282,7 +282,8 @@ namespace PSADT.ProcessManagement
             var langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
-                translationCombinations.Add(Marshal.PtrToStructure<Version32.LANGANDCODEPAGE>(IntPtr.Add(translationPtr, i * langAndCodepageSize)).ToTranslationTableString());
+                ref var langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsStructure<Version32.LANGANDCODEPAGE>();
+                translationCombinations.Add(langAndCodePage.ToTranslationTableString());
             }
 
             // Add some common fallback combinations that are known to work in many cases.
@@ -329,7 +330,7 @@ namespace PSADT.ProcessManagement
             // Attempt to query the version resource for the specified name.
             try
             {
-                Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out var lplpBuffer, out var _)
+                Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out var lplpBuffer, out var _);
                 string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
                 if (!string.IsNullOrWhiteSpace(result))
                 {

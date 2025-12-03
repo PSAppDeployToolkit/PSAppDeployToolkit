@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 
 namespace PSADT.SafeHandles
 {
@@ -39,20 +40,6 @@ namespace PSADT.SafeHandles
         internal virtual void ReAlloc(int length) => throw new NotImplementedException();
 
         /// <summary>
-        /// Converts the handle to a string using the ANSI character set.
-        /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        internal string? ToStringUni(int offset = 0) => Marshal.PtrToStringUni(handle + offset);
-
-        /// <summary>
-        /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        internal T ToStructure<T>(int offset = 0) where T : struct => Marshal.PtrToStructure<T>(handle + offset);
-
-        /// <summary>
         /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -64,6 +51,25 @@ namespace PSADT.SafeHandles
             Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
             return this;
         }
+
+        /// <summary>
+        /// Converts the handle to a string using the ANSI character set.
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        internal string? ToStringUni(int offset = 0) => Marshal.PtrToStringUni(handle + offset);
+
+        /// <summary>
+        /// Returns a reference to a structure of type <typeparamref name="T"/> located at the specified offset from the
+        /// underlying handle.
+        /// </summary>
+        /// <remarks>The caller is responsible for ensuring that the memory at the specified offset is
+        /// valid and properly aligned for type <typeparamref name="T"/>. Accessing invalid or misaligned memory may
+        /// result in undefined behavior.</remarks>
+        /// <typeparam name="T">The value type to interpret the memory as. Must be an unmanaged structure.</typeparam>
+        /// <param name="offset">The byte offset from the start of the handle at which to read the structure. Defaults to 0.</param>
+        /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
+        internal unsafe ref T AsStructure<T>(int offset = 0) where T : struct => ref handle.AsStructure<T>(offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
