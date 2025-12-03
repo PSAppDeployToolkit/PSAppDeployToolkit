@@ -36,7 +36,7 @@ namespace PSADT.SafeHandles
             BOOL res;
             unsafe
             {
-                res = PInvoke.DestroyEnvironmentBlock(handle.ToPointer());
+                res = PInvoke.DestroyEnvironmentBlock((void*)handle);
             }
             if (!res)
             {

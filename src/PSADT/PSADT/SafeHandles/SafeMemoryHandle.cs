@@ -194,7 +194,7 @@ namespace PSADT.SafeHandles
         {
             unsafe
             {
-                new Span<byte>(handle.ToPointer(), Length).Clear();
+                new Span<byte>((void*)handle, Length).Clear();
             }
         }
 

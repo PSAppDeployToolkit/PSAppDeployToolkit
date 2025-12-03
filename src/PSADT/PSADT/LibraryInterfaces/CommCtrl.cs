@@ -62,7 +62,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (PCWSTR)h.Value.ToPointer();
+                return (PCWSTR)(void*)h.Value;
             }
         }
 

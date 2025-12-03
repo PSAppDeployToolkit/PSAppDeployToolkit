@@ -29,7 +29,7 @@ namespace PSADT.SafeHandles
             NTSTATUS res;
             unsafe
             {
-                res = PInvoke.LsaFreeMemory(handle.ToPointer());
+                res = PInvoke.LsaFreeMemory((void*)handle);
             }
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
