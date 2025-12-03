@@ -69,7 +69,7 @@ namespace PSADT.SafeHandles
         /// <typeparam name="T">The value type to interpret the memory as. Must be an unmanaged structure.</typeparam>
         /// <param name="offset">The byte offset from the start of the handle at which to read the structure. Defaults to 0.</param>
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
-        internal unsafe ref T AsStructure<T>(int offset = 0) where T : struct => ref handle.AsStructure<T>(offset);
+        internal unsafe ref T AsStructure<T>(int offset = 0) where T : unmanaged => ref handle.AsStructure<T>(offset);
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
@@ -174,7 +174,7 @@ namespace PSADT.SafeHandles
         /// equal to the length of the memory region.</param>
         /// <returns>A read-only span of bytes beginning at the specified offset and extending to the end of the memory region.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
-        internal ReadOnlySpan<byte> AsReadOnlySpan(int offset = 0)
+        internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
             int length = Length - offset;
             if (length < 0)

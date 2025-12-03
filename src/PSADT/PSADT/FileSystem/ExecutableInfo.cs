@@ -31,7 +31,7 @@ namespace PSADT.FileSystem
                 }
                 return false;
             }
-            static T ReadStruct<T>(BinaryReader reader) where T : struct
+            static T ReadStruct<T>(BinaryReader reader) where T : unmanaged
             {
                 var length = Marshal.SizeOf<T>(); using var handle = SafePinnedGCHandle.Alloc(reader.ReadBytes(length), length);
                 return handle.AsStructure<T>();
