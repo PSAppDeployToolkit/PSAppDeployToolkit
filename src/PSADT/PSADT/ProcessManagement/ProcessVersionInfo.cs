@@ -329,14 +329,12 @@ namespace PSADT.ProcessManagement
             // Attempt to query the version resource for the specified name.
             try
             {
-                if (Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out var lplpBuffer, out var _) && lplpBuffer != IntPtr.Zero)
+                Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out var lplpBuffer, out var _)
+                string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
+                if (!string.IsNullOrWhiteSpace(result))
                 {
-                    string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
-                    if (!string.IsNullOrWhiteSpace(result))
-                    {
-                        success = true;
-                        return result;
-                    }
+                    success = true;
+                    return result;
                 }
             }
             catch
