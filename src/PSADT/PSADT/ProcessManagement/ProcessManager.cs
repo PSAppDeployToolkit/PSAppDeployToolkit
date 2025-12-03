@@ -689,8 +689,8 @@ namespace PSADT.ProcessManagement
                     }
                     var extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
                     Span<byte> hExtendedFlags = stackalloc byte[sizeof(EXTENDED_PROCESS_CREATION_FLAG)]; hExtendedFlags.Write(ref extendedFlag);
-                    using var hAttributeList = SafeProcThreadAttributeListHandle.Create(1);
-                    Kernel32.UpdateProcThreadAttribute(hAttributeList, PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, hExtendedFlags);
+                    using var hAttributeList = SafeProcThreadAttributeListHandle.Alloc(1);
+                    hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, hExtendedFlags);
                     bool hAttributeListAddRef = false;
                     try
                     {

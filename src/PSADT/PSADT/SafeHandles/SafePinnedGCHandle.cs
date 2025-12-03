@@ -13,10 +13,7 @@ namespace PSADT.SafeHandles
         /// <param name="value"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        internal static SafePinnedGCHandle Alloc(object value, int length)
-        {
-            return new(GCHandle.Alloc(value, GCHandleType.Pinned), length, true);
-        }
+        internal static SafePinnedGCHandle Alloc(object value, int length) => new(GCHandle.Alloc(value, GCHandleType.Pinned), length, true);
 
         /// <summary>
         /// Constructs a new instance of the <see cref="SafePinnedGCHandle"/> class with the specified <see cref="GCHandle"/>.
@@ -24,10 +21,7 @@ namespace PSADT.SafeHandles
         /// <param name="handle"></param>
         /// <param name="length"></param>
         /// <param name="ownsHandle"></param>
-        private SafePinnedGCHandle(GCHandle handle, int length, bool ownsHandle) : base(handle.AddrOfPinnedObject(), length, ownsHandle)
-        {
-            gcHandle = handle;
-        }
+        private SafePinnedGCHandle(GCHandle handle, int length, bool ownsHandle) : base(handle.AddrOfPinnedObject(), length, ownsHandle) => pinnedHandle = handle;
 
         /// <summary>
         /// Releases the handle by freeing the underlying <see cref="GCHandle"/>.
@@ -35,13 +29,13 @@ namespace PSADT.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            gcHandle.Free();
+            pinnedHandle.Free();
             return true;
         }
 
         /// <summary>
         /// The underlying <see cref="GCHandle"/> that holds the pinned object.
         /// </summary>
-        private readonly GCHandle gcHandle;
+        private readonly GCHandle pinnedHandle;
     }
 }
