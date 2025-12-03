@@ -82,7 +82,7 @@ namespace PSADT.TerminalServices
                     }
                     else if (typeof(T) == typeof(WTSINFOEXW))
                     {
-                        return (T)(object)pBuffer.ToStructure<WTSINFOEXW>();
+                        return (T)(object)pBuffer.AsStructure<WTSINFOEXW>();
                     }
                     else
                     {
