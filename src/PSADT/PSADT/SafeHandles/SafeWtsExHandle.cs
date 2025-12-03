@@ -26,7 +26,7 @@ namespace PSADT.SafeHandles
             BOOL res;
             unsafe
             {
-                res = PInvoke.WTSFreeMemoryEx(type, handle.ToPointer(), (uint)(Length / WtsTypeClassSizes[(int)type]));
+                res = PInvoke.WTSFreeMemoryEx(type, (void*)handle, (uint)(Length / WtsTypeClassSizes[(int)type]));
             }
             if (!res)
             {

@@ -289,7 +289,7 @@ namespace PSADT.LibraryInterfaces
                 BOOL res;
                 unsafe
                 {
-                    res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, lpJobObjectInformation.ToPointer(), cbJobObjectInformationLength);
+                    res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, (void*)lpJobObjectInformation, cbJobObjectInformationLength);
                 }
                 if (!res)
                 {
@@ -384,7 +384,7 @@ namespace PSADT.LibraryInterfaces
                 BOOL res;
                 unsafe
                 {
-                    res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? lpEnvironment.DangerousGetHandle().ToPointer() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 }
                 if (!res)
                 {
@@ -859,7 +859,7 @@ namespace PSADT.LibraryInterfaces
             BOOL res;
             unsafe
             {
-                res = PInvoke.ReadProcessMemory(hProcess, lpBaseAddress.ToPointer(), lpBuffer, out lpNumberOfBytesRead);
+                res = PInvoke.ReadProcessMemory(hProcess, (void*)lpBaseAddress, lpBuffer, out lpNumberOfBytesRead);
             }
             if (!res)
             {

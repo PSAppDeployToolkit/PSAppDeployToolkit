@@ -20,7 +20,7 @@ namespace PSADT.SafeHandles
             }
             unsafe
             {
-                PInvoke.WTSFreeMemory(handle.ToPointer());
+                PInvoke.WTSFreeMemory((void*)handle);
             }
             handle = default;
             return true;

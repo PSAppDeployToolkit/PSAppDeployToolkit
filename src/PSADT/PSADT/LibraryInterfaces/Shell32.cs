@@ -132,7 +132,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                PInvoke.SHChangeNotify(wEventId, uFlags, dwItem1.ToPointer(), dwItem2.ToPointer());
+                PInvoke.SHChangeNotify(wEventId, uFlags, (void*)dwItem1, (void*)dwItem2);
             }
         }
 
