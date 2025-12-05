@@ -21,6 +21,14 @@ function Start-ADTMspProcessAsUser
     .PARAMETER AdditionalArgumentList
         Additional parameters.
 
+    .PARAMETER LoggingOptions
+        Overrides the default logging options specified in the config.psd1 file.
+
+    .PARAMETER LogFileName
+        Overrides the default log file name. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
+
+        For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
+
     .PARAMETER Username
         A username to invoke the process as. Only supported while running as the SYSTEM account.
 
@@ -93,6 +101,20 @@ function Start-ADTMspProcessAsUser
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$AdditionalArgumentList,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogFileName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or white space.'))
+                }
+                return $true
+            })]
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
