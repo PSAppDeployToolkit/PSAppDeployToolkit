@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.LibraryLoader;
@@ -57,6 +58,25 @@ namespace PSADT.Utilities
                     return new ReadOnlyCollection<Guid>(bufSpan.ToString().TrimRemoveNull().Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g)).ToArray());
                 }
             }
+        }
+
+        /// <summary>
+        /// Extracts and loads the XML data embedded in a Windows Installer patch file into an XmlDocument.
+        /// </summary>
+        /// <remarks>This method reads the XML data stored within a Windows Installer patch file using the
+        /// MsiExtractPatchXMLData API. The returned XmlDocument represents the patch's internal XML metadata, which may
+        /// include information about the patch contents, target products, and other installer details. The caller is
+        /// responsible for handling any exceptions that may occur if the file is invalid or does not contain XML
+        /// data.</remarks>
+        /// <param name="szPatchPath">The full path to the patch file (.msp) from which to extract XML data. Must not be null or empty.</param>
+        /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
+        public static XmlDocument ExtractPatchXmlData(string szPatchPath)
+        {
+            Msi.MsiExtractPatchXMLData(szPatchPath, null, out var requiredLength);
+            Span<char> bufSpan = stackalloc char[(int)requiredLength];
+            Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
+            XmlDocument xmlDoc = new(); xmlDoc.LoadXml(bufSpan.ToString().TrimRemoveNull());
+            return xmlDoc;
         }
     }
 }
