@@ -531,11 +531,25 @@ function Start-ADTMsiProcess
                 }
                 elseif ($InstalledApplication)
                 {
-                    (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
+                    if ($InstalledApplication.ContainsKey('DisplayVersion'))
+                    {
+                        (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
+                    }
+                    else
+                    {
+                        (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                    }
                 }
                 elseif ($msiPropertyTable)
                 {
-                    (Remove-ADTInvalidFileNameChars -Name ($msiPropertyTable.ProductName + '_' + $msiPropertyTable.ProductVersion)) -replace '\s+'
+                    if ($msiPropertyTable.ContainsKey('ProductVersion'))
+                    {
+                        (Remove-ADTInvalidFileNameChars -Name ($msiPropertyTable.ProductName + '_' + $msiPropertyTable.ProductVersion)) -replace '\s+'
+                    }
+                    else
+                    {
+                        (Remove-ADTInvalidFileNameChars -Name $msiPropertyTable.ProductName) -replace '\s+'
+                    }
                 }
 
                 # Build the log path to use.
