@@ -136,5 +136,34 @@ namespace PSADT.LibraryInterfaces
             pcchValueBuf = pcchValueBufLocal;
             return res;
         }
+
+        /// <summary>
+        /// Extracts the XML data embedded in a Windows Installer patch file and copies it into the provided character
+        /// buffer.
+        /// </summary>
+        /// <remarks>If the buffer specified by <paramref name="szXMLData"/> is too small to hold the XML
+        /// data, the method throws an exception. Ensure that the buffer is sized appropriately before calling this
+        /// method.</remarks>
+        /// <param name="szPatchPath">The full path to the patch file from which to extract XML data. Cannot be null.</param>
+        /// <param name="szXMLData">A buffer that receives the extracted XML data as characters. The buffer must be large enough to hold the XML
+        /// data; otherwise, the operation will fail.</param>
+        /// <param name="pcchXMLData">When this method returns, contains the number of characters copied to <paramref name="szXMLData"/>.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the extraction operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the XML data was successfully extracted.</returns>
+        internal static unsafe WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
+        {
+            uint pcchXMLDataLocal = (uint)szXMLData.Length;
+            var res = (WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+            }
+            if (szXMLData.IsEmpty)
+            {
+                pcchXMLDataLocal++;
+            }
+            pcchXMLData = pcchXMLDataLocal;
+            return res;
+        }
     }
 }

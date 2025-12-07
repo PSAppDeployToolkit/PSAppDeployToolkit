@@ -153,6 +153,7 @@ MSIDBOPEN_DIRECT
 MSIDBOPEN_PATCHFILE
 MSIDBOPEN_READONLY
 MSIDBOPEN_TRANSACT
+MsiExtractPatchXMLData
 MsiGetLastErrorRecord
 MsiGetSummaryInformation
 MsiOpenDatabase
