@@ -483,9 +483,13 @@ function Start-ADTMsiProcess
                     $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $Transforms) }
                     Get-ADTMsiTableProperty @gmtpParams
                 }
+                $msiPatchData = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msp')
+                {
+                    [PSADT.Utilities.MsiUtilities]::ExtractPatchXmlData($msiProduct).MsiPatch.TargetProduct
+                }
 
                 # Get the ProductCode of the MSI.
-                $msiProductCode = if ($ProductCode)
+                [System.Guid]$msiProductCode = if ($ProductCode)
                 {
                     $ProductCode
                 }
@@ -496,6 +500,10 @@ function Start-ADTMsiProcess
                 elseif ($msiPropertyTable)
                 {
                     $msiPropertyTable.ProductCode
+                }
+                elseif ($msiPatchData)
+                {
+                    $msiPatchData.TargetProductCode.'#text'
                 }
 
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
@@ -531,13 +539,27 @@ function Start-ADTMsiProcess
                 }
                 elseif ($InstalledApplication)
                 {
-                    if ($InstalledApplication.ContainsKey('DisplayVersion'))
+                    if ($msiPatchData)
                     {
-                        (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
+                        if ($msiPatchData.ChildNodes.LocalName.Contains('UpdatedVersion'))
+                        {
+                            (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $msiPatchData.UpdatedVersion)) -replace '\s+'
+                        }
+                        else
+                        {
+                            (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                        }
                     }
                     else
                     {
-                        (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                        if ($InstalledApplication.ContainsKey('DisplayVersion'))
+                        {
+                            (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
+                        }
+                        else
+                        {
+                            (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                        }
                     }
                 }
                 elseif ($msiPropertyTable)
