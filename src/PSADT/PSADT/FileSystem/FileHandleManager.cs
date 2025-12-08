@@ -126,6 +126,13 @@ namespace PSADT.FileSystem
                         using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
                         using (fileProcessHandle)
                         {
+                            // Skip to the next iteration if the handle is invalid.
+                            if (fileOpenHandle.IsInvalid)
+                            {
+                                return;
+                            }
+
+                            // Duplicate the handle into our process.
                             try
                             {
                                 Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
@@ -138,6 +145,12 @@ namespace PSADT.FileSystem
                             {
                                 return;
                             }
+                        }
+
+                        // Skip to the next iteration if the duplicated handle is invalid.
+                        if (fileDupHandle.IsInvalid)
+                        {
+                            return;
                         }
 
                         // If the duplicated handle isn't a disk handle, skip to the next iteration.
