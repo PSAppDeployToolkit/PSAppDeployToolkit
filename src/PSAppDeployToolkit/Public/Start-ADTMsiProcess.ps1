@@ -529,7 +529,7 @@ function Start-ADTMsiProcess
                 elseif (!$msiInstalled -and ($Action -ne 'Install'))
                 {
                     Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."
-                    return
+                    return $(if ($PassThru) { [PSADT.ProcessManagement.ProcessResult]::new(1605) })
                 }
 
                 # Set up the log file to use.
