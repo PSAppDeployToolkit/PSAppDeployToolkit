@@ -149,8 +149,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             // Configure window events
-            Loaded += FluentDialog_Loaded;
+            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
             SizeChanged += FluentDialog_SizeChanged;
+            Loaded += FluentDialog_Loaded;
         }
 
         /// <summary>
@@ -288,6 +289,24 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 WindowInteropHelper helper = new(this);
                 _hwndSource = HwndSource.FromHwnd(helper.Handle);
                 _hwndSource.AddHook(WndProc);
+            }
+        }
+
+        /// <summary>
+        /// Handles changes to system parameters that may affect window positioning, such as screen size or work area
+        /// updates.
+        /// </summary>
+        /// <remarks>This handler responds to changes in system properties like screen width, height, or
+        /// work area, ensuring the window remains correctly positioned when the display configuration
+        /// changes.</remarks>
+        /// <param name="sender">The source of the event, typically the SystemParameters class.</param>
+        /// <param name="e">An object that contains information about the property that changed, including its name.</param>
+        private void SystemParameters_StaticPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // Reposition the window if screen dimensions or work area change.
+            if (e.PropertyName == nameof(SystemParameters.PrimaryScreenWidth) || e.PropertyName == nameof(SystemParameters.PrimaryScreenHeight) || e.PropertyName == nameof(SystemParameters.WorkArea))
+            {
+                PositionWindow();
             }
         }
 
@@ -985,8 +1004,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (disposing)
             {
                 // Remove event handlers.
-                Loaded -= FluentDialog_Loaded;
+                SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
                 SizeChanged -= FluentDialog_SizeChanged;
+                Loaded -= FluentDialog_Loaded;
 
                 // Remove timer event handlers if they exist.
                 if (_expiryTimer is not null)

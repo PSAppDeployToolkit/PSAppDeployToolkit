@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
@@ -162,12 +163,52 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
             }
 
+            // Subscribe to system events for display and user preference changes.
+            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+
             // Set the form's starting location.
             PositionForm();
 
             // Start the persist timer if it's available.
             persistTimer?.Start();
             expiryTimer?.Start();
+        }
+
+        /// <summary>
+        /// Handles the event that occurs when the display settings change, ensuring the form is repositioned
+        /// appropriately.
+        /// </summary>
+        /// <remarks>This method is intended to respond to system-level display configuration changes,
+        /// such as resolution or monitor layout updates. It ensures that the form remains correctly positioned after
+        /// such changes by invoking the repositioning logic on the UI thread.</remarks>
+        /// <param name="sender">The source of the event, typically the system event manager.</param>
+        /// <param name="e">An <see cref="EventArgs"/> instance containing event data.</param>
+        private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            // We're on a thread pool thread → marshal back to UI thread.
+            if (!IsDisposed && IsHandleCreated)
+            {
+                BeginInvoke(PositionForm);
+            }
+        }
+
+        /// <summary>
+        /// Handles the UserPreferenceChanged event to respond to changes in user preferences such as general, desktop,
+        /// or window settings.
+        /// </summary>
+        /// <remarks>This method is typically used to reposition or update the form when relevant user
+        /// preferences change, such as when the taskbar is moved or resized. It only responds to changes in the
+        /// General, Desktop, or Window categories and ignores other categories.</remarks>
+        /// <param name="sender">The source of the event, typically the system event dispatcher.</param>
+        /// <param name="e">An object containing data about the user preference change, including the category of the change.</param>
+        private void SystemEvents_UserPreferenceChanged(object? sender, UserPreferenceChangedEventArgs e)
+        {
+            // Taskbar moves / size changes often show up here.
+            if (!IsDisposed && IsHandleCreated && (e.Category == UserPreferenceCategory.General || e.Category == UserPreferenceCategory.Desktop || e.Category == UserPreferenceCategory.Window))
+            {
+                BeginInvoke(PositionForm);
+            }
         }
 
         /// <summary>
@@ -183,6 +224,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 e.Cancel = true;
                 return;
             }
+
+            // Unsubscribe from system events.
+            SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
+            SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
 
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
