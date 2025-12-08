@@ -361,8 +361,6 @@ namespace PSADT.LibraryInterfaces
         /// is passed uninitialized.</param>
         /// <param name="DesiredAccess">The access rights requested for the new thread. Specify a combination of THREAD_ACCESS_RIGHTS flags that
         /// determine the permitted operations on the thread.</param>
-        /// <param name="ObjectAttributes">A pointer to an OBJECT_ATTRIBUTES structure that specifies object attributes for the thread, or IntPtr.Zero
-        /// to use default attributes.</param>
         /// <param name="ProcessHandle">A SafeProcessHandle representing the process in which to create the thread. The handle must have appropriate
         /// access rights for thread creation and must not be null or closed.</param>
         /// <param name="StartRoutine">A SafeVirtualAllocHandle specifying the starting address of the thread routine in the target process. This
@@ -375,12 +373,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="StackSize">The initial size, in bytes, of the stack for the new thread. If zero, the default stack size for the
         /// executable is used.</param>
         /// <param name="MaximumStackSize">The maximum size, in bytes, of the stack for the new thread. If zero, the default maximum is used.</param>
-        /// <param name="AttributeList">A pointer to a list of attributes for the new thread, or IntPtr.Zero if no additional attributes are
-        /// required.</param>
         /// <returns>An NTSTATUS code indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, the
         /// code specifies the error.</returns>
         /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null or closed, or if StartRoutine is null, closed, or invalid.</exception>
-        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, IntPtr ObjectAttributes, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, IntPtr Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, IntPtr AttributeList)
+        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, IntPtr? Argument = null, THREAD_CREATE_FLAGS CreateFlags = 0, uint ZeroBits = 0, uint StackSize = 0, uint MaximumStackSize = 0)
         {
             if (StartRoutine is null || StartRoutine.IsClosed || StartRoutine.IsInvalid)
             {
@@ -398,7 +394,7 @@ namespace PSADT.LibraryInterfaces
             {
                 StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                var res = NtCreateThreadEx(out var hThread, DesiredAccess, ObjectAttributes, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument, CreateFlags, ZeroBits, StackSize, MaximumStackSize, AttributeList);
+                var res = NtCreateThreadEx(out var hThread, DesiredAccess, IntPtr.Zero, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? IntPtr.Zero, CreateFlags, ZeroBits, StackSize, MaximumStackSize, IntPtr.Zero);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
