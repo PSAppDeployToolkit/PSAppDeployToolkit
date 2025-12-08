@@ -348,7 +348,10 @@ function Start-ADTProcessAsUser
         # Just farm it out to Start-ADTProcess as it can do it all.
         try
         {
-            return Start-ADTProcess @PSBoundParameters
+            if (($result = Start-ADTProcess @PSBoundParameters) -and $PassThru)
+            {
+                return $result
+            }
         }
         catch
         {
