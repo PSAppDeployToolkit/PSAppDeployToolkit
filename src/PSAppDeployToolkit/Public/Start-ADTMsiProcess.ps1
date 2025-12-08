@@ -806,7 +806,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Return the results if passing through.
-                if ($PassThru -and $result)
+                if ($result -and $PassThru)
                 {
                     return $result
                 }
