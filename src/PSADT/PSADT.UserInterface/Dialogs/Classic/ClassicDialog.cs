@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.Utilities;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -42,7 +45,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Base properties.
                 this.SuspendLayout();
                 this.Text = StripFormattingTags(options.AppTitle);
-                this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
+                this.Icon = GetIcon(options.AppIconImage);
                 this.TopMost = options.DialogTopMost;
                 this.ActiveControl = this.buttonDefault;
                 this.FormClosing += Form_FormClosing;
@@ -100,7 +103,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected void SetPictureBox(PictureBox pictureBox, BaseOptions options)
         {
             double dpiScale = (double)User32.GetDpiForWindow((HWND)this.Handle) / 96.0;
-            pictureBox.Image = ClassicAssets.GetBanner(options.AppBannerImage);
+            pictureBox.Image = GetBanner(options.AppBannerImage);
             pictureBox.Size = new((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * ((double)pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
         }
 
@@ -358,6 +361,40 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private void PersistTimer_Tick(object? sender, EventArgs e) => RestoreWindow();
 
         /// <summary>
+        /// Get the icon for the dialog.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        internal static Icon GetIcon(string path)
+        {
+            // Use a cached icon if available, otherwise load and cache it before returning it.
+            if (!iconCache.TryGetValue(path, out Icon? icon))
+            {
+                using Icon source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new(path);
+                icon = (Icon)source.Clone();
+                iconCache.Add(path, icon);
+            }
+            return icon;
+        }
+
+        /// <summary>
+        /// Get the banner image for the dialog.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        internal static Bitmap GetBanner(string path)
+        {
+            // Use a cached image if available, otherwise load and cache it before returning it.
+            if (!imageCache.TryGetValue(path, out Bitmap? image))
+            {
+                using var source = Bitmap.FromFile(path);
+                image = (Bitmap)source.Clone();
+                imageCache.Add(path, image);
+            }
+            return image;
+        }
+
+        /// <summary>
         /// The result of the dialog.
         /// </summary>
         public new object DialogResult { get; private protected set; } = "Timeout";
@@ -392,5 +429,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Indicates whether the dialog is allowed to be moved.
         /// </summary>
         private readonly bool dialogAllowMove = true;
+
+        /// <summary>
+        /// Cache for icons to avoid loading them multiple times.
+        /// </summary>
+        private static readonly Dictionary<string, Icon> iconCache = [];
+
+        /// <summary>
+        /// Cache for banners to avoid loading them multiple times.
+        /// </summary>
+        private static readonly Dictionary<string, Bitmap> imageCache = [];
     }
 }
