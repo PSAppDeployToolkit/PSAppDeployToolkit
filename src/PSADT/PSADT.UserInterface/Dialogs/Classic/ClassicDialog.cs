@@ -242,7 +242,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// by repeatedly processing the text until all tags are removed.</remarks>
         /// <param name="text">The input string containing formatting tags to be stripped.</param>
         /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
-        protected string StripFormattingTags(string text)
+        protected static string StripFormattingTags(string text)
         {
             foreach (Match match in DialogConstants.TextFormattingRegex.Matches(text))
             {
