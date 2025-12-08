@@ -174,7 +174,7 @@ namespace PSADT.FileSystem
                         }
 
                         // Skip to next iteration if the handle doesn't meet our criteria
-                        if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
+                        if (!(objectName?.StartsWith(@"\Device\HarddiskVolume", StringComparison.Ordinal) == true))
                         {
                             return;
                         }
