@@ -265,6 +265,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             return text;
         }
 
+        /// <summary>
+        /// Processes Windows messages for the window, preventing movement when not allowed.
+        /// </summary>
+        /// <remarks>If movement of the window is not permitted, system commands to move the window are
+        /// ignored. All other messages are processed normally by the base implementation.</remarks>
+        /// <param name="m">A reference to the Windows message to be processed.</param>
         protected override void WndProc(ref Message m)
         {
             // Ignore any attempt to move the window.
