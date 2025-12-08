@@ -11,9 +11,13 @@ using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
+using Windows.Wdk.Foundation;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.System.Memory;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.FileSystem
@@ -28,17 +32,27 @@ namespace PSADT.FileSystem
         /// </summary>
         static FileHandleManager()
         {
+            // Load the necessary libraries and get the function pointers.
+            using (var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
+            {
+                NtQueryObjectProcAddr = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
+            }
+            using (var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
+            {
+                ExitThreadProcAddr = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+            }
+
             // Query the system for the required buffer size for object types information.
-            var objectTypesSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
-            var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
+            var objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
+            var objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
             var typesBuffer = new byte[objectTypesSize]; Span<byte> typesBufferPtr = typesBuffer;
 
             // Reallocate the buffer until we get the required size.
-            var status = NtDll.NtQueryObject(null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
+            var status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 typesBuffer = new byte[typesBufferReqLength]; typesBufferPtr = typesBuffer;
-                status = NtDll.NtQueryObject(null, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
+                status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
             }
 
             // Read the number of types from the buffer and store the built-out dictionary.
@@ -77,106 +91,97 @@ namespace PSADT.FileSystem
             }
 
             // Loop through all handles and return list of open file handles.
-            using var objectBuffers = new ThreadLocal<byte[]>(() => new byte[1024], trackAllValues: true);
-            using var currentProcessHandle = Kernel32.GetCurrentProcess(); var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-            ref var handleInfo = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
-            var handleCount = handleInfo.NumberOfHandles.ToUInt32(); ConcurrentBag<FileHandleInfo> openHandles = [];
-            var entryOffset = handleInfoExSize;
-            Parallel.For(0, (int)handleCount, i =>
+            using var objectBuffers = new ThreadLocal<SafePinnedGCHandle>(() => SafePinnedGCHandle.Alloc(new byte[1024], 1024), trackAllValues: true);
+            try
             {
-                // Read the handle information into a structure, skipping over if it's not a file or directory handle.
-                ref var sysHandle = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(entryOffset + (handleEntryExSize * i))));
-                if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
+                using var currentProcessHandle = Kernel32.GetCurrentProcess(); var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+                ref var handleInfo = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
+                var openHandles = new ConcurrentBag<FileHandleInfo>();
+                Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
-                    return;
-                }
-
-                // Open the owning process with rights to duplicate handles.
-                SafeFileHandle fileProcessHandle;
-                try
-                {
-                    fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
-                }
-                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                {
-                    return;
-                }
-                catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
-                {
-                    return;
-                }
-
-                // Duplicate the remote handle into our process.
-                SafeFileHandle fileDupHandle;
-                using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
-                using (fileProcessHandle)
-                {
-                    try
-                    {
-                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
-                    }
-                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
+                    // Read the handle information into a structure, skipping over if it's not a file or directory handle.
+                    ref var sysHandle = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
+                    if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                     {
                         return;
+                    }
+
+                    // Open the owning process with rights to duplicate handles.
+                    SafeFileHandle fileProcessHandle;
+                    try
+                    {
+                        fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
                     }
                     catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
                     {
                         return;
                     }
-                }
-
-                // If the duplicated handle isn't a disk handle, skip to the next iteration.
-                try
-                {
-                    if (Kernel32.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
+                    catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
                     {
                         return;
                     }
-                }
-                catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE || ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_FUNCTION)
-                {
-                    return;
-                }
 
-                // Get the handle's name to check if it's a hard drive path.
-                string? objectName;
-                using (fileDupHandle)
-                {
-                    Span<byte> objectBuffer = objectBuffers.Value;
+                    // Duplicate the remote handle into our process.
+                    SafeFileHandle fileDupHandle;
+                    using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
+                    using (fileProcessHandle)
+                    {
+                        try
+                        {
+                            Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                        }
+                        catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
+                        {
+                            return;
+                        }
+                        catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                        {
+                            return;
+                        }
+                    }
+
+                    // If the duplicated handle isn't a disk handle, skip to the next iteration.
                     try
                     {
-                        NtDll.NtQueryObject(fileDupHandle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer, out _);
-                        ref var objectBufferData = ref Unsafe.As<byte, Windows.Wdk.Foundation.OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer));
-                        objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
+                        if (Kernel32.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
+                        {
+                            return;
+                        }
                     }
-                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE || ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_FUNCTION)
                     {
                         return;
                     }
-                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+
+                    // Get the handle's name to check if it's a hard drive path.
+                    string? objectName;
+                    using (fileDupHandle)
+                    {
+                        objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBuffers.Value!);
+                    }
+
+                    // Skip to next iteration if the handle doesn't meet our criteria.
+                    if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
                     {
                         return;
                     }
-                    finally
+
+                    // Add the handle information to the list if it matches the specified directory path.
+                    string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                     {
-                        objectBuffer.Clear();
+                        openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                     }
-                }
-
-                // Skip to next iteration if the handle doesn't meet our criteria.
-                if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
+                });
+                return new ReadOnlyCollection<FileHandleInfo>(openHandles.ToArray());
+            }
+            finally
+            {
+                foreach (var objBuffer in objectBuffers.Values)
                 {
-                    return;
+                    objBuffer.Dispose();
                 }
-
-                // Add the handle information to the list if it matches the specified directory path.
-                string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
-                {
-                    openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
-                }
-            });
-            return new ReadOnlyCollection<FileHandleInfo>(openHandles.ToArray());
+            }
         }
 
         /// <summary>
@@ -210,8 +215,216 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
+        /// Retrieves the name of an object associated with a handle.
+        /// </summary>
+        /// <param name="currentProcessHandle"></param>
+        /// <param name="fileHandle"></param>
+        /// <param name="objectBuffer"></param>
+        /// <returns></returns>
+        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafePinnedGCHandle objectBuffer)
+        {
+            if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
+            {
+                throw new ArgumentNullException(nameof(fileHandle));
+            }
+            bool objectBufferAddRef = false;
+            bool fileHandleAddRef = false;
+            try
+            {
+                // Start the thread to retrieve the object name and wait for the outcome.
+                fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
+                using var startRoutine = BuildNtQueryObjectStartRoutine(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr);
+                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, startRoutine, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                using (hThread)
+                {
+                    // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
+                    if (Kernel32.WaitForSingleObject(hThread, TimeSpan.FromSeconds(1)) != WAIT_EVENT.WAIT_OBJECT_0)
+                    {
+                        NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                    }
+
+                    // Get the exit code of the thread, returning null under certain conditions or throwing an exception if it failed.
+                    Kernel32.GetExitCodeThread(hThread, out var exitCode); var res = unchecked((NTSTATUS)exitCode);
+                    if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
+                    {
+                        return null;
+                    }
+                    if (res != NTSTATUS.STATUS_SUCCESS)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                    }
+                    ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
+                    return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
+                }
+            }
+            finally
+            {
+                if (fileHandleAddRef)
+                {
+                    fileHandle.DangerousRelease();
+                }
+                if (objectBufferAddRef)
+                {
+                    objectBuffer.DangerousRelease();
+                }
+                objectBuffer.Clear();
+            }
+        }
+
+        /// <summary>
+        /// The context for the thread that retrieves the object name.
+        /// </summary>
+        /// <param name="exitThread"></param>
+        /// <param name="ntQueryObject"></param>
+        /// <param name="fileHandle"></param>
+        /// <param name="infoClass"></param>
+        /// <param name="infoBuffer"></param>
+        /// <param name="infoBufferLength"></param>
+        /// <returns></returns>
+        /// <exception cref="PlatformNotSupportedException"></exception>
+        private static SafeVirtualAllocHandle BuildNtQueryObjectStartRoutine(FARPROC ntQueryObject, IntPtr fileHandle, LibraryInterfaces.OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength, FARPROC exitThread)
+        {
+            // Build the start routine stub to call NtQueryObject and exit the thread once done.
+            List<byte> startRoutine = [];
+            switch (RuntimeInformation.ProcessArchitecture)
+            {
+                case Architecture.X64:
+                    // mov rcx, handle
+                    startRoutine.Add(0x48); startRoutine.Add(0xB9);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)fileHandle));
+
+                    // mov rdx, infoClass
+                    startRoutine.Add(0x48); startRoutine.Add(0xBA);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)infoClass));
+
+                    // mov r8, buffer
+                    startRoutine.Add(0x49); startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)infoBuffer));
+
+                    // mov r9, bufferSize
+                    startRoutine.Add(0x49); startRoutine.Add(0xB9);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)infoBufferLength));
+
+                    // sub rsp, 0x28 — shadow space + ReturnLength
+                    startRoutine.Add(0x48); startRoutine.Add(0x83); startRoutine.Add(0xEC); startRoutine.Add(0x28);
+
+                    // mov qword [rsp + 0x20], 0  (null for PULONG ReturnLength)
+                    startRoutine.Add(0x48); startRoutine.Add(0xC7); startRoutine.Add(0x44); startRoutine.Add(0x24); startRoutine.Add(0x20);
+                    startRoutine.AddRange(new byte[4]); // 0
+
+                    // mov rax, NtQueryObject
+                    startRoutine.Add(0x48); startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)ntQueryObject.Value));
+
+                    // call rax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+
+                    // mov ecx, eax (exit code)
+                    startRoutine.Add(0x89); startRoutine.Add(0xC1);
+
+                    // mov rax, ExitThread
+                    startRoutine.Add(0x48); startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)exitThread.Value));
+
+                    // call rax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+                    break;
+                case Architecture.X86:
+                    // push NULL (ReturnLength)
+                    startRoutine.Add(0x6A);
+                    startRoutine.Add(0x00);
+
+                    // push bufferSize
+                    startRoutine.Add(0x68);
+                    startRoutine.AddRange(BitConverter.GetBytes(infoBufferLength));
+
+                    // push buffer
+                    startRoutine.Add(0x68);
+                    startRoutine.AddRange(BitConverter.GetBytes(infoBuffer.ToInt32()));
+
+                    // push infoClass
+                    startRoutine.Add(0x68);
+                    startRoutine.AddRange(BitConverter.GetBytes((int)infoClass));
+
+                    // push handle
+                    startRoutine.Add(0x68);
+                    startRoutine.AddRange(BitConverter.GetBytes(fileHandle.ToInt32()));
+
+                    // mov eax, NtQueryObject
+                    startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes(ntQueryObject.Value.ToInt32()));
+
+                    // call eax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+
+                    // push eax (NTSTATUS)
+                    startRoutine.Add(0x50);
+
+                    // mov eax, ExitThread
+                    startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes(exitThread.Value.ToInt32()));
+
+                    // call eax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+                    break;
+                case Architecture.Arm64:
+                    // x0 = handle
+                    List<uint> code = [];
+                    code.AddRange(NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()));
+
+                    // x1 = infoClass (zero-extended)
+                    code.AddRange(NativeUtilities.Load64(1, (ulong)infoClass));
+
+                    // x2 = buffer
+                    code.AddRange(NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()));
+
+                    // x3 = bufferSize
+                    code.AddRange(NativeUtilities.Load64(3, (ulong)infoBufferLength));
+
+                    // x4 = NULL (for ReturnLength)
+                    code.AddRange(NativeUtilities.Load64(4, 0));
+
+                    // x16 = NtQueryObject
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
+
+                    // br x16
+                    code.Add(NativeUtilities.EncodeBr(16));
+
+                    // x16 = ExitThread. result is in x0 → already correct for ExitThread
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
+
+                    // br x16
+                    code.Add(NativeUtilities.EncodeBr(16));
+
+                    // Convert instruction list to byte array
+                    foreach (var instr in code)
+                    {
+                        startRoutine.AddRange(BitConverter.GetBytes(instr));
+                    }
+                    break;
+                default:
+                    throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
+            }
+            var mem = SafeVirtualAllocHandle.Alloc(startRoutine.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+            mem.Write([.. startRoutine]);
+            return mem;
+        }
+
+        /// <summary>
         /// The lookup table of object types.
         /// </summary>
         private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
+
+        /// <summary>
+        /// Represents the function pointer for the NtQueryObject native API method.
+        /// </summary>
+        /// <remarks>This field holds the address of the NtQueryObject function, which is resolved at runtime. It is intended for internal use only and should not be accessed directly by external code.</remarks>
+        private static readonly FARPROC NtQueryObjectProcAddr;
+
+        /// <summary>
+        /// Represents the address of the ExitThread procedure in the native library.
+        /// </summary>
+        /// <remarks>This field holds a function pointer to the ExitThread procedure, which is typically used in low-level interop scenarios. It is initialized to the appropriate address during runtime and should not be modified directly.</remarks>
+        private static readonly FARPROC ExitThreadProcAddr;
     }
 }

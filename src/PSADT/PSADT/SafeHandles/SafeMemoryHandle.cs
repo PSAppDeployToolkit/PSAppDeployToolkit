@@ -140,6 +140,30 @@ namespace PSADT.SafeHandles
         internal void WriteByte(byte value, int offset = 0) => Marshal.WriteByte(handle, offset, value);
 
         /// <summary>
+        /// Writes the provided data to the allocated memory.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="startIndex"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        internal void Write(byte[] data, int startIndex = 0)
+        {
+            if (data is null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+            if (data.Length == 0)
+            {
+                throw new ArgumentException("Code length cannot be zero.", nameof(data));
+            }
+            if (data.Length + startIndex > Length)
+            {
+                throw new ArgumentException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].", nameof(data));
+            }
+            Marshal.Copy(data, startIndex, handle, data.Length);
+        }
+
+        /// <summary>
         /// Returns a read-only span of type T over the memory region, starting at the specified byte offset.
         /// </summary>
         /// <remarks>The returned span reflects the contents of the underlying memory. Modifying the
