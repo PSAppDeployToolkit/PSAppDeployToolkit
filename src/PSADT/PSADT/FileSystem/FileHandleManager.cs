@@ -32,15 +32,9 @@ namespace PSADT.FileSystem
         /// </summary>
         static FileHandleManager()
         {
-            // Load the necessary libraries and get the function pointers.
-            using (var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
-            {
-                NtQueryObjectProcAddr = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
-            }
-            using (var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
-            {
-                ExitThreadProcAddr = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
-            }
+            // Build the StartRoutine template once during static initialization.
+            using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"); using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
+            NtQueryObjectStartRoutineTemplate = BuildNtQueryObjectStartRoutineTemplate(Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject"), Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread"));
 
             // Query the system for the required buffer size for object types information.
             var objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
@@ -90,8 +84,14 @@ namespace PSADT.FileSystem
                 status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
             }
 
+            // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
+            using var threadBuffers = new ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)>
+            (
+                () => (AllocateObjectBuffer(), AllocateStartRoutineBuffer()),
+                trackAllValues: true
+            );
+
             // Loop through all handles and return list of open file handles.
-            using var objectBuffers = new ThreadLocal<SafePinnedGCHandle>(() => SafePinnedGCHandle.Alloc(new byte[1024], 1024), trackAllValues: true);
             try
             {
                 using var currentProcessHandle = Kernel32.GetCurrentProcess(); var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
@@ -170,7 +170,7 @@ namespace PSADT.FileSystem
                     string? objectName;
                     using (fileDupHandle)
                     {
-                        objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBuffers.Value!);
+                        objectName = GetObjectName(currentProcessHandle, fileDupHandle, threadBuffers.Value.ObjectBuffer, threadBuffers.Value.StartRoutineBuffer);
                     }
 
                     // Skip to next iteration if the handle doesn't meet our criteria.
@@ -190,9 +190,10 @@ namespace PSADT.FileSystem
             }
             finally
             {
-                foreach (var objBuffer in objectBuffers.Values)
+                foreach (var buffer in threadBuffers.Values)
                 {
-                    objBuffer.Dispose();
+                    buffer.StartRoutineBuffer.Dispose();
+                    buffer.ObjectBuffer.Dispose();
                 }
             }
         }
@@ -233,8 +234,9 @@ namespace PSADT.FileSystem
         /// <param name="currentProcessHandle"></param>
         /// <param name="fileHandle"></param>
         /// <param name="objectBuffer"></param>
+        /// <param name="startRoutineBuffer"></param>
         /// <returns></returns>
-        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafePinnedGCHandle objectBuffer)
+        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer)
         {
             if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
             {
@@ -246,8 +248,8 @@ namespace PSADT.FileSystem
             {
                 // Start the thread to retrieve the object name and wait for the outcome.
                 fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
-                using var startRoutine = BuildNtQueryObjectStartRoutine(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr);
-                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutine);
+                PatchStartRoutineBuffer(startRoutineBuffer, fileHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
+                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
@@ -285,38 +287,60 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// The context for the thread that retrieves the object name.
+        /// Allocates a pinned buffer of 1,024 bytes and returns a handle that can be used to access the buffer safely.
         /// </summary>
-        /// <param name="exitThread"></param>
-        /// <param name="ntQueryObject"></param>
-        /// <param name="fileHandle"></param>
-        /// <param name="infoClass"></param>
-        /// <param name="infoBuffer"></param>
-        /// <param name="infoBufferLength"></param>
-        /// <returns></returns>
-        /// <exception cref="PlatformNotSupportedException"></exception>
-        private static SafeVirtualAllocHandle BuildNtQueryObjectStartRoutine(FARPROC ntQueryObject, IntPtr fileHandle, LibraryInterfaces.OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength, FARPROC exitThread)
+        /// <remarks>The returned buffer is pinned in memory, preventing the garbage collector from
+        /// relocating it. This is useful for scenarios that require fixed memory addresses, such as interoperability
+        /// with unmanaged code.</remarks>
+        /// <returns>A <see cref="SafePinnedGCHandle"/> representing a pinned buffer of 1,024 bytes. The handle must be disposed
+        /// when no longer needed to release resources.</returns>
+        private static SafePinnedGCHandle AllocateObjectBuffer()
+        {
+            return SafePinnedGCHandle.Alloc(new byte[1024], 1024);
+        }
+
+        /// <summary>
+        /// Allocates a buffer in virtual memory containing the start routine template and returns a handle to the
+        /// allocated memory.
+        /// </summary>
+        /// <remarks>The returned buffer is allocated with execute, read, and write permissions. The
+        /// caller is responsible for disposing the handle when it is no longer needed to release the allocated
+        /// memory.</remarks>
+        /// <returns>A <see cref="SafeVirtualAllocHandle"/> representing the allocated virtual memory buffer containing the start
+        /// routine template.</returns>
+        private static SafeVirtualAllocHandle AllocateStartRoutineBuffer()
+        {
+            var mem = SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+            mem.Write(NtQueryObjectStartRoutineTemplate.Bytes);
+            return mem;
+        }
+
+        /// <summary>
+        /// Builds the StartRoutine template once during static initialization.
+        /// Returns the bytes and the offsets where variable values need to be patched.
+        /// </summary>
+        private static (byte[] Bytes, int HandleOffset, int BufferOffset, int BufferLengthOffset) BuildNtQueryObjectStartRoutineTemplate(FARPROC ntQueryObject, FARPROC exitThread)
         {
             // Build the start routine stub to call NtQueryObject and exit the thread once done.
-            List<byte> startRoutine = [];
+            int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
             switch (RuntimeInformation.ProcessArchitecture)
             {
                 case Architecture.X64:
-                    // mov rcx, handle
+                    // mov rcx, handle (placeholder)
                     startRoutine.Add(0x48); startRoutine.Add(0xB9);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)fileHandle));
+                    handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for handle
 
-                    // mov rdx, infoClass
+                    // mov rdx, infoClass (ObjectNameInformation = 1)
                     startRoutine.Add(0x48); startRoutine.Add(0xBA);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)infoClass));
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
-                    // mov r8, buffer
+                    // mov r8, buffer (placeholder)
                     startRoutine.Add(0x49); startRoutine.Add(0xB8);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)infoBuffer));
+                    bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer
 
-                    // mov r9, bufferSize
+                    // mov r9, bufferSize (placeholder)
                     startRoutine.Add(0x49); startRoutine.Add(0xB9);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)infoBufferLength));
+                    bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer length
 
                     // sub rsp, 0x28 — shadow space + ReturnLength
                     startRoutine.Add(0x48); startRoutine.Add(0x83); startRoutine.Add(0xEC); startRoutine.Add(0x28);
@@ -347,21 +371,21 @@ namespace PSADT.FileSystem
                     startRoutine.Add(0x6A);
                     startRoutine.Add(0x00);
 
-                    // push bufferSize
+                    // push bufferSize (placeholder)
                     startRoutine.Add(0x68);
-                    startRoutine.AddRange(BitConverter.GetBytes(infoBufferLength));
+                    bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
 
-                    // push buffer
+                    // push buffer (placeholder)
                     startRoutine.Add(0x68);
-                    startRoutine.AddRange(BitConverter.GetBytes(infoBuffer.ToInt32()));
+                    bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
 
-                    // push infoClass
+                    // push infoClass (ObjectNameInformation = 1)
                     startRoutine.Add(0x68);
-                    startRoutine.AddRange(BitConverter.GetBytes((int)infoClass));
+                    startRoutine.AddRange(BitConverter.GetBytes((int)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
-                    // push handle
+                    // push handle (placeholder)
                     startRoutine.Add(0x68);
-                    startRoutine.AddRange(BitConverter.GetBytes(fileHandle.ToInt32()));
+                    handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
 
                     // mov eax, NtQueryObject
                     startRoutine.Add(0xB8);
@@ -381,18 +405,18 @@ namespace PSADT.FileSystem
                     startRoutine.Add(0xFF); startRoutine.Add(0xD0);
                     break;
                 case Architecture.Arm64:
-                    // x0 = handle
+                    // x0 = handle (placeholder - 4 instructions)
                     List<uint> code = [];
-                    code.AddRange(NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()));
+                    handleOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(0, 0)); // placeholder
 
-                    // x1 = infoClass (zero-extended)
-                    code.AddRange(NativeUtilities.Load64(1, (ulong)infoClass));
+                    // x1 = infoClass (ObjectNameInformation = 1)
+                    code.AddRange(NativeUtilities.Load64(1, (ulong)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
-                    // x2 = buffer
-                    code.AddRange(NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()));
+                    // x2 = buffer (placeholder - 4 instructions)
+                    bufferOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(2, 0)); // placeholder
 
-                    // x3 = bufferSize
-                    code.AddRange(NativeUtilities.Load64(3, (ulong)infoBufferLength));
+                    // x3 = bufferSize (placeholder - 4 instructions)
+                    bufferLengthOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(3, 0)); // placeholder
 
                     // x4 = NULL (for ReturnLength)
                     code.AddRange(NativeUtilities.Load64(4, 0));
@@ -400,10 +424,10 @@ namespace PSADT.FileSystem
                     // x16 = NtQueryObject
                     code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
 
-                    // br x16
-                    code.Add(NativeUtilities.EncodeBr(16));
+                    // blr x16 (branch with link to x16)
+                    code.Add(NativeUtilities.EncodeBlr(16));
 
-                    // x16 = ExitThread. result is in x0 → already correct for ExitThread
+                    // x16 = ExitThread (x0 already contains result, move to x0 for ExitThread (no-op, already there))
                     code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
 
                     // br x16
@@ -418,9 +442,52 @@ namespace PSADT.FileSystem
                 default:
                     throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
             }
-            var mem = SafeVirtualAllocHandle.Alloc(startRoutine.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            mem.Write([.. startRoutine]);
-            return mem;
+            return new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
+        }
+
+        /// <summary>
+        /// Patches the StartRoutine buffer with the variable values (handle and buffer pointers).
+        /// </summary>
+        /// <param name="startRoutineBuffer">The pre-allocated startRoutine buffer.</param>
+        /// <param name="fileHandle">The file handle to query.</param>
+        /// <param name="infoBuffer">The buffer to receive the object name.</param>
+        /// <param name="infoBufferLength">The length of the info buffer.</param>
+        private static void PatchStartRoutineBuffer(SafeVirtualAllocHandle startRoutineBuffer, IntPtr fileHandle, IntPtr infoBuffer, int infoBufferLength)
+        {
+            switch (RuntimeInformation.ProcessArchitecture)
+            {
+                case Architecture.X64:
+                    // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
+                    // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
+                    // Patch buffer length at offset (mov r9, bufferSize -> 3 bytes opcode + 8 bytes value)
+                    startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                    startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                    startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                    break;
+                case Architecture.X86:
+                    // Patch buffer length (push bufferSize)
+                    // Patch buffer (push buffer)
+                    // Patch handle (push handle)
+                    startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                    startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                    startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                    break;
+                case Architecture.Arm64:
+                    // For ARM64, we need to regenerate the MOVZ/MOVK sequences for each 64-bit value. Each instruction is 4 bytes, patch in place.
+                    // Handle is at x0 (instructions 0-3), buffer is at x2 (instructions 8-11), length is at x3 (instructions 12-15).
+                    var handleInstrs = NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()).ToArray();
+                    var bufferInstrs = NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()).ToArray();
+                    var lengthInstrs = NativeUtilities.Load64(3, (ulong)infoBufferLength).ToArray();
+                    for (int j = 0; j < 4; j++)
+                    {
+                        startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
+                        startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
+                        startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
+                    }
+                    break;
+                default:
+                    throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
+            }
         }
 
         /// <summary>
@@ -429,15 +496,8 @@ namespace PSADT.FileSystem
         private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
 
         /// <summary>
-        /// Represents the function pointer for the NtQueryObject native API method.
+        /// The pre-built StartRoutine template.
         /// </summary>
-        /// <remarks>This field holds the address of the NtQueryObject function, which is resolved at runtime. It is intended for internal use only and should not be accessed directly by external code.</remarks>
-        private static readonly FARPROC NtQueryObjectProcAddr;
-
-        /// <summary>
-        /// Represents the address of the ExitThread procedure in the native library.
-        /// </summary>
-        /// <remarks>This field holds a function pointer to the ExitThread procedure, which is typically used in low-level interop scenarios. It is initialized to the appropriate address during runtime and should not be modified directly.</remarks>
-        private static readonly FARPROC ExitThreadProcAddr;
+        private static readonly (byte[] Bytes, int HandleOffset, int BufferOffset, int BufferLengthOffset) NtQueryObjectStartRoutineTemplate;
     }
 }

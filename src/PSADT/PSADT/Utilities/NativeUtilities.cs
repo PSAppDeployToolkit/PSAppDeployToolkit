@@ -26,11 +26,19 @@ namespace PSADT.Utilities
         internal static uint EncodeMovK(int reg, ushort imm16, int shift) => 0xF2800000 | (uint)reg & 0x1F | ((uint)shift & 3) << 21 | ((uint)imm16 & 0xFFFF) << 5;
 
         /// <summary>
-        /// Encodes a BR instruction for ARM64.
+        /// Encodes a BR (branch to register) instruction for ARM64.
         /// </summary>
         /// <param name="reg"></param>
         /// <returns></returns>
         internal static uint EncodeBr(int reg) => (uint)(0xD61F0000 | (reg & 0x1F) << 5);
+
+        /// <summary>
+        /// Encodes a BLR (branch with link to register) instruction for ARM64.
+        /// This is used for function calls where the return address is saved.
+        /// </summary>
+        /// <param name="reg"></param>
+        /// <returns></returns>
+        internal static uint EncodeBlr(int reg) => (uint)(0xD63F0000 | (reg & 0x1F) << 5);
 
         /// <summary>
         /// Encodes a MOVZ instruction for ARM64 with a 64-bit immediate value.
