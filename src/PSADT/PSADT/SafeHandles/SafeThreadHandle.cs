@@ -29,7 +29,7 @@ namespace PSADT.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero != handle)
+            if (handle == default || IntPtr.Zero == handle)
             {
                 return true;
             }
