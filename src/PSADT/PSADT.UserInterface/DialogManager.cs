@@ -264,7 +264,7 @@ namespace PSADT.UserInterface
             // Don't let this dispose until the balloon tip closes. If it disposes too early, Windows won't show the BalloonTipIcon properly.
             // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
             using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Dialogs.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
-            ManualResetEventSlim balloonTipClosed = new();
+            using ManualResetEventSlim balloonTipClosed = new();
             notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
             notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
             notifyIcon.ShowBalloonTip((int)options.BalloonTipTime, options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);
