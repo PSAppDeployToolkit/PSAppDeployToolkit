@@ -428,7 +428,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="textBlock">The TextBlock to add text to.</param>
         /// <param name="text">The text content to add.</param>
         /// <param name="formattingStack">The current formatting context stack.</param>
-        private void AddFormattedText(TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
+        private static void AddFormattedText(TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -501,7 +501,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Sets the button to be styled with an accent color.
         /// </summary>
         /// <param name="button"></param>
-        protected void SetAccentButton(Button button)
+        protected static void SetAccentButton(Button button)
         {
             button.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
         }
@@ -510,7 +510,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Sets the button to be the form cancel button.
         /// </summary>
         /// <param name="button"></param>
-        protected void SetCancelButton(Button button)
+        protected static void SetCancelButton(Button button)
         {
             button.IsCancel = true;
         }
@@ -519,7 +519,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Sets the button to be the form default button.
         /// </summary>
         /// <param name="button"></param>
-        protected void SetDefaultButton(Button button)
+        protected static void SetDefaultButton(Button button)
         {
             button.IsDefault = true;
         }
@@ -529,7 +529,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="button"></param>
         /// <param name="text"></param>
-        protected void SetButtonContentWithAccelerator(Button button, string text)
+        protected static void SetButtonContentWithAccelerator(Button button, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
