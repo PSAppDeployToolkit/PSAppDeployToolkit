@@ -247,7 +247,7 @@ namespace PSADT.FileSystem
                 // Start the thread to retrieve the object name and wait for the outcome.
                 fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                 using var startRoutine = BuildNtQueryObjectStartRoutine(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr);
-                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, startRoutine, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutine);
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
