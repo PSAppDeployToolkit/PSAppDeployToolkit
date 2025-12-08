@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
+using Microsoft.Win32.SafeHandles;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.SystemInformation;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -343,6 +346,114 @@ namespace PSADT.LibraryInterfaces
                 if (HandleAddRef)
                 {
                     Handle?.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a new thread in the specified process using the native NtCreateThreadEx system call.
+        /// </summary>
+        /// <remarks>This method is intended for advanced scenarios that require direct interaction with
+        /// the Windows native thread creation API. The caller is responsible for ensuring that all parameters,
+        /// especially handles and memory addresses, are valid and appropriate for the target process. Improper use may
+        /// result in process instability or security risks.</remarks>
+        /// <param name="ThreadHandle">When this method returns, contains a SafeThreadHandle representing the newly created thread. This parameter
+        /// is passed uninitialized.</param>
+        /// <param name="DesiredAccess">The access rights requested for the new thread. Specify a combination of THREAD_ACCESS_RIGHTS flags that
+        /// determine the permitted operations on the thread.</param>
+        /// <param name="ObjectAttributes">A pointer to an OBJECT_ATTRIBUTES structure that specifies object attributes for the thread, or IntPtr.Zero
+        /// to use default attributes.</param>
+        /// <param name="ProcessHandle">A SafeProcessHandle representing the process in which to create the thread. The handle must have appropriate
+        /// access rights for thread creation and must not be null or closed.</param>
+        /// <param name="StartRoutine">A SafeVirtualAllocHandle specifying the starting address of the thread routine in the target process. This
+        /// handle must not be null, closed, or invalid.</param>
+        /// <param name="Argument">A pointer to a variable to be passed as a parameter to the thread routine, or IntPtr.Zero if no parameter is
+        /// required.</param>
+        /// <param name="CreateFlags">Flags that control the creation of the thread. This value can be zero or a combination of thread creation
+        /// flags as defined by the native API.</param>
+        /// <param name="ZeroBits">The number of high-order address bits that must be zero in the stack's base address. Typically set to zero.</param>
+        /// <param name="StackSize">The initial size, in bytes, of the stack for the new thread. If zero, the default stack size for the
+        /// executable is used.</param>
+        /// <param name="MaximumStackSize">The maximum size, in bytes, of the stack for the new thread. If zero, the default maximum is used.</param>
+        /// <param name="AttributeList">A pointer to a list of attributes for the new thread, or IntPtr.Zero if no additional attributes are
+        /// required.</param>
+        /// <returns>An NTSTATUS code indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, the
+        /// code specifies the error.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null or closed, or if StartRoutine is null, closed, or invalid.</exception>
+        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, IntPtr ObjectAttributes, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, IntPtr Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, IntPtr AttributeList)
+        {
+            if (StartRoutine is null || StartRoutine.IsClosed || StartRoutine.IsInvalid)
+            {
+                throw new ArgumentNullException(nameof(StartRoutine));
+            }
+            if (ProcessHandle is null || ProcessHandle.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(ProcessHandle));
+            }
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern NTSTATUS NtCreateThreadEx(out IntPtr ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, IntPtr ObjectAttributes, IntPtr ProcessHandle, IntPtr StartRoutine, IntPtr Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, IntPtr AttributeList);
+            bool StartRoutineAddRef = false;
+            bool ProcessHandleAddRef = false;
+            try
+            {
+                StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
+                ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
+                var res = NtCreateThreadEx(out var hThread, DesiredAccess, ObjectAttributes, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument, CreateFlags, ZeroBits, StackSize, MaximumStackSize, AttributeList);
+                if (res != NTSTATUS.STATUS_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                ThreadHandle = new(hThread, true);
+                return res;
+            }
+            finally
+            {
+                if (StartRoutineAddRef)
+                {
+                    StartRoutine.DangerousRelease();
+                }
+                if (ProcessHandleAddRef)
+                {
+                    ProcessHandle.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Terminates the specified thread and sets its exit status code.
+        /// </summary>
+        /// <remarks>This method wraps the native NtTerminateThread function from ntdll.dll. Terminating a
+        /// thread can lead to resource leaks or inconsistent program state if not used carefully. Use this method only
+        /// when it is necessary to forcibly terminate a thread.</remarks>
+        /// <param name="ThreadHandle">A handle to the thread to be terminated. The handle must be valid and not closed.</param>
+        /// <param name="ExitStatus">The exit status code to assign to the thread being terminated.</param>
+        /// <returns>An NTSTATUS value indicating the result of the operation. Returns STATUS_SUCCESS if the thread was
+        /// terminated successfully; otherwise, returns an error code.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if ThreadHandle is null or has already been closed.</exception>
+        internal static NTSTATUS NtTerminateThread(SafeThreadHandle ThreadHandle, in NTSTATUS ExitStatus)
+        {
+            if (ThreadHandle is null || ThreadHandle.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(ThreadHandle));
+            }
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern NTSTATUS NtTerminateThread(IntPtr ThreadHandle, NTSTATUS ExitStatus);
+            bool ThreadHandleAddRef = false;
+            try
+            {
+                ThreadHandle.DangerousAddRef(ref ThreadHandleAddRef);
+                var res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
+                if (res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
+            }
+            finally
+            {
+                if (ThreadHandleAddRef)
+                {
+                    ThreadHandle.DangerousRelease();
                 }
             }
         }

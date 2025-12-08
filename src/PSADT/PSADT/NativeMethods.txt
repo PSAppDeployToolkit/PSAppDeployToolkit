@@ -2061,6 +2061,8 @@ VER_SUITE_TERMINAL
 VER_SUITE_WH_SERVER
 VerLanguageName
 VerQueryValue
+VirtualAlloc
+VirtualFree
 VS_FIXEDFILEINFO
 WaitForSingleObject
 Windows.Win32.UI.Controls.IImageList
