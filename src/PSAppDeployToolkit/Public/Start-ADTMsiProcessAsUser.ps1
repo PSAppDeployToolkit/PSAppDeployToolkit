@@ -340,7 +340,10 @@ function Start-ADTMsiProcessAsUser
         # Just farm it out to Start-ADTMsiProcess as it can do it all.
         try
         {
-            return Start-ADTMsiProcess @PSBoundParameters
+            if (($result = Start-ADTMsiProcess @PSBoundParameters) -and $PassThru)
+            {
+                return $result
+            }
         }
         catch
         {
