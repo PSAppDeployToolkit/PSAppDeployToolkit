@@ -156,9 +156,9 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="InvalidOperationException">Thrown if the file information could not be retrieved.</exception>
         internal static IntPtr SHGetFileInfo(string pszPath, out SHFILEINFO psfi, SHGFI_FLAGS uFlags, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes = 0)
         {
-            [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-            static extern IntPtr SHGetFileInfo(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            psfi = new(); var res = SHGetFileInfo(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
+            [DllImport("shell32.dll", CharSet = CharSet.Auto), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern IntPtr SHGetFileInfoW(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
+            psfi = new(); var res = SHGetFileInfoW(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
             if (res == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to retrieve file information.");
@@ -179,7 +179,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, out SHSTOCKICONINFO psii)
         {
-            [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+            [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
             psii = new SHSTOCKICONINFO { cbSize = (uint)Marshal.SizeOf(typeof(SHSTOCKICONINFO)) };
             return SHGetStockIconInfo(siid, uFlags, ref psii).ThrowOnFailure();

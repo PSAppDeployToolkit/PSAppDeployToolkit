@@ -43,11 +43,11 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static int NtQueryInformationProcess(IntPtr processHandle, out PROCESS_BASIC_INFORMATION processInformation)
         {
             // Import the NtQueryInformationProcess function from ntdll.dll.
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern int NtQueryInformationProcess(IntPtr processHandle, PROCESSINFOCLASS processInformationClass, ref PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, out int returnLength);
 
             // Import the RtlNtStatusToDosError function from ntdll.dll to convert NT status codes to Win32 error codes.
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern uint RtlNtStatusToDosError(int Status);
 
             // Perform the query to get the process information.

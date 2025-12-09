@@ -25,7 +25,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static bool AllocConsole()
         {
             // Import the AllocConsole function from kernel32.dll.
-            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             [return: MarshalAs(UnmanagedType.Bool)]
             static extern bool AllocConsole();
 
@@ -50,7 +50,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static IntPtr GetConsoleWindow()
         {
             // Import the GetConsoleWindow function from kernel32.dll.
-            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = false)]
+            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = false), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern IntPtr GetConsoleWindow();
 
             // Call the GetConsoleWindow function to retrieve the handle to the console window.
@@ -74,7 +74,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static bool FreeConsole()
         {
             // Import the FreeConsole function from kernel32.dll.
-            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             [return: MarshalAs(UnmanagedType.Bool)]
             static extern bool FreeConsole();
 

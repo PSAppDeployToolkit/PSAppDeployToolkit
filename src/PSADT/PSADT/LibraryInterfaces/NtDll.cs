@@ -386,7 +386,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtCreateThreadEx(out IntPtr ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, IntPtr ObjectAttributes, IntPtr ProcessHandle, IntPtr StartRoutine, IntPtr Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, IntPtr AttributeList);
             bool StartRoutineAddRef = false;
             bool ProcessHandleAddRef = false;
@@ -432,7 +432,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(ThreadHandle));
             }
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtTerminateThread(IntPtr ThreadHandle, NTSTATUS ExitStatus);
             bool ThreadHandleAddRef = false;
             try
