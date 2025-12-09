@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Management.Automation.Language;
 using System.Threading;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
@@ -82,7 +82,7 @@ Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]acc
 Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
 
             uint deferralsRemaining = 3;
-            DateTime deferralDeadline = DateTime.Parse("2025-09-20T13:00:00");
+            DateTime deferralDeadline = DateTime.Parse("2025-09-20T13:00:00", CultureInfo.InvariantCulture);
 
             // DateTime? deferralDeadline = null;
             string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";

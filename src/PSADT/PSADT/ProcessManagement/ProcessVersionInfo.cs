@@ -305,7 +305,7 @@ namespace PSADT.ProcessManagement
         private static string? GetFileVersionLanguage(string codepage)
         {
             Span<char> szLang = stackalloc char[(int)PInvoke.MAX_PATH];
-            var len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber)), szLang);
+            var len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang);
             string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
             if (!string.IsNullOrWhiteSpace(result))
             {
@@ -408,112 +408,112 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the raw version information of the file.
         /// </summary>
-        public readonly Version FileVersionRaw = new(0, 0, 0, 0);
+        public Version FileVersionRaw { get; } = new(0, 0, 0, 0);
 
         /// <summary>
         /// Gets the raw version information of the product.
         /// </summary>
-        public readonly Version ProductVersionRaw = new(0, 0, 0, 0);
+        public Version ProductVersionRaw { get; } = new(0, 0, 0, 0);
 
         /// <summary>
         /// Gets the comments associated with the file.
         /// </summary>
-        public readonly string? Comments;
+        public string? Comments { get; }
 
         /// <summary>
         /// Gets the name of the company that produced the file.
         /// </summary>
-        public readonly string? CompanyName;
+        public string? CompanyName { get; }
 
         /// <summary>
         /// Gets the build number of the file.
         /// </summary>
-        public readonly int FileBuildPart;
+        public int FileBuildPart { get; }
 
         /// <summary>
         /// Gets the description of the file.
         /// </summary>
-        public readonly string? FileDescription;
+        public string? FileDescription { get; }
 
         /// <summary>
         /// Gets the major part of the version number.
         /// </summary>
-        public readonly int FileMajorPart;
+        public int FileMajorPart { get; }
 
         /// <summary>
         /// Gets the minor part of the version number of the file.
         /// </summary>
-        public readonly int FileMinorPart;
+        public int FileMinorPart { get; }
 
         /// <summary>
         /// Gets the name of the file that this object instance describes.
         /// </summary>
-        public readonly string FileName;
+        public string FileName { get; }
 
         /// <summary>
         /// Gets the file private part number.
         /// </summary>
-        public readonly int FilePrivatePart;
+        public int FilePrivatePart { get; }
 
         /// <summary>
         /// Gets the file version number.
         /// </summary>
-        public readonly string? FileVersion;
+        public string? FileVersion { get; }
 
         /// <summary>
         /// Gets the internal name of the file, if one exists.
         /// </summary>
-        public readonly string? InternalName;
+        public string? InternalName { get; }
 
         /// <summary>
         /// Gets a value that specifies whether the file contains debugging information or is compiled with debugging features enabled.
         /// </summary>
-        public readonly bool IsDebug;
+        public bool IsDebug { get; }
 
         /// <summary>
         /// Gets a value that specifies whether the file has been modified and is not identical to the original shipping file of the same version number.
         /// </summary>
-        public readonly bool IsPatched;
+        public bool IsPatched { get; }
 
         /// <summary>
         /// Gets a value that specifies whether the file was built using standard release procedures.
         /// </summary>
-        public readonly bool IsPrivateBuild;
+        public bool IsPrivateBuild { get; }
 
         /// <summary>
         /// Gets a value that specifies whether the file is a development version, rather than a commercially released product.
         /// </summary>
-        public readonly bool IsPreRelease;
+        public bool IsPreRelease { get; }
 
         /// <summary>
         /// Gets a value that specifies whether the file is a special build.
         /// </summary>
-        public readonly bool IsSpecialBuild;
+        public bool IsSpecialBuild { get; }
 
         /// <summary>
         /// Gets the default language string for the version info block.
         /// </summary>
-        public readonly string? Language;
+        public string? Language { get; }
 
         /// <summary>
         /// Gets all copyright notices that apply to the specified file.
         /// </summary>
-        public readonly string? LegalCopyright;
+        public string? LegalCopyright { get; }
 
         /// <summary>
         /// Gets the trademarks and registered trademarks that apply to the file.
         /// </summary>
-        public readonly string? LegalTrademarks;
+        public string? LegalTrademarks { get; }
 
         /// <summary>
         /// Gets the name the file was created with.
         /// </summary>
-        public readonly string? OriginalFilename;
+        public string? OriginalFilename { get; }
 
         /// <summary>
         /// Gets information about a private version of the file.
         /// </summary>
-        public readonly string? PrivateBuild;
+        public string? PrivateBuild { get; }
 
         /// <summary>
         /// Represents the process associated with the current operation.
@@ -521,42 +521,42 @@ namespace PSADT.ProcessManagement
         /// <remarks>This field provides access to the underlying process object, allowing inspection and
         /// control of the process's execution. It is read-only and should be used to retrieve information about the
         /// process or to perform operations such as starting, stopping, or monitoring the process.</remarks>
-        public readonly Process Process;
+        public Process Process { get; }
 
         /// <summary>
         /// Gets the build number of the product this file is associated with.
         /// </summary>
-        public readonly int ProductBuildPart;
+        public int ProductBuildPart { get; }
 
         /// <summary>
         /// Gets the major part of the version number for the product this file is associated with.
         /// </summary>
-        public readonly int ProductMajorPart;
+        public int ProductMajorPart { get; }
 
         /// <summary>
         /// Gets the minor part of the version number for the product the file is associated with.
         /// </summary>
-        public readonly int ProductMinorPart;
+        public int ProductMinorPart { get; }
 
         /// <summary>
         /// Gets the name of the product this file is distributed with.
         /// </summary>
-        public readonly string? ProductName;
+        public string? ProductName { get; }
 
         /// <summary>
         /// Gets the private part number of the product this file is associated with.
         /// </summary>
-        public readonly int ProductPrivatePart;
+        public int ProductPrivatePart { get; }
 
         /// <summary>
         /// Gets the version of the product this file is distributed with.
         /// </summary>
-        public readonly string? ProductVersion;
+        public string? ProductVersion { get; }
 
         /// <summary>
         /// Gets the special build information for the file.
         /// </summary>
-        public readonly string? SpecialBuild;
+        public string? SpecialBuild { get; }
 
         /// <summary>
         /// Represents the fixed file information of a version resource.

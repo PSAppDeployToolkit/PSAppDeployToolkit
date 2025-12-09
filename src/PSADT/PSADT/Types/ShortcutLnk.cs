@@ -81,32 +81,32 @@ namespace PSADT.Types
         /// <summary>
         /// The window style for the shortcut.
         /// </summary>
-        public readonly string? WindowStyle;
+        public string? WindowStyle { get; }
 
         /// <summary>
         /// Gets or sets the arguments passed to the target application when the shortcut is executed.
         /// </summary>
-        public readonly string? Arguments;
+        public string? Arguments { get; }
 
         /// <summary>
         /// Gets or sets the description of the shortcut.
         /// </summary>
-        public readonly string? Description;
+        public string? Description { get; }
 
         /// <summary>
         /// Gets or sets the working directory for the shortcut's target application.
         /// </summary>
-        public readonly string? WorkingDirectory;
+        public string? WorkingDirectory { get; }
 
         /// <summary>
         /// Gets or sets the hotkey associated with the shortcut.
         /// </summary>
-        public readonly string? Hotkey;
+        public string? Hotkey { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the shortcut requires administrative privileges to run.
         /// </summary>
-        public readonly bool RunAsAdmin;
+        public bool RunAsAdmin { get; }
 
         /// <summary>
         /// Helper method to check if any string in the list exists within the target string using StringComparison.

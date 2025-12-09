@@ -240,7 +240,7 @@ function Start-ADTMsiProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_InstalledApplication')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_InstalledApplication_NoWait')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.RunAsActiveUser]$RunAsActiveUser,
+        [PSADT.Core.RunAsActiveUser]$RunAsActiveUser,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_FilePath')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_FilePath_NoWait')]

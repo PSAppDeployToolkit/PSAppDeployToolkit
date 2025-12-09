@@ -1,4 +1,4 @@
-﻿namespace PSADT.Module
+﻿namespace PSADT.Core
 {
     /// <summary>
     /// Specifies the logging style to be used by the application.

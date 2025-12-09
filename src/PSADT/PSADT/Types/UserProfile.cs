@@ -57,61 +57,61 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the NT account associated with the user profile.
         /// </summary>
-        public readonly NTAccount NTAccount;
+        public NTAccount NTAccount { get; }
 
         /// <summary>
         /// Gets the security identifier (SID) for the user profile.
         /// </summary>
-        public readonly SecurityIdentifier SID;
+        public SecurityIdentifier SID { get; }
 
         /// <summary>
         /// Gets the path to the user's profile directory.
         /// </summary>
-        public readonly DirectoryInfo ProfilePath;
+        public DirectoryInfo ProfilePath { get; }
         /// <summary>
         /// Gets the path to the user's AppData directory.
         /// </summary>
 
-        public readonly DirectoryInfo? AppDataPath;
+        public DirectoryInfo? AppDataPath { get; }
 
         /// <summary>
         /// Gets the path to the user's LocalAppData directory.
         /// </summary>
-        public readonly DirectoryInfo? LocalAppDataPath;
+        public DirectoryInfo? LocalAppDataPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Desktop directory.
         /// </summary>
-        public readonly DirectoryInfo? DesktopPath;
+        public DirectoryInfo? DesktopPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Documents directory.
         /// </summary>
-        public readonly DirectoryInfo? DocumentsPath;
+        public DirectoryInfo? DocumentsPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Start Menu directory.
         /// </summary>
-        public readonly DirectoryInfo? StartMenuPath;
+        public DirectoryInfo? StartMenuPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Temp directory.
         /// </summary>
-        public readonly DirectoryInfo? TempPath;
+        public DirectoryInfo? TempPath { get; }
 
         /// <summary>
         /// Gets the path to the user's OneDrive directory.
         /// </summary>
-        public readonly DirectoryInfo? OneDrivePath;
+        public DirectoryInfo? OneDrivePath { get; }
 
         /// <summary>
         /// Gets the path to the user's OneDrive for Business directory.
         /// </summary>
-        public readonly DirectoryInfo? OneDriveCommercialPath;
+        public DirectoryInfo? OneDriveCommercialPath { get; }
 
         /// <summary>
         /// Gets the locale information for the user.
         /// </summary>
-        public readonly CultureInfo? UserLocale;
+        public CultureInfo? UserLocale { get; }
     }
 }

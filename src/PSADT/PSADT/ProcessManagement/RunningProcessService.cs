@@ -204,7 +204,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Disposal flag for the <see cref="RunningProcessService"/> class.
         /// </summary>
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// The task that polls for running processes.

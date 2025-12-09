@@ -13,6 +13,7 @@ namespace PSADT.LibraryInterfaces
     /// such as security capabilities, processor affinity, or mitigation policies. Extra values not from CsWin32
     /// are from https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2722-L2757 and
     /// https://github.com/tpn/winsdk-10/blob/9b69fd26ac0c7d0b83d378dba01080e93349c2ed/Include/10.0.16299.0/um/WinBase.h#L3372-L3376</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum PROC_THREAD_ATTRIBUTE : uint
     {
         /// <summary>

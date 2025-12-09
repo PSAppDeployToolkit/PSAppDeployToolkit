@@ -69,6 +69,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// The initial text to be displayed in the input field.
         /// </summary>
         [JsonProperty]
-        public readonly string? InitialInputText;
+        public string? InitialInputText { get; }
     }
 }

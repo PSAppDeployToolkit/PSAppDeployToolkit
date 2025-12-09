@@ -54,7 +54,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the execution policy that determines how operations are executed.
         /// </summary>
         [JsonProperty]
-        public readonly ExecutionPolicy ExecutionPolicy;
+        public ExecutionPolicy ExecutionPolicy { get; }
 
         /// <summary>
         /// Gets a read-only list of module specifications derived from the current module data.

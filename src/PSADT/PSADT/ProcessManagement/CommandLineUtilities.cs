@@ -241,7 +241,7 @@ namespace PSADT.ProcessManagement
                 {
                     // Parse unquoted value - might be a path with spaces.
                     string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    if (value.Contains(' ') && !value.StartsWith("\""))
+                    if (value.Contains(' ') && !value.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
                     {
                         result.Append('"').Append(value).Append('"');
                     }
@@ -343,7 +343,7 @@ namespace PSADT.ProcessManagement
             {
                 position = tokenPositions[pathInfo.TokenCount];
             }
-            else if (pathInfo.Path.EndsWith("\\") && position < commandLine.Length)
+            else if (pathInfo.Path.EndsWith("\\", StringComparison.OrdinalIgnoreCase) && position < commandLine.Length)
             {
                 // If the parsed path ends with a backslash, it's likely a directory.
                 // The original logic might have consumed a following argument.
@@ -419,12 +419,12 @@ namespace PSADT.ProcessManagement
 
             // PRIORITY 3: For UNC paths without executable extensions, apply conservative rules.
             string combinedPath = string.Join(" ", tokens);
-            if (combinedPath.StartsWith("\\\\"))
+            if (combinedPath.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
             {
                 // If a token ends with a backslash, it's likely a directory. The path ends here.
                 for (int i = 0; i < tokens.Count - 1; i++)
                 {
-                    if (tokens[i].EndsWith("\\"))
+                    if (tokens[i].EndsWith("\\", StringComparison.OrdinalIgnoreCase))
                     {
                         return (string.Join(" ", tokens.Take(i + 1)), i + 1);
                     }
@@ -449,8 +449,8 @@ namespace PSADT.ProcessManagement
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
                     string lastToken = tokens[tokens.Count - 1];
-                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") &&
-                        !lastToken.Contains('=') && !lastToken.StartsWith("{"))
+                    if (!lastToken.StartsWith("/", StringComparison.OrdinalIgnoreCase) && !lastToken.StartsWith("-", StringComparison.OrdinalIgnoreCase) &&
+                        !lastToken.Contains('=') && !lastToken.StartsWith("{", StringComparison.OrdinalIgnoreCase))
                     {
                         return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
                     }
@@ -534,7 +534,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Check for flag patterns.
-            if (part.StartsWith("/") || part.StartsWith("-"))
+            if (part.StartsWith("/", StringComparison.OrdinalIgnoreCase) || part.StartsWith("-", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -546,7 +546,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Check for GUID patterns.
-            if (part.StartsWith("{") && part.EndsWith("}"))
+            if (part.StartsWith("{", StringComparison.OrdinalIgnoreCase) && part.EndsWith("}", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -692,7 +692,7 @@ namespace PSADT.ProcessManagement
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
                 string value = argument.Substring(equalsPos + 1);
-                if (value.StartsWith("\"") && value.EndsWith("\""))
+                if (value.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && value.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
                     // The value is already quoted. We can return the argument as-is,
                     // as our compatible parser will handle it correctly.

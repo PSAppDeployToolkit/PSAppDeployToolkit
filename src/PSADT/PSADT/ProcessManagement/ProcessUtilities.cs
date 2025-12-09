@@ -13,7 +13,7 @@ using System.ServiceProcess;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.Security;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;

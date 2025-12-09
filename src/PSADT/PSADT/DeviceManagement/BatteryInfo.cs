@@ -107,7 +107,8 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Indicates whether the device is a laptop.
         /// </summary>
-        public readonly bool IsLaptop = DeviceUtilities.GetSystemChassisType() is SystemChassisType chassisType && (chassisType == SystemChassisType.Laptop || chassisType == SystemChassisType.Notebook || chassisType == SystemChassisType.SubNotebook);
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
+        public bool IsLaptop { get; } = DeviceUtilities.GetSystemChassisType() is SystemChassisType chassisType && (chassisType == SystemChassisType.Laptop || chassisType == SystemChassisType.Notebook || chassisType == SystemChassisType.SubNotebook);
 
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.

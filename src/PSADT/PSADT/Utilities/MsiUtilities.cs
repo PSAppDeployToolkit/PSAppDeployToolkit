@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -75,7 +76,17 @@ namespace PSADT.Utilities
             Msi.MsiExtractPatchXMLData(szPatchPath, null, out var requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength];
             Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
-            XmlDocument xmlDoc = new(); xmlDoc.LoadXml(bufSpan.ToString().TrimRemoveNull());
+            XmlReaderSettings settings = new()
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null
+            };
+            XmlDocument xmlDoc = new() { XmlResolver = null };
+            using (StringReader stringReader = new(bufSpan.ToString().TrimRemoveNull()))
+            using (XmlReader reader = XmlReader.Create(stringReader, settings))
+            {
+                xmlDoc.Load(reader);
+            }
             return xmlDoc;
         }
     }

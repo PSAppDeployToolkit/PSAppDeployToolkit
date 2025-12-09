@@ -30,13 +30,14 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// System information class for querying system handles.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
         [StructLayout(LayoutKind.Sequential)]
         public readonly struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
         {
             /// <summary>
             /// The kernel object's address.
             /// </summary>
-            public readonly IntPtr Object;
+            public readonly IntPtr ObjectPtr;
 
             /// <summary>
             /// The owning process's identifier.

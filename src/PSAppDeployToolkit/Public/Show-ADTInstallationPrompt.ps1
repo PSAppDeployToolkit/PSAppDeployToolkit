@@ -233,7 +233,7 @@ function Show-ADTInstallationPrompt
         }
         else
         {
-            [PSADT.Module.DeploymentType]::Install
+            [PSADT.Core.DeploymentType]::Install
         }
 
         # Set up defaults if not specified.

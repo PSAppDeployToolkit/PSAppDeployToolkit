@@ -1,4 +1,4 @@
-﻿namespace PSADT.Module
+﻿namespace PSADT.Core
 {
     /// <summary>
     /// The deployment modes that a DeploymentSession can be.

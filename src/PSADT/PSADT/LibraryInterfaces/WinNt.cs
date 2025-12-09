@@ -6,6 +6,8 @@ namespace PSADT.LibraryInterfaces
     /// The architecture of the executable..
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum IMAGE_FILE_MACHINE : ushort
     {
         /// <summary>
@@ -172,6 +174,8 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// The subsystem of the executable.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum IMAGE_SUBSYSTEM : ushort
     {
         /// <summary>
@@ -247,6 +251,7 @@ namespace PSADT.LibraryInterfaces
     /// processes associated with a job object. Each message corresponds to a particular event, such as a process
     /// exceeding a time limit or the job reaching its memory limit. These notifications can be used to monitor and
     /// manage the behavior of processes within a job.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum JOB_OBJECT_MSG : uint
     {
         /// <summary>
@@ -400,6 +405,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Enumeration of all available security privileges.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum SE_PRIVILEGE
     {
         /// <summary>

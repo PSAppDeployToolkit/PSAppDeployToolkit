@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -181,13 +182,13 @@ namespace PSADT.ClientServer
             Dictionary<string, string> arguments = [];
             for (int i = 0; i < argv.Length; i++)
             {
-                if (!argv[i].StartsWith("-"))
+                if (!argv[i].StartsWith("-", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
                 var key = argv[i].Substring(1).Trim();
                 var value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
+                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-", StringComparison.OrdinalIgnoreCase) || value!.StartsWith("/", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
@@ -197,7 +198,7 @@ namespace PSADT.ClientServer
             // Check whether an ArgumentsDictionary was provided.
             if (arguments.TryGetValue("ArgumentsDictionary", out var argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
             {
-                if (argvDictValue.StartsWith("HKEY"))
+                if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
                     // Provided value is a registry key path.
                     if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue.Substring(0, valueDivider), argvDictValue.Substring(valueDivider + 1), null) is not string argvDictContent)
@@ -322,7 +323,7 @@ namespace PSADT.ClientServer
                                     {
                                         throw new ClientException("The PromptToCloseApps command requires exactly one argument: PromptToCloseTimeout.", ClientExitCode.InvalidArguments);
                                     }
-                                    var promptToCloseTimeout = TimeSpan.Parse(parts[1]);
+                                    var promptToCloseTimeout = TimeSpan.Parse(parts[1], CultureInfo.InvariantCulture);
 
                                     // Process each running app.
                                     if (closeAppsDialogState.RunningProcessService is null)
@@ -375,7 +376,7 @@ namespace PSADT.ClientServer
                                     }
 
                                     // Update the progress dialog with the provided parameters.
-                                    DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3]) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
+                                    DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3], CultureInfo.InvariantCulture) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
                                     WriteResult(SerializeObject(true));
                                 }
                                 else if (parts[0] == "CloseProgressDialog")

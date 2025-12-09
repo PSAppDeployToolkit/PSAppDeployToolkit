@@ -38,21 +38,21 @@ namespace PSADT.Types
         /// <summary>
         /// The path to the shortcut file.
         /// </summary>
-        public readonly string Path;
+        public string Path { get; }
 
         /// <summary>
         /// The target path of the shortcut.
         /// </summary>
-        public readonly string TargetPath;
+        public string TargetPath { get; }
 
         /// <summary>
         /// The location of the icon used for the shortcut.
         /// </summary>
-        public readonly string? IconLocation;
+        public string? IconLocation { get; }
 
         /// <summary>
         /// The index of the icon used for the shortcut.
         /// </summary>
-        public readonly int? IconIndex;
+        public int? IconIndex { get; }
     }
 }

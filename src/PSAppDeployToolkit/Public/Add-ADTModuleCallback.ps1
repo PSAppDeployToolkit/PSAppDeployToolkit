@@ -69,7 +69,7 @@ function Add-ADTModuleCallback
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.CallbackType]$Hookpoint,
+        [PSADT.Core.CallbackType]$Hookpoint,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

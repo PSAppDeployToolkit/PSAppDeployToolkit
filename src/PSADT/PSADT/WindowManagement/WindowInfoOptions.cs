@@ -35,7 +35,7 @@ namespace PSADT.WindowManagement
         /// Gets the filter criteria for window titles.
         /// </summary>
         [JsonProperty]
-        public readonly IReadOnlyList<string>? WindowTitleFilter;
+        public IReadOnlyList<string>? WindowTitleFilter { get; }
 
         /// <summary>
         /// Represents a filter for window handles used to determine which windows are included in certain operations.
@@ -43,7 +43,7 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
         [JsonProperty]
-        public readonly IReadOnlyList<nint>? WindowHandleFilter;
+        public IReadOnlyList<nint>? WindowHandleFilter { get; }
 
         /// <summary>
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
@@ -52,6 +52,6 @@ namespace PSADT.WindowManagement
         /// array is null or empty,  no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
         [JsonProperty]
-        public readonly IReadOnlyList<string>? ParentProcessFilter;
+        public IReadOnlyList<string>? ParentProcessFilter { get; }
     }
 }

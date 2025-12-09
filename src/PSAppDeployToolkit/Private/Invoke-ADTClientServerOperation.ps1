@@ -83,7 +83,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.RunAsActiveUser]$User,
+        [PSADT.Core.RunAsActiveUser]$User,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InitCloseAppsDialog')]
         [ValidateNotNullOrEmpty()]

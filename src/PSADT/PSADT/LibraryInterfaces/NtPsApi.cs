@@ -11,6 +11,7 @@ namespace PSADT.LibraryInterfaces
     /// process freeze operations. These options are primarily intended for advanced or low-level scenarios, such as
     /// interop with unmanaged code, debugging, or process injection. Most applications do not need to set these flags
     /// explicitly.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum THREAD_CREATE_FLAGS : uint
     {
         /// <summary>
@@ -71,6 +72,7 @@ namespace PSADT.LibraryInterfaces
     /// Specifies extended flags for process creation, allowing customization of process behavior.
     /// </summary>
     /// <remarks>Sourced from https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2781-L2783</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     [Flags]
     internal enum EXTENDED_PROCESS_CREATION_FLAG : uint
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 
 namespace PSADT.ProcessManagement
 {
@@ -64,7 +64,7 @@ namespace PSADT.ProcessManagement
             bool noTerminateOnTimeout = false)
         {
             // Handle file paths that may be wrapped in quotes.
-            if (filePath.StartsWith("\"") && filePath.EndsWith("\""))
+            if (filePath.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && filePath.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 FilePath = filePath.TrimStart('"').TrimEnd('"');
             }
@@ -74,7 +74,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate the file path is rooted.
-            if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%"))
+            if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("File path must be fully qualified.", nameof(filePath));
             }
@@ -147,111 +147,111 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the file path of the process to launch.
         /// </summary>
-        public readonly string FilePath;
+        public string FilePath { get; }
 
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? ArgumentList;
+        public IReadOnlyList<string>? ArgumentList { get; }
 
         /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
-        public readonly string? WorkingDirectory;
+        public string? WorkingDirectory { get; }
 
         /// <summary>
         /// Gets the username to use when starting the process.
         /// </summary>
-        public readonly RunAsActiveUser? RunAsActiveUser;
+        public RunAsActiveUser? RunAsActiveUser { get; }
 
         /// <summary>
         /// Gets a value indicating whether to use the linked admin token to start the process.
         /// </summary>
-        public readonly bool UseLinkedAdminToken;
+        public bool UseLinkedAdminToken { get; }
 
         /// <summary>
         /// Gets a value indicating whether to use the highest available token to start the process.
         /// </summary>
-        public readonly bool UseHighestAvailableToken;
+        public bool UseHighestAvailableToken { get; }
 
         /// <summary>
         /// Gets a value indicating whether to inherit the environment variables of the current process.
         /// </summary>
-        public readonly bool InheritEnvironmentVariables;
+        public bool InheritEnvironmentVariables { get; }
 
         /// <summary>
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
-        public readonly bool ExpandEnvironmentVariables;
+        public bool ExpandEnvironmentVariables { get; }
 
         /// <summary>
         /// Indicates whether user termination is denied.
         /// </summary>
-        public readonly bool DenyUserTermination;
+        public bool DenyUserTermination { get; }
 
         /// <summary>
         /// Gets a value indicating whether anonymous handles are being used.
         /// </summary>
-        public readonly bool InheritHandles;
+        public bool InheritHandles { get; }
 
         /// <summary>
         /// Indicates whether an unelevated token should be used for operations.
         /// </summary>
-        public readonly bool UseUnelevatedToken;
+        public bool UseUnelevatedToken { get; }
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.
         /// </summary>
-        public readonly bool UseShellExecute;
+        public bool UseShellExecute { get; }
 
         /// <summary>
         /// Gets the verb to use when starting the process.
         /// </summary>
-        public readonly string? Verb;
+        public string? Verb { get; }
 
         /// <summary>
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
-        public readonly bool CreateNoWindow;
+        public bool CreateNoWindow { get; }
 
         /// <summary>
         /// Gets a value indicating whether the process should wait for child processes to exit before completing.
         /// </summary>
-        public readonly bool WaitForChildProcesses;
+        public bool WaitForChildProcesses { get; }
 
         /// <summary>
         /// Gets a value indicating whether any child processes spawned with the parent should terminate when the parent closes.
         /// </summary>
-        public readonly bool KillChildProcessesWithParent;
+        public bool KillChildProcessesWithParent { get; }
 
         /// <summary>
         /// Gets the encoding type to use when parsing stdout/stderr text.
         /// </summary>
-        public readonly Encoding StreamEncoding = Encoding.Default;
+        public Encoding StreamEncoding { get; } = Encoding.Default;
 
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public readonly SHOW_WINDOW_CMD? WindowStyle;
+        public SHOW_WINDOW_CMD? WindowStyle { get; }
 
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public readonly System.Diagnostics.ProcessWindowStyle? ProcessWindowStyle;
+        public System.Diagnostics.ProcessWindowStyle? ProcessWindowStyle { get; }
 
         /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
-        public readonly System.Diagnostics.ProcessPriorityClass? PriorityClass;
+        public System.Diagnostics.ProcessPriorityClass? PriorityClass { get; }
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.
         /// </summary>
-        public readonly CancellationToken? CancellationToken;
+        public CancellationToken? CancellationToken { get; }
 
         /// <summary>
         /// Gets whether to not end the process upon CancellationToken expiring.
         /// </summary>
-        public readonly bool NoTerminateOnTimeout;
+        public bool NoTerminateOnTimeout { get; }
     }
 }

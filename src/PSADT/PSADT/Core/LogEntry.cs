@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// Represents all data used as the basis for logging a PSAppDeployToolkit PowerShell log entry via `[ADTSession]::WriteLogEntry()`.
@@ -38,58 +39,58 @@ namespace PSADT.Module
             CallerFileName = !string.IsNullOrWhiteSpace(callerFileName) ? callerFileName : throw new ArgumentNullException("Caller file name cannot be null or empty.", (Exception?)null);
             CallerSource = !string.IsNullOrWhiteSpace(callerSource) ? callerSource : throw new ArgumentNullException("Caller source cannot be null or empty.", (Exception?)null);
             LegacyLogLine = $"[{timeStamp.ToString("O")}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
-            CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
+            CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>
         /// Gets the timestamp of the log entry.
         /// </summary>
-        public readonly DateTime Timestamp;
+        public DateTime Timestamp { get; }
 
         /// <summary>
         /// Gets the log entry message.
         /// </summary>
-        public readonly string Message;
+        public string Message { get; }
 
         /// <summary>
         /// Gets the log entry's severity.
         /// </summary>
-        public readonly LogSeverity Severity;
+        public LogSeverity Severity { get; }
 
         /// <summary>
         /// Gets the log entry's source.
         /// </summary>
-        public readonly string Source;
+        public string Source { get; }
 
         /// <summary>
         /// Gets the log entry's script section, typically defaulting to the active session's InstallPhase value.
         /// </summary>
-        public readonly string? ScriptSection;
+        public string? ScriptSection { get; }
 
         /// <summary>
         /// Gets a value indicating whether the log entry is a debug message.
         /// </summary>
-        public readonly bool DebugMessage;
+        public bool DebugMessage { get; }
 
         /// <summary>
         /// Gets the log entry's caller file name.
         /// </summary>
-        public readonly string CallerFileName;
+        public string CallerFileName { get; }
 
         /// <summary>
         /// Gets the log entry's caller source.
         /// </summary>
-        public readonly string CallerSource;
+        public string CallerSource { get; }
 
         /// <summary>
         /// Gets the log entry in legacy format.
         /// </summary>
-        public readonly string LegacyLogLine;
+        public string LegacyLogLine { get; }
 
         /// <summary>
         /// Gets the log entry as CMTrace format.
         /// </summary>
-        public readonly string CMTraceLogLine;
+        public string CMTraceLogLine { get; }
 
         /// <summary>
         /// Returns a string that represents the current <see cref="LogEntry"/> object.

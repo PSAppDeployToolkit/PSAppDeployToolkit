@@ -6,7 +6,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// The internal database for the PSAppDeployToolkit module, as initialised via PSAppDeployToolkit.psm1.
@@ -112,12 +112,12 @@ namespace PSADT.Module
         /// <summary>
         /// Represents the PSAppDeployToolkit module's internal database.
         /// </summary>
-        private static PSObject? _database = null;
+        private static PSObject? _database;
 
         /// <summary>
         /// Represents the PSAppDeployToolkit module's SessionState object.
         /// </summary>
-        private static SessionState? _sessionState = null;
+        private static SessionState? _sessionState;
 
         /// <summary>
         /// Represents the default runspace for executing PowerShell commands.

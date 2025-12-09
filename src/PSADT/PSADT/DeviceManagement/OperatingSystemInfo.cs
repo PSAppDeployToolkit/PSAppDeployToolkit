@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
@@ -78,7 +79,7 @@ namespace PSADT.DeviceManagement
             }
 
             Kernel32.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
-            Name = string.Format(((DescriptionAttribute[])typeof(WindowsOS).GetField(operatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description, editionId);
+            Name = string.Format(CultureInfo.InvariantCulture, ((DescriptionAttribute[])typeof(WindowsOS).GetField(operatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description, editionId);
             Version = new((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
             Architecture = RuntimeInformation.OSArchitecture;
@@ -93,61 +94,61 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Display name of the operating system.
         /// </summary>
-        public readonly string Name;
+        public string Name { get; }
 
         /// <summary>
         /// Edition of the operating system.
         /// </summary>
-        public readonly string Edition;
+        public string Edition { get; }
 
         /// <summary>
         /// Version of the operating system.
         /// </summary>
-        public readonly Version Version;
+        public Version Version { get; }
 
         /// <summary>
         /// Release Id of the operating system.
         /// </summary>
-        public readonly string? ReleaseId;
+        public string? ReleaseId { get; }
 
         /// <summary>
         /// Release Id name of the operating system.
         /// </summary>
-        public readonly string? ReleaseIdName;
+        public string? ReleaseIdName { get; }
 
         /// <summary>
         /// Architecture of the operating system.
         /// </summary>
-        public readonly Architecture Architecture;
+        public Architecture Architecture { get; }
 
         /// <summary>
         /// Whether the operating system is 64-bit.
         /// </summary>
-        public readonly bool Is64BitOperatingSystem;
+        public bool Is64BitOperatingSystem { get; }
 
         /// <summary>
         /// Whether the operating system is a terminal server.
         /// </summary>
-        public readonly bool IsTerminalServer;
+        public bool IsTerminalServer { get; }
 
         /// <summary>
         /// Whether the operating system is a workstation capable of multiple sessions (AVD, etc).
         /// </summary>
-        public readonly bool IsWorkstationEnterpriseMultiSessionOS;
+        public bool IsWorkstationEnterpriseMultiSessionOS { get; }
 
         /// <summary>
         /// Whether the operating system is a workstation.
         /// </summary>
-        public readonly bool IsWorkstation;
+        public bool IsWorkstation { get; }
 
         /// <summary>
         /// Whether the operating system is a server.
         /// </summary>
-        public readonly bool IsServer;
+        public bool IsServer { get; }
 
         /// <summary>
         /// Whether the operating system is a domain controller.
         /// </summary>
-        public readonly bool IsDomainController;
+        public bool IsDomainController { get; }
     }
 }

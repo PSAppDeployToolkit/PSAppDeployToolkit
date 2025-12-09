@@ -2,7 +2,7 @@
 using System.Security.Principal;
 using PSADT.TerminalServices;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// Represents a user running under a specific Windows NT account context, including associated security details.
@@ -49,7 +49,7 @@ namespace PSADT.Module
         /// <remarks>This field holds an instance of the <see cref="System.Security.Principal.NTAccount"/>
         /// class, which encapsulates a Windows NT account name. It is used to identify a user or group in a Windows
         /// environment.</remarks>
-        public readonly NTAccount NTAccount;
+        public NTAccount NTAccount { get; }
 
         /// <summary>
         /// Represents the security identifier (SID) associated with the current object.
@@ -57,26 +57,26 @@ namespace PSADT.Module
         /// <remarks>A security identifier (SID) is a unique value used to identify a user, group, or
         /// computer account in Windows security. This field is read-only and provides access to the SID associated with
         /// the object, which can be used for security-related operations.</remarks>
-        public readonly SecurityIdentifier SID;
+        public SecurityIdentifier SID { get; }
 
         /// <summary>
         /// Gets the username associated with the user.
         /// </summary>
-        public readonly string UserName;
+        public string UserName { get; }
 
         /// <summary>
         /// Represents the domain name associated with the current context.
         /// </summary>
-        public readonly string DomainName;
+        public string DomainName { get; }
 
         /// <summary>
         /// Represents the session ID of the user.
         /// </summary>
-        public readonly uint SessionId;
+        public uint SessionId { get; }
 
         /// <summary>
         /// Indicates whether the current user has local administrator privileges.
         /// </summary>
-        public readonly bool? IsLocalAdmin;
+        public bool? IsLocalAdmin { get; }
     }
 }

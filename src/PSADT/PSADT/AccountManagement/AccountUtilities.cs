@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using Windows.Win32;

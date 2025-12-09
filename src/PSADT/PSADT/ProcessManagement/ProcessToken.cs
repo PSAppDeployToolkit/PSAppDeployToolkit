@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.Security;
 using PSADT.Utilities;
 using Windows.Win32.Security;

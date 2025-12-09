@@ -387,7 +387,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.
         /// </summary>
-        private static IProgressDialog? progressDialog = null;
+        private static IProgressDialog? progressDialog;
 
         /// <summary>
         /// Event to signal that the progress dialog has been initialized.

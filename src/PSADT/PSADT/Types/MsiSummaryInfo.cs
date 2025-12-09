@@ -68,86 +68,86 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the code page of the MSI file.
         /// </summary>
-        public readonly int CodePage;
+        public int CodePage { get; }
 
         /// <summary>
         /// Gets the title of the MSI package.
         /// </summary>
-        public readonly string Title;
+        public string Title { get; }
 
         /// <summary>
         /// Gets the subject of the MSI package.
         /// </summary>
-        public readonly string Subject;
+        public string Subject { get; }
 
         /// <summary>
         /// Gets the author of the MSI package.
         /// </summary>
-        public readonly string Author;
+        public string Author { get; }
 
         /// <summary>
         /// Gets the keywords associated with the MSI package.
         /// </summary>
-        public readonly string Keywords;
+        public string Keywords { get; }
 
         /// <summary>
         /// Gets the comments or notes about the MSI package.
         /// </summary>
-        public readonly string Comments;
+        public string Comments { get; }
 
         /// <summary>
         /// Gets the template of the MSI package.
         /// </summary>
-        public readonly string Template;
+        public string Template { get; }
 
         /// <summary>
         /// Gets the name of the user who last saved the MSI package.
         /// </summary>
-        public readonly string LastSavedBy;
+        public string LastSavedBy { get; }
 
         /// <summary>
         /// Gets the revision number of the MSI package.
         /// </summary>
-        public readonly Guid RevisionNumber;
+        public Guid RevisionNumber { get; }
 
         /// <summary>
         /// Gets the date and time when the MSI package was last printed.
         /// </summary>
-        public readonly DateTime? LastPrinted;
+        public DateTime? LastPrinted { get; }
 
         /// <summary>
         /// Gets the date and time when the MSI package was created.
         /// </summary>
-        public readonly DateTime CreateTimeDate;
+        public DateTime CreateTimeDate { get; }
 
         /// <summary>
         /// Gets the date and time when the MSI package was last saved.
         /// </summary>
-        public readonly DateTime LastSaveTimeDate;
+        public DateTime LastSaveTimeDate { get; }
 
         /// <summary>
         /// Gets the number of pages in the MSI package.
         /// </summary>
-        public readonly int PageCount;
+        public int PageCount { get; }
 
         /// <summary>
         /// Gets the word count of the MSI package.
         /// </summary>
-        public readonly int WordCount;
+        public int WordCount { get; }
 
         /// <summary>
         /// Gets the character count of the MSI package.
         /// </summary>
-        public readonly int? CharacterCount;
+        public int? CharacterCount { get; }
 
         /// <summary>
         /// Gets the application used to create the MSI package.
         /// </summary>
-        public readonly string CreatingApplication;
+        public string CreatingApplication { get; }
 
         /// <summary>
         /// Gets the security descriptor for the MSI package.
         /// </summary>
-        public readonly int Security;
+        public int Security { get; }
     }
 }

@@ -127,42 +127,42 @@ namespace PSADT.UserInterface.DialogOptions
         /// The custom message to be displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string MessageText;
+        public string MessageText { get; }
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly DialogMessageAlignment? MessageAlignment;
+        public DialogMessageAlignment? MessageAlignment { get; }
 
         /// <summary>
         /// The text for the left button in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string? ButtonLeftText;
+        public string? ButtonLeftText { get; }
 
         /// <summary>
         /// The text for the middle button in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string? ButtonMiddleText;
+        public string? ButtonMiddleText { get; }
 
         /// <summary>
         /// The text for the right button in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string? ButtonRightText;
+        public string? ButtonRightText { get; }
 
         /// <summary>
         /// The icon to be displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly DialogSystemIcon? Icon;
+        public DialogSystemIcon? Icon { get; }
 
         /// <summary>
         /// Gets a value indicating whether windows should be minimized.
         /// </summary>
         [JsonProperty]
-        public readonly bool MinimizeWindows;
+        public bool MinimizeWindows { get; }
     }
 }

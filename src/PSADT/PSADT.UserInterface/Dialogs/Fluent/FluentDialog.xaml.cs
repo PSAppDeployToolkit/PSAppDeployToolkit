@@ -713,8 +713,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Adjust for workArea offset.
             string dialogPosName = _dialogPosition.ToString();
-            left -= _dialogPosition == DialogPosition.Default || dialogPosName.EndsWith("Right") ? 18 : dialogPosName.EndsWith("Left") ? -18 : 0;
-            top -= _dialogPosition == DialogPosition.Default || dialogPosName.StartsWith("Bottom") ? 14 : dialogPosName.StartsWith("Top") ? -14 : 0;
+            left -= _dialogPosition == DialogPosition.Default || dialogPosName.EndsWith("Right", StringComparison.Ordinal) ? 18 : dialogPosName.EndsWith("Left", StringComparison.Ordinal) ? -18 : 0;
+            top -= _dialogPosition == DialogPosition.Default || dialogPosName.StartsWith("Bottom", StringComparison.Ordinal) ? 14 : dialogPosName.StartsWith("Top", StringComparison.Ordinal) ? -14 : 0;
 
             // Set positions in DIPs.
             Left = _startingLeft = left;
@@ -895,12 +895,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Whether this window has been disposed.
         /// </summary>
-        protected bool _disposed { get; private set; } = false;
+        protected bool _disposed { get; private set; }
 
         /// <summary>
         /// Whether this window is able to be closed.
         /// </summary>
-        private bool _canClose = false;
+        private bool _canClose;
 
         /// <summary>
         /// The specified position of the dialog.
@@ -910,7 +910,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Whether the dialog is allowed to be moved.
         /// </summary>
-        private readonly bool _dialogAllowMove = false;
+        private readonly bool _dialogAllowMove;
 
         /// <summary>
         /// The countdown duration for the dialog.

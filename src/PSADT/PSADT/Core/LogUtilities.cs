@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using PSADT.Extensions;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// Provides utility methods for logging operations, including writing log entries to various outputs such as files,
@@ -27,7 +27,7 @@ namespace PSADT.Module
         /// Writes a log entry with detailed parameters.
         /// </summary>
         /// <param name="message">The log message.</param>
-        /// <param name="hostLogStream">What stream to write the message to.</param>
+        /// <param name="hostLogStreamType">What stream to write the message to.</param>
         /// <param name="debugMessage">Whether it is a debug message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the log entry.</param>
@@ -35,7 +35,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logStyle">The type of log.</param>
-        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null)
+        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStreamType hostLogStreamType, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -51,13 +51,13 @@ namespace PSADT.Module
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
             var stackFrames = new StackTrace(true).GetFrames().Skip(1); string? callerFileName, callerSource;
-            if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
+            if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
-                var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
+                var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
                 if (invoker.GetFileName() is null)
                 {
-                    invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
+                    invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
                 }
                 var method = invoker.GetMethod()!;
                 callerFileName = invoker.GetFileName()! ?? "<Unavailable>";
@@ -119,11 +119,11 @@ namespace PSADT.Module
             }
 
             // Write out all messages to host if configured/permitted to do so.
-            if (hostLogStream != HostLogStream.None)
+            if (hostLogStreamType != HostLogStreamType.None)
             {
                 var conOutput = logEntries.Select(static e => e.LegacyLogLine);
                 var sevCols = LogSeverityColors[(int)severity];
-                if (hostLogStream == HostLogStream.Console || noRunspace)
+                if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
                     if (severity != LogSeverity.Info)
@@ -141,7 +141,7 @@ namespace PSADT.Module
                     }
                     Console.ResetColor();
                 }
-                else if (hostLogStream != HostLogStream.Verbose)
+                else if (hostLogStreamType != HostLogStreamType.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
                     ModuleDatabase.InvokeScript(WriteHostDelegate, conOutput, sevCols);

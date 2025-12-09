@@ -1,9 +1,9 @@
-﻿namespace PSADT.Module
+﻿namespace PSADT.Core
 {
     /// <summary>
     /// Flag to indicate how to write log entries to the console.
     /// </summary>
-    public enum HostLogStream
+    public enum HostLogStreamType
     {
         /// <summary>
         /// No log entries are written to the console.

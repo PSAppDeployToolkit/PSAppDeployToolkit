@@ -108,6 +108,7 @@ namespace PSADT.Utilities
         /// <summary>
         /// Valid value types for ValueTypeConverter.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is necessary by way of what the enum is and represents.")]
         public enum ValueTypes
         {
             /// <summary>

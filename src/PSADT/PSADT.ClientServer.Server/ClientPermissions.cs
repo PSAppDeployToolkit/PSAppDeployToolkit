@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using PSADT.Module;
+using PSADT.Core;
 
 namespace PSADT.ClientServer
 {

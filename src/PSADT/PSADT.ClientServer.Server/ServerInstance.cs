@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
@@ -57,6 +58,7 @@ namespace PSADT.ClientServer
         /// returning.</remarks>
         /// <exception cref="ApplicationException">Thrown if the client process fails to respond to the initial command, indicating that it is not properly
         /// initialized.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "The use of ApplicationException is acceptable here.")]
         public void Open()
         {
             // Start the server to listen for incoming connections and process data.
@@ -124,6 +126,7 @@ namespace PSADT.ClientServer
         /// <exception cref="InvalidOperationException">Thrown if the server instance is not open or has already been closed.</exception>
         /// <exception cref="ApplicationException">Thrown if the client process does not properly respond to the close command and <paramref name="force"/> is <see
         /// langword="false"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "The use of ApplicationException is acceptable here.")]
         internal void Close(bool force = false)
         {
             // Confirm that the server instance is open and has not been closed already.
@@ -322,7 +325,7 @@ namespace PSADT.ClientServer
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             _logSource = "Show-ADTInstallationProgress";
-            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((progressPercentage is not null) ? progressPercentage.ToString() : ' ')}{CommonUtilities.ArgumentSeparator}{((messageAlignment is not null) ? messageAlignment.ToString() : ' ')}");
+            return Invoke<bool>($"UpdateProgressDialog{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{CommonUtilities.ArgumentSeparator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{CommonUtilities.ArgumentSeparator}{((progressPercentage is not null) ? progressPercentage.Value.ToString(CultureInfo.InvariantCulture) : ' ')}{CommonUtilities.ArgumentSeparator}{((messageAlignment is not null) ? messageAlignment.ToString() : ' ')}");
         }
 
         /// <summary>
@@ -616,7 +619,7 @@ namespace PSADT.ClientServer
             }
 
             // If the response is an error, rethrow it. Otherwise, deserialize the response.
-            if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}"))
+            if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.Ordinal))
             {
                 throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response.Substring(6)));
             }
@@ -642,7 +645,7 @@ namespace PSADT.ClientServer
                         if (line.Contains(CommonUtilities.ArgumentSeparator.ToString()))
                         {
                             var parts = line.Split(CommonUtilities.ArgumentSeparator);
-                            ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0]), _logSource);
+                            ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0], CultureInfo.InvariantCulture), _logSource);
                         }
                         else
                         {
@@ -674,7 +677,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field stores details about the user's session, such as authentication or
         /// user-specific data. It is intended for internal use and should not be exposed directly to external
         /// consumers.</remarks>
-        public readonly RunAsActiveUser RunAsActiveUser;
+        public RunAsActiveUser RunAsActiveUser { get; }
 
         /// <summary>
         /// Gets a value indicating whether the process is currently running.

@@ -47,6 +47,6 @@ namespace PSADT.UserInterface.Types
         /// <summary>
         /// Private state flag to suppress CollectionChanged events until the collection has been reset.
         /// </summary>
-        private bool _suppressNotification = false;
+        private bool _suppressNotification;
     }
 }

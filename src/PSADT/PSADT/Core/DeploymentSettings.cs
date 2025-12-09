@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// A bitfield representing the possible settings used within an active DeploymentSession object.

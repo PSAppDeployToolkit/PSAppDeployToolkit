@@ -6,6 +6,7 @@ namespace PSADT.LibraryInterfaces
     /// Bitmask of flags that specify object handle attributes.
     /// </summary>
     [Flags]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum OBJECT_ATTRIBUTES : uint
     {
         /// <summary>

@@ -88,42 +88,42 @@ namespace PSADT.UserInterface.DialogOptions
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string AppTitle;
+        public string AppTitle { get; }
 
         /// <summary>
         /// Gets the text of the message.
         /// </summary>
         [JsonProperty]
-        public readonly string MessageText;
+        public string MessageText { get; }
 
         /// <summary>
         /// Gets the set of buttons to display in the message box dialog.
         /// </summary>
         [JsonProperty]
-        public readonly DialogBoxButtons DialogButtons;
+        public DialogBoxButtons DialogButtons { get; }
 
         /// <summary>
         /// Gets the default button that is selected in the dialog box when it is displayed.
         /// </summary>
         [JsonProperty]
-        public readonly DialogBoxDefaultButton DialogDefaultButton;
+        public DialogBoxDefaultButton DialogDefaultButton { get; }
 
         /// <summary>
         /// Gets the icon displayed in the dialog box.
         /// </summary>
         [JsonProperty]
-        public readonly DialogBoxIcon DialogIcon;
+        public DialogBoxIcon DialogIcon { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
         [JsonProperty]
-        public readonly bool DialogTopMost;
+        public bool DialogTopMost { get; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
         [JsonProperty]
-        public readonly TimeSpan DialogExpiryDuration;
+        public TimeSpan DialogExpiryDuration { get; }
     }
 }

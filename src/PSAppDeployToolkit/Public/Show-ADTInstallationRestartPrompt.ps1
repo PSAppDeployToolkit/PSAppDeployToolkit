@@ -153,7 +153,7 @@ function Show-ADTInstallationRestartPrompt
         }
         else
         {
-            [PSADT.Module.DeploymentType]::Install
+            [PSADT.Core.DeploymentType]::Install
         }
 
         # Set up remainder if not specified.

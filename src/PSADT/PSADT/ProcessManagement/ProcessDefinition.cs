@@ -41,17 +41,17 @@ namespace PSADT.ProcessManagement
         /// Gets the name of the process.
         /// </summary>
         [JsonProperty]
-        public readonly string Name;
+        public string Name { get; }
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
         [JsonProperty]
-        public readonly string? Description;
+        public string? Description { get; }
 
         /// <summary>
         /// Gets the filter script for the process.
         /// </summary>
-        public readonly Func<RunningProcess, bool>? Filter;
+        public Func<RunningProcess, bool>? Filter { get; }
     }
 }

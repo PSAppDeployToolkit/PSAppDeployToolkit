@@ -157,10 +157,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonRight.IsEnabled = _deferralsRemaining > 0;
 
                 // Update text value
-                DeferRemainingValueTextBlock.Text = _deferralsRemaining.ToString();
+                DeferRemainingValueTextBlock.Text = _deferralsRemaining.Value.ToString(CultureInfo.CurrentCulture);
 
                 // Update accessibility properties
-                AutomationProperties.SetName(DeferRemainingValueTextBlock, _deferralsRemaining.ToString());
+                AutomationProperties.SetName(DeferRemainingValueTextBlock, _deferralsRemaining.Value.ToString(CultureInfo.CurrentCulture));
 
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
@@ -183,7 +183,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Update text content
                 DateTimeFormatInfo dateTimeFormatInfo = new();
                 DateTimeOffset deferralDeadlineOffset = new((DateTime)_deferralDeadline!);
-                string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f");
+                string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f", CultureInfo.CurrentCulture);
                 if (ButtonRight.IsEnabled)
                 {
                     if (timeRemaining < TimeSpan.FromDays(1))

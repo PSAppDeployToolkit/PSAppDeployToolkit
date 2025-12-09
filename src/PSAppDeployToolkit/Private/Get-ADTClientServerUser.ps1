@@ -7,7 +7,7 @@
 function Private:Get-ADTClientServerUser
 {
     [CmdletBinding(DefaultParameterSetName = 'Default')]
-    [OutputType([PSADT.Module.RunAsActiveUser])]
+    [OutputType([PSADT.Core.RunAsActiveUser])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Username')]

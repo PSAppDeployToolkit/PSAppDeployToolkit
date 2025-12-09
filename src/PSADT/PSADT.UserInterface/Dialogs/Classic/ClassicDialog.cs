@@ -301,7 +301,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    foreach (var formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open") || g.Name.StartsWith("Close"))))
+                    foreach (var formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open", StringComparison.Ordinal) || g.Name.StartsWith("Close", StringComparison.Ordinal))))
                     {
                         text = text.Replace(formattingTag.Value, null);
                     }
@@ -397,8 +397,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // Adjust for workArea offset.
             string dialogPosName = dialogPosition.ToString();
-            left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
-            top += dialogPosName.StartsWith("Bottom") ? 1 : dialogPosName.StartsWith("Top") ? -1 : 0;
+            left += dialogPosName.EndsWith("Right", StringComparison.Ordinal) ? 1 : dialogPosName.EndsWith("Left", StringComparison.Ordinal) ? -1 : 0;
+            top += dialogPosName.StartsWith("Bottom", StringComparison.Ordinal) ? 1 : dialogPosName.StartsWith("Top", StringComparison.Ordinal) ? -1 : 0;
 
             // Set the form’s location
             Location = startingPoint = new((int)left, (int)top);
@@ -459,7 +459,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Flag to indicate if the dialog can be closed.
         /// </summary>
-        private bool canClose = false;
+        private bool canClose;
 
         /// <summary>
         /// A timer used to restore the dialog's position on the screen at a configured interval.
