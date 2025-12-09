@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="deploymentType"></param>
         /// <param name="options"></param>
-        public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : base(options)
+        public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
         {
             // Nothing here is allowed to be null.
             if (options["Strings"] is not Hashtable strings || strings.Count == 0)
@@ -119,6 +119,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
         public sealed record RestartDialogStrings
         {
             /// <summary>

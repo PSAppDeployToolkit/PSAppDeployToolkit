@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <NoWarn>$(NoWarn);CA1305;CA1510;CA1513;CA1866</NoWarn>
+    <NoWarn>$(NoWarn);CA1031;CA1305;CA1307;CA1308;CA1510;CA1513;CA1849;CA1866;CA1867</NoWarn>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
     <Product>PSAppDeployToolkit Common Support Library</Product>
@@ -23,7 +23,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <AnalysisLevel>latest-all</AnalysisLevel>
     <Platforms>AnyCPU</Platforms>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>

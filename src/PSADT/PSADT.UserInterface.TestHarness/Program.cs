@@ -103,7 +103,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             string ButtonRightText = "RightButton";
 
             // Set up options for the dialogs
-            CloseAppsDialogState closeAppsDialogState = new(appsToClose, null);
+            using CloseAppsDialogState closeAppsDialogState = new(appsToClose, null);
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },

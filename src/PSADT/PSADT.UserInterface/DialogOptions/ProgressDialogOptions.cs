@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public ProgressDialogOptions(Hashtable options) : base(options)
+        public ProgressDialogOptions(Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
         {
             // Nothing here is allowed to be null.
             if (options["ProgressMessageText"] is not string progressMessageText || string.IsNullOrWhiteSpace(progressMessageText))

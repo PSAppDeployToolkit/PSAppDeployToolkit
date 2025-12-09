@@ -483,6 +483,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
         /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public AggregateException? GetLogWriterException() => _logWriterTask?.Exception;
 
         /// <summary>

@@ -14,7 +14,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
         Mock -ModuleName PSAppDeployToolkit Get-ADTUserProfiles {
             if ($PesterBoundParameters.LoadProfilePaths)
             {
-                [PSADT.Types.UserProfile]::new(
+                [PSADT.Types.UserProfileInfo]::new(
                     'User1',
                     'S-1-0-0',
                     'C:\Users\User1',
@@ -27,7 +27,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
                     'C:\Users\User1\OneDrive',
                     'C:\Users\User1\OneDrive'
                 )
-                [PSADT.Types.UserProfile]::new(
+                [PSADT.Types.UserProfileInfo]::new(
                     'User2',
                     'S-1-0-0',
                     'C:\Users\User2',
@@ -43,7 +43,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
             }
             else
             {
-                [PSADT.Types.UserProfile]::new(
+                [PSADT.Types.UserProfileInfo]::new(
                     'User1',
                     'S-1-0-0',
                     'C:\Users\User1',
@@ -56,7 +56,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
                     $null,
                     $null
                 )
-                [PSADT.Types.UserProfile]::new(
+                [PSADT.Types.UserProfileInfo]::new(
                     'User2',
                     'S-1-0-0',
                     'C:\Users\User2',

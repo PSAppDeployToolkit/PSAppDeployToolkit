@@ -388,6 +388,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// A restart countdown timer to perform an automatic reboot.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
         private System.Threading.Timer? countdownTimer;
 
         /// <summary>

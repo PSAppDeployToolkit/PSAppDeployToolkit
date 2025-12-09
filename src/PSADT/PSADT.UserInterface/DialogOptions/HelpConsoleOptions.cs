@@ -22,6 +22,10 @@ namespace PSADT.UserInterface.DialogOptions
         public HelpConsoleOptions(Hashtable options)
         {
             // Nothing here is allowed to be null.
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             if (options["ExecutionPolicy"] is not ExecutionPolicy executionPolicy)
             {
                 throw new ArgumentNullException("ExecutionPolicy value is null or invalid.", (Exception?)null);

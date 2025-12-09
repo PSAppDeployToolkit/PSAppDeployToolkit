@@ -100,6 +100,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <remarks>A runspace is a container for the execution environment of PowerShell commands. This
         /// field is initialized before use and should not be null during runtime.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
         private Runspace runspace = null!;
     }
 }

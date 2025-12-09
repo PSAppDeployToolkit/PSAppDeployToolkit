@@ -38,6 +38,10 @@ namespace PSADT.ProcessManagement
         public static IReadOnlyList<RunningProcess> GetRunningProcesses(IReadOnlyList<ProcessDefinition> processDefinitions)
         {
             // Set up some caches for performance.
+            if (processDefinitions is null || processDefinitions.Count == 0)
+            {
+                throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null or empty.");
+            }
             var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
             Dictionary<Process, string[]> processArgvMap = [];
 
@@ -225,6 +229,10 @@ namespace PSADT.ProcessManagement
         /// <returns>The process ID of the specified service.</returns>
         public static uint GetServiceProcessId(ServiceController service)
         {
+            if (service is null)
+            {
+                throw new ArgumentNullException(nameof(service), "Service cannot be null.");
+            }
             using var scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
             using var svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
@@ -276,6 +284,10 @@ namespace PSADT.ProcessManagement
         public static Process GetParentProcess(Process proc)
         {
             // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
+            if (proc is null)
+            {
+                throw new ArgumentNullException(nameof(proc), "Process cannot be null.");
+            }
             return GetParentProcess(proc.SafeHandle);
         }
 
@@ -319,6 +331,10 @@ namespace PSADT.ProcessManagement
         public static string GetProcessCommandLine(Process process)
         {
             // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
+            }
             using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out var requiredLength);
 
@@ -345,8 +361,8 @@ namespace PSADT.ProcessManagement
         internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
-            Span<byte> processIdInfoPtr = stackalloc byte[Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>()]; processIdInfoPtr.Clear();
-            ref var processIdInfo = ref Unsafe.As<byte, NtDll.SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
+            Span<byte> processIdInfoPtr = stackalloc byte[Marshal.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>()]; processIdInfoPtr.Clear();
+            ref var processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
             processIdInfo.ProcessId = (IntPtr)process.Id;
 
             // Perform initial query so we can reallocate with the required length.

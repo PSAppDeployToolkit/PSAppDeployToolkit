@@ -198,6 +198,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// WTS protocol types.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type is correct for the underlying Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum WTS_PROTOCOL_TYPE : uint
     {

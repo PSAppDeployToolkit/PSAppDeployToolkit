@@ -304,7 +304,7 @@ namespace PSADT.Core
                         if (!string.IsNullOrWhiteSpace(_dirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            var msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
+                            var msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
@@ -312,9 +312,9 @@ namespace PSADT.Core
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
-                            else if (msiFiles.Any())
+                            else if (msiFiles.Length > 0)
                             {
-                                _defaultMsiFile = new FileInfo(msiFiles.First()).FullName;
+                                _defaultMsiFile = new FileInfo(msiFiles[0]).FullName;
                             }
                         }
                     }
@@ -370,8 +370,8 @@ namespace PSADT.Core
                             var gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
                             if (gmtpOutput.Count > 0)
                             {
-                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
-                                if (msiExecList.Any())
+                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
+                                if (msiExecList.Length > 0)
                                 {
                                     _appProcessesToClose = new(_appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToArray());
                                     WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
@@ -537,8 +537,8 @@ namespace PSADT.Core
                         }
 
                         // Get all log files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
-                        int logFilesCount = logFiles.Count();
+                        var logFiles = new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime).ToArray();
+                        int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.
                         if (logFilesCount > logMaxHistory)
@@ -1074,11 +1074,11 @@ namespace PSADT.Core
                 try
                 {
                     // Get all archive files sorted by last write time.
-                    IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
+                    var archiveFiles = destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime).ToArray();
                     destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
 
                     // Keep only the max number of archive files
-                    int archiveFilesCount = archiveFiles.Count();
+                    int archiveFilesCount = archiveFiles.Length;
                     if (archiveFilesCount > LogMaxHistory)
                     {
                         foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - LogMaxHistory))
@@ -1423,6 +1423,7 @@ namespace PSADT.Core
         /// <summary>
         /// Gets the exit code.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public int GetExitCode() => ExitCode;
 
         /// <summary>

@@ -1024,6 +1024,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Clean up resources.
                 ThemeManager.RemoveActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
                 _hwndSource?.RemoveHook(WndProc);
+                _hwndSource?.Dispose();
                 _countdownTimer?.Dispose();
             }
             _disposed = true;

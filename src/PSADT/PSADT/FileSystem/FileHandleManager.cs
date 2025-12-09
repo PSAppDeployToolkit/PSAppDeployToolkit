@@ -30,6 +30,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// Static constructor to set up the necessary function pointers.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is required here.")]
         static FileHandleManager()
         {
             // Build the StartRoutine template once during static initialization.
@@ -50,13 +51,13 @@ namespace PSADT.FileSystem
             }
 
             // Read the number of types from the buffer and store the built-out dictionary.
-            ref var typesInfo = ref Unsafe.As<byte, NtDll.OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
+            ref var typesInfo = ref Unsafe.As<byte, OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
             var typesCount = typesInfo.NumberOfTypes; var typeTable = new Dictionary<ushort, string>((int)typesCount);
             var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref var typeInfo = ref Unsafe.As<byte, NtDll.OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr.Slice(ptrOffset)));
+                ref var typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr.Slice(ptrOffset)));
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
@@ -71,8 +72,8 @@ namespace PSADT.FileSystem
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Query the system for the required buffer size for handle information.
-            var handleEntryExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-            var handleInfoExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_INFORMATION_EX>();
+            var handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+            var handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
             var handleBuffer = new byte[handleInfoExSize + handleEntryExSize];
             Span<byte> handleBufferPtr = handleBuffer;
 
@@ -95,12 +96,12 @@ namespace PSADT.FileSystem
             try
             {
                 using var currentProcessHandle = Kernel32.GetCurrentProcess(); var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-                ref var handleInfo = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
+                ref var handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
                 var openHandles = new ConcurrentBag<FileHandleInfo>();
                 Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
-                    ref var sysHandle = ref Unsafe.As<byte, NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
+                    ref var sysHandle = ref Unsafe.As<byte, SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
                     if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                     {
                         return;
@@ -208,7 +209,7 @@ namespace PSADT.FileSystem
         /// Closes the specified handles.
         /// </summary>
         /// <param name="handleEntries"></param>
-        public static void CloseHandles(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
+        public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
             // Confirm the provided input isn't null.
             if (handleEntries is null)

@@ -12,6 +12,7 @@ namespace PSADT.ClientServer
     /// This allows the exception to convey both the error details and a numeric code that can be used for
     /// programmatic handling or process termination.</remarks>
     [Serializable]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
     internal class ClientException : InvalidOperationException
     {
         /// <summary>

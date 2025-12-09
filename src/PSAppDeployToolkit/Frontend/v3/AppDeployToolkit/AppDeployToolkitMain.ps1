@@ -225,7 +225,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.UserProfile[]]$UserProfiles
+        [PSADT.Types.UserProfileInfo[]]$UserProfiles
     )
 
     # Set strict mode to the highest within this function's scope.

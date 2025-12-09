@@ -7,6 +7,8 @@ namespace PSADT.UserInterface.Dialogs
     /// Specifies the default button for a message box displayed to the user.
     /// </summary>
     /// <remarks>This enumeration is used to indicate which button in a message box is preselected by default when the dialog is displayed. The default button is typically activated when the user presses the Enter key without explicitly selecting a button.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "All values are named as per the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This is typed as per the Win32 API.")]
     [Flags]
     public enum DialogBoxDefaultButton : uint
     {

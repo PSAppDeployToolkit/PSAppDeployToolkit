@@ -24,6 +24,7 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Static constructor for readonly constant values.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is very much needed here.")]
         static AccountUtilities()
         {
             // Cache information about the current user.

@@ -4,6 +4,9 @@
     /// SMBIOS chassis (system enclosure) types, as specified in the SMBIOS Type 3 record.
     /// 33–255 are either reserved or OEM-defined.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "There is no zero value in the spec.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type is correct for the data.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This isn't a bitfield...")]
     public enum SystemChassisType : ushort
     {
         /// <summary>

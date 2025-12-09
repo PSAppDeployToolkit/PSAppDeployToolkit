@@ -64,6 +64,10 @@ namespace PSADT.ProcessManagement
             bool noTerminateOnTimeout = false)
         {
             // Handle file paths that may be wrapped in quotes.
+            if (filePath is null)
+            {
+                throw new ArgumentNullException(nameof(filePath), "File path cannot be null.");
+            }
             if (filePath.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && filePath.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 FilePath = filePath.TrimStart('"').TrimEnd('"');

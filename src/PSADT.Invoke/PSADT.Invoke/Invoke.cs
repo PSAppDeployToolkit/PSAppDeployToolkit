@@ -330,11 +330,6 @@ namespace PSADT.Invoke
         private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\PowerShell.exe");
 
         /// <summary>
-        /// The default arguments to pass to PowerShell.
-        /// </summary>
-        private static readonly string pwshDefaultArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo";
-
-        /// <summary>
         /// The current path of the executing assembly.
         /// </summary>
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -343,5 +338,10 @@ namespace PSADT.Invoke
         /// The name of the executing assembly.
         /// </summary>
         private static readonly string assemblyName = Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location);
+
+        /// <summary>
+        /// The default arguments to pass to PowerShell.
+        /// </summary>
+        private const string pwshDefaultArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo";
     }
 }

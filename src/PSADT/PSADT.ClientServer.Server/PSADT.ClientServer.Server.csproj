@@ -3,7 +3,7 @@
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn)</NoWarn>
+    <NoWarn>$(NoWarn);CA1307</NoWarn>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -28,7 +28,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <AnalysisLevel>latest-all</AnalysisLevel>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
   </PropertyGroup>

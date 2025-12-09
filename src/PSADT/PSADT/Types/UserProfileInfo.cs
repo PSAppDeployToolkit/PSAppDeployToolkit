@@ -8,10 +8,10 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about a user profile.
     /// </summary>
-    public sealed record UserProfile
+    public sealed record UserProfileInfo
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserProfile"/> struct.
+        /// Initializes a new instance of the <see cref="UserProfileInfo"/> struct.
         /// </summary>
         /// <param name="ntAccount">The NT account associated with the user profile.</param>
         /// <param name="sid">The security identifier (SID) for the user profile.</param>
@@ -26,7 +26,7 @@ namespace PSADT.Types
         /// <param name="oneDriveCommercialPath">The path to the user's OneDrive for Business directory.</param>
         /// <param name="userLocale">The locale information for the user.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null or empty.</exception>
-        public UserProfile(
+        public UserProfileInfo(
             NTAccount ntAccount,
             SecurityIdentifier sid,
             DirectoryInfo profilePath,

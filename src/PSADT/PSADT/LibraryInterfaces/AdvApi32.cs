@@ -695,6 +695,7 @@ namespace PSADT.LibraryInterfaces
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "The null checks in this method are required.")]
         internal static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
             WIN32_ERROR res;

@@ -18,6 +18,10 @@ namespace PSADT.UserInterface.DialogOptions
         public DialogBoxOptions(Hashtable options)
         {
             // Nothing here is allowed to be null.
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             if (options["AppTitle"] is not string appTitle || string.IsNullOrWhiteSpace(appTitle))
             {
                 throw new ArgumentNullException("AppTitle value is null or invalid.", (Exception?)null);

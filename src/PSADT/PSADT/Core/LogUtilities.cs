@@ -50,7 +50,7 @@ namespace PSADT.Core
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            var stackFrames = new StackTrace(true).GetFrames().Skip(1); string? callerFileName, callerSource;
+            var stackFrames = new StackTrace(true).GetFrames().Skip(1).ToArray(); string? callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.

@@ -464,11 +464,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// A timer used to restore the dialog's position on the screen at a configured interval.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
         private Timer? persistTimer;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
         private Timer? expiryTimer;
 
         /// <summary>

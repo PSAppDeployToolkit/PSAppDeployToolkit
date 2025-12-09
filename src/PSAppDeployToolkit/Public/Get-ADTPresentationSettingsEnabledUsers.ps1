@@ -19,7 +19,7 @@ function Get-ADTPresentationSettingsEnabledUsers
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.UserProfile
+        PSADT.Types.UserProfileInfo
 
         Returns one or more UserProfile objects of the users with presentation mode enabled on their device.
 
@@ -41,7 +41,7 @@ function Get-ADTPresentationSettingsEnabledUsers
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.Types.UserProfile])]
+    [OutputType([PSADT.Types.UserProfileInfo])]
     param
     (
     )

@@ -135,6 +135,8 @@ namespace PSADT.ClientServer
         /// serialization.</description></item> <item><description>Includes a converter for serializing and
         /// deserializing enums as strings.</description></item> </list> This static field can be used as a standard
         /// configuration for JSON serialization across the application.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2326:Do not use TypeNameHandling values other than None", Justification = "This is required at this time.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2327:Do not use insecure JsonSerializerSettings", Justification = "This is required at this time.")]
         private static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
         {
             TypeNameHandling = TypeNameHandling.All,

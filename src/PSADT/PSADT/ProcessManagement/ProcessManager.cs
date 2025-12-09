@@ -45,6 +45,10 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
+            if (launchInfo is null)
+            {
+                throw new ArgumentNullException(nameof(launchInfo));
+            }
             Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask;
             List<string> stdout = [], stderr = [];
             ConcurrentQueue<string> interleaved = [];
@@ -360,7 +364,7 @@ namespace PSADT.ProcessManagement
                             }
                             else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                             {
-                                await Task.WhenAll(hStdOutTask, hStdErrTask);
+                                await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
                                 Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
                                 exitCode = unchecked((int)lpExitCode);
                                 break;
@@ -370,7 +374,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         process.WaitForExit();
-                        await Task.WhenAll(hStdOutTask, hStdErrTask);
+                        await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
                     tcs.SetResult(new(process, launchInfo, commandLine, exitCode.Value, stdout, stderr, [.. interleaved]));

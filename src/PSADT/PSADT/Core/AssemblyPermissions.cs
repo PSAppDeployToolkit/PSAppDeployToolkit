@@ -80,16 +80,16 @@ namespace PSADT.Core
         }
 
         /// <summary>
+        /// Gets the path that contains this assembly (and all required client/server assembly files).
+        /// </summary>
+        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(Directory.GetFiles(Path.GetDirectoryName(typeof(AssemblyPermissions).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToArray());
+
+        /// <summary>
         /// Represents the required file system permissions for the operation.
         /// </summary>
         /// <remarks>This field specifies the minimum permissions needed to access and execute files. It
         /// is set to <see cref="FileSystemRights.ReadAndExecute"/>, which allows reading and executing files but not
         /// modifying them.</remarks>
-        private static readonly FileSystemRights _requiredPermissions = FileSystemRights.ReadAndExecute;
-
-        /// <summary>
-        /// Gets the path that contains this assembly (and all required client/server assembly files).
-        /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(Directory.GetFiles(Path.GetDirectoryName(typeof(AssemblyPermissions).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToArray());
+        private const FileSystemRights _requiredPermissions = FileSystemRights.ReadAndExecute;
     }
 }

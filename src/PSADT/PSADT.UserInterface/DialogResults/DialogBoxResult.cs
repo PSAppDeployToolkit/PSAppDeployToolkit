@@ -6,6 +6,7 @@ namespace PSADT.UserInterface.DialogResults
     /// Specifies the possible results of a message box operation.
     /// </summary>
     /// <remarks>This enumeration represents the various outcomes of a message box interaction, such as the button selected by the user or other conditions like a timeout. Each value corresponds to a specific Windows API constant from MESSAGEBOX_RESULT. These results are typically used to determine the user's response to a prompt or dialog.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "There is no zero value in the Win32 API.")]
     public enum DialogBoxResult
     {
         /// <summary>

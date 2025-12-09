@@ -225,7 +225,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            if (res is null || res.IsInvalid)
+            if (res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -248,7 +248,11 @@ namespace PSADT.LibraryInterfaces
         /// packets for the port. Must be greater than zero.</param>
         /// <returns>A SafeFileHandle representing the I/O completion port. The handle can be used to post and retrieve I/O
         /// completion packets.</returns>
-        internal static SafeFileHandle CreateIoCompletionPort(HANDLE FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads) => CreateIoCompletionPort(new SafeFileHandle(FileHandle, false), ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
+        internal static SafeFileHandle CreateIoCompletionPort(HANDLE FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
+        {
+            using var safeFileHandle = new SafeFileHandle(FileHandle, false);
+            return CreateIoCompletionPort(safeFileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
+        }
 
         /// <summary>
         /// Wrapper around CreateJobObject to manage error handling.
@@ -260,7 +264,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
             var res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
-            if (res is null || res.IsInvalid)
+            if (res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }

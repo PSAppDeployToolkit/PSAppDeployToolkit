@@ -21,7 +21,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <AnalysisLevel>latest-all</AnalysisLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
@@ -34,12 +34,14 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
+    <NoWarn>1701;1702;CA1031;CA1303</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
+    <NoWarn>1701;1702;CA1031;CA1303</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

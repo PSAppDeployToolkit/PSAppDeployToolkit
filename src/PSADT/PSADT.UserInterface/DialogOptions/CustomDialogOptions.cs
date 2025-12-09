@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public CustomDialogOptions(Hashtable options) : base(options)
+        public CustomDialogOptions(Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
         {
             // Nothing here is allowed to be null.
             if (options["MessageText"] is not string messageText || string.IsNullOrWhiteSpace(messageText))
