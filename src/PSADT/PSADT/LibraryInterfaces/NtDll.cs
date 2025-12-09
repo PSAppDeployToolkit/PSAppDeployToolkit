@@ -269,7 +269,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(SystemInformation));
             }
 
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
             bool SystemInformationAddRef = false;
             try
@@ -310,7 +310,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(Handle));
             }
 
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
             bool ObjectInformationAddRef = false;
             bool HandleAddRef = false;
@@ -364,7 +364,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(processHandle));
             }
 
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtCreateThreadEx(out IntPtr threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
             bool startAddressAddRef = false;
             bool processHandleAddRef = false;
@@ -406,7 +406,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(threadHandle));
             }
 
-            [DllImport("ntdll.dll", ExactSpelling = true)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, NTSTATUS exitStatus);
             bool threadHandleAddRef = false;
             try

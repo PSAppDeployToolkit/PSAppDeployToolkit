@@ -531,7 +531,7 @@ namespace PSADT.LibraryInterfaces
         /// before performing operations that depend on the installation mode.</remarks>
         /// <returns><see langword="true"/> if the system is in Terminal Services application installation mode; otherwise, <see
         /// langword="false"/>.</returns>
-        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool TermsrvAppInstallMode();
 

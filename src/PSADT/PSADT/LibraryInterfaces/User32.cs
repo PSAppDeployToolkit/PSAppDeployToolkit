@@ -409,7 +409,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentOutOfRangeException(nameof(dwTimeout), "Timeout duration cannot be negative.");
             }
 
-            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             var res = MessageBoxTimeoutW(hWnd, lpText, lpCaption, uType, wLanguageId, (uint)dwTimeout.TotalMilliseconds);
             if (res == 0)
