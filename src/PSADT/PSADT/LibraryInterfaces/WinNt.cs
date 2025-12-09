@@ -5,6 +5,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// The architecture of the executable..
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum IMAGE_FILE_MACHINE : ushort
     {
         /// <summary>

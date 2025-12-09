@@ -4,6 +4,7 @@
     /// Specifies the length of the strings for the package's identity fields. The length is measured in characters and may or may not include space for the NULL terminator.
     /// </summary>
     /// <remarks>Constants in the form: APPLICATION_USER_MODEL_ID_*_LENGTH and PACKAGE_RELATIVE_APPLICATION_ID_*_LENGTH include space for a NULL terminator, but constants in the form: PACKAGE_*_LENGTH do not include space for a NULL terminator.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum APPX_IDENTITY : uint
     {
         /// <summary>

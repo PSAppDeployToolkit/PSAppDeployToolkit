@@ -751,7 +751,7 @@ namespace PSADT.ClientServer
         /// restart.</param>
         /// <returns><see langword="true"/> if the restart operation was successfully initiated.</returns>
         /// <exception cref="ClientException">Thrown if the <c>"Delay"</c> argument is missing, empty, or invalid.</exception>
-        private static string SilentRestart(IReadOnlyDictionary<string, string> arguments)
+        private static string SilentRestart(ReadOnlyDictionary<string, string> arguments)
         {
             if (!arguments.TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out var delayValue))
             {

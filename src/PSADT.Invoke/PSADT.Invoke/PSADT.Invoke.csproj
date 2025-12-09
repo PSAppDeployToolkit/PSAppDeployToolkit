@@ -21,7 +21,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
@@ -43,6 +43,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
   </ItemGroup>
 </Project>

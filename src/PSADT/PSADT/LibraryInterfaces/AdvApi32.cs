@@ -413,7 +413,7 @@ namespace PSADT.LibraryInterfaces
         {
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
-                throw new ArgumentException("Required null terminator missing.", "lpCommandLine");
+                throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
             }
             bool hTokenAddRef = false;
             bool lpEnvironmentAddRef = false;

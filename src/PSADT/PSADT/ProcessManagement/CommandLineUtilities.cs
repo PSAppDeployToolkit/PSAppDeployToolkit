@@ -231,7 +231,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         // Append the raw slice of the command line that represents the entire quoted value.
-                        result.Append(commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString());
+                        var quotedPath = commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString(); result.Append(quotedPath);
                     }
 
                     // Update the main position to continue parsing after this key-value pair.
@@ -450,7 +450,7 @@ namespace PSADT.ProcessManagement
                     // Check if the last token could reasonably be part of a path.
                     string lastToken = tokens[tokens.Count - 1];
                     if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") &&
-                        !lastToken.Contains("=") && !lastToken.StartsWith("{"))
+                        !lastToken.Contains('=') && !lastToken.StartsWith("{"))
                     {
                         return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
                     }
@@ -540,7 +540,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Check for key=value patterns.
-            if (part.Contains("="))
+            if (part.Contains('='))
             {
                 return true;
             }

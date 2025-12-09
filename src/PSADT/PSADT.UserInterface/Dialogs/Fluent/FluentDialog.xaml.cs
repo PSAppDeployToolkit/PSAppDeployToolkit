@@ -871,6 +871,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The result of the dialog interaction.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1061:Do not hide base class methods", Justification = "The redefinition of this field is by design.")]
         public new virtual object DialogResult
         {
             get => _dialogResult;

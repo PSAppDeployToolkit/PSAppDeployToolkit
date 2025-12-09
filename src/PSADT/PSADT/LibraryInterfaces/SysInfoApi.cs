@@ -149,11 +149,5 @@
         /// Used with provider signature 'ACPI' (0x41435049)
         /// </summary>
         ACPI_PDTT = 0x54544450, // 'PDTT' in little-endian
-
-        /// <summary>
-        /// FIRM firmware table - Default/Raw firmware data
-        /// Used with provider signature 'FIRM' (0x4D524946)
-        /// </summary>
-        FIRM_DEFAULT = 0x0000
     }
 }

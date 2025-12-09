@@ -31,6 +31,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets the current status of the AC power line.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
         public PowerLineStatus ACPowerLineStatus
         {
             get
@@ -43,6 +44,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Represents the current charge status of the device's battery.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
         public BatteryChargeStatus BatteryChargeStatus
         {
             get
@@ -60,6 +62,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Represents the current battery life percentage of a device.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
         public bool BatterySaverEnabled
         {
             get
@@ -73,6 +76,7 @@ namespace PSADT.DeviceManagement
         /// Gets the remaining battery life as a <see cref="TimeSpan"/> value, or <see langword="null"/> if the battery
         /// life cannot be determined.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
         public TimeSpan? BatteryLifeRemaining
         {
             get
@@ -85,6 +89,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets the estimated full lifetime of the battery.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
         public TimeSpan? BatteryFullLifetime
         {
             get

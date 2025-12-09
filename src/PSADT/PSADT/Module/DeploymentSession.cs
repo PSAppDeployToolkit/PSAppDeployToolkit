@@ -430,7 +430,7 @@ namespace PSADT.Module
                 // If we're left with a blank AppName, throw a terminating error.
                 if (string.IsNullOrWhiteSpace(_appName))
                 {
-                    throw new ArgumentNullException(nameof(AppName), "The application name was not specified.");
+                    throw new ArgumentException("The application name was not specified.");
                 }
 
 

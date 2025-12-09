@@ -10,6 +10,7 @@ namespace PSADT.LibraryInterfaces
     /// commands are typically used with functions that manipulate window visibility and state,  such as showing,
     /// hiding, minimizing, or maximizing a window. Each command corresponds to a specific action or state change for a
     /// window.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     public enum SHOW_WINDOW_CMD : int
     {
         /// <summary>
@@ -102,6 +103,7 @@ namespace PSADT.LibraryInterfaces
     /// messages, mouse messages, and more. Developers typically handle these messages in a window procedure function,
     /// which processes each message and executes the corresponding application logic. Understanding and correctly
     /// handling these messages is crucial for developing responsive and well-behaved Windows applications.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum WINDOW_MESSAGE : uint
     {
         // Core Window Messages (0x0000–0x0055).
@@ -428,6 +430,7 @@ namespace PSADT.LibraryInterfaces
         SC_VSCROLL = Windows.Win32.PInvoke.SC_VSCROLL,
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum WM_NCHITTEST : long
     {
         /// <summary>

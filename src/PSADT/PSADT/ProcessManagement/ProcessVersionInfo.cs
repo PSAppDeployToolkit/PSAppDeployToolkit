@@ -178,7 +178,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Read the NT headers to check the magic number.
-            var ntHeadersAddress = baseAddress + dosHeader.e_lfanew;
+            var ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
             var ntHeaders64 = ReadProcessMemory<IMAGE_NT_HEADERS64>(processHandle, ntHeadersAddress);
             if (ntHeaders64.Signature != PInvoke.IMAGE_NT_SIGNATURE)
             {
@@ -216,7 +216,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new InvalidOperationException("The specified process does not have a valid resource directory size.");
             }
-            return FindVersionResource(processHandle, baseAddress + (int)resourceRva, baseAddress);
+            return FindVersionResource(processHandle, unchecked(baseAddress + (int)resourceRva), baseAddress);
         }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace PSADT.ProcessManagement
             // Read the resource directory
             var resourceDir = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY>(processHandle, resourceDirectoryAddress);
             var totalEntries = resourceDir.NumberOfNamedEntries + resourceDir.NumberOfIdEntries;
-            var entriesAddress = resourceDirectoryAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
+            var entriesAddress = unchecked(resourceDirectoryAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
 
             // Look for RT_VERSION resource (type 16) and throw if not found.
             for (int i = 0; i < totalEntries; i++)
@@ -252,7 +252,7 @@ namespace PSADT.ProcessManagement
             IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry;
             do
             {
-                var currentAddress = resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK);
+                var currentAddress = unchecked(resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK));
                 var currentEntryAddress = currentAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
                 currentEntry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, currentEntryAddress);
                 currentOffsetToData = currentEntry.Anonymous2.OffsetToData;
@@ -260,7 +260,7 @@ namespace PSADT.ProcessManagement
             while ((currentOffsetToData & PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY) != 0);
 
             // At this point, currentEntry points to a data entry, not a directory.
-            var dataEntryAddress = resourceDirectoryAddress + (int)currentEntry.Anonymous2.OffsetToData;
+            var dataEntryAddress = unchecked(resourceDirectoryAddress + (int)currentEntry.Anonymous2.OffsetToData);
             var dataEntry = ReadProcessMemory<IMAGE_RESOURCE_DATA_ENTRY>(processHandle, dataEntryAddress);
             if (dataEntry.Size > 0)
             {

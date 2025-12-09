@@ -202,7 +202,7 @@ namespace PSADT.TerminalServices
                 using (pProcessInfo)
                 {
                     var pProcessInfoSpan = pProcessInfo.AsReadOnlySpan<byte>();
-                    int objLength = Marshal.SizeOf(typeof(WTS_PROCESS_INFOW));
+                    int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
                         ref var process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan.Slice(objLength * i)));

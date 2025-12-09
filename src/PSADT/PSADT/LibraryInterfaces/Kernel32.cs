@@ -677,6 +677,7 @@ namespace PSADT.LibraryInterfaces
         /// langword="false"/>.</returns>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "This is OK for the time being.")]
         public static extern bool TermsrvAppInstallMode();
 
         /// <summary>

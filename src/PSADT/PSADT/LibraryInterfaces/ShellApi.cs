@@ -6,6 +6,7 @@ namespace PSADT.LibraryInterfaces
     /// Execution flags for the ShellExecuteEx function.
     /// </summary>
     [Flags]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum SEE_MASK_FLAGS : uint
     {
         /// <summary>
@@ -155,6 +156,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Flags for SHGetImageList function.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum SHIL_SIZE : uint
     {
         /// <summary>
