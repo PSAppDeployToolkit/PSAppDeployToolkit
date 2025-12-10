@@ -511,9 +511,9 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="deferralDeadline">The text representing the deadline for deferrals.</param>
                 /// <param name="buttonLeftText">The text displayed on the left button when processes are detected.</param>
                 /// <param name="buttonRightText">The text displayed on the right button.</param>
-                /// <param name="buttonLeftNoProcessesText">The text displayed on the left button when no processes are detected.</param>
+                /// <param name="buttonLeftTextNoProcesses">The text displayed on the left button when no processes are detected.</param>
                 [JsonConstructor]
-                private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftNoProcessesText)
+                private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftTextNoProcesses)
                 {
                     // Assign the values.
                     DialogMessage = dialogMessage;
@@ -523,7 +523,7 @@ namespace PSADT.UserInterface.DialogOptions
                     DeferralDeadline = deferralDeadline;
                     ButtonLeftText = buttonLeftText;
                     ButtonRightText = buttonRightText;
-                    ButtonLeftTextNoProcesses = buttonLeftNoProcessesText;
+                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses;
                 }
 
                 /// <summary>
