@@ -205,74 +205,67 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };
 
-            try
-            {
-                var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
+            var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
 
-                Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
+            Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
+
+            // #################################################################################
+
+            // Show CloseApps Dialog.
+
+            if (closeAppsResult != CloseAppsDialogResult.Defer)
+            {
+                // Show Progress Dialog
+                DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
+
+                Thread.Sleep(3000); // Simulate some work being done
+
+                // Simulate a process with progress updates
+                for (int i = 0; i <= 100; i += 10)
+                {
+                    // Update progress
+                    DialogManager.UpdateProgressDialog($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
+                    Thread.Sleep(500);  // Simulate work being done
+                }
+
+                // Close Progress Dialog
+                DialogManager.CloseProgressDialog();
 
                 // #################################################################################
 
-                // Show CloseApps Dialog.
+                // Show Custom Dialog
 
-                if (closeAppsResult != CloseAppsDialogResult.Defer)
-                {
-                    // Show Progress Dialog
-                    DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
+                var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
 
-                    Thread.Sleep(3000); // Simulate some work being done
+                Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
 
-                    // Simulate a process with progress updates
-                    for (int i = 0; i <= 100; i += 10)
-                    {
-                        // Update progress
-                        DialogManager.UpdateProgressDialog($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
-                        Thread.Sleep(500);  // Simulate work being done
-                    }
+                // #################################################################################
 
-                    // Close Progress Dialog
-                    DialogManager.CloseProgressDialog();
+                // Show Input Dialog
 
-                    // #################################################################################
+                var inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
 
-                    // Show Custom Dialog
+                // #################################################################################
 
-                    var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
-
-                    Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
-
-                    // #################################################################################
-
-                    // Show Input Dialog
-
-                    var inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
-
-                    // #################################################################################
-
-                    // Show Restart Dialog
-                }
-                else
-                {
-                    Console.WriteLine("Installation deferred or cancelled.");
-                }
-
-                var restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
-
-                Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
-
-                if (restartResult == "Restart")
-                {
-                    Console.WriteLine("Proceeding with installation after restart.");
-                    // Implement actual restart logic here
-                }
-                else if (restartResult == "Defer")
-                {
-                    Console.WriteLine("Installation deferred by the user.");
-                }
+                // Show Restart Dialog
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine("Installation deferred or cancelled.");
+            }
+
+            var restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
+
+            Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
+
+            if (restartResult == "Restart")
+            {
+                Console.WriteLine("Proceeding with installation after restart.");
+                // Implement actual restart logic here
+            }
+            else if (restartResult == "Defer")
+            {
+                Console.WriteLine("Installation deferred by the user.");
             }
         }
     }
