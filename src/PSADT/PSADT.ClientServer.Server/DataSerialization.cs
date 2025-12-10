@@ -140,6 +140,7 @@ namespace PSADT.ClientServer
             TypeNameHandling = TypeNameHandling.All,
             DefaultValueHandling = DefaultValueHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
+            MissingMemberHandling = MissingMemberHandling.Error,
             Formatting = Formatting.None,
         };
 
