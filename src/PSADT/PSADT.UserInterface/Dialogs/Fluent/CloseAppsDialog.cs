@@ -371,8 +371,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     drawingBitmap = SystemIcons.Get(DialogSystemIcon.Application);
                 }
                 using (drawingBitmap)
-                using (SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true))
                 {
+                    using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true);
                     bool hBitmapAddRef = false;
                     try
                     {

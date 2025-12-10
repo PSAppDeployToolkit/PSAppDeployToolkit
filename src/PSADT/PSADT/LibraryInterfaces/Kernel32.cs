@@ -287,19 +287,14 @@ namespace PSADT.LibraryInterfaces
         private static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             bool hJobAddRef = false;
+            BOOL res;
             try
             {
                 hJob.DangerousAddRef(ref hJobAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, (void*)lpJobObjectInformation, cbJobObjectInformationLength);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -308,6 +303,11 @@ namespace PSADT.LibraryInterfaces
                     hJob.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -382,19 +382,14 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
+            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -403,6 +398,11 @@ namespace PSADT.LibraryInterfaces
                     lpEnvironment?.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>

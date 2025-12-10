@@ -114,15 +114,11 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(ObjectInformation));
             }
             bool HandleAddRef = false;
+            NTSTATUS res;
             try
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
-                NTSTATUS res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
+                res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
             }
             finally
             {
@@ -131,6 +127,11 @@ namespace PSADT.LibraryInterfaces
                     Handle?.DangerousRelease();
                 }
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -218,15 +219,11 @@ namespace PSADT.LibraryInterfaces
             [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtTerminateThread(IntPtr ThreadHandle, NTSTATUS ExitStatus);
             bool ThreadHandleAddRef = false;
+            NTSTATUS res;
             try
             {
                 ThreadHandle.DangerousAddRef(ref ThreadHandleAddRef);
-                var res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
-                if (res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
+                res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
             }
             finally
             {
@@ -235,6 +232,11 @@ namespace PSADT.LibraryInterfaces
                     ThreadHandle.DangerousRelease();
                 }
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -261,10 +263,10 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
             bool ProcessHandleAddRef = false;
+            NTSTATUS res;
             try
             {
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                NTSTATUS res;
                 unsafe
                 {
                     fixed (byte* ProcessInformationLocal = ProcessInformation)
@@ -273,11 +275,6 @@ namespace PSADT.LibraryInterfaces
                         res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
                     }
                 }
-                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
             }
             finally
             {
@@ -286,6 +283,11 @@ namespace PSADT.LibraryInterfaces
                     ProcessHandle.DangerousRelease();
                 }
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>

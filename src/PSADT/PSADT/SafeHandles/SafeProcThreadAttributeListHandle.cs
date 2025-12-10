@@ -90,15 +90,11 @@ namespace PSADT.SafeHandles
         internal BOOL Update(PROC_THREAD_ATTRIBUTE Attribute, ReadOnlySpan<byte> lpValue, Span<byte> lpPreviousValue = default, nuint? lpReturnSize = null)
         {
             bool lpAttributeListAddRef = false;
+            BOOL res;
             try
             {
                 DangerousAddRef(ref lpAttributeListAddRef);
-                var res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
-                if (!res)
-                {
-                    throw new Win32Exception();
-                }
-                return res;
+                res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
             }
             finally
             {
@@ -107,6 +103,11 @@ namespace PSADT.SafeHandles
                     DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw new Win32Exception();
+            }
+            return res;
         }
 
         /// <summary>
