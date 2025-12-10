@@ -100,9 +100,9 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.0" />
-    <PackageReference Include="System.Collections.Immutable" Version="10.0.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.1" />
+    <PackageReference Include="System.Reflection.Metadata" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>
