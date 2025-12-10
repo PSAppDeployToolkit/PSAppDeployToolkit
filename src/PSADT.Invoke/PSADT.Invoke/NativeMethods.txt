@@ -1,0 +1,7 @@
+﻿AllocConsole
+FreeConsole
+GetConsoleWindow
+NtQueryInformationProcess
+PROCESS_BASIC_INFORMATION
+RtlNtStatusToDosError
+STATUS_SUCCESS

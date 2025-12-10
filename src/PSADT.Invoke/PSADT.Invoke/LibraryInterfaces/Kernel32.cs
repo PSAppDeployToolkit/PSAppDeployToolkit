@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace PSADT.Invoke.LibraryInterfaces
 {
@@ -22,15 +23,9 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <returns>true if the console was successfully allocated; otherwise, false.</returns>
         /// <exception cref="Win32Exception">Thrown if the underlying system call fails. The exception's error code corresponds to the Win32 error code
         /// returned by the system.</exception>
-        internal static bool AllocConsole()
+        internal static BOOL AllocConsole()
         {
-            // Import the AllocConsole function from kernel32.dll.
-            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            static extern bool AllocConsole();
-
-            // Call the AllocConsole function to allocate a console for the process.
-            var res = AllocConsole();
+            var res = PInvoke.AllocConsole();
             if (!res)
             {
                 throw new Win32Exception();
@@ -47,15 +42,10 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <returns>An <see cref="IntPtr"/> that represents the handle to the console window. If the process does not have a
         /// console window, an exception is thrown.</returns>
         /// <exception cref="Win32Exception">Thrown if the handle to the console window cannot be retrieved.</exception>
-        internal static IntPtr GetConsoleWindow()
+        internal static HWND GetConsoleWindow()
         {
-            // Import the GetConsoleWindow function from kernel32.dll.
-            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = false), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern IntPtr GetConsoleWindow();
-
-            // Call the GetConsoleWindow function to retrieve the handle to the console window.
-            var res = GetConsoleWindow();
-            if (res == IntPtr.Zero)
+            var res = PInvoke.GetConsoleWindow();
+            if (res.IsNull)
             {
                 throw new Win32Exception("Failed to get a handle for the console window.");
             }
@@ -71,15 +61,9 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <returns>true if the process was successfully detached from its console; otherwise, false.</returns>
         /// <exception cref="Win32Exception">Thrown if the underlying system call fails. The exception's error code corresponds to the Win32 error code
         /// returned by the operating system.</exception>
-        internal static bool FreeConsole()
+        internal static BOOL FreeConsole()
         {
-            // Import the FreeConsole function from kernel32.dll.
-            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            static extern bool FreeConsole();
-
-            // Call the FreeConsole function to free the console allocated to the process.
-            var res = FreeConsole();
+            var res = PInvoke.FreeConsole();
             if (!res)
             {
                 throw new Win32Exception();

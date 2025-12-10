@@ -24,8 +24,8 @@ namespace PSADT.Invoke.Utilities
             // Internal method to get the parent process of a given process.
             static Process GetParentProcess(Process proc)
             {
-                NtDll.NtQueryInformationProcess(proc.Handle, out NtDll.PROCESS_BASIC_INFORMATION pbi);
-                return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
+                NtDll.NtQueryInformationProcess(proc.SafeHandle, out var pbi);
+                return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
             }
 
             // Build a list of parent processes and return it to the caller.
