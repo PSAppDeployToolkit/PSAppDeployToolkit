@@ -74,8 +74,9 @@ namespace PSADT.UserInterface.DialogOptions
         [JsonConstructor]
         private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon dialogIcon, bool dialogTopMost, TimeSpan dialogExpiryDuration)
         {
-            AppTitle = appTitle;
-            MessageText = messageText;
+            // Assign the values with null checks to catch deserialization mismatches.
+            AppTitle = appTitle ?? throw new ArgumentNullException(nameof(appTitle));
+            MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText));
             DialogButtons = dialogButtons;
             DialogDefaultButton = dialogDefaultButton;
             DialogIcon = dialogIcon;

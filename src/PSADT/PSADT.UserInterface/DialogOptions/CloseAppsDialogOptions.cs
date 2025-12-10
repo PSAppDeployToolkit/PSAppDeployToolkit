@@ -139,8 +139,8 @@ namespace PSADT.UserInterface.DialogOptions
         [JsonConstructor]
         private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            // Assign the values.
-            Strings = strings;
+            // Assign the values with null checks to catch deserialization mismatches.
+            Strings = strings ?? throw new ArgumentNullException(nameof(strings));
             DeferralsRemaining = deferralsRemaining;
             DeferralDeadline = deferralDeadline;
             UnlimitedDeferrals = unlimitedDeferrals;
@@ -368,19 +368,19 @@ namespace PSADT.UserInterface.DialogOptions
                 [JsonConstructor]
                 private CloseAppsDialogClassicStrings(string welcomeMessage, string closeAppsMessage, string expiryMessage, string deferralsRemaining, string deferralDeadline, string expiryWarning, string countdownDefer, string countdownClose, string buttonClose, string buttonDefer, string buttonContinue, string buttonContinueTooltip)
                 {
-                    // Assign the values.
-                    WelcomeMessage = welcomeMessage;
-                    CloseAppsMessage = closeAppsMessage;
-                    ExpiryMessage = expiryMessage;
-                    DeferralsRemaining = deferralsRemaining;
-                    DeferralDeadline = deferralDeadline;
-                    ExpiryWarning = expiryWarning;
-                    CountdownDefer = countdownDefer;
-                    CountdownClose = countdownClose;
-                    ButtonClose = buttonClose;
-                    ButtonDefer = buttonDefer;
-                    ButtonContinue = buttonContinue;
-                    ButtonContinueTooltip = buttonContinueTooltip;
+                    // Assign the values with null checks to catch deserialization mismatches.
+                    WelcomeMessage = welcomeMessage ?? throw new ArgumentNullException(nameof(welcomeMessage));
+                    CloseAppsMessage = closeAppsMessage ?? throw new ArgumentNullException(nameof(closeAppsMessage));
+                    ExpiryMessage = expiryMessage ?? throw new ArgumentNullException(nameof(expiryMessage));
+                    DeferralsRemaining = deferralsRemaining ?? throw new ArgumentNullException(nameof(deferralsRemaining));
+                    DeferralDeadline = deferralDeadline ?? throw new ArgumentNullException(nameof(deferralDeadline));
+                    ExpiryWarning = expiryWarning ?? throw new ArgumentNullException(nameof(expiryWarning));
+                    CountdownDefer = countdownDefer ?? throw new ArgumentNullException(nameof(countdownDefer));
+                    CountdownClose = countdownClose ?? throw new ArgumentNullException(nameof(countdownClose));
+                    ButtonClose = buttonClose ?? throw new ArgumentNullException(nameof(buttonClose));
+                    ButtonDefer = buttonDefer ?? throw new ArgumentNullException(nameof(buttonDefer));
+                    ButtonContinue = buttonContinue ?? throw new ArgumentNullException(nameof(buttonContinue));
+                    ButtonContinueTooltip = buttonContinueTooltip ?? throw new ArgumentNullException(nameof(buttonContinueTooltip));
                 }
 
                 /// <summary>
@@ -532,15 +532,15 @@ namespace PSADT.UserInterface.DialogOptions
                 [JsonConstructor]
                 private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftTextNoProcesses)
                 {
-                    // Assign the values.
-                    DialogMessage = dialogMessage;
-                    DialogMessageNoProcesses = dialogMessageNoProcesses;
-                    AutomaticStartCountdown = automaticStartCountdown;
-                    DeferralsRemaining = deferralsRemaining;
-                    DeferralDeadline = deferralDeadline;
-                    ButtonLeftText = buttonLeftText;
-                    ButtonRightText = buttonRightText;
-                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses;
+                    // Assign the values with null checks to catch deserialization mismatches.
+                    DialogMessage = dialogMessage ?? throw new ArgumentNullException(nameof(dialogMessage));
+                    DialogMessageNoProcesses = dialogMessageNoProcesses ?? throw new ArgumentNullException(nameof(dialogMessageNoProcesses));
+                    AutomaticStartCountdown = automaticStartCountdown ?? throw new ArgumentNullException(nameof(automaticStartCountdown));
+                    DeferralsRemaining = deferralsRemaining ?? throw new ArgumentNullException(nameof(deferralsRemaining));
+                    DeferralDeadline = deferralDeadline ?? throw new ArgumentNullException(nameof(deferralDeadline));
+                    ButtonLeftText = buttonLeftText ?? throw new ArgumentNullException(nameof(buttonLeftText));
+                    ButtonRightText = buttonRightText ?? throw new ArgumentNullException(nameof(buttonRightText));
+                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses ?? throw new ArgumentNullException(nameof(buttonLeftTextNoProcesses));
                 }
 
                 /// <summary>
