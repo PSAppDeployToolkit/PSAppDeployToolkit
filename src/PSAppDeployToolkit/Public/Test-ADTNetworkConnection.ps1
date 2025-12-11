@@ -14,7 +14,7 @@ function Test-ADTNetworkConnection
         Tests for an active local network connection via Get-NetAdapter; ethernet by default but can test for one or more connection types. This function checks if any physical network adapter is in the 'Up' status.
 
     .PARAMETER InterfaceType
-        Specifies one or more interface types to test. Defaults to `[PSADT.LibraryInterfaces.IF_TYPE]::IF_TYPE_ETHERNET_CSMACD` (Ethernet).
+        Specifies one or more interface types to test. Defaults to `[System.Net.NetworkInformation.NetworkInterfaceType]::Ethernet`.
 
     .INPUTS
         None
@@ -49,7 +49,7 @@ function Test-ADTNetworkConnection
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.LibraryInterfaces.IF_TYPE[]]$InterfaceType = [PSADT.LibraryInterfaces.IF_TYPE]::IF_TYPE_ETHERNET_CSMACD
+        [System.Net.NetworkInformation.NetworkInterfaceType[]]$InterfaceType = [System.Net.NetworkInformation.NetworkInterfaceType]::Ethernet
     )
 
     begin
@@ -70,7 +70,7 @@ function Test-ADTNetworkConnection
                 {
                     if ($adapter.Status.Equals('Up') -and $interfaceTypes.Contains($adapter.InterfaceType))
                     {
-                        Write-ADTLogEntry -Message "Active connection of type [$([PSADT.LibraryInterfaces.IF_TYPE]$adapter.InterfaceType)] found."
+                        Write-ADTLogEntry -Message "Active connection of type [$([System.Net.NetworkInformation.NetworkInterfaceType]$adapter.InterfaceType)] found."
                         return $true
                     }
                 }
