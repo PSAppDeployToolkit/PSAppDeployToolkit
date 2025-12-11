@@ -114,7 +114,7 @@ function Get-ADTApplication
         [System.Guid[]]$ProductCode,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('All', 'MSI', 'EXE')]
+        [ValidateSet('All', 'MSI', 'EXE', 'APPX')]
         [System.String]$ApplicationType = 'All',
 
         [Parameter(Mandatory = $false)]
@@ -130,6 +130,7 @@ function Get-ADTApplication
         # Announce start.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $updatesSkippedCounter = 0
+        $appxKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Applications'
         $uninstallKeyPaths = $(
             'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
             'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -175,138 +176,210 @@ function Get-ADTApplication
     {
         # Create a custom object with the desired properties for the installed applications and sanitize property details.
         Write-ADTLogEntry -Message "Getting information for installed applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
-        $installedApplication = foreach ($item in (Get-ChildItem -LiteralPath $uninstallKeyPaths -ErrorAction Ignore))
+        $installedApplication = if ($ApplicationType -eq 'APPX')
         {
-            try
+            foreach ($item in (Get-ChildItem -LiteralPath $appxKey -ErrorAction Ignore))
             {
                 try
                 {
-                    # Set up initial variables.
-                    $defUriValue = [System.Uri][System.String]::Empty
-                    $installDate = [System.DateTime]::MinValue
-                    $defaultGuid = [System.Guid]::Empty
-
-                    # Exclude anything without any properties.
-                    if (!$item.GetValueNames())
+                    try
                     {
-                        continue
-                    }
+                        [PSADT.PackageManagement.AppxManifest]$manifest = [PSADT.PackageManagement.AppxUtilities]::GetProvisionedPackageManifest($item)
+                        $appDisplayName = $manifest.Name
 
-                    # Exclude anything without a DisplayName field.
-                    if (!($appDisplayName = $item.GetValue('DisplayName', $null)) -or [System.String]::IsNullOrWhiteSpace($appDisplayName))
-                    {
-                        continue
-                    }
-
-                    # Bypass any updates or hotfixes.
-                    if (!$IncludeUpdatesAndHotfixes -and $updatesAndHotFixesRegex.Matches($appDisplayName).Count)
-                    {
-                        $updatesSkippedCounter++
-                        continue
-                    }
-
-                    # Apply name filter if specified.
-                    if ($nameFilterScript -and !(& $nameFilterScript))
-                    {
-                        continue
-                    }
-
-                    # Grab all available uninstall string.
-                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', $null)))
-                    {
-                        $uninstallString = $null
-                    }
-                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', $null)))
-                    {
-                        $quietUninstallString = $null
-                    }
-
-                    # Apply application type filter if specified.
-                    $windowsInstaller = $item.GetValue('WindowsInstaller', $false) -or ($uninstallString -match 'msiexec') -or ($quietUninstallString -match 'msiexec')
-                    if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
-                    {
-                        continue
-                    }
-
-                    # Apply ProductCode filter if specified.
-                    $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($item.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
-                    if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
-                    {
-                        continue
-                    }
-
-                    # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
-                    if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
-                    {
-                        $installDate = [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
-                    }
-
-                    # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
-                    $appProperties = @{}; 'DisplayVersion', 'Publisher', 'EstimatedSize' | & {
-                        process
+                        # Apply name filter if specified.
+                        if ($nameFilterScript -and !(& $nameFilterScript))
                         {
-                            if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, $null))))
+                            continue
+                        }
+
+                        $packageRoot = [System.IO.DirectoryInfo]::new($(
+                            if ($manifest.IsBundle)
                             {
-                                $appProperties.Add($_, $value)
+                                [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($manifest.Path))
                             }
+                            else
+                            {
+                                [System.IO.Path]::GetDirectoryName($manifest.Path)
+                            }
+                        ))
+                        $packageRootSize = 0; $packageRoot.GetFiles("*", [System.IO.SearchOption]::AllDirectories) | & { process { $packageRootSize += $_.Length } }
+
+                        # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
+                        $app = [PSADT.Types.InstalledApplication]::new(
+                            $item.PSPath,
+                            $item.PSParentPath,
+                            $item.PSChildName,
+                            $null,
+                            $appDisplayName,
+                            $manifest.Version,
+                            "$(Get-PowerShellProcessPath) -NonInteractive -NoProfile -WindowStyle Hidden `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullNameIdentifier)' -ErrorAction Stop`"",
+                            $null,
+                            $null,
+                            $packageRoot,
+                            $null,
+                            $manifest.Publisher,
+                            $null,
+                            $packageRootSize,
+                            $false,
+                            $false,
+                            $manifest.Architecture -in @([PSADT.PackageManagement.ProcessorArchitecture]::X64, [PSADT.PackageManagement.ProcessorArchitecture]::Arm64, [PSADT.PackageManagement.ProcessorArchitecture]::Neutral)
+                        )
+
+                        # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
+                        if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
+                        {
+                            Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
+                            $app
                         }
                     }
-
-                    # Process the source/location directory paths.
-                    'InstallSource', 'InstallLocation' | & {
-                        process
-                        {
-                            if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, [System.String]::Empty).TrimStart('"').TrimEnd('"'))) -and [PSADT.FileSystem.FileSystemUtilities]::IsValidFilePath($value))
-                            {
-                                $appProperties.Add($_, $value)
-                            }
-                        }
-                    }
-
-                    # Process the HelpLink, accepting only valid URLs.
-                    if ([System.Uri]::TryCreate($item.GetValue('HelpLink', [System.String]::Empty), [System.UriKind]::Absolute, [ref]$defUriValue))
+                    catch
                     {
-                        $appProperties.Add('HelpLink', $defUriValue)
-                    }
-
-                    # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
-                    $app = [PSADT.Types.InstalledApplication]::new(
-                        $item.PSPath,
-                        $item.PSParentPath,
-                        $item.PSChildName,
-                        $appMsiGuid,
-                        $appDisplayName,
-                        $appProperties['DisplayVersion'],
-                        $uninstallString,
-                        $quietUninstallString,
-                        $appProperties['InstallSource'],
-                        $appProperties['InstallLocation'],
-                        $installDate,
-                        $appProperties['Publisher'],
-                        $appProperties['HelpLink'],
-                        $appProperties['EstimatedSize'],
-                        $item.GetValue('SystemComponent', $false),
-                        $windowsInstaller,
-                        ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
-                    )
-
-                    # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
-                    if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
-                    {
-                        Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
-                        $app
+                        Write-Error -ErrorRecord $_
                     }
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
                 }
             }
-            catch
+        }
+        else
+        {
+            foreach ($item in (Get-ChildItem -LiteralPath $uninstallKeyPaths -ErrorAction Ignore))
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
+                try
+                {
+                    try
+                    {
+                        # Set up initial variables.
+                        $defUriValue = [System.Uri][System.String]::Empty
+                        $installDate = [System.DateTime]::MinValue
+                        $defaultGuid = [System.Guid]::Empty
+
+                        # Exclude anything without any properties.
+                        if (!$item.GetValueNames())
+                        {
+                            continue
+                        }
+
+                        # Exclude anything without a DisplayName field.
+                        if (!($appDisplayName = $item.GetValue('DisplayName', $null)) -or [System.String]::IsNullOrWhiteSpace($appDisplayName))
+                        {
+                            continue
+                        }
+
+                        # Bypass any updates or hotfixes.
+                        if (!$IncludeUpdatesAndHotfixes -and $updatesAndHotFixesRegex.Matches($appDisplayName).Count)
+                        {
+                            $updatesSkippedCounter++
+                            continue
+                        }
+
+                        # Apply name filter if specified.
+                        if ($nameFilterScript -and !(& $nameFilterScript))
+                        {
+                            continue
+                        }
+
+                        # Grab all available uninstall string.
+                        if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', $null)))
+                        {
+                            $uninstallString = $null
+                        }
+                        if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', $null)))
+                        {
+                            $quietUninstallString = $null
+                        }
+
+                        # Apply application type filter if specified.
+                        $windowsInstaller = $item.GetValue('WindowsInstaller', $false) -or ($uninstallString -match 'msiexec') -or ($quietUninstallString -match 'msiexec')
+                        if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
+                        {
+                            continue
+                        }
+
+                        # Apply ProductCode filter if specified.
+                        $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($item.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
+                        if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
+                        {
+                            continue
+                        }
+
+                        # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
+                        if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
+                        {
+                            $installDate = [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
+                        }
+
+                        # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
+                        $appProperties = @{}; 'DisplayVersion', 'Publisher', 'EstimatedSize' | & {
+                            process
+                            {
+                                if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, $null))))
+                                {
+                                    $appProperties.Add($_, $value)
+                                }
+                            }
+                        }
+
+                        # Process the source/location directory paths.
+                        'InstallSource', 'InstallLocation' | & {
+                            process
+                            {
+                                if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, [System.String]::Empty).TrimStart('"').TrimEnd('"'))) -and [PSADT.FileSystem.FileSystemUtilities]::IsValidFilePath($value))
+                                {
+                                    $appProperties.Add($_, $value)
+                                }
+                            }
+                        }
+
+                        # Process the HelpLink, accepting only valid URLs.
+                        if ([System.Uri]::TryCreate($item.GetValue('HelpLink', [System.String]::Empty), [System.UriKind]::Absolute, [ref]$defUriValue))
+                        {
+                            $appProperties.Add('HelpLink', $defUriValue)
+                        }
+
+                        # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
+                        $app = [PSADT.Types.InstalledApplication]::new(
+                            $item.PSPath,
+                            $item.PSParentPath,
+                            $item.PSChildName,
+                            $appMsiGuid,
+                            $appDisplayName,
+                            $appProperties['DisplayVersion'],
+                            $uninstallString,
+                            $quietUninstallString,
+                            $appProperties['InstallSource'],
+                            $appProperties['InstallLocation'],
+                            $installDate,
+                            $appProperties['Publisher'],
+                            $appProperties['HelpLink'],
+                            $appProperties['EstimatedSize'],
+                            $item.GetValue('SystemComponent', $false),
+                            $windowsInstaller,
+                            ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
+                        )
+
+                        # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
+                        if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
+                        {
+                            Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
+                            $app
+                        }
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
+                }
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
+                }
             }
         }
+
 
         # Write to log the number of entries skipped due to them being considered updates.
         if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
