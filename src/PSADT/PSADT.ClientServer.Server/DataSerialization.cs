@@ -49,7 +49,7 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
-            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty)))
+            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty).Trim()))
             {
                 throw new JsonSerializationException("Serialization returned an empty string.");
             }
@@ -70,7 +70,7 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
-            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty)))
+            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty).Trim()))
             {
                 throw new JsonSerializationException("Serialization returned an empty string.");
             }
