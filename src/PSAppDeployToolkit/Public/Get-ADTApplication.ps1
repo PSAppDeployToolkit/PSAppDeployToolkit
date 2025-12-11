@@ -194,16 +194,18 @@ function Get-ADTApplication
                         }
 
                         # Extract the package root from the manifest path.
-                        $packageRoot = [System.IO.DirectoryInfo]::new($(
-                            if ($manifest.IsBundle)
-                            {
-                                [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($manifest.Path))
-                            }
-                            else
-                            {
-                                [System.IO.Path]::GetDirectoryName($manifest.Path)
-                            }
-                        ))
+                        $packageRoot = [System.IO.DirectoryInfo]::new(
+                            $(
+                                if ($manifest.IsBundle)
+                                {
+                                    [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($manifest.Path))
+                                }
+                                else
+                                {
+                                    [System.IO.Path]::GetDirectoryName($manifest.Path)
+                                }
+                            )
+                        )
 
                         # Calculate the application size.
                         $packageRootSize = 0; $packageRoot.GetFiles("*", [System.IO.SearchOption]::AllDirectories) | . { process { $packageRootSize += $_.Length } }
