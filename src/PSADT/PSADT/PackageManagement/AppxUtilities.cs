@@ -173,7 +173,7 @@ namespace PSADT.PackageManagement
 
             return new ReadOnlyCollection<string>(
                 GetPackageIdentifiers()
-                    .Where(id => GetFamilyFromFullName(id).Equals(packageFamilyName, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(id => GetFamilyFromFullName(id).Equals(packageFamilyName, StringComparison.OrdinalIgnoreCase))
                     .ToList()
             );
         }
@@ -242,6 +242,7 @@ namespace PSADT.PackageManagement
 
             var manifestPath = packageKey.GetValue("Path") as string
                 ?? throw new InvalidOperationException("The package does not contain information about its manifest.");
+            manifestPath = Environment.ExpandEnvironmentVariables(manifestPath);
 
             return manifestPath.EndsWith("AppxBundleManifest.xml", StringComparison.OrdinalIgnoreCase)
                 ? ReadBundleManifest(manifestPath)
