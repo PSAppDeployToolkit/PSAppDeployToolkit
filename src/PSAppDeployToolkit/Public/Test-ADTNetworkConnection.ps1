@@ -8,10 +8,13 @@ function Test-ADTNetworkConnection
 {
     <#
     .SYNOPSIS
-        Tests for an active local network connection, excluding wireless and virtual network adapters.
+        Tests for an active local network connection; ethernet by default but can test for one or more connection types.
 
     .DESCRIPTION
-        Tests for an active local network connection, excluding wireless and virtual network adapters, by querying the Win32_NetworkAdapter WMI class. This function checks if any physical network adapter is in the 'Up' status.
+        Tests for an active local network connection via Get-NetAdapter; ethernet by default but can test for one or more connection types. This function checks if any physical network adapter is in the 'Up' status.
+
+    .PARAMETER InterfaceType
+        Specifies one or more interface types to test. Defaults to `[PSADT.LibraryInterfaces.IF_TYPE]::IF_TYPE_ETHERNET_CSMACD` (Ethernet).
 
     .INPUTS
         None
@@ -44,6 +47,9 @@ function Test-ADTNetworkConnection
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.LibraryInterfaces.IF_TYPE[]]$InterfaceType = [PSADT.LibraryInterfaces.IF_TYPE]::IF_TYPE_ETHERNET_CSMACD
     )
 
     begin
@@ -53,17 +59,22 @@ function Test-ADTNetworkConnection
 
     process
     {
-        Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
+        $connectionTypes = [System.String]::Join(', ', $InterfaceType)
+        Write-ADTLogEntry -Message "Checking if system has an active connection of type [$connectionTypes]..."
         try
         {
             try
             {
-                if (Get-NetAdapter -Physical | & { process { if ($_.Status.Equals('Up')) { return $_ } } } | Select-Object -First 1)
+                [System.UInt32[]]$interfaceTypes = $InterfaceType.value__
+                foreach ($adapter in (Get-NetAdapter -Physical))
                 {
-                    Write-ADTLogEntry -Message 'Wired network connection found.'
-                    return $true
+                    if ($adapter.Status.Equals('Up') -and $interfaceTypes.Contains($adapter.InterfaceType))
+                    {
+                        Write-ADTLogEntry -Message "Active connection of type [$([PSADT.LibraryInterfaces.IF_TYPE]$adapter.InterfaceType)] found."
+                        return $true
+                    }
                 }
-                Write-ADTLogEntry -Message 'Wired network connection not found.'
+                Write-ADTLogEntry -Message "Active connection of type [$connectionTypes] not found."
                 return $false
             }
             catch
