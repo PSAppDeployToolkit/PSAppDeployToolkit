@@ -8,13 +8,13 @@ function Test-ADTNetworkConnection
 {
     <#
     .SYNOPSIS
-        Tests for an active local network connection; ethernet by default but can test for one or more connection types.
+        Tests for an active local network connection; ethernet/Wi-Fi by default but can test for a number of other connection types.
 
     .DESCRIPTION
-        Tests for an active local network connection via Get-NetAdapter; ethernet by default but can test for one or more connection types. This function checks if any physical network adapter is in the 'Up' status.
+        Tests for an active local network connection via Get-NetAdapter; ethernet/Wi-Fi by default but can test for a number of other connection types. This function checks if any of the nominated interface types is in the 'Up' status.
 
     .PARAMETER InterfaceType
-        Specifies one or more interface types to test. Defaults to `[System.Net.NetworkInformation.NetworkInterfaceType]::Ethernet`.
+        Specifies one or more interface types to test. Defaults to `Ethernet` and `Wireless80211` (Wi-Fi).
 
     .INPUTS
         None
@@ -49,7 +49,7 @@ function Test-ADTNetworkConnection
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Net.NetworkInformation.NetworkInterfaceType[]]$InterfaceType = [System.Net.NetworkInformation.NetworkInterfaceType]::Ethernet
+        [System.Net.NetworkInformation.NetworkInterfaceType[]]$InterfaceType = ([System.Net.NetworkInformation.NetworkInterfaceType]::Ethernet, [System.Net.NetworkInformation.NetworkInterfaceType]::Wireless80211)
     )
 
     begin
