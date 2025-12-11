@@ -218,7 +218,7 @@ function Get-ADTApplication
                             $null,
                             $appDisplayName,
                             $manifest.Version,
-                            "$(Get-PowerShellProcessPath) -NonInteractive -NoProfile -WindowStyle Hidden -Command `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullNameIdentifier)' -ErrorAction Stop`"",
+                            "$(Get-ADTPowerShellProcessPath) -NonInteractive -NoProfile -WindowStyle Hidden -Command `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullNameIdentifier)' -ErrorAction Stop`"",
                             $null,
                             $null,
                             $packageRoot,
