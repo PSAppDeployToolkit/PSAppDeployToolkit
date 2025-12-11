@@ -184,7 +184,7 @@ function Get-ADTApplication
                 {
                     try
                     {
-                        [PSADT.PackageManagement.AppxManifest]$manifest = [PSADT.PackageManagement.AppxUtilities]::GetProvisionedPackageManifest($item.PSChildName)
+                        $manifest = [PSADT.PackageManagement.AppxUtilities]::GetProvisionedPackageManifest($item.PSChildName)
                         $appDisplayName = $manifest.Name
 
                         # Apply name filter if specified.
@@ -193,6 +193,7 @@ function Get-ADTApplication
                             continue
                         }
 
+                        # Extract the package root from the manifest path.
                         $packageRoot = [System.IO.DirectoryInfo]::new($(
                             if ($manifest.IsBundle)
                             {
@@ -203,7 +204,9 @@ function Get-ADTApplication
                                 [System.IO.Path]::GetDirectoryName($manifest.Path)
                             }
                         ))
-                        $packageRootSize = 0; $packageRoot.GetFiles("*", [System.IO.SearchOption]::AllDirectories) | & { process { $packageRootSize += $_.Length } }
+
+                        # Calculate the application size.
+                        $packageRootSize = 0; $packageRoot.GetFiles("*", [System.IO.SearchOption]::AllDirectories) | . { process { $packageRootSize += $_.Length } }
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                         $app = [PSADT.Types.InstalledApplication]::new(
@@ -213,11 +216,11 @@ function Get-ADTApplication
                             $null,
                             $appDisplayName,
                             $manifest.Version,
-                            "$(Get-PowerShellProcessPath) -NonInteractive -NoProfile -WindowStyle Hidden `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullNameIdentifier)' -ErrorAction Stop`"",
+                            "$(Get-PowerShellProcessPath) -NonInteractive -NoProfile -WindowStyle Hidden -Command `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullNameIdentifier)' -ErrorAction Stop`"",
                             $null,
                             $null,
                             $packageRoot,
-                            $null,
+                            [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date,
                             $manifest.Publisher,
                             $null,
                             $packageRootSize,
