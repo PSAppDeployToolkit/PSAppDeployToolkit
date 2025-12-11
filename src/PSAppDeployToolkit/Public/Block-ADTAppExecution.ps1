@@ -19,7 +19,7 @@ function Block-ADTAppExecution
         4) Modifies the "Image File Execution Options" registry key for the specified process(s) to call `Show-ADTInstallationPrompt` with the appropriate messaging via this module.
         5) When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress. The text of this message can be customized in the strings.psd1 file.
 
-    .PARAMETER ProcessName
+    .PARAMETER Processes
         Name of the process or processes separated by commas.
 
     .PARAMETER WindowLocation
@@ -36,7 +36,7 @@ function Block-ADTAppExecution
         This function does not generate any output.
 
     .EXAMPLE
-        Block-ADTAppExecution -ProcessName ('winword','excel')
+        Block-ADTAppExecution -Processes ('winword','excel')
 
         This example blocks the execution of Microsoft Word and Excel.
 
@@ -59,7 +59,8 @@ function Block-ADTAppExecution
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$ProcessName,
+        [Alias('ProcessName')]
+        [PSADT.ProcessManagement.ProcessDefinition[]]$Processes,
 
         [Parameter(Mandatory = $false, HelpMessage = 'The location of the dialog on the screen.')]
         [ValidateNotNullOrEmpty()]
@@ -92,7 +93,7 @@ function Block-ADTAppExecution
             Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             return
         }
-        Write-ADTLogEntry -Message "Preparing to block execution of the following processes: ['$([System.String]::Join("', '", $ProcessName))']."
+        Write-ADTLogEntry -Message "Preparing to block execution of the following processes: ['$([System.String]::Join("', '", $Processes.Name))']."
 
         try
         {
@@ -183,7 +184,7 @@ function Block-ADTAppExecution
                 }
 
                 # Enumerate each process and set the debugger value to block application execution.
-                foreach ($process in $ProcessName)
+                foreach ($process in $Processes.Name)
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
                     if ([System.IO.Path]::IsPathRooted($process))
