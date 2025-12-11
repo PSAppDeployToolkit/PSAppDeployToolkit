@@ -289,7 +289,7 @@ namespace PSADT.PackageManagement
             var version = packageIdentityNode?.Attributes?["Version"]?.Value
                 ?? throw new InvalidOperationException("No valid Version attribute found in the Package Identity node.");
             var architecture = packageIdentityNode?.Attributes?["ProcessorArchitecture"]?.Value
-                ?? throw new InvalidOperationException("No valid ProcessorArchitecture attribute found in the Package Identity node.");
+                ?? ProcessorArchitecture.Neutral.ToString();
 
             var resourceId = packageIdentityNode?.Attributes?["ResourceId"]?.Value ?? string.Empty;
             var familyIdentifer = GetPackageFamilyName(name, publisher);
