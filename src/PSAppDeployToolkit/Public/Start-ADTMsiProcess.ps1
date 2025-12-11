@@ -489,7 +489,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Get the ProductCode of the MSI.
-                [System.Guid]$msiProductCode = if ($ProductCode)
+                [System.Guid[]]$msiProductCode = if ($ProductCode)
                 {
                     $ProductCode
                 }
@@ -543,7 +543,7 @@ function Start-ADTMsiProcess
                     {
                         if ($msiPatchData.ChildNodes.LocalName.Contains('UpdatedVersion'))
                         {
-                            (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $msiPatchData.UpdatedVersion)) -replace '\s+'
+                            (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + ($msiPatchData.UpdatedVersion | Select-Object -First 1))) -replace '\s+'
                         }
                         else
                         {
