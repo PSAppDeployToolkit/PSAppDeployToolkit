@@ -12,6 +12,8 @@ on:
 permissions:
   id-token: write # Require write permission to Fetch an OIDC token.
   contents: read
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages
 jobs:
   test:
     name: Run Tests
@@ -20,7 +22,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Check out repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Display the path
       shell: powershell
@@ -30,6 +32,22 @@ jobs:
       shell: powershell
       run: $PSVersionTable
 
+    # actions/setup-dotnet caching is unwieldy with multiple projects
+    # https://github.com/NuGet/Home/issues/12409
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.NUGET_PACKAGES }}
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Cache PowerShell modules
+      uses: potatoqualitee/psmodulecache@v6.2.1
+      with:
+        modules-to-cache: Pester:5.7.1, InvokeBuild:5.14.20, PSScriptAnalyzer:1.24.0, platyPS:0.14.2, Alt3.Docusaurus.Powershell:1.0.37
+        shell: powershell
+
     - name: NuGet Latest
       shell: powershell
       run: Install-PackageProvider -Name NuGet -Confirm:$false -Force -Verbose
@@ -37,10 +55,6 @@ jobs:
     - name: PowerShellGet Latest
       shell: powershell
       run: Install-Module -Name PowerShellGet -Repository PSGallery -Force
-
-    - name: Bootstrap
-      shell: powershell
-      run: ./actions_bootstrap.ps1
 
     - name: Install AzureSignTool
       run: dotnet tool install --global azuresigntool
@@ -58,7 +72,7 @@ jobs:
       run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
 
     - name: Upload module
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: PSAppDeployToolkit_ModuleOnly
         path: .\src\Artifacts\Module
@@ -67,7 +81,7 @@ jobs:
         overwrite: true
 
     - name: Upload v3 module template
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: PSAppDeployToolkit_Template_v3
         path: .\src\Artifacts\Template_v3
@@ -76,7 +90,7 @@ jobs:
         overwrite: true
 
     - name: Upload v4 module template
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: PSAppDeployToolkit_Template_v4
         path: .\src\Artifacts\Template_v4
