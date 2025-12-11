@@ -40,46 +40,57 @@ namespace PSADT.PackageManagement
         /// The name of the application.
         /// </summary>
         public string Name { get; }
+
         /// <summary>
         /// The fully qualified name of the publisher.
         /// </summary>
         public string Publisher {  get; }
+
         /// <summary>
         /// The version of the application.
         /// </summary>
         public string Version { get; }
+
         /// <summary>
         /// The archtiecture of the application.
         /// </summary>
         public ProcessorArchitecture Architecture {  get; }
+
         /// <summary>
         /// The resource id of the application, if applicable.
         /// </summary>
         public string ResourceId {  get; }
+
         /// <summary>
         /// The encoded publisher name.
         /// </summary>
         public string PublisherId {  get; }
+
         /// <summary>
         /// The fully qualified id of the application.
         /// </summary>
         public string FullNameIdentifier { get; }
+
         /// <summary>
         /// The family identifier of the application.
         /// </summary>
         public string FamilyIdentifer {  get; }
+
         /// <summary>
         /// The path the manifest was read from.
         /// </summary>
         public string Path {  get; }
+
         /// <summary>
         /// Determines wether the manifest parsed was a bundle.
         /// </summary>
         public bool IsBundle { get; }
+
         /// <summary>
         /// If this manifest represents a bundle, the application ids it packages.
         /// </summary>
         public ReadOnlyCollection<string> BundledApplications { get; }
+
         /// <summary>
         /// If this manifest represents a bundle, the bundled resource ids it packages.
         /// </summary>

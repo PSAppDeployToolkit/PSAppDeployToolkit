@@ -184,7 +184,7 @@ function Get-ADTApplication
                 {
                     try
                     {
-                        [PSADT.PackageManagement.AppxManifest]$manifest = [PSADT.PackageManagement.AppxUtilities]::GetProvisionedPackageManifest($item)
+                        [PSADT.PackageManagement.AppxManifest]$manifest = [PSADT.PackageManagement.AppxUtilities]::GetProvisionedPackageManifest($item.PSChildName)
                         $appDisplayName = $manifest.Name
 
                         # Apply name filter if specified.
