@@ -264,20 +264,7 @@ namespace PSADT.TerminalServices
                 WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken); using (hUserToken)
                 using (var hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
                 {
-                    bool hPrimaryTokenAddRef = false;
-                    try
-                    {
-                        hPrimaryToken.DangerousAddRef(ref hPrimaryTokenAddRef);
-                        using WindowsIdentity identity = new(hPrimaryToken.DangerousGetHandle());
-                        return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-                    }
-                    finally
-                    {
-                        if (hPrimaryTokenAddRef)
-                        {
-                            hPrimaryToken.DangerousRelease();
-                        }
-                    }
+                    return TokenManager.IsTokenAdministrative(hPrimaryToken);
                 }
             }
             return AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
