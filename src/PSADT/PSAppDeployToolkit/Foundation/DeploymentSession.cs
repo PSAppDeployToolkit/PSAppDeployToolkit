@@ -651,7 +651,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Report on all determined system info.
                 WriteLogEntry($"Computer Name is [{adtEnv["envComputerNameFQDN"]}].");
                 WriteLogEntry($"Current User is [{processNtAccount}].");
-                WriteLogEntry($"OS Version is [{adtEnv["envOSName"]}{$" {adtEnv["envOSServicePack"]}".Trim()} {envOSArchitecture} {adtEnv["envOSVersion"]}].");
+                WriteLogEntry($"OS Version is [{adtEnv["envOSName"]} {envOSArchitecture} {adtEnv["envOSVersion"]}].");
                 WriteLogEntry($"OS Type is [{adtEnv["envOSProductTypeName"]}].");
                 WriteLogEntry($"Hardware Platform is [{adtEnv["envHardwareType"]}].");
                 WriteLogEntry($"Current Culture is [{adtEnv["culture"]}], language is [{currentLanguage}] and UI language is [{adtEnv["currentUILanguage"]}].");
