@@ -120,6 +120,10 @@ namespace PSADT.Utilities
         public static string GetApplicationUserModelId(Process process)
         {
             // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
+            }
             return GetApplicationUserModelId(process.SafeHandle);
         }
 

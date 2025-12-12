@@ -31,12 +31,12 @@ namespace PSADT.Types
         /// Gets the native handle of the window.
         /// </summary>
         [JsonProperty]
-        public readonly nint WindowHandle;
+        public nint WindowHandle { get; }
 
         /// <summary>
         /// Represents the keys associated with the current object.
         /// </summary>
         [JsonProperty]
-        public readonly string Keys;
+        public string Keys { get; }
     }
 }

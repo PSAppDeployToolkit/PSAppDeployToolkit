@@ -1,4 +1,4 @@
-﻿namespace PSADT.Module
+﻿namespace PSADT.Core
 {
     /// <summary>
     /// The severity of the log entry.

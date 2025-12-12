@@ -104,106 +104,106 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the registry key that contains the uninstall entry.
         /// </summary>
-        public readonly string PSPath;
+        public string PSPath { get; }
 
         /// <summary>
         /// Gets the registry key for the subkey's parent.
         /// </summary>
-        public readonly string PSParentPath;
+        public string PSParentPath { get; }
 
         /// <summary>
         /// Gets the registry subkey for uninstalling the application.
         /// </summary>
-        public readonly string PSChildName;
+        public string PSChildName { get; }
 
         /// <summary>
         /// Gets the product code for the application.
         /// </summary>
-        public readonly Guid? ProductCode;
+        public Guid? ProductCode { get; }
 
         /// <summary>
         /// Gets the display name of the application.
         /// </summary>
-        public readonly string DisplayName;
+        public string DisplayName { get; }
 
         /// <summary>
         /// Gets the version of the application.
         /// </summary>
-        public readonly string? DisplayVersion;
+        public string? DisplayVersion { get; }
 
         /// <summary>
         /// Gets the uninstall string used to remove the application.
         /// </summary>
-        public readonly string? UninstallString;
+        public string? UninstallString { get; }
 
         /// <summary>
         /// Gets the file path to the uninstall string, if available.
         /// </summary>
-        public readonly FileInfo? UninstallStringFilePath;
+        public FileInfo? UninstallStringFilePath { get; }
 
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
         /// </summary>
-        public readonly IReadOnlyList<string>? UninstallStringArgumentList;
+        public IReadOnlyList<string>? UninstallStringArgumentList { get; }
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
         /// </summary>
-        public readonly string? QuietUninstallString;
+        public string? QuietUninstallString { get; }
 
         /// <summary>
         /// Gets the file path to the quiet uninstall string, if available.
         /// </summary>
-        public readonly FileInfo? QuietUninstallStringFilePath;
+        public FileInfo? QuietUninstallStringFilePath { get; }
 
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
         /// </summary>
-        public readonly IReadOnlyList<string>? QuietUninstallStringArgumentList;
+        public IReadOnlyList<string>? QuietUninstallStringArgumentList { get; }
 
         /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
-        public readonly DirectoryInfo? InstallSource;
+        public DirectoryInfo? InstallSource { get; }
 
         /// <summary>
         /// Gets the location where the application is installed.
         /// </summary>
-        public readonly DirectoryInfo? InstallLocation;
+        public DirectoryInfo? InstallLocation { get; }
 
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
         /// </summary>
-        public readonly DateTime? InstallDate;
+        public DateTime? InstallDate { get; }
 
         /// <summary>
         /// Gets the publisher of the application.
         /// </summary>
-        public readonly string? Publisher;
+        public string? Publisher { get; }
 
         /// <summary>
         /// Gets the publisher's help link of the application.
         /// </summary>
-        public readonly Uri? HelpLink;
+        public Uri? HelpLink { get; }
 
         /// <summary>
         /// Gets the estimated disk usage on kilobytes of the application.
         /// </summary>
-        public readonly uint? EstimatedSize;
+        public uint? EstimatedSize { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a system component.
         /// </summary>
-        public readonly bool SystemComponent;
+        public bool SystemComponent { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is an MSI.
         /// </summary>
-        public readonly bool WindowsInstaller;
+        public bool WindowsInstaller { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
-        public readonly bool Is64BitApplication;
+        public bool Is64BitApplication { get; }
     }
 }

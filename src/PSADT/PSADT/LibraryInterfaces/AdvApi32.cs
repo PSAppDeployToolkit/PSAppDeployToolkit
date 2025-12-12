@@ -303,19 +303,14 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
+            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -324,6 +319,11 @@ namespace PSADT.LibraryInterfaces
                     lpEnvironment?.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -356,19 +356,14 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
+            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -377,6 +372,11 @@ namespace PSADT.LibraryInterfaces
                     lpEnvironment?.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace PSADT.LibraryInterfaces
         {
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
-                throw new ArgumentException("Required null terminator missing.", "lpCommandLine");
+                throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
             }
             bool hTokenAddRef = false;
             bool lpEnvironmentAddRef = false;
@@ -628,6 +628,7 @@ namespace PSADT.LibraryInterfaces
             bool psidGroupAddRef = false;
             bool pDaclAddRef = false;
             bool pSaclAddRef = false;
+            WIN32_ERROR res;
             try
             {
                 handle.DangerousAddRef(ref handleAddRef);
@@ -635,16 +636,10 @@ namespace PSADT.LibraryInterfaces
                 psidGroup?.DangerousAddRef(ref psidGroupAddRef);
                 pDacl?.DangerousAddRef(ref pDaclAddRef);
                 pSacl?.DangerousAddRef(ref pSaclAddRef);
-                WIN32_ERROR res;
                 unsafe
                 {
                     res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
                 }
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-                }
-                return res;
             }
             finally
             {
@@ -669,6 +664,11 @@ namespace PSADT.LibraryInterfaces
                     handle.DangerousRelease();
                 }
             }
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+            }
+            return res;
         }
 
         /// <summary>
@@ -695,6 +695,7 @@ namespace PSADT.LibraryInterfaces
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "The null checks in this method are required.")]
         internal static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
             WIN32_ERROR res;
@@ -780,23 +781,14 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             bool UserSidAddRef = false;
+            BOOL res;
             try
             {
                 UserSid.DangerousAddRef(ref UserSidAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, (void*)DynamicGroupArgs, out phAuthzClientContext);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                if (phAuthzClientContext.IsInvalid)
-                {
-                    throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
-                }
-                return res;
             }
             finally
             {
@@ -805,6 +797,15 @@ namespace PSADT.LibraryInterfaces
                     UserSid.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            if (phAuthzClientContext.IsInvalid)
+            {
+                throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+            }
+            return res;
         }
 
         /// <summary>
@@ -871,23 +872,14 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
         {
             bool pSecurityDescriptorAddRef = false;
+            BOOL res;
             try
             {
                 pSecurityDescriptor.DangerousAddRef(ref pSecurityDescriptorAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                if (phAccessCheckResults.IsInvalid)
-                {
-                    throw new InvalidOperationException("Failed to perform Authz Access Check.");
-                }
-                return res;
             }
             finally
             {
@@ -896,6 +888,15 @@ namespace PSADT.LibraryInterfaces
                     pSecurityDescriptor.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            if (phAccessCheckResults.IsInvalid)
+            {
+                throw new InvalidOperationException("Failed to perform Authz Access Check.");
+            }
+            return res;
         }
 
         /// <summary>

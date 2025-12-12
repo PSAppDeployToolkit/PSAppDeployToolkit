@@ -18,13 +18,14 @@ namespace PSADT.UserInterface.Types
         /// <param name="force"></param>
         internal void ResetItems(IEnumerable<T> items, bool force = false)
         {
-            if (!force && !items.Any() && Count == 0)
+            var incoming = items.ToArray();
+            if (!force && incoming.Length == 0 && Count == 0)
             {
                 return;
             }
             _suppressNotification = true;
             ClearItems();
-            foreach (var item in items)
+            foreach (var item in incoming)
             {
                 Add(item);
             }
@@ -47,6 +48,6 @@ namespace PSADT.UserInterface.Types
         /// <summary>
         /// Private state flag to suppress CollectionChanged events until the collection has been reset.
         /// </summary>
-        private bool _suppressNotification = false;
+        private bool _suppressNotification;
     }
 }

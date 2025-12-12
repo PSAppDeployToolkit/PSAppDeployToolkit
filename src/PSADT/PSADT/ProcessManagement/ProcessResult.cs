@@ -56,36 +56,36 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Represents the process associated with the current operation.
         /// </summary>
-        public readonly Process? Process;
+        public Process? Process { get; }
 
         /// <summary>
         /// Gets the information required to launch a process.
         /// </summary>
-        public readonly ProcessLaunchInfo? LaunchInfo;
+        public ProcessLaunchInfo? LaunchInfo { get; }
 
         /// <summary>
         /// Gets the command line string associated with the current process.
         /// </summary>
-        public readonly string? CommandLine;
+        public string? CommandLine { get; }
 
         /// <summary>
         /// Gets the exit code of the process, if the process had exited.
         /// </summary>
-        public readonly int ExitCode;
+        public int ExitCode { get; }
 
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? StdOut;
+        public IReadOnlyList<string>? StdOut { get; }
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? StdErr;
+        public IReadOnlyList<string>? StdErr { get; }
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? Interleaved;
+        public IReadOnlyList<string>? Interleaved { get; }
     }
 }

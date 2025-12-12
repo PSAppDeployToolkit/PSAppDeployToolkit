@@ -10,8 +10,8 @@
     <AssemblyTitle>PSAppDeployToolkit Deployment Script Launcher</AssemblyTitle>
     <AssemblyDescription>Launches a PSAppDeployToolkit Invoke-AppDeployToolkit.ps1 script without a PowerShell console window being visible.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.7.0</AssemblyVersion>
-    <InformationalVersion>4.1.7</InformationalVersion>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <InformationalVersion>4.2.0</InformationalVersion>
     <LangVersion>latest</LangVersion>
     <WarningLevel>9999</WarningLevel>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
@@ -21,7 +21,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisLevel>latest-all</AnalysisLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
@@ -34,15 +34,24 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
+    <NoWarn>1701;1702;CA1031;CA1303;PInvoke009</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
+    <NoWarn>1701;1702;CA1031;CA1303;PInvoke009</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.259">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

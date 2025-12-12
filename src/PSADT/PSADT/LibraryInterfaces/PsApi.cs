@@ -27,15 +27,11 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL EnumProcessModules(SafeHandle hProcess, Span<byte> lphModule, out uint lpcbNeeded)
         {
             bool hProcessAddRef = false;
+            BOOL res;
             try
             {
                 hProcess.DangerousAddRef(ref hProcessAddRef);
-                var res = PInvoke.EnumProcessModules(hProcess, lphModule, out lpcbNeeded);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                res = PInvoke.EnumProcessModules(hProcess, lphModule, out lpcbNeeded);
             }
             finally
             {
@@ -44,6 +40,11 @@ namespace PSADT.LibraryInterfaces
                     hProcess.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -58,10 +59,10 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetModuleInformation(SafeHandle hProcess, in HMODULE hModule, out MODULEINFO lpmodinfo)
         {
             bool hProcessAddRef = false;
+            BOOL res;
             try
             {
                 hProcess.DangerousAddRef(ref hProcessAddRef);
-                BOOL res;
                 unsafe
                 {
                     fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
@@ -69,11 +70,6 @@ namespace PSADT.LibraryInterfaces
                         res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Marshal.SizeOf<MODULEINFO>());
                     }
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -82,6 +78,11 @@ namespace PSADT.LibraryInterfaces
                     hProcess.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
     }
 }

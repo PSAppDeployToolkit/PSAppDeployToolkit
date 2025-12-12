@@ -1,4 +1,4 @@
-﻿namespace PSADT.Module
+﻿namespace PSADT.Core
 {
     /// <summary>
     /// Status values to determine the overall state/success of a deployment.

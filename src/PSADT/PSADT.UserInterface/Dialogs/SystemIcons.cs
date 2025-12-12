@@ -22,6 +22,7 @@ namespace PSADT.UserInterface.Dialogs
         /// based on the current system DPI, and maps them to corresponding <see cref="DialogSystemIcon"/> values. The
         /// resulting lookup table is stored in <see cref="SystemIconLookupTable"/> for use throughout the
         /// application.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is very much needed.")]
         static SystemIcons()
         {
             // Define temporary list of system icons to look up.

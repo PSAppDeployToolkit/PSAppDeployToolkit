@@ -210,6 +210,10 @@ namespace PSADT.FileSystem
         /// given path.</returns>
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
+            if (path is null)
+            {
+                throw new ArgumentNullException(nameof(path), "Path cannot be null.");
+            }
             if (sid is null)
             {
                 throw new ArgumentNullException(nameof(sid), "SecurityIdentifier cannot be null.");
@@ -236,6 +240,10 @@ namespace PSADT.FileSystem
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="token"/> is null or invalid.</exception>
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
+            if (path is null)
+            {
+                throw new ArgumentNullException(nameof(path), "Path cannot be null.");
+            }
             if (token is null || token.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(token), "Token cannot be null or invalid.");

@@ -225,7 +225,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            if (res is null || res.IsInvalid)
+            if (res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -248,7 +248,11 @@ namespace PSADT.LibraryInterfaces
         /// packets for the port. Must be greater than zero.</param>
         /// <returns>A SafeFileHandle representing the I/O completion port. The handle can be used to post and retrieve I/O
         /// completion packets.</returns>
-        internal static SafeFileHandle CreateIoCompletionPort(HANDLE FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads) => CreateIoCompletionPort(new SafeFileHandle(FileHandle, false), ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
+        internal static SafeFileHandle CreateIoCompletionPort(HANDLE FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
+        {
+            using var safeFileHandle = new SafeFileHandle(FileHandle, false);
+            return CreateIoCompletionPort(safeFileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
+        }
 
         /// <summary>
         /// Wrapper around CreateJobObject to manage error handling.
@@ -260,7 +264,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
             var res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
-            if (res is null || res.IsInvalid)
+            if (res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -283,19 +287,14 @@ namespace PSADT.LibraryInterfaces
         private static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             bool hJobAddRef = false;
+            BOOL res;
             try
             {
                 hJob.DangerousAddRef(ref hJobAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, (void*)lpJobObjectInformation, cbJobObjectInformationLength);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -304,6 +303,11 @@ namespace PSADT.LibraryInterfaces
                     hJob.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -378,19 +382,14 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
+            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                BOOL res;
                 unsafe
                 {
                     res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                 }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
             }
             finally
             {
@@ -399,6 +398,11 @@ namespace PSADT.LibraryInterfaces
                     lpEnvironment?.DangerousRelease();
                 }
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
 
         /// <summary>
@@ -677,6 +681,7 @@ namespace PSADT.LibraryInterfaces
         /// langword="false"/>.</returns>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "This is OK for the time being.")]
         public static extern bool TermsrvAppInstallMode();
 
         /// <summary>

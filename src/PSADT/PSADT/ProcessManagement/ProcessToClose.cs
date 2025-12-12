@@ -21,16 +21,16 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
-        public readonly string Name;
+        public string Name { get; }
 
         /// <summary>
         /// Gets the path of the process.
         /// </summary>
-        public readonly string Path;
+        public string Path { get; }
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
-        public readonly string Description;
+        public string Description { get; }
     }
 }

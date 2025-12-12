@@ -8,6 +8,8 @@ namespace PSADT.DeviceManagement
     /// <remarks>This enumeration is decorated with the <see cref="FlagsAttribute"/>, allowing for a bitwise
     /// combination of its values. Use this enumeration to determine the current state of the battery, such as whether
     /// it is charging, critically low, or absent.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type is correct for the data.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
     [Flags]
     public enum BatteryChargeStatus : byte
     {

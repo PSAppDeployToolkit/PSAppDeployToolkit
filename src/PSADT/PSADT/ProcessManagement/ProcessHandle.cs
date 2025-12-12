@@ -35,17 +35,17 @@ namespace PSADT.ProcessManagement
         /// <remarks>This field provides access to the underlying <see cref="System.Diagnostics.Process"/>
         /// instance. It is read-only and should be used to retrieve information about the process or to perform
         /// operations on it.</remarks>
-        public readonly Process Process;
+        public Process Process { get; }
 
         /// <summary>
         /// Gets the information required to launch a process.
         /// </summary>
-        public readonly ProcessLaunchInfo LaunchInfo;
+        public ProcessLaunchInfo LaunchInfo { get; }
 
         /// <summary>
         /// Gets the command line string associated with the current process.
         /// </summary>
-        public readonly string CommandLine;
+        public string CommandLine { get; }
 
         /// <summary>
         /// Represents an asynchronous operation that returns a <see cref="ProcessResult"/>.
@@ -53,6 +53,6 @@ namespace PSADT.ProcessManagement
         /// <remarks>This field holds a <see cref="Task{TResult}"/> that, when awaited, provides the
         /// result of a process. The task is read-only and should be awaited to retrieve the <see
         /// cref="ProcessResult"/>.</remarks>
-        public readonly Task<ProcessResult> Task;
+        public Task<ProcessResult> Task { get; }
     }
 }

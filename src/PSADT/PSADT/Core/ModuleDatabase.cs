@@ -6,7 +6,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// The internal database for the PSAppDeployToolkit module, as initialised via PSAppDeployToolkit.psm1.
@@ -20,6 +20,10 @@ namespace PSADT.Module
         /// <exception cref="InvalidOperationException"></exception>
         public static void Init(PSObject database)
         {
+            if (database is null)
+            {
+                throw new ArgumentNullException(nameof(database), "Database cannot be null.");
+            }
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
@@ -47,6 +51,7 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static IReadOnlyDictionary<string, object> GetEnvironment() => (IReadOnlyDictionary<string, object>)_database?.Properties["Environment"].Value! ?? throw new InvalidOperationException(initErrorMessage);
 
         /// <summary>
@@ -54,6 +59,7 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static Hashtable GetConfig() => (Hashtable)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject! ?? throw new InvalidOperationException(initErrorMessage);
 
         /// <summary>
@@ -61,6 +67,7 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static Hashtable GetStrings() => (Hashtable)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject! ?? throw new InvalidOperationException(initErrorMessage);
 
         /// <summary>
@@ -112,12 +119,12 @@ namespace PSADT.Module
         /// <summary>
         /// Represents the PSAppDeployToolkit module's internal database.
         /// </summary>
-        private static PSObject? _database = null;
+        private static PSObject? _database;
 
         /// <summary>
         /// Represents the PSAppDeployToolkit module's SessionState object.
         /// </summary>
-        private static SessionState? _sessionState = null;
+        private static SessionState? _sessionState;
 
         /// <summary>
         /// Represents the default runspace for executing PowerShell commands.

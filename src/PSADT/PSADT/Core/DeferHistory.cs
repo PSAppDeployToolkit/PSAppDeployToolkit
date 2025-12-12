@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// Represents the history and state of deferred operations, including remaining deferrals, deadlines, and the last

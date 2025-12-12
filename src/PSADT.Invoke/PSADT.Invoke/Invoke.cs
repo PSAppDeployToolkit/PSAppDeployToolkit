@@ -237,7 +237,7 @@ namespace PSADT.Invoke
                 // Remove the /32 command line argument so that it is not passed to PowerShell script
                 WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
                 cliArguments.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-                if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64"))
+                if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64", StringComparison.OrdinalIgnoreCase))
                 {
                     pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\PowerShell.exe");
                 }
@@ -330,11 +330,6 @@ namespace PSADT.Invoke
         private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\PowerShell.exe");
 
         /// <summary>
-        /// The default arguments to pass to PowerShell.
-        /// </summary>
-        private static readonly string pwshDefaultArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo";
-
-        /// <summary>
         /// The current path of the executing assembly.
         /// </summary>
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -343,5 +338,10 @@ namespace PSADT.Invoke
         /// The name of the executing assembly.
         /// </summary>
         private static readonly string assemblyName = Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location);
+
+        /// <summary>
+        /// The default arguments to pass to PowerShell.
+        /// </summary>
+        private const string pwshDefaultArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo";
     }
 }

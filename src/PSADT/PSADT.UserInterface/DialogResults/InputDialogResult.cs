@@ -24,12 +24,12 @@ namespace PSADT.UserInterface.DialogResults
         /// Gets the result of the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string Result;
+        public string Result { get; }
 
         /// <summary>
         /// Gets the text entered by the user.
         /// </summary>
         [JsonProperty]
-        public readonly string? Text;
+        public string? Text { get; }
     }
 }

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using Windows.Win32;
@@ -24,6 +24,7 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Static constructor for readonly constant values.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is very much needed here.")]
         static AccountUtilities()
         {
             // Cache information about the current user.

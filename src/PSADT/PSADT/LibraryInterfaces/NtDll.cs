@@ -25,225 +25,8 @@ namespace PSADT.LibraryInterfaces
     /// over system resources. Improper use of these APIs can lead to resource leaks, security vulnerabilities, or
     /// system instability. All methods in this class require careful management of handles and memory buffers, and may
     /// throw exceptions for certain error conditions.</remarks>
-    public static class NtDll
+    internal static class NtDll
     {
-        /// <summary>
-        /// System information class for querying system handles.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public readonly struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
-        {
-            /// <summary>
-            /// The kernel object's address.
-            /// </summary>
-            public readonly IntPtr Object;
-
-            /// <summary>
-            /// The owning process's identifier.
-            /// </summary>
-            public readonly UIntPtr UniqueProcessId;
-
-            /// <summary>
-            /// The handle's numerical identifier.
-            /// </summary>
-            public readonly UIntPtr HandleValue;
-
-            /// <summary>
-            /// The type of access granted to the handle.
-            /// </summary>
-            public readonly FileSystemRights GrantedAccess;
-
-            /// <summary>
-            /// The number of references to the object.
-            /// </summary>
-            public readonly ushort CreatorBackTraceIndex;
-
-            /// <summary>
-            /// The type of the object.
-            /// </summary>
-            public readonly ushort ObjectTypeIndex;
-
-            /// <summary>
-            /// The handle attributes.
-            /// </summary>
-            public readonly OBJECT_ATTRIBUTES HandleAttributes;
-
-            /// <summary>
-            /// Reserved for future use.
-            /// </summary>
-            public readonly uint Reserved;
-        }
-
-        /// <summary>
-        /// System information class for querying system handle information.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        internal readonly struct SYSTEM_HANDLE_INFORMATION_EX
-        {
-            /// <summary>
-            /// The number of handles in the system.
-            /// </summary>
-            internal readonly UIntPtr NumberOfHandles;
-
-            /// <summary>
-            /// Reserved for future use.
-            /// </summary>
-            internal readonly UIntPtr Reserved;
-        }
-
-        /// <summary>
-        /// System information class for querying system handle information.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        internal readonly struct OBJECT_TYPE_INFORMATION
-        {
-            /// <summary>
-            /// The name of the type/
-            /// </summary>
-            internal readonly UNICODE_STRING TypeName;
-
-            /// <summary>
-            /// The type's object count.
-            /// </summary>
-            internal readonly uint TotalNumberOfObjects;
-
-            /// <summary>
-            /// The type's handle count.
-            /// </summary>
-            internal readonly uint TotalNumberOfHandles;
-
-            /// <summary>
-            /// The type's paged pool usage.
-            /// </summary>
-            internal readonly uint TotalPagedPoolUsage;
-
-            /// <summary>
-            /// The type's non-paged pool usage.
-            /// </summary>
-            internal readonly uint TotalNonPagedPoolUsage;
-
-            /// <summary>
-            /// The type's name pool usage.
-            /// </summary>
-            internal readonly uint TotalNamePoolUsage;
-
-            /// <summary>
-            /// The type's handle table usage.
-            /// </summary>
-            internal readonly uint TotalHandleTableUsage;
-
-            /// <summary>
-            /// The type's high-water mark for object count.
-            /// </summary>
-            internal readonly uint HighWaterNumberOfObjects;
-
-            /// <summary>
-            /// The type's high-water mark for handle count.
-            /// </summary>
-            internal readonly uint HighWaterNumberOfHandles;
-
-            /// <summary>
-            /// The type's high-water mark for paged pool usage.
-            /// </summary>
-            internal readonly uint HighWaterPagedPoolUsage;
-
-            /// <summary>
-            /// The type's high-water mark for non-paged pool usage.
-            /// </summary>
-            internal readonly uint HighWaterNonPagedPoolUsage;
-
-            /// <summary>
-            /// The type's high-water mark for name pool usage.
-            /// </summary>
-            internal readonly uint HighWaterNamePoolUsage;
-
-            /// <summary>
-            /// The type's high-water mark for handle table usage.
-            /// </summary>
-            internal readonly uint HighWaterHandleTableUsage;
-
-            /// <summary>
-            /// The type's invalid attributes.
-            /// </summary>
-            internal readonly OBJECT_ATTRIBUTES InvalidAttributes;
-
-            /// <summary>
-            /// The type's generic mapping.
-            /// </summary>
-            internal readonly GENERIC_MAPPING GenericMapping;
-
-            /// <summary>
-            /// The type's valid access mask.
-            /// </summary>
-            internal readonly FileSystemRights ValidAccessMask;
-
-            /// <summary>
-            /// The type's security required flag.
-            /// </summary>
-            [MarshalAs(UnmanagedType.U1)]
-            internal readonly bool SecurityRequired;
-
-            /// <summary>
-            /// The type's security descriptor present flag.
-            /// </summary>
-            [MarshalAs(UnmanagedType.U1)]
-            internal readonly bool MaintainHandleCount;
-
-            /// <summary>
-            /// The object type's index.
-            /// </summary>
-            internal readonly byte TypeIndex;
-
-            /// <summary>
-            /// Reserved for future use.
-            /// </summary>
-            internal readonly sbyte ReservedByte;
-
-            /// <summary>
-            /// The object type's pool type.
-            /// </summary>
-            internal readonly uint PoolType;
-
-            /// <summary>
-            /// The default paged pool charge for the object type.
-            /// </summary>
-            internal readonly uint DefaultPagedPoolCharge;
-
-            /// <summary>
-            /// The default non-paged pool charge for the object type.
-            /// </summary>
-            internal readonly uint DefaultNonPagedPoolCharge;
-        }
-
-        /// <summary>
-        /// System information class for querying system object types.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        internal readonly struct OBJECT_TYPES_INFORMATION
-        {
-            /// <summary>
-            /// The number of object types in the system.
-            /// </summary>
-            internal readonly uint NumberOfTypes;
-        }
-
-        /// <summary>
-        /// Enumeration of process information classes.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct SYSTEM_PROCESS_ID_INFORMATION
-        {
-            /// <summary>
-            /// The number of processes in the system.
-            /// </summary>
-            internal IntPtr ProcessId;
-
-            /// <summary>
-            /// The number of threads in the system.
-            /// </summary>
-            internal UNICODE_STRING ImageName;
-        }
-
         /// <summary>
         /// Retrieves version information about the currently running Windows operating system.
         /// </summary>
@@ -331,15 +114,11 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(ObjectInformation));
             }
             bool HandleAddRef = false;
+            NTSTATUS res;
             try
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
-                NTSTATUS res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
+                res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
             }
             finally
             {
@@ -348,6 +127,11 @@ namespace PSADT.LibraryInterfaces
                     Handle?.DangerousRelease();
                 }
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -435,15 +219,11 @@ namespace PSADT.LibraryInterfaces
             [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtTerminateThread(IntPtr ThreadHandle, NTSTATUS ExitStatus);
             bool ThreadHandleAddRef = false;
+            NTSTATUS res;
             try
             {
                 ThreadHandle.DangerousAddRef(ref ThreadHandleAddRef);
-                var res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
-                if (res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
+                res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
             }
             finally
             {
@@ -452,6 +232,11 @@ namespace PSADT.LibraryInterfaces
                     ThreadHandle.DangerousRelease();
                 }
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -478,10 +263,10 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
             bool ProcessHandleAddRef = false;
+            NTSTATUS res;
             try
             {
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                NTSTATUS res;
                 unsafe
                 {
                     fixed (byte* ProcessInformationLocal = ProcessInformation)
@@ -490,11 +275,6 @@ namespace PSADT.LibraryInterfaces
                         res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
                     }
                 }
-                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                }
-                return res;
             }
             finally
             {
@@ -503,6 +283,11 @@ namespace PSADT.LibraryInterfaces
                     ProcessHandle.DangerousRelease();
                 }
             }
+            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
 
         /// <summary>
@@ -514,5 +299,223 @@ namespace PSADT.LibraryInterfaces
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf < OBJECT_TYPES_INFORMATION >() }
         });
+    }
+
+    /// <summary>
+    /// System information class for querying system handles.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly record struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
+    {
+        /// <summary>
+        /// The kernel object's address.
+        /// </summary>
+        public readonly IntPtr ObjectPtr;
+
+        /// <summary>
+        /// The owning process's identifier.
+        /// </summary>
+        public readonly UIntPtr UniqueProcessId;
+
+        /// <summary>
+        /// The handle's numerical identifier.
+        /// </summary>
+        public readonly UIntPtr HandleValue;
+
+        /// <summary>
+        /// The type of access granted to the handle.
+        /// </summary>
+        public readonly FileSystemRights GrantedAccess;
+
+        /// <summary>
+        /// The number of references to the object.
+        /// </summary>
+        public readonly ushort CreatorBackTraceIndex;
+
+        /// <summary>
+        /// The type of the object.
+        /// </summary>
+        public readonly ushort ObjectTypeIndex;
+
+        /// <summary>
+        /// The handle attributes.
+        /// </summary>
+        public readonly OBJECT_ATTRIBUTES HandleAttributes;
+
+        /// <summary>
+        /// Reserved for future use.
+        /// </summary>
+        public readonly uint Reserved;
+    }
+
+    /// <summary>
+    /// System information class for querying system handle information.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct SYSTEM_HANDLE_INFORMATION_EX
+    {
+        /// <summary>
+        /// The number of handles in the system.
+        /// </summary>
+        internal readonly UIntPtr NumberOfHandles;
+
+        /// <summary>
+        /// Reserved for future use.
+        /// </summary>
+        internal readonly UIntPtr Reserved;
+    }
+
+    /// <summary>
+    /// System information class for querying system handle information.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct OBJECT_TYPE_INFORMATION
+    {
+        /// <summary>
+        /// The name of the type/
+        /// </summary>
+        internal readonly UNICODE_STRING TypeName;
+
+        /// <summary>
+        /// The type's object count.
+        /// </summary>
+        internal readonly uint TotalNumberOfObjects;
+
+        /// <summary>
+        /// The type's handle count.
+        /// </summary>
+        internal readonly uint TotalNumberOfHandles;
+
+        /// <summary>
+        /// The type's paged pool usage.
+        /// </summary>
+        internal readonly uint TotalPagedPoolUsage;
+
+        /// <summary>
+        /// The type's non-paged pool usage.
+        /// </summary>
+        internal readonly uint TotalNonPagedPoolUsage;
+
+        /// <summary>
+        /// The type's name pool usage.
+        /// </summary>
+        internal readonly uint TotalNamePoolUsage;
+
+        /// <summary>
+        /// The type's handle table usage.
+        /// </summary>
+        internal readonly uint TotalHandleTableUsage;
+
+        /// <summary>
+        /// The type's high-water mark for object count.
+        /// </summary>
+        internal readonly uint HighWaterNumberOfObjects;
+
+        /// <summary>
+        /// The type's high-water mark for handle count.
+        /// </summary>
+        internal readonly uint HighWaterNumberOfHandles;
+
+        /// <summary>
+        /// The type's high-water mark for paged pool usage.
+        /// </summary>
+        internal readonly uint HighWaterPagedPoolUsage;
+
+        /// <summary>
+        /// The type's high-water mark for non-paged pool usage.
+        /// </summary>
+        internal readonly uint HighWaterNonPagedPoolUsage;
+
+        /// <summary>
+        /// The type's high-water mark for name pool usage.
+        /// </summary>
+        internal readonly uint HighWaterNamePoolUsage;
+
+        /// <summary>
+        /// The type's high-water mark for handle table usage.
+        /// </summary>
+        internal readonly uint HighWaterHandleTableUsage;
+
+        /// <summary>
+        /// The type's invalid attributes.
+        /// </summary>
+        internal readonly OBJECT_ATTRIBUTES InvalidAttributes;
+
+        /// <summary>
+        /// The type's generic mapping.
+        /// </summary>
+        internal readonly GENERIC_MAPPING GenericMapping;
+
+        /// <summary>
+        /// The type's valid access mask.
+        /// </summary>
+        internal readonly FileSystemRights ValidAccessMask;
+
+        /// <summary>
+        /// The type's security required flag.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        internal readonly bool SecurityRequired;
+
+        /// <summary>
+        /// The type's security descriptor present flag.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        internal readonly bool MaintainHandleCount;
+
+        /// <summary>
+        /// The object type's index.
+        /// </summary>
+        internal readonly byte TypeIndex;
+
+        /// <summary>
+        /// Reserved for future use.
+        /// </summary>
+        internal readonly sbyte ReservedByte;
+
+        /// <summary>
+        /// The object type's pool type.
+        /// </summary>
+        internal readonly uint PoolType;
+
+        /// <summary>
+        /// The default paged pool charge for the object type.
+        /// </summary>
+        internal readonly uint DefaultPagedPoolCharge;
+
+        /// <summary>
+        /// The default non-paged pool charge for the object type.
+        /// </summary>
+        internal readonly uint DefaultNonPagedPoolCharge;
+    }
+
+    /// <summary>
+    /// System information class for querying system object types.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct OBJECT_TYPES_INFORMATION
+    {
+        /// <summary>
+        /// The number of object types in the system.
+        /// </summary>
+        internal readonly uint NumberOfTypes;
+    }
+
+    /// <summary>
+    /// Enumeration of process information classes.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SYSTEM_PROCESS_ID_INFORMATION
+    {
+        /// <summary>
+        /// The number of processes in the system.
+        /// </summary>
+        internal IntPtr ProcessId;
+
+        /// <summary>
+        /// The number of threads in the system.
+        /// </summary>
+        internal UNICODE_STRING ImageName;
     }
 }

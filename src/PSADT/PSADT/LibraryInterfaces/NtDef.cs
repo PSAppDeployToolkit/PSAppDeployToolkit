@@ -5,6 +5,8 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Bitmask of flags that specify object handle attributes.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type on this enum is correct.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
     [Flags]
     public enum OBJECT_ATTRIBUTES : uint
     {

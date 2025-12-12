@@ -35,6 +35,10 @@ namespace PSADT.UserInterface.DialogOptions
         public BalloonTipOptions(Hashtable options)
         {
             // Nothing here is allowed to be null.
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             if (options["TrayTitle"] is not string trayTitle || string.IsNullOrWhiteSpace(trayTitle))
             {
                 throw new ArgumentNullException("TrayTitle value is null or invalid.", (Exception?)null);
@@ -104,36 +108,36 @@ namespace PSADT.UserInterface.DialogOptions
         /// Represents the title displayed on the tray.
         /// </summary>
         [JsonProperty]
-        public readonly string TrayTitle;
+        public string TrayTitle { get; }
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
         [JsonProperty]
-        public readonly string TrayIcon;
+        public string TrayIcon { get; }
 
         /// <summary>
         /// Gets the title text displayed in the balloon tip of a notification.
         /// </summary>
         [JsonProperty]
-        public readonly string BalloonTipTitle;
+        public string BalloonTipTitle { get; }
 
         /// <summary>
         /// Gets the text displayed in the balloon tip of a notification.
         /// </summary>
         [JsonProperty]
-        public readonly string BalloonTipText;
+        public string BalloonTipText { get; }
 
         /// <summary>
         /// Gets the icon displayed in the balloon tip associated with the notification.
         /// </summary>
         [JsonProperty]
-        public readonly ToolTipIcon BalloonTipIcon;
+        public ToolTipIcon BalloonTipIcon { get; }
 
         /// <summary>
         /// Gets the duration, in milliseconds, that the balloon tip is displayed.
         /// </summary>
         [JsonProperty]
-        public readonly uint BalloonTipTime;
+        public uint BalloonTipTime { get; }
     }
 }

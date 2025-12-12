@@ -5,7 +5,7 @@
     /// </summary>
     /// <remarks>This class contains shared definitions used in inter-process communication, such as the
     /// character used to separate command parameters in pipe-based communication.</remarks>
-    public class CommonUtilities
+    public static class CommonUtilities
     {
         /// <summary>
         /// Represents the character used to separate command parameters in pipe communication.

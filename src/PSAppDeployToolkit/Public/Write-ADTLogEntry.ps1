@@ -34,7 +34,7 @@ function Write-ADTLogEntry
     .PARAMETER LogFileName
         Set the name of the log file.
 
-    .PARAMETER HostLogStream
+    .PARAMETER HostLogStreamType
         Controls how the log entry is written to the console window.
 
     .PARAMETER PassThru
@@ -49,7 +49,7 @@ function Write-ADTLogEntry
         The message to write to the log file or output to the console.
 
     .OUTPUTS
-        PSADT.Module.LogEntry[]
+        PSADT.Core.LogEntry[]
 
         This function returns the provided output if -PassThru is specified.
 
@@ -84,7 +84,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.LogSeverity]$Severity,
+        [PSADT.Core.LogSeverity]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -97,7 +97,7 @@ function Write-ADTLogEntry
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias('LogType')]
-        [PSADT.Module.LogStyle]$LogStyle,
+        [PSADT.Core.LogStyle]$LogStyle,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -109,7 +109,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.HostLogStream]$HostLogStream,
+        [PSADT.Core.HostLogStreamType]$HostLogStreamType,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
@@ -126,10 +126,10 @@ function Write-ADTLogEntry
         # Set up collector for piped in messages.
         $messages = [System.Collections.Generic.List[System.String]]::new()
 
-        # Force the HostLogStream to none if InformationPreference or WarningPreference is silent.
+        # Force the HostLogStreamType to none if InformationPreference or WarningPreference is silent.
         $bypassSession = if ((($Severity -le 1) -and ($InformationPreference -match '^(SilentlyContinue|Ignore)$')) -or (($Severity -eq 2) -and ($WarningPreference -match '^(SilentlyContinue|Ignore)$')))
         {
-            !($PSBoundParameters.HostLogStream = $HostLogStream = [PSADT.Module.HostLogStream]::None)
+            !($PSBoundParameters.HostLogStreamType = $HostLogStreamType = [PSADT.Core.HostLogStreamType]::None)
         }
     }
 
@@ -167,7 +167,7 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
                 $(if ($PSBoundParameters.ContainsKey('LogStyle')) { $LogStyle }),
-                $HostLogStream
+                $HostLogStreamType
             )
         }
         elseif (!$DebugMessage)
@@ -176,9 +176,9 @@ function Write-ADTLogEntry
             {
                 Initialize-ADTModule
             }
-            [PSADT.Module.LogUtilities]::WriteLogEntry(
+            [PSADT.Core.LogUtilities]::WriteLogEntry(
                 $messages,
-                $(if ($PSBoundParameters.ContainsKey('HostLogStream')) { $HostLogStream } else { ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)] }),
+                $(if ($PSBoundParameters.ContainsKey('HostLogStreamType')) { $HostLogStreamType } else { ([PSADT.Core.HostLogStreamType]::None, [PSADT.Core.HostLogStreamType]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)] }),
                 $false,
                 $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
                 $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),

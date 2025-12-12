@@ -9,7 +9,7 @@
     RootModule = 'PSAppDeployToolkit.Extensions.psm1'
 
     # Version number of this module.
-    ModuleVersion = '4.1.7'
+    ModuleVersion = '4.2.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -49,7 +49,7 @@
 
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules = @(
-        @{ ModuleName = 'PSAppDeployToolkit'; GUID = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.7' }
+        @{ ModuleName = 'PSAppDeployToolkit'; GUID = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }
     )
 
     # Assemblies that must be loaded prior to importing this module

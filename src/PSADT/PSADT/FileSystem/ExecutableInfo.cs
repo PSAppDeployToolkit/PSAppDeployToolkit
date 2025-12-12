@@ -91,31 +91,31 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The FileInfo object for the executable.
         /// </summary>
-        public readonly FileInfo FileInfo;
+        public FileInfo FileInfo { get; }
 
         /// <summary>
         /// The machine type of the executable.
         /// </summary>
-        public readonly LibraryInterfaces.IMAGE_FILE_MACHINE Machine;
+        public LibraryInterfaces.IMAGE_FILE_MACHINE Machine { get; }
 
         /// <summary>
         /// The subsystem of the executable.
         /// </summary>
-        public readonly LibraryInterfaces.IMAGE_SUBSYSTEM Subsystem;
+        public LibraryInterfaces.IMAGE_SUBSYSTEM Subsystem { get; }
 
         /// <summary>
         /// Whether the file is a .NET executable.
         /// </summary>
-        public readonly bool IsDotNetExecutable;
+        public bool IsDotNetExecutable { get; }
 
         /// <summary>
         /// The entry point of the executable.
         /// </summary>
-        public readonly uint EntryPoint;
+        public uint EntryPoint { get; }
 
         /// <summary>
         /// The image base of the executable.
         /// </summary>
-        public readonly ulong ImageBase;
+        public ulong ImageBase { get; }
     }
 }

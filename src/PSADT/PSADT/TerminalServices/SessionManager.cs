@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,7 +10,7 @@ using System.Security.Principal;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.Utilities;
@@ -136,7 +137,7 @@ namespace PSADT.TerminalServices
                         RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
                         ProcessLaunchInfo args = new(clientServerPath, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
-                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0]));
+                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0], CultureInfo.InvariantCulture));
                     }
                     catch
                     {
@@ -202,7 +203,7 @@ namespace PSADT.TerminalServices
                 using (pProcessInfo)
                 {
                     var pProcessInfoSpan = pProcessInfo.AsReadOnlySpan<byte>();
-                    int objLength = Marshal.SizeOf(typeof(WTS_PROCESS_INFOW));
+                    int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
                         ref var process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan.Slice(objLength * i)));
@@ -263,20 +264,7 @@ namespace PSADT.TerminalServices
                 WtsApi32.WTSQueryUserToken(sessionid, out var hUserToken); using (hUserToken)
                 using (var hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
                 {
-                    bool hPrimaryTokenAddRef = false;
-                    try
-                    {
-                        hPrimaryToken.DangerousAddRef(ref hPrimaryTokenAddRef);
-                        using WindowsIdentity identity = new(hPrimaryToken.DangerousGetHandle());
-                        return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-                    }
-                    finally
-                    {
-                        if (hPrimaryTokenAddRef)
-                        {
-                            hPrimaryToken.DangerousRelease();
-                        }
-                    }
+                    return TokenManager.IsTokenAdministrative(hPrimaryToken);
                 }
             }
             return AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);

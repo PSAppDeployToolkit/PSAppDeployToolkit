@@ -45,9 +45,9 @@ function Get-ADTUserProfiles
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.UserProfile
+        PSADT.Types.UserProfileInfo
 
-        Returns a PSADT.Types.UserProfile object with the following properties:
+        Returns a PSADT.Types.UserProfileInfo object with the following properties:
         - NTAccount
         - SID
         - ProfilePath
@@ -81,7 +81,7 @@ function Get-ADTUserProfiles
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ExcludeNTAccount', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding(DefaultParameterSetName = 'All')]
-    [OutputType([PSADT.Types.UserProfile])]
+    [OutputType([PSADT.Types.UserProfileInfo])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'FilterScript', Position = 0)]
@@ -180,7 +180,7 @@ function Get-ADTUserProfiles
                             }
 
                             # Establish base profile.
-                            $userProfile = [PSADT.Types.UserProfile]::new(
+                            $userProfile = [PSADT.Types.UserProfileInfo]::new(
                                 $ntAccount,
                                 $securityIdentifier,
                                 $regProfile.ProfileImagePath
@@ -195,7 +195,7 @@ function Get-ADTUserProfiles
                                     $environment = [Microsoft.Win32.Registry]::Users.OpenSubKey("$securityIdentifier\Environment", $false)
                                     try
                                     {
-                                        [PSADT.Types.UserProfile]::new(
+                                        [PSADT.Types.UserProfileInfo]::new(
                                             $ntAccount,
                                             $securityIdentifier,
                                             $regProfile.ProfileImagePath,
@@ -230,7 +230,7 @@ function Get-ADTUserProfiles
                                 else
                                 {
                                     Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -InformationAction SilentlyContinue -ScriptBlock {
-                                        [PSADT.Types.UserProfile]::new(
+                                        [PSADT.Types.UserProfileInfo]::new(
                                             $_.NTAccount,
                                             $_.SID,
                                             $_.ProfilePath,
@@ -282,7 +282,7 @@ function Get-ADTUserProfiles
                     $defaultUserProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
 
                     # Establish base profile.
-                    $userProfile = [PSADT.Types.UserProfile]::new(
+                    $userProfile = [PSADT.Types.UserProfileInfo]::new(
                         'Default',
                         [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::NullSid),
                         $defaultUserProfilePath
@@ -295,7 +295,7 @@ function Get-ADTUserProfiles
                         $environment = [Microsoft.Win32.Registry]::Users.OpenSubKey(".DEFAULT\Environment", $false)
                         try
                         {
-                            $userProfile = [PSADT.Types.UserProfile]::new(
+                            $userProfile = [PSADT.Types.UserProfileInfo]::new(
                                 'Default',
                                 $userProfile.SID,
                                 $defaultUserProfilePath,

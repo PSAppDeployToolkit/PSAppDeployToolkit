@@ -16,7 +16,7 @@ namespace PSADT.FileSystem
         /// <param name="filePath"></param>
         /// <param name="ntPath"></param>
         /// <param name="handleType"></param>
-        internal FileHandleInfo(in NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
+        internal FileHandleInfo(in SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
         {
             ProcessName = Process.GetProcessById((int)handleInfo.UniqueProcessId).ProcessName;
             FilePath = !string.IsNullOrWhiteSpace(filePath) ? filePath : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
@@ -28,26 +28,26 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The name of the process that owns the handle.
         /// </summary>
-        public readonly string ProcessName;
+        public string ProcessName { get; }
 
         /// <summary>
         /// The file path associated with the handle.
         /// </summary>
-        public readonly string FilePath;
+        public string FilePath { get; }
 
         /// <summary>
         /// The NT path associated with the handle.
         /// </summary>
-        public readonly string NtPath;
+        public string NtPath { get; }
 
         /// <summary>
         /// The type of the handle (e.g., "File", "Directory", etc.).
         /// </summary>
-        public readonly string HandleType;
+        public string HandleType { get; }
 
         /// <summary>
         /// Information about the open handle.
         /// </summary>
-        public readonly NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX HandleInfo;
+        public SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX HandleInfo { get; }
     }
 }

@@ -29,6 +29,31 @@ namespace PSADT.Security
         }
 
         /// <summary>
+        /// Determines whether the specified security token represents a user with administrative privileges.
+        /// </summary>
+        /// <remarks>The caller is responsible for ensuring that the provided token handle remains valid
+        /// for the duration of the call. This method does not take ownership of the handle.</remarks>
+        /// <param name="tokenHandle">A handle to the access token to evaluate. The handle must be valid and have appropriate access rights.</param>
+        /// <returns>true if the token represents a user who is a member of the Administrators group; otherwise, false.</returns>
+        internal static bool IsTokenAdministrative(SafeHandle tokenHandle)
+        {
+            bool tokenHandleAddRef = false;
+            try
+            {
+                tokenHandle.DangerousAddRef(ref tokenHandleAddRef);
+                using WindowsIdentity identity = new(tokenHandle.DangerousGetHandle());
+                return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            finally
+            {
+                if (tokenHandleAddRef)
+                {
+                    tokenHandle.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
         /// Retrieves the linked token associated with the specified token handle.
         /// </summary>
         /// <remarks>This method retrieves the linked token, which is typically used in scenarios

@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public ProgressDialogOptions(Hashtable options) : base(options)
+        public ProgressDialogOptions(Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
         {
             // Nothing here is allowed to be null.
             if (options["ProgressMessageText"] is not string progressMessageText || string.IsNullOrWhiteSpace(progressMessageText))
@@ -91,24 +91,24 @@ namespace PSADT.UserInterface.DialogOptions
         /// The message to be displayed in the progress dialog, indicating the current status or action being performed.
         /// </summary>
         [JsonProperty]
-        public readonly string ProgressMessageText;
+        public string ProgressMessageText { get; }
 
         /// <summary>
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
         [JsonProperty]
-        public readonly string ProgressDetailMessageText;
+        public string ProgressDetailMessageText { get; }
 
         /// <summary>
         /// The percentage value to be displayed on the status bar, if available.
         /// </summary>
         [JsonProperty]
-        public readonly double? ProgressPercentage;
+        public double? ProgressPercentage { get; }
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly DialogMessageAlignment? MessageAlignment;
+        public DialogMessageAlignment? MessageAlignment { get; }
     }
 }

@@ -128,7 +128,7 @@ function Open-ADTSession
         Specifies an override for the default-generated log file name.
 
     .PARAMETER SessionClass
-        Specifies an override for PSADT.Module.DeploymentSession class. Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
+        Specifies an override for PSADT.Core.DeploymentSession class. Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
 
     .PARAMETER UnboundArguments
         Captures any additional arguments passed to the function.
@@ -169,11 +169,11 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.DeploymentType]$DeploymentType,
+        [PSADT.Core.DeploymentType]$DeploymentType,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.DeployMode]$DeployMode,
+        [PSADT.Core.DeployMode]$DeployMode,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
@@ -350,13 +350,13 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (!$_.BaseType.Equals([PSADT.Module.DeploymentSession]))
+                if (!$_.BaseType.Equals([PSADT.Core.DeploymentSession]))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified type is not derived from the DeploymentSession base class.'))
                 }
                 return $_
             })]
-        [System.Type]$SessionClass = [PSADT.Module.DeploymentSession],
+        [System.Type]$SessionClass = [PSADT.Core.DeploymentSession],
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [AllowNull()][AllowEmptyCollection()]
@@ -408,7 +408,7 @@ function Open-ADTSession
         }
 
         # Add any unbound arguments into $PSBoundParameters when using a derived class.
-        if ($PSBoundParameters.ContainsKey('UnboundArguments') -and !$SessionClass.Equals([PSADT.Module.DeploymentSession]))
+        if ($PSBoundParameters.ContainsKey('UnboundArguments') -and !$SessionClass.Equals([PSADT.Core.DeploymentSession]))
         {
             $null = (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator().ForEach({
                     $PSBoundParameters.Add($_.Key, $_.Value)
@@ -441,14 +441,14 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnStart)))
+                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::OnStart)))
                 {
                     & $callback
                 }
             }
 
             # Invoke pre-open callbacks.
-            foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PreOpen)))
+            foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::PreOpen)))
             {
                 & $callback
             }
@@ -502,7 +502,7 @@ function Open-ADTSession
             try
             {
                 # Add any unbound arguments into the $adtSession object as PSNoteProperty objects.
-                if ($PSBoundParameters.ContainsKey('UnboundArguments') -and $SessionClass.Equals([PSADT.Module.DeploymentSession]))
+                if ($PSBoundParameters.ContainsKey('UnboundArguments') -and $SessionClass.Equals([PSADT.Core.DeploymentSession]))
                 {
                     (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator() | & {
                         begin
@@ -518,7 +518,7 @@ function Open-ADTSession
                 }
 
                 # Invoke post-open callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::PostOpen)))
+                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::PostOpen)))
                 {
                     & $callback
                 }

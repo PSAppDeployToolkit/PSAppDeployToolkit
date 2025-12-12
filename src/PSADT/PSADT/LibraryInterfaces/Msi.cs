@@ -66,7 +66,16 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle? hDatabase, string? szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
             MSIHANDLE phSummaryInfoLocal = default;
-            var res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase ?? new SafeFileHandle(IntPtr.Zero, true), szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
+            WIN32_ERROR res;
+            if (hDatabase is null)
+            {
+                using var nullDatabaseHandle = new SafeFileHandle(IntPtr.Zero, true);
+                res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullDatabaseHandle, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
+            }
+            else
+            {
+                res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
+            }
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);

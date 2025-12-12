@@ -35,22 +35,22 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the process associated with the running process.
         /// </summary>
-        public readonly Process Process;
+        public Process Process { get; }
 
         /// <summary>
         /// Gets the description of the running process.
         /// </summary>
-        public readonly string Description;
+        public string Description { get; }
 
         /// <summary>
         /// Gets the file path of the running process.
         /// </summary>
-        public readonly string FileName;
+        public string FileName { get; }
 
         /// <summary>
         /// Gets the arguments passed to the running process.
         /// </summary>
-        public readonly IReadOnlyList<string> ArgumentList;
+        public IReadOnlyList<string> ArgumentList { get; }
 
         /// <summary>
         /// Represents the username associated with a Windows NT account.
@@ -58,6 +58,6 @@ namespace PSADT.ProcessManagement
         /// <remarks>The <see cref="NTAccount"/> class provides a way to work with Windows NT account
         /// names, including translating them to and from security identifiers (SIDs). This field is
         /// read-only.</remarks>
-        public readonly NTAccount? Username;
+        public NTAccount? Username { get; }
     }
 }

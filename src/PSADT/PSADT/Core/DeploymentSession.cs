@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -23,7 +24,7 @@ using PSADT.TerminalServices;
 using PSADT.Utilities;
 using Windows.Win32.Storage.FileSystem;
 
-namespace PSADT.Module
+namespace PSADT.Core
 {
     /// <summary>
     /// Represents a deployment session.
@@ -47,8 +48,8 @@ namespace PSADT.Module
 
 
                 // Establish start date/time first so we can accurately mark the start of execution.
-                _currentDate = CurrentDateTime.ToString("dd-MM-yyyy");
-                _currentTime = CurrentDateTime.ToString("HH:mm:ss");
+                _currentDate = CurrentDateTime.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
+                _currentTime = CurrentDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
                 // Establish initial variable values.
                 var adtData = ModuleDatabase.Get();
@@ -303,7 +304,7 @@ namespace PSADT.Module
                         if (!string.IsNullOrWhiteSpace(_dirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            var msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
+                            var msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
@@ -311,9 +312,9 @@ namespace PSADT.Module
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
-                            else if (msiFiles.Any())
+                            else if (msiFiles.Length > 0)
                             {
-                                _defaultMsiFile = new FileInfo(msiFiles.First()).FullName;
+                                _defaultMsiFile = new FileInfo(msiFiles[0]).FullName;
                             }
                         }
                     }
@@ -369,8 +370,8 @@ namespace PSADT.Module
                             var gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
                             if (gmtpOutput.Count > 0)
                             {
-                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
-                                if (msiExecList.Any())
+                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
+                                if (msiExecList.Length > 0)
                                 {
                                     _appProcessesToClose = new(_appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToArray());
                                     WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
@@ -430,7 +431,7 @@ namespace PSADT.Module
                 // If we're left with a blank AppName, throw a terminating error.
                 if (string.IsNullOrWhiteSpace(_appName))
                 {
-                    throw new ArgumentNullException(nameof(AppName), "The application name was not specified.");
+                    throw new ArgumentException("The application name was not specified.");
                 }
 
 
@@ -536,8 +537,8 @@ namespace PSADT.Module
                         }
 
                         // Get all log files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
-                        int logFilesCount = logFiles.Count();
+                        var logFiles = new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime).ToArray();
+                        int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.
                         if (logFilesCount > logMaxHistory)
@@ -1030,10 +1031,10 @@ namespace PSADT.Module
             {
                 case DeploymentStatus.FastRetry:
                     // Just advise of the exit code with the appropriate severity.
-                    WriteLogEntry(string.Format(deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
                     break;
                 case DeploymentStatus.Error:
-                    WriteLogEntry(string.Format(deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
                     break;
                 default:
                     // Clean up app deferral history.
@@ -1048,7 +1049,7 @@ namespace PSADT.Module
                     {
                         ExitCode = 0;
                     }
-                    WriteLogEntry(string.Format(deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
                     break;
             }
 
@@ -1073,11 +1074,11 @@ namespace PSADT.Module
                 try
                 {
                     // Get all archive files sorted by last write time.
-                    IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
-                    destArchiveFileName = string.Format(destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
+                    var archiveFiles = destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime).ToArray();
+                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
 
                     // Keep only the max number of archive files
-                    int archiveFilesCount = archiveFiles.Count();
+                    int archiveFilesCount = archiveFiles.Length;
                     if (archiveFilesCount > LogMaxHistory)
                     {
                         foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - LogMaxHistory))
@@ -1103,19 +1104,19 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="writeHost"></param>
         /// <returns></returns>
-        private HostLogStream GetHostLogStreamMode(bool? writeHost = null)
+        private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
             if ((writeHost is not null && !writeHost.Value) || !LogWriteToHost)
             {
-                return HostLogStream.None;
+                return HostLogStreamType.None;
             }
             else if (LogHostOutputToStdStreams)
             {
-                return HostLogStream.Console;
+                return HostLogStreamType.Console;
             }
             else
             {
-                return HostLogStream.Host;
+                return HostLogStreamType.Host;
             }
         }
 
@@ -1130,10 +1131,10 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logStyle">The type of log.</param>
-        /// <param name="hostLogStream">What stream to write the message to.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStream? hostLogStream = null)
+        /// <param name="hostLogStreamType">What stream to write the message to.</param>
+        public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStreamType? hostLogStreamType = null)
         {
-            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream ?? GetHostLogStreamMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
+            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStreamType ?? GetHostLogStreamTypeMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
             LogBuffer.AddRange(logEntries);
             return logEntries;
         }
@@ -1177,7 +1178,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        public void WriteLogEntry(string message, bool writeHost) => WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
+        public void WriteLogEntry(string message, bool writeHost) => WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));
 
         /// <summary>
         /// Writes a log divider.
@@ -1299,9 +1300,9 @@ namespace PSADT.Module
                 return null;
             }
             return new(
-                deferTimesRemaining is not null ? deferTimesRemaining is string ? (uint)int.Parse((string)deferTimesRemaining) : (uint)(int)deferTimesRemaining : null,
-                deferDeadline is not null ? DateTime.Parse((string)deferDeadline) : null,
-                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
+                deferTimesRemaining is not null ? deferTimesRemaining is string ? (uint)int.Parse((string)deferTimesRemaining, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
+                deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
+                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null);
         }
 
         /// <summary>
@@ -1422,6 +1423,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the exit code.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public int GetExitCode() => ExitCode;
 
         /// <summary>
@@ -1444,7 +1446,7 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_", StringComparison.OrdinalIgnoreCase)).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.
@@ -1704,7 +1706,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's starting date and time.
         /// </summary>
-        public readonly DateTime CurrentDateTime = DateTime.Now;
+        public DateTime CurrentDateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// Gets the deployment session's starting date as a string.

@@ -29,6 +29,6 @@ namespace PSADT.Utilities
         /// <param name="value">The string from which to trim leading and trailing empty lines.</param>
         /// <returns>A string with leading and trailing empty lines removed. If the input string is empty or consists only of
         /// whitespace, returns an empty string.</returns>
-        public static string TrimLeadingTrailingLines(string value) => string.Join("\n", TrimLeadingTrailingLines(value.Split('\n')));
+        public static string TrimLeadingTrailingLines(string value) => value is not null ? string.Join("\n", TrimLeadingTrailingLines(value.Split('\n'))) : throw new ArgumentNullException(nameof(value));
     }
 }

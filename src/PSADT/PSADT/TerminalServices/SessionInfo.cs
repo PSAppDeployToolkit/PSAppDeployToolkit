@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Principal;
 using PSADT.LibraryInterfaces;
-using PSADT.Module;
+using PSADT.Core;
 
 namespace PSADT.TerminalServices
 {
@@ -95,111 +95,111 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The NTAccount for the session's user.
         /// </summary>
-        public readonly NTAccount NTAccount;
+        public NTAccount NTAccount { get; }
 
         /// <summary>
         /// The SID for the session's user.
         /// </summary>
-        public readonly SecurityIdentifier SID;
+        public SecurityIdentifier SID { get; }
 
         /// <summary>
         /// The username for the session's user.
         /// </summary>
-        public readonly string UserName;
+        public string UserName { get; }
 
         /// <summary>
         /// The domain name for the session's user.
         /// </summary>
-        public readonly string DomainName;
+        public string DomainName { get; }
 
         /// <summary>
         /// The Id of the session.
         /// </summary>
-        public readonly uint SessionId;
+        public uint SessionId { get; }
 
         /// <summary>
         /// The session name for the session.
         /// </summary>
-        public readonly string? SessionName;
+        public string? SessionName { get; }
 
         /// <summary>
         /// The connection state of the session.
         /// </summary>
-        public readonly WTS_CONNECTSTATE_CLASS ConnectState;
+        public WTS_CONNECTSTATE_CLASS ConnectState { get; }
 
         /// <summary>
         /// Whether the session is the current session of the caller.
         /// </summary>
-        public readonly bool IsCurrentSession;
+        public bool IsCurrentSession { get; }
 
         /// <summary>
         /// Whether the session is a console session.
         /// </summary>
-        public readonly bool IsConsoleSession;
+        public bool IsConsoleSession { get; }
 
         /// <summary>
         /// Whether the session is active or not.
         /// </summary>
-        public readonly bool IsActiveUserSession;
+        public bool IsActiveUserSession { get; }
 
         /// <summary>
         /// Whether the session's token can be used to create a process.
         /// </summary>
-        public readonly bool IsValidUserSession;
+        public bool IsValidUserSession { get; }
 
         /// <summary>
         /// Whether the session is that of a user.
         /// </summary>
-        public readonly bool IsUserSession;
+        public bool IsUserSession { get; }
 
         /// <summary>
         /// Whether the session is remote or local.
         /// </summary>
-        public readonly bool IsRdpSession;
+        public bool IsRdpSession { get; }
 
         /// <summary>
         /// Whether the user of the session is a local administrator.
         /// </summary>
-        public readonly bool? IsLocalAdmin;
+        public bool? IsLocalAdmin { get; }
 
         /// <summary>
         /// Represents an exception that occurred while determining whether the current user is a local administrator.
         /// </summary>
-        public readonly Exception? IsLocalAdminException;
+        public Exception? IsLocalAdminException { get; }
 
         /// <summary>
         /// The logon time of the session.
         /// </summary>
-        public readonly DateTime LogonTime;
+        public DateTime LogonTime { get; }
 
         /// <summary>
         /// How long the session has been idle for.
         /// </summary>
-        public readonly TimeSpan? IdleTime;
+        public TimeSpan? IdleTime { get; }
 
         /// <summary>
         /// The last disconnection time of the session.
         /// </summary>
-        public readonly DateTime? DisconnectTime;
+        public DateTime? DisconnectTime { get; }
 
         /// <summary>
         /// The name of the terminal server (workstation).
         /// </summary>
-        public readonly string? ClientName;
+        public string? ClientName { get; }
 
         /// <summary>
         /// The protocol type of the session (console, RDP, etc).
         /// </summary>
-        public readonly WTS_PROTOCOL_TYPE ClientProtocolType;
+        public WTS_PROTOCOL_TYPE ClientProtocolType { get; }
 
         /// <summary>
         /// The directory service providing the session.
         /// </summary>
-        public readonly string? ClientDirectory;
+        public string? ClientDirectory { get; }
 
         /// <summary>
         /// The Windows NT build number of the client.
         /// </summary>
-        public readonly uint? ClientBuildNumber;
+        public uint? ClientBuildNumber { get; }
     }
 }

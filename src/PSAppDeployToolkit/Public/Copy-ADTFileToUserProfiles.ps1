@@ -130,7 +130,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SpecifiedProfiles')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.UserProfile[]]$UserProfiles,
+        [PSADT.Types.UserProfileInfo[]]$UserProfiles,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
         [ValidateNotNullOrEmpty()]

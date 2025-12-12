@@ -131,7 +131,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     }
                     if (options.DeferralDeadline is not null)
                     {
-                        this.labelDeferDeadline.Text = StripFormattingTags($"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim());
+                        this.labelDeferDeadline.Text = StripFormattingTags($"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern, CultureInfo.CurrentCulture) + options.DeferralDeadline.Value.ToString("zzz", CultureInfo.CurrentCulture)}".Trim());
                         if (options.DeferralDeadline <= DateTime.Now)
                         {
                             this.buttonDefer.Enabled = false;
@@ -388,6 +388,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// A restart countdown timer to perform an automatic reboot.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
         private System.Threading.Timer? countdownTimer;
 
         /// <summary>

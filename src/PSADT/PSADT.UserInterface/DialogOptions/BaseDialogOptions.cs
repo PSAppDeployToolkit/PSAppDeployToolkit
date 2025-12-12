@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        public BaseOptions(Hashtable options)
+        internal BaseOptions(Hashtable options)
         {
             // Nothing here is allowed to be null.
             if (options["AppTitle"] is not string appTitle || string.IsNullOrWhiteSpace(appTitle))
@@ -156,72 +156,72 @@ namespace PSADT.UserInterface.DialogOptions
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string AppTitle;
+        public string AppTitle { get; }
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
         [JsonProperty]
-        public readonly string Subtitle;
+        public string Subtitle { get; }
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string AppIconImage;
+        public string AppIconImage { get; }
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string AppIconDarkImage;
+        public string AppIconDarkImage { get; }
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly string AppBannerImage;
+        public string AppBannerImage { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
         [JsonProperty]
-        public readonly bool DialogTopMost;
+        public bool DialogTopMost { get; }
 
         /// <summary>
         /// Gets the culture information representing the language associated with this instance.
         /// </summary>
         [JsonProperty]
-        public readonly CultureInfo Language;
+        public CultureInfo Language { get; }
 
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
         [JsonProperty]
-        public readonly int? FluentAccentColor;
+        public int? FluentAccentColor { get; }
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
         [JsonProperty]
-        public readonly DialogPosition? DialogPosition;
+        public DialogPosition? DialogPosition { get; }
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
         [JsonProperty]
-        public readonly bool? DialogAllowMove;
+        public bool? DialogAllowMove { get; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
         [JsonProperty]
-        public readonly TimeSpan? DialogExpiryDuration;
+        public TimeSpan? DialogExpiryDuration { get; }
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
         [JsonProperty]
-        public readonly TimeSpan? DialogPersistInterval;
+        public TimeSpan? DialogPersistInterval { get; }
     }
 }

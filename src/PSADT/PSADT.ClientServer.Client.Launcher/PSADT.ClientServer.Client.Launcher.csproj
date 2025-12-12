@@ -3,7 +3,7 @@
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn)</NoWarn>
+    <NoWarn>$(NoWarn);CA1031;CA1307</NoWarn>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -17,8 +17,8 @@
     <AssemblyTitle>PSAppDeployToolkit Client/Server Client GUI Launcher</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for launching the Client/Server client without a visible console window.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.7.0</AssemblyVersion>
-    <InformationalVersion>4.1.7</InformationalVersion>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <InformationalVersion>4.2.0</InformationalVersion>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <Platforms>AnyCPU</Platforms>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
@@ -30,7 +30,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisLevel>latest-all</AnalysisLevel>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
   </PropertyGroup>
@@ -63,6 +63,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
   </ItemGroup>
 </Project>

@@ -22,6 +22,10 @@ namespace PSADT.UserInterface.DialogOptions
         public HelpConsoleOptions(Hashtable options)
         {
             // Nothing here is allowed to be null.
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             if (options["ExecutionPolicy"] is not ExecutionPolicy executionPolicy)
             {
                 throw new ArgumentNullException("ExecutionPolicy value is null or invalid.", (Exception?)null);
@@ -54,7 +58,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the execution policy that determines how operations are executed.
         /// </summary>
         [JsonProperty]
-        public readonly ExecutionPolicy ExecutionPolicy;
+        public ExecutionPolicy ExecutionPolicy { get; }
 
         /// <summary>
         /// Gets a read-only list of module specifications derived from the current module data.

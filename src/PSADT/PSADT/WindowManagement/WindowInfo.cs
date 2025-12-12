@@ -30,30 +30,30 @@ namespace PSADT.WindowManagement
         /// Gets the title of the window.
         /// </summary>
         [JsonProperty]
-        public readonly string WindowTitle;
+        public string WindowTitle { get; }
 
         /// <summary>
         /// Gets the handle to the window.
         /// </summary>
         [JsonProperty]
-        public readonly IntPtr WindowHandle;
+        public IntPtr WindowHandle { get; }
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
         /// </summary>
         [JsonProperty]
-        public readonly string? ParentProcess;
+        public string? ParentProcess { get; }
 
         /// <summary>
         /// Gets the handle to the main window of the parent process.
         /// </summary>
         [JsonProperty]
-        public readonly IntPtr ParentProcessMainWindowHandle;
+        public IntPtr ParentProcessMainWindowHandle { get; }
 
         /// <summary>
         /// Gets the ID of the parent process.
         /// </summary>
         [JsonProperty]
-        public readonly int ParentProcessId;
+        public int ParentProcessId { get; }
     }
 }

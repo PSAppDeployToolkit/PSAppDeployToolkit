@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using PSADT.ProcessManagement;
@@ -11,7 +12,7 @@ namespace PSADT.UserInterface.DialogState
     /// <remarks>This type is used internally to manage the lifecycle of processes that need to be closed. It
     /// provides functionality for tracking running processes and managing countdown operations related to process
     /// closure.</remarks>
-    internal sealed record CloseAppsDialogState : BaseState
+    internal sealed record CloseAppsDialogState : BaseState, IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogState"/> class with the specified processes to close.
@@ -53,5 +54,13 @@ namespace PSADT.UserInterface.DialogState
         /// <remarks>This stopwatch is intended for internal use and is initialized when the containing
         /// type is created. It can be used to measure elapsed time for countdown-related functionality.</remarks>
         internal readonly Stopwatch CountdownStopwatch = new();
+
+        /// <summary>
+        /// Disposes of the resources used by the <see cref="CloseAppsDialogState"/> record.
+        /// </summary>
+        public void Dispose()
+        {
+            RunningProcessService?.Dispose();
+        }
     }
 }

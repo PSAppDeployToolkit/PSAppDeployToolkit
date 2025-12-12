@@ -38,7 +38,7 @@ namespace PSADT.AccountManagement
             foreach (var sid in datastore.GetSubKeyNames())
             {
                 // Skip over anything that's not a proper SID.
-                if (!sid.StartsWith("S-1-"))
+                if (!sid.StartsWith("S-1-", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -84,7 +84,7 @@ namespace PSADT.AccountManagement
         /// </summary>
         /// <remarks>This field provides access to the NTAccount representation of the username, which can
         /// be used for security-related operations or identity management within the system.</remarks>
-        public readonly NTAccount Username;
+        public NTAccount Username { get; }
 
         /// <summary>
         /// Represents a security identifier (SID) that uniquely identifies a user, group, or computer account.
@@ -92,7 +92,7 @@ namespace PSADT.AccountManagement
         /// <remarks>A security identifier (SID) is a unique value used to identify a security principal
         /// in Windows-based systems. This field provides access to a predefined SID. The specific SID represented by
         /// this field depends on its context.</remarks>
-        public readonly SecurityIdentifier SID;
+        public SecurityIdentifier SID { get; }
 
         /// <summary>
         /// Represents the registry path to the Group Policy Data Store.

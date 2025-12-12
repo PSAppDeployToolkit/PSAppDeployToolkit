@@ -14,6 +14,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Static constructor to properly initialise WinForms dialogs.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception type is OK here.")]
         static BaseDialog()
         {
             if ("Server Core".Equals(Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion", "InstallationType", null)))
