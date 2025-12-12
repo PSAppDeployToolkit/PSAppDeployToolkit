@@ -2,6 +2,7 @@
 using System.IO;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
+using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -87,6 +88,20 @@ namespace PSADT.DeviceManagement
         public static DateTime GetSystemBootTime()
         {
             return DateTime.Now - GetSystemUptime();
+        }
+
+        /// <summary>
+        /// Retrieves the current domain join status and associated domain or workgroup name of the local computer.
+        /// </summary>
+        /// <returns>A <see cref="DomainStatus"/> object containing the join status and the name of the domain or workgroup the
+        /// computer is joined to.</returns>
+        public static DomainStatus GetDomainStatus()
+        {
+            _ = NetApi32.NetGetJoinInformation(out SafeNetApiBufferFreeHandle? nameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS bufferType);
+            using (nameBuffer)
+            {
+                return new((NETSETUP_JOIN_STATUS)bufferType, nameBuffer.ToStringUni());
+            }
         }
     }
 }
