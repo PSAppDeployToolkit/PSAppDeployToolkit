@@ -282,16 +282,16 @@ namespace PSADT.PackageManagement
             var packageIdentityNode = xmlDoc.SelectSingleNode("/*[local-name()='Package']/*[local-name()='Identity']")
                 ?? throw new InvalidOperationException("No valid Package Identity node found in the manifest.");
 
-            var name = packageIdentityNode?.Attributes?["Name"]?.Value
+            var name = packageIdentityNode.Attributes?["Name"]?.Value
                 ?? throw new InvalidOperationException("No valid Name attribute found in the Package Identity node.");
-            var publisher = packageIdentityNode?.Attributes?["Publisher"]?.Value
+            var publisher = packageIdentityNode.Attributes?["Publisher"]?.Value
                 ?? throw new InvalidOperationException("No valid Publisher attribute found in the Package Identity node.");
-            var version = packageIdentityNode?.Attributes?["Version"]?.Value
+            var version = packageIdentityNode.Attributes?["Version"]?.Value
                 ?? throw new InvalidOperationException("No valid Version attribute found in the Package Identity node.");
-            var architecture = packageIdentityNode?.Attributes?["ProcessorArchitecture"]?.Value
+            var architecture = packageIdentityNode.Attributes?["ProcessorArchitecture"]?.Value
                 ?? ProcessorArchitecture.Neutral.ToString();
 
-            var resourceId = packageIdentityNode?.Attributes?["ResourceId"]?.Value ?? string.Empty;
+            var resourceId = packageIdentityNode.Attributes?["ResourceId"]?.Value ?? string.Empty;
             var familyIdentifer = GetPackageFamilyName(name, publisher);
             var publisherId = familyIdentifer.Split('_').Last();
             var fullNameIdentifier = $"{name}_{version}_{architecture}_{resourceId}_{publisherId}";
