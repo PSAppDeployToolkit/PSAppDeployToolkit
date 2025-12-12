@@ -173,9 +173,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Operating System
     $osInfo = Get-ADTOperatingSystemInfo
-    $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem -Verbose:$false))
-    $variables.Add('envOSName', $variables.envOS.Caption.Trim())
-    $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
+    $variables.Add('envOSName', $osInfo.Name)
     $variables.Add('envOSVersion', $osInfo.Version)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
@@ -183,7 +181,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envOSVersionRevision', $(if ($variables.envOSVersion.Revision -ge 0) { $variables.envOSVersion.Revision }))
 
     # Get the operating system type.
-    $variables.Add('envOSProductType', $variables.envOS.ProductType)
+    $variables.Add('envOSProductType', $osInfo.ProductType)
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
