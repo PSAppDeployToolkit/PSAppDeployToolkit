@@ -10,8 +10,8 @@
     <AssemblyTitle>PSAppDeployToolkit Common Support Library</AssemblyTitle>
     <AssemblyDescription>This assembly serves to provide common code and utilities to all areas of PSAppDeployToolkit.</AssemblyDescription>
     <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.1.7.0</AssemblyVersion>
-    <InformationalVersion>4.1.7</InformationalVersion>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <InformationalVersion>4.2.0</InformationalVersion>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <WarningLevel>9999</WarningLevel>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
