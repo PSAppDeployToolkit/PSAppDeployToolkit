@@ -3,7 +3,7 @@
     /// <summary>
     /// The processor architecture that a given package was built for.
     /// </summary>
-    public enum ProcessorArchitecture : uint
+    public enum ProcessorArchitecture
     {
         /// <summary/>
         X86 = 0,
