@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using System.Xml;
+using Microsoft.Win32;
+using PSADT.Utilities;
 
 namespace PSADT.PackageManagement
 {
@@ -276,8 +277,7 @@ namespace PSADT.PackageManagement
         /// </summary>
         private static AppxManifest ReadPackageManifest(string manifestPath)
         {
-            var xmlDoc = new XmlDocument();
-            xmlDoc.Load(manifestPath);
+            var xmlDoc = XmlUtilities.SafeLoadFromPath(manifestPath);
 
             var packageIdentityNode = xmlDoc.SelectSingleNode("/*[local-name()='Package']/*[local-name()='Identity']")
                 ?? throw new InvalidOperationException("No valid Package Identity node found in the manifest.");
@@ -316,8 +316,7 @@ namespace PSADT.PackageManagement
         /// </summary>
         private static AppxManifest ReadBundleManifest(string manifestPath)
         {
-            var xmlDoc = new XmlDocument();
-            xmlDoc.Load(manifestPath);
+            var xmlDoc = XmlUtilities.SafeLoadFromPath(manifestPath);
 
             var bundleIdentityNode = xmlDoc.SelectSingleNode("/*[local-name()='Bundle']/*[local-name()='Identity']")
                 ?? throw new InvalidOperationException("No valid Bundle Identity node found in the manifest.");
