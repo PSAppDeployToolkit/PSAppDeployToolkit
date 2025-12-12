@@ -23,25 +23,25 @@ namespace PSADT.PackageManagement
 
         private const int ERROR_SUCCESS = 0;
 
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong VerifyPackageFamilyName(string packageFamilyName);
 
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong VerifyPackageFullName(string packageFullName);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong PackageFamilyNameFromId(
             PACKAGE_ID packageId,
             ref uint packageFamilyNameLength,
             StringBuilder? packageFamilyName);
 
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong PackageFamilyNameFromFullName(
             string packageFullName,
             ref uint packageFamilyNameLength,
             StringBuilder? packageFamilyName);
 
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong PackageNameAndPublisherIdFromFamilyName(
             string packageFamilyName,
             ref uint packageNameLength,
