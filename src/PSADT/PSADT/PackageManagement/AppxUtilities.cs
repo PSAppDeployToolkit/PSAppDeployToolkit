@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Xml;
 using Microsoft.Win32;
+using PSADT.LibraryInterfaces;
 using PSADT.Utilities;
 
 namespace PSADT.PackageManagement
@@ -23,12 +24,6 @@ namespace PSADT.PackageManagement
         private const string USER_PACKAGE_SUBKEY = @"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages";
 
         private const int ERROR_SUCCESS = 0;
-
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        private static extern ulong VerifyPackageFamilyName(string packageFamilyName);
-
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        private static extern ulong VerifyPackageFullName(string packageFullName);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1838:Avoid 'StringBuilder' parameters for P/Invokes", Justification = "This P/Invoke is temporary for now.")]
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -65,27 +60,13 @@ namespace PSADT.PackageManagement
         }
 
         /// <summary>
-        /// Check if the identifier is a valid Appx package family name.
-        /// </summary>
-        public static bool IsValidFamilyName(string packageFamilyName)
-        {
-            return VerifyPackageFamilyName(packageFamilyName) == ERROR_SUCCESS;
-        }
-
-        /// <summary>
-        /// Check if the identifier is a valid Appx package full name.
-        /// </summary>
-        public static bool IsValidFullName(string packageFullName)
-        {
-            return VerifyPackageFullName(packageFullName) == ERROR_SUCCESS;
-        }
-
-        /// <summary>
         /// Check if the identifier is a valid Appx package identifier (either family name or full name).
         /// </summary>
         public static bool IsValidIdentifier(string identifier)
         {
-            return IsValidFamilyName(identifier) || IsValidFullName(identifier);
+            KernelBase.VerifyPackageFamilyName(identifier);
+            KernelBase.VerifyPackageFullName(identifier);
+            return true;
         }
 
         /// <summary>
@@ -135,11 +116,7 @@ namespace PSADT.PackageManagement
         /// </summary>
         public static ReadOnlyCollection<string> GetProvisionedPackageFamilyMembers(string packageFamilyName)
         {
-            if (!IsValidFamilyName(packageFamilyName))
-            {
-                throw new ArgumentException("Invalid package family name.", nameof(packageFamilyName));
-            }
-
+            KernelBase.VerifyPackageFamilyName(packageFamilyName);
             return new ReadOnlyCollection<string>(
                 GetProvisionedPackageIdentifiers()
                     .Where(id => GetFamilyFromFullName(id).Equals(packageFamilyName, StringComparison.OrdinalIgnoreCase))
@@ -152,11 +129,7 @@ namespace PSADT.PackageManagement
         /// </summary>
         public static ReadOnlyCollection<string> GetPackageFamilyMembers(string packageFamilyName)
         {
-            if (!IsValidFamilyName(packageFamilyName))
-            {
-                throw new ArgumentException("Invalid package family name.", nameof(packageFamilyName));
-            }
-
+            KernelBase.VerifyPackageFamilyName(packageFamilyName);
             return new ReadOnlyCollection<string>(
                 GetPackageIdentifiers()
                     .Where(id => GetFamilyFromFullName(id).Equals(packageFamilyName, StringComparison.OrdinalIgnoreCase))
@@ -169,11 +142,7 @@ namespace PSADT.PackageManagement
         /// </summary>
         public static bool IsProvisionedPackageInstalled(string packageFullName)
         {
-            if (!IsValidFullName(packageFullName))
-            {
-                throw new ArgumentException("Invalid package full name.", nameof(packageFullName));
-            }
-
+            KernelBase.VerifyPackageFullName(packageFullName);
             using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             using var packageKey = baseKey.OpenSubKey($"{PROVISIONED_PACKAGE_SUBKEY}\\{packageFullName}");
             return packageKey != null;
@@ -184,11 +153,7 @@ namespace PSADT.PackageManagement
         /// </summary>
         public static bool IsPackageInstalled(string packageFullName, IdentityReference? user = null)
         {
-            if (!IsValidFullName(packageFullName))
-            {
-                throw new ArgumentException("Invalid package full name.", nameof(packageFullName));
-            }
-
+            KernelBase.VerifyPackageFullName(packageFullName);
             if (user != null)
             {
                 var sid = user.Translate(typeof(SecurityIdentifier)).Value;
