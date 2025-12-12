@@ -159,6 +159,10 @@ MsiGetLastErrorRecord
 MsiGetSummaryInformation
 MsiOpenDatabase
 MsiSummaryInfoGetProperty
+NERR_Success
+NetApiBufferFree
+NetGetJoinInformation
+NETSETUP_JOIN_STATUS
 NtQueryInformationProcess
 NtQueryObject
 NtQuerySystemInformation
