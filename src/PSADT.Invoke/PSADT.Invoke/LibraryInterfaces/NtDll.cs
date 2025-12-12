@@ -27,7 +27,6 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// converted NTSTATUS value.</exception>
         internal static int NtQueryInformationProcess(SafeProcessHandle ProcessHandle, out PROCESS_BASIC_INFORMATION ProcessBasicInformation)
         {
-            PROCESS_BASIC_INFORMATION ProcessBasicInformationLocal = new();
             uint ReturnLengthLocal = 0; NTSTATUS res;
             bool ProcessHandleAddRef = false;
             try
@@ -35,7 +34,10 @@ namespace PSADT.Invoke.LibraryInterfaces
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
                 unsafe
                 {
-                    res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), PROCESSINFOCLASS.ProcessBasicInformation, &ProcessBasicInformationLocal, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref ReturnLengthLocal);
+                    fixed (PROCESS_BASIC_INFORMATION* pProcessBasicInformation = &ProcessBasicInformation)
+                    {
+                        res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), PROCESSINFOCLASS.ProcessBasicInformation, pProcessBasicInformation, (uint)Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), ref ReturnLengthLocal);
+                    }
                 }
             }
             finally
@@ -49,7 +51,6 @@ namespace PSADT.Invoke.LibraryInterfaces
             {
                 throw new Win32Exception((int)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
-            ProcessBasicInformation = ProcessBasicInformationLocal;
             return res;
         }
     }
