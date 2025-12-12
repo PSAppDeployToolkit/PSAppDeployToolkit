@@ -36,20 +36,6 @@ namespace PSADT.PackageManagement
             ref uint packageFamilyNameLength,
             StringBuilder? packageFamilyName);
 
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        private static extern ulong PackageFamilyNameFromFullName(
-            string packageFullName,
-            ref uint packageFamilyNameLength,
-            StringBuilder? packageFamilyName);
-
-        [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        private static extern ulong PackageNameAndPublisherIdFromFamilyName(
-            string packageFamilyName,
-            ref uint packageNameLength,
-            StringBuilder? packageName,
-            ref uint packagePublisherIdLength,
-            StringBuilder? packagePublisherId);
-
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode, Pack = 4)]
         private struct PACKAGE_ID
         {
