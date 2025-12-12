@@ -156,7 +156,7 @@ namespace PSADT.PackageManagement
 
             return new ReadOnlyCollection<string>(
                 GetProvisionedPackageIdentifiers()
-                    .Where(id => GetFamilyFromFullName(id).Equals(packageFamilyName, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(id => GetFamilyFromFullName(id).Equals(packageFamilyName, StringComparison.OrdinalIgnoreCase))
                     .ToList()
             );
         }
@@ -336,7 +336,7 @@ namespace PSADT.PackageManagement
 
             var familyIdentifer = GetPackageFamilyName(name, publisher);
             var publisherId = familyIdentifer.Split('_').Last();
-            var fullNameIdentifier = $"{name}_{version}_{architecture.ToString().ToLower()}_{resourceId}_{publisherId}";
+            var fullNameIdentifier = $"{name}_{version}_{architecture.ToString().ToLowerInvariant()}_{resourceId}_{publisherId}";
 
             var applicationNodes = xmlDoc.SelectNodes("/*[local-name()='Bundle']/*[local-name()='Packages']/*[@Type='application']");
             var resourceNodes = xmlDoc.SelectNodes("/*[local-name()='Bundle']/*[local-name()='Packages']/*[@Type='resource']");
