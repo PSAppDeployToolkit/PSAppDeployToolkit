@@ -1,6 +1,6 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
