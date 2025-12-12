@@ -30,6 +30,7 @@ namespace PSADT.PackageManagement
         [DllImport("kernelbase.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong VerifyPackageFullName(string packageFullName);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1838:Avoid 'StringBuilder' parameters for P/Invokes", Justification = "This P/Invoke is temporary for now.")]
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern ulong PackageFamilyNameFromId(
             PACKAGE_ID packageId,
