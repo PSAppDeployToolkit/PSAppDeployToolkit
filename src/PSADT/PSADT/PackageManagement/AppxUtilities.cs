@@ -106,7 +106,6 @@ namespace PSADT.PackageManagement
         /// </summary>
         public static ReadOnlyCollection<string> GetProvisionedPackageIdentifiers()
         {
-
             using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             using var packageKey = baseKey.OpenSubKey(PROVISIONED_PACKAGE_SUBKEY);
             return new ReadOnlyCollection<string>(packageKey == null ? Array.Empty<string>() : packageKey.GetSubKeyNames());
@@ -136,11 +135,10 @@ namespace PSADT.PackageManagement
         /// </summary>
         public static string GetFamilyFromFullName(string identifier)
         {
-            if (!IsValidIdentifier(identifier))
+            if (identifier is null || !IsValidIdentifier(identifier))
             {
                 throw new ArgumentException("Invalid package identifier.", nameof(identifier));
             }
-
             var parts = identifier.Split('_');
             return $"{parts.First()}_{parts.Last()}";
         }
