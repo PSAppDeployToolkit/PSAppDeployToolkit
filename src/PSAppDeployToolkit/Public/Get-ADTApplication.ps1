@@ -31,6 +31,9 @@ function Get-ADTApplication
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
 
+    .PARAMETER Appx
+        Switch to the Appx application search mode.
+
     .INPUTS
         None
 
@@ -95,9 +98,8 @@ function Get-ADTApplication
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTApplication
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Appx', Justification = "Parameter is solely required to switch the parameter set.")]
+    [CmdletBinding(DefaultParameterSetName = 'Arp')]
     [OutputType([PSADT.Types.InstalledApplication])]
     param
     (
@@ -109,20 +111,23 @@ function Get-ADTApplication
         [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
         [System.String]$NameMatch = 'Contains',
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Arp')]
         [ValidateNotNullOrEmpty()]
         [System.Guid[]]$ProductCode,
 
-        [Parameter(Mandatory = $false)]
-        [ValidateSet('All', 'MSI', 'EXE', 'APPX')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Arp')]
+        [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Arp')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
         [Parameter(Mandatory = $false, Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock]$FilterScript
+        [System.Management.Automation.ScriptBlock]$FilterScript,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Appx')]
+        [System.Management.Automation.SwitchParameter]$Appx
     )
 
     begin
@@ -175,8 +180,8 @@ function Get-ADTApplication
     process
     {
         # Create a custom object with the desired properties for the installed applications and sanitize property details.
-        Write-ADTLogEntry -Message "Getting information for installed applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
-        $installedApplication = if ($ApplicationType -eq 'APPX')
+        Write-ADTLogEntry -Message "Getting information for installed $($PSCmdlet.ParameterSetName) applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
+        $installedApplication = if ($PSCmdlet.ParameterSetName -eq 'Appx')
         {
             foreach ($item in (Get-ChildItem -LiteralPath $appxKey -ErrorAction Ignore))
             {
@@ -184,8 +189,9 @@ function Get-ADTApplication
                 {
                     try
                     {
-                        $manifest = [PSADT.PackageManagement.AppxUtilities]::GetProvisionedPackageManifest($item.PSChildName)
-                        $appDisplayName = $manifest.Name
+                        $manifestPath = [System.Environment]::ExpandEnvironmentVariables($item.GetValue("Path"))
+                        $manifest = Get-ADTPackageManifest -LiteralPath $manifestPath
+                        $appDisplayName = if (![System.String]::IsNullOrWhiteSpace($manifest.DisplayName)) { $manifest.DisplayName } else { $manifest.Name }
 
                         # Apply name filter if specified.
                         if ($nameFilterScript -and !(& $nameFilterScript))
@@ -198,11 +204,11 @@ function Get-ADTApplication
                             $(
                                 if ($manifest.IsBundle)
                                 {
-                                    [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($manifest.Path))
+                                    [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($manifestPath))
                                 }
                                 else
                                 {
-                                    [System.IO.Path]::GetDirectoryName($manifest.Path)
+                                    [System.IO.Path]::GetDirectoryName($manifestPath)
                                 }
                             )
                         )
@@ -211,30 +217,32 @@ function Get-ADTApplication
                         $packageRootSize = 0; $packageRoot.GetFiles("*", [System.IO.SearchOption]::AllDirectories) | . { process { $packageRootSize += $_.Length } }
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
-                        $app = [PSADT.Types.InstalledApplication]::new(
+                        $app = [PSADT.Types.InstalledAppxPackage]::new(
                             $item.PSPath,
                             $item.PSParentPath,
                             $item.PSChildName,
-                            $null,
                             $appDisplayName,
                             $manifest.Version,
-                            "$(Get-ADTPowerShellProcessPath) -NonInteractive -NoProfile -WindowStyle Hidden -Command `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullNameIdentifier)' -ErrorAction Stop`"",
-                            $null,
+                            "powershell.exe -NonInteractive -NoProfile -WindowStyle Hidden -Command `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullName)' -ErrorAction Stop`"",
                             $null,
                             $packageRoot,
                             [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date,
-                            $manifest.Publisher,
-                            $null,
+                            $(if (![System.String]::IsNullOrWhiteSpace($manifest.PublisherDisplayName)) { $manifest.PublisherDisplayName } else { $manifest.PublisherDistinguishedName }),
                             $packageRootSize,
-                            $false,
-                            $false,
-                            $manifest.Architecture -in @([PSADT.PackageManagement.ProcessorArchitecture]::X64, [PSADT.PackageManagement.ProcessorArchitecture]::Arm64, [PSADT.PackageManagement.ProcessorArchitecture]::Neutral)
+                            $manifest.Architecture.Contains("64") -or $manifest.Architecture -eq "neutral",
+                            $manifest.FullName,
+                            $manifest.FamilyName,
+                            $manifest.PublisherId,
+                            $manifest.Architecture,
+                            $manifest.IsBundle,
+                            $manifest.IsResource,
+                            $manifest.IsFramework
                         )
 
-                        # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
+                        # Build out an object and return it to the pipeline if there's no FilterScript or the FilterScript returns something.
                         if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                         {
-                            Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
+                            Write-ADTLogEntry -Message "Found provisioned package [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
                             $app
                         }
                     }
@@ -346,31 +354,66 @@ function Get-ADTApplication
                         }
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
-                        $app = [PSADT.Types.InstalledApplication]::new(
-                            $item.PSPath,
-                            $item.PSParentPath,
-                            $item.PSChildName,
-                            $appMsiGuid,
-                            $appDisplayName,
-                            $appProperties['DisplayVersion'],
-                            $uninstallString,
-                            $quietUninstallString,
-                            $appProperties['InstallSource'],
-                            $appProperties['InstallLocation'],
-                            $installDate,
-                            $appProperties['Publisher'],
-                            $appProperties['HelpLink'],
-                            $appProperties['EstimatedSize'],
-                            $item.GetValue('SystemComponent', $false),
-                            $windowsInstaller,
-                            ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
-                        )
+                        $app = if (!$windowsInstaller)
+                        {
+                            [PSADT.Types.InstalledArpApplication]::new(
+                                $item.PSPath,
+                                $item.PSParentPath,
+                                $item.PSChildName,
+                                $appDisplayName,
+                                $appProperties['DisplayVersion'],
+                                $uninstallString,
+                                $appProperties['InstallSource'],
+                                $appProperties['InstallLocation'],
+                                $installDate,
+                                $appProperties['Publisher'],
+                                $appProperties['EstimatedSize'],
+                                ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')),
+                                $quietUninstallString,
+                                $appProperties['HelpLink'],
+                                $item.GetValue('SystemComponent', $false)
+                            )
+                        }
+                        else
+                        {
+                            [PSADT.Types.InstalledMsiApplication]::new(
+                                $item.PSPath,
+                                $item.PSParentPath,
+                                $item.PSChildName,
+                                $appDisplayName,
+                                $appProperties['DisplayVersion'],
+                                $uninstallString,
+                                $appProperties['InstallSource'],
+                                $appProperties['InstallLocation'],
+                                $installDate,
+                                $appProperties['Publisher'],
+                                $appProperties['EstimatedSize'],
+                                ([System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')),
+                                $quietUninstallString,
+                                $appProperties['HelpLink'],
+                                $item.GetValue('SystemComponent', $false),
+                                $appMsiGuid
+                            )
+                        }
 
-                        # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
+                        # Build out an object and return it to the pipeline if there's no FilterScript or the FilterScript returns something.
                         if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                         {
                             Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
                             $app
+                        }
+
+                        # Write to log the number of entries skipped due to them being considered updates.
+                        if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
+                        {
+                            if ($updatesSkippedCounter -eq 1)
+                            {
+                                Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "Skipped $updatesSkippedCounter entries while searching, because they were considered Microsoft updates."
+                            }
                         }
                     }
                     catch
@@ -382,20 +425,6 @@ function Get-ADTApplication
                 {
                     Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
                 }
-            }
-        }
-
-
-        # Write to log the number of entries skipped due to them being considered updates.
-        if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
-        {
-            if ($updatesSkippedCounter -eq 1)
-            {
-                Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
             }
         }
 
