@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.Packaging.Appx;
 
 namespace PSADT.PackageManagement
 {
@@ -9,11 +11,9 @@ namespace PSADT.PackageManagement
     /// </summary>
     public static class PackageUtilities
     {
-        private const int ERROR_SUCCESS = 0;
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1838:Avoid 'StringBuilder' parameters for P/Invokes", Justification = "This P/Invoke is temporary for now.")]
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        private static extern ulong PackageFamilyNameFromId(
+        private static extern WIN32_ERROR PackageFamilyNameFromId(
             PACKAGE_ID packageId,
             ref uint packageFamilyNameLength,
             StringBuilder? packageFamilyName);
@@ -30,37 +30,27 @@ namespace PSADT.PackageManagement
             public string publisherId;
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        private struct PACKAGE_VERSION
-        {
-            [FieldOffset(0)]
-            public ulong Version;
-            [FieldOffset(0)]
-            public ushort Revision;
-            [FieldOffset(2)]
-            public ushort Build;
-            [FieldOffset(4)]
-            public ushort Minor;
-            [FieldOffset(6)]
-            public ushort Major;
-        }
-
         /// <summary>
         /// Retrieves the package family name from a given package name and publisher.
         /// </summary>
-        public static string GetPackageFamilyName(string name, string publisher)
+        /// <remarks>
+        /// The method will convert the publisherDn into the publisherId to construct the family name.
+        /// </remarks>
+        /// <param name="name">The identifiying name of the package.</param>
+        /// <param name="publisherDn">The distinguished name of the publisher.</param>
+        public static string GetPackageFamilyName(string name, string publisherDn)
         {
             var packageId = new PACKAGE_ID
             {
                 name = name,
-                publisher = publisher
+                publisher = publisherDn
             };
 
             var packageFamilyNameLength = 0u;
             PackageFamilyNameFromId(packageId, ref packageFamilyNameLength, null);
 
             var packageFamilyNameBuilder = new StringBuilder((int)packageFamilyNameLength);
-            if (PackageFamilyNameFromId(packageId, ref packageFamilyNameLength, packageFamilyNameBuilder) == ERROR_SUCCESS)
+            if (PackageFamilyNameFromId(packageId, ref packageFamilyNameLength, packageFamilyNameBuilder) == WIN32_ERROR.ERROR_SUCCESS)
             {
                 return packageFamilyNameBuilder.ToString();
             }

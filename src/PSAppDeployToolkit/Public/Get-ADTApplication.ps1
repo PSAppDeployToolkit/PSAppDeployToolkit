@@ -135,7 +135,8 @@ function Get-ADTApplication
         # Announce start.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $updatesSkippedCounter = 0
-        $appxKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Applications'
+        $provisionedAppxKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Applications'
+        $appxKey = 'Microsoft.PowerShell.Core\Registry::HKEY_CLASSES_ROOT\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\PackageRepository\Packages'
         $uninstallKeyPaths = $(
             'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
             'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -189,8 +190,16 @@ function Get-ADTApplication
                 {
                     try
                     {
-                        $manifestPath = [System.Environment]::ExpandEnvironmentVariables($item.GetValue("Path"))
-                        $manifest = Get-ADTPackageManifest -LiteralPath $manifestPath
+                        # Check if the path reference is set
+                        if (-not ($packageRoot = $item.GetValue("Path")))
+                        {
+                            continue
+                        }
+
+                        # Parse the included manifest.
+                        $manifest = Get-ADTPackageManifest -LiteralPath "$packageRoot\AppxManifest.xml"
+
+                        # Check which name the filter should be applied to
                         $appDisplayName = if (![System.String]::IsNullOrWhiteSpace($manifest.DisplayName)) { $manifest.DisplayName } else { $manifest.Name }
 
                         # Apply name filter if specified.
@@ -199,22 +208,45 @@ function Get-ADTApplication
                             continue
                         }
 
-                        # Extract the package root from the manifest path.
-                        $packageRoot = [System.IO.DirectoryInfo]::new(
-                            $(
-                                if ($manifest.IsBundle)
+                        # If the package resides in SystemApps it is considered non removable
+                        $nonRemovable = $packageRoot -like "*\Windows\SystemApps\*"
+
+                        # Check if the package was provisioned and by whom.
+                        $provisionedFullName = $null
+                        if (-not $nonRemovable)
+                        {
+                            if (Get-Item -LiteralPath "$appxKey\$($manifest.FullName)")
+                            {
+                                $provisionedFullName = $manifest.FullName
+                            }
+                            else
+                            {
+                                $provisionedFullName = foreach ($familyMember in (Get-ChildItem -LiteralPath $provisionedAppxKey | Where-Object { $_.PSChildName.StartsWith($manifest.Name) -and $_.PSChildName.EndsWith($manifest.PublisherId) }))
                                 {
-                                    [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($manifestPath))
+                                    $memberManifest = Get-ADTPackageManifest -LiteralPath ([System.Environment]::ExpandEnvironmentVariables($familyMember.GetValue("Path")))
+                                    if ($memberManifest.IsBundle -and $manifest.FullName -in ($memberManifest.BundledApplications + $memberManifest.BundledResources))
+                                    {
+                                        $provisionedFullName = $memberManifest.FullName
+                                        break
+                                    }
                                 }
-                                else
-                                {
-                                    [System.IO.Path]::GetDirectoryName($manifestPath)
-                                }
-                            )
-                        )
+                            }
+                        }
 
                         # Calculate the application size.
-                        $packageRootSize = 0; $packageRoot.GetFiles("*", [System.IO.SearchOption]::AllDirectories) | . { process { $packageRootSize += $_.Length } }
+                        $packageRootSize = 0; [System.IO.Directory]::GetFiles($packageRoot, "*", [System.IO.SearchOption]::AllDirectories) | . { process { $packageRootSize += $_.Length } }
+
+                        # Calculate the uninstall string
+                        $uninstallString = 'powershell.exe -NonInteractive -NoProfile -WindowStyle Hidden -Command "' + $(
+                            if (![System.String]::IsNullOrWhiteSpace($provisionedFullName))
+                            {
+                                "Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$provisionedFullName' -ErrorAction Stop"
+                            }
+                            else
+                            {
+                                "Remove-AppxPackage -AllUsers -Package '$($manifest.FullName)' -ErrorAction Stop"
+                            }
+                        ) + '"'
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                         $app = [PSADT.Types.InstalledAppxPackage]::new(
@@ -223,7 +255,7 @@ function Get-ADTApplication
                             $item.PSChildName,
                             $appDisplayName,
                             $manifest.Version,
-                            "powershell.exe -NonInteractive -NoProfile -WindowStyle Hidden -Command `"Remove-AppxProvisionedPackage -Online -AllUsers -PackageName '$($manifest.FullName)' -ErrorAction Stop`"",
+                            $uninstallString,
                             $null,
                             $packageRoot,
                             [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date,
@@ -236,13 +268,15 @@ function Get-ADTApplication
                             $manifest.Architecture,
                             $manifest.IsBundle,
                             $manifest.IsResource,
-                            $manifest.IsFramework
+                            $manifest.IsFramework,
+                            $nonRemovable,
+                            $provisionedFullName
                         )
 
                         # Build out an object and return it to the pipeline if there's no FilterScript or the FilterScript returns something.
                         if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                         {
-                            Write-ADTLogEntry -Message "Found provisioned package [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
+                            Write-ADTLogEntry -Message "Found package [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
                             $app
                         }
                     }

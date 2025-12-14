@@ -15,6 +15,18 @@ namespace PSADT.Types
         /// <summary>
         /// Initializes a new instance of the <see cref="InstalledApplication"/> record.
         /// </summary>
+        /// <param name="psPath">The registry key that contains the uninstall entry.</param>
+        /// <param name="psParentPath">The registry key for the subkey's parent.</param>
+        /// <param name="psChildName">The registry subkey for uninstalling the application.</param>
+        /// <param name="displayName">The display name of the application.</param>
+        /// <param name="displayVersion">The version of the application.</param>
+        /// <param name="uninstallString">The uninstall string used to remove the application.</param>
+        /// <param name="installSource">The source from which the application was installed.</param>
+        /// <param name="installLocation">The location where the application is installed.</param>
+        /// <param name="installDate">The date the application was installed (as a string).</param>
+        /// <param name="publisher">The publisher of the application.</param>
+        /// <param name="estimatedSize">The estimated on-disk usage of the application.</param>
+        /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
         protected InstalledApplication(
             string psPath,
             string psParentPath,
@@ -62,17 +74,17 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the registry key that contains the uninstall entry.
         /// </summary>
-        public readonly string PSPath;
+        public string PSPath { get; }
 
         /// <summary>
         /// Gets the registry key for the subkey's parent.
         /// </summary>
-        public readonly string PSParentPath;
+        public string PSParentPath { get; }
 
         /// <summary>
         /// Gets the registry subkey for uninstalling the application.
         /// </summary>
-        public readonly string PSChildName;
+        public string PSChildName { get; }
 
         /// <summary>
         /// Gets the display name of the application.
@@ -82,51 +94,51 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the version of the application.
         /// </summary>
-        public readonly string? DisplayVersion;
+        public string? DisplayVersion { get; }
 
         /// <summary>
         /// Gets the uninstall string used to remove the application.
         /// </summary>
-        public readonly string? UninstallString;
+        public string? UninstallString { get; }
 
         /// <summary>
         /// Gets the file path to the uninstall string, if available.
         /// </summary>
-        public readonly FileInfo? UninstallStringFilePath;
+        public FileInfo? UninstallStringFilePath { get; }
 
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
         /// </summary>
-        public readonly IReadOnlyList<string>? UninstallStringArgumentList;
+        public IReadOnlyList<string>? UninstallStringArgumentList { get; }
 
         /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
-        public readonly DirectoryInfo? InstallSource;
+        public DirectoryInfo? InstallSource { get; }
 
         /// <summary>
         /// Gets the location where the application is installed.
         /// </summary>
-        public readonly DirectoryInfo? InstallLocation;
+        public DirectoryInfo? InstallLocation { get; }
 
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
         /// </summary>
-        public readonly DateTime? InstallDate;
+        public DateTime? InstallDate { get; }
 
         /// <summary>
         /// Gets the publisher of the application.
         /// </summary>
-        public readonly string? Publisher;
+        public string? Publisher { get; }
 
         /// <summary>
         /// Gets the estimated disk usage on kilobytes of the application.
         /// </summary>
-        public readonly uint? EstimatedSize;
+        public uint? EstimatedSize { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
-        public readonly bool Is64BitApplication;
+        public bool Is64BitApplication { get; }
     }
 }
