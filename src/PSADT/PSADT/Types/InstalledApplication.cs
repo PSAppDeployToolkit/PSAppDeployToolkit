@@ -15,6 +15,18 @@ namespace PSADT.Types
         /// <summary>
         /// Initializes a new instance of the <see cref="InstalledApplication"/> record.
         /// </summary>
+        /// <param name="psPath">The registry key that contains the uninstall entry.</param>
+        /// <param name="psParentPath">The registry key for the subkey's parent.</param>
+        /// <param name="psChildName">The registry subkey for uninstalling the application.</param>
+        /// <param name="displayName">The display name of the application.</param>
+        /// <param name="displayVersion">The version of the application.</param>
+        /// <param name="uninstallString">The uninstall string used to remove the application.</param>
+        /// <param name="installSource">The source from which the application was installed.</param>
+        /// <param name="installLocation">The location where the application is installed.</param>
+        /// <param name="installDate">The date the application was installed (as a string).</param>
+        /// <param name="publisher">The publisher of the application.</param>
+        /// <param name="estimatedSize">The estimated on-disk usage of the application.</param>
+        /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
         protected InstalledApplication(
             string psPath,
             string psParentPath,
@@ -75,11 +87,6 @@ namespace PSADT.Types
         public string PSChildName { get; }
 
         /// <summary>
-        /// Gets the product code for the application.
-        /// </summary>
-        public Guid? ProductCode { get; }
-
-        /// <summary>
         /// Gets the display name of the application.
         /// </summary>
         public string DisplayName { get; }
@@ -105,21 +112,6 @@ namespace PSADT.Types
         public IReadOnlyList<string>? UninstallStringArgumentList { get; }
 
         /// <summary>
-        /// Gets the quiet uninstall string used to remove the application.
-        /// </summary>
-        public string? QuietUninstallString { get; }
-
-        /// <summary>
-        /// Gets the file path to the quiet uninstall string, if available.
-        /// </summary>
-        public FileInfo? QuietUninstallStringFilePath { get; }
-
-        /// <summary>
-        /// Gets the quiet uninstall arguments used to remove the application as a list.
-        /// </summary>
-        public IReadOnlyList<string>? QuietUninstallStringArgumentList { get; }
-
-        /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
         public DirectoryInfo? InstallSource { get; }
@@ -140,24 +132,9 @@ namespace PSADT.Types
         public string? Publisher { get; }
 
         /// <summary>
-        /// Gets the publisher's help link of the application.
-        /// </summary>
-        public Uri? HelpLink { get; }
-
-        /// <summary>
         /// Gets the estimated disk usage on kilobytes of the application.
         /// </summary>
         public uint? EstimatedSize { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the application is a system component.
-        /// </summary>
-        public bool SystemComponent { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the application is an MSI.
-        /// </summary>
-        public bool WindowsInstaller { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a 64-bit application.

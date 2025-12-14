@@ -11,6 +11,27 @@ namespace PSADT.Types
         /// <summary>
         /// Creates a new instance of the <see cref="InstalledAppxPackage"/> record.
         /// </summary>
+        /// <param name="psPath">The registry key that contains the uninstall entry.</param>
+        /// <param name="psParentPath">The registry key for the subkey's parent.</param>
+        /// <param name="psChildName">The registry subkey for uninstalling the application.</param>
+        /// <param name="displayName">The display name of the application.</param>
+        /// <param name="displayVersion">The version of the application.</param>
+        /// <param name="uninstallString">The uninstall string used to remove the application.</param>
+        /// <param name="installSource">The source from which the application was installed.</param>
+        /// <param name="installLocation">The location where the application is installed.</param>
+        /// <param name="installDate">The date the application was installed (as a string).</param>
+        /// <param name="publisher">The publisher of the application.</param>
+        /// <param name="estimatedSize">The estimated on-disk usage of the application.</param>
+        /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
+        /// <param name="fullName">The full name of the Appx package.</param>
+        /// <param name="familyName">The family name of the Appx package.</param>
+        /// <param name="publisherId">The publisher ID of the Appx package.</param>
+        /// <param name="architecture">The architecture of the Appx package.</param>
+        /// <param name="isBundle">A value indicating whether the Appx package is a bundle.</param>
+        /// <param name="isResource">A value indicating whether the Appx package is a resource.</param>
+        /// <param name="isFramework">A value indicating whether the Appx package is a framework.</param>
+        /// <param name="nonRemovable">A value indicating whether the Appx package is non-removable.</param>
+        /// <param name="provisionedPackage">A value indicating whether the Appx package is provisioned.</param>
         public InstalledAppxPackage(
             string psPath,
             string psParentPath,
@@ -30,7 +51,9 @@ namespace PSADT.Types
             string architecture,
             bool isBundle,
             bool isResource,
-            bool isFramework)
+            bool isFramework,
+            bool nonRemovable,
+            string? provisionedPackage)
             : base(psPath, psParentPath, psChildName, displayName, displayVersion, uninstallString, installSource, installLocation, installDate, publisher, estimatedSize, is64BitApplication)
         {
             FullName = !string.IsNullOrWhiteSpace(fullName) ? fullName : throw new ArgumentNullException("FullName cannot be null or empty.", (Exception?)null);
@@ -40,41 +63,63 @@ namespace PSADT.Types
             IsBundle = isBundle;
             IsResource = isResource;
             IsFramework = isFramework;
+            NonRemovable = nonRemovable;
+
+            if (!string.IsNullOrWhiteSpace(provisionedPackage))
+            {
+                IsProvisioned = true;
+                ProvisionedPackage = provisionedPackage;
+            }
         }
 
         /// <summary>
         /// Gets the package full name of the package.
         /// </summary>
-        public readonly string FullName;
+        public string FullName { get; }
 
         /// <summary>
         /// Gets the family name this package belongs to.
         /// </summary>
-        public readonly string FamilyName;
+        public string FamilyName { get; }
 
         /// <summary>
         /// Gets the publisher ID of the package.
         /// </summary>
-        public readonly string PublisherId;
+        public string PublisherId { get; }
 
         /// <summary>
         /// Gets the name of the architecture of the package.
         /// </summary>
-        public readonly string Architecture;
+        public string Architecture { get; }
 
         /// <summary>
         /// Indicates whether the package is a bundle.
         /// </summary>
-        public readonly bool IsBundle;
+        public bool IsBundle { get; }
 
         /// <summary>
         /// Indicates whether the package is a resource package.
         /// </summary>
-        public readonly bool IsResource;
+        public bool IsResource { get; }
 
         /// <summary>
         /// Indicates whether the package is a framework package.
         /// </summary>
-        public readonly bool IsFramework;
+        public bool IsFramework { get; }
+
+        /// <summary>
+        /// Indicates whether the package can be removed.
+        /// </summary>
+        public bool NonRemovable { get; }
+
+        /// <summary>
+        /// Indicates whether the package is provisioned.
+        /// </summary>
+        public bool IsProvisioned { get; }
+
+        /// <summary>
+        /// Gets the full name of the package that provisioned this package, if applicable.
+        /// </summary>
+        public string? ProvisionedPackage { get; }
     }
 }
