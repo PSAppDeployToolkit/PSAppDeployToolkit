@@ -192,7 +192,7 @@ function Start-ADTMsiProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.InstalledApplication]$InstalledApplication,
+        [PSADT.Types.InstalledMsiApplication]$InstalledApplication,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
