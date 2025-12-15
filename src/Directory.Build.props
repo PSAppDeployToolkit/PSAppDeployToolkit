@@ -1,4 +1,51 @@
 ﻿<Project>
+  <!-- Common properties for all PSADT projects -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Platforms>AnyCPU</Platforms>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <!-- Common company/product metadata -->
+  <PropertyGroup>
+    <Company>PSAppDeployToolkit Team</Company>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
+    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <InformationalVersion>4.2.0</InformationalVersion>
+  </PropertyGroup>
+
+  <!-- Debug configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <!-- Release configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <!-- ARM64 preference for .NET Framework -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <!-- Banned API analyzer -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
@@ -8,5 +55,10 @@
 
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+
+  <!-- Common embedded resource for license -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\COPYING.Lesser" />
   </ItemGroup>
 </Project>

@@ -1,59 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Deterministic>true</Deterministic>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>PSADT.UserInterface.TestHarness</RootNamespace>
     <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
     <Product>PSAppDeployToolkit User Interface Test Harness</Product>
-    <Company>PSAppDeployToolkit Team</Company>
-    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
     <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
     <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
-    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.2.0.0</AssemblyVersion>
-    <InformationalVersion>4.2.0</InformationalVersion>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-all</AnalysisLevel>
+    <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-    <WarningLevel>9999</WarningLevel>
     <NoWarn>CA1031;CA1303</NoWarn>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
-    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
-  </Target>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
-    <Optimize>false</Optimize>
-    <PreferNativeArm64>True</PreferNativeArm64>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
-    <Optimize>true</Optimize>
-    <PreferNativeArm64>True</PreferNativeArm64>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
-    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -69,9 +26,5 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
   </ItemGroup>
 </Project>

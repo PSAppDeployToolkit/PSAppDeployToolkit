@@ -5,47 +5,18 @@
     <RootNamespace>PSADT.Invoke</RootNamespace>
     <AssemblyName>Invoke-AppDeployToolkit</AssemblyName>
     <Product>PSAppDeployToolkit Deployment Script Launcher</Product>
-    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
-    <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
     <AssemblyTitle>PSAppDeployToolkit Deployment Script Launcher</AssemblyTitle>
     <AssemblyDescription>Launches a PSAppDeployToolkit Invoke-AppDeployToolkit.ps1 script without a PowerShell console window being visible.</AssemblyDescription>
-    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.2.0.0</AssemblyVersion>
-    <InformationalVersion>4.2.0</InformationalVersion>
-    <LangVersion>latest</LangVersion>
-    <WarningLevel>9999</WarningLevel>
-    <NoWarn>CA1031;CA1303;PInvoke009</NoWarn>
-    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.Invoke.Program</StartupObject>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-all</AnalysisLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <PreferNativeArm64>True</PreferNativeArm64>
+    <NoWarn>CA1031;CA1303;PInvoke009</NoWarn>
   </PropertyGroup>
 
-  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
-    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
-  </Target>
-
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <!-- PSADT.Invoke has different debug settings for Release builds -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.259">
