@@ -9,6 +9,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
+using Windows.Win32.System.Memory;
 using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
@@ -535,6 +536,39 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Initializes a new Access Control List (ACL) with the specified length and revision.
+        /// </summary>
+        /// <remarks>This method allocates memory for the ACL and initializes it with the specified length
+        /// and revision. The caller is responsible for ensuring that the ACL length is sufficient for its intended use.
+        /// The returned <see cref="LocalFreeSafeHandle"/> must be disposed to release the allocated memory.</remarks>
+        /// <param name="pAcl">When this method returns, contains a <see cref="LocalFreeSafeHandle"/> representing the initialized ACL.
+        /// This parameter is passed uninitialized.</param>
+        /// <param name="nAclLength">The length, in bytes, of the ACL to be initialized. Must be large enough to contain the ACL header and any
+        /// Access Control Entries (ACEs) that will be added.</param>
+        /// <param name="dwAclRevision">The revision level of the ACL. Use a value from the <see cref="ACE_REVISION"/> enumeration.</param>
+        /// <returns><see langword="true"/> if the ACL was successfully initialized; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL InitializeAcl(out LocalFreeSafeHandle pAcl, uint nAclLength, ACE_REVISION dwAclRevision)
+        {
+            var pAclLocal = PInvoke.LocalAlloc(LOCAL_ALLOC_FLAGS.LPTR, nAclLength);
+            if (pAclLocal.IsNull)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            BOOL res;
+            unsafe
+            {
+                res = PInvoke.InitializeAcl((ACL*)pAclLocal, nAclLength, dwAclRevision);
+            }
+            if (!res)
+            {
+                var lastError = Marshal.GetLastWin32Error(); PInvoke.LocalFree(pAclLocal);
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastError);
+            }
+            pAcl = new((IntPtr)pAclLocal, true);
+            return res;
+        }
+
+        /// <summary>
         /// Modifies an access control list (ACL) by adding or updating the specified access control entries (ACEs).
         /// </summary>
         /// <remarks>This method uses the Windows API function <c>SetEntriesInAcl</c> to modify the ACL.
@@ -719,6 +753,145 @@ namespace PSADT.LibraryInterfaces
                 ppDacl = pDacl is not null ? new((IntPtr)pDacl, false) : null;
                 ppSacl = pSacl is not null ? new((IntPtr)pSacl, false) : null;
                 ppSecurityDescriptor = new((IntPtr)pSecurityDescriptor, true);
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Sets the security information of a specified object, such as a file, directory, or registry key.
+        /// </summary>
+        /// <remarks>This method modifies the security descriptor of the specified object. The caller must
+        /// ensure that the provided handles are valid and properly initialized. If any of the optional parameters are
+        /// provided, their corresponding security descriptor components will be updated; otherwise, those components
+        /// will remain unchanged. The caller is responsible for managing the lifetime of the provided handles and
+        /// ensuring they are released appropriately.</remarks>
+        /// <param name="pObjectName">The name of the object whose security information is being set. This cannot be <see langword="null"/>.</param>
+        /// <param name="ObjectType">The type of the object, such as a file, directory, or registry key. This determines how the object name is
+        /// interpreted.</param>
+        /// <param name="SecurityInfo">A combination of flags that specify the components of the security descriptor to set. For example, owner,
+        /// group, DACL, or SACL.</param>
+        /// <param name="psidOwner">An optional handle to the security identifier (SID) for the object's owner. Pass <see langword="null"/> to
+        /// leave the owner unchanged.</param>
+        /// <param name="psidGroup">An optional handle to the SID for the object's primary group. Pass <see langword="null"/> to leave the group
+        /// unchanged.</param>
+        /// <param name="pDacl">An optional handle to the discretionary access control list (DACL) for the object. Pass <see
+        /// langword="null"/> to leave the DACL unchanged.</param>
+        /// <param name="pSacl">An optional handle to the system access control list (SACL) for the object. Pass <see langword="null"/> to
+        /// leave the SACL unchanged.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
+        internal static WIN32_ERROR SetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? psidOwner, SafeNoReleaseHandle? psidGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl)
+        {
+            bool psidOwnerAddRef = false;
+            bool psidGroupAddRef = false;
+            bool pDaclAddRef = false;
+            bool pSaclAddRef = false;
+            WIN32_ERROR res;
+            try
+            {
+                psidOwner?.DangerousAddRef(ref psidOwnerAddRef);
+                psidGroup?.DangerousAddRef(ref psidGroupAddRef);
+                pDacl?.DangerousAddRef(ref pDaclAddRef);
+                pSacl?.DangerousAddRef(ref pSaclAddRef);
+                unsafe
+                {
+                    fixed (char* pObjectNameLocal = pObjectName)
+                    {
+                        res = PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, null != psidOwner ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, null != psidGroup ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                    }
+                }
+            }
+            finally
+            {
+                if (pSaclAddRef)
+                {
+                    pSacl?.DangerousRelease();
+                }
+                if (pDaclAddRef)
+                {
+                    pDacl?.DangerousRelease();
+                }
+                if (psidGroupAddRef)
+                {
+                    psidGroup?.DangerousRelease();
+                }
+                if (psidOwnerAddRef)
+                {
+                    psidOwner?.DangerousRelease();
+                }
+            }
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Resets the security information for a specified object and its subobjects in the object tree.
+        /// </summary>
+        /// <remarks>This method modifies the security settings of the specified object and its subobjects
+        /// based on the provided parameters.  It is the caller's responsibility to ensure that the provided handles are
+        /// valid and properly disposed of after use.</remarks>
+        /// <param name="pObjectName">The name of the object for which to reset security information. This must be a valid path or object name.</param>
+        /// <param name="ObjectType">The type of the object, such as a file, registry key, or service. This determines how the object is treated
+        /// during the operation.</param>
+        /// <param name="SecurityInfo">Specifies the security information to reset, such as owner, group, DACL, or SACL.</param>
+        /// <param name="pOwner">An optional handle to the new owner SID. If null, the owner is not changed.</param>
+        /// <param name="pGroup">An optional handle to the new group SID. If null, the group is not changed.</param>
+        /// <param name="pDacl">An optional handle to the new discretionary access control list (DACL). If null, the DACL is not changed.</param>
+        /// <param name="pSacl">An optional handle to the new system access control list (SACL). If null, the SACL is not changed.</param>
+        /// <param name="KeepExplicit">A value indicating whether explicit access control entries (ACEs) in the DACL or SACL should be preserved. 
+        /// Specify <see langword="true"/> to keep explicit ACEs; otherwise, <see langword="false"/>.</param>
+        /// <param name="fnProgress">A callback function that is invoked to report progress during the operation. This can be used to monitor or
+        /// cancel the operation.</param>
+        /// <param name="ProgressInvokeSetting">Specifies how the progress function is invoked, such as on every object or only on errors.</param>
+        /// <param name="Args">An optional pointer to additional arguments passed to the progress callback function.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation.  Returns <see
+        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation completes successfully.</returns>
+        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress, PROG_INVOKE_SETTING ProgressInvokeSetting, [Optional] IntPtr? Args)
+        {
+            bool pOwnerAddRef = false;
+            bool pGroupAddRef = false;
+            bool pDaclAddRef = false;
+            bool pSaclAddRef = false;
+            WIN32_ERROR res;
+            try
+            {
+                pOwner?.DangerousAddRef(ref pOwnerAddRef);
+                pGroup?.DangerousAddRef(ref pGroupAddRef);
+                pDacl?.DangerousAddRef(ref pDaclAddRef);
+                pSacl?.DangerousAddRef(ref pSaclAddRef);
+                unsafe
+                {
+                    fixed (char* pObjectNameLocal = pObjectName)
+                    {
+                        res = PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, null != pOwner ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, null != pGroup ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, null != Args ? Args.Value.ToPointer() : null);
+                    }
+                }
+            }
+            finally
+            {
+                if (pSaclAddRef)
+                {
+                    pSacl?.DangerousRelease();
+                }
+                if (pDaclAddRef)
+                {
+                    pDacl?.DangerousRelease();
+                }
+                if (pGroupAddRef)
+                {
+                    pGroup?.DangerousRelease();
+                }
+                if (pOwnerAddRef)
+                {
+                    pOwner?.DangerousRelease();
+                }
+            }
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
             return res;
         }

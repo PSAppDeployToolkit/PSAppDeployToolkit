@@ -252,6 +252,57 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
+        /// Resets the permissions for the specified directory path, enabling inheritance and propagating inheritable
+        /// permissions to all child objects.
+        /// </summary>
+        /// <remarks>This method performs the following actions: <list type="bullet"> <item>Enables
+        /// inheritance for the specified directory by setting an empty Discretionary Access Control List (DACL).</item>
+        /// <item>Propagates inheritable permissions from the directory to all child objects, effectively replacing
+        /// existing child object permissions with the inheritable entries.</item> </list> Use this method to restore
+        /// default permission inheritance behavior for a directory and its contents.</remarks>
+        /// <param name="path">The absolute path of the directory for which permissions will be reset. The path must exist and cannot be
+        /// null, empty, or whitespace.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> is null, empty, or consists only of whitespace.</exception>
+        /// <exception cref="DirectoryNotFoundException">Thrown if the directory specified by <paramref name="path"/> does not exist.</exception>
+        public static void ResetPermissionsForPath(string path)
+        {
+            // Validate the input path.
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            // Validate that the path exists.
+            if (!Directory.Exists(path))
+            {
+                throw new DirectoryNotFoundException($"The specified path does not exist: {path}");
+            }
+
+            // Define the flags for setting and getting security information.
+            var getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
+            var setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
+
+            // Create an empty ACL for the purpose of enabling inheritance, then set it on the path.
+            AdvApi32.InitializeAcl(out var pEmptyAcl, (uint)Marshal.SizeOf<ACL>(), ACE_REVISION.ACL_REVISION);
+            using (pEmptyAcl)
+            {
+                AdvApi32.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, null, null, pEmptyAcl, null);
+            }
+
+            // Retrieve the set security descriptor for the path and reapply it to all child objects. This is the same as the
+            // "Replace all child object permission entries with inheritable permission entries from this object" checkbox.
+            AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, getSiFlags, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
+            using (ppSecurityDescriptor)
+            using (ppsidOwner)
+            using (ppsidGroup)
+            using (ppDacl)
+            using (ppSacl)
+            {
+                AdvApi32.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false, null, PROG_INVOKE_SETTING.ProgressInvokeNever);
+            }
+        }
+
+        /// <summary>
         /// Determines the effective access rights for a specified security identifier (SID) on a file or directory.
         /// </summary>
         /// <remarks>This method evaluates the effective access rights for the specified SID by performing

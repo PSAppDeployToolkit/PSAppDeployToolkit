@@ -110,6 +110,7 @@ IMAGE_RESOURCE_DIRECTORY
 IMAGE_RESOURCE_DIRECTORY_ENTRY
 IMMDeviceEnumerator
 INFINITE
+InitializeAcl
 InitializeProcThreadAttributeList
 INVALID_HANDLE_VALUE
 IsIconic
@@ -132,6 +133,7 @@ JOBOBJECT_EXTENDED_LIMIT_INFORMATION
 LoadLibrary
 LoadLibraryEx
 LoadString
+LocalAlloc
 LocalFree
 LookupPrivilegeNameW
 LookupPrivilegeValueW
@@ -348,6 +350,7 @@ SetFocus
 SetForegroundWindow
 SetInformationJobObject
 SetLastError
+SetNamedSecurityInfo
 SetSecurityInfo
 SHChangeNotify
 SHGetImageList
@@ -2039,6 +2042,7 @@ THREAD_ACCESS_RIGHTS
 TOKEN_ELEVATION
 TOKEN_LINKED_TOKEN
 TOKEN_USER
+TreeResetNamedSecurityInfo
 UNICODE_STRING
 UpdateProcThreadAttribute
 VARENUM
