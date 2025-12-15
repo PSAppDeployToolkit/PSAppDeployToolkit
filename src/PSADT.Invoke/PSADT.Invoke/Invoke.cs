@@ -36,7 +36,7 @@ namespace PSADT.Invoke
         private static int Main(string[] argv)
         {
             // Configure debug mode if /Debug is specified.
-            var cliArguments = argv.ToList().ConvertAll(static x => x.Trim());
+            List<string> cliArguments = argv.ToList().ConvertAll(static x => x.Trim());
             ConfigureDebugMode(cliArguments);
 
             // Announce commencement and begin.
@@ -44,7 +44,7 @@ namespace PSADT.Invoke
             try
             {
                 // Establish the PowerShell process start information.
-                var processStartInfo = new ProcessStartInfo
+                ProcessStartInfo processStartInfo = new()
                 {
                     FileName = GetPowerShellPath(cliArguments),
                     Arguments = GetPowerShellArguments(cliArguments),
@@ -67,7 +67,7 @@ namespace PSADT.Invoke
                 try
                 {
                     // Redirect the output and error streams if we're debugging, then start.
-                    using var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
+                    using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
                     if (inDebugMode)
                     {
                         process.ErrorDataReceived += (sender, e) =>
@@ -101,7 +101,7 @@ namespace PSADT.Invoke
                 }
                 catch (Exception ex)
                 {
-                    var errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
+                    string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
                     WriteDebugMessage($"{errorMessage} {ex}", true);
                     if (!inDebugMode)
                     {
@@ -112,7 +112,7 @@ namespace PSADT.Invoke
             }
             catch (Exception ex)
             {
-                var errorMessage = $"Error while preparing to invoke deployment script.";
+                string errorMessage = $"Error while preparing to invoke deployment script.";
                 WriteDebugMessage($"{errorMessage} {ex}", true);
                 if (!inDebugMode)
                 {
@@ -244,7 +244,7 @@ namespace PSADT.Invoke
             // If the PowerShell mode hasn't been explicitly specified, override it if PowerShell Core (7) is a parent process.
             if (pwshExecutablePath == pwshDefaultPath)
             {
-                foreach (var parentProcess in ProcessUtilities.GetParentProcesses())
+                foreach (Process parentProcess in ProcessUtilities.GetParentProcesses())
                 {
                     if (parentProcess.ProcessName == "pwsh")
                     {
@@ -280,7 +280,7 @@ namespace PSADT.Invoke
 
             // Determine the path to the script to invoke.
             string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-            var fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
+            int fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
                 adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", null);

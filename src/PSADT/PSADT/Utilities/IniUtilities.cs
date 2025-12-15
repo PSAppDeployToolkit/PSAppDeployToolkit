@@ -25,7 +25,7 @@ namespace PSADT.Utilities
         public static string GetSectionKeyValue(string filepath, string section, string key)
         {
             Span<char> buffer = stackalloc char[4096];
-            var res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
+            uint res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
             return buffer[..(int)res].ToString().TrimRemoveNull();
         }
 
@@ -49,7 +49,7 @@ namespace PSADT.Utilities
         /// <returns>OrderedDictionary of key/value pairs in the section</returns>
         public static OrderedDictionary? GetSection(string filepath, string section)
         {
-            var sections = GetSectionNames(filepath);
+            ReadOnlyCollection<string> sections = GetSectionNames(filepath);
             if (!sections.Contains(section, StringComparer.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Section [{section}] was not found in the INI file. Sections found: {string.Join(", ", sections)}", nameof(section));
@@ -67,21 +67,21 @@ namespace PSADT.Utilities
             }
 
             OrderedDictionary dictionary = [];
-            foreach (var entry in buffer[..(int)res].ToString().Split('\0'))
+            foreach (string entry in buffer[..(int)res].ToString().Split('\0'))
             {
                 if (string.IsNullOrWhiteSpace(entry))
                 {
                     continue;
                 }
 
-                var separatorIndex = entry.IndexOf('=');
+                int separatorIndex = entry.IndexOf('=');
                 if (separatorIndex <= 0)
                 {
                     continue;
                 }
 
-                var key = entry[..separatorIndex];
-                var value = entry[(separatorIndex + 1)..];
+                string key = entry[..separatorIndex];
+                string value = entry[(separatorIndex + 1)..];
                 if (dictionary.Contains(key))
                 {
                     dictionary[key] = value;
@@ -102,7 +102,7 @@ namespace PSADT.Utilities
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536];
-            var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
+            uint res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
             return new([.. buffer[..(int)res].ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name))]);
         }
 

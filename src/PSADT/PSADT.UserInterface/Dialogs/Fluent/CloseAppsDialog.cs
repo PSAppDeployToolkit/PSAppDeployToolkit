@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -259,7 +259,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonLeft.IsEnabled = true;
                 if (_continueOnProcessClosure)
                 {
-                    ButtonLeft.RaiseEvent(new(Button.ClickEvent));
+                    ButtonLeft.RaiseEvent(new(ButtonBase.ClickEvent));
                 }
             }
         }
@@ -345,7 +345,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private static BitmapSource GetAppIcon(string appFilePath)
         {
             // Try to get from cache first
-            if (!_appIconCache.TryGetValue(appFilePath, out var bitmapSource))
+            if (!_appIconCache.TryGetValue(appFilePath, out BitmapSource? bitmapSource))
             {
                 // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
                 Bitmap drawingBitmap;

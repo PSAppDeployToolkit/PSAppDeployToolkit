@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -159,7 +160,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Adjust the menu depending on our config options.
-            using (var menuHandle = User32.GetSystemMenu((HWND)Handle, false))
+            using (DestroyMenuSafeHandle menuHandle = User32.GetSystemMenu((HWND)Handle, false))
             {
                 // Disable the close button on the form. Failing that, disable the ControlBox.
                 try
@@ -319,7 +320,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    foreach (var formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open", StringComparison.Ordinal) || g.Name.StartsWith("Close", StringComparison.Ordinal))))
+                    foreach (Group formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open", StringComparison.Ordinal) || g.Name.StartsWith("Close", StringComparison.Ordinal))))
                     {
                         text = text.Replace(formattingTag.Value, null);
                     }
@@ -351,7 +352,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private void PositionForm()
         {
             // Get the working area (pixels not DIPs)
-            var screen = Screen.FromControl(this);
+            Screen screen = Screen.FromControl(this);
             Rectangle workingArea = screen.WorkingArea;
 
             double left, top;
@@ -459,7 +460,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached image if available, otherwise load and cache it before returning it.
             if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                using var source = Image.FromFile(path);
+                using Image source = Image.FromFile(path);
                 image = (Bitmap)source.Clone();
                 imageCache.Add(path, image);
             }

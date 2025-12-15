@@ -24,7 +24,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_ELEVATION>()];
             AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
-            ref var tokenElevation = ref Unsafe.As<byte, TOKEN_ELEVATION>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_ELEVATION tokenElevation = ref Unsafe.As<byte, TOKEN_ELEVATION>(ref MemoryMarshal.GetReference(buffer));
             return tokenElevation.TokenIsElevated != 0;
         }
 
@@ -66,7 +66,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_LINKED_TOKEN>()];
             AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-            ref var tokenLinkedToken = ref Unsafe.As<byte, TOKEN_LINKED_TOKEN>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_LINKED_TOKEN tokenLinkedToken = ref Unsafe.As<byte, TOKEN_LINKED_TOKEN>(ref MemoryMarshal.GetReference(buffer));
             return new(tokenLinkedToken.LinkedToken, true);
         }
 
@@ -80,7 +80,7 @@ namespace PSADT.Security
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle)
         {
-            AdvApi32.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out var hPrimaryToken);
+            AdvApi32.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
             return hPrimaryToken;
         }
 
@@ -95,7 +95,7 @@ namespace PSADT.Security
         /// <returns>A <see cref="SafeFileHandle"/> representing the linked primary token.</returns>
         internal static SafeFileHandle GetLinkedPrimaryToken(SafeHandle tokenHandle)
         {
-            using var linkedToken = GetLinkedToken(tokenHandle);
+            using SafeFileHandle linkedToken = GetLinkedToken(tokenHandle);
             return GetPrimaryToken(linkedToken);
         }
 
@@ -132,12 +132,12 @@ namespace PSADT.Security
         internal static SecurityIdentifier GetTokenSid(SafeHandle tokenHandle)
         {
             // Get the required buffer size and allocate it.
-            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, null, out var returnLength);
+            AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, null, out uint returnLength);
             Span<byte> buffer = stackalloc byte[(int)returnLength];
 
             // Now grab the token's SID as requested.
             AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
-            ref var tokenUser = ref Unsafe.As<byte, TOKEN_USER>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_USER tokenUser = ref Unsafe.As<byte, TOKEN_USER>(ref MemoryMarshal.GetReference(buffer));
             return tokenUser.User.Sid.ToSecurityIdentifier();
         }
 

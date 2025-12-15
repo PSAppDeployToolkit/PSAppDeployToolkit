@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
 
 namespace PSADT.Utilities
@@ -23,10 +24,10 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
         public static string? GetMessageFromMsiExitCode(uint msiExitCode)
         {
-            using var hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
+            using FreeLibrarySafeHandle hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
             Span<char> bufspan = stackalloc char[4096];
             int len = User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
-            var msiMsgString = bufspan[..(len + 1)].ToString().TrimRemoveNull();
+            string msiMsgString = bufspan[..(len + 1)].ToString().TrimRemoveNull();
             return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
         }
 
@@ -42,11 +43,11 @@ namespace PSADT.Utilities
         public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
         {
             // Open the patch file as a database.
-            Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out var hDatabase);
+            Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
             using (hDatabase)
             {
                 // Get the summary information from the database.
-                Msi.MsiGetSummaryInformation(szDatabasePath, 0, out var hSummaryInfo);
+                Msi.MsiGetSummaryInformation(szDatabasePath, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
                 using (hSummaryInfo)
                 {
                     // Determine the size of the buffer we need.
@@ -72,7 +73,7 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
-            Msi.MsiExtractPatchXMLData(szPatchPath, null, out var requiredLength);
+            Msi.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength];
             Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
             return XmlUtilities.SafeLoadFromText(bufSpan);

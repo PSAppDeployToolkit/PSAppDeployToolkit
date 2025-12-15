@@ -25,7 +25,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// returned by the system.</exception>
         internal static BOOL AllocConsole()
         {
-            var res = PInvoke.AllocConsole();
+            BOOL res = PInvoke.AllocConsole();
             if (!res)
             {
                 throw new Win32Exception();
@@ -44,7 +44,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <exception cref="Win32Exception">Thrown if the handle to the console window cannot be retrieved.</exception>
         internal static HWND GetConsoleWindow()
         {
-            var res = PInvoke.GetConsoleWindow();
+            HWND res = PInvoke.GetConsoleWindow();
             if (res.IsNull)
             {
                 throw new Win32Exception("Failed to get a handle for the console window.");
@@ -63,7 +63,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// returned by the operating system.</exception>
         internal static BOOL FreeConsole()
         {
-            var res = PInvoke.FreeConsole();
+            BOOL res = PInvoke.FreeConsole();
             if (!res)
             {
                 throw new Win32Exception();

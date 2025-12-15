@@ -32,8 +32,8 @@ namespace PSADT.SafeHandles
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than zero.");
             }
-            var lpSize = UIntPtr.Zero; Initialize(default, count, ref lpSize);
-            var handle = Marshal.AllocHGlobal((int)lpSize);
+            UIntPtr lpSize = UIntPtr.Zero; Initialize(default, count, ref lpSize);
+            IntPtr handle = Marshal.AllocHGlobal((int)lpSize);
             try
             {
                 Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
@@ -71,7 +71,7 @@ namespace PSADT.SafeHandles
         /// langword="false"/>.</returns>
         private static BOOL Initialize(LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, uint dwAttributeCount, ref nuint lpSize)
         {
-            var res = PInvoke.InitializeProcThreadAttributeList(lpAttributeList, dwAttributeCount, ref lpSize);
+            BOOL res = PInvoke.InitializeProcThreadAttributeList(lpAttributeList, dwAttributeCount, ref lpSize);
             if (!res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default))
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);

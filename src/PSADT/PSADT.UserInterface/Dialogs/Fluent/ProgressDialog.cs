@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (!(ProgressBar.IsIndeterminate = percentComplete is null))
             {
                 // Create a smooth animation for the progress value
-                var animation = new DoubleAnimation
+                DoubleAnimation animation = new()
                 {
                     To = percentComplete!.Value,
                     Duration = TimeSpan.FromMilliseconds(300),

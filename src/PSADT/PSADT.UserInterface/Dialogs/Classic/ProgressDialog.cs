@@ -91,7 +91,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
 
             // Update the message alignment.
-            if ((messageAlignment is not null) && Enum.TryParse<ContentAlignment>($"Top{messageAlignment}", out var alignment))
+            if ((messageAlignment is not null) && Enum.TryParse($"Top{messageAlignment}", out ContentAlignment alignment))
             {
                 labelMessage.TextAlign = alignment;
                 labelDetail.TextAlign = alignment;

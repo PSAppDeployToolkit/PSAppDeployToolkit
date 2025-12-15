@@ -76,7 +76,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     tableLayoutPanelIconMessage.Controls.Remove(pictureIcon);
                     tableLayoutPanelIconMessage.SetColumn(labelMessage, 0);
                     tableLayoutPanelIconMessage.SetColumnSpan(labelMessage, 2);
-                    var extraWidth = (int)tableLayoutPanelIconMessage.ColumnStyles[0].Width;
+                    int extraWidth = (int)tableLayoutPanelIconMessage.ColumnStyles[0].Width;
                     labelMessage.MinimumSize = new(labelMessage.MinimumSize.Width + extraWidth, labelMessage.MinimumSize.Height);
                     labelMessage.MaximumSize = new(labelMessage.MaximumSize.Width + extraWidth, labelMessage.MaximumSize.Height);
                     tableLayoutPanelIconMessage.ResumeLayout();
@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up the message.
-                if ((options.MessageAlignment is not null) && Enum.TryParse<ContentAlignment>($"Top{options.MessageAlignment}", out var alignment))
+                if ((options.MessageAlignment is not null) && Enum.TryParse($"Top{options.MessageAlignment}", out ContentAlignment alignment))
                 {
                     labelMessage.TextAlign = alignment;
                 }

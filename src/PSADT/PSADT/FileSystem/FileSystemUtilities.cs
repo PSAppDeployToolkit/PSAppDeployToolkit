@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
@@ -26,11 +27,11 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         internal static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
         {
-            var lookupTable = new Dictionary<string, string> { { @"\Device\Mup", @"\" } };
+            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
             foreach (string drive in Environment.GetLogicalDrives())
             {
-                var driveLetter = drive.TrimEnd('\\');
+                string driveLetter = drive.TrimEnd('\\');
                 try
                 {
                     Kernel32.QueryDosDevice(driveLetter, targetPath);
@@ -39,9 +40,9 @@ namespace PSADT.FileSystem
                 {
                     continue;
                 }
-                foreach (var path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+                foreach (string path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var ntPath = path.TrimRemoveNull();
+                    string ntPath = path.TrimRemoveNull();
                     if (ntPath.Length > 0 && !lookupTable.ContainsKey(ntPath))
                     {
                         lookupTable.Add(ntPath, driveLetter);
@@ -127,7 +128,7 @@ namespace PSADT.FileSystem
             }
 
             // Set up the required flags for CreateFile, then see if we can open the file.
-            var dwShareMode = FILE_SHARE_MODE.FILE_SHARE_NONE;
+            FILE_SHARE_MODE dwShareMode = FILE_SHARE_MODE.FILE_SHARE_NONE;
             if ((desiredAccess & FileSystemRights.Read) == FileSystemRights.Read)
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_READ;
@@ -142,7 +143,7 @@ namespace PSADT.FileSystem
             }
             try
             {
-                using var hFile = Kernel32.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL);
+                using SafeFileHandle hFile = Kernel32.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL);
                 if (hFile.IsInvalid)
                 {
                     return false;
@@ -182,7 +183,7 @@ namespace PSADT.FileSystem
         /// <param name="path">The file or directory path to check access for. This cannot be null or empty.</param>
         /// <param name="token">The security token representing the user or process whose access is being tested. This cannot be null.</param>
         /// <param name="desiredAccessMask">The access rights to test, specified as a combination of <see
-        /// cref="System.Security.AccessControl.FileSystemRights"/> flags.</param>
+        /// cref="FileSystemRights"/> flags.</param>
         /// <returns><see langword="true"/> if the specified token has all the requested access rights to the path; otherwise,
         /// <see langword="false"/>.</returns>
         public static bool TestEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
@@ -214,7 +215,7 @@ namespace PSADT.FileSystem
                 throw new ArgumentNullException(nameof(sid), "SecurityIdentifier cannot be null.");
             }
             byte[] sidBytes = new byte[sid.BinaryLength]; sid.GetBinaryForm(sidBytes, 0);
-            using var pSID = SafePinnedGCHandle.Alloc(sidBytes, sidBytes.Length);
+            using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sidBytes, sidBytes.Length);
             return GetEffectiveAccess(path, pSID, desiredAccessMask, TokenType.SID);
         }
 
@@ -274,11 +275,11 @@ namespace PSADT.FileSystem
             }
 
             // Define the flags for setting and getting security information.
-            var getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
-            var setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
+            OBJECT_SECURITY_INFORMATION getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
+            OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
 
             // Create an empty ACL for the purpose of enabling inheritance, then set it on the path.
-            AdvApi32.InitializeAcl(out var pEmptyAcl, (uint)Marshal.SizeOf<ACL>(), ACE_REVISION.ACL_REVISION);
+            AdvApi32.InitializeAcl(out LocalFreeSafeHandle pEmptyAcl, (uint)Marshal.SizeOf<ACL>(), ACE_REVISION.ACL_REVISION);
             using (pEmptyAcl)
             {
                 AdvApi32.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, null, null, pEmptyAcl, null);
@@ -286,7 +287,7 @@ namespace PSADT.FileSystem
 
             // Retrieve the set security descriptor for the path and reapply it to all child objects. This is the same as the
             // "Replace all child object permission entries with inheritable permission entries from this object" checkbox.
-            AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, getSiFlags, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
+            AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, getSiFlags, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
             using (ppSecurityDescriptor)
             using (ppsidOwner)
             using (ppsidGroup)
@@ -327,7 +328,7 @@ namespace PSADT.FileSystem
             }
 
             // Retrieve the security descriptor for the file.
-            AdvApi32.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out var ppsidOwner, out var ppsidGroup, out var ppDacl, out var ppSacl, out var ppSecurityDescriptor);
+            AdvApi32.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
             using (ppSecurityDescriptor)
             using (ppsidOwner)
             using (ppsidGroup)
@@ -335,7 +336,7 @@ namespace PSADT.FileSystem
             using (ppSacl)
             {
                 // Initialize the AuthZ resource manager and client context.
-                AdvApi32.AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS.AUTHZ_RM_FLAG_NO_AUDIT, null, null, null, "PS-Authz", out var hAuthzResourceManager);
+                AdvApi32.AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS.AUTHZ_RM_FLAG_NO_AUDIT, null, null, null, "PS-Authz", out AuthzFreeResourceManagerSafeHandle hAuthzResourceManager);
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
@@ -354,8 +355,8 @@ namespace PSADT.FileSystem
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.
-                        var req = new AUTHZ_ACCESS_REQUEST { DesiredAccess = (uint)desiredAccessMask };
-                        var reply = new AUTHZ_ACCESS_REPLY { ResultListLength = 1 };
+                        AUTHZ_ACCESS_REQUEST req = new() { DesiredAccess = (uint)desiredAccessMask };
+                        AUTHZ_ACCESS_REPLY reply = new() { ResultListLength = 1 };
                         uint grantedAccessMask, error;
                         unsafe
                         {
@@ -364,7 +365,7 @@ namespace PSADT.FileSystem
                         }
 
                         // Perform the access check.
-                        AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out var phAccessCheckResults);
+                        AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out AuthzFreeHandleSafeHandle phAccessCheckResults);
                         using (phAccessCheckResults)
                         {
                             return (FileSystemRights)grantedAccessMask;

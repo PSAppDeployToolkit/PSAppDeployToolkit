@@ -4,6 +4,7 @@ using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.SystemInformation;
@@ -33,14 +34,14 @@ namespace PSADT.DeviceManagement
             }
 
             // Activate the session manager for the capture device and enumerate through each session.
-            microphoneDevice.Activate<IAudioSessionManager2>(CLSCTX.CLSCTX_INPROC_SERVER, null, out var sessionManagerObj);
-            var sessionEnumerator = sessionManagerObj.GetSessionEnumerator();
-            sessionEnumerator.GetCount(out var sessionCount);
+            microphoneDevice.Activate(CLSCTX.CLSCTX_INPROC_SERVER, null, out IAudioSessionManager2 sessionManagerObj);
+            IAudioSessionEnumerator sessionEnumerator = sessionManagerObj.GetSessionEnumerator();
+            sessionEnumerator.GetCount(out int sessionCount);
             for (int i = 0; i < sessionCount; i++)
             {
                 // Check if the session state is active.
-                sessionEnumerator.GetSession(i, out var sessionControl);
-                sessionControl.GetState(out var state);
+                sessionEnumerator.GetSession(i, out IAudioSessionControl sessionControl);
+                sessionControl.GetState(out AudioSessionState state);
                 if (state == AudioSessionState.AudioSessionStateActive)
                 {
                     return true;
@@ -55,7 +56,7 @@ namespace PSADT.DeviceManagement
         /// <returns></returns>
         public static bool IsOOBEComplete()
         {
-            Kernel32.OOBEComplete(out var isOobeComplete);
+            Kernel32.OOBEComplete(out BOOL isOobeComplete);
             return isOobeComplete;
         }
 

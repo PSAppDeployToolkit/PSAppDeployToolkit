@@ -48,7 +48,7 @@ namespace PSADT.LibraryInterfaces
         /// opened successfully; otherwise, an error code is returned.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            var res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult);
+            WIN32_ERROR res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -102,7 +102,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, out uint lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
         {
             lpcchClass = (uint)lpClass.Length;
-            var res = PInvoke.RegQueryInfoKey(hKey, lpClass, ref lpcchClass, out lpcSubKeys, out lpcbMaxSubKeyLen, out lpcbMaxClassLen, out lpcValues, out lpcbMaxValueNameLen, out lpcbMaxValueLen, out lpcbSecurityDescriptor, out lpftLastWriteTime);
+            WIN32_ERROR res = PInvoke.RegQueryInfoKey(hKey, lpClass, ref lpcchClass, out lpcSubKeys, out lpcbMaxSubKeyLen, out lpcbMaxClassLen, out lpcValues, out lpcbMaxValueNameLen, out lpcbMaxValueLen, out lpcbSecurityDescriptor, out lpftLastWriteTime);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -128,7 +128,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>true if the token was duplicated successfully; otherwise, false.</returns>
         internal static BOOL DuplicateTokenEx(SafeHandle hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, in SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out SafeFileHandle phNewToken)
         {
-            var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes, ImpersonationLevel, TokenType, out phNewToken);
+            BOOL res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes, ImpersonationLevel, TokenType, out phNewToken);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -151,7 +151,7 @@ namespace PSADT.LibraryInterfaces
         /// opened successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL OpenProcessToken(SafeHandle ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out SafeFileHandle TokenHandle)
         {
-            var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, out TokenHandle);
+            BOOL res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, out TokenHandle);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -172,7 +172,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>true if the privilege name was successfully found and the LUID was retrieved; otherwise, false.</returns>
         internal static BOOL LookupPrivilegeValue(string? lpSystemName, SE_PRIVILEGE lpName, out LUID lpLuid)
         {
-            var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName.ToString(), out lpLuid);
+            BOOL res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName.ToString(), out lpLuid);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -208,7 +208,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A value that is <see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal static BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, Span<byte> TokenInformation, out uint ReturnLength)
         {
-            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation, out ReturnLength);
+            BOOL res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation, out ReturnLength);
             if (!res && 0 != TokenInformation.Length)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -279,7 +279,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
             cchName = (uint)lpName.Length;
-            var res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref cchName);
+            BOOL res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref cchName);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -474,7 +474,7 @@ namespace PSADT.LibraryInterfaces
         /// database.</returns>
         internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpMachineName, string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
         {
-            var handle = PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess);
+            CloseServiceHandleSafeHandle handle = PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess);
             if (handle.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -520,7 +520,7 @@ namespace PSADT.LibraryInterfaces
         /// must be closed using the appropriate method when it is no longer needed.</returns>
         internal static CloseServiceHandleSafeHandle OpenService(SafeHandle hSCManager, string lpServiceName, SERVICE_ACCESS_RIGHTS dwDesiredAccess)
         {
-            var handle = PInvoke.OpenService(hSCManager, lpServiceName, (uint)dwDesiredAccess);
+            CloseServiceHandleSafeHandle handle = PInvoke.OpenService(hSCManager, lpServiceName, (uint)dwDesiredAccess);
             if (handle.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -542,7 +542,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal static BOOL QueryServiceStatusEx(SafeHandle hService, SC_STATUS_TYPE InfoLevel, Span<byte> lpBuffer, out uint pcbBytesNeeded)
         {
-            var res = PInvoke.QueryServiceStatusEx(hService, InfoLevel, lpBuffer, out pcbBytesNeeded);
+            BOOL res = PInvoke.QueryServiceStatusEx(hService, InfoLevel, lpBuffer, out pcbBytesNeeded);
             if (!res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0))
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -564,7 +564,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns><see langword="true"/> if the ACL was successfully initialized; otherwise, <see langword="false"/>.</returns>
         internal static BOOL InitializeAcl(out LocalFreeSafeHandle pAcl, uint nAclLength, ACE_REVISION dwAclRevision)
         {
-            var pAclLocal = PInvoke.LocalAlloc(LOCAL_ALLOC_FLAGS.LPTR, nAclLength);
+            HLOCAL pAclLocal = PInvoke.LocalAlloc(LOCAL_ALLOC_FLAGS.LPTR, nAclLength);
             if (pAclLocal.IsNull)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -576,7 +576,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (!res)
             {
-                var lastError = Marshal.GetLastWin32Error(); PInvoke.LocalFree(pAclLocal);
+                int lastError = Marshal.GetLastWin32Error(); PInvoke.LocalFree(pAclLocal);
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastError);
             }
             pAcl = new((IntPtr)pAclLocal, true);
@@ -934,7 +934,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception">Thrown if the initialization fails due to a system error.</exception>
         internal static BOOL AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS Flags, PFN_AUTHZ_DYNAMIC_ACCESS_CHECK? pfnDynamicAccessCheck, PFN_AUTHZ_COMPUTE_DYNAMIC_GROUPS? pfnComputeDynamicGroups, PFN_AUTHZ_FREE_DYNAMIC_GROUPS? pfnFreeDynamicGroups, string szResourceManagerName, out AuthzFreeResourceManagerSafeHandle phAuthzResourceManager)
         {
-            var res = PInvoke.AuthzInitializeResourceManager((uint)Flags, pfnDynamicAccessCheck, pfnComputeDynamicGroups, pfnFreeDynamicGroups, szResourceManagerName, out phAuthzResourceManager);
+            BOOL res = PInvoke.AuthzInitializeResourceManager((uint)Flags, pfnDynamicAccessCheck, pfnComputeDynamicGroups, pfnFreeDynamicGroups, szResourceManagerName, out phAuthzResourceManager);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -1100,7 +1100,7 @@ namespace PSADT.LibraryInterfaces
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         internal static WIN32_ERROR RegRenameKey(SafeHandle hKey, string? lpSubKeyName, string lpNewKeyName)
         {
-            var res = PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName);
+            WIN32_ERROR res = PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
@@ -1128,7 +1128,7 @@ namespace PSADT.LibraryInterfaces
         /// from the returned <see cref="NTSTATUS"/> value.</exception>
         internal static NTSTATUS LsaOpenPolicy(LSA_UNICODE_STRING? SystemName, in LSA_OBJECT_ATTRIBUTES ObjectAttributes, LSA_POLICY_ACCESS DesiredAccess, out LsaCloseSafeHandle PolicyHandle)
         {
-            var res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle);
+            NTSTATUS res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle);
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
@@ -1156,7 +1156,7 @@ namespace PSADT.LibraryInterfaces
             NTSTATUS res;
             unsafe
             {
-                res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out var BufferLocal);
+                res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out void* BufferLocal);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));

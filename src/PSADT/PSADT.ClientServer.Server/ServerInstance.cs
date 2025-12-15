@@ -679,7 +679,7 @@ namespace PSADT.ClientServer
                         // Test the line for a log severity.
                         if (line.Contains(CommonUtilities.ArgumentSeparator.ToString()))
                         {
-                            var parts = line.Split(CommonUtilities.ArgumentSeparator);
+                            string[] parts = line.Split(CommonUtilities.ArgumentSeparator);
                             ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0], CultureInfo.InvariantCulture), _logSource);
                         }
                         else

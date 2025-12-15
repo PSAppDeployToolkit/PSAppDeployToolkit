@@ -68,7 +68,7 @@ namespace PSADT.LibraryInterfaces
             BOOL res;
             unsafe
             {
-                res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
+                res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out WTS_SESSION_INFOW* ppSessionInfo, out uint pCount);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -92,7 +92,7 @@ namespace PSADT.LibraryInterfaces
             BOOL res;
             unsafe
             {
-                res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out var ppBuffer, out uint bytesReturned);
+                res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();

@@ -24,17 +24,17 @@ namespace PSADT.UserInterface.TestHarness
         private static void Main()
         {
             // What dialog style are we running with?
-            var dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
+            DialogStyle dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
 
             // Read PSADT's string table into memory.
-            var stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out var tokens, out var errors);
+            ScriptBlockAst stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out Token[]? tokens, out ParseError[]? errors);
             if (errors.Length > 0)
             {
                 throw new InvalidDataException($"Error parsing strings.psd1 file.");
             }
 
             // Read out the hashtable
-            var stringTable = (Hashtable)stringsAst.Find(x => x is HashtableAst, false).SafeGetValue();
+            Hashtable stringTable = (Hashtable)stringsAst.Find(x => x is HashtableAst, false).SafeGetValue();
 
             // Set up parameters for testing
             string appTitle = "Adobe Creative Suite 2.1.45 EN";
@@ -104,7 +104,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Set up options for the dialogs
             using CloseAppsDialogState closeAppsDialogState = new(appsToClose, null);
-            var closeAppsDialogOptions = new Hashtable
+            Hashtable closeAppsDialogOptions = new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 //{ "FluentAccentColor", ValueTypeConverter.ToInt(0xFF107C10) }, // Accent Color: Green #107C10
@@ -124,7 +124,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Language", CultureInfo.CurrentCulture },
                 { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
             };
-            var progressDialogOptions = new ProgressDialogOptions(new Hashtable
+            ProgressDialogOptions progressDialogOptions = new(new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
@@ -141,7 +141,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Language", CultureInfo.CurrentCulture },
                 { "AdditionalOption", true }
             });
-            var customDialogOptions = new CustomDialogOptions(new Hashtable
+            CustomDialogOptions customDialogOptions = new(new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color: Cyan #00B7C3
@@ -163,7 +163,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
 
-            var inputDialogOptions = new InputDialogOptions(new Hashtable
+            InputDialogOptions inputDialogOptions = new(new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE81123) }, // Accent Color: Red #E81123
@@ -183,10 +183,8 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "MinimizeWindows", false },
                 { "Language", CultureInfo.CurrentCulture },
                 { "MessageAlignment", DialogMessageAlignment.Left }
-            })
-            {
-            };
-            var restartDialogOptions = new Hashtable
+            });
+            Hashtable restartDialogOptions = new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE3008C) }, // Accent Color: Purple #E3008C
@@ -205,7 +203,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };
 
-            var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
+            CloseAppsDialogResult closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
 
             Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
@@ -235,7 +233,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
                 // Show Custom Dialog
 
-                var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
+                string customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
 
                 Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
 
@@ -243,7 +241,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
                 // Show Input Dialog
 
-                var inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
+                InputDialogResult inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
 
                 // #################################################################################
 
@@ -254,7 +252,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 Console.WriteLine("Installation deferred or cancelled.");
             }
 
-            var restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
+            string restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
 
             Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 

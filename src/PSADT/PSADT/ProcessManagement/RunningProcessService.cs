@@ -57,7 +57,7 @@ namespace PSADT.ProcessManagement
         /// <returns></returns>
         private async Task PollRunningProcesses()
         {
-            var token = _cancellationTokenSource!.Token;
+            CancellationToken token = _cancellationTokenSource!.Token;
             while (!token.IsCancellationRequested)
             {
                 // Update the list of running processes.

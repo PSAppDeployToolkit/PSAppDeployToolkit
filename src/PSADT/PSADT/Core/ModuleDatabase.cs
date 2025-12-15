@@ -104,7 +104,7 @@ namespace PSADT.Core
         /// <exception cref="InvalidOperationException"></exception>
         public static DeploymentSession GetDeploymentSession()
         {
-            var sessionList = (List<DeploymentSession>)_database?.Properties["Sessions"].Value!;
+            List<DeploymentSession> sessionList = (List<DeploymentSession>)_database?.Properties["Sessions"].Value!;
             if (sessionList.Count == 0)
             {
                 throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.");

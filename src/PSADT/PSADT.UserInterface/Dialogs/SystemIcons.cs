@@ -44,16 +44,16 @@ namespace PSADT.UserInterface.Dialogs
             static Bitmap GetSystemStockIconAsBitmap(SHSTOCKICONID siid, SHIL_SIZE iImageList)
             {
                 // Get a handle to specified stock icon.
-                Shell32.SHGetImageList(iImageList, out var imageList);
-                Shell32.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out var shii);
-                imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out var iconHandle);
+                Shell32.SHGetImageList(iImageList, out IImageList imageList);
+                Shell32.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out Shell32.SHSTOCKICONINFO shii);
+                imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out DestroyIconSafeHandle iconHandle);
                 using (iconHandle)
                 {
                     bool iconHandleAddRef = false;
                     try
                     {
                         iconHandle.DangerousAddRef(ref iconHandleAddRef);
-                        using var icon = Icon.FromHandle(iconHandle.DangerousGetHandle());
+                        using Icon icon = Icon.FromHandle(iconHandle.DangerousGetHandle());
                         return icon.ToBitmap();
                     }
                     finally
@@ -68,9 +68,9 @@ namespace PSADT.UserInterface.Dialogs
 
             // Build an icon out for each stock icon.
             Dictionary<SHSTOCKICONID, Bitmap> icons = [];
-            foreach (var iconId in lookupList)
+            foreach (SHSTOCKICONID iconId in lookupList)
             {
-                using var icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO);
+                using Bitmap icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO);
                 icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x, y));
             }
 

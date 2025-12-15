@@ -48,13 +48,13 @@ namespace PSADT.ProcessManagement
             {
                 // When we're not local system, we need to find the user's Explorer process and get its token.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
-                foreach (var explorerProcess in Process.GetProcessesByName("explorer").Where(p => p.SessionId == runAsActiveUser.SessionId).OrderBy(static p => p.StartTime))
+                foreach (Process explorerProcess in Process.GetProcessesByName("explorer").Where(p => p.SessionId == runAsActiveUser.SessionId).OrderBy(static p => p.StartTime))
                 {
                     try
                     {
-                        using (explorerProcess) using (var explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                        using (explorerProcess) using (SafeProcessHandle explorerProcessSafeHandle = explorerProcess.SafeHandle)
                         {
-                            AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+                            AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
                             if (TokenManager.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
                             {
                                 hUserToken = hProcessToken;
@@ -117,8 +117,8 @@ namespace PSADT.ProcessManagement
             {
                 throw new InvalidOperationException("Cannot retrieve an unelevated token when running as the local system account.");
             }
-            using var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()); using var cProcessSafeHandle = cProcess.SafeHandle;
-            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+            using Process cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()); using SafeProcessHandle cProcessSafeHandle = cProcess.SafeHandle;
+            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
             using (hProcessToken)
             {
                 if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)

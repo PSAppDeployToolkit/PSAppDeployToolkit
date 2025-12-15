@@ -27,7 +27,7 @@ namespace PSADT.AccountManagement
         public static IReadOnlyList<GroupPolicyAccountInfo> Get()
         {
             // Confirm we have a Group Policy Data Store to work with.
-            using var datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
+            using RegistryKey? datastore = Registry.LocalMachine.OpenSubKey(GroupPolicyDataStorePath);
             if (datastore is null)
             {
                 return new ReadOnlyCollection<GroupPolicyAccountInfo>([]);
@@ -35,7 +35,7 @@ namespace PSADT.AccountManagement
 
             // Create list to hold the account information and process each found SID, returning the accumulated results.
             List<GroupPolicyAccountInfo> accountInfoList = [];
-            foreach (var sid in datastore.GetSubKeyNames())
+            foreach (string sid in datastore.GetSubKeyNames())
             {
                 // Skip over anything that's not a proper SID.
                 if (!sid.StartsWith("S-1-", StringComparison.OrdinalIgnoreCase))
@@ -44,17 +44,17 @@ namespace PSADT.AccountManagement
                 }
 
                 // Skip over the entry if there's no indices.
-                using var indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}");
+                using RegistryKey? indices = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}");
                 if (indices is null)
                 {
                     continue;
                 }
 
                 // Process each found index.
-                foreach (var index in indices.GetSubKeyNames())
+                foreach (string index in indices.GetSubKeyNames())
                 {
                     // If the username is available, add it to the list and skip to the next SID.
-                    using var info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}");
+                    using RegistryKey? info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}");
                     if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
                     {
                         accountInfoList.Add(new(new(username.Trim()), new(sid))); break;

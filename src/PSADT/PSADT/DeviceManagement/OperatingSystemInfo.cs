@@ -41,14 +41,14 @@ namespace PSADT.DeviceManagement
                 return true;
             }
 
-            NtDll.RtlGetVersion(out var osVersion);
-            var suiteMask = (SUITE_MASK)osVersion.wSuiteMask;
-            var productType = (PRODUCT_TYPE)osVersion.wProductType;
+            NtDll.RtlGetVersion(out OSVERSIONINFOEXW osVersion);
+            SUITE_MASK suiteMask = (SUITE_MASK)osVersion.wSuiteMask;
+            PRODUCT_TYPE productType = (PRODUCT_TYPE)osVersion.wProductType;
             string? editionId = null;
             string? productName = null;
             int ubr = 0;
 
-            var windowsOS = (((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16); var operatingSystem = WindowsOS.Unknown;
+            ulong windowsOS = (((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16); WindowsOS operatingSystem = WindowsOS.Unknown;
             if (Enum.IsDefined(typeof(WindowsOS), windowsOS))
             {
                 operatingSystem = (WindowsOS)windowsOS;

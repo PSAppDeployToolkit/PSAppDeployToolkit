@@ -71,7 +71,7 @@ namespace PSADT.Types
             Is64BitApplication = is64BitApplication;
             if (UninstallString is not null)
             {
-                var argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
+                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
                 UninstallStringFilePath = new(argumentList[0]);
                 if (argumentList.Count > 1)
                 {
@@ -80,7 +80,7 @@ namespace PSADT.Types
             }
             if (QuietUninstallString is not null)
             {
-                var argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
+                IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
                 QuietUninstallStringFilePath = new(argumentList[0]);
                 if (argumentList.Count > 1)
                 {
