@@ -159,7 +159,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pcchXMLData">When this method returns, contains the number of characters copied to <paramref name="szXMLData"/>.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the extraction operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the XML data was successfully extracted.</returns>
-        internal static unsafe WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
+        internal static WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
         {
             uint pcchXMLDataLocal = (uint)szXMLData.Length;
             var res = (WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal);
