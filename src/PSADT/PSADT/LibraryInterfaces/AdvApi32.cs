@@ -526,7 +526,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (!res)
             {
-                int lastError = Marshal.GetLastWin32Error(); PInvoke.LocalFree(pAclLocal);
+                int lastError = Marshal.GetLastWin32Error(); _ = PInvoke.LocalFree(pAclLocal);
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastError);
             }
             pAcl = new((IntPtr)pAclLocal, true);

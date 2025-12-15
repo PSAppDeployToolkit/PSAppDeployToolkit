@@ -64,6 +64,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="progressMessageDetail"></param>
         /// <param name="progressPercentage"></param>
         /// <param name="messageAlignment"></param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
@@ -137,8 +138,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
         {
             if (e.Button == MouseButtons.Left)
             {
-                User32.ReleaseCapture();
-                User32.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, IntPtr.Zero);
+                _ = User32.ReleaseCapture();
+                _ = User32.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, IntPtr.Zero);
             }
         }
     }

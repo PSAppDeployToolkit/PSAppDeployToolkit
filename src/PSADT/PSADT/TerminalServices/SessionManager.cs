@@ -35,7 +35,7 @@ namespace PSADT.TerminalServices
         /// <exception cref="Win32Exception"></exception>
         public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
-            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out SafeWtsHandle pSessionInfo);
+            _ = WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out SafeWtsHandle pSessionInfo);
             using (pSessionInfo)
             {
                 int objLength = Marshal.SizeOf<WTS_SESSION_INFOW>();
@@ -65,7 +65,7 @@ namespace PSADT.TerminalServices
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
             static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
-                WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);
+                _ = WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);
                 using (pBuffer)
                 {
                     if (typeof(T) == typeof(string))
@@ -192,7 +192,7 @@ namespace PSADT.TerminalServices
             if (AccountUtilities.CallerIsLocalSystem)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken);
+                _ = WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken);
                 using (hUserToken)
                 {
                     return TokenManager.GetTokenSid(hUserToken);
@@ -202,7 +202,7 @@ namespace PSADT.TerminalServices
             // If we're an admin, we can get the SID from a process running in the session.
             if (AccountUtilities.CallerIsAdmin)
             {
-                WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out SafeWtsExHandle pProcessInfo);
+                _ = WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out SafeWtsExHandle pProcessInfo);
                 using (pProcessInfo)
                 {
                     ReadOnlySpan<byte> pProcessInfoSpan = pProcessInfo.AsReadOnlySpan<byte>();
@@ -227,7 +227,7 @@ namespace PSADT.TerminalServices
                     {
                         using (explorerProcess) using (SafeProcessHandle explorerProcessSafeHandle = explorerProcess.SafeHandle)
                         {
-                            AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
+                            _ = AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
                             using (hProcessToken)
                             {
                                 return TokenManager.GetTokenSid(hProcessToken);
@@ -264,7 +264,7 @@ namespace PSADT.TerminalServices
             if (AccountUtilities.CallerIsLocalSystem)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken); using (hUserToken)
+                _ = WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken); using (hUserToken)
                 using (SafeFileHandle hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
                 {
                     return TokenManager.IsTokenAdministrative(hPrimaryToken);

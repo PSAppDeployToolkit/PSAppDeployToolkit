@@ -161,7 +161,7 @@ namespace PSADT.ClientServer
                 "",
                 "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
             ]);
-            DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
+            _ = DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
             throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
         }
 

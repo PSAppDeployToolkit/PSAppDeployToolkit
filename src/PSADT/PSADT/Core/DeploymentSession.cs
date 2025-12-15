@@ -275,7 +275,7 @@ namespace PSADT.Core
                         WriteInitialDivider(ref writtenDivider);
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                         string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
-                        ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
+                        _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
                         AddMountedWimFile(new(wimFile)); _dirFiles = mountPath;
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
@@ -284,7 +284,7 @@ namespace PSADT.Core
                         if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
-                            Kernel32.DefineDosDevice(0, availLetter, _dirFiles);
+                            _ = Kernel32.DefineDosDevice(0, availLetter, _dirFiles);
                             _dirFiles = DirFilesSubstDrive = availLetter;
                         }
                         WriteLogEntry($"Using [{_dirFiles}] as the base DirFiles directory.");
@@ -938,7 +938,7 @@ namespace PSADT.Core
                     }
                     else
                     {
-                        ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
+                        _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
                     }
                 }
 
@@ -966,7 +966,7 @@ namespace PSADT.Core
                 RemoveSubstDrive();
                 DismountWimFiles();
                 SetExitCode(60008);
-                Close();
+                Environment.ExitCode = Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -976,7 +976,7 @@ namespace PSADT.Core
                 RemoveSubstDrive();
                 DismountWimFiles();
                 SetExitCode(DeferExitCode);
-                Close();
+                Environment.ExitCode = Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -986,7 +986,7 @@ namespace PSADT.Core
                 RemoveSubstDrive();
                 DismountWimFiles();
                 SetExitCode(60008);
-                Close();
+                Environment.ExitCode = Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -1015,7 +1015,7 @@ namespace PSADT.Core
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
             {
-                ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
+                _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
             }
 
             // Process resulting exit code.
@@ -1132,7 +1132,7 @@ namespace PSADT.Core
         /// <param name="message">The log message array.</param>
         public void WriteLogEntry(IReadOnlyList<string> message)
         {
-            WriteLogEntry(message, false, null, null, null, null, null, null, null);
+            _ = WriteLogEntry(message, false, null, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1141,7 +1141,7 @@ namespace PSADT.Core
         /// <param name="message">The log message.</param>
         public void WriteLogEntry(string message)
         {
-            WriteLogEntry([message], false, null, null, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, null, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1151,7 +1151,7 @@ namespace PSADT.Core
         /// <param name="severity">The severity level.</param>
         public void WriteLogEntry(string message, LogSeverity severity)
         {
-            WriteLogEntry([message], false, severity, null, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, severity, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1161,7 +1161,7 @@ namespace PSADT.Core
         /// <param name="source">The source of the message.</param>
         public void WriteLogEntry(string message, string source)
         {
-            WriteLogEntry([message], false, null, source, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, null, source, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1172,7 +1172,7 @@ namespace PSADT.Core
         /// <param name="source">The source of the message.</param>
         public void WriteLogEntry(string message, LogSeverity severity, string source)
         {
-            WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, severity, source, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1182,7 +1182,7 @@ namespace PSADT.Core
         /// <param name="writeHost">Whether to write to the host.</param>
         public void WriteLogEntry(string message, bool writeHost)
         {
-            WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));
+            _ = WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));
         }
 
         /// <summary>
@@ -1218,7 +1218,7 @@ namespace PSADT.Core
             if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
             {
                 WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-                Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
+                _ = Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
             }
         }
 
@@ -1232,7 +1232,7 @@ namespace PSADT.Core
         {
             if (MountedWimFiles.Count > 0)
             {
-                MountedWimFiles.Reverse(); ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+                MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
                 MountedWimFiles.Clear();
             }
         }
@@ -1285,7 +1285,7 @@ namespace PSADT.Core
         /// </summary>
         private void CreateDeferHistoryPath()
         {
-            ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
+            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
         }
 
         /// <summary>
@@ -1335,7 +1335,7 @@ namespace PSADT.Core
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", RegistryValueKind.DWord.ToString(), deferTimesRemainingValue, true, true);
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", RegistryValueKind.DWord.ToString(), deferTimesRemainingValue, true, true);
             }
             if (deferDeadline is not null)
             {
@@ -1345,7 +1345,7 @@ namespace PSADT.Core
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", RegistryValueKind.String.ToString(), deferDeadlineValue, true, true);
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", RegistryValueKind.String.ToString(), deferDeadlineValue, true, true);
             }
             if (deferRunInterval is not null)
             {
@@ -1355,7 +1355,7 @@ namespace PSADT.Core
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", RegistryValueKind.String.ToString(), deferRunIntervalValue, true, true);
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", RegistryValueKind.String.ToString(), deferRunIntervalValue, true, true);
             }
             if (deferRunIntervalLastTime is not null)
             {
@@ -1365,7 +1365,7 @@ namespace PSADT.Core
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunIntervalLastTime", RegistryValueKind.String.ToString(), deferRunIntervalLastTimeValue, true, true);
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunIntervalLastTime", RegistryValueKind.String.ToString(), deferRunIntervalLastTimeValue, true, true);
             }
         }
 

@@ -40,7 +40,7 @@ namespace PSADT.FileSystem
             // Read the DOS header and check for the PE signature.
             using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
             using BinaryReader reader = new(fs);
-            IMAGE_DOS_HEADER dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader); fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
+            IMAGE_DOS_HEADER dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader); _ = fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
                 throw new InvalidDataException("The specified file does not have a valid PE header.");
@@ -52,7 +52,7 @@ namespace PSADT.FileSystem
 
             // Read the file header and optional header, returning the ExecutableInfo.
             IMAGE_FILE_MACHINE machine = ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
-            IMAGE_OPTIONAL_HEADER_MAGIC magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16(); fs.Seek(-2, SeekOrigin.Current);
+            IMAGE_OPTIONAL_HEADER_MAGIC magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16(); _ = fs.Seek(-2, SeekOrigin.Current);
             if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
             {
                 IMAGE_OPTIONAL_HEADER32 opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);

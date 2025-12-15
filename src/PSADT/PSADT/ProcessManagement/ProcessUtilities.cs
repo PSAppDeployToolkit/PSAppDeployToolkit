@@ -191,7 +191,7 @@ namespace PSADT.ProcessManagement
                     if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
                     {
                         // We're caching the process, so don't dispose of its SafeHande as .NET caches it also...
-                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
+                        _ = AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
                         using (hToken)
                         {
                             username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
@@ -228,7 +228,7 @@ namespace PSADT.ProcessManagement
             using CloseServiceHandleSafeHandle scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
             using CloseServiceHandleSafeHandle svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
-            AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
+            _ = AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
             ref SERVICE_STATUS_PROCESS serviceStatus = ref Unsafe.As<byte, SERVICE_STATUS_PROCESS>(ref MemoryMarshal.GetReference(buffer));
             return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
                 ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
@@ -247,7 +247,7 @@ namespace PSADT.ProcessManagement
         public static Process GetParentProcess(SafeHandle hProcess)
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
-            NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
+            _ = NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
             ref PROCESS_BASIC_INFORMATION pbi = ref Unsafe.As<byte, PROCESS_BASIC_INFORMATION>(ref MemoryMarshal.GetReference(buffer));
             return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
         }
@@ -322,11 +322,11 @@ namespace PSADT.ProcessManagement
                 throw new ArgumentNullException(nameof(process), "Process cannot be null.");
             }
             using SafeFileHandle hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
+            _ = NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
 
             // Fill the buffer, then retrieve the actual command line string.
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
-            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
+            _ = NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
             ref UNICODE_STRING unicodeString = ref Unsafe.As<byte, UNICODE_STRING>(ref MemoryMarshal.GetReference(buffer));
             return unicodeString.Buffer.ToString().TrimRemoveNull();
         }
@@ -355,7 +355,7 @@ namespace PSADT.ProcessManagement
             processIdInfo.ProcessId = new(process.Id);
 
             // Perform initial query so we can reallocate with the required length.
-            NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+            _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
             Span<byte> imageNamePtr = stackalloc byte[processIdInfo.ImageName.MaximumLength + 2]; imageNamePtr.Clear();
 
             // Assign the ImageName buffer and perform the query again.
@@ -365,7 +365,7 @@ namespace PSADT.ProcessManagement
                 fixed (byte* pImageName = imageNamePtr)
                 {
                     processIdInfo.ImageName.Buffer = (char*)pImageName;
-                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+                    _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
                     imageNameCharArray = [.. processIdInfo.ImageName.Buffer.AsSpan()];
                     processIdInfo.ImageName.Buffer = null;
                 }

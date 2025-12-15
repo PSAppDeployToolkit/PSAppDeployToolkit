@@ -56,7 +56,7 @@ namespace PSADT.DeviceManagement
         /// <returns></returns>
         public static bool IsOOBEComplete()
         {
-            Kernel32.OOBEComplete(out BOOL isOobeComplete);
+            _ = Kernel32.OOBEComplete(out BOOL isOobeComplete);
             return isOobeComplete;
         }
 
@@ -86,7 +86,7 @@ namespace PSADT.DeviceManagement
 
             // Allocate buffer for the SMBIOS data and retrieve it.
             Span<byte> buffer = stackalloc byte[(int)Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, null)];
-            Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, buffer);
+            _ = Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, buffer);
 
             // Parse the SMBIOS data to find Type 3, skipping the header.
             int offset = 0; offset += 8;

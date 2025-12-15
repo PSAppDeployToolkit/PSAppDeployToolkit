@@ -110,7 +110,7 @@ namespace PSADT.ProcessManagement
 
             // If we got a valid version resource, parse it.
             // Read the version information from the resource.
-            Version32.VerQueryValue(versionResource, @"\", out IntPtr fixedInfoPtr, out _);
+            _ = Version32.VerQueryValue(versionResource, @"\", out IntPtr fixedInfoPtr, out _);
             FixedFileInfo = fixedInfoPtr.AsStructure<VS_FIXEDFILEINFO>();
             FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
             FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
@@ -161,10 +161,10 @@ namespace PSADT.ProcessManagement
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
-            PsApi.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
-            PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
+            _ = PsApi.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
+            _ = PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
             ref HMODULE hModule = ref Unsafe.As<byte, HMODULE>(ref MemoryMarshal.GetReference(moduleBuffer));
-            PsApi.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
+            _ = PsApi.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
             return moduleInfo;
         }
 
@@ -267,7 +267,7 @@ namespace PSADT.ProcessManagement
             if (dataEntry.Size > 0)
             {
                 byte[] buffer = new byte[(int)dataEntry.Size];
-                Kernel32.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
+                _ = Kernel32.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
                 return buffer;
             }
             throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{dataEntryAddress.ToInt64():X}");
@@ -280,7 +280,7 @@ namespace PSADT.ProcessManagement
         {
             // Return any translation pairs found in the version resource.
             List<string> translationCombinations = [];
-            Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out IntPtr translationPtr, out uint translationLength);
+            _ = Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out IntPtr translationPtr, out uint translationLength);
             int langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
@@ -328,7 +328,7 @@ namespace PSADT.ProcessManagement
             // Attempt to query the version resource for the specified name.
             try
             {
-                Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out IntPtr lplpBuffer, out uint _);
+                _ = Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out IntPtr lplpBuffer, out _);
                 string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
                 if (!string.IsNullOrWhiteSpace(result))
                 {
@@ -349,7 +349,7 @@ namespace PSADT.ProcessManagement
         private static T ReadProcessMemory<T>(SafeFileHandle processHandle, IntPtr address) where T : struct
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
-            Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);
+            _ = Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);
             return MemoryMarshal.Read<T>(buffer);
         }
 
@@ -361,45 +361,45 @@ namespace PSADT.ProcessManagement
         {
             StringBuilder stringBuilder = new(128);
             string value = "\r\n";
-            stringBuilder.Append("File:             ");
-            stringBuilder.Append(FileName);
-            stringBuilder.Append(value);
-            stringBuilder.Append("InternalName:     ");
-            stringBuilder.Append(InternalName);
-            stringBuilder.Append(value);
-            stringBuilder.Append("OriginalFilename: ");
-            stringBuilder.Append(OriginalFilename);
-            stringBuilder.Append(value);
-            stringBuilder.Append("FileVersion:      ");
-            stringBuilder.Append(FileVersion);
-            stringBuilder.Append(value);
-            stringBuilder.Append("FileDescription:  ");
-            stringBuilder.Append(FileDescription);
-            stringBuilder.Append(value);
-            stringBuilder.Append("Product:          ");
-            stringBuilder.Append(ProductName);
-            stringBuilder.Append(value);
-            stringBuilder.Append("ProductVersion:   ");
-            stringBuilder.Append(ProductVersion);
-            stringBuilder.Append(value);
-            stringBuilder.Append("Debug:            ");
-            stringBuilder.Append(IsDebug);
-            stringBuilder.Append(value);
-            stringBuilder.Append("Patched:          ");
-            stringBuilder.Append(IsPatched);
-            stringBuilder.Append(value);
-            stringBuilder.Append("PreRelease:       ");
-            stringBuilder.Append(IsPreRelease);
-            stringBuilder.Append(value);
-            stringBuilder.Append("PrivateBuild:     ");
-            stringBuilder.Append(IsPrivateBuild);
-            stringBuilder.Append(value);
-            stringBuilder.Append("SpecialBuild:     ");
-            stringBuilder.Append(IsSpecialBuild);
-            stringBuilder.Append(value);
-            stringBuilder.Append("Language:         ");
-            stringBuilder.Append(Language);
-            stringBuilder.Append(value);
+            _ = stringBuilder.Append("File:             ");
+            _ = stringBuilder.Append(FileName);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("InternalName:     ");
+            _ = stringBuilder.Append(InternalName);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("OriginalFilename: ");
+            _ = stringBuilder.Append(OriginalFilename);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("FileVersion:      ");
+            _ = stringBuilder.Append(FileVersion);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("FileDescription:  ");
+            _ = stringBuilder.Append(FileDescription);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("Product:          ");
+            _ = stringBuilder.Append(ProductName);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("ProductVersion:   ");
+            _ = stringBuilder.Append(ProductVersion);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("Debug:            ");
+            _ = stringBuilder.Append(IsDebug);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("Patched:          ");
+            _ = stringBuilder.Append(IsPatched);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("PreRelease:       ");
+            _ = stringBuilder.Append(IsPreRelease);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("PrivateBuild:     ");
+            _ = stringBuilder.Append(IsPrivateBuild);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("SpecialBuild:     ");
+            _ = stringBuilder.Append(IsSpecialBuild);
+            _ = stringBuilder.Append(value);
+            _ = stringBuilder.Append("Language:         ");
+            _ = stringBuilder.Append(Language);
+            _ = stringBuilder.Append(value);
             return stringBuilder.ToString();
         }
 

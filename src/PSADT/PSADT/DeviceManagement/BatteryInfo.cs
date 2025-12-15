@@ -132,7 +132,7 @@ namespace PSADT.DeviceManagement
         /// and battery life.</remarks>
         private static void UpdateSystemPowerStatus()
         {
-            Kernel32.GetSystemPowerStatus(out systemPowerStatus);
+            _ = Kernel32.GetSystemPowerStatus(out systemPowerStatus);
         }
 
         /// <summary>

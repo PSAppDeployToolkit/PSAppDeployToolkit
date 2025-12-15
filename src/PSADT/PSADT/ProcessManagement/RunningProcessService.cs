@@ -72,7 +72,7 @@ namespace PSADT.ProcessManagement
                 }
                 finally
                 {
-                    _mutex.Release();
+                    _ = _mutex.Release();
                 }
 
                 // Raise the event if the list of processes to close has changed.
@@ -127,7 +127,7 @@ namespace PSADT.ProcessManagement
                 }
                 finally
                 {
-                    _mutex.Release();
+                    _ = _mutex.Release();
                 }
             }
         }
@@ -148,7 +148,7 @@ namespace PSADT.ProcessManagement
                 }
                 finally
                 {
-                    _mutex.Release();
+                    _ = _mutex.Release();
                 }
             }
         }

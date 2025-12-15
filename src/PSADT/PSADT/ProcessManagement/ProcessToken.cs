@@ -54,7 +54,7 @@ namespace PSADT.ProcessManagement
                     {
                         using (explorerProcess) using (SafeProcessHandle explorerProcessSafeHandle = explorerProcess.SafeHandle)
                         {
-                            AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
+                            _ = AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
                             if (TokenManager.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
                             {
                                 hUserToken = hProcessToken;
@@ -73,7 +73,7 @@ namespace PSADT.ProcessManagement
             {
                 // When we're local system, we can just get the primary token for the user.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out hUserToken);
+                _ = WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out hUserToken);
             }
 
             // Throw if for whatever reason, we couldn't get a token.
@@ -119,7 +119,7 @@ namespace PSADT.ProcessManagement
                 throw new InvalidOperationException("Cannot retrieve an unelevated token when running as the local system account.");
             }
             using Process cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()); using SafeProcessHandle cProcessSafeHandle = cProcess.SafeHandle;
-            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
+            _ = AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
             using (hProcessToken)
             {
                 if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)

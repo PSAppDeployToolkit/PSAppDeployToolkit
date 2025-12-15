@@ -88,7 +88,10 @@ namespace PSADT.Invoke
                         };
                     }
                     WriteDebugMessage($"Commencing invocation.\n");
-                    process.Start();
+                    if (!process.Start())
+                    {
+                        throw new InvalidOperationException("Failed to start the PowerShell process.");
+                    }
 
                     // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
                     if (inDebugMode)
@@ -167,7 +170,7 @@ namespace PSADT.Invoke
                 {
                     inDebugMode = Kernel32.AllocConsole();
                 }
-                cliArguments.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+                _ = cliArguments.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -182,8 +185,8 @@ namespace PSADT.Invoke
             Console.WriteLine("\nPress any key to exit...");
             try
             {
-                Kernel32.GetConsoleWindow(); Console.ReadKey();
-                Kernel32.FreeConsole();
+                _ = Kernel32.GetConsoleWindow(); _ = Console.ReadKey();
+                _ = Kernel32.FreeConsole();
             }
             catch
             {
@@ -225,7 +228,7 @@ namespace PSADT.Invoke
                     throw new InvalidOperationException("The [/Core] parameter was specified, but PowerShell Core was not found on this system.");
                 }
                 WriteDebugMessage("The [/Core] parameter was specified on the command line. Running using PowerShell 7...");
-                cliArguments.RemoveAll(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+                _ = cliArguments.RemoveAll(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
                 pwshExecutablePath = pwshCorePath;
             }
 
@@ -234,7 +237,7 @@ namespace PSADT.Invoke
             {
                 // Remove the /32 command line argument so that it is not passed to PowerShell script
                 WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
-                cliArguments.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+                _ = cliArguments.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64", StringComparison.OrdinalIgnoreCase))
                 {
                     pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\PowerShell.exe");

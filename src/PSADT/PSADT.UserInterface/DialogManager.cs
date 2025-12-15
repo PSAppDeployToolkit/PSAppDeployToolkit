@@ -174,7 +174,7 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("A progress dialog is already open. Close it before opening a new one.");
             }
-            InvokeDialogAction<object>(() =>
+            _ = InvokeDialogAction<object>(() =>
             {
                 progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null);
                 progressDialog.Show();
@@ -206,7 +206,7 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            InvokeDialogAction<object>(() =>
+            _ = InvokeDialogAction<object>(() =>
             {
                 progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment);
                 return null!;
@@ -222,7 +222,7 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            InvokeDialogAction<object>(() =>
+            _ = InvokeDialogAction<object>(() =>
             {
                 using (progressDialog)
                 {
@@ -261,7 +261,7 @@ namespace PSADT.UserInterface
         internal static void ShowBalloonTip(BalloonTipOptions options)
         {
             // Set the AUMID for this process so the Windows 10 toast has the correct title.
-            Shell32.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
+            _ = Shell32.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
 
             // Correct the registry data for the AUMID. This can reference stale info from a previous run.
             string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.TrayTitle}";
@@ -374,7 +374,7 @@ namespace PSADT.UserInterface
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
                         appInitialized.Set();
                     };
-                    app.Run();
+                    Environment.ExitCode = app.Run();
                 });
                 appThread.SetApartmentState(ApartmentState.STA);
                 appThread.IsBackground = true;

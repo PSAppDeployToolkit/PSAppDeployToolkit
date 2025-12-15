@@ -34,7 +34,7 @@ namespace PSADT.FileSystem
                 string driveLetter = drive.TrimEnd('\\');
                 try
                 {
-                    Kernel32.QueryDosDevice(driveLetter, targetPath);
+                    _ = Kernel32.QueryDosDevice(driveLetter, targetPath);
                 }
                 catch
                 {
@@ -268,22 +268,22 @@ namespace PSADT.FileSystem
             OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
 
             // Create an empty ACL for the purpose of enabling inheritance, then set it on the path.
-            AdvApi32.InitializeAcl(out LocalFreeSafeHandle pEmptyAcl, (uint)Marshal.SizeOf<ACL>(), ACE_REVISION.ACL_REVISION);
+            _ = AdvApi32.InitializeAcl(out LocalFreeSafeHandle pEmptyAcl, (uint)Marshal.SizeOf<ACL>(), ACE_REVISION.ACL_REVISION);
             using (pEmptyAcl)
             {
-                AdvApi32.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, null, null, pEmptyAcl, null);
+                _ = AdvApi32.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, null, null, pEmptyAcl, null);
             }
 
             // Retrieve the set security descriptor for the path and reapply it to all child objects. This is the same as the
             // "Replace all child object permission entries with inheritable permission entries from this object" checkbox.
-            AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, getSiFlags, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
+            _ = AdvApi32.GetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, getSiFlags, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
             using (ppSecurityDescriptor)
             using (ppsidOwner)
             using (ppsidGroup)
             using (ppDacl)
             using (ppSacl)
             {
-                AdvApi32.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false, null, PROG_INVOKE_SETTING.ProgressInvokeNever);
+                _ = AdvApi32.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false, null, PROG_INVOKE_SETTING.ProgressInvokeNever);
             }
         }
 
@@ -317,7 +317,7 @@ namespace PSADT.FileSystem
             }
 
             // Retrieve the security descriptor for the file.
-            AdvApi32.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
+            _ = AdvApi32.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
             using (ppSecurityDescriptor)
             using (ppsidOwner)
             using (ppsidGroup)
@@ -325,22 +325,17 @@ namespace PSADT.FileSystem
             using (ppSacl)
             {
                 // Initialize the AuthZ resource manager and client context.
-                AdvApi32.AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS.AUTHZ_RM_FLAG_NO_AUDIT, null, null, null, "PS-Authz", out AuthzFreeResourceManagerSafeHandle hAuthzResourceManager);
+                _ = AdvApi32.AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS.AUTHZ_RM_FLAG_NO_AUDIT, null, null, null, "PS-Authz", out AuthzFreeResourceManagerSafeHandle hAuthzResourceManager);
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
                     AuthzFreeContextSafeHandle phAuthzClientContext;
-                    switch (tokenType)
+                    _ = tokenType switch
                     {
-                        case TokenType.SID:
-                            AdvApi32.AuthzInitializeContextFromSid(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext);
-                            break;
-                        case TokenType.UserToken:
-                            AdvApi32.AuthzInitializeContextFromToken(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext);
-                            break;
-                        default:
-                            throw new ArgumentException("Invalid token type specified.", nameof(tokenType));
-                    }
+                        TokenType.SID => AdvApi32.AuthzInitializeContextFromSid(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext),
+                        TokenType.UserToken => AdvApi32.AuthzInitializeContextFromToken(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext),
+                        _ => throw new ArgumentException("Invalid token type specified.", nameof(tokenType)),
+                    };
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.
@@ -354,7 +349,7 @@ namespace PSADT.FileSystem
                         }
 
                         // Perform the access check.
-                        AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out AuthzFreeHandleSafeHandle phAccessCheckResults);
+                        _ = AdvApi32.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out AuthzFreeHandleSafeHandle phAccessCheckResults);
                         using (phAccessCheckResults)
                         {
                             return (FileSystemRights)grantedAccessMask;

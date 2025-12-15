@@ -93,7 +93,7 @@ namespace PSADT.Core
             }
             if ((logFileDirectory is not null) && !Directory.Exists(logFileDirectory))
             {
-                Directory.CreateDirectory(logFileDirectory);
+                _ = Directory.CreateDirectory(logFileDirectory);
             }
             if (scriptSection is not null && string.IsNullOrWhiteSpace(scriptSection))
             {
@@ -135,12 +135,12 @@ namespace PSADT.Core
                 else if (hostLogStreamType != HostLogStreamType.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    ModuleDatabase.InvokeScript(WriteHostDelegate, conOutput, sevCols);
+                    _ = ModuleDatabase.InvokeScript(WriteHostDelegate, conOutput, sevCols);
                 }
                 else
                 {
                     // Write the host output to PowerShell's VerboseStream.
-                    ModuleDatabase.InvokeScript(WriteVerboseDelegate, conOutput);
+                    _ = ModuleDatabase.InvokeScript(WriteVerboseDelegate, conOutput);
                 }
             }
             return logEntries;

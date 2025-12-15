@@ -43,19 +43,19 @@ namespace PSADT.Utilities
         public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
         {
             // Open the patch file as a database.
-            Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
+            _ = Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
             using (hDatabase)
             {
                 // Get the summary information from the database.
-                Msi.MsiGetSummaryInformation(szDatabasePath, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
+                _ = Msi.MsiGetSummaryInformation(szDatabasePath, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
                 using (hSummaryInfo)
                 {
                     // Determine the size of the buffer we need.
-                    Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
+                    _ = Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
                     Span<char> bufSpan = stackalloc char[(int)requiredSize];
 
                     // Grab the supported product codes and return them to the caller.
-                    Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
+                    _ = Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
                     return new ReadOnlyCollection<Guid>([.. bufSpan.ToString().TrimRemoveNull().Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g))]);
                 }
             }
@@ -73,9 +73,9 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
-            Msi.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
+            _ = Msi.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength];
-            Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
+            _ = Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
             return XmlUtilities.SafeLoadFromText(bufSpan);
         }
     }

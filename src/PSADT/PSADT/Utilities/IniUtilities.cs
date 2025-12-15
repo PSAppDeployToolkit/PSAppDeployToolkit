@@ -38,7 +38,7 @@ namespace PSADT.Utilities
         /// <param name="filepath"></param>
         public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
         {
-            Kernel32.WritePrivateProfileString(section, key, value, filepath);
+            _ = Kernel32.WritePrivateProfileString(section, key, value, filepath);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace PSADT.Utilities
         {
             if (content is null)
             {
-                Kernel32.WritePrivateProfileSection(section, null, filepath);
+                _ = Kernel32.WritePrivateProfileSection(section, null, filepath);
                 return;
             }
 
@@ -140,18 +140,18 @@ namespace PSADT.Utilities
                     {
                         throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
                     }
-                    entries.Append(key);
-                    entries.Append('=');
-                    entries.Append(entry.Value?.ToString()?.Trim() ?? string.Empty);
-                    entries.Append('\0');
+                    _ = entries.Append(key);
+                    _ = entries.Append('=');
+                    _ = entries.Append(entry.Value?.ToString()?.Trim() ?? string.Empty);
+                    _ = entries.Append('\0');
                 }
             }
             else
             {
-                entries.Append('\0');
+                _ = entries.Append('\0');
             }
-            entries.Append('\0');
-            Kernel32.WritePrivateProfileSection(section, entries.ToString(), filepath);
+            _ = entries.Append('\0');
+            _ = Kernel32.WritePrivateProfileSection(section, entries.ToString(), filepath);
         }
     }
 }
