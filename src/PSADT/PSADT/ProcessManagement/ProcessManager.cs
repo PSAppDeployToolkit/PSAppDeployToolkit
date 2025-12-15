@@ -45,10 +45,7 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
-            if (launchInfo is null)
-            {
-                throw new ArgumentNullException(nameof(launchInfo));
-            }
+            ArgumentNullException.ThrowIfNull(launchInfo, nameof(launchInfo));
             Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask;
             List<string> stdout = [], stderr = [];
             ConcurrentQueue<string> interleaved = [];

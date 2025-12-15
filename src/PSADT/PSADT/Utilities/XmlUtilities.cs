@@ -21,10 +21,7 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument representing the contents of the specified file.</returns>
         internal static XmlDocument SafeLoadFromPath(string path)
         {
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(path, nameof(path));
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException($"Cannot find path '{path}' because it does not exist.");

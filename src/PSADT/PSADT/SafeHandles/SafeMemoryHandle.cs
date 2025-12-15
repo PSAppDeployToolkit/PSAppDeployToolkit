@@ -181,10 +181,7 @@ namespace PSADT.SafeHandles
         /// <exception cref="ArgumentException"></exception>
         internal void Write(byte[] data, int startIndex = 0)
         {
-            if (data is null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
+            ArgumentNullException.ThrowIfNull(data, nameof(data));
             if (data.Length == 0)
             {
                 throw new ArgumentException("Code length cannot be zero.", nameof(data));
