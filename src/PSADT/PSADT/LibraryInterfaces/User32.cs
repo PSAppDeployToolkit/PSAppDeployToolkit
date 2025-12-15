@@ -33,7 +33,10 @@ namespace PSADT.LibraryInterfaces
         /// graying it. Must be a valid combination of MENU_ITEM_FLAGS values.</param>
         /// <returns>A value indicating the previous state of the menu item. Returns a nonzero value if successful; otherwise,
         /// returns zero.</returns>
-        internal static BOOL EnableMenuItem(SafeHandle hMenu, WM_SYSCOMMAND uIDEnableItem, MENU_ITEM_FLAGS uEnable) => PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
+        internal static BOOL EnableMenuItem(SafeHandle hMenu, WM_SYSCOMMAND uIDEnableItem, MENU_ITEM_FLAGS uEnable)
+        {
+            return PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
+        }
 
         /// <summary>
         /// Determines whether the specified window is visible.
@@ -42,14 +45,20 @@ namespace PSADT.LibraryInterfaces
         /// window may be obscured by other windows or outside the visible area of the screen.</remarks>
         /// <param name="hWnd">A handle to the window to be tested for visibility.</param>
         /// <returns>A nonzero value if the window is visible; otherwise, zero.</returns>
-        internal static BOOL IsWindowVisible(HWND hWnd) => PInvoke.IsWindowVisible(hWnd);
+        internal static BOOL IsWindowVisible(HWND hWnd)
+        {
+            return PInvoke.IsWindowVisible(hWnd);
+        }
 
         /// <summary>
         /// Determines whether the specified window is enabled to receive input.
         /// </summary>
         /// <param name="hWnd">A handle to the window to be tested.</param>
         /// <returns>A nonzero value if the window is enabled; otherwise, zero.</returns>
-        internal static BOOL IsWindowEnabled(HWND hWnd) => PInvoke.IsWindowEnabled(hWnd);
+        internal static BOOL IsWindowEnabled(HWND hWnd)
+        {
+            return PInvoke.IsWindowEnabled(hWnd);
+        }
 
         /// <summary>
         /// Retrieves a handle to the window that is currently in the foreground.

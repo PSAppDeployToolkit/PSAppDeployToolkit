@@ -71,7 +71,10 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the key is opened successfully; otherwise, returns a nonzero error
         /// code.</returns>
-        internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult) => RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
+        internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
+        {
+            return RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
+        }
 
         /// <summary>
         /// Retrieves information about the specified registry key, including the number of subkeys, value entries, and
@@ -185,7 +188,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpLuid">When this method returns, contains the LUID that corresponds to the specified privilege name.</param>
         /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the privilege name
         /// was found and the LUID was retrieved successfully; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL LookupPrivilegeValue(SE_PRIVILEGE lpName, out LUID lpLuid) => LookupPrivilegeValue(null, lpName, out lpLuid);
+        internal static BOOL LookupPrivilegeValue(SE_PRIVILEGE lpName, out LUID lpLuid)
+        {
+            return LookupPrivilegeValue(null, lpName, out lpLuid);
+        }
 
         /// <summary>
         /// Retrieves information about the specified access token.
@@ -253,7 +259,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="NewState">A structure that specifies the privileges to enable or disable for the access token.</param>
         /// <returns>A value that indicates whether the function succeeds. Returns <see langword="true"/> if the operation is
         /// successful; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState) => AdjustTokenPrivileges(TokenHandle, false, in NewState, null, out _);
+        internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
+        {
+            return AdjustTokenPrivileges(TokenHandle, false, in NewState, null, out _);
+        }
 
         /// <summary>
         /// Retrieves the name of a privilege specified by a locally unique identifier (LUID) on the specified system.
@@ -436,7 +445,7 @@ namespace PSADT.LibraryInterfaces
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
-                        lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                        lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
                     }
                 }
                 return res;
@@ -483,7 +492,10 @@ namespace PSADT.LibraryInterfaces
         /// performed on the service control manager.</param>
         /// <returns>A safe handle to the service control manager database. The caller is responsible for closing the handle when
         /// it is no longer needed.</returns>
-        internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess) => OpenSCManager(null, lpDatabaseName, dwDesiredAccess);
+        internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
+        {
+            return OpenSCManager(null, lpDatabaseName, dwDesiredAccess);
+        }
 
         /// <summary>
         /// Opens a handle to the Service Control Manager on the local computer with the specified access rights.
@@ -492,7 +504,10 @@ namespace PSADT.LibraryInterfaces
         /// that can be performed with the returned handle.</param>
         /// <returns>A safe handle to the Service Control Manager. The caller is responsible for closing the handle when it is no
         /// longer needed.</returns>
-        internal static CloseServiceHandleSafeHandle OpenSCManager(SC_MANAGER_ACCESS dwDesiredAccess) => OpenSCManager(null, null, dwDesiredAccess);
+        internal static CloseServiceHandleSafeHandle OpenSCManager(SC_MANAGER_ACCESS dwDesiredAccess)
+        {
+            return OpenSCManager(null, null, dwDesiredAccess);
+        }
 
         /// <summary>
         /// Opens an existing service in the specified service control manager database.
@@ -625,7 +640,10 @@ namespace PSADT.LibraryInterfaces
         /// releasing this handle when it is no longer needed.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the ACL was
         /// created successfully; otherwise, returns an error code.</returns>
-        internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl) => SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
+        internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl)
+        {
+            return SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
+        }
 
         /// <summary>
         /// Sets the security information for a specified object, such as a file, registry key, or other securable

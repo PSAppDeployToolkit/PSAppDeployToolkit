@@ -19,6 +19,9 @@ namespace PSADT.Extensions
         /// <param name="filetime">The <see cref="FILETIME"/> structure to convert.</param>
         /// <returns>A <see cref="DateTime"/> object that represents the same point in time as the specified <see
         /// cref="FILETIME"/>.</returns>
-        internal static DateTime ToDateTime(this FILETIME filetime) => DateTime.FromFileTime((long)filetime.dwHighDateTime << 32 | filetime.dwLowDateTime & 0xFFFFFFFFL);
+        internal static DateTime ToDateTime(this FILETIME filetime)
+        {
+            return DateTime.FromFileTime((long)(filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
+        }
     }
 }

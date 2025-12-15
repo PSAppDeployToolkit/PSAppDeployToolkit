@@ -42,7 +42,7 @@ namespace PSADT.TerminalServices
                 var sessions = new List<SessionInfo>(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
-                    ref var session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan.Slice(objLength * i)));
+                    ref var session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan[(objLength * i)..]));
                     if (GetSessionInfo(in session) is SessionInfo sessionInfo)
                     {
                         sessions.Add(sessionInfo);
@@ -159,7 +159,7 @@ namespace PSADT.TerminalServices
                 isConsoleSession,
                 isActiveUserSession,
                 isValidUserSession,
-                pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
+                pWinStationName is not "Services" and not "RDP-Tcp",
                 clientProtocolType != 0,
                 isLocalAdmin,
                 isLocalAdminException,
@@ -206,7 +206,7 @@ namespace PSADT.TerminalServices
                     int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
-                        ref var process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan.Slice(objLength * i)));
+                        ref var process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan[(objLength * i)..]));
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
                             return process.pUserSid.ToSecurityIdentifier();

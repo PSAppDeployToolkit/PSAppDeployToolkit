@@ -53,8 +53,8 @@ namespace PSADT.Types
             }
 
             // Check if it contains a valid modifier
-            string[] validModifiers = { "Ctrl", "Alt", "Shift" };
-            string[] validKeys = { "A-Z", "0-9", "F1-F12", "Insert", "Delete", "Home", "End" };
+            string[] validModifiers = ["Ctrl", "Alt", "Shift"];
+            string[] validKeys = ["A-Z", "0-9", "F1-F12", "Insert", "Delete", "Home", "End"];
             bool containsModifier = false;
             foreach (var part in parts)
             {

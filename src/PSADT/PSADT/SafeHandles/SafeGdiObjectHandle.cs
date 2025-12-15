@@ -19,7 +19,10 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="handle">The native handle to a GDI object to be wrapped by this instance.</param>
         /// <param name="ownsHandle">true to reliably release the handle during finalization; false to prevent the handle from being released.</param>
-        internal SafeGdiObjectHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
+        internal SafeGdiObjectHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        {
+            SetHandle(handle);
+        }
 
         /// <summary>
         /// Releases the handle.

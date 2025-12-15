@@ -59,6 +59,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="minimizeWindows">A value indicating whether all other windows should be minimized when the dialog is displayed.</param>
         /// <param name="initialInputText">The initial text displayed in the input field of the dialog. If <see langword="null"/>, the input field is
         /// empty.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {

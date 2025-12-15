@@ -136,7 +136,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Determines whether deferrals are currently available.
         /// </summary>
         /// <returns><see langword="true"/> if there are remaining deferrals or a deferral deadline is set; otherwise, <see langword="false"/>.</returns>
-        private bool DeferralsAvailable() => _deferralsRemaining.HasValue || _deferralDeadline.HasValue;
+        private bool DeferralsAvailable()
+        {
+            return _deferralsRemaining.HasValue || _deferralDeadline.HasValue;
+        }
 
         /// <summary>
         /// Updates the deferral values displayed in the dialog.
@@ -181,7 +184,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
 
                 // Update text content
-                DateTimeFormatInfo dateTimeFormatInfo = new();
                 DateTimeOffset deferralDeadlineOffset = new((DateTime)_deferralDeadline!);
                 string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f", CultureInfo.CurrentCulture);
                 if (ButtonRight.IsEnabled)
@@ -208,7 +210,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e) => Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(p => new AppToClose(p))));
+        private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
+        {
+            Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(p => new AppToClose(p))));
+        }
 
         /// <summary>
         /// Handles the event when the collection of apps to close changes.
@@ -264,7 +269,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateRunningProcesses();
+        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateRunningProcesses();
+        }
 
         /// <summary>
         /// Handles the loading event of the dialog.
@@ -291,14 +299,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
-            {
-                DialogResult = CloseAppsDialogResult.Close;
-            }
-            else
-            {
-                DialogResult = CloseAppsDialogResult.Continue;
-            }
+            DialogResult = AutomationProperties.GetName(ButtonLeft) == _buttonLeftText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -326,25 +327,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (_forcedCountdown && (null == _runningProcessService || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText))
-                    {
-                        DialogResult = CloseAppsDialogResult.Continue;
-                    }
-                    else if (_forcedCountdown && DeferralsAvailable())
-                    {
-                        DialogResult = CloseAppsDialogResult.Defer;
-                    }
-                    else
-                    {
-                        if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
-                        {
-                            DialogResult = CloseAppsDialogResult.Close;
-                        }
-                        else
-                        {
-                            DialogResult = CloseAppsDialogResult.Continue;
-                        }
-                    }
+                    DialogResult = _forcedCountdown && (null == _runningProcessService || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText)
+                        ? CloseAppsDialogResult.Continue
+                        : _forcedCountdown && DeferralsAvailable()
+                            ? CloseAppsDialogResult.Defer
+                            : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
                     CloseDialog();
                 });
             }
@@ -467,7 +454,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (Disposed)
             {
                 return;
             }

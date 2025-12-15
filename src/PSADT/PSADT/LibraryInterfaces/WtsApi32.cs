@@ -45,14 +45,9 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                if (pLevel > 0)
-                {
-                    pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true);
-                }
-                else
-                {
-                    pProcessInfo = new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
-                }
+                pProcessInfo = pLevel > 0
+                    ? new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true)
+                    : new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
             }
             return res;
         }

@@ -29,9 +29,13 @@ namespace PSADT.Types
             TargetPath = targetPath;
             IconLocation = iconLocation;
 
-            if (!string.IsNullOrWhiteSpace(iconIndex) && !int.TryParse(iconIndex, out var IconIndex))
+            if (!string.IsNullOrWhiteSpace(iconIndex))
             {
-                throw new ArgumentException("IconIndex must be a numeric value.");
+                if (!int.TryParse(iconIndex, out var parsedIndex))
+                {
+                    throw new ArgumentException("IconIndex must be a numeric value.");
+                }
+                IconIndex = parsedIndex;
             }
         }
 

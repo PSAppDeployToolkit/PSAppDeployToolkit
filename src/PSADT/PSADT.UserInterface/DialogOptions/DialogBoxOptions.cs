@@ -75,6 +75,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogTopMost">A value indicating whether the dialog box should appear as the topmost window. <see langword="true"/> if the
         /// dialog box is topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon dialogIcon, bool dialogTopMost, TimeSpan dialogExpiryDuration)
         {

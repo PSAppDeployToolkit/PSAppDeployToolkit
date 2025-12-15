@@ -157,7 +157,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        public new void ShowDialog() => base.ShowDialog();
+        public new void ShowDialog()
+        {
+            base.ShowDialog();
+        }
 
         /// <summary>
         /// Closes the dialog window and cancels associated operations. Can be called by timers or button clicks.
@@ -174,7 +177,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Raises the PropertyChanged event for the specified property.
         /// </summary>
         /// <param name="propertyName"></param>
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new(propertyName));
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new(propertyName));
+        }
 
         /// <summary>
         /// Prevent window movement by handling WM_SYSCOMMAND
@@ -227,7 +233,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Prevents the user from closing the app via the taskbar
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnClosing(CancelEventArgs e) => e.Cancel = !_canClose;
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            e.Cancel = !_canClose;
+        }
 
         /// <summary>
         /// Clean up resources when the window is closed
@@ -304,7 +313,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void SystemParameters_StaticPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             // Reposition the window if screen dimensions or work area change.
-            if (e.PropertyName == nameof(SystemParameters.PrimaryScreenWidth) || e.PropertyName == nameof(SystemParameters.PrimaryScreenHeight) || e.PropertyName == nameof(SystemParameters.WorkArea))
+            if (e.PropertyName is (nameof(SystemParameters.PrimaryScreenWidth)) or (nameof(SystemParameters.PrimaryScreenHeight)) or (nameof(SystemParameters.WorkArea)))
             {
                 PositionWindow();
             }
@@ -315,7 +324,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void PersistTimer_Tick(object? sender, EventArgs e) => RestoreWindow();
+        private void PersistTimer_Tick(object? sender, EventArgs e)
+        {
+            RestoreWindow();
+        }
 
         /// <summary>
         /// Handles the request navigate event of the hyperlink.
@@ -353,7 +365,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Add text before the current match with current formatting
                 if (match.Index > lastPos)
                 {
-                    var textContent = message.Substring(lastPos, match.Index - lastPos);
+                    var textContent = message[lastPos..(match.Index - lastPos)];
                     AddFormattedText(textBlock, textContent, formattingStack);
                 }
 
@@ -365,7 +377,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Add any remaining text after the last match
             if (lastPos < message.Length)
             {
-                var remainingText = message.Substring(lastPos);
+                var remainingText = message[lastPos..];
                 AddFormattedText(textBlock, remainingText, formattingStack);
             }
         }
@@ -565,7 +577,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Updates the Grid RowDefinition based on the current content.
         /// </summary>
-        protected void UpdateRowDefinition() => CenterPanelRow.Height = new(1, GridUnitType.Auto);
+        protected void UpdateRowDefinition()
+        {
+            CenterPanelRow.Height = new(1, GridUnitType.Auto);
+        }
 
         /// <summary>
         /// Converts a 32-bit integer representation of a color into a <see cref="Color"/> object.
@@ -632,7 +647,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <remarks>This method updates both the dialog's window icon and any associated UI element
         /// displaying the application icon.</remarks>
-        private void SetDialogIcon() => Icon = AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
+        private void SetDialogIcon()
+        {
+            Icon = AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
+        }
 
         /// <summary>
         /// Positions the window on the screen based on the specified dialog position.
@@ -780,18 +798,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
                     Grid.SetColumn(visibleButtons[i], i);
                     Button button = (Button)visibleButtons[i];
-                    if (i == 0)
-                    {
-                        button.Margin = new(0, 0, 4, 0);
-                    }
-                    else if (i == visibleButtons.Count - 1)
-                    {
-                        button.Margin = new(4, 0, 0, 0);
-                    }
-                    else
-                    {
-                        button.Margin = new(4, 0, 4, 0);
-                    }
+                    button.Margin = i == 0 ? new(0, 0, 4, 0) : i == visibleButtons.Count - 1 ? new(4, 0, 0, 0) : new(4, 0, 4, 0);
                 }
             }
             else
@@ -866,7 +873,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Callback executed by the countdown timer every second. Decrements remaining time, updates display, and handles auto-action on timeout.
         /// </summary>
         /// <param name="state">Timer state object (not used).</param>
-        protected virtual void CountdownTimer_Tick(object? state) => Dispatcher.Invoke(UpdateCountdownDisplay);
+        protected virtual void CountdownTimer_Tick(object? state)
+        {
+            Dispatcher.Invoke(UpdateCountdownDisplay);
+        }
 
         /// <summary>
         /// The result of the dialog interaction.
@@ -895,7 +905,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Whether this window has been disposed.
         /// </summary>
-        protected bool _disposed { get; private set; }
+        protected bool Disposed { get; private set; }
 
         /// <summary>
         /// Whether this window is able to be closed.
@@ -998,7 +1008,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (Disposed)
             {
                 return;
             }
@@ -1027,7 +1037,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 _hwndSource?.Dispose();
                 _countdownTimer?.Dispose();
             }
-            _disposed = true;
+            Disposed = true;
         }
 
         /// <summary>

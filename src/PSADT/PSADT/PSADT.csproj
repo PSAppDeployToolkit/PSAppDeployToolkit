@@ -71,6 +71,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.68">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Management.Automation">
@@ -83,6 +87,10 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.1" />
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+    <MeziantouPolyfill_ExcludedPolyfills>T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute|T:System.Diagnostics.CodeAnalysis.UnscopedRefAttribute</MeziantouPolyfill_ExcludedPolyfills>
+  </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\..\..\COPYING.Lesser" />

@@ -30,77 +30,77 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
             InitializeComponent();
-            this.SuspendLayout();
-            this.flowLayoutPanelBase.SuspendLayout();
-            this.flowLayoutPanelDialog.SuspendLayout();
+            SuspendLayout();
+            flowLayoutPanelBase.SuspendLayout();
+            flowLayoutPanelDialog.SuspendLayout();
 
             // Apply options to the form if we have any (i.e. not in the designer).
             if (options is not null)
             {
                 // Set up the picturebox.
-                SetPictureBox(this.pictureBanner, options);
+                SetPictureBox(pictureBanner, options);
 
                 // Set up the buttons.
                 if (options.ButtonLeftText is not null)
                 {
-                    this.buttonLeft.Text = StripFormattingTags(options.ButtonLeftText);
-                    this.buttonLeft.Visible = true;
+                    buttonLeft.Text = StripFormattingTags(options.ButtonLeftText);
+                    buttonLeft.Visible = true;
                 }
                 else
                 {
-                    this.tableLayoutPanelButton.Controls.Remove(buttonLeft);
+                    tableLayoutPanelButton.Controls.Remove(buttonLeft);
                 }
                 if (options.ButtonMiddleText is not null)
                 {
-                    this.buttonMiddle.Text = StripFormattingTags(options.ButtonMiddleText);
-                    this.buttonMiddle.Visible = true;
+                    buttonMiddle.Text = StripFormattingTags(options.ButtonMiddleText);
+                    buttonMiddle.Visible = true;
                 }
                 else
                 {
-                    this.tableLayoutPanelButton.Controls.Remove(buttonMiddle);
+                    tableLayoutPanelButton.Controls.Remove(buttonMiddle);
                 }
                 if (options.ButtonRightText is not null)
                 {
-                    this.buttonRight.Text = StripFormattingTags(options.ButtonRightText);
-                    this.buttonRight.Visible = true;
+                    buttonRight.Text = StripFormattingTags(options.ButtonRightText);
+                    buttonRight.Visible = true;
                 }
                 else
                 {
-                    this.tableLayoutPanelButton.Controls.Remove(buttonRight);
+                    tableLayoutPanelButton.Controls.Remove(buttonRight);
                 }
 
                 // Set up the icon.
                 if (options.Icon is null)
                 {
-                    this.tableLayoutPanelIconMessage.SuspendLayout();
-                    this.tableLayoutPanelIconMessage.Controls.Remove(this.pictureIcon);
-                    this.tableLayoutPanelIconMessage.SetColumn(this.labelMessage, 0);
-                    this.tableLayoutPanelIconMessage.SetColumnSpan(this.labelMessage, 2);
-                    var extraWidth = (int)this.tableLayoutPanelIconMessage.ColumnStyles[0].Width;
-                    this.labelMessage.MinimumSize = new(this.labelMessage.MinimumSize.Width + extraWidth, this.labelMessage.MinimumSize.Height);
-                    this.labelMessage.MaximumSize = new(this.labelMessage.MaximumSize.Width + extraWidth, this.labelMessage.MaximumSize.Height);
-                    this.tableLayoutPanelIconMessage.ResumeLayout();
+                    tableLayoutPanelIconMessage.SuspendLayout();
+                    tableLayoutPanelIconMessage.Controls.Remove(pictureIcon);
+                    tableLayoutPanelIconMessage.SetColumn(labelMessage, 0);
+                    tableLayoutPanelIconMessage.SetColumnSpan(labelMessage, 2);
+                    var extraWidth = (int)tableLayoutPanelIconMessage.ColumnStyles[0].Width;
+                    labelMessage.MinimumSize = new(labelMessage.MinimumSize.Width + extraWidth, labelMessage.MinimumSize.Height);
+                    labelMessage.MaximumSize = new(labelMessage.MaximumSize.Width + extraWidth, labelMessage.MaximumSize.Height);
+                    tableLayoutPanelIconMessage.ResumeLayout();
                 }
                 else
                 {
-                    this.pictureIcon.Image = SystemIcons.Get(options.Icon.Value);
+                    pictureIcon.Image = SystemIcons.Get(options.Icon.Value);
                 }
 
                 // Set up the message.
                 if ((options.MessageAlignment is not null) && Enum.TryParse<ContentAlignment>($"Top{options.MessageAlignment}", out var alignment))
                 {
-                    this.labelMessage.TextAlign = alignment;
+                    labelMessage.TextAlign = alignment;
                 }
-                this.labelMessage.Text = StripFormattingTags(options.MessageText);
+                labelMessage.Text = StripFormattingTags(options.MessageText);
             }
 
             // Resume the dialog now that we've applied any options.
-            this.flowLayoutPanelDialog.ResumeLayout(false);
-            this.flowLayoutPanelDialog.PerformLayout();
-            this.flowLayoutPanelBase.ResumeLayout(false);
-            this.flowLayoutPanelBase.PerformLayout();
-            this.ResumeLayout();
-            this.PerformLayout();
+            flowLayoutPanelDialog.ResumeLayout(false);
+            flowLayoutPanelDialog.PerformLayout();
+            flowLayoutPanelBase.ResumeLayout(false);
+            flowLayoutPanelBase.PerformLayout();
+            ResumeLayout();
+            PerformLayout();
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = this.buttonLeft.Text;
+            DialogResult = buttonLeft.Text;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -123,7 +123,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = this.buttonMiddle.Text;
+            DialogResult = buttonMiddle.Text;
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -135,7 +135,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = this.buttonRight.Text;
+            DialogResult = buttonRight.Text;
             base.ButtonRight_Click(sender, e);
         }
     }

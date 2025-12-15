@@ -176,23 +176,13 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Calculate a description for the running application.
-                    string procDescription;
-                    if (!string.IsNullOrWhiteSpace(processDefinition.Description))
-                    {
-                        procDescription = processDefinition.Description!;
-                    }
-                    else if (File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription))
-                    {
-                        procDescription = fileInfo.FileDescription;
-                    }
-                    else if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription))
-                    {
-                        procDescription = procInfo.FileDescription!;
-                    }
-                    else
-                    {
-                        procDescription = process.ProcessName;
-                    }
+                    string procDescription = !string.IsNullOrWhiteSpace(processDefinition.Description)
+                        ? processDefinition.Description!
+                        : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription)
+                            ? fileInfo.FileDescription
+                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription)
+                                ? procInfo.FileDescription!
+                                : process.ProcessName;
 
                     // Grab the process owner if we're an administrator.
                     NTAccount? username = null;
@@ -216,7 +206,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return an ordered list of running processes to the caller.
-            return new ReadOnlyCollection<RunningProcess>(runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToArray());
+            return new ReadOnlyCollection<RunningProcess>([.. runningProcesses.OrderBy(runningProcess => runningProcess.Description)]);
         }
 
         /// <summary>
@@ -280,7 +270,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>This method uses system-level information to identify the parent process. The caller
         /// must ensure that the provided process is valid and accessible.</remarks>
         /// <param name="proc">The process for which to retrieve the parent process. Must not be null.</param>
-        /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
         public static Process GetParentProcess(Process proc)
         {
             // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
@@ -350,7 +340,10 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        public static string GetProcessCommandLine(int processId) => GetProcessCommandLine(Process.GetProcessById(processId));
+        public static string GetProcessCommandLine(int processId)
+        {
+            return GetProcessCommandLine(Process.GetProcessById(processId));
+        }
 
         /// <summary>
         /// Retrieves the image name of a process given its process ID.
@@ -363,7 +356,7 @@ namespace PSADT.ProcessManagement
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
             Span<byte> processIdInfoPtr = stackalloc byte[Marshal.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>()]; processIdInfoPtr.Clear();
             ref var processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
-            processIdInfo.ProcessId = (IntPtr)process.Id;
+            processIdInfo.ProcessId = new(process.Id);
 
             // Perform initial query so we can reallocate with the required length.
             NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
@@ -407,6 +400,9 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        public static string GetProcessImageName(int processId) => GetProcessImageName(Process.GetProcessById(processId), null);
+        public static string GetProcessImageName(int processId)
+        {
+            return GetProcessImageName(Process.GetProcessById(processId), null);
+        }
     }
 }

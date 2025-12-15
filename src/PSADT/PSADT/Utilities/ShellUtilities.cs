@@ -60,13 +60,19 @@ namespace PSADT.Utilities
         /// Minimizes all open windows on the desktop.
         /// </summary>
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
-        internal static void MinimizeAllWindows() => User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+        internal static void MinimizeAllWindows()
+        {
+            User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+        }
 
         /// <summary>
         /// Restores all minimized windows on the desktop to their previous state.
         /// </summary>
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
-        internal static void RestoreAllWindows() => User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+        internal static void RestoreAllWindows()
+        {
+            User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+        }
 
         /// <summary>
         /// Retrieves the process ID of the Windows Explorer shell process.
@@ -120,7 +126,7 @@ namespace PSADT.Utilities
             }
             Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; var length = (uint)appUserModelId.Length;
             Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
-            return appUserModelId.Slice(0, (int)length).ToString().TrimRemoveNull();
+            return appUserModelId[..(int)length].ToString().TrimRemoveNull();
         }
 
         /// <summary>
@@ -167,7 +173,10 @@ namespace PSADT.Utilities
             // Project 32-bit last-input onto the 64-bit timeline.
             ulong base64 = now64 & ~0xFFFF_FFFFUL;
             ulong last64 = base64 | last32;
-            if (last64 > now64) last64 -= 1UL << 32;
+            if (last64 > now64)
+            {
+                last64 -= 1UL << 32;
+            }
             return TimeSpan.FromMilliseconds(now64 - last64);
         }
 

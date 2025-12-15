@@ -96,7 +96,10 @@ namespace PSADT.LibraryInterfaces
         /// taskbar buttons. Cannot be null.</param>
         /// <returns>An HRESULT indicating the success or failure of the operation. A value of 0 indicates success; any other
         /// value indicates an error.</returns>
-        internal static int SetCurrentProcessExplicitAppUserModelID(string AppID) => PInvoke.SetCurrentProcessExplicitAppUserModelID(AppID).ThrowOnFailure();
+        internal static HRESULT SetCurrentProcessExplicitAppUserModelID(string AppID)
+        {
+            return PInvoke.SetCurrentProcessExplicitAppUserModelID(AppID).ThrowOnFailure();
+        }
 
         /// <summary>
         /// Retrieves the current user notification state, indicating the user's availability for receiving
@@ -108,7 +111,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pquns">When this method returns, contains a value from the QUERY_USER_NOTIFICATION_STATE enumeration that specifies
         /// the user's current notification state.</param>
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
-        internal static HRESULT SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE pquns) => PInvoke.SHQueryUserNotificationState(out pquns).ThrowOnFailure();
+        internal static HRESULT SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE pquns)
+        {
+            return PInvoke.SHQueryUserNotificationState(out pquns).ThrowOnFailure();
+        }
 
         /// <summary>
         /// Notifies the system of a change to the shell namespace, such as the creation, deletion, or modification of

@@ -11,11 +11,10 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.cs]
-dotnet_diagnostic.IDE0005.severity = error
-dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
-dotnet_diagnostic.IDE0041.severity = error
-dotnet_diagnostic.IDE0063.severity = error
-dotnet_diagnostic.IDE0090.severity = error
+dotnet_analyzer_diagnostic.category-Style.severity = error
+dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.IDE0046.severity = none
+dotnet_diagnostic.IDE0058.severity = none
 dotnet_diagnostic.RS0030.severity = error
 dotnet_code_quality.RS0030.enabled = true
 dotnet_code_quality.RS0030.banned_symbols =

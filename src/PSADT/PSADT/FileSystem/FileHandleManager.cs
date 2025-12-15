@@ -57,7 +57,7 @@ namespace PSADT.FileSystem
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref var typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr.Slice(ptrOffset)));
+                ref var typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr[..ptrOffset]));
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
@@ -138,7 +138,7 @@ namespace PSADT.FileSystem
                         {
                             Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
                         }
-                        catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
+                        catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_NOT_SUPPORTED) or ((int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                         {
                             return;
                         }
@@ -162,7 +162,7 @@ namespace PSADT.FileSystem
                             return;
                         }
                     }
-                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE || ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_FUNCTION)
+                    catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_INVALID_HANDLE) or ((int)WIN32_ERROR.ERROR_INVALID_FUNCTION))
                     {
                         return;
                     }
@@ -187,14 +187,14 @@ namespace PSADT.FileSystem
                         openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                     }
                 });
-                return new ReadOnlyCollection<FileHandleInfo>(openHandles.ToArray());
+                return new ReadOnlyCollection<FileHandleInfo>([.. openHandles]);
             }
             finally
             {
-                foreach (var buffer in threadBuffers.Values)
+                foreach (var (objectBuffer, startRoutineBuffer) in threadBuffers.Values)
                 {
-                    buffer.StartRoutineBuffer.Dispose();
-                    buffer.ObjectBuffer.Dispose();
+                    startRoutineBuffer.Dispose();
+                    objectBuffer.Dispose();
                 }
             }
         }
@@ -203,7 +203,10 @@ namespace PSADT.FileSystem
         /// Retrieves a list of open handles for the system.
         /// </summary>
         /// <returns></returns>
-        public static IReadOnlyList<FileHandleInfo> GetOpenHandles() => GetOpenHandles(null);
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles()
+        {
+            return GetOpenHandles(null);
+        }
 
         /// <summary>
         /// Closes the specified handles.
@@ -324,124 +327,127 @@ namespace PSADT.FileSystem
         {
             // Build the start routine stub to call NtQueryObject and exit the thread once done.
             int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
-            switch (RuntimeInformation.ProcessArchitecture)
+            var processArchitecture = RuntimeInformation.ProcessArchitecture;
+            if (processArchitecture == Architecture.X64)
             {
-                case Architecture.X64:
-                    // mov rcx, handle (placeholder)
-                    startRoutine.Add(0x48); startRoutine.Add(0xB9);
-                    handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for handle
+                // mov rcx, handle (placeholder)
+                startRoutine.Add(0x48); startRoutine.Add(0xB9);
+                handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for handle
 
-                    // mov rdx, infoClass (ObjectNameInformation = 1)
-                    startRoutine.Add(0x48); startRoutine.Add(0xBA);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+                // mov rdx, infoClass (ObjectNameInformation = 1)
+                startRoutine.Add(0x48); startRoutine.Add(0xBA);
+                startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
-                    // mov r8, buffer (placeholder)
-                    startRoutine.Add(0x49); startRoutine.Add(0xB8);
-                    bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer
+                // mov r8, buffer (placeholder)
+                startRoutine.Add(0x49); startRoutine.Add(0xB8);
+                bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer
 
-                    // mov r9, bufferSize (placeholder)
-                    startRoutine.Add(0x49); startRoutine.Add(0xB9);
-                    bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer length
+                // mov r9, bufferSize (placeholder)
+                startRoutine.Add(0x49); startRoutine.Add(0xB9);
+                bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer length
 
-                    // sub rsp, 0x28 — shadow space + ReturnLength
-                    startRoutine.Add(0x48); startRoutine.Add(0x83); startRoutine.Add(0xEC); startRoutine.Add(0x28);
+                // sub rsp, 0x28 — shadow space + ReturnLength
+                startRoutine.Add(0x48); startRoutine.Add(0x83); startRoutine.Add(0xEC); startRoutine.Add(0x28);
 
-                    // mov qword [rsp + 0x20], 0  (null for PULONG ReturnLength)
-                    startRoutine.Add(0x48); startRoutine.Add(0xC7); startRoutine.Add(0x44); startRoutine.Add(0x24); startRoutine.Add(0x20);
-                    startRoutine.AddRange(new byte[4]); // 0
+                // mov qword [rsp + 0x20], 0  (null for PULONG ReturnLength)
+                startRoutine.Add(0x48); startRoutine.Add(0xC7); startRoutine.Add(0x44); startRoutine.Add(0x24); startRoutine.Add(0x20);
+                startRoutine.AddRange(new byte[4]); // 0
 
-                    // mov rax, NtQueryObject
-                    startRoutine.Add(0x48); startRoutine.Add(0xB8);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)ntQueryObject.Value));
+                // mov rax, NtQueryObject
+                startRoutine.Add(0x48); startRoutine.Add(0xB8);
+                startRoutine.AddRange(BitConverter.GetBytes((ulong)ntQueryObject.Value));
 
-                    // call rax
-                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+                // call rax
+                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
 
-                    // mov ecx, eax (exit code)
-                    startRoutine.Add(0x89); startRoutine.Add(0xC1);
+                // mov ecx, eax (exit code)
+                startRoutine.Add(0x89); startRoutine.Add(0xC1);
 
-                    // mov rax, ExitThread
-                    startRoutine.Add(0x48); startRoutine.Add(0xB8);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)exitThread.Value));
+                // mov rax, ExitThread
+                startRoutine.Add(0x48); startRoutine.Add(0xB8);
+                startRoutine.AddRange(BitConverter.GetBytes((ulong)exitThread.Value));
 
-                    // call rax
-                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
-                    break;
-                case Architecture.X86:
-                    // push NULL (ReturnLength)
-                    startRoutine.Add(0x6A);
-                    startRoutine.Add(0x00);
+                // call rax
+                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+            }
+            else if (processArchitecture == Architecture.X86)
+            {
+                // push NULL (ReturnLength)
+                startRoutine.Add(0x6A);
+                startRoutine.Add(0x00);
 
-                    // push bufferSize (placeholder)
-                    startRoutine.Add(0x68);
-                    bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
+                // push bufferSize (placeholder)
+                startRoutine.Add(0x68);
+                bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
 
-                    // push buffer (placeholder)
-                    startRoutine.Add(0x68);
-                    bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
+                // push buffer (placeholder)
+                startRoutine.Add(0x68);
+                bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
 
-                    // push infoClass (ObjectNameInformation = 1)
-                    startRoutine.Add(0x68);
-                    startRoutine.AddRange(BitConverter.GetBytes((int)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+                // push infoClass (ObjectNameInformation = 1)
+                startRoutine.Add(0x68);
+                startRoutine.AddRange(BitConverter.GetBytes((int)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
-                    // push handle (placeholder)
-                    startRoutine.Add(0x68);
-                    handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
+                // push handle (placeholder)
+                startRoutine.Add(0x68);
+                handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
 
-                    // mov eax, NtQueryObject
-                    startRoutine.Add(0xB8);
-                    startRoutine.AddRange(BitConverter.GetBytes(ntQueryObject.Value.ToInt32()));
+                // mov eax, NtQueryObject
+                startRoutine.Add(0xB8);
+                startRoutine.AddRange(BitConverter.GetBytes(ntQueryObject.Value.ToInt32()));
 
-                    // call eax
-                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+                // call eax
+                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
 
-                    // push eax (NTSTATUS)
-                    startRoutine.Add(0x50);
+                // push eax (NTSTATUS)
+                startRoutine.Add(0x50);
 
-                    // mov eax, ExitThread
-                    startRoutine.Add(0xB8);
-                    startRoutine.AddRange(BitConverter.GetBytes(exitThread.Value.ToInt32()));
+                // mov eax, ExitThread
+                startRoutine.Add(0xB8);
+                startRoutine.AddRange(BitConverter.GetBytes(exitThread.Value.ToInt32()));
 
-                    // call eax
-                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
-                    break;
-                case Architecture.Arm64:
-                    // x0 = handle (placeholder - 4 instructions)
-                    List<uint> code = [];
-                    handleOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(0, 0)); // placeholder
+                // call eax
+                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+            }
+            else if (processArchitecture == Architecture.Arm64)
+            {
+                // x0 = handle (placeholder - 4 instructions)
+                List<uint> code = [];
+                handleOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(0, 0)); // placeholder
 
-                    // x1 = infoClass (ObjectNameInformation = 1)
-                    code.AddRange(NativeUtilities.Load64(1, (ulong)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+                // x1 = infoClass (ObjectNameInformation = 1)
+                code.AddRange(NativeUtilities.Load64(1, (ulong)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
-                    // x2 = buffer (placeholder - 4 instructions)
-                    bufferOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(2, 0)); // placeholder
+                // x2 = buffer (placeholder - 4 instructions)
+                bufferOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(2, 0)); // placeholder
 
-                    // x3 = bufferSize (placeholder - 4 instructions)
-                    bufferLengthOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(3, 0)); // placeholder
+                // x3 = bufferSize (placeholder - 4 instructions)
+                bufferLengthOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(3, 0)); // placeholder
 
-                    // x4 = NULL (for ReturnLength)
-                    code.AddRange(NativeUtilities.Load64(4, 0));
+                // x4 = NULL (for ReturnLength)
+                code.AddRange(NativeUtilities.Load64(4, 0));
 
-                    // x16 = NtQueryObject
-                    code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
+                // x16 = NtQueryObject
+                code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
 
-                    // blr x16 (branch with link to x16)
-                    code.Add(NativeUtilities.EncodeBlr(16));
+                // blr x16 (branch with link to x16)
+                code.Add(NativeUtilities.EncodeBlr(16));
 
-                    // x16 = ExitThread (x0 already contains result, move to x0 for ExitThread (no-op, already there))
-                    code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
+                // x16 = ExitThread (x0 already contains result, move to x0 for ExitThread (no-op, already there))
+                code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
 
-                    // br x16
-                    code.Add(NativeUtilities.EncodeBr(16));
+                // br x16
+                code.Add(NativeUtilities.EncodeBr(16));
 
-                    // Convert instruction list to byte array
-                    foreach (var instr in code)
-                    {
-                        startRoutine.AddRange(BitConverter.GetBytes(instr));
-                    }
-                    break;
-                default:
-                    throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
+                // Convert instruction list to byte array
+                foreach (var instr in code)
+                {
+                    startRoutine.AddRange(BitConverter.GetBytes(instr));
+                }
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
             }
             return new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
         }
@@ -455,39 +461,43 @@ namespace PSADT.FileSystem
         /// <param name="infoBufferLength">The length of the info buffer.</param>
         private static void PatchStartRoutineBuffer(SafeVirtualAllocHandle startRoutineBuffer, IntPtr fileHandle, IntPtr infoBuffer, int infoBufferLength)
         {
-            switch (RuntimeInformation.ProcessArchitecture)
+            // Patch the handle and buffer pointers into the StartRoutine template.
+            var processArchitecture = RuntimeInformation.ProcessArchitecture;
+            if (processArchitecture == Architecture.X64)
             {
-                case Architecture.X64:
-                    // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
-                    // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
-                    // Patch buffer length at offset (mov r9, bufferSize -> 3 bytes opcode + 8 bytes value)
-                    startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
-                    startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                    startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
-                    break;
-                case Architecture.X86:
-                    // Patch buffer length (push bufferSize)
-                    // Patch buffer (push buffer)
-                    // Patch handle (push handle)
-                    startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
-                    startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                    startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
-                    break;
-                case Architecture.Arm64:
-                    // For ARM64, we need to regenerate the MOVZ/MOVK sequences for each 64-bit value. Each instruction is 4 bytes, patch in place.
-                    // Handle is at x0 (instructions 0-3), buffer is at x2 (instructions 8-11), length is at x3 (instructions 12-15).
-                    var handleInstrs = NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()).ToArray();
-                    var bufferInstrs = NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()).ToArray();
-                    var lengthInstrs = NativeUtilities.Load64(3, (ulong)infoBufferLength).ToArray();
-                    for (int j = 0; j < 4; j++)
-                    {
-                        startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
-                        startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
-                        startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
-                    }
-                    break;
-                default:
-                    throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
+                // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
+                // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
+                // Patch buffer length at offset (mov r9, bufferSize -> 3 bytes opcode + 8 bytes value)
+                startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+            }
+            else if (processArchitecture == Architecture.X86)
+            {
+                // Patch buffer length (push bufferSize)
+                // Patch buffer (push buffer)
+                // Patch handle (push handle)
+                startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+            }
+            else if (processArchitecture == Architecture.Arm64)
+            {
+                // For ARM64, we need to regenerate the MOVZ/MOVK sequences for each 64-bit value. Each instruction is 4 bytes, patch in place.
+                // Handle is at x0 (instructions 0-3), buffer is at x2 (instructions 8-11), length is at x3 (instructions 12-15).
+                var handleInstrs = NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()).ToArray();
+                var bufferInstrs = NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()).ToArray();
+                var lengthInstrs = NativeUtilities.Load64(3, (ulong)infoBufferLength).ToArray();
+                for (int j = 0; j < 4; j++)
+                {
+                    startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
+                    startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
+                    startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
+                }
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
             }
         }
 

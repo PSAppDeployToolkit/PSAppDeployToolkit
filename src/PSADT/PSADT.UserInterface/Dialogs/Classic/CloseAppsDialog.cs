@@ -39,23 +39,23 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
             InitializeComponent();
-            this.SuspendLayout();
-            this.flowLayoutPanelBase.SuspendLayout();
-            this.flowLayoutPanelDialog.SuspendLayout();
+            SuspendLayout();
+            flowLayoutPanelBase.SuspendLayout();
+            flowLayoutPanelDialog.SuspendLayout();
 
             // Apply options to the form if we have any (i.e. not in the designer).
             if (options is not null)
             {
                 // Set up main options.
-                this.labelWelcomeMessage.Text = StripFormattingTags(options.Strings.Classic.WelcomeMessage);
-                this.labelAppName.Text = StripFormattingTags(Regex.Replace(options.AppTitle, @"(?<!&)&(?!&)", "&&"));
-                this.labelCloseProcessesMessage.Text = StripFormattingTags(options.Strings.Classic.CloseAppsMessage);
-                this.labelDeferralExpiryMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryMessage);
-                this.labelDeferWarningMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryWarning);
-                this.buttonCloseProcesses.Text = StripFormattingTags(options.Strings.Classic.ButtonClose);
-                this.buttonDefer.Text = StripFormattingTags(options.Strings.Classic.ButtonDefer);
-                this.buttonContinue.Text = StripFormattingTags(options.Strings.Classic.ButtonContinue);
-                this.toolTipButtonContinue.RemoveAll();
+                labelWelcomeMessage.Text = StripFormattingTags(options.Strings.Classic.WelcomeMessage);
+                labelAppName.Text = StripFormattingTags(Regex.Replace(options.AppTitle, @"(?<!&)&(?!&)", "&&"));
+                labelCloseProcessesMessage.Text = StripFormattingTags(options.Strings.Classic.CloseAppsMessage);
+                labelDeferralExpiryMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryMessage);
+                labelDeferWarningMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryWarning);
+                buttonCloseProcesses.Text = StripFormattingTags(options.Strings.Classic.ButtonClose);
+                buttonDefer.Text = StripFormattingTags(options.Strings.Classic.ButtonDefer);
+                buttonContinue.Text = StripFormattingTags(options.Strings.Classic.ButtonContinue);
+                toolTipButtonContinue.RemoveAll();
                 hideCloseButton = options.HideCloseButton;
                 forcedCountdown = options.ForcedCountdown;
                 countdownDuration = options.CountdownDuration;
@@ -65,87 +65,87 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 continueOnProcessClosure = options.ContinueOnProcessClosure;
 
                 // Set up the picturebox.
-                SetPictureBox(this.pictureBanner, options);
+                SetPictureBox(pictureBanner, options);
 
                 // Set the custom message text if we have one.
                 if (options.CustomMessageText is not null)
                 {
-                    this.labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
+                    labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
                 }
                 else
                 {
-                    this.flowLayoutPanelDialog.Controls.Remove(this.labelCustomMessage);
+                    flowLayoutPanelDialog.Controls.Remove(labelCustomMessage);
                 }
 
                 // Allow the dialog to be minimised if specified.
                 if (options.DialogAllowMinimize)
                 {
-                    this.FormBorderStyle = FormBorderStyle.FixedSingle;
-                    this.ControlBox = true;
-                    this.MinimizeBox = true;
-                    this.MaximizeBox = false;
-                    this.ShowInTaskbar = true;
+                    FormBorderStyle = FormBorderStyle.FixedSingle;
+                    ControlBox = true;
+                    MinimizeBox = true;
+                    MaximizeBox = false;
+                    ShowInTaskbar = true;
                 }
 
                 // Set up the process service.
-                this.richTextBoxCloseProcesses.Lines = null;
+                richTextBoxCloseProcesses.Lines = null;
                 if (state.RunningProcessService is not null)
                 {
                     // Get the current running apps and amend the form accordingly.
                     string[] runningApps = [.. (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
                     if (runningApps.Length > 0)
                     {
-                        this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
-                        this.richTextBoxCloseProcesses.Lines = runningApps;
+                        toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
+                        richTextBoxCloseProcesses.Lines = runningApps;
                         if (hideCloseButton)
                         {
-                            this.buttonCloseProcesses.Enabled = false;
-                            this.buttonContinue.Enabled = false;
+                            buttonCloseProcesses.Enabled = false;
+                            buttonContinue.Enabled = false;
                         }
                     }
                     else
                     {
-                        this.flowLayoutPanelCloseApps.Visible = false;
-                        this.buttonCloseProcesses.Enabled = false;
-                        this.buttonCloseProcesses.Visible = false;
+                        flowLayoutPanelCloseApps.Visible = false;
+                        buttonCloseProcesses.Enabled = false;
+                        buttonCloseProcesses.Visible = false;
                     }
                 }
                 else
                 {
-                    this.flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelCloseApps);
-                    this.buttonCloseProcesses.Enabled = false;
-                    this.buttonCloseProcesses.Visible = false;
+                    flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelCloseApps);
+                    buttonCloseProcesses.Enabled = false;
+                    buttonCloseProcesses.Visible = false;
                 }
 
                 // Set up our deferrals display.
                 if (!((options.DeferralsRemaining is null) && (options.DeferralDeadline is null)))
                 {
-                    this.labelDeferDeadline.Text = null;
+                    labelDeferDeadline.Text = null;
                     if (options.DeferralsRemaining is not null && !options.UnlimitedDeferrals)
                     {
-                        this.labelDeferDeadline.Text = StripFormattingTags($"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim());
+                        labelDeferDeadline.Text = StripFormattingTags($"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim());
                         if (options.DeferralsRemaining <= 0)
                         {
-                            this.buttonDefer.Enabled = false;
+                            buttonDefer.Enabled = false;
                         }
                     }
                     if (options.DeferralDeadline is not null)
                     {
-                        this.labelDeferDeadline.Text = StripFormattingTags($"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern, CultureInfo.CurrentCulture) + options.DeferralDeadline.Value.ToString("zzz", CultureInfo.CurrentCulture)}".Trim());
+                        labelDeferDeadline.Text = StripFormattingTags($"{labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern, CultureInfo.CurrentCulture) + options.DeferralDeadline.Value.ToString("zzz", CultureInfo.CurrentCulture)}".Trim());
                         if (options.DeferralDeadline <= DateTime.Now)
                         {
-                            this.buttonDefer.Enabled = false;
+                            buttonDefer.Enabled = false;
                         }
                     }
-                    if (string.IsNullOrWhiteSpace(this.labelDeferDeadline.Text))
+                    if (string.IsNullOrWhiteSpace(labelDeferDeadline.Text))
                     {
-                        this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelDeferral);
+                        flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelDeferral);
                     }
                 }
                 else
                 {
-                    this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelDeferral);
-                    this.buttonDefer.Enabled = false;
+                    flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelDeferral);
+                    buttonDefer.Enabled = false;
                 }
 
                 // Set the countdown timer.
@@ -153,25 +153,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     countdownStopwatch = state.CountdownStopwatch;
-                    if (this.richTextBoxCloseProcesses.Lines?.Length > 0)
-                    {
-                        if (forcedCountdown)
-                        {
-                            this.labelCountdownMessage.Text = countdownDefer;
-                        }
-                        else
-                        {
-                            this.labelCountdownMessage.Text = countdownClose;
-                        }
-                    }
-                    else
-                    {
-                        this.labelCountdownMessage.Text = countdownDefer;
-                    }
+                    labelCountdownMessage.Text = richTextBoxCloseProcesses.Lines?.Length > 0 ? forcedCountdown ? countdownDefer : countdownClose : countdownDefer;
                 }
                 else
                 {
-                    this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelCountdown);
+                    flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelCountdown);
                 }
 
                 // Set up the log writer if we have one.
@@ -183,12 +169,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // Resume the dialog now that we've applied any options.
             DialogResult = CloseAppsDialogResult.Timeout;
-            this.flowLayoutPanelDialog.ResumeLayout(false);
-            this.flowLayoutPanelDialog.PerformLayout();
-            this.flowLayoutPanelBase.ResumeLayout(false);
-            this.flowLayoutPanelBase.PerformLayout();
-            this.ResumeLayout();
-            this.PerformLayout();
+            flowLayoutPanelDialog.ResumeLayout(false);
+            flowLayoutPanelDialog.PerformLayout();
+            flowLayoutPanelBase.ResumeLayout(false);
+            flowLayoutPanelBase.PerformLayout();
+            ResumeLayout();
+            PerformLayout();
         }
 
         /// <summary>
@@ -291,16 +277,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 remaining = TimeSpan.Zero;
             }
-            this.Invoke(() => labelCountdown.Text = FormatTime(remaining));
+            Invoke(() => labelCountdown.Text = FormatTime(remaining));
             if (remaining <= TimeSpan.Zero)
             {
-                this.Invoke(() =>
+                Invoke(() =>
                 {
                     if (forcedCountdown && (runningProcessService is null || richTextBoxCloseProcesses.Lines.Length == 0))
                     {
                         buttonContinue.PerformClick();
                     }
-                    else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral) && this.buttonDefer.Enabled)
+                    else if (forcedCountdown && flowLayoutPanelDialog.Controls.Contains(flowLayoutPanelDeferral) && buttonDefer.Enabled)
                     {
                         buttonDefer.PerformClick();
                     }
@@ -326,9 +312,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {
-            this.Invoke(() =>
+            Invoke(() =>
             {
-                this.richTextBoxCloseProcesses.Lines = null;
+                richTextBoxCloseProcesses.Lines = null;
                 if (e.ProcessesToClose.Count > 0)
                 {
                     string[] runningApps = [.. e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
@@ -337,16 +323,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                         logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
                         logWriter.Flush();
                     }
-                    this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
-                    this.richTextBoxCloseProcesses.Lines = runningApps;
-                    this.labelCountdownMessage.Text = countdownClose;
-                    this.flowLayoutPanelCloseApps.Visible = true;
-                    this.buttonCloseProcesses.Enabled = true;
-                    this.buttonCloseProcesses.Visible = true;
+                    toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
+                    richTextBoxCloseProcesses.Lines = runningApps;
+                    labelCountdownMessage.Text = countdownClose;
+                    flowLayoutPanelCloseApps.Visible = true;
+                    buttonCloseProcesses.Enabled = true;
+                    buttonCloseProcesses.Visible = true;
                     if (hideCloseButton)
                     {
-                        this.buttonCloseProcesses.Enabled = false;
-                        this.buttonContinue.Enabled = false;
+                        buttonCloseProcesses.Enabled = false;
+                        buttonContinue.Enabled = false;
                     }
                 }
                 else
@@ -356,12 +342,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
                         logWriter.Write("Previously detected running processes are no longer running.");
                         logWriter.Flush();
                     }
-                    this.toolTipButtonContinue.RemoveAll();
-                    this.labelCountdownMessage.Text = countdownDefer;
-                    this.flowLayoutPanelCloseApps.Visible = false;
-                    this.buttonCloseProcesses.Enabled = false;
-                    this.buttonCloseProcesses.Visible = false;
-                    this.buttonContinue.Enabled = true;
+                    toolTipButtonContinue.RemoveAll();
+                    labelCountdownMessage.Text = countdownDefer;
+                    flowLayoutPanelCloseApps.Visible = false;
+                    buttonCloseProcesses.Enabled = false;
+                    buttonCloseProcesses.Visible = false;
+                    buttonContinue.Enabled = true;
                     if (continueOnProcessClosure)
                     {
                         buttonContinue.PerformClick();

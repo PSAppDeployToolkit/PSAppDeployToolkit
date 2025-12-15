@@ -82,6 +82,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// behavior is used.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
@@ -184,6 +185,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="buttonRestartNow">The label for the "Restart Now" button. Cannot be <see langword="null"/>.</param>
             /// <param name="buttonRestartLater">The label for the "Restart Later" button. Cannot be <see langword="null"/>.</param>
             /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
             [JsonConstructor]
             private RestartDialogStrings(string title, string message, string messageTime, string messageRestart, string timeRemaining, string buttonRestartNow, string buttonRestartLater)
             {
