@@ -11,6 +11,7 @@ AuthzAccessCheck
 AuthzInitializeContextFromSid
 AuthzInitializeContextFromToken
 AuthzInitializeResourceManager
+BOOLEAN
 BringWindowToTop
 CloseHandle
 CreateEnvironmentBlock
