@@ -26,11 +26,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static BOOL AllocConsole()
         {
             BOOL res = PInvoke.AllocConsole();
-            if (!res)
-            {
-                throw new Win32Exception();
-            }
-            return res;
+            return !res ? throw new Win32Exception() : res;
         }
 
         /// <summary>
@@ -45,11 +41,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static HWND GetConsoleWindow()
         {
             HWND res = PInvoke.GetConsoleWindow();
-            if (res.IsNull)
-            {
-                throw new Win32Exception("Failed to get a handle for the console window.");
-            }
-            return res;
+            return res.IsNull ? throw new Win32Exception("Failed to get a handle for the console window.") : res;
         }
 
         /// <summary>
@@ -64,11 +56,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         internal static BOOL FreeConsole()
         {
             BOOL res = PInvoke.FreeConsole();
-            if (!res)
-            {
-                throw new Win32Exception();
-            }
-            return res;
+            return !res ? throw new Win32Exception() : res;
         }
     }
 }

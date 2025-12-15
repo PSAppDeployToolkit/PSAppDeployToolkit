@@ -12,6 +12,7 @@ namespace PSADT.Extensions
         /// </summary>
         /// <param name="frame"></param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static string GetCommand(this CallStackFrame frame)
         {
             if (frame.InvocationInfo is null)

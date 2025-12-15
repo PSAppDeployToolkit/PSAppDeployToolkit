@@ -40,11 +40,7 @@ namespace PSADT.LibraryInterfaces
                     hProcess.DangerousRelease();
                 }
             }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -78,11 +74,7 @@ namespace PSADT.LibraryInterfaces
                     hProcess.DangerousRelease();
                 }
             }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
     }
 }

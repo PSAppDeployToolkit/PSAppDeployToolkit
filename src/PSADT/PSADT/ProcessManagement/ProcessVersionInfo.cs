@@ -216,11 +216,9 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate the resource directory size.
-            if (resourceSize == 0)
-            {
-                throw new InvalidOperationException("The specified process does not have a valid resource directory size.");
-            }
-            return FindVersionResource(processHandle, unchecked(baseAddress + (int)resourceRva), baseAddress);
+            return resourceSize == 0
+                ? throw new InvalidOperationException("The specified process does not have a valid resource directory size.")
+                : FindVersionResource(processHandle, unchecked(baseAddress + (int)resourceRva), baseAddress);
         }
 
         /// <summary>
@@ -311,11 +309,7 @@ namespace PSADT.ProcessManagement
             Span<char> szLang = stackalloc char[(int)PInvoke.MAX_PATH];
             uint len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang);
             string result = szLang[..(int)len].ToString().TrimRemoveNull();
-            if (!string.IsNullOrWhiteSpace(result))
-            {
-                return result;
-            }
-            return null;
+            return !string.IsNullOrWhiteSpace(result) ? result : null;
         }
 
         /// <summary>

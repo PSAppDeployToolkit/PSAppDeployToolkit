@@ -528,6 +528,7 @@ namespace PSADT.ClientServer
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
@@ -730,11 +731,9 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException"></exception>
         private static string GetEnvironmentVariable(IReadOnlyDictionary<string, string> arguments)
         {
-            if (!arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
-            {
-                throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
-            }
-            return SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(CommonUtilities.ArgumentSeparator, 1));
+            return !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable)
+                ? throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments)
+                : SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(CommonUtilities.ArgumentSeparator, 1));
         }
 
         /// <summary>
@@ -803,6 +802,7 @@ namespace PSADT.ClientServer
         /// key.</param>
         /// <returns>The value associated with the "Options" key in the dictionary.</returns>
         /// <exception cref="ClientException">Thrown if the "Options" key is missing, null, or contains only whitespace.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string GetOptionsFromArguments(IReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we have options and they're not null/invalid.

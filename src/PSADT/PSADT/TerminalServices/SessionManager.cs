@@ -62,6 +62,7 @@ namespace PSADT.TerminalServices
         internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
             // Internal helper for retrieving session information values.
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
             static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
                 WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);

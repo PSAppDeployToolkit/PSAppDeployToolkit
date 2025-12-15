@@ -86,11 +86,9 @@ namespace PSADT.AccountManagement
         public static SecurityIdentifier GetWellKnownSid(WellKnownSidType wellKnownSidType)
         {
             // Return the SecurityIdentifier for the specified well-known SID type.
-            if (!WellKnownSidLookupTable.TryGetValue(wellKnownSidType, out SecurityIdentifier? sid))
-            {
-                throw new ArgumentException($"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.");
-            }
-            return sid;
+            return !WellKnownSidLookupTable.TryGetValue(wellKnownSidType, out SecurityIdentifier? sid)
+                ? throw new ArgumentException($"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.")
+                : sid;
         }
 
         /// <summary>

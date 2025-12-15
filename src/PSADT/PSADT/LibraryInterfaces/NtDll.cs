@@ -47,11 +47,9 @@ namespace PSADT.LibraryInterfaces
                     res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)lpVersionInformationLocal);
                 }
             }
-            if (res != NTSTATUS.STATUS_SUCCESS)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
+            return res != NTSTATUS.STATUS_SUCCESS
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                : res;
         }
 
         /// <summary>
@@ -86,11 +84,9 @@ namespace PSADT.LibraryInterfaces
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
                 }
             }
-            if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
+            return res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                : res;
         }
 
         /// <summary>
@@ -127,11 +123,9 @@ namespace PSADT.LibraryInterfaces
                     Handle?.DangerousRelease();
                 }
             }
-            if (res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
+            return res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass]))
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                : res;
         }
 
         /// <summary>
@@ -232,11 +226,9 @@ namespace PSADT.LibraryInterfaces
                     ThreadHandle.DangerousRelease();
                 }
             }
-            if (res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
+            return res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                : res;
         }
 
         /// <summary>
@@ -283,11 +275,9 @@ namespace PSADT.LibraryInterfaces
                     ProcessHandle.DangerousRelease();
                 }
             }
-            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
+            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0)
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                : res;
         }
 
         /// <summary>

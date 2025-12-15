@@ -230,11 +230,9 @@ namespace PSADT.ProcessManagement
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
             AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
             ref SERVICE_STATUS_PROCESS serviceStatus = ref Unsafe.As<byte, SERVICE_STATUS_PROCESS>(ref MemoryMarshal.GetReference(buffer));
-            if (serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0)
-            {
-                throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.");
-            }
-            return dwProcessId;
+            return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
+                ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
+                : dwProcessId;
         }
 
         /// <summary>
@@ -276,11 +274,7 @@ namespace PSADT.ProcessManagement
         public static Process GetParentProcess(Process proc)
         {
             // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
-            if (proc is null)
-            {
-                throw new ArgumentNullException(nameof(proc), "Process cannot be null.");
-            }
-            return GetParentProcess(proc.SafeHandle);
+            return proc is null ? throw new ArgumentNullException(nameof(proc), "Process cannot be null.") : GetParentProcess(proc.SafeHandle);
         }
 
         /// <summary>
@@ -388,11 +382,9 @@ namespace PSADT.ProcessManagement
             if (ntPathLookupTable is not null)
             {
                 string ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
-                {
-                    throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imageName}].");
-                }
-                return imageName.Replace(ntDeviceName, driveLetter);
+                return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
+                    ? throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imageName}].")
+                    : imageName.Replace(ntDeviceName, driveLetter);
             }
             return imageName;
         }

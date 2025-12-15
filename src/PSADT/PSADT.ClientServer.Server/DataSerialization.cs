@@ -43,6 +43,7 @@ namespace PSADT.ClientServer
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static string SerializeToString<T>(T obj)
         {
             if (obj is null)
@@ -64,6 +65,7 @@ namespace PSADT.ClientServer
         /// JSON to reconstruct the original object.</remarks>
         /// <param name="obj">The object to serialize. Must not be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static string SerializeToString(object obj)
         {
             if (obj is null)
@@ -88,6 +90,7 @@ namespace PSADT.ClientServer
         /// <returns>An object of type <typeparamref name="T"/> deserialized from the provided JSON string.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static T DeserializeFromString<T>(string base64Json)
         {
             if (string.IsNullOrWhiteSpace(base64Json))
@@ -111,6 +114,7 @@ namespace PSADT.ClientServer
         /// <returns>An object representing the deserialized JSON data.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static object DeserializeFromString(string base64Json)
         {
             if (string.IsNullOrWhiteSpace(base64Json))

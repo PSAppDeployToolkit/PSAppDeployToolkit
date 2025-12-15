@@ -91,11 +91,7 @@ namespace PSADT.FileSystem
                 {
                     p++;
                 }
-                if (p < input.Length && input[p] == '"')
-                {
-                    return false;
-                }
-                return true;
+                return p >= input.Length || input[p] != '"';
             }
 
             // Check for DOS drive path (starts with letter:\ or letter:/).
@@ -105,11 +101,7 @@ namespace PSADT.FileSystem
             }
 
             // Check for POSIX path (starts with /letter/ where letter is a drive letter).
-            if (position + 2 < input.Length && input[position] == '/' && char.IsLetter(input[position + 1]) && input[position + 2] == '/')
-            {
-                return true;
-            }
-            return false;
+            return position + 2 < input.Length && input[position] == '/' && char.IsLetter(input[position + 1]) && input[position + 2] == '/';
         }
 
         /// <summary>
@@ -144,11 +136,7 @@ namespace PSADT.FileSystem
             try
             {
                 using SafeFileHandle hFile = Kernel32.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL);
-                if (hFile.IsInvalid)
-                {
-                    return false;
-                }
-                return true;
+                return !hFile.IsInvalid;
             }
             catch
             {
@@ -234,6 +222,7 @@ namespace PSADT.FileSystem
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified token
         /// has for the given path.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="token"/> is null or invalid.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
             if (path is null)

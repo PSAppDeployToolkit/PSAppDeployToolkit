@@ -654,11 +654,9 @@ namespace PSADT.ClientServer
             }
 
             // If the response is an error, rethrow it. Otherwise, deserialize the response.
-            if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.Ordinal))
-            {
-                throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response[6..]));
-            }
-            return DataSerialization.DeserializeFromString<T>(response);
+            return response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.Ordinal)
+                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response[6..]))
+                : DataSerialization.DeserializeFromString<T>(response);
         }
 
         /// <summary>
