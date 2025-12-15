@@ -9,7 +9,7 @@
     <Product>PSAppDeployToolkit User Interface Library</Product>
     <AssemblyTitle>PSAppDeployToolkit User Interface Library</AssemblyTitle>
     <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
-    <NoWarn>CA1031;CA1307;CA1510</NoWarn>
+    <NoWarn>CA1031</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

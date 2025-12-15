@@ -454,7 +454,7 @@ namespace PSADT.Core
                     _installName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{_appVendor}_" : null)}{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
                 }
                 Regex invalidChars = (Regex)adtEnv["invalidFileNameCharsRegExPattern"]!;
-                _installName = invalidChars.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
+                _installName = invalidChars.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null, StringComparison.OrdinalIgnoreCase), "_+", "_"), string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
@@ -484,7 +484,7 @@ namespace PSADT.Core
                 // Append subfolder path if configured to do so.
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
-                    _logPath = Directory.CreateDirectory(Path.Combine(_logPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", null))).FullName;
+                    _logPath = Directory.CreateDirectory(Path.Combine(_logPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", null, StringComparison.OrdinalIgnoreCase))).FullName;
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
@@ -511,7 +511,7 @@ namespace PSADT.Core
                         // Get new log file path.
                         string logFileNameOnly = Path.GetFileNameWithoutExtension(_logName);
                         string logFileExtension = Path.GetExtension(_logName);
-                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null, StringComparison.OrdinalIgnoreCase);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Combine(_logPath, archiveLogFileName);
                         int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
@@ -591,7 +591,7 @@ namespace PSADT.Core
                     }
                     if (_deployAppScriptParameters?.Count > 0)
                     {
-                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(_deployAppScriptParameters).Replace("''", "'")}].");
+                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(_deployAppScriptParameters).Replace("''", "'", StringComparison.OrdinalIgnoreCase)}].");
                     }
                 }
                 PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
@@ -1071,7 +1071,7 @@ namespace PSADT.Core
                 {
                     // Get all archive files sorted by last write time.
                     FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
-                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
+                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null, StringComparison.OrdinalIgnoreCase));
 
                     // Keep only the max number of archive files
                     int archiveFilesCount = archiveFiles.Length;
@@ -1477,7 +1477,7 @@ namespace PSADT.Core
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_", StringComparison.OrdinalIgnoreCase)).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name[2..], static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith('_')).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name[2..], static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.

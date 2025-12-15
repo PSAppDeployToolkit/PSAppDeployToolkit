@@ -74,7 +74,7 @@ namespace PSADT.Utilities
                     continue;
                 }
 
-                int separatorIndex = entry.IndexOf('=');
+                int separatorIndex = entry.IndexOf('=', StringComparison.OrdinalIgnoreCase);
                 if (separatorIndex <= 0)
                 {
                     continue;

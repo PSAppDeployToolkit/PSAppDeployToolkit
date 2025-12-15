@@ -240,7 +240,7 @@ namespace PSADT.ProcessManagement
                 {
                     // Parse unquoted value - might be a path with spaces.
                     string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    _ = value.Contains(' ') && !value.StartsWith("\"", StringComparison.OrdinalIgnoreCase)
+                    _ = value.Contains(' ', StringComparison.OrdinalIgnoreCase) && !value.StartsWith('\"')
                         ? result.Append('"').Append(value).Append('"')
                         : result.Append(value);
                 }
@@ -337,7 +337,7 @@ namespace PSADT.ProcessManagement
             {
                 position = tokenPositions[TokenCount];
             }
-            else if (Path.EndsWith("\\", StringComparison.OrdinalIgnoreCase) && position < commandLine.Length)
+            else if (Path.EndsWith('\\') && position < commandLine.Length)
             {
                 // If the parsed path ends with a backslash, it's likely a directory.
                 // The original logic might have consumed a following argument.
@@ -417,7 +417,7 @@ namespace PSADT.ProcessManagement
                 // If a token ends with a backslash, it's likely a directory. The path ends here.
                 for (int i = 0; i < tokens.Count - 1; i++)
                 {
-                    if (tokens[i].EndsWith("\\", StringComparison.OrdinalIgnoreCase))
+                    if (tokens[i].EndsWith('\\'))
                     {
                         return (string.Join(" ", tokens.Take(i + 1)), i + 1);
                     }
@@ -432,8 +432,8 @@ namespace PSADT.ProcessManagement
                     {
                         string token = tokens[i];
 
-                        if (token.Contains(';') || token.Contains('|') || token.Contains('&') ||
-                            token.Contains('<') || token.Contains('>') || token.Contains('^'))
+                        if (token.Contains(';', StringComparison.OrdinalIgnoreCase) || token.Contains('|', StringComparison.OrdinalIgnoreCase) || token.Contains('&', StringComparison.OrdinalIgnoreCase) ||
+                            token.Contains('<', StringComparison.OrdinalIgnoreCase) || token.Contains('>', StringComparison.OrdinalIgnoreCase) || token.Contains('^', StringComparison.OrdinalIgnoreCase))
                         {
                             return (string.Join(" ", tokens.Take(i)), i);
                         }
@@ -442,8 +442,8 @@ namespace PSADT.ProcessManagement
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
                     string lastToken = tokens[^1];
-                    if (!lastToken.StartsWith("/", StringComparison.OrdinalIgnoreCase) && !lastToken.StartsWith("-", StringComparison.OrdinalIgnoreCase) &&
-                        !lastToken.Contains('=') && !lastToken.StartsWith("{", StringComparison.OrdinalIgnoreCase))
+                    if (!lastToken.StartsWith('/') && !lastToken.StartsWith('-') &&
+                        !lastToken.Contains('=', StringComparison.OrdinalIgnoreCase) && !lastToken.StartsWith('{'))
                     {
                         return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
                     }
@@ -527,19 +527,19 @@ namespace PSADT.ProcessManagement
             }
 
             // Check for flag patterns.
-            if (part.StartsWith("/", StringComparison.OrdinalIgnoreCase) || part.StartsWith("-", StringComparison.OrdinalIgnoreCase))
+            if (part.StartsWith('/') || part.StartsWith('-'))
             {
                 return true;
             }
 
             // Check for key=value patterns.
-            if (part.Contains('='))
+            if (part.Contains('=', StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
             // Check for GUID patterns.
-            return part.StartsWith("{", StringComparison.OrdinalIgnoreCase) && part.EndsWith("}", StringComparison.OrdinalIgnoreCase);
+            return part.StartsWith('{') && part.EndsWith('}');
         }
 
         /// <summary>
@@ -677,11 +677,11 @@ namespace PSADT.ProcessManagement
             }
 
             // Check if the argument is a key-value pair where the value is already quoted.
-            int equalsPos = argument.IndexOf('=');
+            int equalsPos = argument.IndexOf('=', StringComparison.OrdinalIgnoreCase);
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
                 string value = argument[(equalsPos + 1)..];
-                if (value.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && value.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+                if (value.StartsWith('\"') && value.EndsWith('\"'))
                 {
                     // The value is already quoted. We can return the argument as-is,
                     // as our compatible parser will handle it correctly.

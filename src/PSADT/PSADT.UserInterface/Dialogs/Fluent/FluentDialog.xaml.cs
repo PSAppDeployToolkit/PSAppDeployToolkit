@@ -501,7 +501,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
-            if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+            if (!navigateUrl.Contains("://", StringComparison.OrdinalIgnoreCase) && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
             {
                 if (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
                     navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))

@@ -7,7 +7,6 @@
     <Product>PSAppDeployToolkit Client/Server Server Library</Product>
     <AssemblyTitle>PSAppDeployToolkit Client/Server Server Library</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
-    <NoWarn>CA1307</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

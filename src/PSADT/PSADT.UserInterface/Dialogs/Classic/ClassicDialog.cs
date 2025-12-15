@@ -312,17 +312,17 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 if (match.Groups["UrlLinkSimple"] is Group urlLinkSimple && urlLinkSimple.Success)
                 {
-                    text = text.Replace(urlLinkSimple.Value, match.Groups["UrlLinkSimpleContent"].Value);
+                    text = text.Replace(urlLinkSimple.Value, match.Groups["UrlLinkSimpleContent"].Value, StringComparison.OrdinalIgnoreCase);
                 }
                 else if (match.Groups["UrlLinkDescriptive"] is Group urlLinkDescriptive && urlLinkDescriptive.Success)
                 {
-                    text = text.Replace(urlLinkDescriptive.Value, match.Groups["UrlLinkDescription"].Value);
+                    text = text.Replace(urlLinkDescriptive.Value, match.Groups["UrlLinkDescription"].Value, StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
                     foreach (Group formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open", StringComparison.Ordinal) || g.Name.StartsWith("Close", StringComparison.Ordinal))))
                     {
-                        text = text.Replace(formattingTag.Value, null);
+                        text = text.Replace(formattingTag.Value, null, StringComparison.OrdinalIgnoreCase);
                     }
                 }
             }

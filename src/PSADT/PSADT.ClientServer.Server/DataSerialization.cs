@@ -183,7 +183,7 @@ namespace PSADT.ClientServer
                 if (assemblyName == CoreLibAssembly)
                 {
                     assemblyName = MscorlibAssembly;
-                    typeName = typeName.Replace(CoreLibAssembly, MscorlibAssembly);
+                    typeName = typeName.Replace(CoreLibAssembly, MscorlibAssembly, StringComparison.OrdinalIgnoreCase);
                 }
                 return base.BindToType(assemblyName, typeName);
             }
