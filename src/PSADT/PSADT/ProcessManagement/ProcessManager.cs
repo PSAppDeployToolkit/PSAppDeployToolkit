@@ -43,6 +43,7 @@ namespace PSADT.ProcessManagement
         /// <param name="launchInfo"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "We don't have .DisposeAsync() available to us.")]
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
@@ -382,7 +383,7 @@ namespace PSADT.ProcessManagement
                     }
                     else
                     {
-                        process.WaitForExit();
+                        await process.WaitForExitAsync().ConfigureAwait(false);
                         await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
@@ -484,7 +485,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Split into name and value (only on the first '=').
-                    int idx = entry.IndexOf('=');
+                    int idx = entry.IndexOf('=', StringComparison.OrdinalIgnoreCase);
                     if (idx < 0)
                     {
                         throw new ArgumentException($"Invalid environment variable entry: '{entry}'. Expected format is 'Name=Value'.", nameof(environmentBlock));

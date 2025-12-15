@@ -68,10 +68,10 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(filePath), "File path cannot be null.");
             }
-            FilePath = filePath.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && filePath.EndsWith("\"", StringComparison.OrdinalIgnoreCase) ? filePath.TrimStart('"').TrimEnd('"') : filePath;
+            FilePath = filePath.StartsWith('\"') && filePath.EndsWith('\"') ? filePath.TrimStart('"').TrimEnd('"') : filePath;
 
             // Validate the file path is rooted.
-            if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%", StringComparison.OrdinalIgnoreCase))
+            if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith('%'))
             {
                 throw new ArgumentException("File path must be fully qualified.", nameof(filePath));
             }

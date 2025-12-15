@@ -9,7 +9,7 @@
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for launching the Client/Server client without a visible console window.</AssemblyDescription>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.ClientServer.ClientLauncher</StartupObject>
-    <NoWarn>CA1031;CA1307</NoWarn>
+    <NoWarn>CA1031</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

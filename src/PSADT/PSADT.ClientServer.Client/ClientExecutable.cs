@@ -182,13 +182,13 @@ namespace PSADT.ClientServer
             Dictionary<string, string> arguments = [];
             for (int i = 0; i < argv.Length; i++)
             {
-                if (!argv[i].StartsWith("-", StringComparison.OrdinalIgnoreCase))
+                if (!argv[i].StartsWith('-'))
                 {
                     continue;
                 }
                 string key = argv[i][1..].Trim();
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-", StringComparison.OrdinalIgnoreCase) || value!.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith('-') || value!.StartsWith('/'))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
