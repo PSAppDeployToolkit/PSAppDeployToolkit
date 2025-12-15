@@ -1,54 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <NoWarn>CA1031;CA1307;CA1849;CA1866;CA1867</NoWarn>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
     <Product>PSAppDeployToolkit Common Support Library</Product>
-    <Company>PSAppDeployToolkit Team</Company>
-    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
     <AssemblyTitle>PSAppDeployToolkit Common Support Library</AssemblyTitle>
     <AssemblyDescription>This assembly serves to provide common code and utilities to all areas of PSAppDeployToolkit.</AssemblyDescription>
-    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.2.0.0</AssemblyVersion>
-    <InformationalVersion>4.2.0</InformationalVersion>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <WarningLevel>9999</WarningLevel>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Deterministic>true</Deterministic>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Nullable>enable</Nullable>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-all</AnalysisLevel>
-    <Platforms>AnyCPU</Platforms>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
-    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
-  </Target>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
-    <Optimize>false</Optimize>
-    <PreferNativeArm64>True</PreferNativeArm64>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
-    <Optimize>true</Optimize>
-    <PreferNativeArm64>True</PreferNativeArm64>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
-    <Optimize>true</Optimize>
+    <NoWarn>CA1031;CA1307;CA1849;CA1866;CA1867</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -91,8 +50,4 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <MeziantouPolyfill_ExcludedPolyfills>T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute|T:System.Diagnostics.CodeAnalysis.UnscopedRefAttribute</MeziantouPolyfill_ExcludedPolyfills>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
-  </ItemGroup>
 </Project>

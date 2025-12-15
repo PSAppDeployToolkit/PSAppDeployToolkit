@@ -1,0 +1,6 @@
+﻿<Project>
+  <!-- Delete unwanted XML documentation files from output -->
+  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
+    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
+  </Target>
+</Project>

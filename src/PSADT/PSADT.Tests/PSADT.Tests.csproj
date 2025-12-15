@@ -3,15 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.18362.0</TargetFramework>
     <ImplicitUsings>false</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <WarningLevel>9999</WarningLevel>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <LangVersion>latest</LangVersion>
-    <NoWarn>CA1707</NoWarn>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <AnalysisLevel>latest-all</AnalysisLevel>
+    <NoWarn>CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

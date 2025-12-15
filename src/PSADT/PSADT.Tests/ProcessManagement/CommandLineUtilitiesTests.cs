@@ -112,7 +112,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_NullInput_ThrowsArgumentNullException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.CommandLineToArgumentList(null!));
+            _ = Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.CommandLineToArgumentList(null!));
         }
 
         /// <summary>
@@ -171,8 +171,8 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_ListAndArray_ReturnSameResults()
         {
             // Arrange
-            string[] args = { "program", "arg1", "arg2" };
-            List<string> argsList = args.ToList();
+            string[] args = ["program", "arg1", "arg2"];
+            List<string> argsList = [.. args];
 
             // Act
             string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args)!;
@@ -189,8 +189,8 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_ComplexListAndArray_ReturnSameResults()
         {
             // Arrange
-            string[] args = { "program with spaces", "arg with spaces" };
-            List<string> argsList = args.ToList();
+            string[] args = ["program with spaces", "arg with spaces"];
+            List<string> argsList = [.. args];
 
             // Act
             string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args)!;
@@ -207,8 +207,8 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_QuotedListAndArray_ReturnSameResults()
         {
             // Arrange
-            string[] args = { "program", "arg\"with\"quotes" };
-            List<string> argsList = args.ToList();
+            string[] args = ["program", "arg\"with\"quotes"];
+            List<string> argsList = [.. args];
 
             // Act
             string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args)!;
@@ -225,7 +225,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_NullArrayInput_ThrowsArgumentNullException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.ArgumentListToCommandLine((IReadOnlyList<string>)null!));
+            _ = Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.ArgumentListToCommandLine(null!));
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_NullListInput_ThrowsArgumentNullException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.ArgumentListToCommandLine((List<string>)null!));
+            _ = Assert.Throws<ArgumentNullException>(() => CommandLineUtilities.ArgumentListToCommandLine(null!));
         }
 
         /// <summary>
@@ -265,22 +265,22 @@ namespace PSADT.Tests.ProcessManagement
         public void RoundTrip_CreateAndParse_PreservesComplexArguments()
         {
             // Test case 1: Complex arguments with various special characters
-            string[] originalArgs1 = { "a", "b c", "d\"e", "f\\g", "h\\\"i", "j\\\\k", "l\\\\" };
-            string[] expectedArgs1 = originalArgs1.Select(a => a ?? string.Empty).ToArray();
+            string[] originalArgs1 = ["a", "b c", "d\"e", "f\\g", "h\\\"i", "j\\\\k", "l\\\\"];
+            string[] expectedArgs1 = [.. originalArgs1.Select(a => a ?? string.Empty)];
             string commandLine1 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs1)!;
             IReadOnlyList<string> parsedArgs1 = CommandLineUtilities.CommandLineToArgumentList(commandLine1)!;
             Assert.Equal(expectedArgs1, parsedArgs1);
 
             // Test case 2: Path arguments
-            string[] originalArgs2 = { "C:\\Program Files\\My App\\", "data.csv" };
-            string[] expectedArgs2 = originalArgs2.Select(a => a ?? string.Empty).ToArray();
+            string[] originalArgs2 = ["C:\\Program Files\\My App\\", "data.csv"];
+            string[] expectedArgs2 = [.. originalArgs2.Select(a => a ?? string.Empty)];
             string commandLine2 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs2)!;
             IReadOnlyList<string> parsedArgs2 = CommandLineUtilities.CommandLineToArgumentList(commandLine2)!;
             Assert.Equal(expectedArgs2, parsedArgs2);
 
             // Test case 5: Multiple simple arguments
-            string[] originalArgs5 = { "a", "b c", "d", "e" };
-            string[] expectedArgs5 = originalArgs5.Select(a => a ?? string.Empty).ToArray();
+            string[] originalArgs5 = ["a", "b c", "d", "e"];
+            string[] expectedArgs5 = [.. originalArgs5.Select(a => a ?? string.Empty)];
             string commandLine5 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs5)!;
             IReadOnlyList<string> parsedArgs5 = CommandLineUtilities.CommandLineToArgumentList(commandLine5)!;
             Assert.Equal(expectedArgs5, parsedArgs5);

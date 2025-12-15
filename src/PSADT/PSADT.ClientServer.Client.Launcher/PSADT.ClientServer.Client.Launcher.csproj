@@ -2,67 +2,18 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>WinExe</OutputType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>CA1031;CA1307</NoWarn>
-    <LangVersion>latest</LangVersion>
-    <Deterministic>true</Deterministic>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Nullable>enable</Nullable>
-    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
     <AssemblyName>PSADT.ClientServer.Client.Launcher</AssemblyName>
     <Product>PSAppDeployToolkit Client/Server Client GUI Launcher</Product>
-    <Company>PSAppDeployToolkit Team</Company>
-    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
     <AssemblyTitle>PSAppDeployToolkit Client/Server Client GUI Launcher</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for launching the Client/Server client without a visible console window.</AssemblyDescription>
-    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
-    <AssemblyVersion>4.2.0.0</AssemblyVersion>
-    <InformationalVersion>4.2.0</InformationalVersion>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
-    <Platforms>AnyCPU</Platforms>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-    <WarningLevel>9999</WarningLevel>
     <StartupObject>PSADT.ClientServer.ClientLauncher</StartupObject>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest-all</AnalysisLevel>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
-    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
-  </Target>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
-    <Optimize>false</Optimize>
-    <PreferNativeArm64>True</PreferNativeArm64>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
-    <Optimize>true</Optimize>
-    <PreferNativeArm64>True</PreferNativeArm64>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
-    <Optimize>true</Optimize>
+    <NoWarn>CA1031;CA1307</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
   </ItemGroup>
 </Project>
