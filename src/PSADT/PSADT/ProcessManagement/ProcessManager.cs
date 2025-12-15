@@ -739,16 +739,16 @@ namespace PSADT.ProcessManagement
             }
             else
             {
-                StringBuilder exceptionMessage = new("Unable to create a new process via token.");
+                string exceptionMessage = "Unable to create a new process via token.";
                 if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK)
                 {
-                    exceptionMessage.Append($" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
+                    exceptionMessage += $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}";
                 }
                 if (canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK)
                 {
-                    exceptionMessage.Append($" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}");
+                    exceptionMessage += $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}";
                 }
-                throw new InvalidOperationException(exceptionMessage.ToString());
+                throw new InvalidOperationException(exceptionMessage);
             }
         }
 

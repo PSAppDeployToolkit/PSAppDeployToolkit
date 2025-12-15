@@ -14,6 +14,7 @@
     <InformationalVersion>4.2.0</InformationalVersion>
     <LangVersion>latest</LangVersion>
     <WarningLevel>9999</WarningLevel>
+    <NoWarn>CA1031;CA1303;PInvoke009</NoWarn>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
@@ -34,14 +35,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <NoWarn>1701;1702;CA1031;CA1303;PInvoke009</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <NoWarn>1701;1702;CA1031;CA1303;PInvoke009</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
