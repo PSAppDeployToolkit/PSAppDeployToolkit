@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Core;
 using PSADT.LibraryInterfaces;
 using PSADT.Security;
 using PSADT.Utilities;
-using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 
 namespace PSADT.ProcessManagement
@@ -76,10 +73,7 @@ namespace PSADT.ProcessManagement
             {
                 // When we're local system, we can just get the primary token for the user.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                Span<byte> buffer = stackalloc byte[Marshal.SizeOf<WinSta.WINSTATIONUSERTOKEN>()];
-                WinSta.WinStationQueryInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, runAsActiveUser.SessionId, WINSTATIONINFOCLASS.WinStationUserToken, buffer, out _);
-                ref var winStationUserToken = ref Unsafe.As<byte, WinSta.WINSTATIONUSERTOKEN>(ref MemoryMarshal.GetReference(buffer));
-                hUserToken = new(winStationUserToken.UserToken, true);
+                WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out hUserToken);
             }
 
             // Throw if for whatever reason, we couldn't get a token.
