@@ -74,12 +74,21 @@ namespace PSADT.ProcessManagement
             bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
             var iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, UIntPtr.Zero, 1);
             var job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
-            Kernel32.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
+            Kernel32.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+            {
+                CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null
+            });
 
             // Set up the required job limit if child processes must be killed with the parent.
             if (launchInfo.KillChildProcessesWithParent)
             {
-                Kernel32.SetInformationJobObject(job, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION { BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION { LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE } });
+                Kernel32.SetInformationJobObject(job, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+                {
+                    BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION
+                    {
+                        LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                    }
+                });
             }
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
@@ -149,7 +158,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
-                    PROCESS_INFORMATION pi = new();
+                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan;
                     if (launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
@@ -162,8 +171,8 @@ namespace PSADT.ProcessManagement
                                 fixed (char* pDesktop = @"winsta0\default")
                                 {
                                     startupInfo.lpDesktop = new(pDesktop);
-                                    OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
-                                    CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
+                                    OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out string? workingDirectory, out commandSpan);
+                                    CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                     startupInfo.lpDesktop = null;
                                 }
                             }
@@ -172,30 +181,27 @@ namespace PSADT.ProcessManagement
                     else if ((launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin))
                     {
                         // We're running elevated but have been asked to de-elevate.
-                        using (var hPrimaryToken = ProcessToken.GetUnelevatedToken())
-                        {
-                            OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
-                            CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
-                        }
+                        using var hPrimaryToken = ProcessToken.GetUnelevatedToken();
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out string? workingDirectory, out commandSpan);
+                        CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out commandLine, out string? workingDirectory); Span<char> commandSpan = commandLine.ToCharArray();
-                        Kernel32.CreateProcess(filePath, ref commandSpan, null, null, inheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi); commandLine = commandSpan.ToString().TrimRemoveNull();
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out string? workingDirectory, out commandSpan);
+                        Kernel32.CreateProcess(filePath, ref commandSpan, null, null, inheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
 
                     // Start tracking the process and allow it to resume execution.
                     process = GetProcessFromId((processId = pi.dwProcessId).Value);
+                    using SafeThreadHandle hThread = new(pi.hThread, true);
+                    commandLine = commandSpan.ToString().TrimRemoveNull();
                     hProcess = new(pi.hProcess, true);
-                    using (SafeThreadHandle hThread = new(pi.hThread, true))
+                    if (assignProcessToJob)
                     {
-                        if (assignProcessToJob)
-                        {
-                            Kernel32.AssignProcessToJobObject(job, hProcess);
-                        }
-                        Kernel32.ResumeThread(hThread);
+                        Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
+                    Kernel32.ResumeThread(hThread);
                 }
                 finally
                 {
@@ -216,7 +222,8 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out var arguments, out commandLine, out string? workingDirectory);
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out var arguments, out string? workingDirectory, out Span<char> commandSpan);
+                commandLine = commandSpan.ToString().TrimRemoveNull();
                 process = new Process
                 {
                     StartInfo = new ProcessStartInfo
@@ -539,10 +546,10 @@ namespace PSADT.ProcessManagement
         /// <param name="filePath">When this method returns, contains the fully qualified file path of the executable to launch.</param>
         /// <param name="arguments">When this method returns, contains the command line arguments for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        /// <param name="commandLine">When this method returns, contains the constructed command line string for the process launch.</param>
         /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
         /// if not specified.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string commandLine, out string? workingDirectory)
+        /// <param name="commandSpan">When this method returns, contains the complete command line to be used for process creation.</param>
+        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string? workingDirectory, out Span<char> commandSpan)
         {
             if (environmentDictionary is not null)
             {
@@ -561,7 +568,7 @@ namespace PSADT.ProcessManagement
                 arguments = launchInfo.ArgumentList is not null ? launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null : null;
                 workingDirectory = launchInfo.WorkingDirectory;
             }
-            commandLine = $"\"{filePath}\"{(!string.IsNullOrWhiteSpace(arguments) ? $" {arguments}" : null)}\0";
+            commandSpan = $"\"{filePath}\"{(!string.IsNullOrWhiteSpace(arguments) ? $" {arguments}" : null)}\0".ToCharArray();
         }
 
         /// <summary>
