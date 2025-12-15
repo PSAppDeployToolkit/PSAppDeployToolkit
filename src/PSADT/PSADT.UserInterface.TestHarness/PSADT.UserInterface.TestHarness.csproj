@@ -27,6 +27,7 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <WarningLevel>9999</WarningLevel>
+    <NoWarn>CA1031;CA1303</NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
@@ -40,23 +41,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
     <Optimize>false</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
-    <NoWarn>1701;1702;CA1031;CA1303</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.18362.0|AnyCPU'">
     <Optimize>false</Optimize>
-    <NoWarn>1701;1702;CA1031;CA1303</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
     <Optimize>true</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
-    <NoWarn>1701;1702;CA1031;CA1303</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.18362.0|AnyCPU'">
     <Optimize>true</Optimize>
-    <NoWarn>1701;1702;CA1031;CA1303</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

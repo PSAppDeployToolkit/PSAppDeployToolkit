@@ -3,7 +3,7 @@
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn);CA1031;CA1307</NoWarn>
+    <NoWarn>CA1031;CA1307</NoWarn>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

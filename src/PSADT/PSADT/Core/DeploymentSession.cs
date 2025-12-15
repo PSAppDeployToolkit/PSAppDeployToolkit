@@ -308,7 +308,7 @@ namespace PSADT.Core
                             var formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture.ToString().ToLowerInvariant()}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
