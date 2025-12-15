@@ -86,16 +86,16 @@ namespace PSADT.ProcessManagement
             {
                 foreach (string arg in args)
                 {
-                    sb.Append(EscapeArgumentCompatible(arg));
-                    sb.Append(' ');
+                    _ = sb.Append(EscapeArgumentCompatible(arg));
+                    _ = sb.Append(' ');
                 }
             }
             else
             {
                 foreach (string arg in args)
                 {
-                    sb.Append(EscapeArgumentStrict(arg));
-                    sb.Append(' ');
+                    _ = sb.Append(EscapeArgumentStrict(arg));
+                    _ = sb.Append(' ');
                 }
             }
             return sb.ToString().TrimRemoveNull();
@@ -194,14 +194,14 @@ namespace PSADT.ProcessManagement
             StringBuilder result = new();
             while (position < commandLine.Length && commandLine[position] != '=')
             {
-                result.Append(commandLine[position]);
+                _ = result.Append(commandLine[position]);
                 position++;
             }
 
             // Add the = sign.
             if (position < commandLine.Length)
             {
-                result.Append(commandLine[position]);
+                _ = result.Append(commandLine[position]);
                 position++;
             }
 
@@ -225,12 +225,12 @@ namespace PSADT.ProcessManagement
                     if (convertedValue != quotedValue)
                     {
                         // The value was converted from POSIX, so we need to rebuild the quoted portion.
-                        result.Append('"').Append(convertedValue).Append('"');
+                        _ = result.Append('"').Append(convertedValue).Append('"');
                     }
                     else
                     {
                         // Append the raw slice of the command line that represents the entire quoted value.
-                        result.Append(commandLine[valueStartPosition..tempPosition]);
+                        _ = result.Append(commandLine[valueStartPosition..tempPosition]);
                     }
 
                     // Update the main position to continue parsing after this key-value pair.
@@ -240,14 +240,9 @@ namespace PSADT.ProcessManagement
                 {
                     // Parse unquoted value - might be a path with spaces.
                     string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    if (value.Contains(' ') && !value.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.Append('"').Append(value).Append('"');
-                    }
-                    else
-                    {
-                        result.Append(value);
-                    }
+                    _ = value.Contains(' ') && !value.StartsWith("\"", StringComparison.OrdinalIgnoreCase)
+                        ? result.Append('"').Append(value).Append('"')
+                        : result.Append(value);
                 }
             }
             return result.ToString();
@@ -268,7 +263,7 @@ namespace PSADT.ProcessManagement
                 StringBuilder value = new();
                 while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
                 {
-                    value.Append(commandLine[position]);
+                    _ = value.Append(commandLine[position]);
                     position++;
                 }
                 return value.ToString();
@@ -327,7 +322,7 @@ namespace PSADT.ProcessManagement
                 StringBuilder tokenBuilder = new();
                 while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
                 {
-                    tokenBuilder.Append(commandLine[position]);
+                    _ = tokenBuilder.Append(commandLine[position]);
                     position++;
                 }
                 if (tokenBuilder.Length > 0)
@@ -580,10 +575,10 @@ namespace PSADT.ProcessManagement
                         // Backslashes are followed by a quote.
                         // 2n backslashes + quote -> n backslashes, and the quote is a delimiter.
                         // 2n+1 backslashes + quote -> n backslashes + a literal quote.
-                        argument.Append('\\', backslashCount / 2);
+                        _ = argument.Append('\\', backslashCount / 2);
                         if (backslashCount % 2 == 1)
                         {
-                            argument.Append('"'); // Escaped quote.
+                            _ = argument.Append('"'); // Escaped quote.
                         }
                         else
                         {
@@ -594,7 +589,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         // Backslashes are not followed by a quote, treat them literally.
-                        argument.Append('\\', backslashCount);
+                        _ = argument.Append('\\', backslashCount);
                     }
                 }
                 else if (c == '"')
@@ -602,7 +597,7 @@ namespace PSADT.ProcessManagement
                     // Check for MSVCRT's "" escape sequence inside a quoted argument.
                     if (inQuote && position + 1 < commandLine.Length && commandLine[position + 1] == '"')
                     {
-                        argument.Append('"');
+                        _ = argument.Append('"');
                         position += 2;
                     }
                     else
@@ -613,7 +608,7 @@ namespace PSADT.ProcessManagement
                 }
                 else
                 {
-                    argument.Append(c);
+                    _ = argument.Append(c);
                     position++;
                 }
             }
@@ -719,7 +714,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Escape the argument by doubling backslashes and escaping quotes.
-            StringBuilder sb = new(); sb.Append('"');
+            StringBuilder sb = new(); _ = sb.Append('"');
             for (int i = 0; i < argument.Length; ++i)
             {
                 int backslashes = 0;
@@ -732,23 +727,23 @@ namespace PSADT.ProcessManagement
                 if (i == argument.Length)
                 {
                     // Trailing backslashes are doubled.
-                    sb.Append('\\', backslashes * 2);
+                    _ = sb.Append('\\', backslashes * 2);
                     break;
                 }
                 else if (argument[i] == '"')
                 {
                     // Backslashes preceding a quote are doubled, and the quote is escaped.
-                    sb.Append('\\', (backslashes * 2) + 1);
-                    sb.Append('"');
+                    _ = sb.Append('\\', (backslashes * 2) + 1);
+                    _ = sb.Append('"');
                 }
                 else
                 {
                     // Backslashes not followed by a quote are literal.
-                    sb.Append('\\', backslashes);
-                    sb.Append(argument[i]);
+                    _ = sb.Append('\\', backslashes);
+                    _ = sb.Append(argument[i]);
                 }
             }
-            sb.Append('"'); return sb.ToString();
+            _ = sb.Append('"'); return sb.ToString();
         }
     }
 }

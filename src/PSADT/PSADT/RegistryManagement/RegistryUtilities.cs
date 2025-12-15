@@ -21,7 +21,7 @@ namespace PSADT.RegistryManagement
         public static DateTime GetRegistryKeyLastWriteTime(string fullKeyPath)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(fullKeyPath);
-            AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
+            _ = AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
             return lastWriteTime.ToDateTime();
         }
 
@@ -37,7 +37,7 @@ namespace PSADT.RegistryManagement
         public static void RenameRegistryKey(string keyPath, string? subKeyName, string newKeyName)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(keyPath, REG_SAM_FLAGS.KEY_READ | REG_SAM_FLAGS.KEY_WRITE);
-            AdvApi32.RegRenameKey(hKey, subKeyName, newKeyName);
+            _ = AdvApi32.RegRenameKey(hKey, subKeyName, newKeyName);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace PSADT.RegistryManagement
 
             // Open the registry key and return it to the caller.
             using SafeRegistryHandle hKeyRoot = GetRegistryHiveHandle(hiveName);
-            AdvApi32.RegOpenKeyEx(hKeyRoot, subKeyPath, openFlags, out SafeRegistryHandle hKey);
+            _ = AdvApi32.RegOpenKeyEx(hKeyRoot, subKeyPath, openFlags, out SafeRegistryHandle hKey);
             return hKey;
         }
 

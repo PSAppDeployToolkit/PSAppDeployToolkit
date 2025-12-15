@@ -70,7 +70,7 @@ namespace PSADT.UserInterface.Utilities
                 bw.Write(22);                 //18-21 offset of image data
                 bw.Write(msImg.ToArray());    // write image data
                 bw.Flush();
-                bw.Seek(0, SeekOrigin.Begin);
+                _ = bw.Seek(0, SeekOrigin.Begin);
                 return new(msIco);
             }
 
@@ -109,7 +109,7 @@ namespace PSADT.UserInterface.Utilities
             }
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
-            Shell32.SHGetFileInfo(path, out Shell32.SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
+            _ = Shell32.SHGetFileInfo(path, out Shell32.SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
             using DestroyIconSafeHandle hIcon = new(psfi.hIcon, true);
             bool hIconAddRef = false;
             try

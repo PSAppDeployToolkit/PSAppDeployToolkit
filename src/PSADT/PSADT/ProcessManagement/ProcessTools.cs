@@ -20,7 +20,7 @@ namespace PSADT.ProcessManagement
             try
             {
                 using SafeFileHandle hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, false, (uint)processId);
-                Kernel32.GetExitCodeProcess(hProc, out uint exitCode);
+                _ = Kernel32.GetExitCodeProcess(hProc, out uint exitCode);
                 return exitCode == NTSTATUS.STILL_ACTIVE;
             }
             catch (ArgumentException)

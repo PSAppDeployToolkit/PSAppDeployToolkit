@@ -17,7 +17,7 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<HWND> EnumWindows()
         {
             List<HWND> windows = [];
-            User32.EnumWindows((hWnd, lParam) =>
+            _ = User32.EnumWindows((hWnd, lParam) =>
             {
                 if (hWnd != HWND.Null)
                 {
@@ -69,23 +69,23 @@ namespace PSADT.WindowManagement
             // Restore the window if it's minimized.
             if (PInvoke.IsIconic(hWnd))
             {
-                PInvoke.ShowWindow(hWnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE);
+                _ = PInvoke.ShowWindow(hWnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_RESTORE);
             }
 
             // Bring the window to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
             uint windowThreadId = User32.GetWindowThreadProcessId(hWnd, out _);
-            User32.AttachThreadInput(currentThreadId, windowThreadId, true);
+            _ = User32.AttachThreadInput(currentThreadId, windowThreadId, true);
             try
             {
-                User32.BringWindowToTop(hWnd);
-                User32.SetForegroundWindow(hWnd);
-                User32.SetActiveWindow(hWnd);
-                User32.SetFocus(hWnd);
+                _ = User32.BringWindowToTop(hWnd);
+                _ = User32.SetForegroundWindow(hWnd);
+                _ = User32.SetActiveWindow(hWnd);
+                _ = User32.SetFocus(hWnd);
             }
             finally
             {
-                User32.AttachThreadInput(currentThreadId, windowThreadId, false);
+                _ = User32.AttachThreadInput(currentThreadId, windowThreadId, false);
             }
         }
 
@@ -100,7 +100,7 @@ namespace PSADT.WindowManagement
             {
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
-            User32.GetWindowThreadProcessId(hWnd, out uint processId);
+            _ = User32.GetWindowThreadProcessId(hWnd, out uint processId);
             return processId;
         }
     }

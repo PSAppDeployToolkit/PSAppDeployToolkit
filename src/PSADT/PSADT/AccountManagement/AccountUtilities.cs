@@ -37,13 +37,13 @@ namespace PSADT.AccountManagement
             }
 
             // Build out process/session id information.
-            Kernel32.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
+            _ = Kernel32.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
 
             // Retrieve the local account domain SID.
-            AdvApi32.LsaOpenPolicy(null, new LSA_OBJECT_ATTRIBUTES { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out LsaCloseSafeHandle hPolicy);
+            _ = AdvApi32.LsaOpenPolicy(null, new LSA_OBJECT_ATTRIBUTES { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out LsaCloseSafeHandle hPolicy);
             using (hPolicy)
             {
-                AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out SafeLsaFreeMemoryHandle buf);
+                _ = AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out SafeLsaFreeMemoryHandle buf);
                 using (buf)
                 {
                     ref POLICY_ACCOUNT_DOMAIN_INFO policyAccountDomainInfo = ref buf.AsStructure<POLICY_ACCOUNT_DOMAIN_INFO>();

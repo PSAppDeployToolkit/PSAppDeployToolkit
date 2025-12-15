@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         public new void ShowDialog()
         {
-            base.ShowDialog();
+            _ = base.ShowDialog();
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Disable the close button on the form. Failing that, disable the ControlBox.
                 try
                 {
-                    User32.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
+                    _ = User32.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
                 }
                 catch
                 {
@@ -175,7 +175,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Disable the move command on the system menu if we can't move the dialog.
                 if (!dialogAllowMove)
                 {
-                    User32.RemoveMenu(menuHandle, WM_SYSCOMMAND.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
+                    _ = User32.RemoveMenu(menuHandle, WM_SYSCOMMAND.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
                 }
             }
 
@@ -205,7 +205,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // We're on a thread pool thread → marshal back to UI thread.
             if (!IsDisposed && IsHandleCreated)
             {
-                BeginInvoke(PositionForm);
+                _ = BeginInvoke(PositionForm);
             }
         }
 
@@ -223,7 +223,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Taskbar moves / size changes often show up here.
             if (!IsDisposed && IsHandleCreated && (e.Category == UserPreferenceCategory.General || e.Category == UserPreferenceCategory.Desktop || e.Category == UserPreferenceCategory.Window))
             {
-                BeginInvoke(PositionForm);
+                _ = BeginInvoke(PositionForm);
             }
         }
 

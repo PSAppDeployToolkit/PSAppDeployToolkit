@@ -159,7 +159,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         public new void ShowDialog()
         {
-            base.ShowDialog();
+            _ = base.ShowDialog();
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             // Use ShellExecute to open the URL in the default browser/handler
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            using Process? process = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
             e.Handled = true;
         }
 
@@ -449,7 +449,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         {
             if (formattingStack.Count > 0 && predicate(formattingStack.Peek()))
             {
-                formattingStack.Pop();
+                _ = formattingStack.Pop();
             }
         }
 
@@ -834,7 +834,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 _countdownStopwatch.Start();
             }
-            _countdownTimer.Change(0, 1000);
+            if (!_countdownTimer.Change(0, 1000))
+            {
+                throw new InvalidOperationException("Failed to start countdown timer.");
+            }
         }
 
         /// <summary>

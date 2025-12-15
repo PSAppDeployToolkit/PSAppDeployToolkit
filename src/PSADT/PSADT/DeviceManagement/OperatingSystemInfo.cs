@@ -42,7 +42,7 @@ namespace PSADT.DeviceManagement
                 return true;
             }
 
-            NtDll.RtlGetVersion(out OSVERSIONINFOEXW osVersion);
+            _ = NtDll.RtlGetVersion(out OSVERSIONINFOEXW osVersion);
             SUITE_MASK suiteMask = (SUITE_MASK)osVersion.wSuiteMask;
             PRODUCT_TYPE productType = (PRODUCT_TYPE)osVersion.wProductType;
             string? editionId = null;
@@ -79,7 +79,7 @@ namespace PSADT.DeviceManagement
                 }
             }
 
-            Kernel32.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
+            _ = Kernel32.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
             Name = string.Format(CultureInfo.InvariantCulture, ((DescriptionAttribute[])typeof(WindowsOS).GetField(operatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description, editionId);
             Version = new((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();

@@ -98,7 +98,7 @@ namespace PSADT.FileSystem
                 using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess(); ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
                 ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
                 ConcurrentBag<FileHandleInfo> openHandles = [];
-                Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
+                _ = Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
                     ref SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref Unsafe.As<byte, SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
@@ -136,7 +136,7 @@ namespace PSADT.FileSystem
                         // Duplicate the handle into our process.
                         try
                         {
-                            Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                            _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
                         }
                         catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_NOT_SUPPORTED) or ((int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                         {
@@ -221,7 +221,7 @@ namespace PSADT.FileSystem
             {
                 using SafeFileHandle fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
                 using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
-                Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
             }
         }
@@ -247,17 +247,17 @@ namespace PSADT.FileSystem
                 // Start the thread to retrieve the object name and wait for the outcome.
                 fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                 PatchStartRoutineBuffer(startRoutineBuffer, fileHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                _ = NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
                     if (Kernel32.WaitForSingleObject(hThread, TimeSpan.FromSeconds(1)) != WAIT_EVENT.WAIT_OBJECT_0)
                     {
-                        NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                        _ = NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                     }
 
                     // Get the exit code of the thread, returning null under certain conditions or throwing an exception if it failed.
-                    Kernel32.GetExitCodeThread(hThread, out uint exitCode); NTSTATUS res = unchecked((NTSTATUS)exitCode);
+                    _ = Kernel32.GetExitCodeThread(hThread, out uint exitCode); NTSTATUS res = unchecked((NTSTATUS)exitCode);
                     if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
                     {
                         return null;

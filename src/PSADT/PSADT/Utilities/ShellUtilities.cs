@@ -43,8 +43,8 @@ namespace PSADT.Utilities
             RefreshDesktop();
 
             // Notify all top-level windows that the environment variables have changed.
-            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
-            User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
+            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
+            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace PSADT.Utilities
         /// <returns>The user notification state.</returns>
         internal static LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
-            Shell32.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
+            _ = Shell32.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
             return (LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE)state;
         }
 
@@ -63,7 +63,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
         internal static void MinimizeAllWindows()
         {
-            User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+            _ = User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
         internal static void RestoreAllWindows()
         {
-            User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+            _ = User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace PSADT.Utilities
         /// <returns>The process ID of the Windows Explorer shell process as an unsigned integer.</returns>
         internal static uint GetExplorerProcessId()
         {
-            User32.GetWindowThreadProcessId(User32.GetShellWindow(), out uint pid);
+            _ = User32.GetWindowThreadProcessId(User32.GetShellWindow(), out uint pid);
             return pid;
         }
 
@@ -97,7 +97,7 @@ namespace PSADT.Utilities
         /// <returns>The process ID of the application owning the foreground window. Returns 0 if no foreground window is found.</returns>
         internal static uint GetForegroundWindowProcessId()
         {
-            User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out uint pid);
+            _ = User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out uint pid);
             return pid;
         }
 
@@ -126,7 +126,7 @@ namespace PSADT.Utilities
                 throw new InvalidOperationException("Process handle is invalid.");
             }
             Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; uint length = (uint)appUserModelId.Length;
-            Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
+            _ = Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
             return appUserModelId[..(int)length].ToString().TrimRemoveNull();
         }
 
@@ -165,7 +165,7 @@ namespace PSADT.Utilities
         internal static TimeSpan GetLastInputTime()
         {
             // Get the last input information using User32 API.
-            User32.GetLastInputInfo(out LASTINPUTINFO lastInputInfo);
+            _ = User32.GetLastInputInfo(out LASTINPUTINFO lastInputInfo);
             ulong now64 = PInvoke.GetTickCount64();
             ulong last32 = lastInputInfo.dwTime;
 

@@ -174,7 +174,7 @@ namespace PSADT.ClientServer
                 }
                 try
                 {
-                    _clientProcess.Task.GetAwaiter().GetResult();
+                    _ = _clientProcess.Task.GetAwaiter().GetResult();
                 }
                 catch (TaskCanceledException)
                 {

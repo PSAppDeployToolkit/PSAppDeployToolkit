@@ -25,9 +25,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetCancelButton(ButtonRight);
 
             // Focus the input box initially
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
             {
-                InputBoxText.Focus();
+                _ = InputBoxText.Focus();
                 InputBoxText.SelectAll();
             });
 

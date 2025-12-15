@@ -104,7 +104,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     countdownStopwatch.Start();
                 }
-                countdownTimer.Change(0, 1000);
+                if (!countdownTimer.Change(0, 1000))
+                {
+                    throw new InvalidOperationException("Failed to start the countdown timer.");
+                }
             }
         }
 
@@ -159,6 +162,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Ticker for the countdown timer.
         /// </summary>
         /// <param name="state"></param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void CountdownTimer_Tick(object? state)
         {
             TimeSpan remaining = countdownDuration!.Value - countdownStopwatch.Elapsed;
