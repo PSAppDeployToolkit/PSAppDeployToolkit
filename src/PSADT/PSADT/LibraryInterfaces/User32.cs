@@ -68,11 +68,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND GetForegroundWindow()
         {
             HWND res = PInvoke.GetForegroundWindow();
-            if (res == HWND.Null)
-            {
-                throw new InvalidOperationException("Failed to get the foreground window.");
-            }
-            return res;
+            return res == HWND.Null ? throw new InvalidOperationException("Failed to get the foreground window.") : res;
         }
 
         /// <summary>
@@ -88,11 +84,9 @@ namespace PSADT.LibraryInterfaces
         internal static int LoadString(SafeHandle hInstance, uint uID, Span<char> lpBuffer)
         {
             int res = PInvoke.LoadString(hInstance, uID, lpBuffer, lpBuffer.Length);
-            if (res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
-            }
-            return res;
+            return res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                : res;
         }
 
         /// <summary>
@@ -109,11 +103,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL EnumWindows(WNDENUMPROC lpEnumFunc, LPARAM lParam)
         {
             BOOL res = PInvoke.EnumWindows(lpEnumFunc, lParam);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -148,11 +138,9 @@ namespace PSADT.LibraryInterfaces
         internal static int GetWindowTextLength(HWND hWnd)
         {
             PInvoke.SetLastError(0); int res = PInvoke.GetWindowTextLength(hWnd);
-            if (res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
-            }
-            return res;
+            return res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                : res;
         }
 
         /// <summary>
@@ -167,11 +155,7 @@ namespace PSADT.LibraryInterfaces
         internal static int GetWindowText(HWND hWnd, Span<char> lpString)
         {
             int res = PInvoke.GetWindowText(hWnd, lpString);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -186,11 +170,7 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetWindowThreadProcessId(HWND hWnd, out uint lpdwProcessId)
         {
             uint res = PInvoke.GetWindowThreadProcessId(hWnd, out lpdwProcessId);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -212,11 +192,7 @@ namespace PSADT.LibraryInterfaces
             [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern BOOL AttachThreadInput(uint idAttach, uint idAttachTo, BOOL fAttach);
             BOOL res = AttachThreadInput(idAttach, idAttachTo, fAttach);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -231,11 +207,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL BringWindowToTop(HWND hWnd)
         {
             BOOL res = PInvoke.BringWindowToTop(hWnd);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -246,11 +218,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND SetActiveWindow(HWND hWnd)
         {
             HWND res = PInvoke.SetActiveWindow(hWnd);
-            if (res == HWND.Null)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == HWND.Null ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -263,11 +231,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND SetFocus(HWND hWnd)
         {
             HWND res = PInvoke.SetFocus(hWnd);
-            if (res == HWND.Null)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == HWND.Null ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -293,11 +257,7 @@ namespace PSADT.LibraryInterfaces
         internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
             LRESULT res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam, fuFlags, uTimeout, out lpdwResult);
-            if (res == default)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == default ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -340,11 +300,7 @@ namespace PSADT.LibraryInterfaces
         internal static DestroyMenuSafeHandle GetSystemMenu(HWND hWnd, BOOL bRevert)
         {
             DestroyMenuSafeHandle res = PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert);
-            if (res.IsInvalid)
-            {
-                throw new InvalidOperationException("Failed to retrieve the menu handle.");
-            }
-            return res;
+            return res.IsInvalid ? throw new InvalidOperationException("Failed to retrieve the menu handle.") : res;
         }
 
         /// <summary>
@@ -362,11 +318,9 @@ namespace PSADT.LibraryInterfaces
         internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam)
         {
             PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
-            if ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
-            }
-            return res;
+            return (WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                : res;
         }
 
         /// <summary>
@@ -404,11 +358,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL ReleaseCapture()
         {
             BOOL res = PInvoke.ReleaseCapture();
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -422,11 +372,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL RemoveMenu(SafeHandle hMenu, WM_SYSCOMMAND uPosition, MENU_ITEM_FLAGS uFlags)
         {
             BOOL res = PInvoke.RemoveMenu(hMenu, (uint)uPosition, uFlags);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -439,11 +385,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND FindWindow(string? lpClassName, string? lpWindowName)
         {
             HWND res = PInvoke.FindWindow(lpClassName, lpWindowName);
-            if (res.IsNull)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res.IsNull ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -456,11 +398,7 @@ namespace PSADT.LibraryInterfaces
         internal static HMONITOR MonitorFromPoint(Point pt, MONITOR_FROM_FLAGS dwFlags)
         {
             HMONITOR monitor = PInvoke.MonitorFromPoint(pt, dwFlags);
-            if (monitor.IsNull)
-            {
-                throw new InvalidOperationException("Failed to retrieve monitor from point.");
-            }
-            return monitor;
+            return monitor.IsNull ? throw new InvalidOperationException("Failed to retrieve monitor from point.") : monitor;
         }
 
         /// <summary>
@@ -477,11 +415,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(hwnd), "Window handle cannot be null.");
             }
             uint res = PInvoke.GetDpiForWindow(hwnd);
-            if (res == 0)
-            {
-                throw new InvalidOperationException("Failed to get DPI scale for window handle.");
-            }
-            return res;
+            return res == 0 ? throw new InvalidOperationException("Failed to get DPI scale for window handle.") : res;
         }
 
         /// <summary>
@@ -512,11 +446,7 @@ namespace PSADT.LibraryInterfaces
             [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             MESSAGEBOX_RESULT res = MessageBoxTimeoutW(hWnd, lpText, lpCaption, uType, wLanguageId, (uint)dwTimeout.TotalMilliseconds);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -528,11 +458,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL SetForegroundWindow(HWND hWnd)
         {
             BOOL res = PInvoke.SetForegroundWindow(hWnd);
-            if (!res)
-            {
-                throw new InvalidOperationException($"Failed to set the window as foreground.");
-            }
-            return res;
+            return !res ? throw new InvalidOperationException($"Failed to set the window as foreground.") : res;
         }
 
         /// <summary>
@@ -543,11 +469,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND GetShellWindow()
         {
             HWND res = PInvoke.GetShellWindow();
-            if (res.IsNull)
-            {
-                throw new InvalidOperationException("Failed to retrieve the shell window handle.");
-            }
-            return res;
+            return res.IsNull ? throw new InvalidOperationException("Failed to retrieve the shell window handle.") : res;
         }
 
         /// <summary>
@@ -569,11 +491,7 @@ namespace PSADT.LibraryInterfaces
                 cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>()
             };
             BOOL res = PInvoke.GetLastInputInfo(ref plii);
-            if (!res)
-            {
-                throw new InvalidOperationException("Failed to retrieve the last input info.");
-            }
-            return res;
+            return !res ? throw new InvalidOperationException("Failed to retrieve the last input info.") : res;
         }
 
         /// <summary>

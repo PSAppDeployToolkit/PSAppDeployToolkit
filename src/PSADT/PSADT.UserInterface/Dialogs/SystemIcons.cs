@@ -99,11 +99,9 @@ namespace PSADT.UserInterface.Dialogs
         internal static Bitmap Get(DialogSystemIcon icon)
         {
             // Return the requested system icon.
-            if (!SystemIconLookupTable.TryGetValue(icon, out Bitmap? bitmap))
-            {
-                throw new KeyNotFoundException($"The requested system icon [{icon}] is not available.");
-            }
-            return (Bitmap)bitmap.Clone();
+            return !SystemIconLookupTable.TryGetValue(icon, out Bitmap? bitmap)
+                ? throw new KeyNotFoundException($"The requested system icon [{icon}] is not available.")
+                : (Bitmap)bitmap.Clone();
         }
 
         /// <summary>

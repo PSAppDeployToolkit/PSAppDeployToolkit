@@ -111,6 +111,7 @@ namespace PSADT.ProcessManagement
         /// context.</remarks>
         /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the Explorer process, or <see
         /// langword="null"/> if the operation fails.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static SafeFileHandle GetUnelevatedToken()
         {
             if (AccountUtilities.CallerIsLocalSystem)

@@ -105,11 +105,9 @@ namespace PSADT.Core
         public static DeploymentSession GetDeploymentSession()
         {
             List<DeploymentSession> sessionList = (List<DeploymentSession>)_database?.Properties["Sessions"].Value!;
-            if (sessionList.Count == 0)
-            {
-                throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.");
-            }
-            return sessionList.Last();
+            return sessionList.Count == 0
+                ? throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
+                : sessionList.Last();
         }
 
         /// <summary>

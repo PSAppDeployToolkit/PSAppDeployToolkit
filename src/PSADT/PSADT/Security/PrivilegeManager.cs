@@ -56,11 +56,9 @@ namespace PSADT.Security
             {
                 AdvApi32.LookupPrivilegeName(null, attr.Luid, buffer, out uint retLength);
                 string privilegeName = buffer[..(int)retLength].ToString().TrimRemoveNull();
-                if (!Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege))
-                {
-                    throw new ArgumentException($"Unknown privilege: {privilegeName}");
-                }
-                return privilege;
+                return !Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege)
+                    ? throw new ArgumentException($"Unknown privilege: {privilegeName}")
+                    : privilege;
             }
 
             // Get the size of the buffer required to hold the token privileges.

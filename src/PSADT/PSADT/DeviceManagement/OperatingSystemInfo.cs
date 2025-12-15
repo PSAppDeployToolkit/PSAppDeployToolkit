@@ -24,6 +24,7 @@ namespace PSADT.DeviceManagement
         private OperatingSystemInfo()
         {
             // Helper function to determine if the OS is an Enterprise Multi-Session OS.
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
             static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
             {
                 if (productType != OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)

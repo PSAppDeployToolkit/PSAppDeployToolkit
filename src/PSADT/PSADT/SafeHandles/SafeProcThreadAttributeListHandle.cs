@@ -72,11 +72,9 @@ namespace PSADT.SafeHandles
         private static BOOL Initialize(LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, uint dwAttributeCount, ref nuint lpSize)
         {
             BOOL res = PInvoke.InitializeProcThreadAttributeList(lpAttributeList, dwAttributeCount, ref lpSize);
-            if (!res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default))
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
-            }
-            return res;
+            return !res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default)
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                : res;
         }
 
         /// <summary>
@@ -106,11 +104,7 @@ namespace PSADT.SafeHandles
                     DangerousRelease();
                 }
             }
-            if (!res)
-            {
-                throw new Win32Exception();
-            }
-            return res;
+            return !res ? throw new Win32Exception() : res;
         }
 
         /// <summary>

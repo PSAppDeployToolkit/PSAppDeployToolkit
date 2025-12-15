@@ -165,11 +165,7 @@ namespace PSADT.LibraryInterfaces
             [DllImport("shell32.dll", CharSet = CharSet.Auto), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern IntPtr SHGetFileInfoW(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
             psfi = new(); IntPtr res = SHGetFileInfoW(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
-            if (res == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Failed to retrieve file information.");
-            }
-            return res;
+            return res == IntPtr.Zero ? throw new InvalidOperationException("Failed to retrieve file information.") : res;
         }
 
         /// <summary>

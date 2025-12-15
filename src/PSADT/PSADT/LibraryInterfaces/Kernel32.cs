@@ -41,11 +41,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL OOBEComplete(out BOOL isOOBEComplete)
         {
             BOOL res = PInvoke.OOBEComplete(out isOOBEComplete);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -62,11 +58,7 @@ namespace PSADT.LibraryInterfaces
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
         {
             FreeLibrarySafeHandle? res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
-            if (res is null || res.IsInvalid)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res is null || res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -83,11 +75,7 @@ namespace PSADT.LibraryInterfaces
         internal static FARPROC GetProcAddress(SafeHandle hModule, string lpProcName)
         {
             FARPROC res = PInvoke.GetProcAddress(hModule, lpProcName);
-            if (res.IsNull)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res.IsNull ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -103,11 +91,9 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
             uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName);
-            if (res == lpReturnedString.Length - 2)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
-            }
-            return res;
+            return res == lpReturnedString.Length - 2
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
+                : res;
         }
 
         /// <summary>
@@ -125,11 +111,9 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
         {
             uint res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName);
-            if (res == lpReturnedString.Length - 2)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
-            }
-            return res;
+            return res == lpReturnedString.Length - 2
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
+                : res;
         }
 
         /// <summary>
@@ -175,11 +159,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL WritePrivateProfileSection(string lpAppName, string? lpString, string lpFileName)
         {
             BOOL res = PInvoke.WritePrivateProfileSection(lpAppName, lpString, lpFileName);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -198,11 +178,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
             BOOL res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -225,11 +201,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             SafeFileHandle res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            if (res.IsInvalid)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -264,11 +236,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
             SafeFileHandle res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
-            if (res.IsInvalid)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -303,11 +271,7 @@ namespace PSADT.LibraryInterfaces
                     hJob.DangerousRelease();
                 }
             }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -398,11 +362,7 @@ namespace PSADT.LibraryInterfaces
                     lpEnvironment?.DangerousRelease();
                 }
             }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -420,11 +380,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL AssignProcessToJobObject(SafeHandle hJob, SafeHandle hProcess)
         {
             BOOL res = PInvoke.AssignProcessToJobObject(hJob, hProcess);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -436,11 +392,7 @@ namespace PSADT.LibraryInterfaces
         internal static uint ResumeThread(SafeHandle hThread)
         {
             uint res = PInvoke.ResumeThread(hThread);
-            if (res == uint.MaxValue)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == uint.MaxValue ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -483,11 +435,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
         {
             BOOL res = PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -502,11 +450,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL TerminateJobObject(SafeHandle hJob, uint uExitCode)
         {
             BOOL res = PInvoke.TerminateJobObject(hJob, uExitCode);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -518,11 +462,7 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetProcessId(SafeHandle Process)
         {
             uint res = PInvoke.GetProcessId(Process);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -549,11 +489,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
         {
             BOOL res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out lpTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -572,11 +508,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
         {
             SafeFileHandle? res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
-            if (res is null || res.IsInvalid)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res is null || res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -593,11 +525,7 @@ namespace PSADT.LibraryInterfaces
         internal static uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
         {
             uint res = PInvoke.QueryDosDevice(lpDeviceName, lpTargetPath);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -612,11 +540,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetExitCodeThread(SafeHandle hThread, out uint lpExitCode)
         {
             BOOL res = PInvoke.GetExitCodeThread(hThread, out lpExitCode);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -631,11 +555,7 @@ namespace PSADT.LibraryInterfaces
         internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
         {
             FreeLibrarySafeHandle? res = PInvoke.LoadLibrary(lpLibFileName);
-            if (res is null || res.IsInvalid)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res is null || res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -648,11 +568,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeProcessHandle GetCurrentProcess()
         {
             HANDLE res = PInvoke.GetCurrentProcess();
-            if (res != (nint)(-1))
-            {
-                throw new InvalidOperationException("Failed to retrieve handle for current process.");
-            }
-            return new(res, true);
+            return res != (nint)(-1) ? throw new InvalidOperationException("Failed to retrieve handle for current process.") : new(res, true);
         }
 
         /// <summary>
@@ -664,11 +580,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL ProcessIdToSessionId(uint dwProcessId, out uint pSessionId)
         {
             BOOL res = PInvoke.ProcessIdToSessionId(dwProcessId, out pSessionId);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -696,6 +608,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>The size, in bytes, of the firmware table data retrieved.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer provided in <paramref name="pFirmwareTableBuffer"/> is too small to hold the firmware
         /// table data.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static uint GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER FirmwareTableProviderSignature, FIRMWARE_TABLE_ID FirmwareTableID, Span<byte> pFirmwareTableBuffer)
         {
             uint res = PInvoke.GetSystemFirmwareTable(FirmwareTableProviderSignature, (uint)FirmwareTableID, pFirmwareTableBuffer);
@@ -721,11 +634,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetSystemPowerStatus(out SYSTEM_POWER_STATUS lpSystemPowerStatus)
         {
             BOOL res = PInvoke.GetSystemPowerStatus(out lpSystemPowerStatus);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -741,11 +650,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL IsProcessInJob(SafeHandle ProcessHandle, SafeHandle? JobHandle, out BOOL Result)
         {
             BOOL res = PInvoke.IsProcessInJob(ProcessHandle, JobHandle, out Result);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -764,11 +669,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, Span<byte> lpJobObjectInformation, out uint lpReturnLength)
         {
             BOOL res = PInvoke.QueryInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation, out lpReturnLength);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -786,11 +687,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, ref uint applicationUserModelIdLength, Span<char> applicationUserModelId)
         {
             WIN32_ERROR res = PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-            }
-            return res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
         }
 
         /// <summary>
@@ -813,11 +710,7 @@ namespace PSADT.LibraryInterfaces
             {
                 res = PInvoke.ReadProcessMemory(hProcess, (void*)lpBaseAddress, lpBuffer, out lpNumberOfBytesRead);
             }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -829,6 +722,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="szLang">A span of characters that receives the language name. The buffer must be large enough to hold the name.</param>
         /// <returns>The number of characters written to <paramref name="szLang"/>, excluding the null terminator.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer provided by <paramref name="szLang"/> is too small to hold the language name.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static uint VerLanguageName(uint wLang, Span<char> szLang)
         {
             uint res = PInvoke.VerLanguageName(wLang, szLang);
@@ -868,11 +762,7 @@ namespace PSADT.LibraryInterfaces
                     res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, pOverlapped);
                 }
             }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -903,11 +793,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, in SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FILE_FLAGS_AND_ATTRIBUTES dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
         {
             SafeFileHandle res = PInvoke.CreateFile(lpFileName, (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-            if (res.IsInvalid)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -926,11 +812,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetProductInfo(uint dwOSMajorVersion, uint dwOSMinorVersion, uint dwSpMajorVersion, uint dwSpMinorVersion, out OS_PRODUCT_TYPE pdwReturnedProductType)
         {
             BOOL res = PInvoke.GetProductInfo(dwOSMajorVersion, dwOSMinorVersion, dwSpMajorVersion, dwSpMinorVersion, out pdwReturnedProductType);
-            if (!res)
-            {
-                throw new InvalidOperationException("Failed to get product info.");
-            }
-            return res;
+            return !res ? throw new InvalidOperationException("Failed to get product info.") : res;
         }
 
         /// <summary>
@@ -944,11 +826,7 @@ namespace PSADT.LibraryInterfaces
         internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, TimeSpan dwMilliseconds)
         {
             WAIT_EVENT res = PInvoke.WaitForSingleObject(hHandle, (uint)dwMilliseconds.TotalMilliseconds);
-            if (res == WAIT_EVENT.WAIT_FAILED)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return res == WAIT_EVENT.WAIT_FAILED ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -968,11 +846,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS dwFlags, string lpDeviceName, string? lpTargetPath)
         {
             BOOL res = PInvoke.DefineDosDevice(dwFlags, lpDeviceName, lpTargetPath);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -986,11 +860,9 @@ namespace PSADT.LibraryInterfaces
         internal static FILE_TYPE GetFileType(SafeHandle hFile)
         {
             FILE_TYPE res = PInvoke.GetFileType(hFile);
-            if (res == FILE_TYPE.FILE_TYPE_UNKNOWN && Marshal.GetLastWin32Error() is int lastWin32Error && lastWin32Error != 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastWin32Error);
-            }
-            return res;
+            return res == FILE_TYPE.FILE_TYPE_UNKNOWN && Marshal.GetLastWin32Error() is int lastWin32Error && lastWin32Error != 0
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastWin32Error)
+                : res;
         }
     }
 }

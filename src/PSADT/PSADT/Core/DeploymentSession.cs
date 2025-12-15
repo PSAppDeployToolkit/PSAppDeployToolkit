@@ -1102,18 +1102,9 @@ namespace PSADT.Core
         /// <returns></returns>
         private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
-            if ((writeHost is not null && !writeHost.Value) || !LogWriteToHost)
-            {
-                return HostLogStreamType.None;
-            }
-            else if (LogHostOutputToStdStreams)
-            {
-                return HostLogStreamType.Console;
-            }
-            else
-            {
-                return HostLogStreamType.Host;
-            }
+            return (writeHost is not null && !writeHost.Value) || !LogWriteToHost
+                ? HostLogStreamType.None
+                : LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host;
         }
 
         /// <summary>
@@ -1263,11 +1254,9 @@ namespace PSADT.Core
         /// <returns></returns>
         private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
         {
-            if (CallerSessionState is not null)
-            {
-                return (T)CallerSessionState.PSVariable.GetValue(propertyName);
-            }
-            return (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
+            return CallerSessionState is not null
+                ? (T)CallerSessionState.PSVariable.GetValue(propertyName)
+                : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
         }
 
         /// <summary>
@@ -1318,14 +1307,11 @@ namespace PSADT.Core
             object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
             object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
             object? deferDeadline = history.Properties["DeferDeadline"]?.Value;
-            if (deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null)
-            {
-                return null;
-            }
-            return new(
+            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null ? null : new(
                 deferTimesRemaining is not null ? deferTimesRemaining is string deferTimesRemainingString ? (uint)int.Parse(deferTimesRemainingString, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
                 deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
-                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null);
+                deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null
+            );
         }
 
         /// <summary>
@@ -1399,6 +1385,7 @@ namespace PSADT.Core
         /// Gets the deployment status.
         /// </summary>
         /// <returns>The deployment status.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public DeploymentStatus GetDeploymentStatus()
         {
             if ((ExitCode == DefaultExitCode) || (ExitCode == DeferExitCode))

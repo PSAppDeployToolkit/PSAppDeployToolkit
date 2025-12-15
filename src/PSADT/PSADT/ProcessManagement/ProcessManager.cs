@@ -491,11 +491,7 @@ namespace PSADT.ProcessManagement
                     envDict.Add(entry[..idx], entry[(idx + 1)..]);
                     envBlockPtr += (entry.Length + 1) * sizeof(char);
                 }
-                if (envDict.Count == 0)
-                {
-                    throw new ArgumentException("The environment block is empty.", nameof(environmentBlock));
-                }
-                return new(envDict);
+                return envDict.Count == 0 ? throw new ArgumentException("The environment block is empty.", nameof(environmentBlock)) : new(envDict);
             }
             finally
             {
@@ -521,6 +517,7 @@ namespace PSADT.ProcessManagement
         /// Placeholders that cannot be resolved are left unchanged.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
         /// if <paramref name="environment"/> is invalid.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
             if (string.IsNullOrWhiteSpace(input))

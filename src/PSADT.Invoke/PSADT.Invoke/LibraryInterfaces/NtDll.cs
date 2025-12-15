@@ -47,11 +47,7 @@ namespace PSADT.Invoke.LibraryInterfaces
                     ProcessHandle.DangerousRelease();
                 }
             }
-            if (res != NTSTATUS.STATUS_SUCCESS)
-            {
-                throw new Win32Exception((int)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
+            return res != NTSTATUS.STATUS_SUCCESS ? throw new Win32Exception((int)Windows.Win32.PInvoke.RtlNtStatusToDosError(res)) : (int)res;
         }
     }
 }
