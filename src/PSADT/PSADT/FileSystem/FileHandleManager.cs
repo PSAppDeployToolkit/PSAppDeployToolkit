@@ -214,13 +214,8 @@ namespace PSADT.FileSystem
         /// <param name="handleEntries"></param>
         public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
-            // Confirm the provided input isn't null.
-            if (handleEntries is null)
-            {
-                throw new ArgumentNullException(nameof(handleEntries));
-            }
-
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
+            ArgumentNullException.ThrowIfNull(handleEntries, nameof(handleEntries));
             using var currentProcessHandle = Kernel32.GetCurrentProcess();
             foreach (var handleEntry in handleEntries)
             {

@@ -118,10 +118,7 @@ namespace PSADT.ProcessManagement
         {
             get
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException(nameof(RunningProcessService));
-                }
+                ObjectDisposedException.ThrowIf(_disposed, this);
                 _mutex.Wait();
                 try
                 {
@@ -142,10 +139,7 @@ namespace PSADT.ProcessManagement
         {
             get
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException(nameof(RunningProcessService));
-                }
+                ObjectDisposedException.ThrowIf(_disposed, this);
                 _mutex.Wait();
                 try
                 {

@@ -82,13 +82,8 @@ namespace PSADT.ProcessManagement
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
-            // Validate the input process.
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
             // Confirm we've got the privilege to read the process memory.
+            ArgumentNullException.ThrowIfNull(process, nameof(process));
             if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege))
             {
                 throw new UnauthorizedAccessException("The current process does not have the required SeDebugPrivilege to read the target process memory.");

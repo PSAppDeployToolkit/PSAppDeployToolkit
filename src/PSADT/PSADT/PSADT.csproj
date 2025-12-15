@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <NoWarn>CA1031;CA1307;CA1510;CA1513;CA1849;CA1866;CA1867</NoWarn>
+    <NoWarn>CA1031;CA1307;CA1849;CA1866;CA1867</NoWarn>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
     <Product>PSAppDeployToolkit Common Support Library</Product>
