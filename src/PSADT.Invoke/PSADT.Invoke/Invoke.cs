@@ -66,40 +66,38 @@ namespace PSADT.Invoke
                 // Invoke the given script as per the StartInfo.
                 try
                 {
-                    using (var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode })
+                    // Redirect the output and error streams if we're debugging, then start.
+                    using var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
+                    if (inDebugMode)
                     {
-                        // Redirect the output and error streams if we're debugging, then start.
-                        if (inDebugMode)
+                        process.ErrorDataReceived += (sender, e) =>
                         {
-                            process.ErrorDataReceived += (sender, e) =>
+                            if (!string.IsNullOrWhiteSpace(e.Data))
                             {
-                                if (!string.IsNullOrWhiteSpace(e.Data))
-                                {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.Error.WriteLine(e.Data);
-                                    Console.ResetColor();
-                                }
-                            };
-                            process.OutputDataReceived += (sender, e) =>
-                            {
-                                if (!string.IsNullOrWhiteSpace(e.Data))
-                                {
-                                    Console.WriteLine(e.Data);
-                                }
-                            };
-                        }
-                        WriteDebugMessage($"Commencing invocation.\n");
-                        process.Start();
-
-                        // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
-                        if (inDebugMode)
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Error.WriteLine(e.Data);
+                                Console.ResetColor();
+                            }
+                        };
+                        process.OutputDataReceived += (sender, e) =>
                         {
-                            process.BeginOutputReadLine();
-                            process.BeginErrorReadLine();
-                        }
-                        process.WaitForExit();
-                        return process.ExitCode;
+                            if (!string.IsNullOrWhiteSpace(e.Data))
+                            {
+                                Console.WriteLine(e.Data);
+                            }
+                        };
                     }
+                    WriteDebugMessage($"Commencing invocation.\n");
+                    process.Start();
+
+                    // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
+                    if (inDebugMode)
+                    {
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+                    }
+                    process.WaitForExit();
+                    return process.ExitCode;
                 }
                 catch (Exception ex)
                 {

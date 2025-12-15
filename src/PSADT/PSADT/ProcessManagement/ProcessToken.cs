@@ -117,22 +117,19 @@ namespace PSADT.ProcessManagement
             {
                 throw new InvalidOperationException("Cannot retrieve an unelevated token when running as the local system account.");
             }
-            using (var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()))
-            using (var cProcessSafeHandle = cProcess.SafeHandle)
+            using var cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()); using var cProcessSafeHandle = cProcess.SafeHandle;
+            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
+            using (hProcessToken)
             {
-                AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out var hProcessToken);
-                using (hProcessToken)
+                if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
                 {
-                    if (TokenManager.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
-                    {
-                        throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
-                    }
-                    if (TokenManager.IsTokenElevated(hProcessToken))
-                    {
-                        throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.");
-                    }
-                    return TokenManager.GetPrimaryToken(hProcessToken);
+                    throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
                 }
+                if (TokenManager.IsTokenElevated(hProcessToken))
+                {
+                    throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.");
+                }
+                return TokenManager.GetPrimaryToken(hProcessToken);
             }
         }
     }
