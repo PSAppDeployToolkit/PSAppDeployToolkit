@@ -62,7 +62,7 @@ namespace PSADT.Utilities
         internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, ReadOnlyCollection<string>? exclusions = null)
         {
             List<string> args = [];
-            foreach (var entry in dict)
+            foreach (KeyValuePair<string, object> entry in dict)
             {
                 string key = entry.Key.ToString()!;
                 string val = string.Empty;

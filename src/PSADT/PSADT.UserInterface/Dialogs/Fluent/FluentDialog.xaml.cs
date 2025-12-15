@@ -358,14 +358,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Use stack-based approach to handle nested/combined formatting
             Stack<FormattingContext> formattingStack = new();
-            var lastPos = 0;
+            int lastPos = 0;
 
             foreach (Match match in DialogConstants.TextFormattingRegex.Matches(message))
             {
                 // Add text before the current match with current formatting
                 if (match.Index > lastPos)
                 {
-                    var textContent = message[lastPos..(match.Index - lastPos)];
+                    string textContent = message[lastPos..(match.Index - lastPos)];
                     AddFormattedText(textBlock, textContent, formattingStack);
                 }
 
@@ -377,7 +377,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Add any remaining text after the last match
             if (lastPos < message.Length)
             {
-                var remainingText = message[lastPos..];
+                string remainingText = message[lastPos..];
                 AddFormattedText(textBlock, remainingText, formattingStack);
             }
         }
@@ -400,7 +400,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else if (match.Groups["OpenAccent"].Success)
             {
-                var newContext = GetCurrentFormattingContext(formattingStack).Clone();
+                FormattingContext newContext = GetCurrentFormattingContext(formattingStack).Clone();
                 newContext.IsAccent = true;
                 formattingStack.Push(newContext);
             }
@@ -410,7 +410,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else if (match.Groups["OpenBold"].Success)
             {
-                var newContext = GetCurrentFormattingContext(formattingStack).Clone();
+                FormattingContext newContext = GetCurrentFormattingContext(formattingStack).Clone();
                 newContext.IsBold = true;
                 formattingStack.Push(newContext);
             }
@@ -420,7 +420,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else if (match.Groups["OpenItalic"].Success)
             {
-                var newContext = GetCurrentFormattingContext(formattingStack).Clone();
+                FormattingContext newContext = GetCurrentFormattingContext(formattingStack).Clone();
                 newContext.IsItalic = true;
                 formattingStack.Push(newContext);
             }
@@ -466,7 +466,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 return;
             }
 
-            var context = GetCurrentFormattingContext(formattingStack);
+            FormattingContext context = GetCurrentFormattingContext(formattingStack);
             Run run = new(text);
 
             // Apply formatting based on context
@@ -511,7 +511,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             // Add the URL as a proper hyperlink
-            if (!AccountUtilities.CallerIsSystemInteractive && Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
+            if (!AccountUtilities.CallerIsSystemInteractive && Uri.TryCreate(navigateUrl, UriKind.Absolute, out Uri? uri))
             {
                 Hyperlink link = new(new Run(displayText))
                 {
@@ -590,7 +590,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <returns>A <see cref="Color"/> object corresponding to the specified integer value.</returns>
         private static Color IntToColor(int color)
         {
-            var colorBytes = BitConverter.GetBytes(color);
+            byte[] colorBytes = BitConverter.GetBytes(color);
             return Color.FromArgb(colorBytes[3], colorBytes[2], colorBytes[1], colorBytes[0]);
         }
 
@@ -605,13 +605,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private static BitmapSource GetIcon(string dialogIconPath)
         {
             // Try to get from cache first.
-            if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapSource))
+            if (!_dialogIconCache.TryGetValue(dialogIconPath, out BitmapSource? bitmapSource))
             {
                 // Nothing cached. If we have an icon, get the highest resolution frame.
                 if (Path.GetExtension(dialogIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
                 {
                     // Use IconBitmapDecoder to get the icon frame.
-                    var iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
+                    BitmapFrame iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
 
                     // Make it shareable across threads
                     if (iconFrame.CanFreeze)

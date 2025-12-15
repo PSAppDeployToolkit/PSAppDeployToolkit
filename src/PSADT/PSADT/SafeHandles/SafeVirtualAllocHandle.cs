@@ -24,7 +24,7 @@ namespace PSADT.SafeHandles
         {
             unsafe
             {
-                var handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
+                void* handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
                 if (handle is null)
                 {
                     throw new InvalidOperationException("Failed to allocate memory.");

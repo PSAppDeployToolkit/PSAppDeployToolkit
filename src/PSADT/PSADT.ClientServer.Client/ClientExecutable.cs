@@ -148,10 +148,10 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown to indicate that no arguments were provided to the application.</exception>
         private static void ShowHelpDialog()
         {
-            var fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
-            var helpVersion = new Version(fileInfo.ProductVersion!.Split('+')[0]);
-            var helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
-            var helpMessage = string.Join(Environment.NewLine,
+            FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
+            Version helpVersion = new(fileInfo.ProductVersion!.Split('+')[0]);
+            string helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
+            string helpMessage = string.Join(Environment.NewLine,
             [
                 helpTitle,
                 "",
@@ -186,8 +186,8 @@ namespace PSADT.ClientServer
                 {
                     continue;
                 }
-                var key = argv[i][1..].Trim();
-                var value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
+                string key = argv[i][1..].Trim();
+                string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
                 if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-", StringComparison.OrdinalIgnoreCase) || value!.StartsWith("/", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
@@ -196,7 +196,7 @@ namespace PSADT.ClientServer
             }
 
             // Check whether an ArgumentsDictionary was provided.
-            if (arguments.TryGetValue("ArgumentsDictionary", out var argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
+            if (arguments.TryGetValue("ArgumentsDictionary", out string? argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
             {
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
@@ -307,7 +307,7 @@ namespace PSADT.ClientServer
                             {
                                 // Split the line on the pipe operator, it's our delimiter for args. We don't
                                 // use a switch here so it's easier to break the while loop if we're exiting.
-                                var parts = inputReader.ReadString().Split(CommonUtilities.ArgumentSeparator);
+                                string[] parts = inputReader.ReadString().Split(CommonUtilities.ArgumentSeparator);
 
                                 // Process the command in the first part. We never let an exception here kill the pipe.
                                 try
@@ -325,7 +325,7 @@ namespace PSADT.ClientServer
                                         {
                                             throw new ClientException("The PromptToCloseApps command requires exactly one argument: PromptToCloseTimeout.", ClientExitCode.InvalidArguments);
                                         }
-                                        var promptToCloseTimeout = TimeSpan.Parse(parts[1], CultureInfo.InvariantCulture);
+                                        TimeSpan promptToCloseTimeout = TimeSpan.Parse(parts[1], CultureInfo.InvariantCulture);
 
                                         // Process each running app.
                                         if (closeAppsDialogState.RunningProcessService is null)
@@ -534,9 +534,9 @@ namespace PSADT.ClientServer
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
                 // Set up the required variables.
-                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; var filePath = command[0];
-                var ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
-                var fileName = Path.GetFileName(filePath); var ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
+                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0];
+                string ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
+                string fileName = Path.GetFileName(filePath); string ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
 
                 // Rename the IFEO subkey, start the process asynchronously, and then rename it back.
                 RegistryUtilities.RenameRegistryKey(ifeoPath, fileName, ifeoName);
@@ -707,7 +707,7 @@ namespace PSADT.ClientServer
         private static string SendKeys(IReadOnlyDictionary<string, string> arguments)
         {
             // Deserialise the received options.
-            var options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(arguments));
+            SendKeysOptions options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(arguments));
 
             // Bring the window to the front and make sure it's enabled.
             HWND hwnd = (HWND)options.WindowHandle;
@@ -785,7 +785,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown if the <c>"Delay"</c> argument is missing, empty, or invalid.</exception>
         private static string SilentRestart(ReadOnlyDictionary<string, string> arguments)
         {
-            if (!arguments.TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out var delayValue))
+            if (!arguments.TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
             {
                 throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
             }
@@ -829,14 +829,14 @@ namespace PSADT.ClientServer
         /// <param name="logWriter">A <see cref="StreamWriter"/> used to log the actions and results of the method.</param>
         private static void PromptToCloseApps(IReadOnlyList<RunningProcess> runningProcesses, TimeSpan promptToCloseTimeout, BinaryWriter logWriter)
         {
-            foreach (var runningApp in runningProcesses)
+            foreach (RunningProcess runningApp in runningProcesses)
             {
                 // Get all open windows for the running app.
-                var openWindows = WindowUtilities.GetProcessWindowInfo(null, null, [runningApp.Process.ProcessName]);
+                ReadOnlyCollection<WindowInfo> openWindows = WindowUtilities.GetProcessWindowInfo(null, null, [runningApp.Process.ProcessName]);
                 if (openWindows.Count > 0)
                 {
                     // Start gracefully closing each open window.
-                    foreach (var window in openWindows)
+                    foreach (WindowInfo window in openWindows)
                     {
                         try
                         {

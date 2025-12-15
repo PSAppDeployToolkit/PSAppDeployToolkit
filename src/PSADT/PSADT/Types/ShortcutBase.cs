@@ -31,7 +31,7 @@ namespace PSADT.Types
 
             if (!string.IsNullOrWhiteSpace(iconIndex))
             {
-                if (!int.TryParse(iconIndex, out var parsedIndex))
+                if (!int.TryParse(iconIndex, out int parsedIndex))
                 {
                     throw new ArgumentException("IconIndex must be a numeric value.");
                 }

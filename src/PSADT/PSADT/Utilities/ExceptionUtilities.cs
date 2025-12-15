@@ -17,8 +17,8 @@ namespace PSADT.Utilities
         /// <returns></returns>
         internal static Exception GetExceptionForLastWin32Error(WIN32_ERROR? lastWin32Error = null)
         {
-            var win32ErrorCode = lastWin32Error.HasValue ? unchecked((int)lastWin32Error.Value) : Marshal.GetLastWin32Error();
-            var marshalException = Marshal.GetExceptionForHR(GetHRForWin32ErrorCode(win32ErrorCode));
+            int win32ErrorCode = lastWin32Error.HasValue ? unchecked((int)lastWin32Error.Value) : Marshal.GetLastWin32Error();
+            Exception? marshalException = Marshal.GetExceptionForHR(GetHRForWin32ErrorCode(win32ErrorCode));
             return marshalException is not null && (marshalException is not COMException || win32ErrorCode == (int)WIN32_ERROR.ERROR_MR_MID_NOT_FOUND) ? marshalException : new Win32Exception(win32ErrorCode);
         }
 

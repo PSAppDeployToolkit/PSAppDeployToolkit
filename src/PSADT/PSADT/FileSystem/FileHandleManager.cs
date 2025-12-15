@@ -34,16 +34,16 @@ namespace PSADT.FileSystem
         static FileHandleManager()
         {
             // Build the StartRoutine template once during static initialization.
-            using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"); using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
+            using FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"); using FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
             NtQueryObjectStartRoutineTemplate = BuildNtQueryObjectStartRoutineTemplate(Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject"), Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread"));
 
             // Query the system for the required buffer size for object types information.
-            var objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
-            var objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
-            var typesBuffer = new byte[objectTypesSize]; Span<byte> typesBufferPtr = typesBuffer;
+            int objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
+            int objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
+            byte[] typesBuffer = new byte[objectTypesSize]; Span<byte> typesBufferPtr = typesBuffer;
 
             // Reallocate the buffer until we get the required size.
-            var status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
+            NTSTATUS status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 typesBuffer = new byte[typesBufferReqLength]; typesBufferPtr = typesBuffer;
@@ -51,13 +51,13 @@ namespace PSADT.FileSystem
             }
 
             // Read the number of types from the buffer and store the built-out dictionary.
-            ref var typesInfo = ref Unsafe.As<byte, OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
-            var typesCount = typesInfo.NumberOfTypes; var typeTable = new Dictionary<ushort, string>((int)typesCount);
-            var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
+            ref OBJECT_TYPES_INFORMATION typesInfo = ref Unsafe.As<byte, OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
+            uint typesCount = typesInfo.NumberOfTypes; Dictionary<ushort, string> typeTable = new((int)typesCount);
+            int ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref var typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr[..ptrOffset]));
+                ref OBJECT_TYPE_INFORMATION typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr[..ptrOffset]));
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
@@ -72,13 +72,13 @@ namespace PSADT.FileSystem
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Query the system for the required buffer size for handle information.
-            var handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-            var handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
-            var handleBuffer = new byte[handleInfoExSize + handleEntryExSize];
+            int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+            int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
+            byte[] handleBuffer = new byte[handleInfoExSize + handleEntryExSize];
             Span<byte> handleBufferPtr = handleBuffer;
 
             // Reallocate the buffer until we get the required size.
-            var status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out uint handleBufferReqLength);
+            NTSTATUS status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out uint handleBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 handleBuffer = new byte[(int)handleBufferReqLength]; handleBufferPtr = handleBuffer;
@@ -86,7 +86,7 @@ namespace PSADT.FileSystem
             }
 
             // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
-            using var threadBuffers = new ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)>
+            using ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)> threadBuffers = new
             (
                 () => (AllocateObjectBuffer(), AllocateStartRoutineBuffer()),
                 trackAllValues: true
@@ -95,13 +95,13 @@ namespace PSADT.FileSystem
             // Loop through all handles and return list of open file handles.
             try
             {
-                using var currentProcessHandle = Kernel32.GetCurrentProcess(); var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-                ref var handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
-                var openHandles = new ConcurrentBag<FileHandleInfo>();
+                using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess(); ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
+                ConcurrentBag<FileHandleInfo> openHandles = [];
                 Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
-                    ref var sysHandle = ref Unsafe.As<byte, SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
+                    ref SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref Unsafe.As<byte, SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
                     if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                     {
                         return;
@@ -191,7 +191,7 @@ namespace PSADT.FileSystem
             }
             finally
             {
-                foreach (var (objectBuffer, startRoutineBuffer) in threadBuffers.Values)
+                foreach ((SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer) in threadBuffers.Values)
                 {
                     startRoutineBuffer.Dispose();
                     objectBuffer.Dispose();
@@ -216,14 +216,13 @@ namespace PSADT.FileSystem
         {
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
             ArgumentNullException.ThrowIfNull(handleEntries, nameof(handleEntries));
-            using var currentProcessHandle = Kernel32.GetCurrentProcess();
-            foreach (var handleEntry in handleEntries)
+            using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
+            foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {
-                using var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
+                using SafeFileHandle fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
                 using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
-                Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
-                localHandle = null;
             }
         }
 
@@ -248,7 +247,7 @@ namespace PSADT.FileSystem
                 // Start the thread to retrieve the object name and wait for the outcome.
                 fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                 PatchStartRoutineBuffer(startRoutineBuffer, fileHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
@@ -258,7 +257,7 @@ namespace PSADT.FileSystem
                     }
 
                     // Get the exit code of the thread, returning null under certain conditions or throwing an exception if it failed.
-                    Kernel32.GetExitCodeThread(hThread, out var exitCode); var res = unchecked((NTSTATUS)exitCode);
+                    Kernel32.GetExitCodeThread(hThread, out uint exitCode); NTSTATUS res = unchecked((NTSTATUS)exitCode);
                     if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
                     {
                         return null;
@@ -267,7 +266,7 @@ namespace PSADT.FileSystem
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
                     }
-                    ref var objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
+                    ref OBJECT_NAME_INFORMATION objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
                     return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
                 }
             }
@@ -309,7 +308,7 @@ namespace PSADT.FileSystem
         /// routine template.</returns>
         private static SafeVirtualAllocHandle AllocateStartRoutineBuffer()
         {
-            var mem = SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+            SafeVirtualAllocHandle mem = SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
             mem.Write(NtQueryObjectStartRoutineTemplate.Bytes);
             return mem;
         }
@@ -322,7 +321,7 @@ namespace PSADT.FileSystem
         {
             // Build the start routine stub to call NtQueryObject and exit the thread once done.
             int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
-            var processArchitecture = RuntimeInformation.ProcessArchitecture;
+            Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
             if (processArchitecture == Architecture.X64)
             {
                 // mov rcx, handle (placeholder)
@@ -435,7 +434,7 @@ namespace PSADT.FileSystem
                 code.Add(NativeUtilities.EncodeBr(16));
 
                 // Convert instruction list to byte array
-                foreach (var instr in code)
+                foreach (uint instr in code)
                 {
                     startRoutine.AddRange(BitConverter.GetBytes(instr));
                 }
@@ -457,7 +456,7 @@ namespace PSADT.FileSystem
         private static void PatchStartRoutineBuffer(SafeVirtualAllocHandle startRoutineBuffer, IntPtr fileHandle, IntPtr infoBuffer, int infoBufferLength)
         {
             // Patch the handle and buffer pointers into the StartRoutine template.
-            var processArchitecture = RuntimeInformation.ProcessArchitecture;
+            Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
             if (processArchitecture == Architecture.X64)
             {
                 // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
@@ -480,9 +479,9 @@ namespace PSADT.FileSystem
             {
                 // For ARM64, we need to regenerate the MOVZ/MOVK sequences for each 64-bit value. Each instruction is 4 bytes, patch in place.
                 // Handle is at x0 (instructions 0-3), buffer is at x2 (instructions 8-11), length is at x3 (instructions 12-15).
-                var handleInstrs = NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()).ToArray();
-                var bufferInstrs = NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()).ToArray();
-                var lengthInstrs = NativeUtilities.Load64(3, (ulong)infoBufferLength).ToArray();
+                uint[] handleInstrs = [.. NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64())];
+                uint[] bufferInstrs = [.. NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64())];
+                uint[] lengthInstrs = [.. NativeUtilities.Load64(3, (ulong)infoBufferLength)];
                 for (int j = 0; j < 4; j++)
                 {
                     startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));

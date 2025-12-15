@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.LibraryInterfaces;
+using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
@@ -44,7 +45,7 @@ namespace PSADT.UserInterface
             if (state.LogWriter is not null)
             {
                 // Announce whether there's apps to close.
-                var procsRunning = state.RunningProcessService?.ProcessesToClose;
+                IReadOnlyList<ProcessToClose>? procsRunning = state.RunningProcessService?.ProcessesToClose;
                 if (procsRunning?.Count > 0)
                 {
                     state.LogWriter.Write($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...");
@@ -54,7 +55,7 @@ namespace PSADT.UserInterface
                 // Announce the current countdown information.
                 if (options.CountdownDuration is not null)
                 {
-                    var elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
+                    TimeSpan? elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
                     if (elapsed < TimeSpan.Zero)
                     {
                         elapsed = TimeSpan.Zero;
@@ -73,7 +74,7 @@ namespace PSADT.UserInterface
             }
 
             // Show the dialog and get the result.
-            var result = ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state);
+            CloseAppsDialogResult result = ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state);
 
             // Perform some result logging before returning.
             if ((state.LogWriter is not null) && (options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
@@ -116,7 +117,7 @@ namespace PSADT.UserInterface
             {
                 ShellUtilities.MinimizeAllWindows();
             }
-            var res = ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+            string res = ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
                 ShellUtilities.RestoreAllWindows();
@@ -141,7 +142,7 @@ namespace PSADT.UserInterface
             {
                 ShellUtilities.MinimizeAllWindows();
             }
-            var res = ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+            InputDialogResult res = ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
                 ShellUtilities.RestoreAllWindows();
@@ -246,7 +247,7 @@ namespace PSADT.UserInterface
         {
             return InvokeDialogAction(() =>
             {
-                using var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
+                using IModalDialog dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;
             });
         }
@@ -263,7 +264,7 @@ namespace PSADT.UserInterface
             Shell32.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
 
             // Correct the registry data for the AUMID. This can reference stale info from a previous run.
-            var regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.TrayTitle}";
+            string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.TrayTitle}";
             Registry.SetValue(regKey, "DisplayName", options.TrayTitle, RegistryValueKind.String);
             Registry.SetValue(regKey, "IconUri", options.TrayIcon, RegistryValueKind.ExpandString);
 
@@ -315,7 +316,7 @@ namespace PSADT.UserInterface
         /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default)
         {
-            return InvokeDialogAction<MESSAGEBOX_RESULT>(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
+            return InvokeDialogAction(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
         }
 
         /// <summary>
@@ -331,7 +332,7 @@ namespace PSADT.UserInterface
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
-            return InvokeDialogAction<MESSAGEBOX_RESULT>(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
+            return InvokeDialogAction(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
         }
 
         /// <summary>
@@ -345,7 +346,7 @@ namespace PSADT.UserInterface
         /// cref="System.Windows.Forms.DialogResult.Cancel"/> if the user canceled.</returns>
         internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options)
         {
-            return InvokeDialogAction<System.Windows.Forms.DialogResult>(() =>
+            return InvokeDialogAction(() =>
             {
                 using Dialogs.Classic.HelpConsole helpConsole = new(options);
                 return helpConsole.ShowDialog();

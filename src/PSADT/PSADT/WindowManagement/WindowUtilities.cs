@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.LibraryInterfaces;
+using Windows.Win32.Foundation;
 
 namespace PSADT.WindowManagement
 {
@@ -30,7 +31,7 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
         {
             // Get the list of processes based on the provided filters.
-            var processes = windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
+            IEnumerable<Process> processes = windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
                             windowHandleFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle)) :
                             parentProcessFilter is not null ? Process.GetProcesses().Where(p => parentProcessFilter.Contains(p.ProcessName)) :
                             Process.GetProcesses();
@@ -38,7 +39,7 @@ namespace PSADT.WindowManagement
             // Create a list to hold the window information.
             Regex? windowTitleRegex = windowTitleFilter is not null ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
             List<WindowInfo> windowInfos = [];
-            foreach (var window in WindowTools.EnumWindows())
+            foreach (HWND window in WindowTools.EnumWindows())
             {
                 // Continue if window isn't visible.
                 if (!User32.IsWindowVisible(window))
@@ -59,7 +60,7 @@ namespace PSADT.WindowManagement
                 }
 
                 // Continue if the window doesn't have an associated process.
-                var process = processes.FirstOrDefault(p => p.Id == WindowTools.GetWindowThreadProcessId(window));
+                Process? process = processes.FirstOrDefault(p => p.Id == WindowTools.GetWindowThreadProcessId(window));
                 if (process is null)
                 {
                     continue;

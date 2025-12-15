@@ -36,7 +36,7 @@ namespace PSADT.SafeHandles
             {
                 return true;
             }
-            var res = PInvoke.CloseHandle((HANDLE)handle);
+            BOOL res = PInvoke.CloseHandle((HANDLE)handle);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();

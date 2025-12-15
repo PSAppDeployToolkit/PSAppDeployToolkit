@@ -164,7 +164,7 @@ namespace PSADT.LibraryInterfaces
         {
             [DllImport("shell32.dll", CharSet = CharSet.Auto), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern IntPtr SHGetFileInfoW(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            psfi = new(); var res = SHGetFileInfoW(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
+            psfi = new(); IntPtr res = SHGetFileInfoW(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
             if (res == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to retrieve file information.");
@@ -203,7 +203,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetImageList(SHIL_SIZE iImageList, out IImageList ppvObj)
         {
-            var res = PInvoke.SHGetImageList((int)iImageList, new("46EB5926-582E-4017-9FDF-E8998DAA0950"), out var ppvObjLocal).ThrowOnFailure();
+            HRESULT res = PInvoke.SHGetImageList((int)iImageList, new("46EB5926-582E-4017-9FDF-E8998DAA0950"), out object ppvObjLocal).ThrowOnFailure();
             ppvObj = (IImageList)ppvObjLocal;
             return res;
         }

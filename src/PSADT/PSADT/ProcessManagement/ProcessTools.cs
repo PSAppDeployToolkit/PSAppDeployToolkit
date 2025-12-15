@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
@@ -18,8 +19,8 @@ namespace PSADT.ProcessManagement
             // If we fail to open the process because of invalid input, we assume it is not running.
             try
             {
-                using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, false, (uint)processId);
-                Kernel32.GetExitCodeProcess(hProc, out var exitCode);
+                using SafeFileHandle hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE, false, (uint)processId);
+                Kernel32.GetExitCodeProcess(hProc, out uint exitCode);
                 return exitCode == NTSTATUS.STILL_ACTIVE;
             }
             catch (ArgumentException)

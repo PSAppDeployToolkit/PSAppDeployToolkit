@@ -26,7 +26,7 @@ namespace PSADT.LibraryInterfaces
             BOOL res;
             unsafe
             {
-                res = PInvoke.CreateEnvironmentBlock(out var lpEnvironmentPtr, hToken, bInherit);
+                res = PInvoke.CreateEnvironmentBlock(out void* lpEnvironmentPtr, hToken, bInherit);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();

@@ -10,12 +10,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
+using Microsoft.Win32.SafeHandles;
+using PSADT.Core;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
-using PSADT.Core;
 using PSADT.Security;
 using Windows.Wdk.System.Threading;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.Services;
@@ -42,7 +44,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null or empty.");
             }
-            var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+            ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
             Dictionary<Process, string[]> processArgvMap = [];
 
             // Ensure we have a PowerShell runspace available for command execution here.
@@ -55,7 +57,7 @@ namespace PSADT.ProcessManagement
             static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
                 // Get the command line from the cache if we have it.
-                if (processArgvMap.TryGetValue(process, out var argv))
+                if (processArgvMap.TryGetValue(process, out string[]? argv))
                 {
                     return argv;
                 }
@@ -119,13 +121,13 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            var processNames = processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant());
-            var allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()));
+            IEnumerable<string> processNames = processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant());
+            IEnumerable<Process> allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()));
             List<RunningProcess> runningProcesses = [];
-            foreach (var processDefinition in processDefinitions)
+            foreach (ProcessDefinition processDefinition in processDefinitions)
             {
                 // Loop through each process and check if it matches the definition.
-                foreach (var process in allProcesses)
+                foreach (Process process in allProcesses)
                 {
                     // Skip this process if it doesn't match the name.
                     if (!Path.IsPathRooted(processDefinition.Name) && !process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
@@ -189,7 +191,7 @@ namespace PSADT.ProcessManagement
                     if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
                     {
                         // We're caching the process, so don't dispose of its SafeHande as .NET caches it also...
-                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
+                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
                         using (hToken)
                         {
                             username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
@@ -223,11 +225,11 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(service), "Service cannot be null.");
             }
-            using var scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
-            using var svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
+            using CloseServiceHandleSafeHandle scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
+            using CloseServiceHandleSafeHandle svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
             AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
-            ref var serviceStatus = ref Unsafe.As<byte, SERVICE_STATUS_PROCESS>(ref MemoryMarshal.GetReference(buffer));
+            ref SERVICE_STATUS_PROCESS serviceStatus = ref Unsafe.As<byte, SERVICE_STATUS_PROCESS>(ref MemoryMarshal.GetReference(buffer));
             if (serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0)
             {
                 throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.");
@@ -248,7 +250,7 @@ namespace PSADT.ProcessManagement
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
             NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
-            ref var pbi = ref Unsafe.As<byte, PROCESS_BASIC_INFORMATION>(ref MemoryMarshal.GetReference(buffer));
+            ref PROCESS_BASIC_INFORMATION pbi = ref Unsafe.As<byte, PROCESS_BASIC_INFORMATION>(ref MemoryMarshal.GetReference(buffer));
             return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
         }
 
@@ -260,7 +262,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
         public static Process GetParentProcess()
         {
-            using var hProcess = Kernel32.GetCurrentProcess();
+            using SafeProcessHandle hProcess = Kernel32.GetCurrentProcess();
             return GetParentProcess(hProcess);
         }
 
@@ -293,7 +295,7 @@ namespace PSADT.ProcessManagement
         /// will be empty.</returns>
         public static IReadOnlyList<Process> GetParentProcesses()
         {
-            var proc = Process.GetCurrentProcess();
+            Process proc = Process.GetCurrentProcess();
             List<Process> procs = [];
             while (true)
             {
@@ -325,13 +327,13 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(process), "Process cannot be null.");
             }
-            using var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out var requiredLength);
+            using SafeFileHandle hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
+            NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
 
             // Fill the buffer, then retrieve the actual command line string.
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
             NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
-            ref var unicodeString = ref Unsafe.As<byte, UNICODE_STRING>(ref MemoryMarshal.GetReference(buffer));
+            ref UNICODE_STRING unicodeString = ref Unsafe.As<byte, UNICODE_STRING>(ref MemoryMarshal.GetReference(buffer));
             return unicodeString.Buffer.ToString().TrimRemoveNull();
         }
 
@@ -355,7 +357,7 @@ namespace PSADT.ProcessManagement
         {
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
             Span<byte> processIdInfoPtr = stackalloc byte[Marshal.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>()]; processIdInfoPtr.Clear();
-            ref var processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
+            ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
             processIdInfo.ProcessId = new(process.Id);
 
             // Perform initial query so we can reallocate with the required length.
@@ -376,7 +378,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate we received something valid from the buffer. This function is known to return garbage.
-            var imageName = new string(imageNameCharArray).TrimRemoveNull();
+            string imageName = new string(imageNameCharArray).TrimRemoveNull();
             if (!imageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imageName}]. Raw char values: [{string.Join(", ", imageNameCharArray)}]");
@@ -385,7 +387,7 @@ namespace PSADT.ProcessManagement
             // If we have a lookup table, replace the NT path with the drive letter before returning.
             if (ntPathLookupTable is not null)
             {
-                var ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                string ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                 if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
                 {
                     throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imageName}].");

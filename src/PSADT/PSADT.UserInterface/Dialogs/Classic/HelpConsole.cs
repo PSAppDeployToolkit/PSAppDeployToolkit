@@ -43,54 +43,54 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 Environment.SetEnvironmentVariable("PSModulePath", null);
 
                 // Set up a PowerShell initial session state.
-                var iss = InitialSessionState.CreateDefault2();
+                InitialSessionState iss = InitialSessionState.CreateDefault2();
                 iss.ExecutionPolicy = options.ExecutionPolicy;
                 iss.ImportPSModule(options.Modules);
 
                 // Set up a runspace and open it for usage.
-                this.runspace = RunspaceFactory.CreateRunspace(iss);
-                this.runspace.Open();
+                runspace = RunspaceFactory.CreateRunspace(iss);
+                runspace.Open();
 
                 // Populate the ComboBox with our modules.
-                using (var ps = PowerShell.Create())
+                using (PowerShell ps = PowerShell.Create())
                 {
-                    ps.Runspace = this.runspace;
-                    this.comboBox.Items.Clear();
-                    this.comboBox.Items.AddRange([.. ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1") == om.Name && im.Guid == om.Guid && im.Version == om.Version))]);
+                    ps.Runspace = runspace;
+                    comboBox.Items.Clear();
+                    comboBox.Items.AddRange([.. ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1") == om.Name && im.Guid == om.Guid && im.Version == om.Version))]);
                 }
 
                 // Set up the ComboBox event handler.
-                this.comboBox.SelectedIndexChanged += (sender, e) =>
+                comboBox.SelectedIndexChanged += (sender, e) =>
                 {
                     // Update the listbox with the commands from the selected module.
-                    this.listBox.Items.Clear(); this.listBox.Items.AddRange([.. ((PSModuleInfo)this.comboBox.SelectedItem!).ExportedCommands.Keys]);
+                    listBox.Items.Clear(); listBox.Items.AddRange([.. ((PSModuleInfo)comboBox.SelectedItem!).ExportedCommands.Keys]);
                 };
 
                 // Set up the ListBox event handler.
-                this.listBox.SelectedIndexChanged += (sender, e) =>
+                listBox.SelectedIndexChanged += (sender, e) =>
                 {
-                    using var ps = PowerShell.Create();
-                    ps.Runspace = this.runspace;
-                    this.richTextBox.Clear();
-                    this.richTextBox.Text = string.Join("\n", ps.AddCommand("Get-Help").AddParameter("Name", (string)this.listBox.SelectedItem!).AddParameter("Full", true).AddCommand("Out-String").AddParameter("Width", int.MaxValue).AddParameter("Stream", true).Invoke<string>().Select(static s => !string.IsNullOrWhiteSpace(s) ? s.TrimEnd() : null)).Trim().Replace("<br />", null) + "\n";
+                    using PowerShell ps = PowerShell.Create();
+                    ps.Runspace = runspace;
+                    richTextBox.Clear();
+                    richTextBox.Text = string.Join("\n", ps.AddCommand("Get-Help").AddParameter("Name", (string)listBox.SelectedItem!).AddParameter("Full", true).AddCommand("Out-String").AddParameter("Width", int.MaxValue).AddParameter("Stream", true).Invoke<string>().Select(static s => !string.IsNullOrWhiteSpace(s) ? s.TrimEnd() : null)).Trim().Replace("<br />", null) + "\n";
                 };
 
                 // Ensure the runspace is closed when the form is closed.
-                this.FormClosed += (sender, e) =>
+                FormClosed += (sender, e) =>
                 {
                     // Ensure the runspace is closed when the form is closed.
-                    if (this.runspace is not null && this.runspace.RunspaceStateInfo.State == RunspaceState.Opened)
+                    if (runspace is not null && runspace.RunspaceStateInfo.State == RunspaceState.Opened)
                     {
-                        this.runspace.Close();
-                        this.runspace.Dispose();
-                        this.runspace = null!;
+                        runspace.Close();
+                        runspace.Dispose();
+                        runspace = null!;
                     }
                 };
 
                 // Lastly, set the initial selected index of the ComboBox to the first item, if available.
-                if (this.comboBox.Items.Count > 0)
+                if (comboBox.Items.Count > 0)
                 {
-                    this.comboBox.SelectedIndex = 0;
+                    comboBox.SelectedIndex = 0;
                 }
             }
         }

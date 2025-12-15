@@ -229,7 +229,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         // Append the raw slice of the command line that represents the entire quoted value.
-                        var quotedPath = commandLine[valueStartPosition..tempPosition].ToString(); result.Append(quotedPath);
+                        result.Append(commandLine[valueStartPosition..tempPosition]);
                     }
 
                     // Update the main position to continue parsing after this key-value pair.
@@ -336,7 +336,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Find the optimal breakpoint for the path. If we found a breakpoint, adjust the position to point to the start of the next argument.
-            var (Path, TokenCount) = FindOptimalPathFromTokens(tokens);
+            (string Path, int TokenCount) = FindOptimalPathFromTokens(tokens);
             if (TokenCount < tokens.Count)
             {
                 position = tokenPositions[TokenCount];

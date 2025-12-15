@@ -54,25 +54,25 @@ namespace PSADT.Core
                 _currentTime = CurrentDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
                 // Establish initial variable values.
-                var adtData = ModuleDatabase.Get();
-                var adtEnv = ModuleDatabase.GetEnvironment();
-                var adtConfig = ModuleDatabase.GetConfig();
-                var configUI = (Hashtable)adtConfig["UI"]!;
-                var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
-                var moduleSessionState = ModuleDatabase.GetSessionState();
+                PSObject adtData = ModuleDatabase.Get();
+                IReadOnlyDictionary<string, object> adtEnv = ModuleDatabase.GetEnvironment();
+                Hashtable adtConfig = ModuleDatabase.GetConfig();
+                Hashtable configUI = (Hashtable)adtConfig["UI"]!;
+                Hashtable configToolkit = (Hashtable)adtConfig["Toolkit"]!;
+                SessionState moduleSessionState = ModuleDatabase.GetSessionState();
                 bool writtenDivider = false; _ = _installPhase;
                 bool forceProcessDetection = false;
 
                 // Pre-cache reused environment variables.
-                var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
-                var appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
-                var IsProcessUserInteractive = (bool)adtEnv["IsProcessUserInteractive"]!;
-                var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
-                var RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
-                var currentLanguage = (string)adtEnv["currentLanguage"]!;
-                var envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
-                var processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;
-                var isAdmin = (bool)adtEnv["IsAdmin"]!;
+                string appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
+                string appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
+                bool IsProcessUserInteractive = (bool)adtEnv["IsProcessUserInteractive"]!;
+                ReadOnlyCollection<NTAccount>? usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
+                RunAsActiveUser? RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
+                string currentLanguage = (string)adtEnv["currentLanguage"]!;
+                Architecture envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
+                NTAccount processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;
+                bool isAdmin = (bool)adtEnv["IsAdmin"]!;
 
                 // Set up constant values for the lifetime of the deployment session.
                 DefaultExitCode = (int)configUI["DefaultExitCode"]!;
@@ -87,7 +87,7 @@ namespace PSADT.Core
                 // Set up other variable values based on incoming dictionary.
                 if (parameters is not null && parameters.Count > 0)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out var paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeploymentType", out object? paramValue) && (paramValue is not null))
                     {
                         _deploymentType = (DeploymentType)paramValue;
                     }
@@ -247,7 +247,7 @@ namespace PSADT.Core
                 // Establish script directories.
                 if (_scriptDirectory.Count > 0)
                 {
-                    foreach (var directory in _scriptDirectory)
+                    foreach (string directory in _scriptDirectory)
                     {
                         if (string.IsNullOrWhiteSpace(_dirFiles) && Directory.Exists(Path.Combine(directory, "Files")))
                         {
@@ -306,8 +306,8 @@ namespace PSADT.Core
                         if (!string.IsNullOrWhiteSpace(_dirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            var msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
-                            var formattedOSArch = string.Empty;
+                            string[] msiFiles = [.. Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
+                            string formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
                             if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
@@ -369,10 +369,10 @@ namespace PSADT.Core
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            var gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
+                            ReadOnlyCollection<PSObject> gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
                             if (gmtpOutput.Count > 0)
                             {
-                                var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
+                                ProcessDefinition[] msiExecList = [.. ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)))];
                                 if (msiExecList.Length > 0)
                                 {
                                     _appProcessesToClose = new([.. _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
@@ -382,7 +382,7 @@ namespace PSADT.Core
                         }
 
                         // Update our app variables with new values.
-                        var msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
+                        IReadOnlyDictionary<string, object> msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
                         if (string.IsNullOrWhiteSpace(_appVendor))
                         {
                             _appVendor = (string)msiProps["Manufacturer"];
@@ -453,7 +453,7 @@ namespace PSADT.Core
                 {
                     _installName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{_appVendor}_" : null)}{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
                 }
-                var invalidChars = (Regex)adtEnv["invalidFileNameCharsRegExPattern"]!;
+                Regex invalidChars = (Regex)adtEnv["invalidFileNameCharsRegExPattern"]!;
                 _installName = invalidChars.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
 
                 // Set the Defer History registry path.
@@ -469,7 +469,7 @@ namespace PSADT.Core
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    var logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
+                    string logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
                     if (Directory.Exists(logTempFolder))
                     {
                         Directory.Delete(logTempFolder, true);
@@ -500,7 +500,7 @@ namespace PSADT.Core
                 _logName = invalidChars.Replace(_logName, string.Empty);
                 string logFile = Path.Combine(_logPath, _logName);
                 FileInfo logFileInfo = new(logFile);
-                var logMaxSize = (int)configToolkit["LogMaxSize"]!;
+                int logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
 
                 // Check if log file needs to be rotated.
@@ -514,7 +514,7 @@ namespace PSADT.Core
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Combine(_logPath, archiveLogFileName);
-                        var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                        int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
                         if (logFileSizeExceeded)
@@ -532,7 +532,7 @@ namespace PSADT.Core
                         }
 
                         // Get all log files sorted by last write time.
-                        var logFiles = new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime).ToArray();
+                        FileInfo[] logFiles = [.. new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                         int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.
@@ -553,7 +553,7 @@ namespace PSADT.Core
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    if (!Enum.TryParse<LogStyle>((string)configToolkit["LogStyle"]!, out var configStyle))
+                    if (!Enum.TryParse((string)configToolkit["LogStyle"]!, out LogStyle configStyle))
                     {
                         throw new InvalidOperationException("Unable to retrieve the LogStyle from the config for an unknown reason.");
                     }
@@ -594,8 +594,8 @@ namespace PSADT.Core
                         WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(_deployAppScriptParameters).Replace("''", "'")}].");
                     }
                 }
-                var adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
-                var adtDurations = (PSObject)adtData.Properties["Durations"].Value;
+                PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
+                PSObject adtDurations = (PSObject)adtData.Properties["Durations"].Value;
                 WriteLogEntry($"[{appDeployToolkitName}] module version is [{appDeployMainScriptVersion}].");
                 WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
@@ -768,7 +768,7 @@ namespace PSADT.Core
                         {
                             if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
                             {
-                                var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                                PSObject? fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                                 if (fsRegData is not null)
                                 {
                                     if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
@@ -1010,7 +1010,7 @@ namespace PSADT.Core
             }
 
             // Establish initial variable values.
-            var adtExitCode = (int)ModuleDatabase.Get().Properties["LastExitCode"].Value;
+            int adtExitCode = (int)ModuleDatabase.Get().Properties["LastExitCode"].Value;
 
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
@@ -1066,11 +1066,11 @@ namespace PSADT.Core
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
                 string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
-                var destArchiveFilePath = Directory.CreateDirectory(ConfigLogPath);
+                DirectoryInfo destArchiveFilePath = Directory.CreateDirectory(ConfigLogPath);
                 try
                 {
                     // Get all archive files sorted by last write time.
-                    var archiveFiles = destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime).ToArray();
+                    FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                     destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
 
                     // Keep only the max number of archive files
@@ -1130,7 +1130,7 @@ namespace PSADT.Core
         /// <param name="hostLogStreamType">What stream to write the message to.</param>
         public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStreamType? hostLogStreamType = null)
         {
-            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStreamType ?? GetHostLogStreamTypeMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
+            IReadOnlyList<LogEntry> logEntries = LogUtilities.WriteLogEntry(message, hostLogStreamType ?? GetHostLogStreamTypeMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
             LogBuffer.AddRange(logEntries);
             return logEntries;
         }
@@ -1310,14 +1310,14 @@ namespace PSADT.Core
                 return null;
             }
             WriteLogEntry("Getting deferral history...");
-            var history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
+            PSObject? history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
             if (history is null)
             {
                 return null;
             }
-            var deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
-            var deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
-            var deferDeadline = history.Properties["DeferDeadline"]?.Value;
+            object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
+            object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
+            object? deferDeadline = history.Properties["DeferDeadline"]?.Value;
             if (deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null)
             {
                 return null;
@@ -1338,12 +1338,12 @@ namespace PSADT.Core
         public void SetDeferHistory(uint? deferTimesRemaining, DateTime? deferDeadline, TimeSpan? deferRunInterval, DateTime? deferRunIntervalLastTime)
         {
             // Get the module's session state before proceeding.
-            var moduleSessionState = ModuleDatabase.GetSessionState();
+            SessionState moduleSessionState = ModuleDatabase.GetSessionState();
 
             // Test each property and set it if it exists.
             if (deferTimesRemaining is not null)
             {
-                var deferTimesRemainingValue = deferTimesRemaining.Value;
+                uint deferTimesRemainingValue = deferTimesRemaining.Value;
                 WriteLogEntry($"Setting deferral history: [DeferTimesRemaining = {deferTimesRemainingValue}].");
                 if (!TestDeferHistoryPath())
                 {
@@ -1353,7 +1353,7 @@ namespace PSADT.Core
             }
             if (deferDeadline is not null)
             {
-                var deferDeadlineValue = deferDeadline.Value.ToUniversalTime().ToString("O");
+                string deferDeadlineValue = deferDeadline.Value.ToUniversalTime().ToString("O");
                 WriteLogEntry($"Setting deferral history: [DeferDeadline = {deferDeadlineValue}].");
                 if (!TestDeferHistoryPath())
                 {
@@ -1363,7 +1363,7 @@ namespace PSADT.Core
             }
             if (deferRunInterval is not null)
             {
-                var deferRunIntervalValue = deferRunInterval.Value.ToString("c");
+                string deferRunIntervalValue = deferRunInterval.Value.ToString("c");
                 WriteLogEntry($"Setting deferral history: [DeferRunInterval = {deferRunIntervalValue}].");
                 if (!TestDeferHistoryPath())
                 {
@@ -1373,7 +1373,7 @@ namespace PSADT.Core
             }
             if (deferRunIntervalLastTime is not null)
             {
-                var deferRunIntervalLastTimeValue = deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O");
+                string deferRunIntervalLastTimeValue = deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O");
                 WriteLogEntry($"Setting deferral history: [DeferRunIntervalLastTime = {deferRunIntervalLastTimeValue}].");
                 if (!TestDeferHistoryPath())
                 {

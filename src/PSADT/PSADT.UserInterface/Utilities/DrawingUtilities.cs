@@ -28,7 +28,7 @@ namespace PSADT.UserInterface.Utilities
             destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
 
             // Create a new graphic that we can resize.
-            using var graphics = Graphics.FromImage(destImage);
+            using Graphics graphics = Graphics.FromImage(destImage);
             graphics.CompositingMode = CompositingMode.SourceCopy;
             graphics.CompositingQuality = CompositingQuality.HighQuality;
             graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -77,7 +77,7 @@ namespace PSADT.UserInterface.Utilities
             // Ensure the incoming image is < 128px in width/height.
             if ((img.Width > 128) || (img.Height > 128))
             {
-                using var resizedImg = ResizeBitmap(img, 128, 128);
+                using Bitmap resizedImg = ResizeBitmap(img, 128, 128);
                 return ConvertBitmapToIconImpl(resizedImg);
             }
             return ConvertBitmapToIconImpl(img);
@@ -90,7 +90,7 @@ namespace PSADT.UserInterface.Utilities
         /// <returns></returns>
         internal static Icon ConvertBitmapToIcon(string imagePath)
         {
-            using var img = (Bitmap)Bitmap.FromFile(imagePath);
+            using Bitmap img = (Bitmap)Image.FromFile(imagePath);
             return ConvertBitmapToIcon(img);
         }
 
@@ -109,13 +109,13 @@ namespace PSADT.UserInterface.Utilities
             }
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
-            Shell32.SHGetFileInfo(path, out var psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
+            Shell32.SHGetFileInfo(path, out Shell32.SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
             using DestroyIconSafeHandle hIcon = new(psfi.hIcon, true);
             bool hIconAddRef = false;
             try
             {
                 hIcon.DangerousAddRef(ref hIconAddRef);
-                using var icon = Icon.FromHandle(hIcon.DangerousGetHandle());
+                using Icon icon = Icon.FromHandle(hIcon.DangerousGetHandle());
                 return (Icon)icon.Clone();
             }
             finally
@@ -136,7 +136,7 @@ namespace PSADT.UserInterface.Utilities
         internal static Bitmap ExtractBitmapFromExecutable(string path)
         {
             // Convert the icon to a bitmap and return it.
-            using var icon = ExtractIconFromExecutable(path);
+            using Icon icon = ExtractIconFromExecutable(path);
             return icon.ToBitmap();
         }
     }

@@ -6,10 +6,11 @@ using System.DirectoryServices;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using PSADT.Core;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using PSADT.Core;
 using PSADT.ProcessManagement;
+using PSADT.SafeHandles;
 using PSADT.Security;
 using Windows.Win32;
 using Windows.Win32.Security.Authentication.Identity;
@@ -39,20 +40,20 @@ namespace PSADT.AccountManagement
             Kernel32.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
 
             // Retrieve the local account domain SID.
-            AdvApi32.LsaOpenPolicy(null, new LSA_OBJECT_ATTRIBUTES { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out var hPolicy);
+            AdvApi32.LsaOpenPolicy(null, new LSA_OBJECT_ATTRIBUTES { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out LsaCloseSafeHandle hPolicy);
             using (hPolicy)
             {
-                AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out var buf);
+                AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out SafeLsaFreeMemoryHandle buf);
                 using (buf)
                 {
-                    ref var policyAccountDomainInfo = ref buf.AsStructure<POLICY_ACCOUNT_DOMAIN_INFO>();
+                    ref POLICY_ACCOUNT_DOMAIN_INFO policyAccountDomainInfo = ref buf.AsStructure<POLICY_ACCOUNT_DOMAIN_INFO>();
                     LocalAccountDomainSid = policyAccountDomainInfo.DomainSid.ToSecurityIdentifier();
                 }
             }
 
             // Initialize the lookup table for well-known SIDs, skipping ones that don't construct.
-            var wellKnownSidTypes = typeof(WellKnownSidType).GetEnumValues();
-            var wellKnownSids = new Dictionary<WellKnownSidType, SecurityIdentifier>(wellKnownSidTypes.Length);
+            Array wellKnownSidTypes = typeof(WellKnownSidType).GetEnumValues();
+            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = new(wellKnownSidTypes.Length);
             foreach (WellKnownSidType wellKnownSidType in wellKnownSidTypes)
             {
                 if (wellKnownSids.ContainsKey(wellKnownSidType) || wellKnownSidType == WellKnownSidType.LogonIdsSid || (int)wellKnownSidType == 80 || (int)wellKnownSidType == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
@@ -120,14 +121,14 @@ namespace PSADT.AccountManagement
                     }
 
                     // Skip over the SID if it's malformed.
-                    var sid = memberEntry.Properties["ObjectSID"].Value;
+                    byte[]? sid = (byte[]?)memberEntry.Properties["ObjectSID"].Value;
                     if (sid is null)
                     {
                         continue;
                     }
 
                     // Return true if the current SID is the one we're testing for or if the member is a group that contains the target SID.
-                    if (new SecurityIdentifier((byte[])sid, 0) == targetSid || (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited)))
+                    if (new SecurityIdentifier(sid, 0) == targetSid || (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited)))
                     {
                         return true;
                     }

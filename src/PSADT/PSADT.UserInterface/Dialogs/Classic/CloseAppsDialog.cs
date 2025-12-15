@@ -272,7 +272,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="state"></param>
         private void CountdownTimer_Tick(object? state)
         {
-            var remaining = countdownDuration!.Value - countdownStopwatch!.Elapsed;
+            TimeSpan remaining = countdownDuration!.Value - countdownStopwatch!.Elapsed;
             if (remaining < TimeSpan.Zero)
             {
                 remaining = TimeSpan.Zero;

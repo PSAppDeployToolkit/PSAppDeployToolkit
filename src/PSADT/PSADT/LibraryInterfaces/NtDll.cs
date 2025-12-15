@@ -178,7 +178,7 @@ namespace PSADT.LibraryInterfaces
             {
                 StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                var res = NtCreateThreadEx(out var hThread, DesiredAccess, IntPtr.Zero, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? IntPtr.Zero, CreateFlags, ZeroBits, StackSize, MaximumStackSize, IntPtr.Zero);
+                NTSTATUS res = NtCreateThreadEx(out IntPtr hThread, DesiredAccess, IntPtr.Zero, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? IntPtr.Zero, CreateFlags, ZeroBits, StackSize, MaximumStackSize, IntPtr.Zero);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));

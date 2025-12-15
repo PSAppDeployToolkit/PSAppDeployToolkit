@@ -6,6 +6,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -26,9 +27,9 @@ namespace PSADT.Utilities
         {
             // Update desktop icons using SHChangeNotify, then restart the Start Menu Experience Host to reflect changes.
             Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
-            foreach (var runningProc in ProcessUtilities.GetRunningProcesses([new("StartMenuExperienceHost")]))
+            foreach (RunningProcess runningProc in ProcessUtilities.GetRunningProcesses([new("StartMenuExperienceHost")]))
             {
-                using var process = runningProc.Process; process.Kill();
+                using Process process = runningProc.Process; process.Kill();
             }
         }
 
@@ -83,7 +84,7 @@ namespace PSADT.Utilities
         /// <returns>The process ID of the Windows Explorer shell process as an unsigned integer.</returns>
         internal static uint GetExplorerProcessId()
         {
-            User32.GetWindowThreadProcessId(User32.GetShellWindow(), out var pid);
+            User32.GetWindowThreadProcessId(User32.GetShellWindow(), out uint pid);
             return pid;
         }
 
@@ -96,7 +97,7 @@ namespace PSADT.Utilities
         /// <returns>The process ID of the application owning the foreground window. Returns 0 if no foreground window is found.</returns>
         internal static uint GetForegroundWindowProcessId()
         {
-            User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out var pid);
+            User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out uint pid);
             return pid;
         }
 
@@ -124,7 +125,7 @@ namespace PSADT.Utilities
             {
                 throw new InvalidOperationException("Process handle is invalid.");
             }
-            Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; var length = (uint)appUserModelId.Length;
+            Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; uint length = (uint)appUserModelId.Length;
             Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
             return appUserModelId[..(int)length].ToString().TrimRemoveNull();
         }
@@ -151,7 +152,7 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID associated with the specified process.</returns>
         public static string GetApplicationUserModelId(uint processId)
         {
-            using var process = Process.GetProcessById((int)processId);
+            using Process process = Process.GetProcessById((int)processId);
             return GetApplicationUserModelId(process);
         }
 
@@ -166,7 +167,7 @@ namespace PSADT.Utilities
         internal static TimeSpan GetLastInputTime()
         {
             // Get the last input information using User32 API.
-            User32.GetLastInputInfo(out var lastInputInfo);
+            User32.GetLastInputInfo(out LASTINPUTINFO lastInputInfo);
             ulong now64 = PInvoke.GetTickCount64();
             ulong last32 = lastInputInfo.dwTime;
 

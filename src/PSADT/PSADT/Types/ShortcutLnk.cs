@@ -56,7 +56,7 @@ namespace PSADT.Types
             string[] validModifiers = ["Ctrl", "Alt", "Shift"];
             string[] validKeys = ["A-Z", "0-9", "F1-F12", "Insert", "Delete", "Home", "End"];
             bool containsModifier = false;
-            foreach (var part in parts)
+            foreach (string part in parts)
             {
                 if (IndexOfAny(part, validModifiers, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
@@ -67,7 +67,7 @@ namespace PSADT.Types
 
             // Check if it contains a valid key
             bool containsValidKey = false;
-            foreach (var part in parts)
+            foreach (string part in parts)
             {
                 if (IndexOfAny(part, validKeys, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
@@ -117,7 +117,7 @@ namespace PSADT.Types
         /// <returns>The index of the first occurrence of any string in the list, or -1 if none found.</returns>
         private static int IndexOfAny(string target, string[] list, StringComparison comparison)
         {
-            foreach (var item in list)
+            foreach (string item in list)
             {
                 int index = target.IndexOf(item, comparison);
                 if (index >= 0)

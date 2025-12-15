@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using PSADT.Extensions;
@@ -50,23 +51,23 @@ namespace PSADT.Core
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            var stackFrames = new StackTrace(true).GetFrames().Skip(1).ToArray(); string? callerFileName, callerSource;
+            StackFrame[] stackFrames = [.. new StackTrace(true).GetFrames().Skip(1)]; string? callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
-                var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
+                StackFrame invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
                 if (invoker.GetFileName() is null)
                 {
                     invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
                 }
-                var method = invoker.GetMethod()!;
+                MethodBase method = invoker.GetMethod()!;
                 callerFileName = invoker.GetFileName()! ?? "<Unavailable>";
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }
             else
             {
                 // Get the first PowerShell stack frame that contains a valid command.
-                var invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
+                CallStackFrame invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
             }
@@ -84,7 +85,7 @@ namespace PSADT.Core
             // Set up default values if not specified and build out the log entries.
             if (canLogToDisk && !logStyle.HasValue)
             {
-                logStyle = Enum.TryParse<LogStyle>((string)configToolkit?["LogStyle"]!, out var configStyle) ? configStyle : LogStyle.CMTrace;
+                logStyle = Enum.TryParse((string)configToolkit?["LogStyle"]!, out LogStyle configStyle) ? configStyle : LogStyle.CMTrace;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
@@ -111,8 +112,8 @@ namespace PSADT.Core
             // Write out all messages to host if configured/permitted to do so.
             if (hostLogStreamType != HostLogStreamType.None)
             {
-                var conOutput = logEntries.Select(static e => e.LegacyLogLine);
-                var sevCols = LogSeverityColors[(int)severity];
+                IEnumerable<string> conOutput = logEntries.Select(static e => e.LegacyLogLine);
+                ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.

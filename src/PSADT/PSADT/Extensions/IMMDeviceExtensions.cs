@@ -27,7 +27,7 @@ namespace PSADT.Extensions
         /// <param name="ppInterface">When the method returns, contains the activated interface of type <typeparamref name="T"/>.</param>
         internal static void Activate<T>(this IMMDevice device, CLSCTX dwClsCtx, PROPVARIANT_unmanaged? pActivationParams, out T ppInterface) where T : class
         {
-            Media_Audio_IMMDevice_Extensions.Activate(device, typeof(T).GUID, dwClsCtx, pActivationParams, out var ppInterfaceInner);
+            Media_Audio_IMMDevice_Extensions.Activate(device, typeof(T).GUID, dwClsCtx, pActivationParams, out object ppInterfaceInner);
             ppInterface = (T)ppInterfaceInner;
         }
     }

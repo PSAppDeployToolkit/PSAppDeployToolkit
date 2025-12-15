@@ -67,7 +67,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (byte* pBlockPtr = pBlock)
                 {
-                    res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out var lplpBufferLocal, out puLen);
+                    res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out void* lplpBufferLocal, out puLen);
                     if (!res)
                     {
                         throw new InvalidOperationException($"Failed to query [{lpSubBlock}] version value.");

@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.Core;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
@@ -69,8 +70,8 @@ namespace PSADT.ProcessManagement
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
-            var iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, UIntPtr.Zero, 1);
-            var job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
+            SafeFileHandle iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, UIntPtr.Zero, 1);
+            SafeFileHandle job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
             Kernel32.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
             {
                 CompletionPort = (HANDLE)iocp.DangerousGetHandle(),
@@ -102,7 +103,7 @@ namespace PSADT.ProcessManagement
                 try
                 {
                     // Set up the startup information for the process.
-                    var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
+                    STARTUPINFOW startupInfo = new() { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
                     if (launchInfo.WindowStyle is not null)
                     {
                         startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
@@ -110,7 +111,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // The process is created suspended so it can be assigned to the job object.
-                    var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                    PROCESS_CREATION_FLAGS creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                         PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
@@ -160,8 +161,8 @@ namespace PSADT.ProcessManagement
                     if (launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                        using var hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
-                        UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                        using SafeFileHandle hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
+                        UserEnv.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                         using (lpEnvironment)
                         {
                             unsafe
@@ -169,7 +170,7 @@ namespace PSADT.ProcessManagement
                                 fixed (char* pDesktop = @"winsta0\default")
                                 {
                                     startupInfo.lpDesktop = new(pDesktop);
-                                    OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out var filePath, out _, out string? workingDirectory, out commandSpan);
+                                    OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
                                     CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                     startupInfo.lpDesktop = null;
                                 }
@@ -179,14 +180,14 @@ namespace PSADT.ProcessManagement
                     else if ((launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin))
                     {
                         // We're running elevated but have been asked to de-elevate.
-                        using var hPrimaryToken = ProcessToken.GetUnelevatedToken();
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out string? workingDirectory, out commandSpan);
+                        using SafeFileHandle hPrimaryToken = ProcessToken.GetUnelevatedToken();
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
                         CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out _, out string? workingDirectory, out commandSpan);
+                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
                         Kernel32.CreateProcess(filePath, ref commandSpan, null, null, inheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
 
@@ -220,7 +221,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var filePath, out var arguments, out string? workingDirectory, out Span<char> commandSpan);
+                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out string? arguments, out string? workingDirectory, out Span<char> commandSpan);
                 commandLine = commandSpan.ToString().TrimRemoveNull();
                 process = new Process
                 {
@@ -280,7 +281,7 @@ namespace PSADT.ProcessManagement
             if (launchInfo.DenyUserTermination)
             {
                 // If the client/server process isn't ours, we'll want to change the owner to ourselves if we can.
-                var runAsActiveUser = launchInfo.RunAsActiveUser ?? AccountUtilities.CallerRunAsActiveUser; bool changeOwner = false;
+                RunAsActiveUser runAsActiveUser = launchInfo.RunAsActiveUser ?? AccountUtilities.CallerRunAsActiveUser; bool changeOwner = false;
                 if (runAsActiveUser.SID != AccountUtilities.CallerSid && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
                 {
                     PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
@@ -296,12 +297,12 @@ namespace PSADT.ProcessManagement
                 {
                     // Generate an explicit access control entry (ACE) for the user SID.
                     pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
-                    var ea = new EXPLICIT_ACCESS_W
+                    EXPLICIT_ACCESS_W ea = new()
                     {
                         grfAccessPermissions = (uint)(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),
                         grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
                         grfInheritance = ACE_FLAGS.NO_INHERITANCE,
-                        Trustee = new TRUSTEE_W
+                        Trustee = new()
                         {
                             TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
                             ptstrName = new(pinnedUserSid.DangerousGetHandle())
@@ -309,7 +310,7 @@ namespace PSADT.ProcessManagement
                     };
 
                     // Apply the ACL and potentially change the owner of the client process.
-                    AdvApi32.SetEntriesInAcl([ea], out var pAcl);
+                    AdvApi32.SetEntriesInAcl([ea], out LocalFreeSafeHandle pAcl);
                     using (pAcl)
                     {
                         if (changeOwner)
@@ -338,7 +339,7 @@ namespace PSADT.ProcessManagement
             Task.Run(async () =>
             {
                 // Set up the cancellation token source and registration if needed.
-                var timeoutExitCode = unchecked((uint)TimeoutExitCode);
+                uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
                 CancellationTokenRegistration ctr = default;
                 if (launchInfo.CancellationToken is not null)
                 {
@@ -353,7 +354,7 @@ namespace PSADT.ProcessManagement
                     {
                         while (true)
                         {
-                            Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out var lpOverlapped, PInvoke.INFINITE);
+                            Kernel32.GetQueuedCompletionStatus(iocp, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
                             if (lpCompletionCode == timeoutExitCode)
                             {
                                 if (launchInfo.NoTerminateOnTimeout)
@@ -370,7 +371,7 @@ namespace PSADT.ProcessManagement
                             else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                             {
                                 await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
-                                Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
+                                Kernel32.GetExitCodeProcess(hProcess, out uint lpExitCode);
                                 exitCode = unchecked((int)lpExitCode);
                                 break;
                             }
@@ -468,8 +469,8 @@ namespace PSADT.ProcessManagement
             try
             {
                 environmentBlock.DangerousAddRef(ref envBlockAddRef);
-                var envBlockPtr = environmentBlock.DangerousGetHandle();
-                var envDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                IntPtr envBlockPtr = environmentBlock.DangerousGetHandle();
+                Dictionary<string, string> envDict = new(StringComparer.OrdinalIgnoreCase);
                 while (true)
                 {
                     // Marshal.PtrToStringUni will read up to the first null terminator.
@@ -530,7 +531,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
-            return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
+            return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
 
         /// <summary>
@@ -599,9 +600,9 @@ namespace PSADT.ProcessManagement
             }
 
             // Test whether the process is part of an existing job object.
-            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using (SafeProcessHandle cProcessSafeHandle = Kernel32.GetCurrentProcess())
             {
-                Kernel32.IsProcessInJob(cProcessSafeHandle, null, out var inJob);
+                Kernel32.IsProcessInJob(cProcessSafeHandle, null, out BOOL inJob);
                 if (!inJob)
                 {
                     return CreateProcessUsingTokenStatus.OK;
@@ -611,8 +612,8 @@ namespace PSADT.ProcessManagement
             // Since we're part of a job object, we need to check if the job has the JOB_OBJECT_LIMIT_BREAKAWAY_OK flag set.
             Span<byte> lpJobObjectInformation = stackalloc byte[Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
             Kernel32.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
-            ref var jobObjectInfo = ref Unsafe.As<byte, JOBOBJECT_EXTENDED_LIMIT_INFORMATION>(ref MemoryMarshal.GetReference(lpJobObjectInformation));
-            var jobObjectLimitFlags = jobObjectInfo.BasicLimitInformation.LimitFlags;
+            ref JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref Unsafe.As<byte, JOBOBJECT_EXTENDED_LIMIT_INFORMATION>(ref MemoryMarshal.GetReference(lpJobObjectInformation));
+            JOB_OBJECT_LIMIT jobObjectLimitFlags = jobObjectInfo.BasicLimitInformation.LimitFlags;
             if (!(jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
             {
                 return CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
@@ -696,15 +697,15 @@ namespace PSADT.ProcessManagement
                     {
                         throw new UnauthorizedAccessException(CreateProcessUsingTokenStatusMessages[CreateProcessUsingTokenStatus.SeTcbPrivilege]);
                     }
-                    var extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
+                    EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
                     Span<byte> hExtendedFlags = stackalloc byte[sizeof(EXTENDED_PROCESS_CREATION_FLAG)]; hExtendedFlags.Write(ref extendedFlag);
-                    using var hAttributeList = SafeProcThreadAttributeListHandle.Alloc(1);
+                    using SafeProcThreadAttributeListHandle hAttributeList = SafeProcThreadAttributeListHandle.Alloc(1);
                     hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, hExtendedFlags);
                     bool hAttributeListAddRef = false;
                     try
                     {
                         hAttributeList.DangerousAddRef(ref hAttributeListAddRef);
-                        var startupInfoEx = new STARTUPINFOEXW { StartupInfo = startupInfo };
+                        STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
                         startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
                         startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
@@ -764,7 +765,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="Process"/> object that represents the process with the specified identifier.</returns>
         private static Process GetProcessFromId(uint processId)
         {
-            var process = Process.GetProcessById((int)processId);
+            Process process = Process.GetProcessById((int)processId);
             _ = process; _ = process.Handle;
             return process;
         }
