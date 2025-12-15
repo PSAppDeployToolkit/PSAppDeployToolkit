@@ -68,14 +68,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(filePath), "File path cannot be null.");
             }
-            if (filePath.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && filePath.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                FilePath = filePath.TrimStart('"').TrimEnd('"');
-            }
-            else
-            {
-                FilePath = filePath;
-            }
+            FilePath = filePath.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && filePath.EndsWith("\"", StringComparison.OrdinalIgnoreCase) ? filePath.TrimStart('"').TrimEnd('"') : filePath;
 
             // Validate the file path is rooted.
             if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%", StringComparison.OrdinalIgnoreCase))
@@ -90,7 +83,7 @@ namespace PSADT.ProcessManagement
             }
             if (argumentList?.Any() == true)
             {
-                ArgumentList = new ReadOnlyCollection<string>(argumentList.ToArray());
+                ArgumentList = new ReadOnlyCollection<string>([.. argumentList]);
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {

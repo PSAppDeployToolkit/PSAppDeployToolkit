@@ -29,6 +29,8 @@ namespace PSADT.Core
     /// <summary>
     /// Represents a deployment session.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0052:Remove unread private members", Justification = "These private members are read by reflection, which we really need to drop.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "These private members are written to by reflection, which we really need to drop.")]
     public class DeploymentSession
     {
         #region Constructors.
@@ -167,19 +169,19 @@ namespace PSADT.Core
                     }
                     if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appSuccessExitCodes = new(((int[])paramValue).ToArray());
+                        _appSuccessExitCodes = new([.. (int[])paramValue]);
                     }
                     if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appRebootExitCodes = new(((int[])paramValue).ToArray());
+                        _appRebootExitCodes = new([.. (int[])paramValue]);
                     }
                     if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
                     {
-                        _appProcessesToClose = new(((ProcessDefinition[])paramValue).ToArray());
+                        _appProcessesToClose = new([.. (ProcessDefinition[])paramValue]);
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
-                        _scriptDirectory = new(((string[])paramValue).ToArray());
+                        _scriptDirectory = new([.. (string[])paramValue]);
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
@@ -199,7 +201,7 @@ namespace PSADT.Core
                     }
                     if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
                     {
-                        _defaultMspFiles = new(((string[])paramValue).ToArray());
+                        _defaultMspFiles = new([.. (string[])paramValue]);
                     }
                     if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -352,12 +354,12 @@ namespace PSADT.Core
                         {
                             if (!string.IsNullOrWhiteSpace(_dirFiles))
                             {
-                                _defaultMspFiles = new(Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase)).ToArray());
+                                _defaultMspFiles = new([.. Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))]);
                             }
                         }
                         else if (!string.IsNullOrWhiteSpace(_dirFiles) && _defaultMspFiles.Any(static f => !Path.IsPathRooted(f)))
                         {
-                            _defaultMspFiles = new(_defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f).ToArray());
+                            _defaultMspFiles = new([.. _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f)]);
                         }
                         if (_defaultMspFiles.Count > 0)
                         {
@@ -373,7 +375,7 @@ namespace PSADT.Core
                                 var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
                                 if (msiExecList.Length > 0)
                                 {
-                                    _appProcessesToClose = new(_appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToArray());
+                                    _appProcessesToClose = new([.. _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
                                     WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                                 }
                             }
@@ -493,14 +495,7 @@ namespace PSADT.Core
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 if (string.IsNullOrWhiteSpace(_logName))
                 {
-                    if (isAdmin)
-                    {
-                        _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}.log";
-                    }
-                    else
-                    {
-                        _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}_{adtEnv["envUserName"]}.log";
-                    }
+                    _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}{(isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log";
                 }
                 _logName = invalidChars.Replace(_logName, string.Empty);
                 string logFile = Path.Combine(_logPath, _logName);
@@ -916,15 +911,14 @@ namespace PSADT.Core
 
                 // Set Deploy Mode switches.
                 WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
-                switch (_deployMode)
+                if (_deployMode == DeployMode.Silent)
                 {
-                    case DeployMode.Silent:
-                        Settings |= DeploymentSettings.NonInteractive;
-                        Settings |= DeploymentSettings.Silent;
-                        break;
-                    case DeployMode.NonInteractive:
-                        Settings |= DeploymentSettings.NonInteractive;
-                        break;
+                    Settings |= DeploymentSettings.NonInteractive;
+                    Settings |= DeploymentSettings.Silent;
+                }
+                else if (_deployMode == DeployMode.NonInteractive)
+                {
+                    Settings |= DeploymentSettings.NonInteractive;
                 }
 
                 // Check deployment type (install/uninstall).
@@ -1012,7 +1006,7 @@ namespace PSADT.Core
             // Throw if this object has already been disposed.
             if (Settings.HasFlag(DeploymentSettings.Disposed))
             {
-                throw new ObjectDisposedException(typeof(DeploymentSession).Name, "This object has already been disposed.");
+                throw new ObjectDisposedException(nameof(DeploymentSession), "This object has already been disposed.");
             }
 
             // Establish initial variable values.
@@ -1036,6 +1030,8 @@ namespace PSADT.Core
                 case DeploymentStatus.Error:
                     WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
                     break;
+                case DeploymentStatus.RestartRequired:
+                case DeploymentStatus.Complete:
                 default:
                     // Clean up app deferral history.
                     ResetDeferHistory();
@@ -1143,27 +1139,39 @@ namespace PSADT.Core
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        public void WriteLogEntry(IReadOnlyList<string> message) => WriteLogEntry(message, false, null, null, null, null, null, null, null);
+        public void WriteLogEntry(IReadOnlyList<string> message)
+        {
+            WriteLogEntry(message, false, null, null, null, null, null, null, null);
+        }
 
         /// <summary>
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
-        public void WriteLogEntry(string message) => WriteLogEntry([message], false, null, null, null, null, null, null, null);
+        public void WriteLogEntry(string message)
+        {
+            WriteLogEntry([message], false, null, null, null, null, null, null, null);
+        }
 
         /// <summary>
         /// Writes a log entry with a single message and severity.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public void WriteLogEntry(string message, LogSeverity severity) => WriteLogEntry([message], false, severity, null, null, null, null, null, null);
+        public void WriteLogEntry(string message, LogSeverity severity)
+        {
+            WriteLogEntry([message], false, severity, null, null, null, null, null, null);
+        }
 
         /// <summary>
         /// Writes a log entry with a single message and source.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="source">The source of the message.</param>
-        public void WriteLogEntry(string message, string source) => WriteLogEntry([message], false, null, source, null, null, null, null, null);
+        public void WriteLogEntry(string message, string source)
+        {
+            WriteLogEntry([message], false, null, source, null, null, null, null, null);
+        }
 
         /// <summary>
         /// Writes a log entry with a single message, severity, and source.
@@ -1171,19 +1179,28 @@ namespace PSADT.Core
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        public void WriteLogEntry(string message, LogSeverity severity, string source) => WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+        public void WriteLogEntry(string message, LogSeverity severity, string source)
+        {
+            WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+        }
 
         /// <summary>
         /// Writes a log entry with a single message and host write option.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        public void WriteLogEntry(string message, bool writeHost) => WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));
+        public void WriteLogEntry(string message, bool writeHost)
+        {
+            WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));
+        }
 
         /// <summary>
         /// Writes a log divider.
         /// </summary>
-        private void WriteLogDivider() => WriteLogEntry(LogUtilities.LogDivider);
+        private void WriteLogDivider()
+        {
+            WriteLogEntry(LogUtilities.LogDivider);
+        }
 
         /// <summary>
         /// Writes a divider if one hasn't been written already.
@@ -1233,7 +1250,10 @@ namespace PSADT.Core
         /// Gets the log buffer as a read-only list.
         /// </summary>
         /// <returns></returns>
-        public IReadOnlyList<LogEntry> GetLogBuffer() => LogBuffer.AsReadOnly();
+        public IReadOnlyList<LogEntry> GetLogBuffer()
+        {
+            return LogBuffer.AsReadOnly();
+        }
 
         /// <summary>
         /// Gets the value of a property.
@@ -1258,10 +1278,7 @@ namespace PSADT.Core
         /// <param name="propertyName"></param>
         private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
         {
-            if (CallerSessionState is not null)
-            {
-                CallerSessionState.PSVariable.Set(new(propertyName, value));
-            }
+            CallerSessionState?.PSVariable.Set(new(propertyName, value));
             BackingFields[propertyName!].SetValue(this, value);
         }
 
@@ -1269,12 +1286,18 @@ namespace PSADT.Core
         /// Tests the deferral history path.
         /// </summary>
         /// <returns>True if the deferral history path exists; otherwise, false.</returns>
-        private bool TestDeferHistoryPath() => ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
+        private bool TestDeferHistoryPath()
+        {
+            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
+        }
 
         /// <summary>
         /// Creates the deferral history path.
         /// </summary>
-        private void CreateDeferHistoryPath() => ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
+        private void CreateDeferHistoryPath()
+        {
+            ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
+        }
 
         /// <summary>
         /// Gets the deferral history.
@@ -1300,7 +1323,7 @@ namespace PSADT.Core
                 return null;
             }
             return new(
-                deferTimesRemaining is not null ? deferTimesRemaining is string ? (uint)int.Parse((string)deferTimesRemaining, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
+                deferTimesRemaining is not null ? deferTimesRemaining is string deferTimesRemainingString ? (uint)int.Parse(deferTimesRemainingString, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
                 deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
                 deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null);
         }
@@ -1400,43 +1423,64 @@ namespace PSADT.Core
         /// Add the mounted WIM files.
         /// </summary>
         /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
-        public void AddMountedWimFile(FileInfo wimFile) => MountedWimFiles.Add(wimFile);
+        public void AddMountedWimFile(FileInfo wimFile)
+        {
+            MountedWimFiles.Add(wimFile);
+        }
 
         /// <summary>
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
-        public bool CanExitOnClose() => !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
+        public bool CanExitOnClose()
+        {
+            return !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
+        }
 
         /// <summary>
         /// Determines whether the mode is non-interactive.
         /// </summary>
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
-        public bool IsNonInteractive() => Settings.HasFlag(DeploymentSettings.NonInteractive);
+        public bool IsNonInteractive()
+        {
+            return Settings.HasFlag(DeploymentSettings.NonInteractive);
+        }
 
         /// <summary>
         /// Determines whether the mode is silent.
         /// </summary>
         /// <returns>True if the mode is silent; otherwise, false.</returns>
-        public bool IsSilent() => Settings.HasFlag(DeploymentSettings.Silent);
+        public bool IsSilent()
+        {
+            return Settings.HasFlag(DeploymentSettings.Silent);
+        }
 
         /// <summary>
         /// Gets the exit code.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        public int GetExitCode() => ExitCode;
+        public int GetExitCode()
+        {
+            return ExitCode;
+        }
 
         /// <summary>
         /// Sets the exit code.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
-        public void SetExitCode(int exitCode) => ExitCode = exitCode;
+        public void SetExitCode(int exitCode)
+        {
+            ExitCode = exitCode;
+        }
 
         /// <summary>
         /// Returns whether this session has been closed out.
         /// </summary>
         /// <returns>True if so; otherwise, false.</returns>
-        public bool IsClosed() => Settings.HasFlag(DeploymentSettings.Disposed);
+        public bool IsClosed()
+        {
+            return Settings.HasFlag(DeploymentSettings.Disposed);
+        }
 
 
         #endregion
@@ -1446,7 +1490,7 @@ namespace PSADT.Core
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_", StringComparison.OrdinalIgnoreCase)).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_", StringComparison.OrdinalIgnoreCase)).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name[2..], static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.

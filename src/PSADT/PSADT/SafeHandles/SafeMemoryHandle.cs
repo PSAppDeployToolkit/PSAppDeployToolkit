@@ -37,7 +37,10 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="length"></param>
         /// <exception cref="OutOfMemoryException"></exception>
-        internal virtual void ReAlloc(int length) => throw new NotImplementedException();
+        internal virtual void ReAlloc(int length)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
@@ -57,7 +60,10 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal string? ToStringUni(int offset = 0) => Marshal.PtrToStringUni(handle + offset);
+        internal string? ToStringUni(int offset = 0)
+        {
+            return Marshal.PtrToStringUni(handle + offset);
+        }
 
         /// <summary>
         /// Returns a reference to a structure of type <typeparamref name="T"/> located at the specified offset from the
@@ -69,35 +75,50 @@ namespace PSADT.SafeHandles
         /// <typeparam name="T">The value type to interpret the memory as. Must be an unmanaged structure.</typeparam>
         /// <param name="offset">The byte offset from the start of the handle at which to read the structure. Defaults to 0.</param>
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
-        internal unsafe ref T AsStructure<T>(int offset = 0) where T : unmanaged => ref handle.AsStructure<T>(offset);
+        internal ref T AsStructure<T>(int offset = 0) where T : unmanaged
+        {
+            return ref handle.AsStructure<T>(offset);
+        }
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal long ReadInt64(int offset = 0) => Marshal.ReadInt64(handle, offset);
+        internal long ReadInt64(int offset = 0)
+        {
+            return Marshal.ReadInt64(handle, offset);
+        }
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal int ReadInt32(int offset = 0) => Marshal.ReadInt32(handle, offset);
+        internal int ReadInt32(int offset = 0)
+        {
+            return Marshal.ReadInt32(handle, offset);
+        }
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal short ReadInt16(int offset = 0) => Marshal.ReadInt16(handle, offset);
+        internal short ReadInt16(int offset = 0)
+        {
+            return Marshal.ReadInt16(handle, offset);
+        }
 
         /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal byte ReadByte(int offset = 0) => Marshal.ReadByte(handle, offset);
+        internal byte ReadByte(int offset = 0)
+        {
+            return Marshal.ReadByte(handle, offset);
+        }
 
         /// <summary>
         /// Writes a 64-bit signed integer to the specified memory location.
@@ -107,7 +128,10 @@ namespace PSADT.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 64-bit signed integer to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteInt64(long value, int offset = 0) => Marshal.WriteInt64(handle, offset, value);
+        internal void WriteInt64(long value, int offset = 0)
+        {
+            Marshal.WriteInt64(handle, offset, value);
+        }
 
         /// <summary>
         /// Writes a 32-bit integer value to a specific location in unmanaged memory.
@@ -117,7 +141,10 @@ namespace PSADT.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 32-bit integer value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteInt32(int value, int offset = 0) => Marshal.WriteInt32(handle, offset, value);
+        internal void WriteInt32(int value, int offset = 0)
+        {
+            Marshal.WriteInt32(handle, offset, value);
+        }
 
         /// <summary>
         /// Writes a 16-bit signed integer to the specified offset within the unmanaged memory block.
@@ -127,7 +154,10 @@ namespace PSADT.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 16-bit signed integer to write.</param>
         /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
-        internal void WriteInt16(short value, int offset = 0) => Marshal.WriteInt16(handle, offset, value);
+        internal void WriteInt16(short value, int offset = 0)
+        {
+            Marshal.WriteInt16(handle, offset, value);
+        }
 
         /// <summary>
         /// Writes a byte value to a specific location in unmanaged memory.
@@ -137,7 +167,10 @@ namespace PSADT.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The byte value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteByte(byte value, int offset = 0) => Marshal.WriteByte(handle, offset, value);
+        internal void WriteByte(byte value, int offset = 0)
+        {
+            Marshal.WriteByte(handle, offset, value);
+        }
 
         /// <summary>
         /// Writes the provided data to the allocated memory.

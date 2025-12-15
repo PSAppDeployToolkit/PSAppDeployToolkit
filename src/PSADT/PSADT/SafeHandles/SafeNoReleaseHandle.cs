@@ -20,12 +20,18 @@ namespace PSADT.SafeHandles
         /// the SafeNoReleaseHandle is disposed or finalized. Use this when the handle's lifetime is managed
         /// elsewhere.</remarks>
         /// <param name="handle">The native handle to be encapsulated by the SafeNoReleaseHandle instance.</param>
-        internal SafeNoReleaseHandle(IntPtr handle) : base(false) => SetHandle(handle);
+        internal SafeNoReleaseHandle(IntPtr handle) : base(false)
+        {
+            SetHandle(handle);
+        }
 
         /// <summary>
         /// Releases the handle associated with the current instance.
         /// </summary>
         /// <returns><see langword="true"/> if the handle was successfully released; otherwise, <see langword="false"/>.</returns>
-        protected override bool ReleaseHandle() => true;
+        protected override bool ReleaseHandle()
+        {
+            return true;
+        }
     }
 }

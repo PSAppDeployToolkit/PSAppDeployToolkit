@@ -26,7 +26,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = stackalloc char[4096];
             var res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
-            return buffer.Slice(0, (int)res).ToString().TrimRemoveNull();
+            return buffer[..(int)res].ToString().TrimRemoveNull();
         }
 
         /// <summary>
@@ -36,7 +36,10 @@ namespace PSADT.Utilities
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="filepath"></param>
-        public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value) => Kernel32.WritePrivateProfileString(section, key, value, filepath);
+        public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
+        {
+            Kernel32.WritePrivateProfileString(section, key, value, filepath);
+        }
 
         /// <summary>
         /// Gets all key/value pairs in a section of an INI file.
@@ -63,8 +66,8 @@ namespace PSADT.Utilities
                 throw new InvalidDataException($"Failed to get section [{section}] from the INI file.", ex);
             }
 
-            OrderedDictionary dictionary = new();
-            foreach (var entry in buffer.Slice(0, (int)res).ToString().Split('\0'))
+            OrderedDictionary dictionary = [];
+            foreach (var entry in buffer[..(int)res].ToString().Split('\0'))
             {
                 if (string.IsNullOrWhiteSpace(entry))
                 {
@@ -77,8 +80,8 @@ namespace PSADT.Utilities
                     continue;
                 }
 
-                var key = entry.Substring(0, separatorIndex);
-                var value = entry.Substring(separatorIndex + 1);
+                var key = entry[..separatorIndex];
+                var value = entry[(separatorIndex + 1)..];
                 if (dictionary.Contains(key))
                 {
                     dictionary[key] = value;
@@ -100,7 +103,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = new char[65536];
             var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-            return new(buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToArray());
+            return new([.. buffer[..(int)res].ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name))]);
         }
 
         /// <summary>
@@ -122,7 +125,7 @@ namespace PSADT.Utilities
             {
                 foreach (DictionaryEntry entry in content)
                 {
-                    if (!(entry.Key is string || entry.Key is ValueType))
+                    if (entry.Key is not (string or ValueType))
                     {
                         throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.", nameof(content));
                     }
@@ -133,7 +136,7 @@ namespace PSADT.Utilities
                         throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]", nameof(content));
                     }
 
-                    if (!(entry.Value is string || entry.Value is ValueType || entry.Value is null))
+                    if (entry.Value is not (string or ValueType or null))
                     {
                         throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
                     }

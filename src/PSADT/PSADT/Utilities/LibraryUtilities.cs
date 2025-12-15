@@ -12,6 +12,9 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static int AlignUp(int value) => (value + IntPtr.Size - 1) & ~(IntPtr.Size - 1);
+        internal static int AlignUp(int value)
+        {
+            return (value + IntPtr.Size - 1) & ~(IntPtr.Size - 1);
+        }
     }
 }

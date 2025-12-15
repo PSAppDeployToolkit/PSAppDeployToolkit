@@ -21,7 +21,10 @@ namespace PSADT.SafeHandles
         /// <param name="handle">The native handle to the environment block to be managed.</param>
         /// <param name="ownsHandle">true to reliably release the handle during the finalization phase; false to prevent the handle from being
         /// released.</param>
-        internal SafeEnvironmentBlockHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
+        internal SafeEnvironmentBlockHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        {
+            SetHandle(handle);
+        }
 
         /// <summary>
         /// Releases the handle.

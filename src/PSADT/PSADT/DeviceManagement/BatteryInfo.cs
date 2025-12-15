@@ -18,7 +18,10 @@ namespace PSADT.DeviceManagement
         /// Retrieves the current battery information.
         /// </summary>
         /// <returns>A <see cref="BatteryInfo"/> object containing details about the battery's state.</returns>
-        public static BatteryInfo Get() => new();
+        public static BatteryInfo Get()
+        {
+            return new();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BatteryInfo"/> class.
@@ -26,7 +29,10 @@ namespace PSADT.DeviceManagement
         /// <remarks>This constructor retrieves initial battery and power-related information from the
         /// system. It uses system utilities to populate properties such as battery life, charge status, and power line
         /// status. This class is designed to provide information about the device's power and battery state.</remarks>
-        private BatteryInfo() => UpdateSystemPowerStatus();
+        private BatteryInfo()
+        {
+            UpdateSystemPowerStatus();
+        }
 
         /// <summary>
         /// Gets the current status of the AC power line.
@@ -113,7 +119,10 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.
         /// </summary>
-        private bool IsBatteryInvalid() => BatteryChargeStatus is BatteryChargeStatus batteryChargeStatus && (batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown);
+        private bool IsBatteryInvalid()
+        {
+            return BatteryChargeStatus is BatteryChargeStatus batteryChargeStatus && (batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown);
+        }
 
         /// <summary>
         /// Updates the current system power status by retrieving information about the system's power state.
@@ -121,7 +130,10 @@ namespace PSADT.DeviceManagement
         /// <remarks>This method uses the <see cref="Kernel32.GetSystemPowerStatus"/> function to update
         /// the power status. The retrieved information includes details such as battery charge level, AC power status,
         /// and battery life.</remarks>
-        private static void UpdateSystemPowerStatus() => Kernel32.GetSystemPowerStatus(out systemPowerStatus);
+        private static void UpdateSystemPowerStatus()
+        {
+            Kernel32.GetSystemPowerStatus(out systemPowerStatus);
+        }
 
         /// <summary>
         /// Represents the current power status of the system.

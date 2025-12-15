@@ -14,8 +14,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new Custom dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        /// <param name="setFocus">Indicates whether to set focus to the dialog upon creation.</param>
-        internal CustomDialog(CustomDialogOptions options, bool setFocus = true) : base(options)
+        internal CustomDialog(CustomDialogOptions options) : base(options)
         {
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, options.MessageText);
@@ -51,7 +50,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (this.DialogResult is string)
+            if (DialogResult is string)
             {
                 DialogResult = ((AccessText)ButtonLeft.Content).Text.Replace("_", "");
             }
@@ -66,7 +65,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (this.DialogResult is string)
+            if (DialogResult is string)
             {
                 DialogResult = ((AccessText)ButtonMiddle.Content).Text.Replace("_", "");
             }
@@ -81,7 +80,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (this.DialogResult is string)
+            if (DialogResult is string)
             {
                 DialogResult = ((AccessText)ButtonRight.Content).Text.Replace("_", "");
             }

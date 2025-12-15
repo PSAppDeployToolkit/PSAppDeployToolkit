@@ -25,6 +25,12 @@ namespace PSADT.Extensions
         /// <param name="offset">The byte offset from <paramref name="handle"/> at which the structure of type <typeparamref name="T"/> is
         /// located. The offset must be zero or positive.</param>
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified memory address and offset.</returns>
-        internal unsafe static ref T AsStructure<T>(this IntPtr handle, int offset = 0) where T : unmanaged => ref Unsafe.AsRef<T>((void*)unchecked(handle + offset));
+        internal static ref T AsStructure<T>(this IntPtr handle, int offset = 0) where T : unmanaged
+        {
+            unsafe
+            {
+                return ref Unsafe.AsRef<T>((void*)unchecked(handle + offset));
+            }
+        }
     }
 }

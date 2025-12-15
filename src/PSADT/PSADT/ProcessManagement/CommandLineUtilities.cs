@@ -72,7 +72,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException("The specified enumerable is null.", (Exception?)null);
             }
-            string[] args = argv.ToArray();
+            string[] args = [.. argv];
             if (args.Length == 0)
             {
                 throw new ArgumentNullException("The specified enumerable is empty.", (Exception?)null);
@@ -232,7 +232,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         // Append the raw slice of the command line that represents the entire quoted value.
-                        var quotedPath = commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString(); result.Append(quotedPath);
+                        var quotedPath = commandLine[valueStartPosition..tempPosition].ToString(); result.Append(quotedPath);
                     }
 
                     // Update the main position to continue parsing after this key-value pair.
@@ -339,25 +339,25 @@ namespace PSADT.ProcessManagement
             }
 
             // Find the optimal breakpoint for the path. If we found a breakpoint, adjust the position to point to the start of the next argument.
-            var pathInfo = FindOptimalPathFromTokens(tokens);
-            if (pathInfo.TokenCount < tokens.Count)
+            var (Path, TokenCount) = FindOptimalPathFromTokens(tokens);
+            if (TokenCount < tokens.Count)
             {
-                position = tokenPositions[pathInfo.TokenCount];
+                position = tokenPositions[TokenCount];
             }
-            else if (pathInfo.Path.EndsWith("\\", StringComparison.OrdinalIgnoreCase) && position < commandLine.Length)
+            else if (Path.EndsWith("\\", StringComparison.OrdinalIgnoreCase) && position < commandLine.Length)
             {
                 // If the parsed path ends with a backslash, it's likely a directory.
                 // The original logic might have consumed a following argument.
                 // Let's check if what follows the path is a new argument.
-                int potentialNextArgPos = initialPosition + pathInfo.Path.Length;
+                int potentialNextArgPos = initialPosition + Path.Length;
                 SkipWhitespace(commandLine, ref potentialNextArgPos);
                 if (potentialNextArgPos < commandLine.Length && IsStartOfNewArgument(commandLine, potentialNextArgPos))
                 {
                     // The path seems to be followed by a new argument, so don't include it.
-                    position = initialPosition + pathInfo.Path.TrimEnd().Length;
+                    position = initialPosition + Path.TrimEnd().Length;
                 }
             }
-            return ConvertPosixPathToWindows(pathInfo.Path);
+            return ConvertPosixPathToWindows(Path);
         }
 
         /// <summary>
@@ -379,7 +379,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Try to find where the executable path ends by looking for executable extensions.
-            string[] executableExtensions = { ".exe", ".msi", ".bat", ".cmd", ".com", ".scr" };
+            string[] executableExtensions = [".exe", ".msi", ".bat", ".cmd", ".com", ".scr"];
             for (int i = 0; i < tokens.Count; i++)
             {
                 // Check if this part ends with an executable extension.
@@ -408,9 +408,8 @@ namespace PSADT.ProcessManagement
                 string token = tokens[i];
                 if (token.Length > 0)
                 {
-                    char lastChar = token[token.Length - 1];
-                    if (lastChar == ';' || lastChar == '|' || lastChar == '&' ||
-                        lastChar == '<' || lastChar == '>' || lastChar == '^')
+                    char lastChar = token[^1];
+                    if (lastChar is ';' or '|' or '&' or '<' or '>' or '^')
                     {
                         // This token contains a command separator, so the path ends here.
                         return (string.Join(" ", tokens.Take(i + 1)), i + 1);
@@ -449,7 +448,7 @@ namespace PSADT.ProcessManagement
 
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
-                    string lastToken = tokens[tokens.Count - 1];
+                    string lastToken = tokens[^1];
                     if (!lastToken.StartsWith("/", StringComparison.OrdinalIgnoreCase) && !lastToken.StartsWith("-", StringComparison.OrdinalIgnoreCase) &&
                         !lastToken.Contains('=') && !lastToken.StartsWith("{", StringComparison.OrdinalIgnoreCase))
                     {
@@ -462,7 +461,7 @@ namespace PSADT.ProcessManagement
             if (tokens.Count > 3 && combinedPath.Length > 2 && char.IsLetter(combinedPath[0]) && combinedPath[1] == ':')
             {
                 // Check if the last token looks like an argument
-                string lastToken = tokens[tokens.Count - 1];
+                string lastToken = tokens[^1];
                 if (IsArgumentLike(lastToken))
                 {
                     return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
@@ -489,7 +488,7 @@ namespace PSADT.ProcessManagement
 
             // Check for common argument patterns.
             char ch = commandLine[position];
-            if (ch == '/' || ch == '-')
+            if (ch is '/' or '-')
             {
                 return true;
             }
@@ -638,7 +637,7 @@ namespace PSADT.ProcessManagement
             {
                 // This looks like a POSIX-style path, e.g., /C/Program Files/app.exe
                 // Convert it to a Windows-style path, e.g., C:\Program Files\app.exe
-                return $"{path[1]}:\\{path.Substring(3).Replace('/', '\\')}";
+                return $"{path[1]}:\\{path[3..].Replace('/', '\\')}";
             }
             return path;
         }
@@ -665,7 +664,7 @@ namespace PSADT.ProcessManagement
         private static bool IsWhitespace(char c)
         {
             // Windows command line parsing considers space and tab as whitespace.
-            return c == ' ' || c == '\t';
+            return c is ' ' or '\t';
         }
 
         /// <summary>
@@ -692,7 +691,7 @@ namespace PSADT.ProcessManagement
             int equalsPos = argument.IndexOf('=');
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
-                string value = argument.Substring(equalsPos + 1);
+                string value = argument[(equalsPos + 1)..];
                 if (value.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && value.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
                     // The value is already quoted. We can return the argument as-is,
@@ -745,7 +744,7 @@ namespace PSADT.ProcessManagement
                 else if (argument[i] == '"')
                 {
                     // Backslashes preceding a quote are doubled, and the quote is escaped.
-                    sb.Append('\\', backslashes * 2 + 1);
+                    sb.Append('\\', (backslashes * 2) + 1);
                     sb.Append('"');
                 }
                 else

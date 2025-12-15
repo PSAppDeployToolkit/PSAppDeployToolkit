@@ -44,27 +44,27 @@ namespace PSADT.UserInterface.Dialogs.Classic
             if (options is not null)
             {
                 // Base properties.
-                this.SuspendLayout();
-                this.Text = StripFormattingTags(options.AppTitle);
-                this.Icon = GetIcon(options.AppIconImage);
-                this.TopMost = options.DialogTopMost;
-                this.ActiveControl = this.buttonDefault;
-                this.FormClosing += Form_FormClosing;
-                this.Load += Form_Load;
-                this.ResumeLayout();
+                SuspendLayout();
+                Text = StripFormattingTags(options.AppTitle);
+                Icon = GetIcon(options.AppIconImage);
+                TopMost = options.DialogTopMost;
+                ActiveControl = buttonDefault;
+                FormClosing += Form_FormClosing;
+                Load += Form_Load;
+                ResumeLayout();
 
                 // Set the expiry timer if specified.
                 if (options.DialogExpiryDuration is not null && options.DialogExpiryDuration.Value != TimeSpan.Zero)
                 {
-                    this.expiryTimer = new Timer { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
-                    this.expiryTimer.Tick += (s, e) => CloseDialog();
+                    expiryTimer = new Timer { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
+                    expiryTimer.Tick += (s, e) => CloseDialog();
                 }
 
                 // PersistPrompt timer code.
                 if (options.DialogPersistInterval is not null && options.DialogPersistInterval.Value != TimeSpan.Zero)
                 {
-                    this.persistTimer = new Timer { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
-                    this.persistTimer.Tick += PersistTimer_Tick;
+                    persistTimer = new Timer { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
+                    persistTimer.Tick += PersistTimer_Tick;
                 }
 
                 // Set the optional dialog position.
@@ -84,7 +84,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        public new void ShowDialog() => base.ShowDialog();
+        public new void ShowDialog()
+        {
+            base.ShowDialog();
+        }
 
         /// <summary>
         /// Closes the dialog.
@@ -103,9 +106,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="options">The options containing the banner image to display. Cannot be <see langword="null"/>.</param>
         protected void SetPictureBox(PictureBox pictureBox, BaseOptions options)
         {
-            double dpiScale = (double)User32.GetDpiForWindow((HWND)this.Handle) / 96.0;
+            double dpiScale = User32.GetDpiForWindow((HWND)Handle) / 96.0;
             pictureBox.Image = GetBanner(options.AppBannerImage);
-            pictureBox.Size = new((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * ((double)pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
+            pictureBox.Size = new((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * (pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
         }
 
         /// <summary>
@@ -113,28 +116,40 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="ts"></param>
         /// <returns></returns>
-        protected static string FormatTime(TimeSpan ts) => $"{ts.Days * 24 + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+        protected static string FormatTime(TimeSpan ts)
+        {
+            return $"{(ts.Days * 24) + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+        }
 
         /// <summary>
         /// Handles the click event of the left button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonLeft_Click(object sender, EventArgs e) => CloseDialog();
+        protected virtual void ButtonLeft_Click(object sender, EventArgs e)
+        {
+            CloseDialog();
+        }
 
         /// <summary>
         /// Handles the click event of the middle button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonMiddle_Click(object sender, EventArgs e) => CloseDialog();
+        protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
+        {
+            CloseDialog();
+        }
 
         /// <summary>
         /// Handles the click event of the right button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonRight_Click(object sender, EventArgs e) => CloseDialog();
+        protected virtual void ButtonRight_Click(object sender, EventArgs e)
+        {
+            CloseDialog();
+        }
 
         /// <summary>
         /// Handles the form's load event.
@@ -144,7 +159,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Adjust the menu depending on our config options.
-            using (var menuHandle = User32.GetSystemMenu((HWND)this.Handle, false))
+            using (var menuHandle = User32.GetSystemMenu((HWND)Handle, false))
             {
                 // Disable the close button on the form. Failing that, disable the ControlBox.
                 try
@@ -153,7 +168,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 catch
                 {
-                    this.ControlBox = false;
+                    ControlBox = false;
                 }
 
                 // Disable the move command on the system menu if we can't move the dialog.
@@ -249,7 +264,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Tests whether this form is allowed to close down.
         /// </summary>
         /// <returns></returns>
-        protected bool CanClose() => canClose;
+        protected bool CanClose()
+        {
+            return canClose;
+        }
 
         /// <summary>
         /// Restores the window to its normal state and repositions it to its starting location.
@@ -258,9 +276,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected void RestoreWindow()
         {
             // Reset the window and restore its location.
-            this.WindowState = FormWindowState.Normal;
-            this.Location = startingPoint;
-            this.BringToFront();
+            WindowState = FormWindowState.Normal;
+            Location = startingPoint;
+            BringToFront();
         }
 
         /// <summary>
@@ -409,7 +427,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void PersistTimer_Tick(object? sender, EventArgs e) => RestoreWindow();
+        private void PersistTimer_Tick(object? sender, EventArgs e)
+        {
+            RestoreWindow();
+        }
 
         /// <summary>
         /// Get the icon for the dialog.
@@ -438,7 +459,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached image if available, otherwise load and cache it before returning it.
             if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                using var source = Bitmap.FromFile(path);
+                using var source = Image.FromFile(path);
                 image = (Bitmap)source.Clone();
                 imageCache.Add(path, image);
             }

@@ -25,7 +25,7 @@ namespace PSADT.ProcessManagement
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
             FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
-            ArgumentList = new ReadOnlyCollection<string>(argumentList.Where(static a => !string.IsNullOrWhiteSpace(a)).ToArray());
+            ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
             if (username is not null)
             {
                 Username = username;

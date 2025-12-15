@@ -26,7 +26,7 @@ namespace PSADT.Utilities
             using var hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
             Span<char> bufspan = stackalloc char[4096];
             int len = User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
-            var msiMsgString = bufspan.Slice(0, len + 1).ToString().TrimRemoveNull();
+            var msiMsgString = bufspan[..(len + 1)].ToString().TrimRemoveNull();
             return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
         }
 
@@ -55,7 +55,7 @@ namespace PSADT.Utilities
 
                     // Grab the supported product codes and return them to the caller.
                     Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
-                    return new ReadOnlyCollection<Guid>(bufSpan.ToString().TrimRemoveNull().Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g)).ToArray());
+                    return new ReadOnlyCollection<Guid>([.. bufSpan.ToString().TrimRemoveNull().Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g))]);
                 }
             }
         }

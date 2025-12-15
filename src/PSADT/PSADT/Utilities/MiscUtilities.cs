@@ -21,7 +21,10 @@ namespace PSADT.Utilities
         /// <param name="value">The collection of strings to process. Each string represents a line.</param>
         /// <returns>An <see cref="IEnumerable{T}"/> of strings with leading and trailing white-space lines removed. The order of
         /// the remaining lines is preserved.</returns>
-        public static IReadOnlyList<string> TrimLeadingTrailingLines(IEnumerable<string> value) => value is not null ? new ReadOnlyCollection<string>(value.Select(static s => s.TrimEndRemoveNull()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToArray()) : throw new ArgumentNullException("The input collection cannot be null.", (Exception?)null);
+        public static IReadOnlyList<string> TrimLeadingTrailingLines(IEnumerable<string> value)
+        {
+            return value is not null ? new ReadOnlyCollection<string>([.. value.Select(static s => s.TrimEndRemoveNull()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()]) : throw new ArgumentNullException("The input collection cannot be null.", (Exception?)null);
+        }
 
         /// <summary>
         /// Trims leading and trailing empty lines from the specified string.
@@ -29,6 +32,9 @@ namespace PSADT.Utilities
         /// <param name="value">The string from which to trim leading and trailing empty lines.</param>
         /// <returns>A string with leading and trailing empty lines removed. If the input string is empty or consists only of
         /// whitespace, returns an empty string.</returns>
-        public static string TrimLeadingTrailingLines(string value) => value is not null ? string.Join("\n", TrimLeadingTrailingLines(value.Split('\n'))) : throw new ArgumentNullException(nameof(value));
+        public static string TrimLeadingTrailingLines(string value)
+        {
+            return value is not null ? string.Join("\n", TrimLeadingTrailingLines(value.Split('\n'))) : throw new ArgumentNullException(nameof(value));
+        }
     }
 }

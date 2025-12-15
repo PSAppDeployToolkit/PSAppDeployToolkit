@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.DialogOptions
 
             // The hashtable was correctly defined, assign the remaining values.
             ExecutionPolicy = executionPolicy;
-            ModuleData = new(modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } }).ToArray());
+            ModuleData = new([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } })]);
         }
 
         /// <summary>
@@ -47,6 +47,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="executionPolicy">The execution policy to be applied. This determines the level of permissions granted during execution.</param>
         /// <param name="moduleData">A read-only collection of hashtables containing module-specific data. Cannot be null.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="moduleData"/> is null.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private HelpConsoleOptions(ExecutionPolicy executionPolicy, ReadOnlyCollection<Hashtable> moduleData)
         {
@@ -67,7 +68,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// cref="ModuleSpecification"/> instances. This property provides a snapshot of the module specifications at
         /// the time of access.</remarks>
         [JsonIgnore]
-        public IReadOnlyList<ModuleSpecification> Modules => new ReadOnlyCollection<ModuleSpecification>(ModuleData.Select(static m => new ModuleSpecification(m)).ToArray());
+        public IReadOnlyList<ModuleSpecification> Modules => new ReadOnlyCollection<ModuleSpecification>([.. ModuleData.Select(static m => new ModuleSpecification(m))]);
 
         /// <summary>
         /// Represents a collection of module data.

@@ -158,7 +158,7 @@ namespace PSADT.LibraryInterfaces
         /// instance.</param>
         private MSI_PERSISTENCE_MODE(int value)
         {
-            Value = (IntPtr)value;
+            Value = new(value);
         }
 
         /// <summary>

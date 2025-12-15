@@ -106,7 +106,7 @@ namespace PSADT.DeviceManagement
                         // The chassis type is at offset 5 within the Type 3 structure.
                         // Extract the lower 7 bits as per spec (bit 7 is reserved).
                         byte chassisType = buffer[offset + ChassisTypeOffset] &= 0x7F;
-                        return chassisType >= 1 && chassisType <= 32 ? (SystemChassisType)chassisType : SystemChassisType.Other;
+                        return chassisType is >= 1 and <= 32 ? (SystemChassisType)chassisType : SystemChassisType.Other;
                     }
                     break;
                 }

@@ -54,7 +54,7 @@ namespace PSADT.Security
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 AdvApi32.LookupPrivilegeName(null, attr.Luid, buffer, out var retLength);
-                string privilegeName = buffer.Slice(0, (int)retLength).ToString().TrimRemoveNull();
+                string privilegeName = buffer[..(int)retLength].ToString().TrimRemoveNull();
                 if (!Enum.TryParse<SE_PRIVILEGE>(privilegeName, true, out var privilege))
                 {
                     throw new ArgumentException($"Unknown privilege: {privilegeName}");
@@ -78,7 +78,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    ref var attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
+                    ref var attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer[(bufferOffset + (increment * i))..]));
                     if ((attr.Attributes & attributes) == attributes)
                     {
                         privileges.Add(GetPrivilege(in attr, charSpan));
@@ -89,11 +89,11 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    ref var attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
+                    ref var attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer[(bufferOffset + (increment * i))..]));
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }
-            return new ReadOnlyCollection<SE_PRIVILEGE>(privileges.OrderBy(static p => p).ToArray());
+            return new ReadOnlyCollection<SE_PRIVILEGE>([.. privileges.OrderBy(static p => p)]);
         }
 
         /// <summary>
@@ -120,14 +120,20 @@ namespace PSADT.Security
         /// <param name="token"></param>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege) => GetPrivileges(token).Contains(privilege);
+        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
+        {
+            return GetPrivileges(token).Contains(privilege);
+        }
 
         /// <summary>
         /// Determines whether a privilege is enabled in the current process token.
         /// </summary>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        internal static bool HasPrivilege(SE_PRIVILEGE privilege) => AccountUtilities.CallerPrivileges.Contains(privilege);
+        internal static bool HasPrivilege(SE_PRIVILEGE privilege)
+        {
+            return AccountUtilities.CallerPrivileges.Contains(privilege);
+        }
 
         /// <summary>
         /// Determines whether a privilege is enabled in the specified token.
@@ -135,7 +141,10 @@ namespace PSADT.Security
         /// <param name="token"></param>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege) => GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
+        private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
+        {
+            return GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
+        }
 
         /// <summary>
         /// Determines whether a privilege is enabled in the current process token.

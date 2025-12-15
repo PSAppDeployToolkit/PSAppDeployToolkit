@@ -76,7 +76,8 @@ namespace PSADT.ProcessManagement
             var job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
             Kernel32.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
             {
-                CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null
+                CompletionPort = (HANDLE)iocp.DangerousGetHandle(),
+                CompletionKey = null,
             });
 
             // Set up the required job limit if child processes must be killed with the parent.
@@ -443,7 +444,10 @@ namespace PSADT.ProcessManagement
         /// Subsequent changes to the environment variables will not be reflected in the returned dictionary.</remarks>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are the names of the environment variables
         /// and the values are their corresponding values as strings.</returns>
-        private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary() => new(Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
+        private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary()
+        {
+            return new(Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
+        }
 
         /// <summary>
         /// Converts a native environment block into a read-only dictionary of environment variables.
@@ -486,7 +490,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Add the valid entry and advance pointer past this string + its null terminator.
-                    envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
+                    envDict.Add(entry[..idx], entry[(idx + 1)..]);
                     envBlockPtr += (entry.Length + 1) * sizeof(char);
                 }
                 if (envDict.Count == 0)

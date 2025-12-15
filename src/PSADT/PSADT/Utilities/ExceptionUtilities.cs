@@ -27,6 +27,9 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="win32ErrorCode"></param>
         /// <returns></returns>
-        private static int GetHRForWin32ErrorCode(int win32ErrorCode) => (win32ErrorCode & 0x80000000u) != 2147483648u ? win32ErrorCode & 0xFFFF | -2147024896 : win32ErrorCode;
+        private static int GetHRForWin32ErrorCode(int win32ErrorCode)
+        {
+            return (win32ErrorCode & 0x80000000u) != 2147483648u ? (win32ErrorCode & 0xFFFF) | -2147024896 : win32ErrorCode;
+        }
     }
 }

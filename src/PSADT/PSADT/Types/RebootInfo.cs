@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace PSADT.Types
 {
@@ -46,15 +45,18 @@ namespace PSADT.Types
             IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations?.Count > 0 ? pendingFileRenameOperations.ToArray() : []);
-            ErrorMsg = new ReadOnlyCollection<string>(errorMsg.ToArray());
+            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations?.Count > 0 ? [.. pendingFileRenameOperations] : []);
+            ErrorMsg = new ReadOnlyCollection<string>([.. errorMsg]);
         }
 
         /// <summary>
         /// Returns a value indicating whether any reboot is pending.
         /// </summary>
         /// <returns>True if any reboot is pending; otherwise false.</returns>
-        public bool HasPendingReboot() => IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending == true || IsAppVRebootPending || IsFileRenameRebootPending == true;
+        public bool HasPendingReboot()
+        {
+            return IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending == true || IsAppVRebootPending || IsFileRenameRebootPending == true;
+        }
 
         /// <summary>
         /// Gets the name of the computer.

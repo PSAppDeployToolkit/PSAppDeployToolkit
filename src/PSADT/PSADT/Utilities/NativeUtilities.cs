@@ -14,7 +14,10 @@ namespace PSADT.Utilities
         /// <param name="imm16"></param>
         /// <param name="shift"></param>
         /// <returns></returns>
-        internal static uint EncodeMovZ(int reg, ushort imm16, int shift) => 0xD2800000 | (uint)reg & 0x1F | ((uint)shift & 3) << 21 | ((uint)imm16 & 0xFFFF) << 5;
+        internal static uint EncodeMovZ(int reg, ushort imm16, int shift)
+        {
+            return 0xD2800000 | ((uint)reg & 0x1F) | (((uint)shift & 3) << 21) | (((uint)imm16 & 0xFFFF) << 5);
+        }
 
         /// <summary>
         /// Encodes a MOVK instruction for ARM64.
@@ -23,14 +26,20 @@ namespace PSADT.Utilities
         /// <param name="imm16"></param>
         /// <param name="shift"></param>
         /// <returns></returns>
-        internal static uint EncodeMovK(int reg, ushort imm16, int shift) => 0xF2800000 | (uint)reg & 0x1F | ((uint)shift & 3) << 21 | ((uint)imm16 & 0xFFFF) << 5;
+        internal static uint EncodeMovK(int reg, ushort imm16, int shift)
+        {
+            return 0xF2800000 | ((uint)reg & 0x1F) | (((uint)shift & 3) << 21) | (((uint)imm16 & 0xFFFF) << 5);
+        }
 
         /// <summary>
         /// Encodes a BR (branch to register) instruction for ARM64.
         /// </summary>
         /// <param name="reg"></param>
         /// <returns></returns>
-        internal static uint EncodeBr(int reg) => (uint)(0xD61F0000 | (reg & 0x1F) << 5);
+        internal static uint EncodeBr(int reg)
+        {
+            return (uint)(0xD61F0000 | ((reg & 0x1F) << 5));
+        }
 
         /// <summary>
         /// Encodes a BLR (branch with link to register) instruction for ARM64.
@@ -38,7 +47,10 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="reg"></param>
         /// <returns></returns>
-        internal static uint EncodeBlr(int reg) => (uint)(0xD63F0000 | (reg & 0x1F) << 5);
+        internal static uint EncodeBlr(int reg)
+        {
+            return (uint)(0xD63F0000 | ((reg & 0x1F) << 5));
+        }
 
         /// <summary>
         /// Encodes a MOVZ instruction for ARM64 with a 64-bit immediate value.

@@ -83,6 +83,9 @@ namespace PSADT.WindowManagement
         /// parent process filters.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects representing the windows that match the specified
         /// filters. The list will be empty if no windows match the criteria.</returns>
-        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options) => GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter);
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
+        {
+            return GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter);
+        }
     }
 }

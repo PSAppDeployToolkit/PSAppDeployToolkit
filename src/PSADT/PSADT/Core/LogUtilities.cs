@@ -84,18 +84,7 @@ namespace PSADT.Core
             // Set up default values if not specified and build out the log entries.
             if (canLogToDisk && !logStyle.HasValue)
             {
-                if (Enum.TryParse<LogStyle>((string)configToolkit?["LogStyle"]!, out var configStyle))
-                {
-                    logStyle = configStyle;
-                }
-                else
-                {
-                    logStyle = LogStyle.CMTrace;
-                }
-            }
-            if (severity is null)
-            {
-                severity = LogSeverity.Info;
+                logStyle = Enum.TryParse<LogStyle>((string)configToolkit?["LogStyle"]!, out var configStyle) ? configStyle : LogStyle.CMTrace;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
@@ -109,7 +98,8 @@ namespace PSADT.Core
             {
                 scriptSection = null;
             }
-            ReadOnlyCollection<LogEntry> logEntries = new(message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource)).ToArray());
+            severity ??= LogSeverity.Info;
+            ReadOnlyCollection<LogEntry> logEntries = new([.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource))]);
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)

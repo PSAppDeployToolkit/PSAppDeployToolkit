@@ -95,14 +95,7 @@ namespace PSADT.Utilities
                 }
                 else if (entry.Value is IEnumerable enumerable)
                 {
-                    if (enumerable.OfType<string>().ToArray() is string[] strings)
-                    {
-                        val = $"'{string.Join("','", strings.Select(s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'";
-                    }
-                    else
-                    {
-                        val = string.Join(",", enumerable);
-                    }
+                    val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'" : string.Join(",", enumerable);
                 }
                 else if (entry.Value is not SwitchParameter)
                 {

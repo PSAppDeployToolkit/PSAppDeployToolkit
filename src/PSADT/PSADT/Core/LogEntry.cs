@@ -38,8 +38,8 @@ namespace PSADT.Core
             DebugMessage = debugMessage;
             CallerFileName = !string.IsNullOrWhiteSpace(callerFileName) ? callerFileName : throw new ArgumentNullException("Caller file name cannot be null or empty.", (Exception?)null);
             CallerSource = !string.IsNullOrWhiteSpace(callerSource) ? callerSource : throw new ArgumentNullException("Caller source cannot be null or empty.", (Exception?)null);
-            LegacyLogLine = $"[{timeStamp.ToString("O")}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
-            CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
+            LegacyLogLine = $"[{timeStamp:O}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
+            CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m[start..]) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>
@@ -96,7 +96,10 @@ namespace PSADT.Core
         /// Returns a string that represents the current <see cref="LogEntry"/> object.
         /// </summary>
         /// <returns>A formatted string containing the exit code, standard output, and standard error.</returns>
-        public override string ToString() => LegacyLogLine;
+        public override string ToString()
+        {
+            return LegacyLogLine;
+        }
 
         /// <summary>
         /// Represents a compiled regular expression that matches the first non-whitespace character in a string.

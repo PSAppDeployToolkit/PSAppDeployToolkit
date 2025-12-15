@@ -82,7 +82,7 @@ namespace PSADT.Core
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(Directory.GetFiles(Path.GetDirectoryName(typeof(AssemblyPermissions).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f)).ToArray());
+        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new([.. Directory.GetFiles(Path.GetDirectoryName(typeof(AssemblyPermissions).Assembly.Location)!, "*", SearchOption.AllDirectories).Select(static f => new FileInfo(f))]);
 
         /// <summary>
         /// Represents the required file system permissions for the operation.

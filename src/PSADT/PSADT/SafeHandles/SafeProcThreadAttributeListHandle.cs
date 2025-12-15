@@ -55,7 +55,10 @@ namespace PSADT.SafeHandles
         /// <param name="handle">The initial handle to the process thread attribute list.</param>
         /// <param name="ownsHandle">A value indicating whether the handle should be released when the safe handle is disposed. true if the
         /// handle should be released; otherwise, false.</param>
-        private SafeProcThreadAttributeListHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
+        private SafeProcThreadAttributeListHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        {
+            SetHandle(handle);
+        }
 
         /// <summary>
         /// Initializes a list of attributes for process and thread creation.

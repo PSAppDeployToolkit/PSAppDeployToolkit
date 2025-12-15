@@ -197,7 +197,10 @@ namespace PSADT.ClientServer
         /// <remarks>This method closes the connection and optionally performs additional cleanup
         /// operations depending on the internal implementation. Once closed, the connection cannot be reused and must
         /// be reopened if needed.</remarks>
-        public void Close() => Close(false);
+        public void Close()
+        {
+            Close(false);
+        }
 
         /// <summary>
         /// Initializes a dialog to close specified applications.
@@ -236,7 +239,10 @@ namespace PSADT.ClientServer
         /// <param name="options">The options for configuring the dialog, such as the list of applications to close and additional settings.</param>
         /// <returns>A <see cref="CloseAppsDialogResult"/> indicating the user's response to the dialog. The result may include
         /// information about whether the user chose to close the applications or canceled the operation.</returns>
-        public CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options) => ShowModalDialog<CloseAppsDialogResult, CloseAppsDialogOptions>(DialogType.CloseAppsDialog, dialogStyle, options);
+        public CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
+        {
+            return ShowModalDialog<CloseAppsDialogResult, CloseAppsDialogOptions>(DialogType.CloseAppsDialog, dialogStyle, options);
+        }
 
         /// <summary>
         /// Displays a custom dialog with the specified style and options, and returns the user's input as a string.
@@ -247,7 +253,10 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and input settings.</param>
         /// <returns>The user's input as a string, or <see langword="null"/> if the dialog is canceled.</returns>
-        public string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options) => ShowModalDialog<string, CustomDialogOptions>(DialogType.CustomDialog, dialogStyle, options);
+        public string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        {
+            return ShowModalDialog<string, CustomDialogOptions>(DialogType.CustomDialog, dialogStyle, options);
+        }
 
         /// <summary>
         /// Displays an input dialog to the user and returns the result of the interaction.
@@ -258,7 +267,10 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
-        public InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options) => ShowModalDialog<InputDialogResult, InputDialogOptions>(DialogType.InputDialog, dialogStyle, options);
+        public InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options)
+        {
+            return ShowModalDialog<InputDialogResult, InputDialogOptions>(DialogType.InputDialog, dialogStyle, options);
+        }
 
         /// <summary>
         /// Displays a restart dialog to the user and returns the user's input as a string.
@@ -270,7 +282,10 @@ namespace PSADT.ClientServer
         /// <param name="options">The options to configure the restart dialog, such as title, message, and default values.</param>
         /// <returns>A string representing the user's input from the dialog. The value may vary depending on the dialog
         /// configuration and user interaction.</returns>
-        public string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options) => ShowModalDialog<string, RestartDialogOptions>(DialogType.RestartDialog, dialogStyle, options);
+        public string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options)
+        {
+            return ShowModalDialog<string, RestartDialogOptions>(DialogType.RestartDialog, dialogStyle, options);
+        }
 
         /// <summary>
         /// Displays a modal dialog box with the specified options, and returns the result of the dialog interaction.
@@ -280,7 +295,10 @@ namespace PSADT.ClientServer
         /// indicate the user's action (e.g., OK, Cancel).</remarks>
         /// <param name="options">The options to configure the dialog box, such as title, message, and input fields.</param>
         /// <returns>A <see cref="DialogBoxResult"/> that represents the result of the user's interaction with the dialog box.</returns>
-        public DialogBoxResult ShowDialogBox(DialogBoxOptions options) => ShowModalDialog<DialogBoxResult, DialogBoxOptions>(DialogType.DialogBox, 0, options);
+        public DialogBoxResult ShowDialogBox(DialogBoxOptions options)
+        {
+            return ShowModalDialog<DialogBoxResult, DialogBoxOptions>(DialogType.DialogBox, 0, options);
+        }
 
         /// <summary>
         /// Displays a progress dialog with the specified style and options.
@@ -305,7 +323,10 @@ namespace PSADT.ClientServer
         /// <remarks>This method checks the state of the progress dialog and returns a boolean value
         /// indicating whether it is currently displayed to the user.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
-        public bool ProgressDialogOpen() => Invoke<bool>("ProgressDialogOpen");
+        public bool ProgressDialogOpen()
+        {
+            return Invoke<bool>("ProgressDialogOpen");
+        }
 
         /// <summary>
         /// Updates the progress dialog with the specified message, detail message, progress percentage, and message
@@ -364,7 +385,10 @@ namespace PSADT.ClientServer
         /// indicates whether the operation was successful. Note that the success of this operation may depend on
         /// system permissions or the current state of the desktop environment.</remarks>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        public bool MinimizeAllWindows() => Invoke<bool>("MinimizeAllWindows");
+        public bool MinimizeAllWindows()
+        {
+            return Invoke<bool>("MinimizeAllWindows");
+        }
 
         /// <summary>
         /// Restores all minimized or hidden windows to their original state.
@@ -372,7 +396,10 @@ namespace PSADT.ClientServer
         /// <remarks>This method attempts to restore all windows that were previously minimized or hidden.
         /// The return value indicates whether the operation was successful for all windows.</remarks>
         /// <returns><see langword="true"/> if all windows were successfully restored; otherwise, <see langword="false"/>.</returns>
-        public bool RestoreAllWindows() => Invoke<bool>("RestoreAllWindows");
+        public bool RestoreAllWindows()
+        {
+            return Invoke<bool>("RestoreAllWindows");
+        }
 
         /// <summary>
         /// Sends a sequence of keystrokes to the specified window.
@@ -484,7 +511,10 @@ namespace PSADT.ClientServer
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
         /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        public AggregateException? GetLogWriterException() => _logWriterTask?.Exception;
+        public AggregateException? GetLogWriterException()
+        {
+            return _logWriterTask?.Exception;
+        }
 
         /// <summary>
         /// Retrieves the result of the client process task.
@@ -496,7 +526,10 @@ namespace PSADT.ClientServer
         /// langword="true"/>, the method will synchronously wait for the client process task to complete.</param>
         /// <returns>The result of the client process task if <paramref name="iKnowWhatImDoing"/> is <see langword="true"/>; 
         /// otherwise, <see langword="null"/>.</returns>
-        public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing) => iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
+        public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing)
+        {
+            return iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
+        }
 
         /// <summary>
         /// Releases the resources used by the current instance of the class.
@@ -567,6 +600,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog to display.</param>
         /// <param name="options">The options to configure the dialog. This parameter cannot be null.</param>
         /// <returns>The result of the dialog, deserialized to the specified type <typeparamref name="TResult"/>.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0072:Add missing cases", Justification = "The missing cases are caught by the default case.")]
         private TResult ShowModalDialog<TResult, TOptions>(DialogType dialogType, DialogStyle dialogStyle, TOptions options)
         {
             _logSource = dialogType switch
@@ -622,7 +656,7 @@ namespace PSADT.ClientServer
             // If the response is an error, rethrow it. Otherwise, deserialize the response.
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.Ordinal))
             {
-                throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response.Substring(6)));
+                throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response[6..]));
             }
             return DataSerialization.DeserializeFromString<T>(response);
         }

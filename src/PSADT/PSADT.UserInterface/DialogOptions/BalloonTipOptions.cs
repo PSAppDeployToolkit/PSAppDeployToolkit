@@ -93,6 +93,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="balloonTipTime">The duration, in milliseconds, for which the balloon tip is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the following parameters are <see langword="null"/>: <paramref name="trayTitle"/>,
         /// <paramref name="trayIcon"/>, <paramref name="balloonTipTitle"/>, or <paramref name="balloonTipText"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private BalloonTipOptions(string trayTitle, string trayIcon, string balloonTipTitle, string balloonTipText, ToolTipIcon balloonTipIcon, uint balloonTipTime)
         {

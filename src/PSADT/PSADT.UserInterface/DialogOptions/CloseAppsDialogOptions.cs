@@ -136,6 +136,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
         /// <param name="dialogAllowMinimize">A value indicating whether the dialog can be minimized by the user.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
@@ -249,6 +250,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="fluent">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="classic"/> or <paramref name="fluent"/> is <see
             /// langword="null"/>.</exception>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is just used for deserialisation.")]
             [JsonConstructor]
             private CloseAppsDialogStrings(CloseAppsDialogClassicStrings classic, CloseAppsDialogFluentStrings fluent)
             {
@@ -366,6 +368,7 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonDefer">The label for the button used to defer the action.</param>
                 /// <param name="buttonContinue">The label for the button used to continue the process.</param>
                 /// <param name="buttonContinueTooltip">The tooltip text for the continue button, providing additional context or instructions.</param>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is just used for deserialisation.")]
                 [JsonConstructor]
                 private CloseAppsDialogClassicStrings(string welcomeMessage, string closeAppsMessage, string expiryMessage, string deferralsRemaining, string deferralDeadline, string expiryWarning, string countdownDefer, string countdownClose, string buttonClose, string buttonDefer, string buttonContinue, string buttonContinueTooltip)
                 {
@@ -530,6 +533,7 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonLeftText">The text displayed on the left button when processes are detected.</param>
                 /// <param name="buttonRightText">The text displayed on the right button.</param>
                 /// <param name="buttonLeftTextNoProcesses">The text displayed on the left button when no processes are detected.</param>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
                 [JsonConstructor]
                 private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftTextNoProcesses)
                 {

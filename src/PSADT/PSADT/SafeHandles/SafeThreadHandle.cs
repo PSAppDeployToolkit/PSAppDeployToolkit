@@ -21,7 +21,10 @@ namespace PSADT.SafeHandles
         /// <param name="handle">The native handle to the thread resource to be wrapped by the SafeThreadHandle instance.</param>
         /// <param name="ownsHandle">true to indicate that the SafeThreadHandle instance owns the handle and is responsible for releasing it;
         /// otherwise, false.</param>
-        internal SafeThreadHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle) => SetHandle(handle);
+        internal SafeThreadHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        {
+            SetHandle(handle);
+        }
 
         /// <summary>
         /// Releases the handle.

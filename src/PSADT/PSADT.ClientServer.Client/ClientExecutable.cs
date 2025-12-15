@@ -49,63 +49,63 @@ namespace PSADT.ClientServer
                 {
                     ShowHelpDialog();
                 }
-                else if (argv.Any(static arg => arg == "/ShowModalDialog" || arg == "/smd"))
+                else if (argv.Any(static arg => arg is "/ShowModalDialog" or "/smd"))
                 {
                     Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
                 }
-                else if (argv.Any(static arg => arg == "/ShowBalloonTip" || arg == "/sbt"))
+                else if (argv.Any(static arg => arg is "/ShowBalloonTip" or "/sbt"))
                 {
                     Console.WriteLine(ShowBalloonTip(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/GetProcessWindowInfo" || arg == "/gpwi"))
+                else if (argv.Any(static arg => arg is "/GetProcessWindowInfo" or "/gpwi"))
                 {
                     Console.WriteLine(GetProcessWindowInfo(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/GetUserNotificationState" || arg == "/guns"))
+                else if (argv.Any(static arg => arg is "/GetUserNotificationState" or "/guns"))
                 {
                     Console.WriteLine(GetUserNotificationState());
                 }
-                else if (argv.Any(static arg => arg == "/GetForegroundWindowProcessId" || arg == "/gfwpi"))
+                else if (argv.Any(static arg => arg is "/GetForegroundWindowProcessId" or "/gfwpi"))
                 {
                     Console.WriteLine(GetForegroundWindowProcessId());
                 }
-                else if (argv.Any(static arg => arg == "/RefreshDesktopAndEnvironmentVariables" || arg == "/rdaev"))
+                else if (argv.Any(static arg => arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev"))
                 {
                     Console.WriteLine(RefreshDesktopAndEnvironmentVariables());
                 }
-                else if (argv.Any(static arg => arg == "/MinimizeAllWindows" || arg == "/maw"))
+                else if (argv.Any(static arg => arg is "/MinimizeAllWindows" or "/maw"))
                 {
                     Console.WriteLine(MinimizeAllWindows());
                 }
-                else if (argv.Any(static arg => arg == "/RestoreAllWindows" || arg == "/raw"))
+                else if (argv.Any(static arg => arg is "/RestoreAllWindows" or "/raw"))
                 {
                     Console.WriteLine(RestoreAllWindows());
                 }
-                else if (argv.Any(static arg => arg == "/SendKeys" || arg == "/sk"))
+                else if (argv.Any(static arg => arg is "/SendKeys" or "/sk"))
                 {
                     Console.WriteLine(SendKeys(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/GetEnvironmentVariable" || arg == "/gev"))
+                else if (argv.Any(static arg => arg is "/GetEnvironmentVariable" or "/gev"))
                 {
                     Console.WriteLine(GetEnvironmentVariable(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/SetEnvironmentVariable" || arg == "/sev"))
+                else if (argv.Any(static arg => arg is "/SetEnvironmentVariable" or "/sev"))
                 {
                     Console.WriteLine(SetEnvironmentVariable(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/RemoveEnvironmentVariable" || arg == "/rev"))
+                else if (argv.Any(static arg => arg is "/RemoveEnvironmentVariable" or "/rev"))
                 {
                     Console.WriteLine(RemoveEnvironmentVariable(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/SilentRestart" || arg == "/sr"))
+                else if (argv.Any(static arg => arg is "/SilentRestart" or "/sr"))
                 {
                     Console.WriteLine(SilentRestart(ArgvToDictionary(argv)));
                 }
-                else if (argv.Any(static arg => arg == "/GetLastInputTime" || arg == "/glit"))
+                else if (argv.Any(static arg => arg is "/GetLastInputTime" or "/glit"))
                 {
                     Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
                 }
-                else if (argv.Any(static arg => arg == "/ClientServer" || arg == "/cs"))
+                else if (argv.Any(static arg => arg is "/ClientServer" or "/cs"))
                 {
                     EnterClientServerMode(ArgvToDictionary(argv));
                 }
@@ -151,8 +151,8 @@ namespace PSADT.ClientServer
             var fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
             var helpVersion = new Version(fileInfo.ProductVersion!.Split('+')[0]);
             var helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
-            var helpMessage = string.Join(Environment.NewLine, new[]
-            {
+            var helpMessage = string.Join(Environment.NewLine,
+            [
                 helpTitle,
                 "",
                 fileInfo.LegalCopyright,
@@ -160,7 +160,7 @@ namespace PSADT.ClientServer
                 "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                 "",
                 "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
-            });
+            ]);
             DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
             throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
         }
@@ -186,7 +186,7 @@ namespace PSADT.ClientServer
                 {
                     continue;
                 }
-                var key = argv[i].Substring(1).Trim();
+                var key = argv[i][1..].Trim();
                 var value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
                 if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-", StringComparison.OrdinalIgnoreCase) || value!.StartsWith("/", StringComparison.OrdinalIgnoreCase))
                 {
@@ -201,7 +201,7 @@ namespace PSADT.ClientServer
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
                     // Provided value is a registry key path.
-                    if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue.Substring(0, valueDivider), argvDictValue.Substring(valueDivider + 1), null) is not string argvDictContent)
+                    if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue[..valueDivider], argvDictValue[(valueDivider + 1)..], null) is not string argvDictContent)
                     {
                         throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
                     }
@@ -344,7 +344,7 @@ namespace PSADT.ClientServer
                                         {
                                             throw new ClientException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ClientExitCode.InvalidArguments);
                                         }
-                                        WriteResult(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
+                                        WriteResult(ShowModalDialog(new(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }), closeAppsDialogState));
                                     }
                                     else if (parts[0] == "ShowProgressDialog")
                                     {
@@ -528,7 +528,7 @@ namespace PSADT.ClientServer
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
-        private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
+        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
@@ -579,16 +579,31 @@ namespace PSADT.ClientServer
             }
 
             // Show the dialog and return the serialised result for the caller to handle.
-            return dialogType switch
+            if (dialogType == DialogType.DialogBox)
             {
-                DialogType.DialogBox => SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.HelpConsole => SerializeObject(DialogManager.ShowHelpConsole(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.InputDialog => SerializeObject(DialogManager.ShowInputDialog(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.CustomDialog => SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!)),
-                _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog),
-            };
+                return SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments))));
+            }
+            if (dialogType == DialogType.HelpConsole)
+            {
+                return SerializeObject(DialogManager.ShowHelpConsole(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))));
+            }
+            if (dialogType == DialogType.InputDialog)
+            {
+                return SerializeObject(DialogManager.ShowInputDialog(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments))));
+            }
+            if (dialogType == DialogType.CustomDialog)
+            {
+                return SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(GetOptionsFromArguments(arguments))));
+            }
+            if (dialogType == DialogType.RestartDialog)
+            {
+                return SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments))));
+            }
+            if (dialogType == DialogType.CloseAppsDialog)
+            {
+                return SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!));
+            }
+            throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog);
         }
 
         /// <summary>
@@ -619,7 +634,10 @@ namespace PSADT.ClientServer
         /// cref="WindowInfoOptions"/>.</param>
         /// <returns>A serialized string representation of the window information. The format and content of the string depend on
         /// the options provided in <paramref name="arguments"/>.</returns>
-        private static string GetProcessWindowInfo(IReadOnlyDictionary<string, string> arguments) => SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))));
+        private static string GetProcessWindowInfo(IReadOnlyDictionary<string, string> arguments)
+        {
+            return SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))));
+        }
 
         /// <summary>
         /// Retrieves the current user notification state as a serialized string.
@@ -628,7 +646,10 @@ namespace PSADT.ClientServer
         /// as whether the user is available, busy, or away. The returned string is a serialized representation of the
         /// state, which can be deserialized for further processing.</remarks>
         /// <returns>A serialized string representing the current user notification state.</returns>
-        private static string GetUserNotificationState() => SerializeObject(ShellUtilities.GetUserNotificationState());
+        private static string GetUserNotificationState()
+        {
+            return SerializeObject(ShellUtilities.GetUserNotificationState());
+        }
 
         /// <summary>
         /// Retrieves the process ID of the foreground window and returns it as a serialized string.
@@ -637,7 +658,10 @@ namespace PSADT.ClientServer
         /// function to obtain the process ID of the currently active window and serializes the result. The returned
         /// string can be used for further processing or logging purposes.</remarks>
         /// <returns>A serialized string representation of the process ID of the foreground window.</returns>
-        private static string GetForegroundWindowProcessId() => SerializeObject(ShellUtilities.GetForegroundWindowProcessId());
+        private static string GetForegroundWindowProcessId()
+        {
+            return SerializeObject(ShellUtilities.GetForegroundWindowProcessId());
+        }
 
         /// <summary>
         /// Refreshes the desktop environment and updates system environment variables.

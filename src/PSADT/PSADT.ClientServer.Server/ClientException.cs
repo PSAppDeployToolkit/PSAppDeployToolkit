@@ -21,7 +21,10 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="exitCode">The exit code associated with the exception, which is used to set the <see cref="Exception.HResult"/> property.</param>
-        internal ClientException(string message, ClientExitCode exitCode) : base(message) => HResult = (int)exitCode;
+        internal ClientException(string message, ClientExitCode exitCode) : base(message)
+        {
+            HResult = (int)exitCode;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientException"/> class with a specified error message, 
@@ -30,7 +33,10 @@ namespace PSADT.ClientServer
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="exitCode">The exit code associated with the exception, which is used to set the <see cref="Exception.HResult"/> property.</param>
         /// <param name="innerException">The exception that is the cause of the current exception, or <see langword="null"/> if no inner exception is specified.</param>
-        internal ClientException(string message, ClientExitCode exitCode, Exception innerException) : base(message, innerException) => HResult = (int)exitCode;
+        internal ClientException(string message, ClientExitCode exitCode, Exception innerException) : base(message, innerException)
+        {
+            HResult = (int)exitCode;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientException"/> class with serialized data.
@@ -60,6 +66,9 @@ namespace PSADT.ClientServer
 #if NET8_0_OR_GREATER
         [Obsolete(DiagnosticId = "SYSLIB0051")]
 #endif
-        public override void GetObjectData(SerializationInfo info, StreamingContext context) => base.GetObjectData(info, context);
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+        }
     }
 }
