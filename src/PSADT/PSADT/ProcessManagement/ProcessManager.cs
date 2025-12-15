@@ -635,22 +635,19 @@ namespace PSADT.ProcessManagement
                 return CreateProcessUsingTokenStatus.SeImpersonatePrivilege;
             }
 
-            // Test whether the "Secondary Log-on" service is running, which is required for CreateProcessWithToken.
-            using (ServiceController serviceController = new("seclogon"))
+            // If the service is disabled, we cannot use CreateProcessWithToken. This
+            // property will fail if the service is not found, so catch that as well.
+            using ServiceController serviceController = new("seclogon");
+            try
             {
-                // If the service is disabled, we cannot use CreateProcessWithToken. This
-                // property will fail if the service is not found, so catch that as well.
-                try
+                if (serviceController.StartType == ServiceStartMode.Disabled)
                 {
-                    if (serviceController.StartType == ServiceStartMode.Disabled)
-                    {
-                        return CreateProcessUsingTokenStatus.SecLogonServiceDisabled;
-                    }
+                    return CreateProcessUsingTokenStatus.SecLogonServiceDisabled;
                 }
-                catch
-                {
-                    return CreateProcessUsingTokenStatus.SecLogonServiceNotFound;
-                }
+            }
+            catch
+            {
+                return CreateProcessUsingTokenStatus.SecLogonServiceNotFound;
             }
 
             // If we're here, everything we need to be able to use CreateProcessWithToken() is available.

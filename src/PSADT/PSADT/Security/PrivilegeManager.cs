@@ -25,15 +25,13 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
-            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using var cProcessSafeHandle = Kernel32.GetCurrentProcess();
+            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
+            using (hProcessToken)
             {
-                AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
-                using (hProcessToken)
+                if (!IsPrivilegeEnabled(hProcessToken, privilege))
                 {
-                    if (!IsPrivilegeEnabled(hProcessToken, privilege))
-                    {
-                        EnablePrivilege(hProcessToken, privilege);
-                    }
+                    EnablePrivilege(hProcessToken, privilege);
                 }
             }
         }
@@ -146,13 +144,11 @@ namespace PSADT.Security
         /// <returns></returns>
         internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
-            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using var cProcessSafeHandle = Kernel32.GetCurrentProcess();
+            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
+            using (hProcessToken)
             {
-                AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hProcessToken);
-                using (hProcessToken)
-                {
-                    return IsPrivilegeEnabled(hProcessToken, privilege);
-                }
+                return IsPrivilegeEnabled(hProcessToken, privilege);
             }
         }
 
@@ -186,13 +182,11 @@ namespace PSADT.Security
         /// <param name="privilege"></param>
         internal static void EnablePrivilege(SE_PRIVILEGE privilege)
         {
-            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using var cProcessSafeHandle = Kernel32.GetCurrentProcess();
+            AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
+            using (hProcessToken)
             {
-                AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out var hProcessToken);
-                using (hProcessToken)
-                {
-                    EnablePrivilege(hProcessToken, privilege);
-                }
+                EnablePrivilege(hProcessToken, privilege);
             }
         }
 
