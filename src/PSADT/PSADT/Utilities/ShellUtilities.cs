@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -21,7 +22,15 @@ namespace PSADT.Utilities
         /// <remarks>Call this method after making changes to file associations or related system settings
         /// to ensure that the desktop and shell reflect the updates. This method triggers a system-wide notification,
         /// which may cause open Explorer windows and desktop icons to refresh.</remarks>
-        internal static void RefreshDesktop() => Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
+        internal static void RefreshDesktop()
+        {
+            // Update desktop icons using SHChangeNotify, then restart the Start Menu Experience Host to reflect changes.
+            Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
+            foreach (var runningProc in ProcessUtilities.GetRunningProcesses([new("StartMenuExperienceHost")]))
+            {
+                using var process = runningProc.Process; process.Kill();
+            }
+        }
 
         /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
@@ -29,8 +38,10 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
         internal static void RefreshDesktopAndEnvironmentVariables()
         {
-            // Update desktop icons using SHChangeNotify, then notify all top-level windows that the environment variables have changed.
+            // Update desktop icons using SHChangeNotify.
             RefreshDesktop();
+
+            // Notify all top-level windows that the environment variables have changed.
             User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
             User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
         }
