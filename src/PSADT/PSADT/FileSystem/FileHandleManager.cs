@@ -113,11 +113,11 @@ namespace PSADT.FileSystem
                     {
                         fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
                     }
-                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                    catch (UnauthorizedAccessException)
                     {
                         return;
                     }
-                    catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
+                    catch (ArgumentException)
                     {
                         return;
                     }
@@ -142,7 +142,7 @@ namespace PSADT.FileSystem
                         {
                             return;
                         }
-                        catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                        catch (UnauthorizedAccessException)
                         {
                             return;
                         }

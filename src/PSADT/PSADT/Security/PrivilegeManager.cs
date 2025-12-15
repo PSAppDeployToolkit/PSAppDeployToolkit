@@ -9,7 +9,6 @@ using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.Threading;
 
@@ -205,20 +204,18 @@ namespace PSADT.Security
         /// <returns></returns>
         internal static bool TestProcessAccessRights(SafeProcessHandle token, PROCESS_ACCESS_RIGHTS accessRights)
         {
-            using (var cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using var cProcessSafeHandle = Kernel32.GetCurrentProcess();
+            try
             {
-                try
+                var res = Kernel32.DuplicateHandle(cProcessSafeHandle, token, cProcessSafeHandle, out var newHandle, accessRights, false, 0);
+                using (newHandle)
                 {
-                    var res = Kernel32.DuplicateHandle(cProcessSafeHandle, token, cProcessSafeHandle, out var newHandle, accessRights, false, 0);
-                    using (newHandle)
-                    {
-                        return res;
-                    }
+                    return res;
                 }
-                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                {
-                    return false;
-                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
             }
         }
     }

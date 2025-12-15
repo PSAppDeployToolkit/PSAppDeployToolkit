@@ -25,8 +25,6 @@ DestroyEnvironmentBlock
 DuplicateHandle
 DuplicateTokenEx
 DwmGetColorizationColor
-E_ACCESSDENIED
-E_INVALIDARG
 EnableMenuItem
 EnumProcessModules
 EnumWindows
