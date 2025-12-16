@@ -44,6 +44,7 @@ namespace PSADT.ProcessManagement
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "We don't have .DisposeAsync() available to us.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The setup is too complex for the compiler to understand.")]
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
