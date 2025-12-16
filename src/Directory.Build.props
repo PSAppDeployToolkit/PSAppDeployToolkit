@@ -47,7 +47,7 @@
 
   <!-- Modern polyfills for .NET Framework -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Meziantou.Polyfill" Version="1.0.68">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.71">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
