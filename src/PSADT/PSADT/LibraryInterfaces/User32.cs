@@ -235,57 +235,44 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Sends the specified message to a window or windows, waiting for the message to be processed or for a timeout
-        /// period to elapse.
+        /// Sends a message to the specified window and returns immediately without waiting for the window to process
+        /// the message.
         /// </summary>
-        /// <remarks>If the message is not processed before the specified timeout period elapses, an
-        /// exception is thrown. This method wraps the native SendMessageTimeout API and throws an exception for any
-        /// underlying Win32 error.</remarks>
-        /// <param name="hWnd">A handle to the window whose window procedure will receive the message. Use HWND_BROADCAST to send the
-        /// message to all top-level windows.</param>
-        /// <param name="Msg">The message to be sent. This value determines the action to be performed by the receiving window procedure.</param>
-        /// <param name="wParam">Additional message-specific information. The exact meaning depends on the value of the Msg parameter.</param>
-        /// <param name="lParam">Additional message-specific information. The exact meaning depends on the value of the Msg parameter.</param>
-        /// <param name="fuFlags">Flags that specify how the message is sent. These control aspects such as whether the call is synchronous or
-        /// asynchronous.</param>
-        /// <param name="uTimeout">The duration, in milliseconds, to wait for the message to be processed before timing out. Set to zero for no
-        /// wait.</param>
-        /// <param name="lpdwResult">When this method returns, contains the result of the message processing. The value is set only if the
-        /// message is processed before the timeout elapses.</param>
-        /// <returns>The result code from the SendMessageTimeout operation. If the message is processed successfully, the return
-        /// value is nonzero.</returns>
-        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, TimeSpan uTimeout, out nuint lpdwResult)
+        /// <remarks>This method wraps the native SendNotifyMessage function and throws an exception if
+        /// the underlying call fails. Unlike SendMessage, this method returns immediately and does not wait for the
+        /// message to be processed by the target window.</remarks>
+        /// <param name="hWnd">A handle to the window whose window procedure will receive the message.</param>
+        /// <param name="Msg">The message to be sent to the window.</param>
+        /// <param name="wParam">Additional message-specific information. The contents depend on the value of the Msg parameter.</param>
+        /// <param name="lParam">Additional message-specific information. The contents depend on the value of the Msg parameter.</param>
+        /// <returns>A value indicating the result of the message send operation. If the operation fails, an exception is thrown.</returns>
+        internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(uTimeout, TimeSpan.Zero, nameof(uTimeout));
-            LRESULT res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam, fuFlags, (uint)uTimeout.TotalMilliseconds, out lpdwResult);
-            return res == default ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            BOOL res = PInvoke.SendNotifyMessage(hWnd, (uint)Msg, wParam, lParam);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
-        /// Sends the specified message to a window and waits for the result, with a specified timeout period.
+        /// Sends a message to the specified window and returns immediately, without waiting for the window to process
+        /// the message.
         /// </summary>
-        /// <remarks>This method is typically used for inter-process or inter-thread communication with a
-        /// window, allowing the caller to specify a timeout to avoid indefinite blocking. If the timeout period elapses
-        /// before the message is processed, the function returns and the result may be undefined. The method is unsafe
-        /// and intended for advanced scenarios where direct message passing is required.</remarks>
+        /// <remarks>This method does not wait for the recipient window to process the message. Use this
+        /// method when the sender does not require a result from the message processing. The caller is responsible for
+        /// ensuring that the message and parameters are appropriate for the target window.</remarks>
         /// <param name="hWnd">A handle to the window whose window procedure will receive the message.</param>
         /// <param name="Msg">The message to be sent.</param>
-        /// <param name="wParam">The message-specific first parameter, or null if not used.</param>
-        /// <param name="lParam">The message-specific second parameter, or null if not used.</param>
-        /// <param name="fuFlags">Flags that specify how the message is sent. Determines message delivery behavior and timeout handling.</param>
-        /// <param name="uTimeout">The duration, in milliseconds, to wait for the message to be processed before timing out.</param>
-        /// <param name="lpdwResult">When this method returns, contains the result of the message processing. This parameter is passed
-        /// uninitialized.</param>
-        /// <returns>A value of type LRESULT that indicates the result of the message processing. If the function fails, the
-        /// return value is zero.</returns>
-        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, TimeSpan uTimeout, out nuint lpdwResult)
+        /// <param name="wParam">The message-specific first parameter, passed as a string. Can be null.</param>
+        /// <param name="lParam">The message-specific second parameter, passed as a string. Can be null.</param>
+        /// <returns>A value of type LRESULT that indicates the result of the message processing. The meaning of the return value
+        /// depends on the message sent.</returns>
+        internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
         {
             unsafe
             {
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
-                    return SendMessageTimeout(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr, fuFlags, uTimeout, out lpdwResult);
+                    return SendNotifyMessage(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr);
                 }
             }
         }
