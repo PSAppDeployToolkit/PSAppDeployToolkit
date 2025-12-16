@@ -254,9 +254,10 @@ namespace PSADT.LibraryInterfaces
         /// message is processed before the timeout elapses.</param>
         /// <returns>The result code from the SendMessageTimeout operation. If the message is processed successfully, the return
         /// value is nonzero.</returns>
-        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, TimeSpan uTimeout, out nuint lpdwResult)
         {
-            LRESULT res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam, fuFlags, uTimeout, out lpdwResult);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(uTimeout, TimeSpan.Zero, nameof(uTimeout));
+            LRESULT res = PInvoke.SendMessageTimeout(hWnd, (uint)Msg, wParam, lParam, fuFlags, (uint)uTimeout.TotalMilliseconds, out lpdwResult);
             return res == default ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -277,7 +278,7 @@ namespace PSADT.LibraryInterfaces
         /// uninitialized.</param>
         /// <returns>A value of type LRESULT that indicates the result of the message processing. If the function fails, the
         /// return value is zero.</returns>
-        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal static LRESULT SendMessageTimeout(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, TimeSpan uTimeout, out nuint lpdwResult)
         {
             unsafe
             {
