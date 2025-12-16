@@ -25,8 +25,13 @@ namespace PSADT.Utilities
         /// which may cause open Explorer windows and desktop icons to refresh.</remarks>
         internal static void RefreshDesktop()
         {
-            // Update desktop icons using SHChangeNotify, then restart the Start Menu Experience Host to reflect changes.
+            // Update desktop icons using SHChangeNotify. This covers the bulk of things.
             Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
+
+            // Refresh the taskbar. See https://stackoverflow.com/questions/70260518/how-can-i-refresh-the-taskbar-programatically-in-windows-10-and-higher for details.
+            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "TraySettings", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, TimeSpan.FromMilliseconds(500), out _);
+
+            // Terminate the StartMenuExperienceHost to refresh the start menu. Windows restarts this process instantly.
             foreach (RunningProcess runningProc in ProcessUtilities.GetRunningProcesses([new("StartMenuExperienceHost")]))
             {
                 using Process process = runningProc.Process; process.Kill();
@@ -43,8 +48,8 @@ namespace PSADT.Utilities
             RefreshDesktop();
 
             // Notify all top-level windows that the environment variables have changed.
-            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
-            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
+            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, TimeSpan.FromMilliseconds(500), out _);
+            _ = User32.SendMessageTimeout(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment", SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, TimeSpan.FromMilliseconds(500), out _);
         }
 
         /// <summary>

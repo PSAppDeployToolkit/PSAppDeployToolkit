@@ -825,6 +825,7 @@ namespace PSADT.LibraryInterfaces
         /// or <see cref="WAIT_EVENT.WAIT_ABANDONED"/> for an abandoned mutex.</returns>
         internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, TimeSpan dwMilliseconds)
         {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(dwMilliseconds, TimeSpan.Zero, nameof(dwMilliseconds));
             WAIT_EVENT res = PInvoke.WaitForSingleObject(hHandle, (uint)dwMilliseconds.TotalMilliseconds);
             return res == WAIT_EVENT.WAIT_FAILED ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
