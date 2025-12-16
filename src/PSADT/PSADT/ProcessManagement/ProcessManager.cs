@@ -43,7 +43,6 @@ namespace PSADT.ProcessManagement
         /// <param name="launchInfo"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "We don't have .DisposeAsync() available to us.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The setup is too complex for the compiler to understand.")]
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
@@ -345,11 +344,7 @@ namespace PSADT.ProcessManagement
             {
                 // Set up the cancellation token source and registration if needed.
                 uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
-                CancellationTokenRegistration ctr = default;
-                if (launchInfo.CancellationToken is not null)
-                {
-                    ctr = launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, UIntPtr.Zero));
-                }
+                using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, UIntPtr.Zero)) : default;
 
                 // Spin until complete or cancelled.
                 bool disposeJob = true; int? exitCode = null;
@@ -397,7 +392,7 @@ namespace PSADT.ProcessManagement
                 finally
                 {
                     // Only dispose of the handle when we don't own it or the process has already closed.
-                    ctr.Dispose(); if (!launchInfo.UseShellExecute || (exitCode.HasValue && exitCode.Value != TimeoutExitCode))
+                    if (!launchInfo.UseShellExecute || (exitCode.HasValue && exitCode.Value != TimeoutExitCode))
                     {
                         hProcess.Dispose();
                     }

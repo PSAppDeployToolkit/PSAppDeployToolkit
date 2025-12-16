@@ -378,7 +378,7 @@ namespace PSADT.ClientServer
                                         }
 
                                         // Update the progress dialog with the provided parameters.
-                                        DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3], CultureInfo.InvariantCulture) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
+                                        DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3], CultureInfo.InvariantCulture) : null, !string.IsNullOrWhiteSpace(parts[4]) ? Enum.Parse<DialogMessageAlignment>(parts[4]) : null);
                                         WriteResult(SerializeObject(true));
                                     }
                                     else if (parts[0] == "CloseProgressDialog")
