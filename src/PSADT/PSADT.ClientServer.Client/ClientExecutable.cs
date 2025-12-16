@@ -125,7 +125,7 @@ namespace PSADT.ClientServer
                 Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
                 return ex.HResult;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 // This block is here as a fail-safe and should never be reached.
                 if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Path.GetFileNameWithoutExtension(typeof(ClientExecutable).Assembly.Location) + ".Launcher", StringComparison.OrdinalIgnoreCase))
@@ -483,7 +483,7 @@ namespace PSADT.ClientServer
                                         throw new ClientException($"The specified command [{parts[0]}] is not recognised.", ClientExitCode.InvalidArguments);
                                     }
                                 }
-                                catch (Exception ex)
+                                catch (Exception ex) when (ex.Message is not null)
                                 {
                                     // Something we weren't expecting occurred. We should never get here.
                                     WriteResult($"Error{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(ex)}");
@@ -847,7 +847,7 @@ namespace PSADT.ClientServer
                             {
                                 WindowTools.BringWindowToFront((HWND)window.WindowHandle);
                             }
-                            catch (Exception ex)
+                            catch (Exception ex) when (ex.Message is not null)
                             {
                                 logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
                                 logWriter.Flush();
@@ -888,7 +888,7 @@ namespace PSADT.ClientServer
                                 logWriter.Flush();
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex.Message is not null)
                         {
                             logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
                             logWriter.Flush();

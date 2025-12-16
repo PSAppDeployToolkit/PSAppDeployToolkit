@@ -28,7 +28,7 @@ namespace PSADT.ClientServer
                 Environment.FailFast($"An unexpected Win32 error occurred with code [{ex.NativeErrorCode}].\nException Info: {ex}", ex);
                 return ex.NativeErrorCode;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 Environment.FailFast($"An unexpected exception occurred with HRESULT [{ex.HResult}].\nException Info: {ex}", ex);
                 return ex.HResult;

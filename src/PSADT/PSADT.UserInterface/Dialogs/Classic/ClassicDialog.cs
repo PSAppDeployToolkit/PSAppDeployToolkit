@@ -167,7 +167,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     _ = User32.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
                 }
-                catch
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     ControlBox = false;
                 }

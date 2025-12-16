@@ -10,7 +10,7 @@
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.ClientServer.ClientExecutable</StartupObject>
-    <NoWarn>CA1031;CA2263</NoWarn>
+    <NoWarn>CA2263</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

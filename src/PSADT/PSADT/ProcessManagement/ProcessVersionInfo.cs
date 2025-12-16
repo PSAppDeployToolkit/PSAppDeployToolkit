@@ -105,6 +105,7 @@ namespace PSADT.ProcessManagement
                 catch
                 {
                     return;
+                    throw;
                 }
             }
 
@@ -339,6 +340,7 @@ namespace PSADT.ProcessManagement
             catch
             {
                 return null;
+                throw;
             }
             return null;
         }

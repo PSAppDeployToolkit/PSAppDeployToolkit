@@ -117,6 +117,7 @@ namespace PSADT.Security
             catch
             {
                 return GetPrimaryToken(tokenHandle);
+                throw;
             }
         }
 

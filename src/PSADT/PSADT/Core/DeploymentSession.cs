@@ -544,7 +544,7 @@ namespace PSADT.Core
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.Message is not null)
                     {
                         WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex}", LogSeverity.Error);
                     }
@@ -1087,7 +1087,7 @@ namespace PSADT.Core
                     ZipFile.CreateFromDirectory(LogPath, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
                     Directory.Delete(LogPath, true);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex}", LogSeverity.Error);
                 }

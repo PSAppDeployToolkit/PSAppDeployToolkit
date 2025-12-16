@@ -10,7 +10,7 @@
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <NoWarn>CA1031;CA1303</NoWarn>
+    <NoWarn>CA1303</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

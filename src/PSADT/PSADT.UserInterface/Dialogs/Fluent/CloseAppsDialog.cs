@@ -353,7 +353,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 {
                     drawingBitmap = DrawingUtilities.ExtractBitmapFromExecutable(appFilePath);
                 }
-                catch
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     drawingBitmap = SystemIcons.Get(DialogSystemIcon.Application);
                 }

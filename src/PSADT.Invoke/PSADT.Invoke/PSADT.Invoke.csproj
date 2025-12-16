@@ -9,7 +9,7 @@
     <AssemblyDescription>Launches a PSAppDeployToolkit Invoke-AppDeployToolkit.ps1 script without a PowerShell console window being visible.</AssemblyDescription>
     <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.Invoke.Program</StartupObject>
-    <NoWarn>CA1031;CA1303;PInvoke009</NoWarn>
+    <NoWarn>CA1303;PInvoke009</NoWarn>
   </PropertyGroup>
 
   <!-- PSADT.Invoke has different debug settings for Release builds -->

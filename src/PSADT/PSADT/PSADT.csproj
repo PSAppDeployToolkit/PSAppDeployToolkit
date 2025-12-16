@@ -7,7 +7,7 @@
     <Product>PSAppDeployToolkit Common Support Library</Product>
     <AssemblyTitle>PSAppDeployToolkit Common Support Library</AssemblyTitle>
     <AssemblyDescription>This assembly serves to provide common code and utilities to all areas of PSAppDeployToolkit.</AssemblyDescription>
-    <NoWarn>CA1031</NoWarn>
+    <NoWarn>SYSLIB1045;SYSLIB1054</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
