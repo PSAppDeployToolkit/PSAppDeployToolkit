@@ -212,6 +212,7 @@ namespace PSADT.FileSystem
         /// Closes the specified handles.
         /// </summary>
         /// <param name="handleEntries"></param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No idea, but the compiler just doesn't understand that this is OK.")]
         public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.

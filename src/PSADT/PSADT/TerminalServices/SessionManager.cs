@@ -59,7 +59,7 @@ namespace PSADT.TerminalServices
         /// </summary>
         /// <param name="session"></param>
         /// <returns></returns>
-        internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
+        private static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
             // Internal helper for retrieving session information values.
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]

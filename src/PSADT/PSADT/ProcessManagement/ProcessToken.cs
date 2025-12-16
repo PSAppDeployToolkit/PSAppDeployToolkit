@@ -42,8 +42,27 @@ namespace PSADT.ProcessManagement
         /// name="useHighestAvailableToken"/> is <see langword="false"/>.</exception>
         internal static SafeFileHandle GetUserPrimaryToken(RunAsActiveUser runAsActiveUser, bool useLinkedAdminToken, bool useHighestAvailableToken)
         {
+            // Internal helper to make the compiler happier.
+            SafeFileHandle GetPrimaryFromUserToken(SafeFileHandle userToken)
+            {
+                if (useLinkedAdminToken || useHighestAvailableToken)
+                {
+                    try
+                    {
+                        return TokenManager.GetLinkedPrimaryToken(userToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!useHighestAvailableToken)
+                        {
+                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
+                        }
+                    }
+                }
+                return TokenManager.GetPrimaryToken(userToken);
+            }
+
             // Get the user's token.
-            SafeFileHandle hUserToken = null!;
             if (!AccountUtilities.CallerIsLocalSystem)
             {
                 // When we're not local system, we need to find the user's Explorer process and get its token.
@@ -57,8 +76,10 @@ namespace PSADT.ProcessManagement
                             _ = AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
                             if (TokenManager.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
                             {
-                                hUserToken = hProcessToken;
-                                break;
+                                using (hProcessToken)
+                                {
+                                    return GetPrimaryFromUserToken(hProcessToken);
+                                }
                             }
                         }
                     }
@@ -74,34 +95,13 @@ namespace PSADT.ProcessManagement
             {
                 // When we're local system, we can just get the primary token for the user.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out hUserToken);
-            }
-
-            // Throw if for whatever reason, we couldn't get a token.
-            if (hUserToken is null)
-            {
-                throw new InvalidOperationException($"Failed to retrieve a primary token for user [{runAsActiveUser.NTAccount}]. Ensure the user is logged on and has an active session.");
-            }
-
-            // Get the primary token for the user, either linked or not.
-            using (hUserToken)
-            {
-                if (useLinkedAdminToken || useHighestAvailableToken)
+                _ = WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out SafeFileHandle hUserToken);
+                using (hUserToken)
                 {
-                    try
-                    {
-                        return TokenManager.GetLinkedPrimaryToken(hUserToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!useHighestAvailableToken)
-                        {
-                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
-                        }
-                    }
+                    return GetPrimaryFromUserToken(hUserToken);
                 }
-                return TokenManager.GetPrimaryToken(hUserToken);
             }
+            throw new InvalidOperationException($"Failed to retrieve a primary token for user [{runAsActiveUser.NTAccount}]. Ensure the user is logged on and has an active session.");
         }
 
         /// <summary>

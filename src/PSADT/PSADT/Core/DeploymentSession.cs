@@ -563,7 +563,7 @@ namespace PSADT.Core
 
                 // Open log file with commencement message.
                 WriteInitialDivider(ref writtenDivider);
-                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLowerInvariant()} started.");
+                WriteLogEntry($"[{_installName}] {CultureInfo.InvariantCulture.TextInfo.ToLower(_deploymentType.ToString())} started.");
 
 
                 #endregion
@@ -1019,7 +1019,7 @@ namespace PSADT.Core
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
