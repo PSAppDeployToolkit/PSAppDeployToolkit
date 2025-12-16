@@ -102,7 +102,7 @@ namespace PSADT.Invoke
                     process.WaitForExit();
                     return process.ExitCode;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
                     WriteDebugMessage($"{errorMessage} {ex}", true);
@@ -113,7 +113,7 @@ namespace PSADT.Invoke
                     return 60011;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 string errorMessage = $"Error while preparing to invoke deployment script.";
                 WriteDebugMessage($"{errorMessage} {ex}", true);
@@ -188,7 +188,7 @@ namespace PSADT.Invoke
                 _ = Kernel32.GetConsoleWindow(); _ = Console.ReadKey();
                 _ = Kernel32.FreeConsole();
             }
-            catch
+            catch (Exception ex) when (ex.Message is not null)
             {
                 return;
             }

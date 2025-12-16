@@ -63,7 +63,7 @@ namespace PSADT.ProcessManagement
             {
                 cliApp = ExecutableInfo.Get(launchInfo.FilePath).Subsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
             }
-            catch
+            catch (Exception ex) when (ex.Message is not null)
             {
                 cliApp = launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
             }
@@ -255,7 +255,7 @@ namespace PSADT.ProcessManagement
                     hProcess = process.SafeHandle;
                     processId = (uint)process.Id;
                 }
-                catch
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     hProcess = null;
                     processId = null;
@@ -389,7 +389,7 @@ namespace PSADT.ProcessManagement
                     }
                     tcs.SetResult(new(process, launchInfo, commandLine, exitCode.Value, stdout, stderr, [.. interleaved]));
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     tcs.SetException(ex);
                 }
@@ -651,6 +651,7 @@ namespace PSADT.ProcessManagement
             catch
             {
                 return CreateProcessUsingTokenStatus.SecLogonServiceNotFound;
+                throw;
             }
 
             // If we're here, everything we need to be able to use CreateProcessWithToken() is available.

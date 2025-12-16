@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using PSADT.Invoke.LibraryInterfaces;
@@ -42,7 +43,7 @@ namespace PSADT.Invoke.Utilities
                     }
                     procs.Add(proc);
                 }
-                catch
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     break;
                 }

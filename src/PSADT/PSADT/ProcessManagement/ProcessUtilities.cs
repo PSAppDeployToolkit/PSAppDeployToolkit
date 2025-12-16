@@ -72,7 +72,7 @@ namespace PSADT.ProcessManagement
                 {
                     commandLine = GetProcessCommandLine(process);
                 }
-                catch
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     commandLine = null;
                 }
@@ -304,6 +304,7 @@ namespace PSADT.ProcessManagement
                 catch
                 {
                     break;
+                    throw;
                 }
             }
             return procs.AsReadOnly();

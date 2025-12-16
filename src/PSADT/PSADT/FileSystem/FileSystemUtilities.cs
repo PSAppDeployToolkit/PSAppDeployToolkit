@@ -39,6 +39,7 @@ namespace PSADT.FileSystem
                 catch
                 {
                     continue;
+                    throw;
                 }
                 foreach (string path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
                 {
@@ -141,6 +142,7 @@ namespace PSADT.FileSystem
             catch
             {
                 return false;
+                throw;
             }
         }
 

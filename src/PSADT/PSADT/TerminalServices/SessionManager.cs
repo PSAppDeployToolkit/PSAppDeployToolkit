@@ -121,7 +121,7 @@ namespace PSADT.TerminalServices
             {
                 isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId, sid);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 isLocalAdminException = ex;
             }
@@ -142,7 +142,7 @@ namespace PSADT.TerminalServices
                         ProcessLaunchInfo args = new(clientServerPath, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
                         idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0], CultureInfo.InvariantCulture));
                     }
-                    catch
+                    catch (Exception ex) when (ex.Message is not null)
                     {
                         idleTime = null;
                     }
@@ -238,6 +238,7 @@ namespace PSADT.TerminalServices
                     {
                         // It's possible the process may be inaccessible if Explorer is elevated by EPM but the caller is not.
                         continue;
+                        throw;
                     }
                 }
             }

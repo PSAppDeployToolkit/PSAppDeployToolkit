@@ -618,6 +618,7 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests systematic round-trip conversion using MemberData for comprehensive coverage.
         /// This test ensures that arguments can be converted to command line and back without loss.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1042:The member referenced by the MemberData attribute returns untyped data rows", Justification = "Too hard to change for now.")]
         [Theory]
         [MemberData(nameof(SystematicRoundTripTestData))]
         public void SystematicRoundTrip_ArgumentListToCommandLineAndBack_PreservesArguments(string[] originalArgv)
@@ -981,6 +982,7 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests UNC path round-trip scenarios to ensure perfect preservation.
         /// These tests verify that UNC paths can be converted to command line and back without any loss.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1042:The member referenced by the MemberData attribute returns untyped data rows", Justification = "Too hard to change for now.")]
         [Theory]
         [MemberData(nameof(UncPathRoundTripTestData))]
         public void UncPaths_RoundTripConversion_PreservesExactArguments(string[] originalArgs)
