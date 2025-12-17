@@ -40,6 +40,7 @@ namespace PSADT.ProcessManagement
         /// logged on or does not have an active session.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the linked administrative token cannot be retrieved and <paramref
         /// name="useHighestAvailableToken"/> is <see langword="false"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No idea, but the compiler just doesn't understand that this is OK.")]
         internal static SafeFileHandle GetUserPrimaryToken(RunAsActiveUser runAsActiveUser, bool useLinkedAdminToken, bool useHighestAvailableToken)
         {
             // Internal helper to make the compiler happier.

@@ -26,7 +26,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = stackalloc char[4096];
             uint res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
-            return buffer[..(int)res].ToString().TrimRemoveNull();
+            return buffer.Slice(0, (int)res).ToString().TrimRemoveNull();
         }
 
         /// <summary>
@@ -67,21 +67,21 @@ namespace PSADT.Utilities
             }
 
             OrderedDictionary dictionary = [];
-            foreach (string entry in buffer[..(int)res].ToString().Split('\0'))
+            foreach (string entry in buffer.Slice(0, (int)res).ToString().Split('\0'))
             {
                 if (string.IsNullOrWhiteSpace(entry))
                 {
                     continue;
                 }
 
-                int separatorIndex = entry.IndexOf('=', StringComparison.OrdinalIgnoreCase);
+                int separatorIndex = entry.IndexOf('=');
                 if (separatorIndex <= 0)
                 {
                     continue;
                 }
 
-                string key = entry[..separatorIndex];
-                string value = entry[(separatorIndex + 1)..];
+                string key = entry.Substring(0, separatorIndex);
+                string value = entry.Substring(separatorIndex + 1);
                 if (dictionary.Contains(key))
                 {
                     dictionary[key] = value;
@@ -103,7 +103,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = new char[65536];
             uint res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-            return new([.. buffer[..(int)res].ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name))]);
+            return new([.. buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name))]);
         }
 
         /// <summary>

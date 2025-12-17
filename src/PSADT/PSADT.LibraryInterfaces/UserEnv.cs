@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using Microsoft.Win32.SafeHandles;
-using PSADT.SafeHandles;
-using PSADT.Utilities;
+using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 

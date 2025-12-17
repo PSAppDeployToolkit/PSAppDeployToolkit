@@ -8,6 +8,7 @@ using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Security;
@@ -113,8 +114,13 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         public static bool TestFileAccess(FileInfo path, FileSystemRights desiredAccess = FileSystemRights.ReadAndExecute)
         {
+            // Validate the input path.
+            if (path is null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             // Validate that the path exists.
-            ArgumentNullException.ThrowIfNull(path, nameof(path));
             if (!path.Exists)
             {
                 throw new FileNotFoundException($"The specified path does not exist: {path}");

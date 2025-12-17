@@ -655,7 +655,7 @@ namespace PSADT.ClientServer
 
             // If the response is an error, rethrow it. Otherwise, deserialize the response.
             return response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.Ordinal)
-                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response[6..]))
+                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromString<Exception>(response.Substring(6)))
                 : DataSerialization.DeserializeFromString<T>(response);
         }
 
@@ -675,7 +675,7 @@ namespace PSADT.ClientServer
                     if (_logReader.ReadString() is string line && ModuleDatabase.IsDeploymentSessionActive())
                     {
                         // Test the line for a log severity.
-                        if (line.Contains(CommonUtilities.ArgumentSeparator, StringComparison.OrdinalIgnoreCase))
+                        if (line.Contains(CommonUtilities.ArgumentSeparator.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             string[] parts = line.Split(CommonUtilities.ArgumentSeparator);
                             ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0], CultureInfo.InvariantCulture), _logSource);
@@ -825,6 +825,6 @@ namespace PSADT.ClientServer
         /// <remarks>This field retrieves the location of the first loaded assembly in the current
         /// application domain whose file name ends with "PSADT.ClientServer.Client.exe". It is intended for internal use
         /// only.</remarks>
-        private static readonly string _assemblyLocation = typeof(ServerInstance).Assembly.Location.Replace("Server.dll", "Client.exe", StringComparison.OrdinalIgnoreCase);
+        private static readonly string _assemblyLocation = typeof(ServerInstance).Assembly.Location.Replace("Server.dll", "Client.exe");
     }
 }

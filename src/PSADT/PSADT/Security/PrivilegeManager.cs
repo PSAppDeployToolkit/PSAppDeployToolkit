@@ -55,7 +55,7 @@ namespace PSADT.Security
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 _ = AdvApi32.LookupPrivilegeName(null, attr.Luid, buffer, out uint retLength);
-                string privilegeName = buffer[..(int)retLength].ToString().TrimRemoveNull();
+                string privilegeName = buffer.Slice(0, (int)retLength).ToString().TrimRemoveNull();
                 return !Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege)
                     ? throw new ArgumentException($"Unknown privilege: {privilegeName}")
                     : privilege;
@@ -77,7 +77,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    ref LUID_AND_ATTRIBUTES attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer[(bufferOffset + (increment * i))..]));
+                    ref LUID_AND_ATTRIBUTES attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
                     if ((attr.Attributes & attributes) == attributes)
                     {
                         privileges.Add(GetPrivilege(in attr, charSpan));
@@ -88,7 +88,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    ref LUID_AND_ATTRIBUTES attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer[(bufferOffset + (increment * i))..]));
+                    ref LUID_AND_ATTRIBUTES attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }

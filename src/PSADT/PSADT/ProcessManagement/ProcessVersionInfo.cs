@@ -11,6 +11,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.Security;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -82,8 +83,13 @@ namespace PSADT.ProcessManagement
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
+            // Validate the input process.
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
             // Confirm we've got the privilege to read the process memory.
-            ArgumentNullException.ThrowIfNull(process, nameof(process));
             if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege))
             {
                 throw new UnauthorizedAccessException("The current process does not have the required SeDebugPrivilege to read the target process memory.");
@@ -309,7 +315,7 @@ namespace PSADT.ProcessManagement
         {
             Span<char> szLang = stackalloc char[(int)PInvoke.MAX_PATH];
             uint len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang);
-            string result = szLang[..(int)len].ToString().TrimRemoveNull();
+            string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
             return !string.IsNullOrWhiteSpace(result) ? result : null;
         }
 

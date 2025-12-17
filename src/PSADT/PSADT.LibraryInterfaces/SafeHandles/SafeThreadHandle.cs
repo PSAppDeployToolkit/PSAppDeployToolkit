@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Utilities;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Provides a safe handle for a native thread resource, ensuring that the underlying handle is released reliably.

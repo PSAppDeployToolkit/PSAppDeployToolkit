@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.LibraryInterfaces.Utilities;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
@@ -57,7 +59,7 @@ namespace PSADT.FileSystem
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref OBJECT_TYPE_INFORMATION typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr[ptrOffset..]));
+                ref OBJECT_TYPE_INFORMATION typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr.Slice(ptrOffset)));
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
@@ -182,7 +184,7 @@ namespace PSADT.FileSystem
 
                     // Add the handle information to the list if it matches the specified directory path.
                     string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter, StringComparison.OrdinalIgnoreCase) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
+                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                     {
                         openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                     }
@@ -215,8 +217,13 @@ namespace PSADT.FileSystem
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No idea, but the compiler just doesn't understand that this is OK.")]
         public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
+            // Confirm the provided input isn't null.
+            if (handleEntries is null)
+            {
+                throw new ArgumentNullException(nameof(handleEntries));
+            }
+
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
-            ArgumentNullException.ThrowIfNull(handleEntries, nameof(handleEntries));
             using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
             foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {

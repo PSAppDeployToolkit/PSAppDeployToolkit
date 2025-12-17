@@ -60,7 +60,7 @@ namespace PSADT.RegistryManagement
             }
 
             // Split hive and subkey so we know what root hive we're accessing.
-            string[] parts = fullKeyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null, StringComparison.OrdinalIgnoreCase).Split(['\\'], 2);
+            string[] parts = fullKeyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null).Split(['\\'], 2);
             if (parts.Length < 2)
             {
                 throw new ArgumentException("Invalid registry key format.", nameof(fullKeyPath));

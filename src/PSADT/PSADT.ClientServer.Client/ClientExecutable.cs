@@ -182,13 +182,13 @@ namespace PSADT.ClientServer
             Dictionary<string, string> arguments = [];
             for (int i = 0; i < argv.Length; i++)
             {
-                if (!argv[i].StartsWith('-'))
+                if (!argv[i].StartsWith("-"))
                 {
                     continue;
                 }
-                string key = argv[i][1..].Trim();
+                string key = argv[i].Substring(1).Trim();
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith('-') || value!.StartsWith('/'))
+                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
@@ -201,7 +201,7 @@ namespace PSADT.ClientServer
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
                     // Provided value is a registry key path.
-                    if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue[..valueDivider], argvDictValue[(valueDivider + 1)..], null) is not string argvDictContent)
+                    if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue.Substring(0, valueDivider), argvDictValue.Substring(valueDivider + 1), null) is not string argvDictContent)
                     {
                         throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
                     }
@@ -378,7 +378,7 @@ namespace PSADT.ClientServer
                                         }
 
                                         // Update the progress dialog with the provided parameters.
-                                        DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3], CultureInfo.InvariantCulture) : null, !string.IsNullOrWhiteSpace(parts[4]) ? Enum.Parse<DialogMessageAlignment>(parts[4]) : null);
+                                        DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3], CultureInfo.InvariantCulture) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
                                         WriteResult(SerializeObject(true));
                                     }
                                     else if (parts[0] == "CloseProgressDialog")

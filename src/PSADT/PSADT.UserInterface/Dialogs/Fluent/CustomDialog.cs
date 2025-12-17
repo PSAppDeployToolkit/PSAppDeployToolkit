@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
@@ -53,7 +52,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set the result and call base method to handle window closure.
             if (DialogResult is string)
             {
-                DialogResult = ((AccessText)ButtonLeft.Content).Text.Replace("_", null, StringComparison.OrdinalIgnoreCase);
+                DialogResult = ((AccessText)ButtonLeft.Content).Text.Replace("_", null);
             }
             base.ButtonLeft_Click(sender, e);
         }
@@ -68,7 +67,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set the result and call base method to handle window closure.
             if (DialogResult is string)
             {
-                DialogResult = ((AccessText)ButtonMiddle.Content).Text.Replace("_", null, StringComparison.OrdinalIgnoreCase);
+                DialogResult = ((AccessText)ButtonMiddle.Content).Text.Replace("_", null);
             }
             base.ButtonMiddle_Click(sender, e);
         }
@@ -83,7 +82,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set the result and call base method to handle window closure.
             if (DialogResult is string)
             {
-                DialogResult = ((AccessText)ButtonRight.Content).Text.Replace("_", null, StringComparison.OrdinalIgnoreCase);
+                DialogResult = ((AccessText)ButtonRight.Content).Text.Replace("_", null);
             }
             base.ButtonRight_Click(sender, e);
         }

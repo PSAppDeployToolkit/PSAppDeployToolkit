@@ -21,6 +21,7 @@ using PSADT.Core;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
 using Windows.Win32;
@@ -47,7 +48,10 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
-            ArgumentNullException.ThrowIfNull(launchInfo, nameof(launchInfo));
+            if (launchInfo is null)
+            {
+                throw new ArgumentNullException(nameof(launchInfo));
+            }
             Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask;
             List<string> stdout = [], stderr = [];
             ConcurrentQueue<string> interleaved = [];
@@ -379,7 +383,7 @@ namespace PSADT.ProcessManagement
                     }
                     else
                     {
-                        await process.WaitForExitAsync().ConfigureAwait(false);
+                        process.WaitForExit();
                         await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
@@ -481,14 +485,14 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Split into name and value (only on the first '=').
-                    int idx = entry.IndexOf('=', StringComparison.OrdinalIgnoreCase);
+                    int idx = entry.IndexOf("=");
                     if (idx < 0)
                     {
                         throw new ArgumentException($"Invalid environment variable entry: '{entry}'. Expected format is 'Name=Value'.", nameof(environmentBlock));
                     }
 
                     // Add the valid entry and advance pointer past this string + its null terminator.
-                    envDict.Add(entry[..idx], entry[(idx + 1)..]);
+                    envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
                     envBlockPtr += (entry.Length + 1) * sizeof(char);
                 }
                 return envDict.Count == 0 ? throw new ArgumentException("The environment block is empty.", nameof(environmentBlock)) : new(envDict);
