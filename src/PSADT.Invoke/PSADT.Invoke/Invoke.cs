@@ -267,7 +267,7 @@ namespace PSADT.Invoke
         /// code propagation. The returned argument string wraps script invocation in a try/catch block to preserve
         /// error handling semantics.</remarks>
         /// <param name="cliArguments">The list of command-line arguments to be passed to the PowerShell script. Must not include the -Command
-        /// parameter. The list may be modified by this method.</param>
+        /// parameter. The list might be modified by this method.</param>
         /// <returns>A string containing the complete set of arguments to be supplied to PowerShell.exe, including the script
         /// path and any additional arguments.</returns>
         /// <exception cref="ArgumentException">Thrown if the -Command parameter is present in the <paramref name="cliArguments"/> list. Use the -File
