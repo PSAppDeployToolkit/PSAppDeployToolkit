@@ -556,7 +556,7 @@ namespace PSADT.ClientServer
                 {
                     Environment.Exit(result.ExitCode);
                 }
-                return SerializeObject(DialogConstants.BlockExecutionButtonText);
+                return SerializeObject(DialogManager.BlockExecutionButtonText);
             }
 
             // Confirm we have a DialogType and that it's valid.

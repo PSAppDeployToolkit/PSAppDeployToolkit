@@ -301,14 +301,14 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// with their corresponding plain text content.
         /// </summary>
         /// <remarks>This method processes text to remove specific formatting tags, such as bold, italic,
-        /// accent, and URL tags, as defined by the <see cref="DialogConstants.TextFormattingRegex"/> regular expression.
+        /// accent, and URL tags, as defined by the <see cref="DialogManager.TextFormattingRegex"/> regular expression.
         /// The content within these tags is preserved and included in the returned string. Handles nested tags properly
         /// by repeatedly processing the text until all tags are removed.</remarks>
         /// <param name="text">The input string containing formatting tags to be stripped.</param>
         /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
         protected static string StripFormattingTags(string text)
         {
-            foreach (Match match in DialogConstants.TextFormattingRegex.Matches(text))
+            foreach (Match match in DialogManager.TextFormattingRegex.Matches(text))
             {
                 if (match.Groups["UrlLinkSimple"] is Group urlLinkSimple && urlLinkSimple.Success)
                 {
