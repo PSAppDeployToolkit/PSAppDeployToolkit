@@ -94,12 +94,12 @@ function Close-ADTInstallationProgress
                 # Send out the final toast notification.
                 switch ($adtSession.GetDeploymentStatus())
                 {
-                    ([PSADT.Core.DeploymentStatus]::FastRetry)
+                    ([PSAppDeployToolkit.SessionManagement.DeploymentStatus]::FastRetry)
                     {
                         Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText (Get-ADTStringTable).BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
                         break
                     }
-                    ([PSADT.Core.DeploymentStatus]::Error)
+                    ([PSAppDeployToolkit.SessionManagement.DeploymentStatus]::Error)
                     {
                         Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText (Get-ADTStringTable).BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
                         break

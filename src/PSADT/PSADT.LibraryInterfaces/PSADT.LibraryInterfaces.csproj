@@ -16,6 +16,7 @@
     <InternalsVisibleTo Include="PSADT" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
+    <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>
 
   <ItemGroup>

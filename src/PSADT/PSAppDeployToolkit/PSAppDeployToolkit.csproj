@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PSAppDeployToolkit</RootNamespace>
+    <AssemblyName>PSAppDeployToolkit</AssemblyName>
+    <Product>PSAppDeployToolkit PowerShell Module Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit PowerShell Module Library</AssemblyTitle>
+    <AssemblyDescription>This assembly contains all PowerShell-specific elements of the solution.</AssemblyDescription>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>SYSLIB1045</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
+    <InternalsVisibleTo Include="PSADT.UserInterface" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="System.Management.Automation">
+      <HintPath>$(SystemRoot)\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
+    <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Permissions" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.LibraryInterfaces\PSADT.LibraryInterfaces.csproj" />
+    <ProjectReference Include="..\PSADT\PSADT.csproj" />
+  </ItemGroup>
+</Project>

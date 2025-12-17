@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
-namespace PSADT.Utilities
+namespace PSAppDeployToolkit.Utilities
 {
     /// <summary>
     /// A collection of utility methods for use in the PSADT module.

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
+using PSAppDeployToolkit.SessionManagement;
 
-namespace PSADT.Core
+namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
     /// The internal database for the PSAppDeployToolkit module, as initialised via PSAppDeployToolkit.psm1.
@@ -121,16 +121,6 @@ namespace PSADT.Core
         }
 
         /// <summary>
-        /// Retrieves the default PowerShell runspace associated with the current context.
-        /// </summary>
-        /// <returns>The default <see cref="Runspace"/> instance.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the default runspace is not initialized. This typically occurs if the assembly is not loaded via the PSAppDeployToolkit PowerShell module.</exception>
-        internal static Runspace GetRunspace()
-        {
-            return _defaultRunspace ?? throw new InvalidOperationException(pwshErrorMessage);
-        }
-
-        /// <summary>
         /// Utility method to invoke a scriptblock using the module's internal SessionState.
         /// </summary>
         /// <param name="scriptBlock"></param>
@@ -150,14 +140,6 @@ namespace PSADT.Core
         /// Represents the PSAppDeployToolkit module's SessionState object.
         /// </summary>
         private static SessionState? _sessionState;
-
-        /// <summary>
-        /// Represents the default runspace for executing PowerShell commands.
-        /// </summary>
-        /// <remarks>This field is initialized with the default runspace provided by the PowerShell
-        /// environment. If the default runspace is not available, an <see cref="InvalidOperationException"/> is thrown.
-        /// This field is intended for use within the context of the PSAppDeployToolkit PowerShell module.</remarks>
-        private static readonly Runspace _defaultRunspace = Runspace.DefaultRunspace ?? throw new InvalidOperationException(pwshErrorMessage);
 
         /// <summary>
         /// Represents the error message displayed when PSAppDeployToolkit functions or methods are used without prior initialization.

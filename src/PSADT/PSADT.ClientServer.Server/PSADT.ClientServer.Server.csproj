@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
+    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

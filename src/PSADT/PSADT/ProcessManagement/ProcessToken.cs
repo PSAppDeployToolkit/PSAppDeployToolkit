@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.Core;
+using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.Security;
 using PSADT.Utilities;

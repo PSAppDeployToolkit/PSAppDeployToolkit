@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.Core
+namespace PSAppDeployToolkit.SessionManagement
 {
     /// <summary>
     /// A bitfield representing the possible settings used within an active DeploymentSession object.

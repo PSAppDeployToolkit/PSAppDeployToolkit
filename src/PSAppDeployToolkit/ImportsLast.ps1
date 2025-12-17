@@ -15,15 +15,15 @@ try
     # Define object for holding all PSADT variables.
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
             Callbacks = ([ordered]@{
-                    [PSADT.Core.CallbackType]::OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::OnDefer = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSADT.Core.CallbackType]::OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::OnDefer = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Common.CallbackType]::OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                 }).AsReadOnly()
             Directories = [pscustomobject]@{
                 Defaults = ([ordered]@{
@@ -42,7 +42,7 @@ try
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ClientServerProcess = $null
-            Sessions = [System.Collections.Generic.List[PSADT.Core.DeploymentSession]]::new()
+            Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.SessionManagement.DeploymentSession]]::new()
             Environment = $null
             Language = $null
             Config = $null
@@ -89,7 +89,7 @@ try
         }).AsReadOnly()
 
     # Send the module's database into the C# code for internal access.
-    [PSADT.Core.ModuleDatabase]::Init($ADT)
+    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Init($ADT)
 }
 catch
 {

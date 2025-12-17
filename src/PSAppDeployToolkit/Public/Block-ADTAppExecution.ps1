@@ -114,7 +114,7 @@ function Block-ADTAppExecution
                         Write-ADTLogEntry -Message "There is no active logged on user. Verifying client/server access permissions using [BUILTIN\Users]."
                         $usersSid = [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid)
                         $usersNtAccount = $usersSid.Translate([System.Security.Principal.NTAccount]); $usersSessionId = [System.UInt32]::MaxValue
-                        Set-ADTClientServerProcessPermissions -User ([PSADT.Core.RunAsActiveUser]::new($usersNtAccount, $usersSid, $usersSessionId, $false))
+                        Set-ADTClientServerProcessPermissions -User ([PSADT.Foundation.RunAsActiveUser]::new($usersNtAccount, $usersSid, $usersSessionId, $false))
                     }
                     else
                     {

@@ -2,7 +2,7 @@
 using System.Security.Principal;
 using PSADT.TerminalServices;
 
-namespace PSADT.Core
+namespace PSADT.Foundation
 {
     /// <summary>
     /// Represents a user running under a specific Windows NT account context, including associated security details.

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 
-namespace PSADT.Core
+namespace PSAppDeployToolkit.Logging
 {
     /// <summary>
     /// Represents all data used as the basis for logging a PSAppDeployToolkit PowerShell log entry via `[ADTSession]::WriteLogEntry()`.

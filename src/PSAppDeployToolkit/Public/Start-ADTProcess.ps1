@@ -209,7 +209,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Core.RunAsActiveUser]$RunAsActiveUser,
+        [PSADT.Foundation.RunAsActiveUser]$RunAsActiveUser,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
@@ -614,17 +614,17 @@ function Start-ADTProcess
             $isSuccessCode = $SuccessExitCodes.Contains($ExitCode)
             $isRestartCode = $RebootExitCodes.Contains($ExitCode)
             $isFailureCode = !$isSuccessCode -and !$isRestartCode
-            if ($isFailureCode -and ($adtSessionStatus -le [PSADT.Core.DeploymentStatus]::Error))
+            if ($isFailureCode -and ($adtSessionStatus -le [PSAppDeployToolkit.SessionManagement.DeploymentStatus]::Error))
             {
                 $adtSession.SetExitCode($ExitCode)
                 return
             }
-            if ($isRestartCode -and ($adtSessionStatus -le [PSADT.Core.DeploymentStatus]::RestartRequired))
+            if ($isRestartCode -and ($adtSessionStatus -le [PSAppDeployToolkit.SessionManagement.DeploymentStatus]::RestartRequired))
             {
                 $adtSession.SetExitCode($ExitCode)
                 return
             }
-            if ($isSuccessCode -and ($adtSessionStatus -le [PSADT.Core.DeploymentStatus]::Complete))
+            if ($isSuccessCode -and ($adtSessionStatus -le [PSAppDeployToolkit.SessionManagement.DeploymentStatus]::Complete))
             {
                 $adtSession.SetExitCode($ExitCode)
                 return
@@ -905,7 +905,7 @@ function Start-ADTProcess
                         {
                             "N/A"
                         }
-                        Write-ADTLogEntry -Message "$property Output from Execution: $streamMessage" -HostLogStreamType ([PSADT.Core.HostLogStreamType]::None)
+                        Write-ADTLogEntry -Message "$property Output from Execution: $streamMessage" -HostLogStreamType ([PSAppDeployToolkit.Logging.HostLogStreamType]::None)
                     }
                 }
 

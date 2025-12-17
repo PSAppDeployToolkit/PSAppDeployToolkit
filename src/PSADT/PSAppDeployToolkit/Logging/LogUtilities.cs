@@ -10,9 +10,10 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using PSADT.Extensions;
+using PSAppDeployToolkit.Extensions;
+using PSAppDeployToolkit.Foundation;
 
-namespace PSADT.Core
+namespace PSAppDeployToolkit.Logging
 {
     /// <summary>
     /// Provides utility methods for logging operations, including writing log entries to various outputs such as files,

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Principal;
+using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
-using PSADT.Core;
 
 namespace PSADT.TerminalServices
 {

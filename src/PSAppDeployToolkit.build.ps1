@@ -815,7 +815,7 @@ Add-BuildTask Build {
             throw 'AzureSignTool not found.'
         }
         Write-Build Gray '        Signing module...'
-        Get-ChildItem -Path $Script:BuildModuleRoot -Include '*.ps*1', 'PSADT*.dll', 'PSADT*.exe', 'iNKORE.UI.WPF*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
+        Get-ChildItem -Path $Script:BuildModuleRoot -Include '*.ps*1', 'PSAppDeployToolkit.dll', 'PSADT*.dll', 'PSADT*.exe', 'iNKORE.UI.WPF*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
         & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 -ifl FilesToSign.txt
     }
     else

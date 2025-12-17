@@ -5,13 +5,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Management.Automation.Runspaces;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Core;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
@@ -46,12 +44,6 @@ namespace PSADT.ProcessManagement
             }
             ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
             Dictionary<Process, string[]> processArgvMap = [];
-
-            // Ensure we have a PowerShell runspace available for command execution here.
-            if (processDefinitions.Any(p => p.Filter is not null) && Runspace.DefaultRunspace is null)
-            {
-                Runspace.DefaultRunspace = ModuleDatabase.GetRunspace();
-            }
 
             // Inline lambda to get the command line from the given process.
             static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)

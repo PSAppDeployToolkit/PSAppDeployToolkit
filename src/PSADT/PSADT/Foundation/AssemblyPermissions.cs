@@ -8,7 +8,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.FileSystem;
 using PSADT.ProcessManagement;
 
-namespace PSADT.Core
+namespace PSADT.Foundation
 {
     /// <summary>
     /// Provides methods for managing and ensuring file system permissions for specific users and file paths.

@@ -21,7 +21,7 @@ function Private:Exit-ADTInvocation
     )
 
     # Invoke on-exit callbacks.
-    $callbackErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::OnExit)))
+    $callbackErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::OnExit)))
     {
         try
         {

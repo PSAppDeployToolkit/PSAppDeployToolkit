@@ -49,7 +49,7 @@ function Write-ADTLogEntry
         The message to write to the log file or output to the console.
 
     .OUTPUTS
-        PSADT.Core.LogEntry[]
+        PSAppDeployToolkit.Logging.LogEntry[]
 
         This function returns the provided output if -PassThru is specified.
 
@@ -84,7 +84,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Core.LogSeverity]$Severity,
+        [PSAppDeployToolkit.Logging.LogSeverity]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -97,7 +97,7 @@ function Write-ADTLogEntry
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias('LogType')]
-        [PSADT.Core.LogStyle]$LogStyle,
+        [PSAppDeployToolkit.Logging.LogStyle]$LogStyle,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -109,7 +109,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Core.HostLogStreamType]$HostLogStreamType,
+        [PSAppDeployToolkit.Logging.HostLogStreamType]$HostLogStreamType,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
@@ -129,7 +129,7 @@ function Write-ADTLogEntry
         # Force the HostLogStreamType to none if InformationPreference or WarningPreference is silent.
         $bypassSession = if ((($Severity -le 1) -and ($InformationPreference -match '^(SilentlyContinue|Ignore)$')) -or (($Severity -eq 2) -and ($WarningPreference -match '^(SilentlyContinue|Ignore)$')))
         {
-            !($PSBoundParameters.HostLogStreamType = $HostLogStreamType = [PSADT.Core.HostLogStreamType]::None)
+            !($PSBoundParameters.HostLogStreamType = $HostLogStreamType = [PSAppDeployToolkit.Logging.HostLogStreamType]::None)
         }
     }
 
@@ -176,9 +176,9 @@ function Write-ADTLogEntry
             {
                 Initialize-ADTModule
             }
-            [PSADT.Core.LogUtilities]::WriteLogEntry(
+            [PSAppDeployToolkit.Logging.LogUtilities]::WriteLogEntry(
                 $messages,
-                $(if ($PSBoundParameters.ContainsKey('HostLogStreamType')) { $HostLogStreamType } else { ([PSADT.Core.HostLogStreamType]::None, [PSADT.Core.HostLogStreamType]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)] }),
+                $(if ($PSBoundParameters.ContainsKey('HostLogStreamType')) { $HostLogStreamType } else { ([PSAppDeployToolkit.Logging.HostLogStreamType]::None, [PSAppDeployToolkit.Logging.HostLogStreamType]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)] }),
                 $false,
                 $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
                 $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),

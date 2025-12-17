@@ -1,4 +1,4 @@
-﻿namespace PSADT.Core
+﻿namespace PSAppDeployToolkit.Common
 {
     /// <summary>
     /// The type of callback to be executed.

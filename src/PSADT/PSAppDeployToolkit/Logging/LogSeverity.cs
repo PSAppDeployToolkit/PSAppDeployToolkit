@@ -1,4 +1,4 @@
-﻿namespace PSADT.Core
+﻿namespace PSAppDeployToolkit.Logging
 {
     /// <summary>
     /// The severity of the log entry.
