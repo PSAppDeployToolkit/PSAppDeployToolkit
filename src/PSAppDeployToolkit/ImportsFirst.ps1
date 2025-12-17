@@ -83,12 +83,6 @@ try
         New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
     }
 
-    # Throw if any previous version of the unofficial PSADT module is found on the system.
-    if (Get-Module -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
-    {
-        Write-Warning -Message "This module should not be used while the unofficial v3 PSADT module is installed."
-    }
-
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName PSAppDeployToolkit.psd1
