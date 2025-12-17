@@ -161,7 +161,7 @@ namespace PSAppDeployToolkit.Logging
         /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
-        internal static readonly UTF8Encoding LogEncoding = new(true);
+        internal static readonly UTF8Encoding LogEncoding = new(true, true);
 
         /// <summary>
         /// Gets the Write-Host delegate script block.
