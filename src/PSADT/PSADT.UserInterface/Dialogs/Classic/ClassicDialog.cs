@@ -19,7 +19,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Base class for classic dialog forms.
     /// </summary>
-    internal partial class ClassicDialog : BaseDialog, IDialogBase
+    internal partial class ClassicDialog : ClassicBase, IDialogBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class.
