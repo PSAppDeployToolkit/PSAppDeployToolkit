@@ -205,8 +205,6 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             CloseAppsDialogResult closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
 
-            Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
-
             // #################################################################################
 
             // Show CloseApps Dialog.
@@ -235,8 +233,6 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
                 string customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
 
-                Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
-
                 // #################################################################################
 
                 // Show Input Dialog
@@ -247,24 +243,8 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
                 // Show Restart Dialog
             }
-            else
-            {
-                Console.WriteLine("Installation deferred or cancelled.");
-            }
 
             string restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
-
-            Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
-
-            if (restartResult == "Restart")
-            {
-                Console.WriteLine("Proceeding with installation after restart.");
-                // Implement actual restart logic here
-            }
-            else if (restartResult == "Defer")
-            {
-                Console.WriteLine("Installation deferred by the user.");
-            }
         }
     }
 }
