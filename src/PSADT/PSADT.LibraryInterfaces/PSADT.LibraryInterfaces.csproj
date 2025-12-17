@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PSADT.LibraryInterfaces</RootNamespace>
+    <AssemblyName>PSADT.LibraryInterfaces</AssemblyName>
+    <Product>PSAppDeployToolkit Win32 Native Methods Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit Win32 Native Methods Library</AssemblyTitle>
+    <AssemblyDescription>This assembly provides Win32 library access to all areas of PSAppDeployToolkit.</AssemblyDescription>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <NoWarn>SYSLIB1054</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PSADT" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.UserInterface" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.264">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Memory" Version="4.6.3" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+  </ItemGroup>
+</Project>

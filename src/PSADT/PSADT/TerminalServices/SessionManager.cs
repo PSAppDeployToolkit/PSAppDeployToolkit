@@ -12,8 +12,8 @@ using PSADT.AccountManagement;
 using PSADT.Core;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.ProcessManagement;
-using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.Utilities;
 using Windows.Win32;
@@ -44,7 +44,7 @@ namespace PSADT.TerminalServices
                 List<SessionInfo> sessions = new(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
-                    ref WTS_SESSION_INFOW session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan[(objLength * i)..]));
+                    ref WTS_SESSION_INFOW session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan.Slice(objLength * i)));
                     if (GetSessionInfo(in session) is SessionInfo sessionInfo)
                     {
                         sessions.Add(sessionInfo);
@@ -138,7 +138,7 @@ namespace PSADT.TerminalServices
                     try
                     {
                         RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
-                        string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe", StringComparison.OrdinalIgnoreCase);
+                        string clientServerPath = typeof(SessionInfo).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe");
                         ProcessLaunchInfo args = new(clientServerPath, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
                         idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0], CultureInfo.InvariantCulture));
                     }
@@ -209,7 +209,7 @@ namespace PSADT.TerminalServices
                     int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
-                        ref WTS_PROCESS_INFOW process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan[(objLength * i)..]));
+                        ref WTS_PROCESS_INFOW process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan.Slice(objLength * i)));
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
                             return process.pUserSid.ToSecurityIdentifier();

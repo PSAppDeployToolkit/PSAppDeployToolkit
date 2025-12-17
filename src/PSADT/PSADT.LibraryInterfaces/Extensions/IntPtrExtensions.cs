@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace PSADT.Extensions
+namespace PSADT.LibraryInterfaces.Extensions
 {
     /// <summary>
     /// Provides extension methods for working with memory addresses represented by <see cref="IntPtr"/>. These methods

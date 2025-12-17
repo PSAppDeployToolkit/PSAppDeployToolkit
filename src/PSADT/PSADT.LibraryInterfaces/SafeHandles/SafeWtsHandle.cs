@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.Win32;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Represents a wrapper for an environment block handle that ensures the handle is properly released.

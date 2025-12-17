@@ -2,13 +2,12 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.LibraryInterfaces;
-using PSADT.Utilities;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Represents a safe handle for a process thread attribute list used with Windows process and thread creation APIs.

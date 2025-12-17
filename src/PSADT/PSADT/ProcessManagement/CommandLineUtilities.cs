@@ -69,7 +69,10 @@ namespace PSADT.ProcessManagement
         public static string ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
         {
             // Consider a null or empty argument list as an error.
-            ArgumentNullException.ThrowIfNull(argv, nameof(argv));
+            if (argv is null)
+            {
+                throw new ArgumentNullException("The specified enumerable is null.", (Exception?)null);
+            }
             string[] args = [.. argv];
             if (args.Length == 0)
             {
@@ -230,7 +233,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         // Append the raw slice of the command line that represents the entire quoted value.
-                        _ = result.Append(commandLine[valueStartPosition..tempPosition]);
+                        string quotedPath = commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString(); _ = result.Append(quotedPath);
                     }
 
                     // Update the main position to continue parsing after this key-value pair.
@@ -240,7 +243,7 @@ namespace PSADT.ProcessManagement
                 {
                     // Parse unquoted value - might be a path with spaces.
                     string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    _ = value.Contains(' ', StringComparison.OrdinalIgnoreCase) && !value.StartsWith('\"')
+                    _ = value.Contains(" ") && !value.StartsWith("\"")
                         ? result.Append('"').Append(value).Append('"')
                         : result.Append(value);
                 }
@@ -337,7 +340,7 @@ namespace PSADT.ProcessManagement
             {
                 position = tokenPositions[TokenCount];
             }
-            else if (Path.EndsWith('\\') && position < commandLine.Length)
+            else if (Path.EndsWith("\\") && position < commandLine.Length)
             {
                 // If the parsed path ends with a backslash, it's likely a directory.
                 // The original logic might have consumed a following argument.
@@ -401,7 +404,7 @@ namespace PSADT.ProcessManagement
                 string token = tokens[i];
                 if (token.Length > 0)
                 {
-                    char lastChar = token[^1];
+                    char lastChar = token[token.Length - 1];
                     if (lastChar is ';' or '|' or '&' or '<' or '>' or '^')
                     {
                         // This token contains a command separator, so the path ends here.
@@ -417,7 +420,7 @@ namespace PSADT.ProcessManagement
                 // If a token ends with a backslash, it's likely a directory. The path ends here.
                 for (int i = 0; i < tokens.Count - 1; i++)
                 {
-                    if (tokens[i].EndsWith('\\'))
+                    if (tokens[i].EndsWith("\\"))
                     {
                         return (string.Join(" ", tokens.Take(i + 1)), i + 1);
                     }
@@ -432,8 +435,8 @@ namespace PSADT.ProcessManagement
                     {
                         string token = tokens[i];
 
-                        if (token.Contains(';', StringComparison.OrdinalIgnoreCase) || token.Contains('|', StringComparison.OrdinalIgnoreCase) || token.Contains('&', StringComparison.OrdinalIgnoreCase) ||
-                            token.Contains('<', StringComparison.OrdinalIgnoreCase) || token.Contains('>', StringComparison.OrdinalIgnoreCase) || token.Contains('^', StringComparison.OrdinalIgnoreCase))
+                        if (token.Contains(";") || token.Contains("|") || token.Contains("&") ||
+                            token.Contains("<") || token.Contains(">") || token.Contains("^"))
                         {
                             return (string.Join(" ", tokens.Take(i)), i);
                         }
@@ -441,9 +444,9 @@ namespace PSADT.ProcessManagement
 
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
-                    string lastToken = tokens[^1];
-                    if (!lastToken.StartsWith('/') && !lastToken.StartsWith('-') &&
-                        !lastToken.Contains('=', StringComparison.OrdinalIgnoreCase) && !lastToken.StartsWith('{'))
+                    string lastToken = tokens[tokens.Count - 1];
+                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") &&
+                        !lastToken.Contains("=") && !lastToken.StartsWith("{"))
                     {
                         return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
                     }
@@ -454,7 +457,7 @@ namespace PSADT.ProcessManagement
             if (tokens.Count > 3 && combinedPath.Length > 2 && char.IsLetter(combinedPath[0]) && combinedPath[1] == ':')
             {
                 // Check if the last token looks like an argument
-                string lastToken = tokens[^1];
+                string lastToken = tokens[tokens.Count - 1];
                 if (IsArgumentLike(lastToken))
                 {
                     return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
@@ -527,19 +530,19 @@ namespace PSADT.ProcessManagement
             }
 
             // Check for flag patterns.
-            if (part.StartsWith('/') || part.StartsWith('-'))
+            if (part.StartsWith("/") || part.StartsWith("-"))
             {
                 return true;
             }
 
             // Check for key=value patterns.
-            if (part.Contains('=', StringComparison.OrdinalIgnoreCase))
+            if (part.Contains("="))
             {
                 return true;
             }
 
             // Check for GUID patterns.
-            return part.StartsWith('{') && part.EndsWith('}');
+            return part.StartsWith("{") && part.EndsWith("}");
         }
 
         /// <summary>
@@ -626,7 +629,7 @@ namespace PSADT.ProcessManagement
             {
                 // This looks like a POSIX-style path, e.g., /C/Program Files/app.exe
                 // Convert it to a Windows-style path, e.g., C:\Program Files\app.exe
-                return $"{path[1]}:\\{path[3..].Replace('/', '\\')}";
+                return $"{path[1]}:\\{path.Substring(3).Replace('/', '\\')}";
             }
             return path;
         }
@@ -677,11 +680,11 @@ namespace PSADT.ProcessManagement
             }
 
             // Check if the argument is a key-value pair where the value is already quoted.
-            int equalsPos = argument.IndexOf('=', StringComparison.OrdinalIgnoreCase);
+            int equalsPos = argument.IndexOf("=");
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
-                string value = argument[(equalsPos + 1)..];
-                if (value.StartsWith('\"') && value.EndsWith('\"'))
+                string value = argument.Substring(equalsPos + 1);
+                if (value.StartsWith("\"") && value.EndsWith("\""))
                 {
                     // The value is already quoted. We can return the argument as-is,
                     // as our compatible parser will handle it correctly.

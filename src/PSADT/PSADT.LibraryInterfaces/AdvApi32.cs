@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.SafeHandles;
-using PSADT.Utilities;
+using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -405,7 +405,7 @@ namespace PSADT.LibraryInterfaces
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
-                        lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
+                        lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
                     }
                 }
                 return res;

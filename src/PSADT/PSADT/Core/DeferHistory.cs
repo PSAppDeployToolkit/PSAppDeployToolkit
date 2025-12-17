@@ -3,18 +3,38 @@
 namespace PSADT.Core
 {
     /// <summary>
-    /// Represents the history and state of deferred operations, including remaining deferrals, deadlines, and the last
-    /// interval execution time.
+    /// Represents the deferral history for an operation, including the number of remaining deferrals, the deadline for
+    /// completion, and the most recent run interval time.
     /// </summary>
-    /// <remarks>This record is used to track the state of deferred operations, such as how many deferrals
-    /// remain, the deadline for completing the deferrals,  and the last time the operation was executed within the
-    /// defined interval. It is immutable and designed for scenarios where deferred execution needs to be monitored or
-    /// managed.</remarks>
-    /// <param name="DeferTimesRemaining">The number of deferrals remaining. A value of <see langword="null"/> indicates that the deferral count is not
-    /// applicable or unlimited.</param>
-    /// <param name="DeferDeadline">The deadline by which all deferrals must be completed. A value of <see langword="null"/> indicates that no
-    /// deadline is set.</param>
-    /// <param name="DeferRunIntervalLastTime">The timestamp of the last execution within the defined interval. A value of <see langword="null"/> indicates
-    /// that no execution has occurred yet.</param>
-    public sealed record DeferHistory(uint? DeferTimesRemaining, DateTime? DeferDeadline, DateTime? DeferRunIntervalLastTime);
+    public sealed record DeferHistory
+    {
+        /// <summary>
+        /// Initializes a new instance of the DeferHistory class with the specified defer times remaining, deadline, and
+        /// last run interval time.
+        /// </summary>
+        /// <param name="deferTimesRemaining">The number of times the operation can still be deferred. Specify null if there is no limit.</param>
+        /// <param name="deferDeadline">The deadline by which the operation must be completed. Specify null if there is no deadline.</param>
+        /// <param name="deferRunIntervalLastTime">The most recent time the defer interval was run. Specify null if the operation has not yet run.</param>
+        public DeferHistory(uint? deferTimesRemaining, DateTime? deferDeadline, DateTime? deferRunIntervalLastTime)
+        {
+            DeferTimesRemaining = deferTimesRemaining;
+            DeferDeadline = deferDeadline;
+            DeferRunIntervalLastTime = deferRunIntervalLastTime;
+        }
+
+        /// <summary>
+        /// The amount of deferrals remaining for this deployment.
+        /// </summary>
+        public uint? DeferTimesRemaining { get; }
+
+        /// <summary>
+        /// The deadline date and time for deferrals.
+        /// </summary>
+        public DateTime? DeferDeadline { get; }
+
+        /// <summary>
+        /// The last time the defer run interval was executed.
+        /// </summary>
+        public DateTime? DeferRunIntervalLastTime { get; }
+    }
 }

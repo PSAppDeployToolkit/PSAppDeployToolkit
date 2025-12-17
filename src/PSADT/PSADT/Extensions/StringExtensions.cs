@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PSADT.Extensions
+﻿namespace PSADT.Extensions
 {
     /// <summary>
     /// Extension methods for string manipulation.
@@ -14,7 +12,7 @@ namespace PSADT.Extensions
         /// <returns></returns>
         internal static string TrimRemoveNull(this string str)
         {
-            return str.Replace("\0", null, StringComparison.OrdinalIgnoreCase).Trim();
+            return str.Replace("\0", null).Trim();
         }
 
         /// <summary>
@@ -24,7 +22,7 @@ namespace PSADT.Extensions
         /// <returns>A new string with trailing whitespace removed and all null characters replaced with an empty string.</returns>
         internal static string TrimEndRemoveNull(this string str)
         {
-            return str.Replace("\0", null, StringComparison.OrdinalIgnoreCase).TrimEnd();
+            return str.Replace("\0", null).TrimEnd();
         }
     }
 }

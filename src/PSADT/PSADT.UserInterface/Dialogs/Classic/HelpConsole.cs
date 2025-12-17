@@ -56,7 +56,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     ps.Runspace = runspace;
                     comboBox.Items.Clear();
-                    comboBox.Items.AddRange([.. ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1", StringComparison.OrdinalIgnoreCase) == om.Name && im.Guid == om.Guid && im.Version == om.Version))]);
+                    comboBox.Items.AddRange([.. ps.AddCommand("Get-Module").Invoke<PSModuleInfo>().Where(im => options.Modules.Any(om => im.Path.Replace(".psm1", ".psd1") == om.Name && im.Guid == om.Guid && im.Version == om.Version))]);
                 }
 
                 // Set up the ComboBox event handler.
@@ -72,7 +72,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     using PowerShell ps = PowerShell.Create();
                     ps.Runspace = runspace;
                     richTextBox.Clear();
-                    richTextBox.Text = string.Join("\n", ps.AddCommand("Get-Help").AddParameter("Name", (string)listBox.SelectedItem!).AddParameter("Full", true).AddCommand("Out-String").AddParameter("Width", int.MaxValue).AddParameter("Stream", true).Invoke<string>().Select(static s => !string.IsNullOrWhiteSpace(s) ? s.TrimEnd() : null)).Trim().Replace("<br />", null, StringComparison.OrdinalIgnoreCase) + "\n";
+                    richTextBox.Text = string.Join("\n", ps.AddCommand("Get-Help").AddParameter("Name", (string)listBox.SelectedItem!).AddParameter("Full", true).AddCommand("Out-String").AddParameter("Width", int.MaxValue).AddParameter("Stream", true).Invoke<string>().Select(static s => !string.IsNullOrWhiteSpace(s) ? s.TrimEnd() : null)).Trim().Replace("<br />", null) + "\n";
                 };
 
                 // Ensure the runspace is closed when the form is closed.

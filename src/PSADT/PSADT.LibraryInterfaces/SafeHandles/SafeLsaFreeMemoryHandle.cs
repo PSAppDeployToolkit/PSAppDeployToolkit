@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Represents a safe handle for memory allocated by the Local Security Authority (LSA) that requires deallocation

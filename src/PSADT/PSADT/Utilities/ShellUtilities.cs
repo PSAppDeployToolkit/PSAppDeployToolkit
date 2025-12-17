@@ -131,7 +131,7 @@ namespace PSADT.Utilities
             }
             Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; uint length = (uint)appUserModelId.Length;
             _ = Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
-            return appUserModelId[..(int)length].ToString().TrimRemoveNull();
+            return appUserModelId.Slice(0, (int)length).ToString().TrimRemoveNull();
         }
 
         /// <summary>

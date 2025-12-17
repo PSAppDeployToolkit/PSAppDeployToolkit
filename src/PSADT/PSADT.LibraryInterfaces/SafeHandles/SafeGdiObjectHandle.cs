@@ -4,7 +4,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Provides a safe handle for a Windows GDI object, ensuring that the underlying handle is released reliably.

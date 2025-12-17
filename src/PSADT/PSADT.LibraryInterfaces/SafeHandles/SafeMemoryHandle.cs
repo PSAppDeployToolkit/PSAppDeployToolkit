@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Extensions;
+using PSADT.LibraryInterfaces.Extensions;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Provides a base class for managing and safely releasing unmanaged memory handles. Ensures that memory is
@@ -181,7 +181,10 @@ namespace PSADT.SafeHandles
         /// <exception cref="ArgumentException"></exception>
         internal void Write(byte[] data, int startIndex = 0)
         {
-            ArgumentNullException.ThrowIfNull(data, nameof(data));
+            if (data is null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
             if (data.Length == 0)
             {
                 throw new ArgumentException("Code length cannot be zero.", nameof(data));

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
@@ -44,7 +43,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null, StringComparison.OrdinalIgnoreCase), InputBoxText.Text);
+            DialogResult = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null), InputBoxText.Text);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -56,7 +55,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null, StringComparison.OrdinalIgnoreCase), InputBoxText.Text);
+            DialogResult = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null), InputBoxText.Text);
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -68,7 +67,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null, StringComparison.OrdinalIgnoreCase), InputBoxText.Text);
+            DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null), InputBoxText.Text);
             base.ButtonRight_Click(sender, e);
         }
     }

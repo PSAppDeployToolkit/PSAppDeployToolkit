@@ -1,10 +1,10 @@
 ﻿using System;
-using PSADT.Utilities;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Memory;
 
-namespace PSADT.SafeHandles
+namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
     /// Represents a wrapper for a virtual memory allocation handle that ensures the handle is properly released.

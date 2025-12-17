@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using PSADT.Utilities;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;

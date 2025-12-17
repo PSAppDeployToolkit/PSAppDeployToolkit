@@ -4,6 +4,7 @@
 root = true
 
 [*]
+# Sane defaults for all files.
 charset = utf-8-bom
 indent_size = 4
 indent_style = space
@@ -11,6 +12,7 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.cs]
+# Harden the compiler as far as it'll go.
 dotnet_analyzer_diagnostic.category-Design.severity = error
 dotnet_analyzer_diagnostic.category-Documentation.severity = error
 dotnet_analyzer_diagnostic.category-Globalization.severity = error
@@ -23,4 +25,18 @@ dotnet_analyzer_diagnostic.category-Reliability.severity = error
 dotnet_analyzer_diagnostic.category-Security.severity = error
 dotnet_analyzer_diagnostic.category-Style.severity = error
 dotnet_analyzer_diagnostic.category-Usage.severity = error
+
+# Enforce BannedApiAnalyzers symbol blocking.
 dotnet_diagnostic.RS0030.severity = error
+
+# Disable severities we can't address while dual-targeting.
+dotnet_diagnostic.IDE0056.severity = none
+dotnet_diagnostic.IDE0057.severity = none
+dotnet_diagnostic.CA1307.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1510.severity = none
+dotnet_diagnostic.CA1513.severity = none
+dotnet_diagnostic.CA1847.severity = none
+dotnet_diagnostic.CA1849.severity = none
+dotnet_diagnostic.CA1866.severity = none
+dotnet_diagnostic.CA2263.severity = none
