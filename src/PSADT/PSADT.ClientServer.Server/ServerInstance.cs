@@ -8,14 +8,16 @@ using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
-using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.WindowManagement;
+using PSAppDeployToolkit.Foundation;
+using PSAppDeployToolkit.Logging;
 
 namespace PSADT.ClientServer
 {

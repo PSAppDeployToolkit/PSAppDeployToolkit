@@ -1,4 +1,4 @@
-﻿namespace PSADT.Core
+﻿namespace PSAppDeployToolkit.Logging
 {
     /// <summary>
     /// Specifies the logging style to be used by the application.

@@ -5,13 +5,13 @@ using System.Globalization;
 using System.IO;
 using System.Management.Automation.Language;
 using System.Threading;
-using PSADT.Core;
 using PSADT.ProcessManagement;
 using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
+using PSAppDeployToolkit.SessionManagement;
 
 namespace PSADT.UserInterface.TestHarness
 {

@@ -52,7 +52,7 @@ function Remove-ADTModuleCallback
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Core.CallbackType]$Hookpoint,
+        [PSAppDeployToolkit.Common.CallbackType]$Hookpoint,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

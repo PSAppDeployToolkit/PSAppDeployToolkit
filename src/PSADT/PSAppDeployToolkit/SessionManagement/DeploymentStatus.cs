@@ -1,4 +1,4 @@
-﻿namespace PSADT.Core
+﻿namespace PSAppDeployToolkit.SessionManagement
 {
     /// <summary>
     /// Status values to determine the overall state/success of a deployment.

@@ -233,7 +233,7 @@ function Show-ADTInstallationPrompt
         }
         else
         {
-            [PSADT.Core.DeploymentType]::Install
+            [PSAppDeployToolkit.SessionManagement.DeploymentType]::Install
         }
 
         # Set up defaults if not specified.

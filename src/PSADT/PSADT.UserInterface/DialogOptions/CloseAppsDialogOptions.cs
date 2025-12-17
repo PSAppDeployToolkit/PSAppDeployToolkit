@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using PSADT.Core;
 using PSADT.UserInterface.Dialogs;
+using PSAppDeployToolkit.SessionManagement;
 using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions

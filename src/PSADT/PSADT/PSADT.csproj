@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <NoWarn>CA1031;CA1307;CA1510;CA1513;CA1849;CA1866;CA1867</NoWarn>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
     <Product>PSAppDeployToolkit Common Support Library</Product>
@@ -13,11 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="PSADT.Tests" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
+    <InternalsVisibleTo Include="PSADT.Tests" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
+    <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,15 +28,11 @@
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Management.Automation">
-      <HintPath>$(SystemRoot)\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
+    <PackageReference Include="System.DirectoryServices" Version="10.0.1" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.1" />
-    <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace PSADT.Core
+﻿namespace PSAppDeployToolkit.Logging
 {
     /// <summary>
     /// Flag to indicate how to write log entries to the console.

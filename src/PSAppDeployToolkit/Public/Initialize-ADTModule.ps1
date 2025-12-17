@@ -124,7 +124,7 @@ function Initialize-ADTModule
                 }
 
                 # Invoke all callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::OnInit)))
+                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::OnInit)))
                 {
                     & $callback
                 }

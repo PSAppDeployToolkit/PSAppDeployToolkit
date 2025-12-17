@@ -1,6 +1,6 @@
 ﻿using System.Management.Automation;
 
-namespace PSADT.Extensions
+namespace PSAppDeployToolkit.Extensions
 {
     /// <summary>
     /// Extension methods for <see cref="CallStackFrame"/> objects.

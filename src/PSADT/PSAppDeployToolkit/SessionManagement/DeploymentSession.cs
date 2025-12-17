@@ -18,13 +18,16 @@ using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
+using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
-using PSADT.Utilities;
+using PSAppDeployToolkit.Utilities;
+using PSAppDeployToolkit.Foundation;
+using PSAppDeployToolkit.Logging;
 using Windows.Win32.Storage.FileSystem;
 
-namespace PSADT.Core
+namespace PSAppDeployToolkit.SessionManagement
 {
     /// <summary>
     /// Represents a deployment session.

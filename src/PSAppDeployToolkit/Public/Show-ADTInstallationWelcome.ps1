@@ -725,7 +725,7 @@ function Show-ADTInstallationWelcome
         }
         else
         {
-            [PSADT.Core.DeploymentType]::Install
+            [PSAppDeployToolkit.SessionManagement.DeploymentType]::Install
         }
 
         # Set up remainder if not specified.
@@ -1221,7 +1221,7 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
-                                foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::OnDefer)))
+                                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::OnDefer)))
                                 {
                                     & $callback
                                 }

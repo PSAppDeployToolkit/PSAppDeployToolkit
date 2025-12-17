@@ -1,4 +1,4 @@
-﻿namespace PSADT.Core
+﻿namespace PSAppDeployToolkit.SessionManagement
 {
     /// <summary>
     /// The deployment modes that a DeploymentSession can be.

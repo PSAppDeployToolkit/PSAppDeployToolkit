@@ -10,4 +10,5 @@
   <Project Path="PSADT.UserInterface.TestHarness/PSADT.UserInterface.TestHarness.csproj" />
   <Project Path="PSADT.UserInterface/PSADT.UserInterface.csproj" />
   <Project Path="PSADT/PSADT.csproj" />
+  <Project Path="PSAppDeployToolkit/PSAppDeployToolkit.csproj" />
 </Solution>

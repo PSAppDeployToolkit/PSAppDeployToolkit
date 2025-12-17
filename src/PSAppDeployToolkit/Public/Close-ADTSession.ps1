@@ -108,7 +108,7 @@ function Close-ADTSession
 
         # Invoke all callbacks and capture all errors.
         $preCloseErrors = $(
-            foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::PreClose)))
+            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::PreClose)))
             {
                 try
                 {
@@ -126,7 +126,7 @@ function Close-ADTSession
                     $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]."
                 }
             }
-            foreach ($callback in $(if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.([PSADT.Core.CallbackType]::OnFinish) }))
+            foreach ($callback in $(if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::OnFinish) }))
             {
                 try
                 {
@@ -166,7 +166,7 @@ function Close-ADTSession
         finally
         {
             # Invoke close callbacks before we remove the session, the callback owner may still need it.
-            $postCloseErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Core.CallbackType]::PostClose)))
+            $postCloseErrors = foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::PostClose)))
             {
                 try
                 {

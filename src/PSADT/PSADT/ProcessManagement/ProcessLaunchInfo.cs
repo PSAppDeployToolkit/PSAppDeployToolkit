@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
-using PSADT.Core;
 
 namespace PSADT.ProcessManagement
 {

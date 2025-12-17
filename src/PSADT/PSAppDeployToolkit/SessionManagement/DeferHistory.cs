@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.Core
+namespace PSAppDeployToolkit.SessionManagement
 {
     /// <summary>
     /// Represents the deferral history for an operation, including the number of remaining deferrals, the deadline for
