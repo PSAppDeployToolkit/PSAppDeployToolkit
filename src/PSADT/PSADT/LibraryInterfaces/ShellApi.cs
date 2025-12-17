@@ -35,6 +35,11 @@ namespace PSADT.LibraryInterfaces
         SEE_MASK_INVOKEIDLIST = Windows.Win32.PInvoke.SEE_MASK_INVOKEIDLIST,
 
         /// <summary>
+        /// ICON
+        /// </summary>
+        SEE_MASK_ICON = Windows.Win32.PInvoke.SEE_MASK_ICON,
+
+        /// <summary>
         /// HOTKEY
         /// </summary>
         SEE_MASK_HOTKEY = Windows.Win32.PInvoke.SEE_MASK_HOTKEY,

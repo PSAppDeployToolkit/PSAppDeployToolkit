@@ -19,6 +19,8 @@
     <Platforms>AnyCPU</Platforms>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
+    <EmbedAllSources>false</EmbedAllSources>
+    <EmbedUntrackedSources>false</EmbedUntrackedSources>
   </PropertyGroup>
 
   <!-- Common company/product metadata -->
