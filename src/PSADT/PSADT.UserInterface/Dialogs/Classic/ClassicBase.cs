@@ -9,13 +9,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// Represents the base class for custom dialog forms in a Windows Forms application.
     /// </summary>
     /// <remarks>This class ensures that visual styles and compatible text rendering are enabled for all derived dialog forms. It is intended to be used as a base class for creating consistent and properly initialized dialog windows.</remarks>
-    internal class BaseDialog : Form
+    internal class ClassicBase : Form
     {
         /// <summary>
         /// Static constructor to properly initialise WinForms dialogs.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception type is OK here.")]
-        static BaseDialog()
+        static ClassicBase()
         {
             if ("Server Core".Equals(Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion", "InstallationType", null)))
             {
