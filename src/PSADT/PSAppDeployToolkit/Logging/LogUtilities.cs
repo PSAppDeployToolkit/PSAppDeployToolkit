@@ -45,7 +45,7 @@ namespace PSAppDeployToolkit.Logging
             // Perform early return checks before wasting time.
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
             Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
-            if (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!)
+            if (debugMessage && configToolkit?["LogDebugMessage"] is not true)
             {
                 return new ReadOnlyCollection<LogEntry>([]);
             }
@@ -86,7 +86,7 @@ namespace PSAppDeployToolkit.Logging
             // Set up default values if not specified and build out the log entries.
             if (!logStyle.HasValue)
             {
-                logStyle = Enum.TryParse((string)configToolkit?["LogStyle"]!, out LogStyle configStyle) ? configStyle : LogStyle.CMTrace;
+                logStyle = configToolkit?["LogStyle"] is string styleString && Enum.TryParse(styleString, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
