@@ -302,7 +302,7 @@ namespace PSADT.FileSystem
         /// when no longer needed to release resources.</returns>
         private static SafePinnedGCHandle AllocateObjectBuffer()
         {
-            return SafePinnedGCHandle.Alloc(new byte[1024], 1024);
+            return SafePinnedGCHandle.Alloc(new byte[1024]);
         }
 
         /// <summary>
