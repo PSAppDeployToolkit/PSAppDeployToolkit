@@ -45,7 +45,7 @@ namespace PSADT.ClientServer
             try
             {
                 // Determine the mode of operation based on the provided arguments.
-                if (argv is null || argv.Length == 0)
+                if (!(argv?.Length > 0))
                 {
                     ShowHelpDialog();
                 }
@@ -188,7 +188,7 @@ namespace PSADT.ClientServer
                 }
                 string key = argv[i].Substring(1).Trim();
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
+                if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
@@ -235,15 +235,15 @@ namespace PSADT.ClientServer
         private static void EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
-            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || outputPipeHandle is null || string.IsNullOrWhiteSpace(outputPipeHandle))
+            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || string.IsNullOrWhiteSpace(outputPipeHandle))
             {
                 throw new ClientException("The specified OutputPipe handle was null or invalid.", ClientExitCode.NoOutputPipe);
             }
-            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || inputPipeHandle is null || string.IsNullOrWhiteSpace(inputPipeHandle))
+            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || string.IsNullOrWhiteSpace(inputPipeHandle))
             {
                 throw new ClientException("The specified InputPipe handle was null or invalid.", ClientExitCode.NoInputPipe);
             }
-            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || logPipeHandle is null || string.IsNullOrWhiteSpace(logPipeHandle))
+            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || string.IsNullOrWhiteSpace(logPipeHandle))
             {
                 throw new ClientException("The specified LogPipe handle was null or invalid.", ClientExitCode.NoLogPipe);
             }
@@ -810,7 +810,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions);
             }
-            if (options is null || string.IsNullOrWhiteSpace(options))
+            if (string.IsNullOrWhiteSpace(options))
             {
                 throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions);
             }
