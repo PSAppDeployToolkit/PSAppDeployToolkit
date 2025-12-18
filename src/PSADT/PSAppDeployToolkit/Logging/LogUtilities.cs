@@ -84,7 +84,7 @@ namespace PSAppDeployToolkit.Logging
             }
 
             // Set up default values if not specified and build out the log entries.
-            if (canLogToDisk && !logStyle.HasValue)
+            if (!logStyle.HasValue)
             {
                 logStyle = Enum.TryParse((string)configToolkit?["LogStyle"]!, out LogStyle configStyle) ? configStyle : LogStyle.CMTrace;
             }
@@ -107,7 +107,10 @@ namespace PSAppDeployToolkit.Logging
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding);
-                logFileWriter.WriteLine(string.Join(Environment.NewLine, logStyle!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
+                foreach (string line in logStyle.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine))
+                {
+                    logFileWriter.WriteLine(line);
+                }
             }
 
             // Write out all messages to host if configured/permitted to do so.
