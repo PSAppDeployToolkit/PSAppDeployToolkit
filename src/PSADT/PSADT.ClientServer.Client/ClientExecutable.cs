@@ -579,6 +579,14 @@ namespace PSADT.ClientServer
             }
 
             // Show the dialog and return the serialised result for the caller to handle.
+            if (dialogType == DialogType.CloseAppsDialog)
+            {
+                if (closeAppsDialogState is null)
+                {
+                    throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState);
+                }
+                return SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState));
+            }
             if (dialogType == DialogType.DialogBox)
             {
                 return SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments))));
@@ -598,10 +606,6 @@ namespace PSADT.ClientServer
             if (dialogType == DialogType.RestartDialog)
             {
                 return SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments))));
-            }
-            if (dialogType == DialogType.CloseAppsDialog)
-            {
-                return SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!));
             }
             throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog);
         }
