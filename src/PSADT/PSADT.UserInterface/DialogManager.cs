@@ -287,7 +287,7 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
         internal static DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
-            return ShowDialogBox(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon, options.DialogTopMost, options.DialogExpiryDuration);
+            return ShowDialogBox(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon ?? 0, options.DialogTopMost, options.DialogExpiryDuration);
         }
 
         /// <summary>

@@ -38,10 +38,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("DialogDefaultButton value is null or invalid.", (Exception?)null);
             }
-            if (options["DialogIcon"] is not DialogBoxIcon dialogIcon)
-            {
-                throw new ArgumentNullException("DialogIcon value is null or invalid.", (Exception?)null);
-            }
             if (options["DialogTopMost"] is not bool dialogTopMost)
             {
                 throw new ArgumentNullException("DialogTopMost value is null or invalid.", (Exception?)null);
@@ -51,12 +47,21 @@ namespace PSADT.UserInterface.DialogOptions
                 throw new ArgumentNullException("DialogExpiryDuration value is null or invalid.", (Exception?)null);
             }
 
+            // Test and set optional values.
+            if (options.ContainsKey("DialogIcon"))
+            {
+                if (options["DialogIcon"] is not DialogBoxIcon dialogIcon)
+                {
+                    throw new ArgumentNullException("DialogIcon value is null or invalid.", (Exception?)null);
+                }
+                DialogIcon = dialogIcon;
+            }
+
             // The hashtable was correctly defined, assign the remaining values.
             AppTitle = appTitle;
             MessageText = messageText;
             DialogButtons = dialogButtons;
             DialogDefaultButton = dialogDefaultButton;
-            DialogIcon = dialogIcon;
             DialogTopMost = dialogTopMost;
             DialogExpiryDuration = dialogExpiryDuration;
         }
@@ -77,7 +82,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
-        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon dialogIcon, bool dialogTopMost, TimeSpan dialogExpiryDuration)
+        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, TimeSpan dialogExpiryDuration)
         {
             // Assign the values with null checks to catch deserialization mismatches.
             AppTitle = appTitle ?? throw new ArgumentNullException(nameof(appTitle));
@@ -117,7 +122,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the icon displayed in the dialog box.
         /// </summary>
         [JsonProperty]
-        public DialogBoxIcon DialogIcon { get; }
+        public DialogBoxIcon? DialogIcon { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.

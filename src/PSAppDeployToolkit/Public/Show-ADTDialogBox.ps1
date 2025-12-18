@@ -82,7 +82,7 @@ function Show-ADTDialogBox
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogBoxIcon]$Icon = [PSADT.UserInterface.Dialogs.DialogBoxIcon]::None,
+        [PSADT.UserInterface.Dialogs.DialogBoxIcon]$Icon,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -173,15 +173,20 @@ function Show-ADTDialogBox
             try
             {
                 # Instantiate dialog options as required.
-                [PSADT.UserInterface.DialogOptions.DialogBoxOptions]$dialogOptions = @{
+                $dialogOptions = @{
                     AppTitle = $Title
                     MessageText = $Text
                     DialogButtons = $Buttons
                     DialogDefaultButton = $DefaultButton
-                    DialogIcon = $Icon
                     DialogTopMost = !$NotTopMost
                     DialogExpiryDuration = $Timeout
+                    DialogIcon = $Icon
                 }
+                if ($PSBoundParameters.ContainsKey('Icon'))
+                {
+                    $dialogOptions.Add('DialogIcon', $Icon)
+                }
+                [PSADT.UserInterface.DialogOptions.DialogBoxOptions]$dialogOptions = $dialogOptions
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
