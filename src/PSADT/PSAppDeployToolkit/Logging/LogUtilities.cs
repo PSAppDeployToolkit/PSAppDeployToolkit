@@ -62,7 +62,7 @@ namespace PSAppDeployToolkit.Logging
                     invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
                 }
                 MethodBase method = invoker.GetMethod()!;
-                callerFileName = invoker.GetFileName()! ?? "<Unavailable>";
+                callerFileName = invoker.GetFileName() ?? "<Unavailable>";
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }
             else
