@@ -92,7 +92,7 @@ namespace PSAppDeployToolkit.Logging
             {
                 source = callerSource;
             }
-            if ((logFileDirectory is not null) && !Directory.Exists(logFileDirectory))
+            if (logFileDirectory is not null && !Directory.Exists(logFileDirectory))
             {
                 _ = Directory.CreateDirectory(logFileDirectory);
             }
