@@ -1394,18 +1394,15 @@ namespace PSAppDeployToolkit.SessionManagement
             {
                 return DeploymentStatus.FastRetry;
             }
-            else if (AppRebootExitCodes.Contains(ExitCode))
+            if (AppRebootExitCodes.Contains(ExitCode))
             {
                 return DeploymentStatus.RestartRequired;
             }
-            else if (AppSuccessExitCodes.Contains(ExitCode))
+            if (AppSuccessExitCodes.Contains(ExitCode))
             {
                 return DeploymentStatus.Complete;
             }
-            else
-            {
-                return DeploymentStatus.Error;
-            }
+            return DeploymentStatus.Error;
         }
 
         /// <summary>
