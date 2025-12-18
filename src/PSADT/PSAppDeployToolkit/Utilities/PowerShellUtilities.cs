@@ -20,34 +20,35 @@ namespace PSAppDeployToolkit.Utilities
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
         public static Dictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
-            Dictionary<string, object> values = [];
-            if (remainingArguments?.Count > 0)
+            if (!(remainingArguments?.Count > 0))
             {
-                try
+                return [];
+            }
+            Dictionary<string, object> values = [];
+            try
+            {
+                string currentKey = string.Empty;
+                foreach (object argument in remainingArguments)
                 {
-                    string currentKey = string.Empty;
-                    foreach (object argument in remainingArguments)
+                    if (argument is null)
                     {
-                        if (argument is null)
-                        {
-                            continue;
-                        }
-                        if ((argument is string str) && Regex.IsMatch(str, @"^-[\w\d][\w\d-]+:?$"))
-                        {
-                            currentKey = Regex.Replace(str, "(^-|:$)", string.Empty);
-                            values.Add(currentKey, new SwitchParameter(true));
-                        }
-                        else if (!string.IsNullOrWhiteSpace(currentKey))
-                        {
-                            values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null!;
-                            currentKey = string.Empty;
-                        }
+                        continue;
+                    }
+                    if ((argument is string str) && Regex.IsMatch(str, @"^-[\w\d][\w\d-]+:?$"))
+                    {
+                        currentKey = Regex.Replace(str, "(^-|:$)", string.Empty);
+                        values.Add(currentKey, new SwitchParameter(true));
+                    }
+                    else if (!string.IsNullOrWhiteSpace(currentKey))
+                    {
+                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null!;
+                        currentKey = string.Empty;
                     }
                 }
-                catch (Exception ex)
-                {
-                    throw new FormatException("The parser was unable to process the provided arguments.", ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("The parser was unable to process the provided arguments.", ex);
             }
             return values;
         }
