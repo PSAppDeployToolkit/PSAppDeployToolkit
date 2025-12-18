@@ -38,7 +38,7 @@ namespace PSADT.ProcessManagement
         public static IReadOnlyList<RunningProcess> GetRunningProcesses(IReadOnlyList<ProcessDefinition> processDefinitions)
         {
             // Set up some caches for performance.
-            if (processDefinitions is null || processDefinitions.Count == 0)
+            if (!(processDefinitions?.Count > 0))
             {
                 throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null or empty.");
             }
