@@ -780,7 +780,7 @@ Add-BuildTask Build {
         # Write out the processed file back to disk.
         $text; [System.String]::Empty; [System.String]::Empty
     }
-    [System.IO.File]::WriteAllLines($Script:BuildModuleRootFile, $scriptContent, [System.Text.Encoding]::UTF8)
+    [System.IO.File]::WriteAllLines($Script:BuildModuleRootFile, $scriptContent, [System.Text.UTF8Encoding]::new($true, $true))
     Write-Build Gray '        ...Module creation complete.'
 
     # Clean up artifacts that are no longer required.
