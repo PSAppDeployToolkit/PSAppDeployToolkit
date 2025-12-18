@@ -47,9 +47,9 @@ namespace PSADT.ClientServer
             _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _outputWriter = new(_outputServer, Encoding.UTF8);
-            _inputReader = new(_inputServer, Encoding.UTF8);
-            _logReader = new(_logServer, Encoding.UTF8);
+            _outputWriter = new(_outputServer, DefaultEncoding);
+            _inputReader = new(_inputServer, DefaultEncoding);
+            _logReader = new(_logServer, DefaultEncoding);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace PSADT.ClientServer
                     createNoWindow: true,
                     waitForChildProcesses: true,
                     killChildProcessesWithParent: true,
-                    streamEncoding: Encoding.UTF8,
+                    streamEncoding: DefaultEncoding,
                     windowStyle: ProcessWindowStyle.Hidden,
                     cancellationToken: (_clientProcessCts = new()).Token
                 ));
@@ -739,6 +739,15 @@ namespace PSADT.ClientServer
         /// <remarks>This constant is set to <see langword="true"/> and is intended for internal use to
         /// specify that the highest available token should be utilized in relevant operations.</remarks>
         internal const bool UseHighestAvailableToken = true;
+
+        /// <summary>
+        /// Provides a default instance of UTF8Encoding configured to not emit a byte order mark (BOM) and to throw on
+        /// invalid bytes.
+        /// </summary>
+        /// <remarks>This encoding instance is suitable for scenarios where a BOM should be omitted and
+        /// strict error checking is required. It can be reused to avoid creating multiple identical encoding
+        /// objects.</remarks>
+        internal static UTF8Encoding DefaultEncoding = new(false, true);
 
         /// <summary>
         /// Indicates whether the object has been disposed.
