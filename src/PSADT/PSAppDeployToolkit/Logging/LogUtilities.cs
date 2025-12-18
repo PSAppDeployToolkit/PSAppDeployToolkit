@@ -125,11 +125,17 @@ namespace PSAppDeployToolkit.Logging
                     }
                     if (severity == LogSeverity.Error)
                     {
-                        Console.Error.WriteLine(string.Join(Environment.NewLine, conOutput));
+                        foreach (string line in conOutput)
+                        {
+                            Console.Error.WriteLine(line);
+                        }
                     }
                     else
                     {
-                        Console.WriteLine(string.Join(Environment.NewLine, conOutput));
+                        foreach (string line in conOutput)
+                        {
+                            Console.WriteLine(line);
+                        }
                     }
                     Console.ResetColor();
                 }
