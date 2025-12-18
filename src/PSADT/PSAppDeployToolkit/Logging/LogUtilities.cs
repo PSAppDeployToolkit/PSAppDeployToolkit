@@ -118,7 +118,8 @@ namespace PSAppDeployToolkit.Logging
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
-                    if (severity != LogSeverity.Info)
+                    bool colouredOutput = severity != LogSeverity.Info;
+                    if (colouredOutput)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                         Console.BackgroundColor = sevCols["BackgroundColor"];
@@ -137,7 +138,10 @@ namespace PSAppDeployToolkit.Logging
                             Console.WriteLine(line);
                         }
                     }
-                    Console.ResetColor();
+                    if (colouredOutput)
+                    {
+                        Console.ResetColor();
+                    }
                 }
                 else if (hostLogStreamType != HostLogStreamType.Verbose)
                 {
