@@ -211,7 +211,7 @@ namespace PSADT.FileSystem
                 throw new ArgumentNullException(nameof(sid), "SecurityIdentifier cannot be null.");
             }
             byte[] sidBytes = new byte[sid.BinaryLength]; sid.GetBinaryForm(sidBytes, 0);
-            using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sidBytes, sidBytes.Length);
+            using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sidBytes);
             return GetEffectiveAccess(path, pSID, desiredAccessMask, TokenType.SID);
         }
 

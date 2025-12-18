@@ -299,7 +299,7 @@ namespace PSADT.ProcessManagement
 
                 // Create a restricted access control list (ACL) for the client process so the user can't terminate it.
                 byte[] userSid = new byte[runAsActiveUser.SID.BinaryLength]; runAsActiveUser.SID.GetBinaryForm(userSid, 0);
-                using SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid, userSid.Length);
+                using SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid);
                 bool pinnedUserSidAddRef = false;
                 try
                 {
@@ -324,7 +324,7 @@ namespace PSADT.ProcessManagement
                         if (changeOwner)
                         {
                             byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
-                            using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid, callerSid.Length);
+                            using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid);
                             _ = AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
                         }
                         else

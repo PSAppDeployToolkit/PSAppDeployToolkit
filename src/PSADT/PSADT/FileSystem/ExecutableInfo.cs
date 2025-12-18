@@ -33,7 +33,7 @@ namespace PSADT.FileSystem
             }
             static T ReadStruct<T>(BinaryReader reader) where T : unmanaged
             {
-                int length = Marshal.SizeOf<T>(); using SafePinnedGCHandle handle = SafePinnedGCHandle.Alloc(reader.ReadBytes(length), length);
+                int length = Marshal.SizeOf<T>(); using SafePinnedGCHandle handle = SafePinnedGCHandle.Alloc(reader.ReadBytes(length));
                 return handle.AsStructure<T>();
             }
 
