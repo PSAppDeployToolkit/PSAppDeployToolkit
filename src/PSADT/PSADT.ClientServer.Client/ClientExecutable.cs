@@ -141,7 +141,7 @@ namespace PSADT.ClientServer
         /// Displays a help dialog with information about the application and its usage.
         /// </summary>
         /// <remarks>This method shows a dialog box containing the application's version, copyright
-        /// information,  and a message indicating that the application is intended to be used with the
+        /// information, and a message indicating that the application is intended to be used with the
         /// PSAppDeployToolkit PowerShell module. It also advises end-users to contact their helpdesk for assistance. 
         /// After displaying the dialog, the method throws a <see cref="ClientException"/> to indicate that no
         /// arguments were provided to the application.</remarks>
@@ -307,7 +307,7 @@ namespace PSADT.ClientServer
                             {
                                 // Split the line on the pipe operator, it's our delimiter for args. We don't
                                 // use a switch here so it's easier to break the while loop if we're exiting.
-                                string[] parts = inputReader.ReadString().Split(CommonUtilities.ArgumentSeparator);
+                                string[] parts = inputReader.ReadString().Split(ServerInstance.ArgumentSeparator);
 
                                 // Process the command in the first part. We never let an exception here kill the pipe.
                                 try
@@ -486,7 +486,7 @@ namespace PSADT.ClientServer
                                 catch (Exception ex) when (ex.Message is not null)
                                 {
                                     // Something we weren't expecting occurred. We should never get here.
-                                    WriteResult($"Error{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(ex)}");
+                                    WriteResult($"Error{ServerInstance.ArgumentSeparator}{DataSerialization.SerializeToString(ex)}");
                                 }
                             }
                             catch (EndOfStreamException)
@@ -733,7 +733,7 @@ namespace PSADT.ClientServer
         {
             return !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable)
                 ? throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments)
-                : SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(CommonUtilities.ArgumentSeparator, 1));
+                : SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(ServerInstance.ArgumentSeparator, 1));
         }
 
         /// <summary>
@@ -849,7 +849,7 @@ namespace PSADT.ClientServer
                             }
                             catch (Exception ex) when (ex.Message is not null)
                             {
-                                logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
+                                logWriter.Write($"2{ServerInstance.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
                                 logWriter.Flush();
                             }
 
@@ -873,7 +873,7 @@ namespace PSADT.ClientServer
                                 // Test whether we succeeded.
                                 if (openWindow.Count > 0)
                                 {
-                                    logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
+                                    logWriter.Write($"2{ServerInstance.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
                                     logWriter.Flush();
                                 }
                                 else
@@ -884,13 +884,13 @@ namespace PSADT.ClientServer
                             }
                             else
                             {
-                                logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
+                                logWriter.Write($"3{ServerInstance.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
                                 logWriter.Flush();
                             }
                         }
                         catch (Exception ex) when (ex.Message is not null)
                         {
-                            logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
+                            logWriter.Write($"3{ServerInstance.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
                             logWriter.Flush();
                         }
                     }
