@@ -248,6 +248,10 @@ namespace PSADT.UserInterface
         {
             return InvokeDialogAction(() =>
             {
+                if (dialogType == DialogType.CloseAppsDialog && state is null)
+                {
+                    throw new ArgumentNullException(nameof(state), "State must be provided for CloseAppsDialog.");
+                }
                 using IModalDialog dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;
             });

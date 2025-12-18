@@ -71,6 +71,11 @@
         InvalidDialogStyle = 14,
 
         /// <summary>
+        /// The client operation failed due to an invalid close applications dialog state being specified.
+        /// </summary>
+        NoCloseAppsDialogState = 15,
+
+        /// <summary>
         /// The client operation failed because no output pipe was specified.
         /// </summary>
         NoOutputPipe = 20,
