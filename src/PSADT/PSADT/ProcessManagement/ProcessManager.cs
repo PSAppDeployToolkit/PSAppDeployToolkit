@@ -715,6 +715,9 @@ namespace PSADT.ProcessManagement
                     {
                         throw new UnauthorizedAccessException(CreateProcessUsingTokenStatusMessages[CreateProcessUsingTokenStatus.SeTcbPrivilege]);
                     }
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
                     unsafe
                     {
                         using SafeProcThreadAttributeListHandle hAttributeList = SafeProcThreadAttributeListHandle.Alloc(1);
@@ -727,9 +730,6 @@ namespace PSADT.ProcessManagement
                             STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
                             startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
                             startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
                             _ = AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, inheritHandles || callerUsingHandles, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
                         }
                         finally
@@ -746,11 +746,12 @@ namespace PSADT.ProcessManagement
                     // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
                     // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
                     // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
                     if (TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid)
                     {
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                     }
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege); PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
                     _ = AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, inheritHandles || callerUsingHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                 }
                 else
