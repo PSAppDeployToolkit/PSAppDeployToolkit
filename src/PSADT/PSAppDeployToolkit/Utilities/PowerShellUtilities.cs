@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
@@ -59,60 +58,54 @@ namespace PSAppDeployToolkit.Utilities
         /// <param name="dict">A dictionary of key-value pairs to convert.</param>
         /// <param name="exclusions">An array of keys to exclude from the conversion.</param>
         /// <returns>A string of PowerShell arguments representing the dictionary.</returns>
-        internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, ReadOnlyCollection<string>? exclusions = null)
+        internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, IReadOnlyList<string>? exclusions = null)
         {
-            List<string> args = [];
-            foreach (KeyValuePair<string, object> entry in dict)
+            // Internal iterator function to yield each argument.
+            static IEnumerable<string> ConvertDictToPowerShellArgsImpl(IReadOnlyDictionary<string, object> dict, IReadOnlyList<string>? exclusions = null)
             {
-                string key = entry.Key.ToString()!;
-                string val = string.Empty;
+                // Iterate through each key-value pair in the dictionary.
+                foreach (KeyValuePair<string, object> entry in dict)
+                {
+                    // Skip anything null or excluded.
+                    string key = entry.Key.ToString()!;
+                    string val = string.Empty;
+                    if (entry.Value is null)
+                    {
+                        continue;
+                    }
+                    if ((exclusions is not null) && exclusions.Contains(entry.Key.ToString()))
+                    {
+                        continue;
+                    }
 
-                // Skip anything null or excluded.
-                if (entry.Value is null)
-                {
-                    continue;
-                }
-                if ((exclusions is not null) && exclusions.Contains(entry.Key.ToString()))
-                {
-                    continue;
-                }
+                    // Handle nested dictionaries.
+                    if (entry.Value is IDictionary dictionary)
+                    {
+                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value!), exclusions);
+                        continue;
+                    }
 
-                // Handle nested dictionaries.
-                if (entry.Value is IDictionary dictionary)
-                {
-                    args.Add(ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value!), exclusions));
-                    continue;
-                }
-
-                // Handle all over values.
-                if (entry.Value is string str)
-                {
-                    val = $"'{Regex.Replace(str, @"(?<!')'(?!')", "''")}'";
-                }
-                else if (entry.Value is List<object> list)
-                {
-                    val = ConvertDictToPowerShellArgs(ConvertValuesFromRemainingArguments(list), exclusions);
-                }
-                else if (entry.Value is IEnumerable enumerable)
-                {
-                    val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'" : string.Join(",", enumerable);
-                }
-                else if (entry.Value is not SwitchParameter)
-                {
-                    val = entry.Value.ToString()!;
-                }
-
-                // Add the key-value pair to the list.
-                if (!string.IsNullOrWhiteSpace(val))
-                {
-                    args.Add($"-{key}:{val}");
-                }
-                else
-                {
-                    args.Add($"-{key}");
+                    // Handle all other values.
+                    if (entry.Value is string str)
+                    {
+                        val = $"'{Regex.Replace(str, @"(?<!')'(?!')", "''")}'";
+                    }
+                    else if (entry.Value is List<object> list)
+                    {
+                        val = ConvertDictToPowerShellArgs(ConvertValuesFromRemainingArguments(list), exclusions);
+                    }
+                    else if (entry.Value is IEnumerable enumerable)
+                    {
+                        val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'" : string.Join(",", enumerable);
+                    }
+                    else if (entry.Value is not SwitchParameter)
+                    {
+                        val = entry.Value.ToString()!;
+                    }
+                    yield return !string.IsNullOrWhiteSpace(val) ? $"-{key}:{val}" : $"-{key}";
                 }
             }
-            return string.Join(" ", args);
+            return string.Join(" ", ConvertDictToPowerShellArgsImpl(dict, exclusions));
         }
     }
 }
