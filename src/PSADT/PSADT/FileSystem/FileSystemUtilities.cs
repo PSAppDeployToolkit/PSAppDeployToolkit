@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.SafeHandles;
@@ -44,10 +43,9 @@ namespace PSADT.FileSystem
                 }
                 foreach (string path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
                 {
-                    string ntPath = path.TrimRemoveNull();
-                    if (ntPath.Length > 0 && !lookupTable.ContainsKey(ntPath))
+                    if (path.Length > 0 && !lookupTable.ContainsKey(path))
                     {
-                        lookupTable.Add(ntPath, driveLetter);
+                        lookupTable.Add(path, driveLetter);
                     }
                 }
                 targetPath.Clear();
