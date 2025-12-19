@@ -35,6 +35,14 @@ namespace PSADT.FileSystem
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is required here.")]
         static FileHandleManager()
         {
+            // Internal helper to get the required buffer size for object types information.
+            static int GetObjectTypesBufferSize(int queryBufferSize)
+            {
+                Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
+                _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength);
+                return (int)requiredLength;
+            }
+
             // Build the StartRoutine template once during static initialization.
             using (FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
             using (FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
@@ -42,18 +50,11 @@ namespace PSADT.FileSystem
                 NtQueryObjectStartRoutineTemplate = BuildNtQueryObjectStartRoutineTemplate(Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject"), Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread"));
             }
 
-            // Query the system for the required buffer size for object types information.
+            // Allocate an appropriately sized buffer and query the system for object types information.
             int objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
             int objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
-            byte[] typesBuffer = new byte[objectTypesSize]; Span<byte> typesBufferPtr = typesBuffer;
-
-            // Reallocate the buffer until we get the required size.
-            NTSTATUS status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
-            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
-            {
-                typesBuffer = new byte[typesBufferReqLength]; typesBufferPtr = typesBuffer;
-                status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
-            }
+            Span<byte> typesBufferPtr = stackalloc byte[GetObjectTypesBufferSize(objectTypesSize)];
+            _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
 
             // Read the number of types from the buffer and store the built-out dictionary.
             ref OBJECT_TYPES_INFORMATION typesInfo = ref Unsafe.As<byte, OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
