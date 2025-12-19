@@ -351,7 +351,7 @@ namespace PSADT.ProcessManagement
                 using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, UIntPtr.Zero)) : default;
 
                 // Spin until complete or cancelled.
-                bool disposeJob = true; int? exitCode = null;
+                bool disposeJob = true; int exitCode = TimeoutExitCode;
                 try
                 {
                     if (assignProcessToJob)
@@ -387,7 +387,7 @@ namespace PSADT.ProcessManagement
                         await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
-                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode.Value, stdout, stderr, interleaved));
+                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved));
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -396,7 +396,7 @@ namespace PSADT.ProcessManagement
                 finally
                 {
                     // Only dispose of the handle when we don't own it or the process has already closed.
-                    if (!launchInfo.UseShellExecute || (exitCode.HasValue && exitCode.Value != TimeoutExitCode))
+                    if (!launchInfo.UseShellExecute || exitCode != TimeoutExitCode || !launchInfo.NoTerminateOnTimeout)
                     {
                         hProcess.Dispose();
                     }
