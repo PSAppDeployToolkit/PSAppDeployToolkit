@@ -247,10 +247,6 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer)
         {
-            if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
-            {
-                throw new ArgumentNullException(nameof(fileHandle));
-            }
             bool objectBufferAddRef = false;
             bool fileHandleAddRef = false;
             try
