@@ -563,7 +563,7 @@ namespace PSADT.ProcessManagement
         {
             if (null != environmentDictionary)
             {
-                var argv = launchInfo.ArgumentList?.ToArray() ?? [];
+                string[]? argv = launchInfo.ArgumentList?.Count > 0 ? [.. launchInfo.ArgumentList] : [];
                 for (int i = 0; i < argv.Length; i++)
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
