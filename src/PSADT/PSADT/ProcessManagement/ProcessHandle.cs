@@ -23,10 +23,10 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null or if <paramref name="commandLine"/> is empty.</exception>
         internal ProcessHandle(Process process, ProcessLaunchInfo launchInfo, string commandLine, Task<ProcessResult> task)
         {
-            this.Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
-            this.LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
-            this.CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException("CommandLine cannot be null or empty.", (Exception?)null);
-            this.Task = task ?? throw new ArgumentNullException("Task cannot be null.", (Exception?)null);
+            Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
+            LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
+            CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException("CommandLine cannot be null or empty.", (Exception?)null);
+            Task = task ?? throw new ArgumentNullException("Task cannot be null.", (Exception?)null);
         }
 
         /// <summary>
