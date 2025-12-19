@@ -77,19 +77,20 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
-            // Query the system for the required buffer size for handle information.
-            int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-            int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
-            byte[] handleBuffer = new byte[handleInfoExSize + handleEntryExSize];
-            Span<byte> handleBufferPtr = handleBuffer;
-
-            // Reallocate the buffer until we get the required size.
-            NTSTATUS status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out uint handleBufferReqLength);
-            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            // Internal helper to get the required buffer size for extended handle information.
+            static int GetExtendedHandleBufferSize(int queryBufferSize)
             {
-                handleBuffer = new byte[(int)handleBufferReqLength]; handleBufferPtr = handleBuffer;
-                status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
+                Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
+                _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, queryBuffer, out uint requiredLength);
+                return (int)requiredLength;
             }
+
+            // Allocate an appropriately sized buffer and query the system for extended handle information. We increase
+            // the size slightly to account for new handles being created between the size check and the actual query.
+            int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
+            int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+            byte[] handleBuffer = new byte[GetExtendedHandleBufferSize(handleInfoExSize + handleEntryExSize) * 5 / 4];
+            _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBuffer, out _);
 
             // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
             using ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)> threadBuffers = new
@@ -101,8 +102,9 @@ namespace PSADT.FileSystem
             // Loop through all handles and return list of open file handles.
             try
             {
-                using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess(); ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
+                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBuffer));
+                ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+                using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
                 ConcurrentBag<FileHandleInfo> openHandles = [];
                 _ = Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {

@@ -84,7 +84,7 @@ namespace PSADT.LibraryInterfaces
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
                 }
             }
-            return res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH
+            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ((!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length))
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
                 : res;
         }
@@ -123,7 +123,7 @@ namespace PSADT.LibraryInterfaces
                     Handle?.DangerousRelease();
                 }
             }
-            return res != NTSTATUS.STATUS_SUCCESS && ((Handle is not null && !Handle.IsInvalid && 0 != ObjectInformation.Length) || ((Handle is null || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass]))
+            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ((!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length))
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
                 : res;
         }
@@ -288,6 +288,15 @@ namespace PSADT.LibraryInterfaces
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf < OBJECT_TYPES_INFORMATION >() }
+        });
+
+        /// <summary>
+        /// Lookup table for system information class struct sizes.
+        /// </summary>
+        internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()
+        {
+            { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
+            { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Marshal.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
         });
     }
 
