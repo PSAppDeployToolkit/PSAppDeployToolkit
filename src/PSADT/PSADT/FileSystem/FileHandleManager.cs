@@ -36,8 +36,11 @@ namespace PSADT.FileSystem
         static FileHandleManager()
         {
             // Build the StartRoutine template once during static initialization.
-            using FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"); using FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
-            NtQueryObjectStartRoutineTemplate = BuildNtQueryObjectStartRoutineTemplate(Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject"), Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread"));
+            using (FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
+            using (FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
+            {
+                NtQueryObjectStartRoutineTemplate = BuildNtQueryObjectStartRoutineTemplate(Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject"), Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread"));
+            }
 
             // Query the system for the required buffer size for object types information.
             int objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
