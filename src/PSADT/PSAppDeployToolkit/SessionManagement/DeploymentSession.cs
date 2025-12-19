@@ -556,12 +556,8 @@ namespace PSAppDeployToolkit.SessionManagement
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    if (!Enum.TryParse((string)configToolkit["LogStyle"]!, out LogStyle configStyle))
-                    {
-                        throw new InvalidOperationException("Unable to retrieve the LogStyle from the config for an unknown reason.");
-                    }
                     using StreamWriter logFileWriter = new(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding);
-                    logFileWriter.WriteLine(string.Join(Environment.NewLine, configStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
+                    logFileWriter.WriteLine(string.Join(Environment.NewLine, LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
                 }
 
                 // Open log file with commencement message.
