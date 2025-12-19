@@ -1041,7 +1041,7 @@ namespace PSAppDeployToolkit.SessionManagement
                     // Handle reboot prompts on successful script completion.
                     if (deploymentStatus == DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                     {
-                        WriteLogEntry("A restart has been flagged as required.");
+                        WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
                     }
                     else
                     {
