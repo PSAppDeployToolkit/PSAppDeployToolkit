@@ -1021,16 +1021,16 @@ namespace PSAppDeployToolkit.SessionManagement
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} {{0}} in [{{1}}] seconds with exit code [{{2}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
                     // Just advise of the exit code with the appropriate severity.
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
                     break;
                 case DeploymentStatus.Error:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
                     break;
                 case DeploymentStatus.RestartRequired:
                 case DeploymentStatus.Complete:
@@ -1047,7 +1047,7 @@ namespace PSAppDeployToolkit.SessionManagement
                     {
                         ExitCode = 0;
                     }
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
                     break;
             }
 
