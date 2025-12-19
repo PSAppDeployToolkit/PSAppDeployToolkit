@@ -10,6 +10,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.SafeHandles;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.Security.Authorization;
 using Windows.Win32.Storage.FileSystem;
@@ -210,7 +211,7 @@ namespace PSADT.FileSystem
             }
             byte[] sidBytes = new byte[sid.BinaryLength]; sid.GetBinaryForm(sidBytes, 0);
             using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sidBytes);
-            return GetEffectiveAccess(path, pSID, desiredAccessMask, TokenType.SID);
+            return GetEffectiveAccess(path, pSID, desiredAccessMask, AdvApi32.AuthzInitializeContextFromSid);
         }
 
         /// <summary>
@@ -239,7 +240,7 @@ namespace PSADT.FileSystem
             {
                 throw new ArgumentNullException(nameof(token), "Token cannot be null or invalid.");
             }
-            return GetEffectiveAccess(path, token, desiredAccessMask, TokenType.UserToken);
+            return GetEffectiveAccess(path, token, desiredAccessMask, AdvApi32.AuthzInitializeContextFromToken);
         }
 
         /// <summary>
@@ -304,10 +305,13 @@ namespace PSADT.FileSystem
         /// <param name="token">A valid security token representing the user or group for which to evaluate access rights. This cannot be
         /// null or invalid.</param>
         /// <param name="desiredAccessMask">The desired access mask specifying the access rights to evaluate.</param>
-        /// <param name="tokenType">The type of token being used for the access check (SID or UserToken).</param>
+        /// <param name="AuthzInitializeContext">A callback function used to initialize the AuthZ client context for access evaluation. This function is
+        /// invoked with the provided token and resource manager.</param>
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified SID
         /// has on the file or directory.</returns>
-        private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, TokenType tokenType)
+        /// <exception cref="DirectoryNotFoundException">Thrown if the specified path refers to a directory that does not exist.</exception>
+        /// <exception cref="FileNotFoundException">Thrown if the specified path refers to a file that does not exist.</exception>
+        private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, AuthzInitializeContext AuthzInitializeContext)
         {
             // Validate that the path exists.
             if (!path.Exists)
@@ -335,13 +339,7 @@ namespace PSADT.FileSystem
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
-                    AuthzFreeContextSafeHandle phAuthzClientContext;
-                    _ = tokenType switch
-                    {
-                        TokenType.SID => AdvApi32.AuthzInitializeContextFromSid(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext),
-                        TokenType.UserToken => AdvApi32.AuthzInitializeContextFromToken(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out phAuthzClientContext),
-                        _ => throw new ArgumentException("Invalid token type specified.", nameof(tokenType)),
-                    };
+                    _ = AuthzInitializeContext(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out AuthzFreeContextSafeHandle phAuthzClientContext);
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.
@@ -366,14 +364,24 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Represents the types of tokens that can be safely handled within the system.
+        /// Represents a callback method that initializes an authorization context for use with the Authz API.
         /// </summary>
-        /// <remarks>This enumeration defines the specific categories of tokens, such as security
-        /// identifiers (SID) and user tokens, that are used in the context of secure operations.</remarks>
-        private enum TokenType
-        {
-            SID,
-            UserToken,
-        }
+        /// <remarks>This delegate is typically used to customize the initialization of authorization
+        /// contexts in advanced scenarios, such as when integrating with the Windows Authz API. The caller is
+        /// responsible for ensuring that all handles provided remain valid for the duration of the callback.</remarks>
+        /// <param name="Flags">A set of flags that specify options for context initialization. The value must be a valid combination of
+        /// AUTHZ_CONTEXT_FLAGS.</param>
+        /// <param name="Handle">A handle to a security token or object used as the basis for the new authorization context. This handle must
+        /// be valid and remain open for the duration of the callback.</param>
+        /// <param name="hAuthzResourceManager">A handle to the resource manager with which the authorization context is associated. This handle must be
+        /// valid.</param>
+        /// <param name="pExpirationTime">The expiration time, in 100-nanosecond intervals since January 1, 1601 (UTC), for the authorization context,
+        /// or null if no expiration is set.</param>
+        /// <param name="Identifier">A reference to a locally unique identifier (LUID) that uniquely identifies the authorization context.</param>
+        /// <param name="DynamicGroupArgs">A pointer to application-defined data used to compute dynamic groups for the context. This value may be null
+        /// if not required.</param>
+        /// <param name="phAuthzClientContext">When this method returns, contains a handle to the newly created authorization client context.</param>
+        /// <returns>A BOOL value that is nonzero if the context was successfully initialized; otherwise, zero.</returns>
+        private delegate BOOL AuthzInitializeContext(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle Handle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext);
     }
 }
