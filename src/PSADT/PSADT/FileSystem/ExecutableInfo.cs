@@ -24,12 +24,12 @@ namespace PSADT.FileSystem
             // Internal helper methods to read structures and check for CLR header.
             static bool HasCLRHeader(__IMAGE_DATA_DIRECTORY_16 dataDirectory)
             {
-                if (dataDirectory.Length > 14)
+                if (dataDirectory.Length <= 14)
                 {
-                    IMAGE_DATA_DIRECTORY comDir = dataDirectory._14;
-                    return comDir.VirtualAddress != 0 && comDir.Size != 0;
+                    return false;
                 }
-                return false;
+                IMAGE_DATA_DIRECTORY comDir = dataDirectory._14;
+                return comDir.VirtualAddress != 0 && comDir.Size != 0;
             }
             static ref T ReadStruct<T>(BinaryReader reader) where T : unmanaged
             {
