@@ -156,6 +156,7 @@ namespace PSADT.ProcessManagement
                         hStdErrWrite = hStdErrRead.ClientSafePipeHandle;
                         hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
                         hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
+                        startupInfo.hStdInput = HANDLE.INVALID_HANDLE_VALUE;
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
                         startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
                         inheritHandles = true;
