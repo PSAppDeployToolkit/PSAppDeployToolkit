@@ -387,7 +387,7 @@ namespace PSADT.ProcessManagement
                         await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
-                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode.Value, stdout, stderr, [.. interleaved]));
+                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode.Value, stdout, stderr, interleaved));
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
