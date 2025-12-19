@@ -167,6 +167,13 @@ namespace PSADT.ProcessManagement
         /// <returns>True if this looks like a key=value argument.</returns>
         private static bool IsKeyValueArgument(ReadOnlySpan<char> commandLine, int position)
         {
+            // If the argument starts with a quote, it should be parsed as a single argument,
+            // not as a key=value pair. The quotes wrap the entire argument.
+            if (position < commandLine.Length && commandLine[position] == '"')
+            {
+                return false;
+            }
+
             // Look for a pattern like: word=value where word doesn't contain spaces.
             int equalPos = position;
             bool foundKey = false;

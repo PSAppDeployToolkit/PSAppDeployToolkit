@@ -1284,5 +1284,97 @@ namespace PSADT.Tests.ProcessManagement
             // Assert
             Assert.Equal(expected, result);
         }
+
+        /// <summary>
+        /// Tests that quoted key=value arguments (where the entire argument is wrapped in quotes)
+        /// are parsed correctly without double-quoting. This is a regression test for Chrome-style
+        /// command lines where arguments like "--user-data-dir=C:\path with spaces" are quoted
+        /// as a whole.
+        /// </summary>
+        [Theory]
+        [InlineData("\"--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\"",
+                   new[] { "--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data" })]
+        [InlineData("\"--database=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\\Crashpad\"",
+                   new[] { "--database=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\\Crashpad" })]
+        [InlineData("\"--key=value with spaces\"",
+                   new[] { "--key=value with spaces" })]
+        [InlineData("\"-D=C:\\Program Files\\App\"",
+                   new[] { "-D=C:\\Program Files\\App" })]
+        [InlineData("\"/D=C:\\Program Files\\App\"",
+                   new[] { "/D=C:\\Program Files\\App" })]
+        public void CommandLineToArgumentList_QuotedKeyValueArguments_ParsedWithoutDoubleQuoting(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests Chrome-style command lines with multiple quoted key=value arguments.
+        /// This is a real-world regression test based on actual Chrome crashpad handler command lines.
+        /// </summary>
+        [Fact]
+        public void CommandLineToArgumentList_ChromeStyleCommandLine_ParsedCorrectly()
+        {
+            // Arrange - Real Chrome crashpad handler command line
+            string commandLine = "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" " +
+                "--type=crashpad-handler " +
+                "\"--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\" " +
+                "/prefetch:4 " +
+                "--monitor-self-annotation=ptype=crashpad-handler " +
+                "\"--database=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\\Crashpad\" " +
+                "--url=https://clients2.google.com/cr/report " +
+                "--annotation=channel= " +
+                "--annotation=plat=Win64 " +
+                "--annotation=prod=Chrome " +
+                "--annotation=ver=143.0.7499.42 " +
+                "--initial-client-data=0x124,0x128,0x12c,0x100,0x130,0x7ff8afed59e8,0x7ff8afed59f4,0x7ff8afed5a00";
+
+            string[] expected =
+            [
+                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                "--type=crashpad-handler",
+                "--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data",
+                "/prefetch:4",
+                "--monitor-self-annotation=ptype=crashpad-handler",
+                "--database=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\\Crashpad",
+                "--url=https://clients2.google.com/cr/report",
+                "--annotation=channel=",
+                "--annotation=plat=Win64",
+                "--annotation=prod=Chrome",
+                "--annotation=ver=143.0.7499.42",
+                "--initial-client-data=0x124,0x128,0x12c,0x100,0x130,0x7ff8afed59e8,0x7ff8afed59f4,0x7ff8afed5a00"
+            ];
+
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that unquoted key=value arguments with quoted values are still parsed correctly.
+        /// This ensures the fix for quoted whole arguments doesn't break the existing key="value" handling.
+        /// </summary>
+        [Theory]
+        [InlineData("--key=\"value with spaces\"",
+                   new[] { "--key=\"value with spaces\"" })]
+        [InlineData("/D=\"C:\\Program Files\\App\"",
+                   new[] { "/D=\"C:\\Program Files\\App\"" })]
+        [InlineData("TARGETDIR=\"C:\\Program Files\\My App\"",
+                   new[] { "TARGETDIR=\"C:\\Program Files\\My App\"" })]
+        [InlineData("program.exe --config=\"C:\\My Config\\file.json\"",
+                   new[] { "program.exe", "--config=\"C:\\My Config\\file.json\"" })]
+        public void CommandLineToArgumentList_UnquotedKeyWithQuotedValue_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
     }
 }
