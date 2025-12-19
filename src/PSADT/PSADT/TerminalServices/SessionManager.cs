@@ -170,7 +170,7 @@ namespace PSADT.TerminalServices
                 idleTime,
                 sessionInfo.DisconnectTime != 0 && !isActiveUserSession ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
                 clientName,
-                (WTS_PROTOCOL_TYPE)clientProtocolType!,
+                (WTS_PROTOCOL_TYPE)clientProtocolType,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
                 (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
