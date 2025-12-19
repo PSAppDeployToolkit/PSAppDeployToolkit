@@ -21,11 +21,14 @@ namespace PSADT.Extensions
         /// <param name="bytes">A span of bytes to decode.</param>
         /// <param name="byteCount">An optional number of bytes to decode. If <see langword="null"/>, the entire span is decoded.</param>
         /// <returns>A string containing the decoded characters from the specified byte sequence.</returns>
-        internal unsafe static string GetString(this Encoding encoding, Span<byte> bytes, int? byteCount = null)
+        internal static string GetString(this Encoding encoding, ReadOnlySpan<byte> bytes, int? byteCount = null)
         {
-            fixed (byte* pBytes = bytes)
+            unsafe
             {
-                return encoding.GetString(pBytes, byteCount ?? bytes.Length);
+                fixed (byte* pBytes = bytes)
+                {
+                    return encoding.GetString(pBytes, byteCount ?? bytes.Length);
+                }
             }
         }
     }
