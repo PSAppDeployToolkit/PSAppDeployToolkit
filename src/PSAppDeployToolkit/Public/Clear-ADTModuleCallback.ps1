@@ -63,7 +63,7 @@ function Clear-ADTModuleCallback
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSAppDeployToolkit.Common.CallbackType]$Hookpoint
+        [PSAppDeployToolkit.Foundation.CallbackType]$Hookpoint
     )
 
     # Directly clear the backend list.

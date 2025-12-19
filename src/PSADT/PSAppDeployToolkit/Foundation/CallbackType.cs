@@ -1,4 +1,4 @@
-﻿namespace PSAppDeployToolkit.Common
+﻿namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
     /// The type of callback to be executed.

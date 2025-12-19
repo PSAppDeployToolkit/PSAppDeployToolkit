@@ -22,9 +22,9 @@ using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
-using PSAppDeployToolkit.Utilities;
 using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Logging;
+using PSAppDeployToolkit.Utilities;
 using Windows.Win32.Storage.FileSystem;
 
 namespace PSAppDeployToolkit.SessionManagement

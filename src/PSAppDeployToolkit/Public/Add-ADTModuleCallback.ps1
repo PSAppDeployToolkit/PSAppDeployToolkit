@@ -69,7 +69,7 @@ function Add-ADTModuleCallback
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSAppDeployToolkit.Common.CallbackType]$Hookpoint,
+        [PSAppDeployToolkit.Foundation.CallbackType]$Hookpoint,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

@@ -15,15 +15,15 @@ try
     # Define object for holding all PSADT variables.
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
             Callbacks = ([ordered]@{
-                    [PSAppDeployToolkit.Common.CallbackType]::OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::OnDefer = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                    [PSAppDeployToolkit.Common.CallbackType]::OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::OnDefer = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                 }).AsReadOnly()
             Directories = [pscustomobject]@{
                 Defaults = ([ordered]@{
