@@ -557,7 +557,10 @@ namespace PSAppDeployToolkit.SessionManagement
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
                     using StreamWriter logFileWriter = new(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding);
-                    logFileWriter.WriteLine(string.Join(Environment.NewLine, LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
+                    foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
+                    {
+                        logFileWriter.WriteLine(line);
+                    }
                 }
 
                 // Open log file with commencement message.
