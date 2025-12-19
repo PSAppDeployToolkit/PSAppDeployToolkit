@@ -282,6 +282,12 @@ namespace PSADT.ProcessManagement
             // If we don't have a process (shell action), return early.
             if (!(hProcess is not null && processId is not null))
             {
+                if (iocpAddRef)
+                {
+                    iocp.DangerousRelease();
+                }
+                iocp.Dispose();
+                job.Dispose();
                 return null;
             }
 
@@ -363,6 +369,9 @@ namespace PSADT.ProcessManagement
                             {
                                 if (launchInfo.NoTerminateOnTimeout)
                                 {
+                                    // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
+                                    // Disposing the job would terminate the process we're supposed to let run, so we intentionally
+                                    // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
                                     if (launchInfo.KillChildProcessesWithParent)
                                     {
                                         disposeJob = false;
@@ -409,7 +418,13 @@ namespace PSADT.ProcessManagement
                     iocp.Dispose();
 
                     // We only dispose of the job if the process has closed or if we're killing all child processes along with the parent.
-                    if (disposeJob)
+                    if (!disposeJob)
+                    {
+                        // Prevent the finalizer from closing the job handle, which would kill the processes
+                        // due to JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE. This intentionally leaks the handle.
+                        job.SetHandleAsInvalid();
+                    }
+                    else
                     {
                         job.Dispose();
                     }
