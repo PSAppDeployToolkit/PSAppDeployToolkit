@@ -953,32 +953,17 @@ namespace PSAppDeployToolkit.SessionManagement
             }
             catch (UnauthorizedAccessException ex)
             {
-                WriteLogEntry(ex.Message, LogSeverity.Error);
-                RemoveSubstDrive();
-                DismountWimFiles();
-                SetExitCode(60008);
-                Environment.ExitCode = Close();
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                HandleCtorException(ex, ex.Message, 60008);
                 throw;
             }
             catch (NotSupportedException ex)
             {
-                WriteLogEntry(ex.Message, LogSeverity.Error);
-                RemoveSubstDrive();
-                DismountWimFiles();
-                SetExitCode(DeferExitCode);
-                Environment.ExitCode = Close();
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                HandleCtorException(ex, ex.Message, DeferExitCode);
                 throw;
             }
             catch (Exception ex)
             {
-                WriteLogEntry($"Failure occurred while instantiating new deployment session: {ex}", LogSeverity.Error);
-                RemoveSubstDrive();
-                DismountWimFiles();
-                SetExitCode(60008);
-                Environment.ExitCode = Close();
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                HandleCtorException(ex, $"Failure occurred while instantiating new deployment session: {ex}", 60008);
                 throw;
             }
         }
@@ -1222,6 +1207,26 @@ namespace PSAppDeployToolkit.SessionManagement
                 MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
                 MountedWimFiles.Clear();
             }
+        }
+
+        /// <summary>
+        /// Handles an exception that occurs during object construction by logging the error, performing cleanup,
+        /// setting the process exit code, and rethrowing the exception.
+        /// </summary>
+        /// <remarks>This method performs necessary cleanup and ensures that the process exit code is set
+        /// before rethrowing the original exception. The method does not return to the caller, as it rethrows the
+        /// exception after cleanup.</remarks>
+        /// <param name="ex">The exception that was thrown during construction. Cannot be null.</param>
+        /// <param name="logMessage">The message to log describing the error condition.</param>
+        /// <param name="exitCode">The exit code to set for the process before termination.</param>
+        private void HandleCtorException(Exception ex, string logMessage, int exitCode)
+        {
+            WriteLogEntry(logMessage, LogSeverity.Error);
+            RemoveSubstDrive();
+            DismountWimFiles();
+            SetExitCode(exitCode);
+            Environment.ExitCode = Close();
+            ExceptionDispatchInfo.Capture(ex).Throw();
         }
 
         /// <summary>
