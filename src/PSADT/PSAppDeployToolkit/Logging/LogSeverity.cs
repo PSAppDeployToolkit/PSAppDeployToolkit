@@ -8,21 +8,21 @@
         /// <summary>
         /// The log entry indicates a successful operation.
         /// </summary>
-        Success = 0,
+        Success,
 
         /// <summary>
         /// The log entry provides informational messages.
         /// </summary>
-        Info = 1,
+        Info,
 
         /// <summary>
         /// The log entry indicates a warning condition.
         /// </summary>
-        Warning = 2,
+        Warning,
 
         /// <summary>
         /// The log entry indicates an error condition.
         /// </summary>
-        Error = 3,
+        Error,
     }
 }
