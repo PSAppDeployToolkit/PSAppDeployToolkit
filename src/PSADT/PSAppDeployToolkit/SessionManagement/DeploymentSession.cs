@@ -1193,46 +1193,33 @@ namespace PSAppDeployToolkit.SessionManagement
             // Get the module's session state before proceeding.
             SessionState moduleSessionState = ModuleDatabase.GetSessionState();
 
+            // Internal helper for setting deferral history.
+            void SetDeferHistoryImpl(string key, object value, RegistryValueKind kind)
+            {
+                WriteLogEntry($"Setting deferral history: [{key} = {value}].");
+                if (!TestDeferHistoryPath())
+                {
+                    CreateDeferHistoryPath();
+                }
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], key, kind.ToString(), value, true, true);
+            }
+
             // Test each property and set it if it exists.
             if (deferTimesRemaining is not null)
             {
-                uint deferTimesRemainingValue = deferTimesRemaining.Value;
-                WriteLogEntry($"Setting deferral history: [DeferTimesRemaining = {deferTimesRemainingValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", RegistryValueKind.DWord.ToString(), deferTimesRemainingValue, true, true);
+                SetDeferHistoryImpl("DeferTimesRemaining", deferTimesRemaining.Value, RegistryValueKind.DWord);
             }
             if (deferDeadline is not null)
             {
-                string deferDeadlineValue = deferDeadline.Value.ToUniversalTime().ToString("O");
-                WriteLogEntry($"Setting deferral history: [DeferDeadline = {deferDeadlineValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", RegistryValueKind.String.ToString(), deferDeadlineValue, true, true);
+                SetDeferHistoryImpl("DeferDeadline", deferDeadline.Value.ToUniversalTime().ToString("O"), RegistryValueKind.String);
             }
             if (deferRunInterval is not null)
             {
-                string deferRunIntervalValue = deferRunInterval.Value.ToString("c");
-                WriteLogEntry($"Setting deferral history: [DeferRunInterval = {deferRunIntervalValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", RegistryValueKind.String.ToString(), deferRunIntervalValue, true, true);
+                SetDeferHistoryImpl("DeferRunInterval", deferRunInterval.Value.ToString("c"), RegistryValueKind.String);
             }
             if (deferRunIntervalLastTime is not null)
             {
-                string deferRunIntervalLastTimeValue = deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O");
-                WriteLogEntry($"Setting deferral history: [DeferRunIntervalLastTime = {deferRunIntervalLastTimeValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunIntervalLastTime", RegistryValueKind.String.ToString(), deferRunIntervalLastTimeValue, true, true);
+                SetDeferHistoryImpl("DeferRunIntervalLastTime", deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O"), RegistryValueKind.String);
             }
         }
 
