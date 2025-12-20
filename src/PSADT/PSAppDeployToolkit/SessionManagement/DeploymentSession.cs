@@ -1068,18 +1068,6 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
-        /// Gets the host log stream mode based on the configuration and parameters.
-        /// </summary>
-        /// <param name="writeHost"></param>
-        /// <returns></returns>
-        private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
-        {
-            return writeHost != false && LogWriteToHost
-                ? (LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host)
-                : HostLogStreamType.None;
-        }
-
-        /// <summary>
         /// Writes a log entry with detailed parameters.
         /// </summary>
         /// <param name="message">The log message.</param>
@@ -1158,126 +1146,12 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
-        /// Writes a log divider.
-        /// </summary>
-        private void WriteLogDivider()
-        {
-            WriteLogEntry(LogUtilities.LogDivider);
-        }
-
-        /// <summary>
-        /// Writes a divider if one hasn't been written already.
-        /// </summary>
-        private void WriteInitialDivider(ref bool written)
-        {
-            if (written)
-            {
-                return;
-            }
-            WriteLogDivider();
-            written = true;
-        }
-
-        /// <summary>
-        /// Removes the virtual drive mapping created with the SUBST command for the directory specified by
-        /// DirFilesSubstDrive.
-        /// </summary>
-        /// <remarks>This method undoes a previous drive substitution, making the drive letter unavailable
-        /// for accessing the substituted directory. If DirFilesSubstDrive is null, empty, or consists only of
-        /// white-space characters, no action is taken.</remarks>
-        private void RemoveSubstDrive()
-        {
-            if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
-            {
-                WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-                _ = Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
-            }
-        }
-
-        /// <summary>
-        /// Dismounts all currently mounted Windows Imaging (WIM) files managed by this instance.
-        /// </summary>
-        /// <remarks>This method processes all mounted WIM files in reverse order and clears the internal
-        /// list after dismounting. It should be called when all operations requiring access to the mounted WIM files
-        /// are complete.</remarks>
-        private void DismountWimFiles()
-        {
-            if (MountedWimFiles.Count > 0)
-            {
-                MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
-                MountedWimFiles.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Handles an exception that occurs during object construction by logging the error, performing cleanup,
-        /// setting the process exit code, and rethrowing the exception.
-        /// </summary>
-        /// <remarks>This method performs necessary cleanup and ensures that the process exit code is set
-        /// before rethrowing the original exception. The method does not return to the caller, as it rethrows the
-        /// exception after cleanup.</remarks>
-        /// <param name="ex">The exception that was thrown during construction. Cannot be null.</param>
-        /// <param name="logMessage">The message to log describing the error condition.</param>
-        /// <param name="exitCode">The exit code to set for the process before termination.</param>
-        private void HandleCtorException(Exception ex, string logMessage, int exitCode)
-        {
-            WriteLogEntry(logMessage, LogSeverity.Error);
-            RemoveSubstDrive();
-            DismountWimFiles();
-            SetExitCode(exitCode);
-            Environment.ExitCode = Close();
-            ExceptionDispatchInfo.Capture(ex).Throw();
-        }
-
-        /// <summary>
         /// Gets the log buffer as a read-only list.
         /// </summary>
         /// <returns></returns>
         public IReadOnlyList<LogEntry> GetLogBuffer()
         {
             return LogBuffer.AsReadOnly();
-        }
-
-        /// <summary>
-        /// Gets the value of a property.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
-        {
-            return CallerSessionState is not null
-                ? (T)CallerSessionState.PSVariable.GetValue(propertyName)
-                : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
-        }
-
-        /// <summary>
-        /// Sets the value of a property.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="propertyName"></param>
-        private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
-        {
-            CallerSessionState?.PSVariable.Set(new(propertyName, value));
-            BackingFields[propertyName!].SetValue(this, value);
-        }
-
-        /// <summary>
-        /// Tests the deferral history path.
-        /// </summary>
-        /// <returns>True if the deferral history path exists; otherwise, false.</returns>
-        private bool TestDeferHistoryPath()
-        {
-            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
-        }
-
-        /// <summary>
-        /// Creates the deferral history path.
-        /// </summary>
-        private void CreateDeferHistoryPath()
-        {
-            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
         }
 
         /// <summary>
@@ -1296,10 +1170,11 @@ namespace PSAppDeployToolkit.SessionManagement
             {
                 return null;
             }
-            object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
-            object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
             object? deferDeadline = history.Properties["DeferDeadline"]?.Value;
-            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null ? null : new(
+            object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
+            object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
+            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null ? null : new
+            (
                 deferTimesRemaining is not null ? deferTimesRemaining is string deferTimesRemainingString ? (uint)int.Parse(deferTimesRemainingString, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
                 deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
                 deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null
@@ -1396,12 +1271,12 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
-        /// Add the mounted WIM files.
+        /// Returns whether this session has been closed out.
         /// </summary>
-        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
-        public void AddMountedWimFile(FileInfo wimFile)
+        /// <returns>True if so; otherwise, false.</returns>
+        public bool IsClosed()
         {
-            MountedWimFiles.Add(wimFile);
+            return Settings.HasFlag(DeploymentSettings.Disposed);
         }
 
         /// <summary>
@@ -1450,12 +1325,140 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
-        /// Returns whether this session has been closed out.
+        /// Add the mounted WIM files.
         /// </summary>
-        /// <returns>True if so; otherwise, false.</returns>
-        public bool IsClosed()
+        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
+        public void AddMountedWimFile(FileInfo wimFile)
         {
-            return Settings.HasFlag(DeploymentSettings.Disposed);
+            MountedWimFiles.Add(wimFile);
+        }
+
+        /// <summary>
+        /// Handles an exception that occurs during object construction by logging the error, performing cleanup,
+        /// setting the process exit code, and rethrowing the exception.
+        /// </summary>
+        /// <remarks>This method performs necessary cleanup and ensures that the process exit code is set
+        /// before rethrowing the original exception. The method does not return to the caller, as it rethrows the
+        /// exception after cleanup.</remarks>
+        /// <param name="ex">The exception that was thrown during construction. Cannot be null.</param>
+        /// <param name="logMessage">The message to log describing the error condition.</param>
+        /// <param name="exitCode">The exit code to set for the process before termination.</param>
+        private void HandleCtorException(Exception ex, string logMessage, int exitCode)
+        {
+            WriteLogEntry(logMessage, LogSeverity.Error);
+            RemoveSubstDrive();
+            DismountWimFiles();
+            SetExitCode(exitCode);
+            Environment.ExitCode = Close();
+            ExceptionDispatchInfo.Capture(ex).Throw();
+        }
+
+        /// <summary>
+        /// Writes a log divider.
+        /// </summary>
+        private void WriteLogDivider()
+        {
+            WriteLogEntry(LogUtilities.LogDivider);
+        }
+
+        /// <summary>
+        /// Writes a divider if one hasn't been written already.
+        /// </summary>
+        private void WriteInitialDivider(ref bool written)
+        {
+            if (written)
+            {
+                return;
+            }
+            WriteLogDivider();
+            written = true;
+        }
+
+        /// <summary>
+        /// Gets the host log stream mode based on the configuration and parameters.
+        /// </summary>
+        /// <param name="writeHost"></param>
+        /// <returns></returns>
+        private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
+        {
+            return writeHost != false && LogWriteToHost
+                ? (LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host)
+                : HostLogStreamType.None;
+        }
+
+        /// <summary>
+        /// Tests the deferral history path.
+        /// </summary>
+        /// <returns>True if the deferral history path exists; otherwise, false.</returns>
+        private bool TestDeferHistoryPath()
+        {
+            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
+        }
+
+        /// <summary>
+        /// Creates the deferral history path.
+        /// </summary>
+        private void CreateDeferHistoryPath()
+        {
+            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
+        }
+
+        /// <summary>
+        /// Removes the virtual drive mapping created with the SUBST command for the directory specified by
+        /// DirFilesSubstDrive.
+        /// </summary>
+        /// <remarks>This method undoes a previous drive substitution, making the drive letter unavailable
+        /// for accessing the substituted directory. If DirFilesSubstDrive is null, empty, or consists only of
+        /// white-space characters, no action is taken.</remarks>
+        private void RemoveSubstDrive()
+        {
+            if (string.IsNullOrWhiteSpace(DirFilesSubstDrive))
+            {
+                return;
+            }
+            WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
+            _ = Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
+        }
+
+        /// <summary>
+        /// Dismounts all currently mounted Windows Imaging (WIM) files managed by this instance.
+        /// </summary>
+        /// <remarks>This method processes all mounted WIM files in reverse order and clears the internal
+        /// list after dismounting. It should be called when all operations requiring access to the mounted WIM files
+        /// are complete.</remarks>
+        private void DismountWimFiles()
+        {
+            if (MountedWimFiles.Count <= 0)
+            {
+                return;
+            }
+            MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+            MountedWimFiles.Clear();
+        }
+
+        /// <summary>
+        /// Gets the value of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
+        {
+            return CallerSessionState is not null
+                ? (T)CallerSessionState.PSVariable.GetValue(propertyName)
+                : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
+        }
+
+        /// <summary>
+        /// Sets the value of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="propertyName"></param>
+        private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
+        {
+            CallerSessionState?.PSVariable.Set(new(propertyName, value));
+            BackingFields[propertyName!].SetValue(this, value);
         }
 
 
