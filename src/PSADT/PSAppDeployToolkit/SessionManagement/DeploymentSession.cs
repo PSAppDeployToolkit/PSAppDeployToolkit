@@ -1183,14 +1183,14 @@ namespace PSAppDeployToolkit.SessionManagement
         /// <summary>
         /// Writes a divider if one hasn't been written already.
         /// </summary>
-        private void WriteInitialDivider(ref bool write)
+        private void WriteInitialDivider(ref bool written)
         {
-            if (write)
+            if (written)
             {
                 return;
             }
             WriteLogDivider();
-            write = true;
+            written = true;
         }
 
         /// <summary>
