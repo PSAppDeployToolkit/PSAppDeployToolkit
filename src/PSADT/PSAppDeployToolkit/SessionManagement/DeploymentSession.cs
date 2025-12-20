@@ -1089,9 +1089,9 @@ namespace PSAppDeployToolkit.SessionManagement
         /// <returns></returns>
         private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
-            return (writeHost is not null && !writeHost.Value) || !LogWriteToHost
-                ? HostLogStreamType.None
-                : LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host;
+            return writeHost != false && LogWriteToHost
+                ? (LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host)
+                : HostLogStreamType.None;
         }
 
         /// <summary>
