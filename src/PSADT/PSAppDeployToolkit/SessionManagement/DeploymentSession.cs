@@ -1015,7 +1015,6 @@ namespace PSAppDeployToolkit.SessionManagement
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
-                    // Just advise of the exit code with the appropriate severity.
                     WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
                     break;
                 case DeploymentStatus.Error:
@@ -1024,10 +1023,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 case DeploymentStatus.RestartRequired:
                 case DeploymentStatus.Complete:
                 default:
-                    // Clean up app deferral history.
-                    ResetDeferHistory();
-
-                    // Handle reboot prompts on successful script completion.
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
                     if (deploymentStatus == DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                     {
                         WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
@@ -1036,7 +1032,7 @@ namespace PSAppDeployToolkit.SessionManagement
                     {
                         ExitCode = 0;
                     }
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
+                    ResetDeferHistory();
                     break;
             }
 
