@@ -52,6 +52,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="offset"></param>
         internal TSelf FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
         {
+            ConfirmStateValidity(offset);
             Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
             return (TSelf)this;
         }
@@ -63,6 +64,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal string? ToStringUni(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.PtrToStringUni(handle + offset);
         }
 
@@ -78,6 +80,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
         internal ref T AsStructure<T>(int offset = 0) where T : unmanaged
         {
+            ConfirmStateValidity(offset);
             return ref handle.AsStructure<T>(offset);
         }
 
@@ -88,6 +91,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal long ReadInt64(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadInt64(handle, offset);
         }
 
@@ -98,6 +102,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal int ReadInt32(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadInt32(handle, offset);
         }
 
@@ -108,6 +113,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal short ReadInt16(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadInt16(handle, offset);
         }
 
@@ -118,6 +124,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal byte ReadByte(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadByte(handle, offset);
         }
 
@@ -131,6 +138,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt64(long value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteInt64(handle, offset, value);
             return (TSelf)this;
         }
@@ -145,6 +153,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt32(int value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteInt32(handle, offset, value);
             return (TSelf)this;
         }
@@ -159,6 +168,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt16(short value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteInt16(handle, offset, value);
             return (TSelf)this;
         }
@@ -173,6 +183,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteByte(byte value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteByte(handle, offset, value);
             return (TSelf)this;
         }
@@ -186,6 +197,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <exception cref="ArgumentException"></exception>
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
+            ConfirmStateValidity(startIndex);
             if (data is null)
             {
                 throw new ArgumentNullException(nameof(data));
@@ -217,14 +229,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
-            if (IsInvalid || IsClosed)
-            {
-                throw new ObjectDisposedException(typeof(TSelf).Name);
-            }
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
-            }
+            ConfirmStateValidity(offset);
             int length = (Length - offset) / Marshal.SizeOf<T>();
             if (length < 0)
             {
@@ -248,6 +253,25 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             unsafe
             {
                 new Span<byte>((void*)handle, Length).Clear();
+            }
+        }
+
+        /// <summary>
+        /// Validates that the current object is in a usable state and that the specified offset is within the valid
+        /// range.
+        /// </summary>
+        /// <param name="offset">The offset to validate. Must be zero or greater.</param>
+        /// <exception cref="ObjectDisposedException">Thrown if the object is in an invalid or closed state.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than zero.</exception>
+        private void ConfirmStateValidity(int offset)
+        {
+            if (IsInvalid || IsClosed)
+            {
+                throw new ObjectDisposedException(typeof(TSelf).Name);
+            }
+            if (offset < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
             }
         }
 
