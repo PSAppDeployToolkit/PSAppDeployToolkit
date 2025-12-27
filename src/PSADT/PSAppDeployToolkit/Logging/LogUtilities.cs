@@ -83,7 +83,7 @@ namespace PSAppDeployToolkit.Logging
                 throw new InvalidOperationException("Failed to determine a command source for the caller.");
             }
 
-            // Set up default values if not specified and build out the log entries.
+            // Set up default values if not specified.
             if (!logStyle.HasValue)
             {
                 logStyle = configToolkit?["LogStyle"] is string styleString && Enum.TryParse(styleString, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
@@ -101,7 +101,13 @@ namespace PSAppDeployToolkit.Logging
                 scriptSection = null;
             }
             severity ??= LogSeverity.Info;
+
+            // Build out the log entries and confirm whether there's anything to log.
             ReadOnlyCollection<LogEntry> logEntries = new([.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource))]);
+            if (logEntries.Count == 0)
+            {
+                throw new InvalidOperationException("No valid log messages were provided to log.");
+            }
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
