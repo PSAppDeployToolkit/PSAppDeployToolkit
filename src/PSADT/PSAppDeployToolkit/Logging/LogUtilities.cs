@@ -177,6 +177,11 @@ namespace PSAppDeployToolkit.Logging
         internal static readonly UTF8Encoding LogEncoding = new(true, true);
 
         /// <summary>
+        /// Gets the log divider string.
+        /// </summary>
+        internal const string LogDivider = "-------------------------------------------------------------------------------";
+
+        /// <summary>
         /// Gets the Write-Host delegate script block.
         /// </summary>
         private static readonly ScriptBlock WriteHostDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-Host' @colours");
@@ -208,10 +213,5 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
         /// "&lt;example&gt;"). This is typically used to identify script locations in a specific format.</remarks>
         private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
-
-        /// <summary>
-        /// Gets the log divider string.
-        /// </summary>
-        internal const string LogDivider = "-------------------------------------------------------------------------------";
     }
 }
