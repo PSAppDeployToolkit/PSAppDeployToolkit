@@ -360,7 +360,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Stack<FormattingContext> formattingStack = new();
             int lastPos = 0;
 
-            foreach (Match match in DialogConstants.TextFormattingRegex.Matches(message))
+            foreach (Match match in DialogManager.TextFormattingRegex.Matches(message))
             {
                 // Add text before the current match with current formatting
                 if (match.Index > lastPos)
@@ -501,7 +501,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
-            if (!navigateUrl.Contains("://", StringComparison.OrdinalIgnoreCase) && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+            if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
             {
                 if (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
                     navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))

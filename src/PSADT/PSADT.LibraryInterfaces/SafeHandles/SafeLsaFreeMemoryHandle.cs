@@ -10,11 +10,11 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// using the <see cref="PInvoke.LsaFreeMemory"/> function.
     /// </summary>
     /// <remarks>This class ensures that memory allocated by the LSA is properly released when the handle is
-    /// disposed or finalized. It is a specialized implementation of <see cref="SafeMemoryHandle"/> designed to work
+    /// disposed or finalized. It is a specialized implementation of <see cref="SafeMemoryHandle{TSelf}"/> designed to work
     /// with LSA memory management functions.</remarks>
     /// <param name="handle"></param>
     /// <param name="ownsHandle"></param>
-    internal sealed class SafeLsaFreeMemoryHandle(IntPtr handle, bool ownsHandle) : SafeMemoryHandle(handle, 0, ownsHandle)
+    internal sealed class SafeLsaFreeMemoryHandle(IntPtr handle, bool ownsHandle) : SafeMemoryHandle<SafeLsaFreeMemoryHandle>(handle, 0, ownsHandle)
     {
         /// <summary>
         /// Releases the handle.

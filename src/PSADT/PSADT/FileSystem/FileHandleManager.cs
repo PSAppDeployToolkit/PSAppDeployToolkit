@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,31 +34,163 @@ namespace PSADT.FileSystem
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is required here.")]
         static FileHandleManager()
         {
-            // Build the StartRoutine template once during static initialization.
-            using FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"); using FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
-            NtQueryObjectStartRoutineTemplate = BuildNtQueryObjectStartRoutineTemplate(Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject"), Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread"));
-
-            // Query the system for the required buffer size for object types information.
-            int objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
-            int objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
-            byte[] typesBuffer = new byte[objectTypesSize]; Span<byte> typesBufferPtr = typesBuffer;
-
-            // Reallocate the buffer until we get the required size.
-            NTSTATUS status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out uint typesBufferReqLength);
-            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            // Internal helper to get the required buffer size for object types information.
+            static int GetObjectTypesBufferSize(int queryBufferSize)
             {
-                typesBuffer = new byte[typesBufferReqLength]; typesBufferPtr = typesBuffer;
-                status = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
+                Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
+                _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength);
+                return (int)requiredLength;
             }
 
+            // Build the StartRoutine template once during static initialization.
+            using (FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
+            using (FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
+            {
+                // Build the start routine stub to call NtQueryObject and exit the thread once done.
+                FARPROC ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
+                FARPROC exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+                int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
+                Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
+                if (processArchitecture == Architecture.X64)
+                {
+                    // mov rcx, handle (placeholder)
+                    startRoutine.Add(0x48); startRoutine.Add(0xB9);
+                    handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for handle
+
+                    // mov rdx, infoClass (ObjectNameInformation = 1)
+                    startRoutine.Add(0x48); startRoutine.Add(0xBA);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+
+                    // mov r8, buffer (placeholder)
+                    startRoutine.Add(0x49); startRoutine.Add(0xB8);
+                    bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer
+
+                    // mov r9, bufferSize (placeholder)
+                    startRoutine.Add(0x49); startRoutine.Add(0xB9);
+                    bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer length
+
+                    // sub rsp, 0x28 — shadow space + ReturnLength
+                    startRoutine.Add(0x48); startRoutine.Add(0x83); startRoutine.Add(0xEC); startRoutine.Add(0x28);
+
+                    // mov qword [rsp + 0x20], 0  (null for PULONG ReturnLength)
+                    startRoutine.Add(0x48); startRoutine.Add(0xC7); startRoutine.Add(0x44); startRoutine.Add(0x24); startRoutine.Add(0x20);
+                    startRoutine.AddRange(new byte[4]); // 0
+
+                    // mov rax, NtQueryObject
+                    startRoutine.Add(0x48); startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)ntQueryObject.Value));
+
+                    // call rax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+
+                    // mov ecx, eax (exit code)
+                    startRoutine.Add(0x89); startRoutine.Add(0xC1);
+
+                    // mov rax, ExitThread
+                    startRoutine.Add(0x48); startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)exitThread.Value));
+
+                    // call rax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+                    NtQueryObjectStartRoutineTemplate = new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
+                }
+                else if (processArchitecture == Architecture.X86)
+                {
+                    // push NULL (ReturnLength)
+                    startRoutine.Add(0x6A);
+                    startRoutine.Add(0x00);
+
+                    // push bufferSize (placeholder)
+                    startRoutine.Add(0x68);
+                    bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
+
+                    // push buffer (placeholder)
+                    startRoutine.Add(0x68);
+                    bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
+
+                    // push infoClass (ObjectNameInformation = 1)
+                    startRoutine.Add(0x68);
+                    startRoutine.AddRange(BitConverter.GetBytes((int)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+
+                    // push handle (placeholder)
+                    startRoutine.Add(0x68);
+                    handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
+
+                    // mov eax, NtQueryObject
+                    startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes(ntQueryObject.Value.ToInt32()));
+
+                    // call eax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+
+                    // push eax (NTSTATUS)
+                    startRoutine.Add(0x50);
+
+                    // mov eax, ExitThread
+                    startRoutine.Add(0xB8);
+                    startRoutine.AddRange(BitConverter.GetBytes(exitThread.Value.ToInt32()));
+
+                    // call eax
+                    startRoutine.Add(0xFF); startRoutine.Add(0xD0);
+                    NtQueryObjectStartRoutineTemplate = new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
+                }
+                else if (processArchitecture == Architecture.Arm64)
+                {
+                    // x0 = handle (placeholder - 4 instructions)
+                    List<uint> code = [];
+                    handleOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(0, 0)); // placeholder
+
+                    // x1 = infoClass (ObjectNameInformation = 1)
+                    code.AddRange(NativeUtilities.Load64(1, (ulong)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+
+                    // x2 = buffer (placeholder - 4 instructions)
+                    bufferOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(2, 0)); // placeholder
+
+                    // x3 = bufferSize (placeholder - 4 instructions)
+                    bufferLengthOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(3, 0)); // placeholder
+
+                    // x4 = NULL (for ReturnLength)
+                    code.AddRange(NativeUtilities.Load64(4, 0));
+
+                    // x16 = NtQueryObject
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
+
+                    // blr x16 (branch with link to x16)
+                    code.Add(NativeUtilities.EncodeBlr(16));
+
+                    // x16 = ExitThread (x0 already contains result, move to x0 for ExitThread (no-op, already there))
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
+
+                    // br x16
+                    code.Add(NativeUtilities.EncodeBr(16));
+
+                    // Convert instruction list to byte array
+                    foreach (uint instr in code)
+                    {
+                        startRoutine.AddRange(BitConverter.GetBytes(instr));
+                    }
+                    NtQueryObjectStartRoutineTemplate = new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
+                }
+                else
+                {
+                    HandleUnsupportedArchitecture();
+                }
+            }
+
+            // Allocate an appropriately sized buffer and query the system for object types information.
+            int objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
+            int objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
+            Span<byte> typesBufferPtr = stackalloc byte[GetObjectTypesBufferSize(objectTypesSize)];
+            _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
+
             // Read the number of types from the buffer and store the built-out dictionary.
-            ref OBJECT_TYPES_INFORMATION typesInfo = ref Unsafe.As<byte, OBJECT_TYPES_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr));
+            ref OBJECT_TYPES_INFORMATION typesInfo = ref typesBufferPtr.AsStructure<OBJECT_TYPES_INFORMATION>();
             uint typesCount = typesInfo.NumberOfTypes; Dictionary<ushort, string> typeTable = new((int)typesCount);
             int ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref OBJECT_TYPE_INFORMATION typeInfo = ref Unsafe.As<byte, OBJECT_TYPE_INFORMATION>(ref MemoryMarshal.GetReference(typesBufferPtr.Slice(ptrOffset)));
+                ref OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsStructure<OBJECT_TYPE_INFORMATION>();
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
@@ -73,37 +204,39 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
-            // Query the system for the required buffer size for handle information.
-            int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-            int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
-            byte[] handleBuffer = new byte[handleInfoExSize + handleEntryExSize];
-            Span<byte> handleBufferPtr = handleBuffer;
-
-            // Reallocate the buffer until we get the required size.
-            NTSTATUS status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out uint handleBufferReqLength);
-            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            // Internal helper to get the required buffer size for extended handle information.
+            static int GetExtendedHandleBufferSize(int queryBufferSize)
             {
-                handleBuffer = new byte[(int)handleBufferReqLength]; handleBufferPtr = handleBuffer;
-                status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
+                Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
+                _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, queryBuffer, out uint requiredLength);
+                return (int)requiredLength;
             }
+
+            // Allocate an appropriately sized buffer and query the system for extended handle information. We increase
+            // the size slightly to account for new handles being created between the size check and the actual query.
+            int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
+            int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+            byte[] handleBuffer = new byte[GetExtendedHandleBufferSize(handleInfoExSize + handleEntryExSize) * 5 / 4];
+            _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBuffer, out _);
 
             // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
             using ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)> threadBuffers = new
             (
-                () => (AllocateObjectBuffer(), AllocateStartRoutineBuffer()),
+                () => (SafePinnedGCHandle.Alloc(new byte[1024]), SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE).Write(NtQueryObjectStartRoutineTemplate.Bytes)),
                 trackAllValues: true
             );
 
             // Loop through all handles and return list of open file handles.
             try
             {
-                using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess(); ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref Unsafe.As<byte, SYSTEM_HANDLE_INFORMATION_EX>(ref MemoryMarshal.GetReference(handleBufferPtr));
+                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsStructure<SYSTEM_HANDLE_INFORMATION_EX>();
+                ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+                using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
                 ConcurrentBag<FileHandleInfo> openHandles = [];
                 _ = Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
-                    ref SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref Unsafe.As<byte, SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(ref MemoryMarshal.GetReference(handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i))));
+                    ref SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i)).AsStructure<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
                     if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                     {
                         return;
@@ -173,7 +306,49 @@ namespace PSADT.FileSystem
                     string? objectName;
                     using (fileDupHandle)
                     {
-                        objectName = GetObjectName(currentProcessHandle, fileDupHandle, threadBuffers.Value.ObjectBuffer, threadBuffers.Value.StartRoutineBuffer);
+                        (SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer) = threadBuffers.Value;
+                        bool fileDupHandleAddRef = false; bool objectBufferAddRef = false;
+                        try
+                        {
+                            // Start the thread to retrieve the object name and wait for the outcome.
+                            fileDupHandle.DangerousAddRef(ref fileDupHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
+                            PatchStartRoutineBuffer(startRoutineBuffer, fileDupHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
+                            _ = NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                            NTSTATUS res;
+                            using (hThread)
+                            {
+                                // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung); otherwise just get the exit code.
+                                if (Kernel32.WaitForSingleObject(hThread, TimeSpan.FromMilliseconds(500)) != WAIT_EVENT.WAIT_OBJECT_0)
+                                {
+                                    _ = NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                                }
+                                _ = Kernel32.GetExitCodeThread(hThread, out uint exitCode); res = unchecked((NTSTATUS)exitCode);
+                            }
+
+                            // Handle the result of the NtQueryObject call; returning early on certain expected failure codes.
+                            if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
+                            {
+                                return;
+                            }
+                            if (res != NTSTATUS.STATUS_SUCCESS)
+                            {
+                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                            }
+                            ref OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsStructure<OBJECT_NAME_INFORMATION>();
+                            objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
+                        }
+                        finally
+                        {
+                            if (fileDupHandleAddRef)
+                            {
+                                fileDupHandle.DangerousRelease();
+                            }
+                            if (objectBufferAddRef)
+                            {
+                                objectBuffer.DangerousRelease();
+                            }
+                            objectBuffer.Clear();
+                        }
                     }
 
                     // Skip to next iteration if the handle doesn't meet our criteria.
@@ -202,15 +377,6 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Retrieves a list of open handles for the system.
-        /// </summary>
-        /// <returns></returns>
-        public static IReadOnlyList<FileHandleInfo> GetOpenHandles()
-        {
-            return GetOpenHandles(null);
-        }
-
-        /// <summary>
         /// Closes the specified handles.
         /// </summary>
         /// <param name="handleEntries"></param>
@@ -235,226 +401,6 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Retrieves the name of an object associated with a handle.
-        /// </summary>
-        /// <param name="currentProcessHandle"></param>
-        /// <param name="fileHandle"></param>
-        /// <param name="objectBuffer"></param>
-        /// <param name="startRoutineBuffer"></param>
-        /// <returns></returns>
-        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer)
-        {
-            if (fileHandle is null || fileHandle.IsClosed || fileHandle.IsInvalid)
-            {
-                throw new ArgumentNullException(nameof(fileHandle));
-            }
-            bool objectBufferAddRef = false;
-            bool fileHandleAddRef = false;
-            try
-            {
-                // Start the thread to retrieve the object name and wait for the outcome.
-                fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
-                PatchStartRoutineBuffer(startRoutineBuffer, fileHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                _ = NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
-                using (hThread)
-                {
-                    // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
-                    if (Kernel32.WaitForSingleObject(hThread, TimeSpan.FromMilliseconds(500)) != WAIT_EVENT.WAIT_OBJECT_0)
-                    {
-                        _ = NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
-                    }
-
-                    // Get the exit code of the thread, returning null under certain conditions or throwing an exception if it failed.
-                    _ = Kernel32.GetExitCodeThread(hThread, out uint exitCode); NTSTATUS res = unchecked((NTSTATUS)exitCode);
-                    if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
-                    {
-                        return null;
-                    }
-                    if (res != NTSTATUS.STATUS_SUCCESS)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
-                    }
-                    ref OBJECT_NAME_INFORMATION objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
-                    return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
-                }
-            }
-            finally
-            {
-                if (fileHandleAddRef)
-                {
-                    fileHandle.DangerousRelease();
-                }
-                if (objectBufferAddRef)
-                {
-                    objectBuffer.DangerousRelease();
-                }
-                objectBuffer.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Allocates a pinned buffer of 1,024 bytes and returns a handle that can be used to access the buffer safely.
-        /// </summary>
-        /// <remarks>The returned buffer is pinned in memory, preventing the garbage collector from
-        /// relocating it. This is useful for scenarios that require fixed memory addresses, such as interoperability
-        /// with unmanaged code.</remarks>
-        /// <returns>A <see cref="SafePinnedGCHandle"/> representing a pinned buffer of 1,024 bytes. The handle must be disposed
-        /// when no longer needed to release resources.</returns>
-        private static SafePinnedGCHandle AllocateObjectBuffer()
-        {
-            return SafePinnedGCHandle.Alloc(new byte[1024], 1024);
-        }
-
-        /// <summary>
-        /// Allocates a buffer in virtual memory containing the start routine template and returns a handle to the
-        /// allocated memory.
-        /// </summary>
-        /// <remarks>The returned buffer is allocated with execute, read, and write permissions. The
-        /// caller is responsible for disposing the handle when it is no longer needed to release the allocated
-        /// memory.</remarks>
-        /// <returns>A <see cref="SafeVirtualAllocHandle"/> representing the allocated virtual memory buffer containing the start
-        /// routine template.</returns>
-        private static SafeVirtualAllocHandle AllocateStartRoutineBuffer()
-        {
-            SafeVirtualAllocHandle mem = SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            mem.Write(NtQueryObjectStartRoutineTemplate.Bytes);
-            return mem;
-        }
-
-        /// <summary>
-        /// Builds the StartRoutine template once during static initialization.
-        /// Returns the bytes and the offsets where variable values need to be patched.
-        /// </summary>
-        private static (byte[] Bytes, int HandleOffset, int BufferOffset, int BufferLengthOffset) BuildNtQueryObjectStartRoutineTemplate(FARPROC ntQueryObject, FARPROC exitThread)
-        {
-            // Build the start routine stub to call NtQueryObject and exit the thread once done.
-            int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
-            Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
-            if (processArchitecture == Architecture.X64)
-            {
-                // mov rcx, handle (placeholder)
-                startRoutine.Add(0x48); startRoutine.Add(0xB9);
-                handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for handle
-
-                // mov rdx, infoClass (ObjectNameInformation = 1)
-                startRoutine.Add(0x48); startRoutine.Add(0xBA);
-                startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
-
-                // mov r8, buffer (placeholder)
-                startRoutine.Add(0x49); startRoutine.Add(0xB8);
-                bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer
-
-                // mov r9, bufferSize (placeholder)
-                startRoutine.Add(0x49); startRoutine.Add(0xB9);
-                bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[8]); // placeholder for buffer length
-
-                // sub rsp, 0x28 — shadow space + ReturnLength
-                startRoutine.Add(0x48); startRoutine.Add(0x83); startRoutine.Add(0xEC); startRoutine.Add(0x28);
-
-                // mov qword [rsp + 0x20], 0  (null for PULONG ReturnLength)
-                startRoutine.Add(0x48); startRoutine.Add(0xC7); startRoutine.Add(0x44); startRoutine.Add(0x24); startRoutine.Add(0x20);
-                startRoutine.AddRange(new byte[4]); // 0
-
-                // mov rax, NtQueryObject
-                startRoutine.Add(0x48); startRoutine.Add(0xB8);
-                startRoutine.AddRange(BitConverter.GetBytes((ulong)ntQueryObject.Value));
-
-                // call rax
-                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
-
-                // mov ecx, eax (exit code)
-                startRoutine.Add(0x89); startRoutine.Add(0xC1);
-
-                // mov rax, ExitThread
-                startRoutine.Add(0x48); startRoutine.Add(0xB8);
-                startRoutine.AddRange(BitConverter.GetBytes((ulong)exitThread.Value));
-
-                // call rax
-                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
-            }
-            else if (processArchitecture == Architecture.X86)
-            {
-                // push NULL (ReturnLength)
-                startRoutine.Add(0x6A);
-                startRoutine.Add(0x00);
-
-                // push bufferSize (placeholder)
-                startRoutine.Add(0x68);
-                bufferLengthOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
-
-                // push buffer (placeholder)
-                startRoutine.Add(0x68);
-                bufferOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
-
-                // push infoClass (ObjectNameInformation = 1)
-                startRoutine.Add(0x68);
-                startRoutine.AddRange(BitConverter.GetBytes((int)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
-
-                // push handle (placeholder)
-                startRoutine.Add(0x68);
-                handleOffset = startRoutine.Count; startRoutine.AddRange(new byte[4]); // placeholder
-
-                // mov eax, NtQueryObject
-                startRoutine.Add(0xB8);
-                startRoutine.AddRange(BitConverter.GetBytes(ntQueryObject.Value.ToInt32()));
-
-                // call eax
-                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
-
-                // push eax (NTSTATUS)
-                startRoutine.Add(0x50);
-
-                // mov eax, ExitThread
-                startRoutine.Add(0xB8);
-                startRoutine.AddRange(BitConverter.GetBytes(exitThread.Value.ToInt32()));
-
-                // call eax
-                startRoutine.Add(0xFF); startRoutine.Add(0xD0);
-            }
-            else if (processArchitecture == Architecture.Arm64)
-            {
-                // x0 = handle (placeholder - 4 instructions)
-                List<uint> code = [];
-                handleOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(0, 0)); // placeholder
-
-                // x1 = infoClass (ObjectNameInformation = 1)
-                code.AddRange(NativeUtilities.Load64(1, (ulong)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
-
-                // x2 = buffer (placeholder - 4 instructions)
-                bufferOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(2, 0)); // placeholder
-
-                // x3 = bufferSize (placeholder - 4 instructions)
-                bufferLengthOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(3, 0)); // placeholder
-
-                // x4 = NULL (for ReturnLength)
-                code.AddRange(NativeUtilities.Load64(4, 0));
-
-                // x16 = NtQueryObject
-                code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
-
-                // blr x16 (branch with link to x16)
-                code.Add(NativeUtilities.EncodeBlr(16));
-
-                // x16 = ExitThread (x0 already contains result, move to x0 for ExitThread (no-op, already there))
-                code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
-
-                // br x16
-                code.Add(NativeUtilities.EncodeBr(16));
-
-                // Convert instruction list to byte array
-                foreach (uint instr in code)
-                {
-                    startRoutine.AddRange(BitConverter.GetBytes(instr));
-                }
-            }
-            else
-            {
-                throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
-            }
-            return new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
-        }
-
-        /// <summary>
         /// Patches the StartRoutine buffer with the variable values (handle and buffer pointers).
         /// </summary>
         /// <param name="startRoutineBuffer">The pre-allocated startRoutine buffer.</param>
@@ -470,18 +416,18 @@ namespace PSADT.FileSystem
                 // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
                 // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
                 // Patch buffer length at offset (mov r9, bufferSize -> 3 bytes opcode + 8 bytes value)
-                startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
-                startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                _ = startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                _ = startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                _ = startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
             }
             else if (processArchitecture == Architecture.X86)
             {
                 // Patch buffer length (push bufferSize)
                 // Patch buffer (push buffer)
                 // Patch handle (push handle)
-                startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
-                startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                _ = startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                _ = startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                _ = startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
             }
             else if (processArchitecture == Architecture.Arm64)
             {
@@ -492,15 +438,24 @@ namespace PSADT.FileSystem
                 uint[] lengthInstrs = [.. NativeUtilities.Load64(3, (ulong)infoBufferLength)];
                 for (int j = 0; j < 4; j++)
                 {
-                    startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
-                    startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
-                    startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
+                    _ = startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
+                    _ = startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
+                    _ = startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
                 }
             }
             else
             {
-                throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
+                HandleUnsupportedArchitecture();
             }
+        }
+
+        /// <summary>
+        /// Throws a PlatformNotSupportedException to indicate that the current processor architecture is not supported.
+        /// </summary>
+        /// <exception cref="PlatformNotSupportedException">Thrown when the method is called on an unsupported processor architecture.</exception>
+        private static void HandleUnsupportedArchitecture()
+        {
+            throw new PlatformNotSupportedException("Unsupported architecture: " + RuntimeInformation.ProcessArchitecture);
         }
 
         /// <summary>

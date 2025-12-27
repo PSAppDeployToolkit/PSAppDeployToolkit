@@ -15,15 +15,16 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// from structures, and exposing the memory as spans for efficient access. Inheritors must implement the
     /// ReleaseHandle method to define how the memory is freed. Instances of this class are not thread safe unless
     /// otherwise specified by derived types.</remarks>
-    internal abstract class SafeMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    /// <typeparam name="TSelf">The derived type that inherits from this class.</typeparam>
+    internal abstract class SafeMemoryHandle<TSelf> : SafeHandleZeroOrMinusOneIsInvalid where TSelf : SafeMemoryHandle<TSelf>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SafeMemoryHandle"/> class with a specified handle, length, and
+        /// Initializes a new instance of the <see cref="SafeMemoryHandle{TSelf}"/> class with a specified handle, length, and
         /// ownership flag.
         /// </summary>
         /// <param name="handle">The memory handle to be managed.</param>
         /// <param name="length">The length of the memory block. Must be greater than zero.</param>
-        /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle"/> should reliably release the handle during the
+        /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle{TSelf}"/> should reliably release the handle during the
         /// finalization phase.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
         protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(ownsHandle)
@@ -49,10 +50,11 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="structure"></param>
         /// <param name="fDeleteOld"></param>
         /// <param name="offset"></param>
-        internal SafeMemoryHandle FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
+        internal TSelf FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
         {
+            ConfirmStateValidity(offset);
             Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
-            return this;
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -62,6 +64,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal string? ToStringUni(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.PtrToStringUni(handle + offset);
         }
 
@@ -77,6 +80,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
         internal ref T AsStructure<T>(int offset = 0) where T : unmanaged
         {
+            ConfirmStateValidity(offset);
             return ref handle.AsStructure<T>(offset);
         }
 
@@ -87,6 +91,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal long ReadInt64(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadInt64(handle, offset);
         }
 
@@ -97,6 +102,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal int ReadInt32(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadInt32(handle, offset);
         }
 
@@ -107,6 +113,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal short ReadInt16(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadInt16(handle, offset);
         }
 
@@ -117,6 +124,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         internal byte ReadByte(int offset = 0)
         {
+            ConfirmStateValidity(offset);
             return Marshal.ReadByte(handle, offset);
         }
 
@@ -128,9 +136,11 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 64-bit signed integer to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteInt64(long value, int offset = 0)
+        internal TSelf WriteInt64(long value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteInt64(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -141,9 +151,11 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 32-bit integer value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteInt32(int value, int offset = 0)
+        internal TSelf WriteInt32(int value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteInt32(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -154,9 +166,11 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 16-bit signed integer to write.</param>
         /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
-        internal void WriteInt16(short value, int offset = 0)
+        internal TSelf WriteInt16(short value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteInt16(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -167,9 +181,11 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The byte value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteByte(byte value, int offset = 0)
+        internal TSelf WriteByte(byte value, int offset = 0)
         {
+            ConfirmStateValidity(offset);
             Marshal.WriteByte(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -179,8 +195,9 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="startIndex"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        internal void Write(byte[] data, int startIndex = 0)
+        internal TSelf Write(byte[] data, int startIndex = 0)
         {
+            ConfirmStateValidity(startIndex);
             if (data is null)
             {
                 throw new ArgumentNullException(nameof(data));
@@ -194,21 +211,25 @@ namespace PSADT.LibraryInterfaces.SafeHandles
                 throw new ArgumentException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].", nameof(data));
             }
             Marshal.Copy(data, startIndex, handle, data.Length);
+            return (TSelf)this;
         }
 
         /// <summary>
-        /// Returns a read-only span of type T over the memory region, starting at the specified byte offset.
+        /// Returns a read-only span of bytes representing the memory region, starting at the specified offset.
         /// </summary>
         /// <remarks>The returned span reflects the contents of the underlying memory. Modifying the
         /// memory through other means will be visible in the span. The caller is responsible for ensuring that the
         /// memory remains valid for the lifetime of the span.</remarks>
         /// <typeparam name="T">The unmanaged value type to interpret the memory as.</typeparam>
-        /// <param name="offset">The byte offset at which to begin the span. Must be non-negative and aligned to the size of T.</param>
-        /// <returns>A read-only span of type T that represents the memory region starting at the specified offset.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is negative or greater than the length of the memory region.</exception>
+        /// <param name="offset">The zero-based byte offset at which to begin the span. Must be greater than or equal to 0 and less than or
+        /// equal to the length of the memory region.</param>
+        /// <returns>A read-only span of type T beginning at the specified offset and extending to the end of the memory region.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown when the handle has been disposed or is invalid.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
         /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
-        internal ReadOnlySpan<T> AsSpan<T>(int offset = 0) where T : unmanaged
+        internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
+            ConfirmStateValidity(offset);
             int length = (Length - offset) / Marshal.SizeOf<T>();
             if (length < 0)
             {
@@ -217,26 +238,6 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             if ((Length - offset) % Marshal.SizeOf<T>() != 0)
             {
                 throw new ArgumentException("Offset must be aligned to the size of the type T.", nameof(offset));
-            }
-            unsafe
-            {
-                return new((void*)(handle + offset), length);
-            }
-        }
-
-        /// <summary>
-        /// Returns a read-only span of bytes representing the memory region, starting at the specified offset.
-        /// </summary>
-        /// <param name="offset">The zero-based byte offset at which to begin the span. Must be greater than or equal to 0 and less than or
-        /// equal to the length of the memory region.</param>
-        /// <returns>A read-only span of bytes beginning at the specified offset and extending to the end of the memory region.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
-        internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
-        {
-            int length = Length - offset;
-            if (length < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");
             }
             unsafe
             {
@@ -256,6 +257,25 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         }
 
         /// <summary>
+        /// Validates that the current object is in a usable state and that the specified offset is within the valid
+        /// range.
+        /// </summary>
+        /// <param name="offset">The offset to validate. Must be zero or greater.</param>
+        /// <exception cref="ObjectDisposedException">Thrown if the object is in an invalid or closed state.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than zero.</exception>
+        private void ConfirmStateValidity(int offset)
+        {
+            if (IsInvalid || IsClosed)
+            {
+                throw new ObjectDisposedException(typeof(TSelf).Name);
+            }
+            if (offset < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
+            }
+        }
+
+        /// <summary>
         /// Releases the handle and frees the allocated memory.
         /// </summary>
         /// <returns></returns>
@@ -264,6 +284,6 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <summary>
         /// Gets the size of the allocated memory block.
         /// </summary>
-        internal int Length { get; private protected set; }
+        internal readonly int Length;
     }
 }

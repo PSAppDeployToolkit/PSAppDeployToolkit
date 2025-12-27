@@ -148,7 +148,7 @@ function Set-ADTShortcut
                             }
                         }
                     }
-                    [System.IO.File]::WriteAllLines($LiteralPath, $URLFile, [System.Text.UTF8Encoding]::new($false))
+                    [System.IO.File]::WriteAllLines($LiteralPath, $URLFile, [System.Text.UTF8Encoding]::new($false, $true))
                 }
                 else
                 {

@@ -12,11 +12,6 @@ namespace PSADT.UserInterface.Dialogs
     public enum DialogBoxIcon : uint
     {
         /// <summary>
-        /// Represents the absence of any specific value or state.
-        /// </summary>
-        None = 0,
-
-        /// <summary>
         /// Critical message. This member is equivalent to the Visual Basic constant vbCritical.
         /// </summary>
         Stop = MESSAGEBOX_STYLE.MB_ICONSTOP,

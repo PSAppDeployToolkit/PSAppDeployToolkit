@@ -203,7 +203,7 @@ function New-ADTShortcut
                     {
                         $URLFile += "IconFile=$IconLocation"
                     }
-                    [System.IO.File]::WriteAllLines($FullPath, $URLFile, [System.Text.UTF8Encoding]::new($false))
+                    [System.IO.File]::WriteAllLines($FullPath, $URLFile, [System.Text.UTF8Encoding]::new($false, $true))
                 }
                 else
                 {

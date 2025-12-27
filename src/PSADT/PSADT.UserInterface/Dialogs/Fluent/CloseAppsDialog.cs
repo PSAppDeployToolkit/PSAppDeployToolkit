@@ -180,11 +180,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (_deferralDeadline.HasValue)
             {
                 // Set button state based on deadline
-                TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
+                TimeSpan timeRemaining = _deferralDeadline.Value - DateTime.Now;
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
 
                 // Update text content
-                DateTimeOffset deferralDeadlineOffset = new((DateTime)_deferralDeadline!);
+                DateTimeOffset deferralDeadlineOffset = new(_deferralDeadline.Value);
                 string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f", CultureInfo.CurrentCulture);
                 if (ButtonRight.IsEnabled)
                 {

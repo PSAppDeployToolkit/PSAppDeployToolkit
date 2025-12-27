@@ -45,7 +45,7 @@ namespace PSAppDeployToolkit.Logging
             // Perform early return checks before wasting time.
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
             Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
-            if (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!)
+            if (debugMessage && configToolkit?["LogDebugMessage"] is not true)
             {
                 return new ReadOnlyCollection<LogEntry>([]);
             }
@@ -62,7 +62,7 @@ namespace PSAppDeployToolkit.Logging
                     invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
                 }
                 MethodBase method = invoker.GetMethod()!;
-                callerFileName = invoker.GetFileName()! ?? "<Unavailable>";
+                callerFileName = invoker.GetFileName() ?? "<Unavailable>";
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }
             else
@@ -83,16 +83,16 @@ namespace PSAppDeployToolkit.Logging
                 throw new InvalidOperationException("Failed to determine a command source for the caller.");
             }
 
-            // Set up default values if not specified and build out the log entries.
-            if (canLogToDisk && !logStyle.HasValue)
+            // Set up default values if not specified.
+            if (!logStyle.HasValue)
             {
-                logStyle = Enum.TryParse((string)configToolkit?["LogStyle"]!, out LogStyle configStyle) ? configStyle : LogStyle.CMTrace;
+                logStyle = configToolkit?["LogStyle"] is string styleString && Enum.TryParse(styleString, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
                 source = callerSource;
             }
-            if ((logFileDirectory is not null) && !Directory.Exists(logFileDirectory))
+            if (logFileDirectory is not null && !Directory.Exists(logFileDirectory))
             {
                 _ = Directory.CreateDirectory(logFileDirectory);
             }
@@ -101,13 +101,22 @@ namespace PSAppDeployToolkit.Logging
                 scriptSection = null;
             }
             severity ??= LogSeverity.Info;
+
+            // Build out the log entries and confirm whether there's anything to log.
             ReadOnlyCollection<LogEntry> logEntries = new([.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource))]);
+            if (logEntries.Count == 0)
+            {
+                throw new InvalidOperationException("No valid log messages were provided to log.");
+            }
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding);
-                logFileWriter.WriteLine(string.Join(Environment.NewLine, logStyle!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
+                foreach (string line in logStyle.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine))
+                {
+                    logFileWriter.WriteLine(line);
+                }
             }
 
             // Write out all messages to host if configured/permitted to do so.
@@ -118,20 +127,30 @@ namespace PSAppDeployToolkit.Logging
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
-                    if (severity != LogSeverity.Info)
+                    bool colouredOutput = severity != LogSeverity.Info;
+                    if (colouredOutput)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                         Console.BackgroundColor = sevCols["BackgroundColor"];
                     }
                     if (severity == LogSeverity.Error)
                     {
-                        Console.Error.WriteLine(string.Join(Environment.NewLine, conOutput));
+                        foreach (string line in conOutput)
+                        {
+                            Console.Error.WriteLine(line);
+                        }
                     }
                     else
                     {
-                        Console.WriteLine(string.Join(Environment.NewLine, conOutput));
+                        foreach (string line in conOutput)
+                        {
+                            Console.WriteLine(line);
+                        }
                     }
-                    Console.ResetColor();
+                    if (colouredOutput)
+                    {
+                        Console.ResetColor();
+                    }
                 }
                 else if (hostLogStreamType != HostLogStreamType.Verbose)
                 {
@@ -161,7 +180,12 @@ namespace PSAppDeployToolkit.Logging
         /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
-        internal static readonly UTF8Encoding LogEncoding = new(true);
+        internal static readonly UTF8Encoding LogEncoding = new(true, true);
+
+        /// <summary>
+        /// Gets the log divider string.
+        /// </summary>
+        internal const string LogDivider = "-------------------------------------------------------------------------------";
 
         /// <summary>
         /// Gets the Write-Host delegate script block.
@@ -195,10 +219,5 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
         /// "&lt;example&gt;"). This is typically used to identify script locations in a specific format.</remarks>
         private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
-
-        /// <summary>
-        /// Gets the log divider string.
-        /// </summary>
-        internal const string LogDivider = "-------------------------------------------------------------------------------";
     }
 }

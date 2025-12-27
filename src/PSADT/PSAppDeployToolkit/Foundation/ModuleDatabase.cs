@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
 using PSAppDeployToolkit.SessionManagement;
 
@@ -102,12 +101,13 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static DeploymentSession GetDeploymentSession()
         {
             List<DeploymentSession> sessionList = (List<DeploymentSession>)_database?.Properties["Sessions"].Value!;
             return sessionList.Count == 0
                 ? throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
-                : sessionList.Last();
+                : sessionList[sessionList.Count - 1];
         }
 
         /// <summary>

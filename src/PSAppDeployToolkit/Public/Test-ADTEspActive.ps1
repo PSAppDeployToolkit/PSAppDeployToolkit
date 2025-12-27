@@ -60,13 +60,6 @@ function Test-ADTEspActive
         {
             try
             {
-                # Test whether the device is Autopilot-enrolled.
-                if (![Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot", "CloudAssignedTenantId", $null))
-                {
-                    Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [Device has no Autopilot cloud-assigned tenant Id]."
-                    return $false
-                }
-
                 # Test whether wwahost.exe is running. This is responsible for displaying the ESP.
                 if (!($wwaHostProcess = [System.Diagnostics.Process]::GetProcessesByName('wwahost')).Length)
                 {

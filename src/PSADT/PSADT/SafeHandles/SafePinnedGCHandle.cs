@@ -6,17 +6,16 @@ namespace PSADT.SafeHandles
     /// <summary>
     /// Represents a wrapper for a <see cref="GCHandle"/> that pins an object in memory.
     /// </summary>
-    internal sealed class SafePinnedGCHandle : SafeMemoryHandle
+    internal sealed class SafePinnedGCHandle : SafeMemoryHandle<SafePinnedGCHandle>
     {
         /// <summary>
         /// Allocates a new <see cref="SafePinnedGCHandle"/> for the specified object, pinning it in memory.
         /// </summary>
         /// <param name="value"></param>
-        /// <param name="length"></param>
         /// <returns></returns>
-        internal static SafePinnedGCHandle Alloc(object value, int length)
+        internal static SafePinnedGCHandle Alloc<T>(T[] value)
         {
-            return new(GCHandle.Alloc(value, GCHandleType.Pinned), length, true);
+            return new(GCHandle.Alloc(value, GCHandleType.Pinned), Marshal.SizeOf<T>() * value.Length, true);
         }
 
         /// <summary>

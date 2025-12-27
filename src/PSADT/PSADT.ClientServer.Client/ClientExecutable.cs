@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
@@ -45,75 +44,103 @@ namespace PSADT.ClientServer
             try
             {
                 // Determine the mode of operation based on the provided arguments.
-                if (argv is null || argv.Length == 0)
+                if (!(argv?.Length > 0))
                 {
-                    ShowHelpDialog();
+                    FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
+                    Version helpVersion = new(fileInfo.ProductVersion!.Split('+')[0]);
+                    string helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
+                    string helpMessage = string.Join(Environment.NewLine,
+                    [
+                        helpTitle,
+                        "",
+                        fileInfo.LegalCopyright,
+                        "",
+                        "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
+                        "",
+                        "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
+                    ]);
+                    _ = DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
+                    throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
                 }
-                else if (argv.Any(static arg => arg is "/ShowModalDialog" or "/smd"))
+                foreach (string arg in argv)
                 {
-                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
+                    if (arg is "/ShowModalDialog" or "/smd")
+                    {
+                        Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/ShowBalloonTip" or "/sbt")
+                    {
+                        Console.WriteLine(ShowBalloonTip(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/GetProcessWindowInfo" or "/gpwi")
+                    {
+                        Console.WriteLine(GetProcessWindowInfo(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/GetUserNotificationState" or "/guns")
+                    {
+                        Console.WriteLine(GetUserNotificationState());
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
+                    {
+                        Console.WriteLine(GetForegroundWindowProcessId());
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
+                    {
+                        Console.WriteLine(RefreshDesktopAndEnvironmentVariables());
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/MinimizeAllWindows" or "/maw")
+                    {
+                        Console.WriteLine(MinimizeAllWindows());
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/RestoreAllWindows" or "/raw")
+                    {
+                        Console.WriteLine(RestoreAllWindows());
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/SendKeys" or "/sk")
+                    {
+                        Console.WriteLine(SendKeys(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/GetEnvironmentVariable" or "/gev")
+                    {
+                        Console.WriteLine(GetEnvironmentVariable(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/SetEnvironmentVariable" or "/sev")
+                    {
+                        Console.WriteLine(SetEnvironmentVariable(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/RemoveEnvironmentVariable" or "/rev")
+                    {
+                        Console.WriteLine(RemoveEnvironmentVariable(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/SilentRestart" or "/sr")
+                    {
+                        Console.WriteLine(SilentRestart(ArgvToDictionary(argv)));
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/GetLastInputTime" or "/glit")
+                    {
+                        Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
+                        return (int)ClientExitCode.Success;
+                    }
+                    else if (arg is "/ClientServer" or "/cs")
+                    {
+                        EnterClientServerMode(ArgvToDictionary(argv));
+                        return (int)ClientExitCode.Success;
+                    }
                 }
-                else if (argv.Any(static arg => arg is "/ShowBalloonTip" or "/sbt"))
-                {
-                    Console.WriteLine(ShowBalloonTip(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/GetProcessWindowInfo" or "/gpwi"))
-                {
-                    Console.WriteLine(GetProcessWindowInfo(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/GetUserNotificationState" or "/guns"))
-                {
-                    Console.WriteLine(GetUserNotificationState());
-                }
-                else if (argv.Any(static arg => arg is "/GetForegroundWindowProcessId" or "/gfwpi"))
-                {
-                    Console.WriteLine(GetForegroundWindowProcessId());
-                }
-                else if (argv.Any(static arg => arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev"))
-                {
-                    Console.WriteLine(RefreshDesktopAndEnvironmentVariables());
-                }
-                else if (argv.Any(static arg => arg is "/MinimizeAllWindows" or "/maw"))
-                {
-                    Console.WriteLine(MinimizeAllWindows());
-                }
-                else if (argv.Any(static arg => arg is "/RestoreAllWindows" or "/raw"))
-                {
-                    Console.WriteLine(RestoreAllWindows());
-                }
-                else if (argv.Any(static arg => arg is "/SendKeys" or "/sk"))
-                {
-                    Console.WriteLine(SendKeys(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/GetEnvironmentVariable" or "/gev"))
-                {
-                    Console.WriteLine(GetEnvironmentVariable(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/SetEnvironmentVariable" or "/sev"))
-                {
-                    Console.WriteLine(SetEnvironmentVariable(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/RemoveEnvironmentVariable" or "/rev"))
-                {
-                    Console.WriteLine(RemoveEnvironmentVariable(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/SilentRestart" or "/sr"))
-                {
-                    Console.WriteLine(SilentRestart(ArgvToDictionary(argv)));
-                }
-                else if (argv.Any(static arg => arg is "/GetLastInputTime" or "/glit"))
-                {
-                    Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
-                }
-                else if (argv.Any(static arg => arg is "/ClientServer" or "/cs"))
-                {
-                    EnterClientServerMode(ArgvToDictionary(argv));
-                }
-                else
-                {
-                    throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
-                }
-                return (int)ClientExitCode.Success;
+                throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
             }
             catch (ClientException ex)
             {
@@ -135,34 +162,6 @@ namespace PSADT.ClientServer
                 Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
                 return (int)ClientExitCode.Unknown;
             }
-        }
-
-        /// <summary>
-        /// Displays a help dialog with information about the application and its usage.
-        /// </summary>
-        /// <remarks>This method shows a dialog box containing the application's version, copyright
-        /// information,  and a message indicating that the application is intended to be used with the
-        /// PSAppDeployToolkit PowerShell module. It also advises end-users to contact their helpdesk for assistance. 
-        /// After displaying the dialog, the method throws a <see cref="ClientException"/> to indicate that no
-        /// arguments were provided to the application.</remarks>
-        /// <exception cref="ClientException">Thrown to indicate that no arguments were provided to the application.</exception>
-        private static void ShowHelpDialog()
-        {
-            FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
-            Version helpVersion = new(fileInfo.ProductVersion!.Split('+')[0]);
-            string helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
-            string helpMessage = string.Join(Environment.NewLine,
-            [
-                helpTitle,
-                "",
-                fileInfo.LegalCopyright,
-                "",
-                "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
-                "",
-                "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
-            ]);
-            _ = DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
-            throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
         }
 
         /// <summary>
@@ -188,7 +187,7 @@ namespace PSADT.ClientServer
                 }
                 string key = argv[i].Substring(1).Trim();
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (value is null || string.IsNullOrWhiteSpace(value) || value!.StartsWith("-") || value!.StartsWith("/"))
+                if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
                 {
                     throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
                 }
@@ -235,15 +234,15 @@ namespace PSADT.ClientServer
         private static void EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
-            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || outputPipeHandle is null || string.IsNullOrWhiteSpace(outputPipeHandle))
+            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || string.IsNullOrWhiteSpace(outputPipeHandle))
             {
                 throw new ClientException("The specified OutputPipe handle was null or invalid.", ClientExitCode.NoOutputPipe);
             }
-            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || inputPipeHandle is null || string.IsNullOrWhiteSpace(inputPipeHandle))
+            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || string.IsNullOrWhiteSpace(inputPipeHandle))
             {
                 throw new ClientException("The specified InputPipe handle was null or invalid.", ClientExitCode.NoInputPipe);
             }
-            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || logPipeHandle is null || string.IsNullOrWhiteSpace(logPipeHandle))
+            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || string.IsNullOrWhiteSpace(logPipeHandle))
             {
                 throw new ClientException("The specified LogPipe handle was null or invalid.", ClientExitCode.NoLogPipe);
             }
@@ -283,9 +282,9 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (BinaryWriter outputWriter = new(outputPipeClient, Encoding.UTF8))
-                using (BinaryReader inputReader = new(inputPipeClient, Encoding.UTF8))
-                using (BinaryWriter logWriter = new(logPipeClient, Encoding.UTF8))
+                using (BinaryWriter outputWriter = new(outputPipeClient, ServerInstance.DefaultEncoding))
+                using (BinaryReader inputReader = new(inputPipeClient, ServerInstance.DefaultEncoding))
+                using (BinaryWriter logWriter = new(logPipeClient, ServerInstance.DefaultEncoding))
                 {
                     // Helper method to reduce some boilerplate.
                     void WriteResult(string result)
@@ -307,7 +306,7 @@ namespace PSADT.ClientServer
                             {
                                 // Split the line on the pipe operator, it's our delimiter for args. We don't
                                 // use a switch here so it's easier to break the while loop if we're exiting.
-                                string[] parts = inputReader.ReadString().Split(CommonUtilities.ArgumentSeparator);
+                                string[] parts = inputReader.ReadString().Split(ServerInstance.ArgumentSeparator);
 
                                 // Process the command in the first part. We never let an exception here kill the pipe.
                                 try
@@ -486,7 +485,7 @@ namespace PSADT.ClientServer
                                 catch (Exception ex) when (ex.Message is not null)
                                 {
                                     // Something we weren't expecting occurred. We should never get here.
-                                    WriteResult($"Error{CommonUtilities.ArgumentSeparator}{DataSerialization.SerializeToString(ex)}");
+                                    WriteResult($"Error{ServerInstance.ArgumentSeparator}{DataSerialization.SerializeToString(ex)}");
                                 }
                             }
                             catch (EndOfStreamException)
@@ -556,7 +555,7 @@ namespace PSADT.ClientServer
                 {
                     Environment.Exit(result.ExitCode);
                 }
-                return SerializeObject(DialogConstants.BlockExecutionButtonText);
+                return SerializeObject(DialogManager.BlockExecutionButtonText);
             }
 
             // Confirm we have a DialogType and that it's valid.
@@ -580,6 +579,14 @@ namespace PSADT.ClientServer
             }
 
             // Show the dialog and return the serialised result for the caller to handle.
+            if (dialogType == DialogType.CloseAppsDialog)
+            {
+                if (closeAppsDialogState is null)
+                {
+                    throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState);
+                }
+                return SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState));
+            }
             if (dialogType == DialogType.DialogBox)
             {
                 return SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments))));
@@ -599,10 +606,6 @@ namespace PSADT.ClientServer
             if (dialogType == DialogType.RestartDialog)
             {
                 return SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments))));
-            }
-            if (dialogType == DialogType.CloseAppsDialog)
-            {
-                return SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!));
             }
             throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog);
         }
@@ -733,7 +736,7 @@ namespace PSADT.ClientServer
         {
             return !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable)
                 ? throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments)
-                : SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(CommonUtilities.ArgumentSeparator, 1));
+                : SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? new(ServerInstance.ArgumentSeparator, 1));
         }
 
         /// <summary>
@@ -810,7 +813,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions);
             }
-            if (options is null || string.IsNullOrWhiteSpace(options))
+            if (string.IsNullOrWhiteSpace(options))
             {
                 throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions);
             }
@@ -849,7 +852,7 @@ namespace PSADT.ClientServer
                             }
                             catch (Exception ex) when (ex.Message is not null)
                             {
-                                logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
+                                logWriter.Write($"2{ServerInstance.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
                                 logWriter.Flush();
                             }
 
@@ -873,7 +876,7 @@ namespace PSADT.ClientServer
                                 // Test whether we succeeded.
                                 if (openWindow.Count > 0)
                                 {
-                                    logWriter.Write($"2{CommonUtilities.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
+                                    logWriter.Write($"2{ServerInstance.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
                                     logWriter.Flush();
                                 }
                                 else
@@ -884,13 +887,13 @@ namespace PSADT.ClientServer
                             }
                             else
                             {
-                                logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
+                                logWriter.Write($"3{ServerInstance.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
                                 logWriter.Flush();
                             }
                         }
                         catch (Exception ex) when (ex.Message is not null)
                         {
-                            logWriter.Write($"3{CommonUtilities.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
+                            logWriter.Write($"3{ServerInstance.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
                             logWriter.Flush();
                         }
                     }

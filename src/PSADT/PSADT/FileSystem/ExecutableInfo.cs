@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using PSADT.SafeHandles;
+using PSADT.Extensions;
 using Windows.Win32;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.SystemInformation;
@@ -24,23 +24,22 @@ namespace PSADT.FileSystem
             // Internal helper methods to read structures and check for CLR header.
             static bool HasCLRHeader(__IMAGE_DATA_DIRECTORY_16 dataDirectory)
             {
-                if (dataDirectory.Length > 14)
+                if (dataDirectory.Length <= 14)
                 {
-                    IMAGE_DATA_DIRECTORY comDir = dataDirectory._14;
-                    return comDir.VirtualAddress != 0 && comDir.Size != 0;
+                    return false;
                 }
-                return false;
+                IMAGE_DATA_DIRECTORY comDir = dataDirectory._14;
+                return comDir.VirtualAddress != 0 && comDir.Size != 0;
             }
-            static T ReadStruct<T>(BinaryReader reader) where T : unmanaged
+            static ref T ReadStruct<T>(BinaryReader reader) where T : unmanaged
             {
-                int length = Marshal.SizeOf<T>(); using SafePinnedGCHandle handle = SafePinnedGCHandle.Alloc(reader.ReadBytes(length), length);
-                return handle.AsStructure<T>();
+                return ref reader.ReadBytes(Marshal.SizeOf<T>()).AsStructure<T>();
             }
 
             // Read the DOS header and check for the PE signature.
             using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
             using BinaryReader reader = new(fs);
-            IMAGE_DOS_HEADER dosHeader = ReadStruct<IMAGE_DOS_HEADER>(reader); _ = fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
+            ref IMAGE_DOS_HEADER dosHeader = ref ReadStruct<IMAGE_DOS_HEADER>(reader); _ = fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
                 throw new InvalidDataException("The specified file does not have a valid PE header.");
@@ -51,16 +50,16 @@ namespace PSADT.FileSystem
             }
 
             // Read the file header and optional header, returning the ExecutableInfo.
-            IMAGE_FILE_MACHINE machine = ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
+            ref IMAGE_FILE_MACHINE machine = ref ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
             IMAGE_OPTIONAL_HEADER_MAGIC magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16(); _ = fs.Seek(-2, SeekOrigin.Current);
             if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
             {
-                IMAGE_OPTIONAL_HEADER32 opt32 = ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
+                ref IMAGE_OPTIONAL_HEADER32 opt32 = ref ReadStruct<IMAGE_OPTIONAL_HEADER32>(reader);
                 return new(filePath, machine, opt32.Subsystem, HasCLRHeader(opt32.DataDirectory), opt32.AddressOfEntryPoint, opt32.ImageBase);
             }
             else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
             {
-                IMAGE_OPTIONAL_HEADER64 opt64 = ReadStruct<IMAGE_OPTIONAL_HEADER64>(reader);
+                ref IMAGE_OPTIONAL_HEADER64 opt64 = ref ReadStruct<IMAGE_OPTIONAL_HEADER64>(reader);
                 return new(filePath, machine, opt64.Subsystem, HasCLRHeader(opt64.DataDirectory), opt64.AddressOfEntryPoint, opt64.ImageBase);
             }
             else

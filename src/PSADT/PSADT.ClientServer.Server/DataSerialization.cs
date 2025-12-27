@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -54,7 +53,7 @@ namespace PSADT.ClientServer
             {
                 throw new JsonSerializationException("Serialization returned an empty string.");
             }
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(res));
+            return Convert.ToBase64String(ServerInstance.DefaultEncoding.GetBytes(res));
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace PSADT.ClientServer
             {
                 throw new JsonSerializationException("Serialization returned an empty string.");
             }
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(res));
+            return Convert.ToBase64String(ServerInstance.DefaultEncoding.GetBytes(res));
         }
 
         /// <summary>
@@ -97,7 +96,7 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
-            if (JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not T res)
+            if (JsonConvert.DeserializeObject<T>(ServerInstance.DefaultEncoding.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not T res)
             {
                 throw new JsonSerializationException("Deserialization returned a null result.");
             }
@@ -121,7 +120,7 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
-            if (JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not object res)
+            if (JsonConvert.DeserializeObject(ServerInstance.DefaultEncoding.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not object res)
             {
                 throw new JsonSerializationException("Deserialization returned a null result.");
             }

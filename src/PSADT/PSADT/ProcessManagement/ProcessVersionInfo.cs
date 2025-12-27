@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
@@ -170,7 +169,7 @@ namespace PSADT.ProcessManagement
             // Get all process modules, then return the first one (main module).
             _ = PsApi.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
             _ = PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
-            ref HMODULE hModule = ref Unsafe.As<byte, HMODULE>(ref MemoryMarshal.GetReference(moduleBuffer));
+            ref HMODULE hModule = ref moduleBuffer.AsStructure<HMODULE>();
             _ = PsApi.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
             return moduleInfo;
         }

@@ -78,10 +78,6 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException("The specified enumerable is empty.", (Exception?)null);
             }
-            if (args.Any(string.IsNullOrWhiteSpace))
-            {
-                throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
-            }
 
             // Construct and return the command line string.
             StringBuilder sb = new();
@@ -89,6 +85,10 @@ namespace PSADT.ProcessManagement
             {
                 foreach (string arg in args)
                 {
+                    if (string.IsNullOrWhiteSpace(arg))
+                    {
+                        throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
+                    }
                     _ = sb.Append(EscapeArgumentCompatible(arg));
                     _ = sb.Append(' ');
                 }
@@ -97,6 +97,10 @@ namespace PSADT.ProcessManagement
             {
                 foreach (string arg in args)
                 {
+                    if (string.IsNullOrWhiteSpace(arg))
+                    {
+                        throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
+                    }
                     _ = sb.Append(EscapeArgumentStrict(arg));
                     _ = sb.Append(' ');
                 }
@@ -167,6 +171,13 @@ namespace PSADT.ProcessManagement
         /// <returns>True if this looks like a key=value argument.</returns>
         private static bool IsKeyValueArgument(ReadOnlySpan<char> commandLine, int position)
         {
+            // If the argument starts with a quote, it should be parsed as a single argument,
+            // not as a key=value pair. The quotes wrap the entire argument.
+            if (position < commandLine.Length && commandLine[position] == '"')
+            {
+                return false;
+            }
+
             // Look for a pattern like: word=value where word doesn't contain spaces.
             int equalPos = position;
             bool foundKey = false;
@@ -710,7 +721,7 @@ namespace PSADT.ProcessManagement
             }
 
             // The argument must be quoted if it contains a space, tab, a quote, or is empty.
-            bool needsQuoting = argument.Length == 0 || argument.Any(c => IsWhitespace(c) || c == '"');
+            bool needsQuoting = argument.Length == 0 || argument.Any(static c => IsWhitespace(c) || c == '"');
             if (!needsQuoting)
             {
                 return argument;

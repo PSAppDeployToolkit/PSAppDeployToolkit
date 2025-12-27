@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using PSADT.Utilities;
 
@@ -21,7 +20,7 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyList<string> stdOut, IReadOnlyList<string> stdErr, IReadOnlyList<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
+        public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
@@ -35,11 +34,11 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(int exitCode, IReadOnlyList<string> stdOut, IReadOnlyList<string> stdErr, IReadOnlyList<string> interleaved) : this(exitCode)
+        public ProcessResult(int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode)
         {
-            StdOut = new ReadOnlyCollection<string>([.. MiscUtilities.TrimLeadingTrailingLines(stdOut)]);
-            StdErr = new ReadOnlyCollection<string>([.. MiscUtilities.TrimLeadingTrailingLines(stdErr)]);
-            Interleaved = new ReadOnlyCollection<string>([.. MiscUtilities.TrimLeadingTrailingLines(interleaved)]);
+            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
+            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
+            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
         }
 
         /// <summary>

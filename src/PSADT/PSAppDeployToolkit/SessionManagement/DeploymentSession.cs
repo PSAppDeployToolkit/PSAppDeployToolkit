@@ -22,9 +22,9 @@ using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
-using PSAppDeployToolkit.Utilities;
 using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Logging;
+using PSAppDeployToolkit.Utilities;
 using Windows.Win32.Storage.FileSystem;
 
 namespace PSAppDeployToolkit.SessionManagement
@@ -372,20 +372,17 @@ namespace PSAppDeployToolkit.SessionManagement
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ReadOnlyCollection<PSObject> gmtpOutput = ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!);
-                            if (gmtpOutput.Count > 0)
+                            ReadOnlyDictionary<string, object> gmtpOutput = (ReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File -TablePropertyValueColumnNum 3"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
+                            ProcessDefinition[] msiExecList = [.. gmtpOutput.Values.Where(static p => ((string)p).EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(((string)p).Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
+                            if (msiExecList.Length > 0)
                             {
-                                ProcessDefinition[] msiExecList = [.. ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)))];
-                                if (msiExecList.Length > 0)
-                                {
-                                    _appProcessesToClose = new([.. _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
-                                    WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
-                                }
+                                _appProcessesToClose = new([.. _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
+                                WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                             }
                         }
 
                         // Update our app variables with new values.
-                        IReadOnlyDictionary<string, object> msiProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
+                        ReadOnlyDictionary<string, object> msiProps = (ReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
                         if (string.IsNullOrWhiteSpace(_appVendor))
                         {
                             _appVendor = (string)msiProps["Manufacturer"];
@@ -556,12 +553,11 @@ namespace PSAppDeployToolkit.SessionManagement
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    if (!Enum.TryParse((string)configToolkit["LogStyle"]!, out LogStyle configStyle))
-                    {
-                        throw new InvalidOperationException("Unable to retrieve the LogStyle from the config for an unknown reason.");
-                    }
                     using StreamWriter logFileWriter = new(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding);
-                    logFileWriter.WriteLine(string.Join(Environment.NewLine, configStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
+                    foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
+                    {
+                        logFileWriter.WriteLine(line);
+                    }
                 }
 
                 // Open log file with commencement message.
@@ -763,60 +759,52 @@ namespace PSAppDeployToolkit.SessionManagement
                 else if (Process.GetProcessesByName("WWAHost") is Process[] wwaHostProcesses && wwaHostProcesses.Length > 0)
                 {
                     // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
-                    WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
-                    if (!string.IsNullOrWhiteSpace((string?)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot", "CloudAssignedTenantId", null)))
+                    WriteLogEntry("The WWAHost process is running, checking ESP User Account setup phase.");
+                    if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
                     {
-                        WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
-                        if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
+                        if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
                         {
-                            if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
+                            PSObject? fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                            if (fsRegData is not null)
                             {
-                                PSObject? fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
-                                if (fsRegData is not null)
+                                if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
                                 {
-                                    if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
+                                    if (deployModeChanged)
                                     {
-                                        if (deployModeChanged)
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
-                                        }
-                                        else if (_deployMode != DeployMode.Auto)
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
-                                        }
-                                        else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
-                                            deployModeChanged = true;
-                                        }
-                                        else
-                                        {
-                                            WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
-                                        }
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
+                                    }
+                                    else if (_deployMode != DeployMode.Auto)
+                                    {
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
+                                    }
+                                    else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
+                                    {
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                                        deployModeChanged = true;
                                     }
                                     else
                                     {
-                                        WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                        WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
                                     }
                                 }
                                 else
                                 {
-                                    WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
+                                    WriteLogEntry("The ESP User Account Setup phase is already complete.");
                                 }
                             }
                             else
                             {
-                                WriteLogEntry("There are no WWAHost processes running for the currently logged on user");
+                                WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
                             }
                         }
                         else
                         {
-                            WriteLogEntry("The device currently has no users logged on.");
+                            WriteLogEntry("There are no WWAHost processes running for the currently logged on user");
                         }
                     }
                     else
                     {
-                        WriteLogEntry("The device is not Autopilot-enrolled.");
+                        WriteLogEntry("The device currently has no users logged on.");
                     }
                 }
                 else
@@ -965,32 +953,17 @@ namespace PSAppDeployToolkit.SessionManagement
             }
             catch (UnauthorizedAccessException ex)
             {
-                WriteLogEntry(ex.Message, LogSeverity.Error);
-                RemoveSubstDrive();
-                DismountWimFiles();
-                SetExitCode(60008);
-                Environment.ExitCode = Close();
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                HandleCtorException(ex, ex.Message, 60008);
                 throw;
             }
             catch (NotSupportedException ex)
             {
-                WriteLogEntry(ex.Message, LogSeverity.Error);
-                RemoveSubstDrive();
-                DismountWimFiles();
-                SetExitCode(DeferExitCode);
-                Environment.ExitCode = Close();
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                HandleCtorException(ex, ex.Message, DeferExitCode);
                 throw;
             }
             catch (Exception ex)
             {
-                WriteLogEntry($"Failure occurred while instantiating new deployment session: {ex}", LogSeverity.Error);
-                RemoveSubstDrive();
-                DismountWimFiles();
-                SetExitCode(60008);
-                Environment.ExitCode = Close();
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                HandleCtorException(ex, $"Failure occurred while instantiating new deployment session: {ex}", 60008);
                 throw;
             }
         }
@@ -1022,33 +995,29 @@ namespace PSAppDeployToolkit.SessionManagement
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} {{0}} in [{{1}}] seconds with exit code [{{2}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
-                    // Just advise of the exit code with the appropriate severity.
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
                     break;
                 case DeploymentStatus.Error:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
                     break;
                 case DeploymentStatus.RestartRequired:
                 case DeploymentStatus.Complete:
                 default:
-                    // Clean up app deferral history.
-                    ResetDeferHistory();
-
-                    // Handle reboot prompts on successful script completion.
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
                     if (deploymentStatus == DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                     {
-                        WriteLogEntry("A restart has been flagged as required.");
+                        WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
                     }
                     else
                     {
                         ExitCode = 0;
                     }
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
+                    ResetDeferHistory();
                     break;
             }
 
@@ -1096,18 +1065,6 @@ namespace PSAppDeployToolkit.SessionManagement
                 }
             }
             return adtExitCode;
-        }
-
-        /// <summary>
-        /// Gets the host log stream mode based on the configuration and parameters.
-        /// </summary>
-        /// <param name="writeHost"></param>
-        /// <returns></returns>
-        private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
-        {
-            return (writeHost is not null && !writeHost.Value) || !LogWriteToHost
-                ? HostLogStreamType.None
-                : LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host;
         }
 
         /// <summary>
@@ -1189,106 +1146,12 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
-        /// Writes a log divider.
-        /// </summary>
-        private void WriteLogDivider()
-        {
-            WriteLogEntry(LogUtilities.LogDivider);
-        }
-
-        /// <summary>
-        /// Writes a divider if one hasn't been written already.
-        /// </summary>
-        private void WriteInitialDivider(ref bool write)
-        {
-            if (write)
-            {
-                return;
-            }
-            WriteLogDivider();
-            write = true;
-        }
-
-        /// <summary>
-        /// Removes the virtual drive mapping created with the SUBST command for the directory specified by
-        /// DirFilesSubstDrive.
-        /// </summary>
-        /// <remarks>This method undoes a previous drive substitution, making the drive letter unavailable
-        /// for accessing the substituted directory. If DirFilesSubstDrive is null, empty, or consists only of
-        /// white-space characters, no action is taken.</remarks>
-        private void RemoveSubstDrive()
-        {
-            if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
-            {
-                WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-                _ = Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
-            }
-        }
-
-        /// <summary>
-        /// Dismounts all currently mounted Windows Imaging (WIM) files managed by this instance.
-        /// </summary>
-        /// <remarks>This method processes all mounted WIM files in reverse order and clears the internal
-        /// list after dismounting. It should be called when all operations requiring access to the mounted WIM files
-        /// are complete.</remarks>
-        private void DismountWimFiles()
-        {
-            if (MountedWimFiles.Count > 0)
-            {
-                MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
-                MountedWimFiles.Clear();
-            }
-        }
-
-        /// <summary>
         /// Gets the log buffer as a read-only list.
         /// </summary>
         /// <returns></returns>
         public IReadOnlyList<LogEntry> GetLogBuffer()
         {
             return LogBuffer.AsReadOnly();
-        }
-
-        /// <summary>
-        /// Gets the value of a property.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
-        {
-            return CallerSessionState is not null
-                ? (T)CallerSessionState.PSVariable.GetValue(propertyName)
-                : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
-        }
-
-        /// <summary>
-        /// Sets the value of a property.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="propertyName"></param>
-        private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
-        {
-            CallerSessionState?.PSVariable.Set(new(propertyName, value));
-            BackingFields[propertyName!].SetValue(this, value);
-        }
-
-        /// <summary>
-        /// Tests the deferral history path.
-        /// </summary>
-        /// <returns>True if the deferral history path exists; otherwise, false.</returns>
-        private bool TestDeferHistoryPath()
-        {
-            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
-        }
-
-        /// <summary>
-        /// Creates the deferral history path.
-        /// </summary>
-        private void CreateDeferHistoryPath()
-        {
-            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
         }
 
         /// <summary>
@@ -1307,10 +1170,11 @@ namespace PSAppDeployToolkit.SessionManagement
             {
                 return null;
             }
-            object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
-            object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
             object? deferDeadline = history.Properties["DeferDeadline"]?.Value;
-            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null ? null : new(
+            object? deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
+            object? deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
+            return deferRunIntervalLastTime is null && deferTimesRemaining is null && deferDeadline is null ? null : new
+            (
                 deferTimesRemaining is not null ? deferTimesRemaining is string deferTimesRemainingString ? (uint)int.Parse(deferTimesRemainingString, CultureInfo.InvariantCulture) : (uint)(int)deferTimesRemaining : null,
                 deferDeadline is not null ? DateTime.Parse((string)deferDeadline, CultureInfo.InvariantCulture) : null,
                 deferRunIntervalLastTime is not null ? DateTime.Parse((string)deferRunIntervalLastTime, CultureInfo.InvariantCulture) : null
@@ -1329,46 +1193,33 @@ namespace PSAppDeployToolkit.SessionManagement
             // Get the module's session state before proceeding.
             SessionState moduleSessionState = ModuleDatabase.GetSessionState();
 
+            // Internal helper for setting deferral history.
+            void SetDeferHistoryImpl(string key, object value, RegistryValueKind kind)
+            {
+                WriteLogEntry($"Setting deferral history: [{key} = {value}].");
+                if (!TestDeferHistoryPath())
+                {
+                    CreateDeferHistoryPath();
+                }
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], key, kind.ToString(), value, true, true);
+            }
+
             // Test each property and set it if it exists.
             if (deferTimesRemaining is not null)
             {
-                uint deferTimesRemainingValue = deferTimesRemaining.Value;
-                WriteLogEntry($"Setting deferral history: [DeferTimesRemaining = {deferTimesRemainingValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", RegistryValueKind.DWord.ToString(), deferTimesRemainingValue, true, true);
+                SetDeferHistoryImpl("DeferTimesRemaining", deferTimesRemaining.Value, RegistryValueKind.DWord);
             }
             if (deferDeadline is not null)
             {
-                string deferDeadlineValue = deferDeadline.Value.ToUniversalTime().ToString("O");
-                WriteLogEntry($"Setting deferral history: [DeferDeadline = {deferDeadlineValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", RegistryValueKind.String.ToString(), deferDeadlineValue, true, true);
+                SetDeferHistoryImpl("DeferDeadline", deferDeadline.Value.ToUniversalTime().ToString("O"), RegistryValueKind.String);
             }
             if (deferRunInterval is not null)
             {
-                string deferRunIntervalValue = deferRunInterval.Value.ToString("c");
-                WriteLogEntry($"Setting deferral history: [DeferRunInterval = {deferRunIntervalValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", RegistryValueKind.String.ToString(), deferRunIntervalValue, true, true);
+                SetDeferHistoryImpl("DeferRunInterval", deferRunInterval.Value.ToString("c"), RegistryValueKind.String);
             }
             if (deferRunIntervalLastTime is not null)
             {
-                string deferRunIntervalLastTimeValue = deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O");
-                WriteLogEntry($"Setting deferral history: [DeferRunIntervalLastTime = {deferRunIntervalLastTimeValue}].");
-                if (!TestDeferHistoryPath())
-                {
-                    CreateDeferHistoryPath();
-                }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunIntervalLastTime", RegistryValueKind.String.ToString(), deferRunIntervalLastTimeValue, true, true);
+                SetDeferHistoryImpl("DeferRunIntervalLastTime", deferRunIntervalLastTime.Value.ToUniversalTime().ToString("O"), RegistryValueKind.String);
             }
         }
 
@@ -1395,27 +1246,24 @@ namespace PSAppDeployToolkit.SessionManagement
             {
                 return DeploymentStatus.FastRetry;
             }
-            else if (AppRebootExitCodes.Contains(ExitCode))
+            if (AppRebootExitCodes.Contains(ExitCode))
             {
                 return DeploymentStatus.RestartRequired;
             }
-            else if (AppSuccessExitCodes.Contains(ExitCode))
+            if (AppSuccessExitCodes.Contains(ExitCode))
             {
                 return DeploymentStatus.Complete;
             }
-            else
-            {
-                return DeploymentStatus.Error;
-            }
+            return DeploymentStatus.Error;
         }
 
         /// <summary>
-        /// Add the mounted WIM files.
+        /// Returns whether this session has been closed out.
         /// </summary>
-        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
-        public void AddMountedWimFile(FileInfo wimFile)
+        /// <returns>True if so; otherwise, false.</returns>
+        public bool IsClosed()
         {
-            MountedWimFiles.Add(wimFile);
+            return Settings.HasFlag(DeploymentSettings.Disposed);
         }
 
         /// <summary>
@@ -1464,12 +1312,140 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
-        /// Returns whether this session has been closed out.
+        /// Add the mounted WIM files.
         /// </summary>
-        /// <returns>True if so; otherwise, false.</returns>
-        public bool IsClosed()
+        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
+        public void AddMountedWimFile(FileInfo wimFile)
         {
-            return Settings.HasFlag(DeploymentSettings.Disposed);
+            MountedWimFiles.Add(wimFile);
+        }
+
+        /// <summary>
+        /// Handles an exception that occurs during object construction by logging the error, performing cleanup,
+        /// setting the process exit code, and rethrowing the exception.
+        /// </summary>
+        /// <remarks>This method performs necessary cleanup and ensures that the process exit code is set
+        /// before rethrowing the original exception. The method does not return to the caller, as it rethrows the
+        /// exception after cleanup.</remarks>
+        /// <param name="ex">The exception that was thrown during construction. Cannot be null.</param>
+        /// <param name="logMessage">The message to log describing the error condition.</param>
+        /// <param name="exitCode">The exit code to set for the process before termination.</param>
+        private void HandleCtorException(Exception ex, string logMessage, int exitCode)
+        {
+            WriteLogEntry(logMessage, LogSeverity.Error);
+            RemoveSubstDrive();
+            DismountWimFiles();
+            SetExitCode(exitCode);
+            Environment.ExitCode = Close();
+            ExceptionDispatchInfo.Capture(ex).Throw();
+        }
+
+        /// <summary>
+        /// Writes a log divider.
+        /// </summary>
+        private void WriteLogDivider()
+        {
+            WriteLogEntry(LogUtilities.LogDivider);
+        }
+
+        /// <summary>
+        /// Writes a divider if one hasn't been written already.
+        /// </summary>
+        private void WriteInitialDivider(ref bool written)
+        {
+            if (written)
+            {
+                return;
+            }
+            WriteLogDivider();
+            written = true;
+        }
+
+        /// <summary>
+        /// Gets the host log stream mode based on the configuration and parameters.
+        /// </summary>
+        /// <param name="writeHost"></param>
+        /// <returns></returns>
+        private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
+        {
+            return writeHost != false && LogWriteToHost
+                ? (LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host)
+                : HostLogStreamType.None;
+        }
+
+        /// <summary>
+        /// Tests the deferral history path.
+        /// </summary>
+        /// <returns>True if the deferral history path exists; otherwise, false.</returns>
+        private bool TestDeferHistoryPath()
+        {
+            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
+        }
+
+        /// <summary>
+        /// Creates the deferral history path.
+        /// </summary>
+        private void CreateDeferHistoryPath()
+        {
+            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
+        }
+
+        /// <summary>
+        /// Removes the virtual drive mapping created with the SUBST command for the directory specified by
+        /// DirFilesSubstDrive.
+        /// </summary>
+        /// <remarks>This method undoes a previous drive substitution, making the drive letter unavailable
+        /// for accessing the substituted directory. If DirFilesSubstDrive is null, empty, or consists only of
+        /// white-space characters, no action is taken.</remarks>
+        private void RemoveSubstDrive()
+        {
+            if (string.IsNullOrWhiteSpace(DirFilesSubstDrive))
+            {
+                return;
+            }
+            WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
+            _ = Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
+        }
+
+        /// <summary>
+        /// Dismounts all currently mounted Windows Imaging (WIM) files managed by this instance.
+        /// </summary>
+        /// <remarks>This method processes all mounted WIM files in reverse order and clears the internal
+        /// list after dismounting. It should be called when all operations requiring access to the mounted WIM files
+        /// are complete.</remarks>
+        private void DismountWimFiles()
+        {
+            if (MountedWimFiles.Count <= 0)
+            {
+                return;
+            }
+            MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+            MountedWimFiles.Clear();
+        }
+
+        /// <summary>
+        /// Gets the value of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
+        {
+            return CallerSessionState is not null
+                ? (T)CallerSessionState.PSVariable.GetValue(propertyName)
+                : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
+        }
+
+        /// <summary>
+        /// Sets the value of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="propertyName"></param>
+        private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
+        {
+            CallerSessionState?.PSVariable.Set(new(propertyName, value));
+            BackingFields[propertyName!].SetValue(this, value);
         }
 
 

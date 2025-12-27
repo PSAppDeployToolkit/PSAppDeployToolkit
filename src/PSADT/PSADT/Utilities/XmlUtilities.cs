@@ -40,7 +40,7 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument representing the parsed XML content.</returns>
         internal static XmlDocument SafeLoadFromText(string input)
         {
-            if (input is null || string.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrWhiteSpace(input))
             {
                 throw new ArgumentNullException(nameof(input));
             }

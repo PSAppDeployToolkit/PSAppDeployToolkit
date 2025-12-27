@@ -1221,7 +1221,7 @@ function Show-ADTInstallationWelcome
                             if ($adtSession)
                             {
                                 Update-ADTDeferHistory
-                                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::OnDefer)))
+                                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnDefer)))
                                 {
                                     & $callback
                                 }

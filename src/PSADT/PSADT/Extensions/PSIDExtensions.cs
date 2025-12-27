@@ -19,10 +19,7 @@ namespace PSADT.Extensions
         /// <returns>A <see cref="SecurityIdentifier"/> representing the specified <see cref="PSID"/>.</returns>
         internal static SecurityIdentifier ToSecurityIdentifier(this PSID pSid)
         {
-            unsafe
-            {
-                return new((IntPtr)pSid.Value);
-            }
+            return new((IntPtr)pSid);
         }
     }
 }

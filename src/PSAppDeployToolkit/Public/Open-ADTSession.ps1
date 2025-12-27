@@ -441,14 +441,14 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::OnStart)))
+                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnStart)))
                 {
                     & $callback
                 }
             }
 
             # Invoke pre-open callbacks.
-            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::PreOpen)))
+            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::PreOpen)))
             {
                 & $callback
             }
@@ -518,7 +518,7 @@ function Open-ADTSession
                 }
 
                 # Invoke post-open callbacks.
-                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Common.CallbackType]::PostOpen)))
+                foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::PostOpen)))
                 {
                     & $callback
                 }

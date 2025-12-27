@@ -9,7 +9,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// <summary>
     /// Represents a wrapper for a virtual memory allocation handle that ensures the handle is properly released.
     /// </summary>
-    internal sealed class SafeVirtualAllocHandle : SafeMemoryHandle
+    internal sealed class SafeVirtualAllocHandle : SafeMemoryHandle<SafeVirtualAllocHandle>
     {
         /// <summary>
         /// Allocates a block of memory of the specified size and returns a <see cref="SafeVirtualAllocHandle"/> that wraps the allocated memory.

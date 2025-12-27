@@ -19,7 +19,9 @@ namespace PSADT.LibraryInterfaces.Utilities
         {
             int win32ErrorCode = lastWin32Error.HasValue ? unchecked((int)lastWin32Error.Value) : Marshal.GetLastWin32Error();
             Exception? marshalException = Marshal.GetExceptionForHR(GetHRForWin32ErrorCode(win32ErrorCode));
-            return marshalException is not null && (marshalException is not COMException || win32ErrorCode == (int)WIN32_ERROR.ERROR_MR_MID_NOT_FOUND) ? marshalException : new Win32Exception(win32ErrorCode);
+            return marshalException is null || (marshalException is COMException && win32ErrorCode != (int)WIN32_ERROR.ERROR_MR_MID_NOT_FOUND)
+                ? new Win32Exception(win32ErrorCode)
+                : marshalException;
         }
 
         /// <summary>
