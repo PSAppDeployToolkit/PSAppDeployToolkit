@@ -552,7 +552,7 @@ function Start-ADTMsiProcess
                     }
                     else
                     {
-                        if ($InstalledApplication.ContainsKey('DisplayVersion'))
+                        if (![System.String]::IsNullOrWhiteSpace($InstalledApplication.DisplayVersion))
                         {
                             (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
                         }
