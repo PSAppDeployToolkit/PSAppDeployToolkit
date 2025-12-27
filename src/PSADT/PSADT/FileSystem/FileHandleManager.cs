@@ -95,7 +95,7 @@ namespace PSADT.FileSystem
             // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
             using ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)> threadBuffers = new
             (
-                () => (AllocateObjectBuffer(), AllocateStartRoutineBuffer()),
+                () => (SafePinnedGCHandle.Alloc(new byte[1024]), SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE).Write(NtQueryObjectStartRoutineTemplate.Bytes)),
                 trackAllValues: true
             );
 
@@ -271,35 +271,6 @@ namespace PSADT.FileSystem
                 _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Allocates a pinned buffer of 1,024 bytes and returns a handle that can be used to access the buffer safely.
-        /// </summary>
-        /// <remarks>The returned buffer is pinned in memory, preventing the garbage collector from
-        /// relocating it. This is useful for scenarios that require fixed memory addresses, such as interoperability
-        /// with unmanaged code.</remarks>
-        /// <returns>A <see cref="SafePinnedGCHandle"/> representing a pinned buffer of 1,024 bytes. The handle must be disposed
-        /// when no longer needed to release resources.</returns>
-        private static SafePinnedGCHandle AllocateObjectBuffer()
-        {
-            return SafePinnedGCHandle.Alloc(new byte[1024]);
-        }
-
-        /// <summary>
-        /// Allocates a buffer in virtual memory containing the start routine template and returns a handle to the
-        /// allocated memory.
-        /// </summary>
-        /// <remarks>The returned buffer is allocated with execute, read, and write permissions. The
-        /// caller is responsible for disposing the handle when it is no longer needed to release the allocated
-        /// memory.</remarks>
-        /// <returns>A <see cref="SafeVirtualAllocHandle"/> representing the allocated virtual memory buffer containing the start
-        /// routine template.</returns>
-        private static SafeVirtualAllocHandle AllocateStartRoutineBuffer()
-        {
-            SafeVirtualAllocHandle mem = SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            _ = mem.Write(NtQueryObjectStartRoutineTemplate.Bytes);
-            return mem;
         }
 
         /// <summary>
