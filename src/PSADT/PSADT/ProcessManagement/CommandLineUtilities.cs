@@ -78,10 +78,6 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException("The specified enumerable is empty.", (Exception?)null);
             }
-            if (args.Any(string.IsNullOrWhiteSpace))
-            {
-                throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
-            }
 
             // Construct and return the command line string.
             StringBuilder sb = new();
@@ -89,6 +85,10 @@ namespace PSADT.ProcessManagement
             {
                 foreach (string arg in args)
                 {
+                    if (string.IsNullOrWhiteSpace(arg))
+                    {
+                        throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
+                    }
                     _ = sb.Append(EscapeArgumentCompatible(arg));
                     _ = sb.Append(' ');
                 }
@@ -97,6 +97,10 @@ namespace PSADT.ProcessManagement
             {
                 foreach (string arg in args)
                 {
+                    if (string.IsNullOrWhiteSpace(arg))
+                    {
+                        throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
+                    }
                     _ = sb.Append(EscapeArgumentStrict(arg));
                     _ = sb.Append(' ');
                 }
