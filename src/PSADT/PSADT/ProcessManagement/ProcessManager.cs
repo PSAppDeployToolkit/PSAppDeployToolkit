@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
@@ -629,7 +628,7 @@ namespace PSADT.ProcessManagement
             // Since we're part of a job object, we need to check if the job has the JOB_OBJECT_LIMIT_BREAKAWAY_OK flag set.
             Span<byte> lpJobObjectInformation = stackalloc byte[Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
             _ = Kernel32.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
-            ref JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref Unsafe.As<byte, JOBOBJECT_EXTENDED_LIMIT_INFORMATION>(ref MemoryMarshal.GetReference(lpJobObjectInformation));
+            ref JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref lpJobObjectInformation.AsStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
             JOB_OBJECT_LIMIT jobObjectLimitFlags = jobObjectInfo.BasicLimitInformation.LimitFlags;
             if (!(jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
             {

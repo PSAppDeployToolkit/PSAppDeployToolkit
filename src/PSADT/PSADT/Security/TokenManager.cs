@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
@@ -24,7 +23,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_ELEVATION>()];
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
-            ref TOKEN_ELEVATION tokenElevation = ref Unsafe.As<byte, TOKEN_ELEVATION>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_ELEVATION tokenElevation = ref buffer.AsStructure<TOKEN_ELEVATION>();
             return tokenElevation.TokenIsElevated != 0;
         }
 
@@ -66,7 +65,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_LINKED_TOKEN>()];
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-            ref TOKEN_LINKED_TOKEN tokenLinkedToken = ref Unsafe.As<byte, TOKEN_LINKED_TOKEN>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsStructure<TOKEN_LINKED_TOKEN>();
             return new(tokenLinkedToken.LinkedToken, true);
         }
 
@@ -138,7 +137,7 @@ namespace PSADT.Security
 
             // Now grab the token's SID as requested.
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
-            ref TOKEN_USER tokenUser = ref Unsafe.As<byte, TOKEN_USER>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_USER tokenUser = ref buffer.AsStructure<TOKEN_USER>();
             return tokenUser.User.Sid.ToSecurityIdentifier();
         }
 
@@ -154,7 +153,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[sizeof(uint)];
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
-            return Unsafe.As<byte, uint>(ref MemoryMarshal.GetReference(buffer));
+            return buffer.AsStructure<uint>();
         }
     }
 }
