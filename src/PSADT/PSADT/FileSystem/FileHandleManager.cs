@@ -179,7 +179,49 @@ namespace PSADT.FileSystem
                     string? objectName;
                     using (fileDupHandle)
                     {
-                        objectName = GetObjectName(currentProcessHandle, fileDupHandle, threadBuffers.Value.ObjectBuffer, threadBuffers.Value.StartRoutineBuffer);
+                        (SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer) = threadBuffers.Value;
+                        bool fileDupHandleAddRef = false; bool objectBufferAddRef = false;
+                        try
+                        {
+                            // Start the thread to retrieve the object name and wait for the outcome.
+                            fileDupHandle.DangerousAddRef(ref fileDupHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
+                            PatchStartRoutineBuffer(startRoutineBuffer, fileDupHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
+                            _ = NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                            NTSTATUS res;
+                            using (hThread)
+                            {
+                                // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung); otherwise just get the exit code.
+                                if (Kernel32.WaitForSingleObject(hThread, TimeSpan.FromMilliseconds(500)) != WAIT_EVENT.WAIT_OBJECT_0)
+                                {
+                                    _ = NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                                }
+                                _ = Kernel32.GetExitCodeThread(hThread, out uint exitCode); res = unchecked((NTSTATUS)exitCode);
+                            }
+
+                            // Handle the result of the NtQueryObject call; returning early on certain expected failure codes.
+                            if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
+                            {
+                                return;
+                            }
+                            if (res != NTSTATUS.STATUS_SUCCESS)
+                            {
+                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                            }
+                            ref OBJECT_NAME_INFORMATION objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
+                            objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
+                        }
+                        finally
+                        {
+                            if (fileDupHandleAddRef)
+                            {
+                                fileDupHandle.DangerousRelease();
+                            }
+                            if (objectBufferAddRef)
+                            {
+                                objectBuffer.DangerousRelease();
+                            }
+                            objectBuffer.Clear();
+                        }
                     }
 
                     // Skip to next iteration if the handle doesn't meet our criteria.
@@ -237,60 +279,6 @@ namespace PSADT.FileSystem
                 using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
                 _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the name of an object associated with a handle.
-        /// </summary>
-        /// <param name="currentProcessHandle"></param>
-        /// <param name="fileHandle"></param>
-        /// <param name="objectBuffer"></param>
-        /// <param name="startRoutineBuffer"></param>
-        /// <returns></returns>
-        private static string? GetObjectName(SafeProcessHandle currentProcessHandle, SafeFileHandle fileHandle, SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer)
-        {
-            bool objectBufferAddRef = false;
-            bool fileHandleAddRef = false;
-            try
-            {
-                // Start the thread to retrieve the object name and wait for the outcome.
-                fileHandle.DangerousAddRef(ref fileHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
-                PatchStartRoutineBuffer(startRoutineBuffer, fileHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                _ = NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
-                using (hThread)
-                {
-                    // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
-                    if (Kernel32.WaitForSingleObject(hThread, TimeSpan.FromMilliseconds(500)) != WAIT_EVENT.WAIT_OBJECT_0)
-                    {
-                        _ = NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
-                    }
-
-                    // Get the exit code of the thread, returning null under certain conditions or throwing an exception if it failed.
-                    _ = Kernel32.GetExitCodeThread(hThread, out uint exitCode); NTSTATUS res = unchecked((NTSTATUS)exitCode);
-                    if (res == NTSTATUS.STATUS_TIMEOUT || res == NTSTATUS.STATUS_PENDING || res == NTSTATUS.STATUS_NOT_SUPPORTED || res == NTSTATUS.STATUS_OBJECT_PATH_INVALID || res == NTSTATUS.STATUS_ACCESS_DENIED || res == NTSTATUS.STATUS_PIPE_DISCONNECTED)
-                    {
-                        return null;
-                    }
-                    if (res != NTSTATUS.STATUS_SUCCESS)
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
-                    }
-                    ref OBJECT_NAME_INFORMATION objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
-                    return objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
-                }
-            }
-            finally
-            {
-                if (fileHandleAddRef)
-                {
-                    fileHandle.DangerousRelease();
-                }
-                if (objectBufferAddRef)
-                {
-                    objectBuffer.DangerousRelease();
-                }
-                objectBuffer.Clear();
             }
         }
 
