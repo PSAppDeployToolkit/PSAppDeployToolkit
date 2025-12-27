@@ -677,7 +677,7 @@ namespace PSADT.ClientServer
                     if (_logReader.ReadString() is string line && ModuleDatabase.IsDeploymentSessionActive())
                     {
                         // Test the line for a log severity.
-                        if (line.Contains(ArgumentSeparator.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (line.Contains(ArgumentSeparator.ToString()))
                         {
                             string[] parts = line.Split(ArgumentSeparator);
                             ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0], CultureInfo.InvariantCulture), _logSource);

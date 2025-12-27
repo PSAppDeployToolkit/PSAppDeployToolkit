@@ -33,7 +33,7 @@ namespace PSADT.FileSystem
             }
             static ref T ReadStruct<T>(BinaryReader reader) where T : unmanaged
             {
-                return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(reader.ReadBytes(Marshal.SizeOf<T>())));
+                return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference<byte>(reader.ReadBytes(Marshal.SizeOf<T>())));
             }
 
             // Read the DOS header and check for the PE signature.
