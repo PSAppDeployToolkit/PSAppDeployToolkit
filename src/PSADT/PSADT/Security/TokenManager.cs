@@ -153,7 +153,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[sizeof(uint)];
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
-            return buffer.AsStructure<uint>();
+            return MemoryMarshal.Read<uint>(buffer);
         }
     }
 }
