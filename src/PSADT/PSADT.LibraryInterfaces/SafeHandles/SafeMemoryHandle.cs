@@ -270,6 +270,6 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <summary>
         /// Gets the size of the allocated memory block.
         /// </summary>
-        internal int Length { get; private protected set; }
+        internal readonly int Length;
     }
 }
