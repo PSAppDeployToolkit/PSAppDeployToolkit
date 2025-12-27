@@ -335,7 +335,7 @@ namespace PSADT.FileSystem
                             {
                                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
                             }
-                            ref OBJECT_NAME_INFORMATION objectBufferData = ref Unsafe.As<byte, OBJECT_NAME_INFORMATION>(ref MemoryMarshal.GetReference(objectBuffer.AsReadOnlySpan<byte>()));
+                            ref OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsStructure<OBJECT_NAME_INFORMATION>();
                             objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
                         }
                         finally
