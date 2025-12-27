@@ -721,7 +721,7 @@ namespace PSADT.ProcessManagement
             }
 
             // The argument must be quoted if it contains a space, tab, a quote, or is empty.
-            bool needsQuoting = argument.Length == 0 || argument.Any(c => IsWhitespace(c) || c == '"');
+            bool needsQuoting = argument.Length == 0 || argument.Any(static c => IsWhitespace(c) || c == '"');
             if (!needsQuoting)
             {
                 return argument;
