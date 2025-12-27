@@ -10,7 +10,7 @@ namespace PSADT.Tests.ProcessManagement
     /// to Microsoft's CommandLineToArgv(), msvcrt pre-2008, msvcrt post-2008, and other Windows
     /// command line parsing standards.
     /// </summary>
-    public class CommandLineUtilitiesTests
+    public sealed class CommandLineUtilitiesTests
     {
         /// <summary>
         /// Tests basic argument parsing with simple cases.
