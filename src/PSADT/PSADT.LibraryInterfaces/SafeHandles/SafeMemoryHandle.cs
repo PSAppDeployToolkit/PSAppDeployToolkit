@@ -15,15 +15,16 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// from structures, and exposing the memory as spans for efficient access. Inheritors must implement the
     /// ReleaseHandle method to define how the memory is freed. Instances of this class are not thread safe unless
     /// otherwise specified by derived types.</remarks>
-    internal abstract class SafeMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    /// <typeparam name="TSelf">The derived type that inherits from this class.</typeparam>
+    internal abstract class SafeMemoryHandle<TSelf> : SafeHandleZeroOrMinusOneIsInvalid where TSelf : SafeMemoryHandle<TSelf>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SafeMemoryHandle"/> class with a specified handle, length, and
+        /// Initializes a new instance of the <see cref="SafeMemoryHandle{TSelf}"/> class with a specified handle, length, and
         /// ownership flag.
         /// </summary>
         /// <param name="handle">The memory handle to be managed.</param>
         /// <param name="length">The length of the memory block. Must be greater than zero.</param>
-        /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle"/> should reliably release the handle during the
+        /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle{TSelf}"/> should reliably release the handle during the
         /// finalization phase.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
         protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(ownsHandle)
@@ -49,10 +50,10 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="structure"></param>
         /// <param name="fDeleteOld"></param>
         /// <param name="offset"></param>
-        internal SafeMemoryHandle FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
+        internal TSelf FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
         {
             Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
-            return this;
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -128,9 +129,10 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 64-bit signed integer to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteInt64(long value, int offset = 0)
+        internal TSelf WriteInt64(long value, int offset = 0)
         {
             Marshal.WriteInt64(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -141,9 +143,10 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 32-bit integer value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteInt32(int value, int offset = 0)
+        internal TSelf WriteInt32(int value, int offset = 0)
         {
             Marshal.WriteInt32(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -154,9 +157,10 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The 16-bit signed integer to write.</param>
         /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
-        internal void WriteInt16(short value, int offset = 0)
+        internal TSelf WriteInt16(short value, int offset = 0)
         {
             Marshal.WriteInt16(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -167,9 +171,10 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// memory to avoid memory corruption.</remarks>
         /// <param name="value">The byte value to write.</param>
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
-        internal void WriteByte(byte value, int offset = 0)
+        internal TSelf WriteByte(byte value, int offset = 0)
         {
             Marshal.WriteByte(handle, offset, value);
+            return (TSelf)this;
         }
 
         /// <summary>
@@ -179,7 +184,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="startIndex"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        internal void Write(byte[] data, int startIndex = 0)
+        internal TSelf Write(byte[] data, int startIndex = 0)
         {
             if (data is null)
             {
@@ -194,6 +199,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
                 throw new ArgumentException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].", nameof(data));
             }
             Marshal.Copy(data, startIndex, handle, data.Length);
+            return (TSelf)this;
         }
 
         /// <summary>

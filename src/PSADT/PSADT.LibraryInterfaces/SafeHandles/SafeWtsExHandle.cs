@@ -11,7 +11,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// <summary>
     /// Represents a wrapper for an environment block handle that ensures the handle is properly released.
     /// </summary>
-    internal sealed class SafeWtsExHandle(IntPtr handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle(handle, length, ownsHandle)
+    internal sealed class SafeWtsExHandle(IntPtr handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsExHandle>(handle, length, ownsHandle)
     {
         /// <summary>
         /// Releases the handle.

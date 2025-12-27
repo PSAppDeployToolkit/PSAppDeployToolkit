@@ -298,7 +298,7 @@ namespace PSADT.FileSystem
         private static SafeVirtualAllocHandle AllocateStartRoutineBuffer()
         {
             SafeVirtualAllocHandle mem = SafeVirtualAllocHandle.Alloc(NtQueryObjectStartRoutineTemplate.Bytes.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            mem.Write(NtQueryObjectStartRoutineTemplate.Bytes);
+            _ = mem.Write(NtQueryObjectStartRoutineTemplate.Bytes);
             return mem;
         }
 
@@ -451,18 +451,18 @@ namespace PSADT.FileSystem
                 // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
                 // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
                 // Patch buffer length at offset (mov r9, bufferSize -> 3 bytes opcode + 8 bytes value)
-                startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
-                startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                _ = startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                _ = startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                _ = startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
             }
             else if (processArchitecture == Architecture.X86)
             {
                 // Patch buffer length (push bufferSize)
                 // Patch buffer (push buffer)
                 // Patch handle (push handle)
-                startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
-                startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                _ = startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
+                _ = startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                _ = startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
             }
             else if (processArchitecture == Architecture.Arm64)
             {
@@ -473,9 +473,9 @@ namespace PSADT.FileSystem
                 uint[] lengthInstrs = [.. NativeUtilities.Load64(3, (ulong)infoBufferLength)];
                 for (int j = 0; j < 4; j++)
                 {
-                    startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
-                    startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
-                    startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
+                    _ = startRoutineBuffer.WriteInt32(unchecked((int)handleInstrs[j]), NtQueryObjectStartRoutineTemplate.HandleOffset + (j * 4));
+                    _ = startRoutineBuffer.WriteInt32(unchecked((int)bufferInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferOffset + (j * 4));
+                    _ = startRoutineBuffer.WriteInt32(unchecked((int)lengthInstrs[j]), NtQueryObjectStartRoutineTemplate.BufferLengthOffset + (j * 4));
                 }
             }
             else

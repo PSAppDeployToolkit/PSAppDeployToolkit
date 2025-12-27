@@ -6,7 +6,7 @@ namespace PSADT.SafeHandles
     /// <summary>
     /// Represents a wrapper for a <see cref="GCHandle"/> that pins an object in memory.
     /// </summary>
-    internal sealed class SafePinnedGCHandle : SafeMemoryHandle
+    internal sealed class SafePinnedGCHandle : SafeMemoryHandle<SafePinnedGCHandle>
     {
         /// <summary>
         /// Allocates a new <see cref="SafePinnedGCHandle"/> for the specified object, pinning it in memory.
