@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
@@ -44,7 +43,7 @@ namespace PSADT.TerminalServices
                 List<SessionInfo> sessions = new(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
-                    ref WTS_SESSION_INFOW session = ref Unsafe.As<byte, WTS_SESSION_INFOW>(ref MemoryMarshal.GetReference(pSessionInfoSpan.Slice(objLength * i)));
+                    ref WTS_SESSION_INFOW session = ref pSessionInfoSpan.Slice(objLength * i).AsStructure<WTS_SESSION_INFOW>();
                     if (GetSessionInfo(in session) is SessionInfo sessionInfo)
                     {
                         sessions.Add(sessionInfo);
@@ -209,7 +208,7 @@ namespace PSADT.TerminalServices
                     int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
-                        ref WTS_PROCESS_INFOW process = ref Unsafe.As<byte, WTS_PROCESS_INFOW>(ref MemoryMarshal.GetReference(pProcessInfoSpan.Slice(objLength * i)));
+                        ref WTS_PROCESS_INFOW process = ref pProcessInfoSpan.Slice(objLength * i).AsStructure<WTS_PROCESS_INFOW>();
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
                             return process.pUserSid.ToSecurityIdentifier();

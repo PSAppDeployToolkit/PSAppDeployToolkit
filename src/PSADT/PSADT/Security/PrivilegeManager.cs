@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -67,7 +66,7 @@ namespace PSADT.Security
 
             // Retrieve the token privileges and filter them based on the specified attributes before returning them.
             _ = AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
-            ref TOKEN_PRIVILEGES tokenPrivileges = ref Unsafe.As<byte, TOKEN_PRIVILEGES>(ref MemoryMarshal.GetReference(buffer));
+            ref TOKEN_PRIVILEGES tokenPrivileges = ref buffer.AsStructure<TOKEN_PRIVILEGES>();
             uint privilegeCount = tokenPrivileges.PrivilegeCount;
             int bufferOffset = sizeof(uint);
             int increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
@@ -77,7 +76,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    ref LUID_AND_ATTRIBUTES attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
+                    ref LUID_AND_ATTRIBUTES attr = ref buffer.Slice(bufferOffset + (increment * i)).AsStructure<LUID_AND_ATTRIBUTES>();
                     if ((attr.Attributes & attributes) == attributes)
                     {
                         privileges.Add(GetPrivilege(in attr, charSpan));
@@ -88,7 +87,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    ref LUID_AND_ATTRIBUTES attr = ref Unsafe.As<byte, LUID_AND_ATTRIBUTES>(ref MemoryMarshal.GetReference(buffer.Slice(bufferOffset + (increment * i))));
+                    ref LUID_AND_ATTRIBUTES attr = ref buffer.Slice(bufferOffset + (increment * i)).AsStructure<LUID_AND_ATTRIBUTES>();
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }
