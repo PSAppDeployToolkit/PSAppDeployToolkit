@@ -751,60 +751,52 @@ namespace PSADT.Module
                 else if (Process.GetProcessesByName("WWAHost") is Process[] wwaHostProcesses && wwaHostProcesses.Length > 0)
                 {
                     // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
-                    WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
-                    if (!string.IsNullOrWhiteSpace((string?)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot", "CloudAssignedTenantId", null)))
+                    WriteLogEntry("The WWAHost process is running, checking ESP User Account setup phase.");
+                    if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
                     {
-                        WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
-                        if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
+                        if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
                         {
-                            if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
+                            PSObject? fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                            if (fsRegData is not null)
                             {
-                                var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
-                                if (null != fsRegData)
+                                if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
                                 {
-                                    if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
+                                    if (deployModeChanged)
                                     {
-                                        if (deployModeChanged)
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
-                                        }
-                                        else if (_deployMode != DeployMode.Auto)
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
-                                        }
-                                        else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
-                                        {
-                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
-                                            deployModeChanged = true;
-                                        }
-                                        else
-                                        {
-                                            WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
-                                        }
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
+                                    }
+                                    else if (_deployMode != DeployMode.Auto)
+                                    {
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
+                                    }
+                                    else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
+                                    {
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                                        deployModeChanged = true;
                                     }
                                     else
                                     {
-                                        WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                        WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
                                     }
                                 }
                                 else
                                 {
-                                    WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
+                                    WriteLogEntry("The ESP User Account Setup phase is already complete.");
                                 }
                             }
                             else
                             {
-                                WriteLogEntry("There are no WWAHost processes running for the currently logged on user");
+                                WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
                             }
                         }
                         else
                         {
-                            WriteLogEntry("The device currently has no users logged on.");
+                            WriteLogEntry("There are no WWAHost processes running for the currently logged on user");
                         }
                     }
                     else
                     {
-                        WriteLogEntry("The device is not Autopilot-enrolled.");
+                        WriteLogEntry("The device currently has no users logged on.");
                     }
                 }
                 else
