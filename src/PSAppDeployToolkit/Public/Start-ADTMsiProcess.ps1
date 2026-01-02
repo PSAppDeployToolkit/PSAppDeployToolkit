@@ -724,7 +724,7 @@ function Start-ADTMsiProcess
                         $msiArgs.AddRange($ArgumentList)
                     }
                 }
-                else
+                elseif (![System.String]::IsNullOrWhiteSpace($msiDefaultParams))
                 {
                     $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($msiDefaultParams))
                 }
