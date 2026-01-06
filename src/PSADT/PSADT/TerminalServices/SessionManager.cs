@@ -9,7 +9,9 @@ using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
+using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.Security;
@@ -18,7 +20,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.RemoteDesktop;
-using PSADT.Foundation;
 
 namespace PSADT.TerminalServices
 {

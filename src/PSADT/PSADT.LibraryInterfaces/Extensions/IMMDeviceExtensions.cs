@@ -3,7 +3,7 @@ using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.StructuredStorage;
 
-namespace PSADT.Extensions
+namespace PSADT.LibraryInterfaces.Extensions
 {
     /// <summary>
     /// Provides extension methods for the <see cref="IMMDevice"/> interface to facilitate activation of COM interfaces.
