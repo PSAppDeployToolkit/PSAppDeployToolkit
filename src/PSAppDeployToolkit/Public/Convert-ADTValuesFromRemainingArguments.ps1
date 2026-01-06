@@ -65,7 +65,7 @@ function Convert-ADTValuesFromRemainingArguments
             try
             {
                 # Process input into a dictionary and return it. Assume anything starting with a '-' is a new variable.
-                return [PSADT.Utilities.PowerShellUtilities]::ConvertValuesFromRemainingArguments($RemainingArguments)
+                return [PSAppDeployToolkit.Utilities.PowerShellUtilities]::ConvertValuesFromRemainingArguments($RemainingArguments)
             }
             catch
             {
