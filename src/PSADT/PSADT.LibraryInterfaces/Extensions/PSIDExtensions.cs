@@ -2,7 +2,7 @@
 using System.Security.Principal;
 using Windows.Win32.Security;
 
-namespace PSADT.Extensions
+namespace PSADT.LibraryInterfaces.Extensions
 {
     /// <summary>
     /// Provides extension methods for working with <see cref="PSID"/> instances.

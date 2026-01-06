@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
