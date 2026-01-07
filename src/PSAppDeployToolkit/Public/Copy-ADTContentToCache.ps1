@@ -111,10 +111,12 @@ function Copy-ADTContentToCache
             try
             {
                 # Check if source and destination are the same (already running from cache)
-                if ((Resolve-Path $scriptDir).Path -eq (Resolve-Path $LiteralPath).Path) {
+                if ((Resolve-Path $scriptDir).Path -eq (Resolve-Path $LiteralPath).Path)
+                {
                     Write-ADTLogEntry -Message "Source and destination are the same path [$LiteralPath]. Skipping copy operation."
                 }
-                else {
+                else
+                {
                     Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $LiteralPath -Recurse
                 }
                 $adtSession.DirFiles = Join-Path -Path $LiteralPath -ChildPath Files
