@@ -52,7 +52,7 @@ function Enable-ADTTerminalServerInstallMode
 
     process
     {
-        if ([PSADT.LibraryInterfaces.Kernel32]::TermsrvAppInstallMode())
+        if ([PSADT.TerminalServices.TerminalServerUtilities]::InAppInstallMode())
         {
             Write-ADTLogEntry -Message "This terminal server is already in user install mode."
             return

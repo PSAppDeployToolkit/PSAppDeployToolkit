@@ -28,7 +28,7 @@ namespace PSADT.LibraryInterfaces
     /// .NET exceptions for easier error handling. Handles returned by these methods must be released by the caller to
     /// avoid resource leaks. This class is intended for advanced scenarios that require direct interaction with Windows
     /// system APIs.</remarks>
-    public static class Kernel32
+    internal static class Kernel32
     {
         /// <summary>
         /// Determines whether the Out-Of-Box Experience (OOBE) has been completed on the system.
@@ -593,8 +593,7 @@ namespace PSADT.LibraryInterfaces
         /// langword="false"/>.</returns>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "This is OK for the time being.")]
-        public static extern bool TermsrvAppInstallMode();
+        internal static extern bool TermsrvAppInstallMode();
 
         /// <summary>
         /// Retrieves system firmware table data for the specified firmware table provider and table ID.
