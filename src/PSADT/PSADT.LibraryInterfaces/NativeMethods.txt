@@ -1,4 +1,5 @@
-﻿AdjustTokenPrivileges
+﻿AddFontResource
+AdjustTokenPrivileges
 APPLICATION_USER_MODEL_ID_MAX_LENGTH
 APPLICATION_USER_MODEL_ID_MIN_LENGTH
 AssignProcessToJobObject
@@ -254,6 +255,7 @@ RegOpenKeyEx
 RegQueryInfoKey
 RegRenameKey
 ReleaseCapture
+RemoveFontResource
 RemoveMenu
 ResumeThread
 RT_ACCELERATOR
