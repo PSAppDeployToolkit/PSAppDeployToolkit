@@ -10,6 +10,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
+using Microsoft.Win32.SafeHandles;
+using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
@@ -191,14 +193,37 @@ namespace PSADT.ProcessManagement
                         procDescription = process.ProcessName;
                     }
 
-                    // Grab the process owner if we're an administrator.
+                    // Grab the process owner if we can.
                     NTAccount? username = null;
-                    if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited)
+                    if (!process.HasExited)
                     {
-                        AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out var hToken);
-                        using (hToken)
+                        // Leverage SeDebugPrivilege if we have it for complete accuracy.
+                        if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege))
                         {
-                            username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
+                            // We're caching the process, so don't dispose of its SafeHande as .NET caches it also...
+                            _ = AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
+                            using (hToken)
+                            {
+                                username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
+                            }
+                        }
+
+                        // If we couldn't get it that way, test for session Id equality.
+                        if (username is null)
+                        {
+                            // This needs to be in a try/catch as accessing SessionId can throw E_ACCESSDENIED exceptions.
+                            try
+                            {
+                                if (process.SessionId == AccountUtilities.CallerSessionId)
+                                {
+                                    // The process is in our session, so assume it's ours.
+                                    username = AccountUtilities.CallerUsername;
+                                }
+                            }
+                            catch (Exception ex) when (ex.Message is not null)
+                            {
+                                username = null;
+                            }
                         }
                     }
 
