@@ -953,7 +953,7 @@ function Start-ADTProcess
             $sessionClosed = $false
             switch -Regex ($_.Exception.GetType().FullName)
             {
-                '^System\.Runtime\.InteropServices\.ExternalException$'
+                '^System\.(Runtime\.InteropServices\.ExternalException|Threading\.SynchronizationLockException)$'
                 {
                     # Handle requirements for when there's an active session.
                     if ($adtSession -and $extInvoker)
