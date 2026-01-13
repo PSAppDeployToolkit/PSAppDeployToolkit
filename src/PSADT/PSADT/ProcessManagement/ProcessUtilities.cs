@@ -113,8 +113,8 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            IEnumerable<string> processNames = processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant());
-            IEnumerable<Process> allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()));
+            string[] processNames = [.. processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant())];
+            Process[] allProcesses = [.. Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()))];
             List<RunningProcess> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
             {

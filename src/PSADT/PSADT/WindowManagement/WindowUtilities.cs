@@ -31,10 +31,10 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
         {
             // Get the list of processes based on the provided filters.
-            IEnumerable<Process> processes = windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
+            Process[] processes = [.. windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
                             windowHandleFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle)) :
                             parentProcessFilter is not null ? Process.GetProcesses().Where(p => parentProcessFilter.Contains(p.ProcessName)) :
-                            Process.GetProcesses();
+                            Process.GetProcesses()];
 
             // Create a list to hold the window information.
             Regex? windowTitleRegex = windowTitleFilter is not null ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;

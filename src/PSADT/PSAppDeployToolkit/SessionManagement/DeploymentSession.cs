@@ -283,7 +283,7 @@ namespace PSAppDeployToolkit.SessionManagement
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
-                        IEnumerable<string> usedLetters = DriveInfo.GetDrives().Select(static d => d.Name);
+                        string[] usedLetters = [.. DriveInfo.GetDrives().Select(static d => d.Name)];
                         if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");

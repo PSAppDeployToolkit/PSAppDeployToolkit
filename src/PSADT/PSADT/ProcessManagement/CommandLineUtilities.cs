@@ -66,24 +66,19 @@ namespace PSADT.ProcessManagement
         /// <see cref="CommandLineToArgumentList(string, bool)"/>, will yield the original arguments.
         /// Special characters are properly escaped according to Windows conventions.
         /// </remarks>
-        public static string ArgumentListToCommandLine(IEnumerable<string> argv, bool strict = false)
+        public static string ArgumentListToCommandLine(IReadOnlyList<string> argv, bool strict = false)
         {
             // Consider a null or empty argument list as an error.
-            if (argv is null)
+            if (!(argv?.Count > 0))
             {
-                throw new ArgumentNullException("The specified enumerable is null.", (Exception?)null);
-            }
-            string[] args = [.. argv];
-            if (args.Length == 0)
-            {
-                throw new ArgumentNullException("The specified enumerable is empty.", (Exception?)null);
+                throw new ArgumentNullException("The specified enumerable is null or empty.", (Exception?)null);
             }
 
             // Construct and return the command line string.
             StringBuilder sb = new();
             if (!strict)
             {
-                foreach (string arg in args)
+                foreach (string arg in argv)
                 {
                     if (string.IsNullOrWhiteSpace(arg))
                     {
@@ -95,7 +90,7 @@ namespace PSADT.ProcessManagement
             }
             else
             {
-                foreach (string arg in args)
+                foreach (string arg in argv)
                 {
                     if (string.IsNullOrWhiteSpace(arg))
                     {
