@@ -318,8 +318,8 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
-    $variables.Add('userProfileName', $(if ($variables.RunAsActiveUser) { $variables.RunAsActiveUser.UserName }))
-    $variables.Add('runasUserProfile', $(if ($variables.userProfileName) { Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore }))
+    $variables.Add('runasUserProfile', $(if ($variables.RunAsActiveUser) { [Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$($variables.RunAsActiveUser.SID)", 'ProfileImagePath', $null) }))
+    $variables.Add('userProfileName', $(if ($variables.runasUserProfile) { $variables.runasUserProfile.Split('\')[-1] }))
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]][System.IO.Path]::GetInvalidFileNameChars())
