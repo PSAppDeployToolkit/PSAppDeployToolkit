@@ -200,17 +200,13 @@ namespace PSADT.ProcessManagement
             }
 
             // Check for drive letter pattern (X:)
-            if (afterQuote + 1 < commandLine.Length &&
-                char.IsLetter(commandLine[afterQuote]) &&
-                commandLine[afterQuote + 1] == ':')
+            if (afterQuote + 1 < commandLine.Length && char.IsLetter(commandLine[afterQuote]) && commandLine[afterQuote + 1] == ':')
             {
                 return true;
             }
 
             // Check for UNC path (\\)
-            return afterQuote + 1 < commandLine.Length &&
-                commandLine[afterQuote] == '\\' &&
-                commandLine[afterQuote + 1] == '\\';
+            return afterQuote + 1 < commandLine.Length && commandLine[afterQuote] == '\\' && commandLine[afterQuote + 1] == '\\';
         }
 
         /// <summary>
@@ -221,10 +217,8 @@ namespace PSADT.ProcessManagement
         /// <returns>The parsed argument with quotes preserved only if needed.</returns>
         private static string ParseFlagWithQuotedPath(ReadOnlySpan<char> commandLine, ref int position)
         {
-            StringBuilder flagPart = new();
-            StringBuilder pathPart = new();
-
             // Parse the flag prefix (- or / followed by flag name)
+            StringBuilder flagPart = new(); StringBuilder pathPart = new();
             while (position < commandLine.Length && commandLine[position] != '"')
             {
                 _ = flagPart.Append(commandLine[position]);
@@ -241,7 +235,6 @@ namespace PSADT.ProcessManagement
             while (position < commandLine.Length)
             {
                 char c = commandLine[position];
-
                 if (c == '"')
                 {
                     // Check for escaped quote ("")
@@ -279,7 +272,6 @@ namespace PSADT.ProcessManagement
             // Check if the path actually needs quoting (contains spaces, tabs, or quotes)
             string path = pathPart.ToString();
             bool needsQuotes = path.Any(static c => IsWhitespace(c) || c == '"');
-
             return needsQuotes ? $"{flagPart}\"{path}\"" : $"{flagPart}{path}";
         }
 
@@ -355,7 +347,6 @@ namespace PSADT.ProcessManagement
 
                     // Check if the value actually needs quoting (contains spaces, tabs, or quotes)
                     bool needsQuotes = convertedValue.Any(static c => IsWhitespace(c) || c == '"');
-
                     if (needsQuotes)
                     {
                         // Value needs quotes - check if POSIX conversion happened
@@ -384,9 +375,7 @@ namespace PSADT.ProcessManagement
                 {
                     // Parse unquoted value - might be a path with spaces.
                     string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    _ = value.Contains(" ") && !value.StartsWith("\"")
-                        ? result.Append('"').Append(value).Append('"')
-                        : result.Append(value);
+                    _ = value.Contains(" ") && !value.StartsWith("\"") ? result.Append('"').Append(value).Append('"') : result.Append(value);
                 }
             }
             return result.ToString();
@@ -586,8 +575,7 @@ namespace PSADT.ProcessManagement
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
                     string lastToken = tokens[tokens.Count - 1];
-                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") &&
-                        !lastToken.Contains("=") && !lastToken.StartsWith("{"))
+                    if (!lastToken.StartsWith("/") && !lastToken.StartsWith("-") && !lastToken.Contains("=") && !lastToken.StartsWith("{"))
                     {
                         return (string.Join(" ", tokens.Take(tokens.Count - 1)), tokens.Count - 1);
                     }
@@ -713,7 +701,6 @@ namespace PSADT.ProcessManagement
                         position++;
                     }
                     int backslashCount = position - backslashStart;
-
                     if (position < commandLine.Length && commandLine[position] == '"')
                     {
                         // Backslashes are followed by a quote.
@@ -833,7 +820,6 @@ namespace PSADT.ProcessManagement
 
                     // Check if the value actually needs quoting (contains spaces, tabs, or quotes)
                     bool needsQuotes = valueContent.Any(static c => IsWhitespace(c) || c == '"');
-
                     if (needsQuotes)
                     {
                         // Value needs quotes - return as-is
@@ -871,9 +857,8 @@ namespace PSADT.ProcessManagement
         /// </remarks>
         private static bool TryEscapeFlagWithAttachedPath(string argument, out string escaped)
         {
-            escaped = string.Empty;
-
             // Must start with - or /.
+            escaped = string.Empty;
             if (argument.Length < 3 || (argument[0] != '-' && argument[0] != '/'))
             {
                 return false;
@@ -912,11 +897,10 @@ namespace PSADT.ProcessManagement
                 return false;
             }
 
-            string flagPart = argument.Substring(0, valueStart);
-            string valuePart = argument.Substring(valueStart);
-
             // If the path portion is already quoted (flag ends with " and value ends with "),
             // check if the quotes are actually needed.
+            string flagPart = argument.Substring(0, valueStart);
+            string valuePart = argument.Substring(valueStart);
             if (flagPart.EndsWith("\"") && valuePart.EndsWith("\""))
             {
                 // Extract the actual flag (without trailing quote) and path (without trailing quote)
@@ -971,7 +955,6 @@ namespace PSADT.ProcessManagement
                     backslashes++;
                     i++;
                 }
-
                 if (i == argument.Length)
                 {
                     // Trailing backslashes are doubled.
