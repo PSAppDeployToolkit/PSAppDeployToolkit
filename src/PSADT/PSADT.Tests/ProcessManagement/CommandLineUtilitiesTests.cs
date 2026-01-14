@@ -694,7 +694,7 @@ namespace PSADT.Tests.ProcessManagement
         [InlineData("\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S /D=\"C:\\Program Files\\MyApp\"",
                    new[] { "\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe", "/S", "/D=\"C:\\Program Files\\MyApp\"" })]
         [InlineData("msiexec.exe /i \"\\\\server\\msi-packages\\Application Suite.msi\" /qn TARGETDIR=\"\\\\server\\app-installs\\Application\\\\\"",
-                   new[] { "msiexec.exe", "/i", "\\\\server\\msi-packages\\Application Suite.msi", "/qn", "TARGETDIR=\"\\\\server\\app-installs\\Application\\\\\"" })]
+                   new[] { "msiexec.exe", "/i", "\\\\server\\msi-packages\\Application Suite.msi", "/qn", "TARGETDIR=\\\\server\\app-installs\\Application\\" })] // No spaces in path, quotes stripped
         public void CommandLineToArgumentList_RealWorldUncScenarios_ParsedCorrectlyCompatible(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
@@ -1357,7 +1357,7 @@ namespace PSADT.Tests.ProcessManagement
 
         /// <summary>
         /// Tests that unquoted key=value arguments with quoted values are still parsed correctly.
-        /// This ensures the fix for quoted whole arguments doesn't break the existing key="value" handling.
+        /// Quotes are preserved only if the value contains spaces or special characters.
         /// </summary>
         [Theory]
         [InlineData("--key=\"value with spaces\"",
@@ -1368,10 +1368,33 @@ namespace PSADT.Tests.ProcessManagement
                    new[] { "TARGETDIR=\"C:\\Program Files\\My App\"" })]
         [InlineData("program.exe --config=\"C:\\My Config\\file.json\"",
                    new[] { "program.exe", "--config=\"C:\\My Config\\file.json\"" })]
+        [InlineData("--key=\"simplevalue\"",
+                   new[] { "--key=simplevalue" })] // No spaces, quotes stripped
+        [InlineData("PROPERTY=\"C:\\NoSpaces\\Path\"",
+                   new[] { "PROPERTY=C:\\NoSpaces\\Path" })] // No spaces, quotes stripped
+        [InlineData("/D=\"C:\\Simple\"",
+                   new[] { "/D=C:\\Simple" })] // No spaces, quotes stripped
         public void CommandLineToArgumentList_UnquotedKeyWithQuotedValue_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
             IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that key=value arguments with unnecessary quotes have those quotes stripped on escaping.
+        /// </summary>
+        [Theory]
+        [InlineData(new[] { "KEY=\"value with spaces\"" }, "KEY=\"value with spaces\"")]
+        [InlineData(new[] { "KEY=\"simplevalue\"" }, "KEY=simplevalue")] // No spaces, quotes stripped
+        [InlineData(new[] { "TARGETDIR=\"C:\\NoSpaces\\Path\"" }, "TARGETDIR=C:\\NoSpaces\\Path")] // No spaces, quotes stripped
+        [InlineData(new[] { "/D=\"C:\\Program Files\\App\"" }, "/D=\"C:\\Program Files\\App\"")] // Has spaces, quotes preserved
+        public void ArgumentListToCommandLine_KeyValueWithQuotes_StripsUnnecessaryQuotes(string[] args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
 
             // Assert
             Assert.Equal(expected, result);
