@@ -845,7 +845,7 @@ function Show-ADTInstallationWelcome
             return $runningApps | & {
                 process
                 {
-                    if ($_.Username -eq $runAsActiveUser.Username)
+                    if ($_.Username -eq $runAsActiveUser.NTAccount)
                     {
                         return $_
                     }
