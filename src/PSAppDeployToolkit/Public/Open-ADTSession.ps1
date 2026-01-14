@@ -524,7 +524,7 @@ function Open-ADTSession
                 }
 
                 # Export the environment table to variables within the caller's scope.
-                if ($firstSession -and !$noExitOnClose)
+                if ($firstSession)
                 {
                     Export-ADTEnvironmentTableToSessionState -SessionState $SessionState
                 }
