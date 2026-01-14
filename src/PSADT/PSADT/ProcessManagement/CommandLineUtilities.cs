@@ -134,7 +134,8 @@ namespace PSADT.ProcessManagement
             while (position < commandLine.Length)
             {
                 // Check for key=value patterns first - these should be parsed with special handling.
-                // Following that, check for unquoted paths, otherwise just parse the argument.
+                // Following that, check for flag+quoted-path patterns, then unquoted paths,
+                // otherwise just parse the argument.
                 SkipWhitespace(commandLine, ref position);
                 if (position >= commandLine.Length)
                 {
@@ -143,6 +144,10 @@ namespace PSADT.ProcessManagement
                 if (IsKeyValueArgument(commandLine, position))
                 {
                     arguments.Add(ParseKeyValueArgument(commandLine, ref position));
+                }
+                else if (IsFlagWithQuotedPath(commandLine, position))
+                {
+                    arguments.Add(ParseFlagWithQuotedPath(commandLine, ref position));
                 }
                 else if (IsAtStartOfUnquotedPath(commandLine, position))
                 {
@@ -154,6 +159,123 @@ namespace PSADT.ProcessManagement
                 }
             }
             return arguments.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Determines if the current position starts a flag with a quoted path pattern (e.g., -sfx_o"C:\Path").
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position.</param>
+        /// <returns>True if this looks like a flag with a quoted path.</returns>
+        private static bool IsFlagWithQuotedPath(ReadOnlySpan<char> commandLine, int position)
+        {
+            // Must start with - or /
+            if (position >= commandLine.Length || (commandLine[position] != '-' && commandLine[position] != '/'))
+            {
+                return false;
+            }
+
+            // Look for the pattern: flag characters followed by a quote, then a path
+            int i = position + 1;
+
+            // Skip flag name characters (letters, digits, underscores, hyphens)
+            while (i < commandLine.Length && (char.IsLetterOrDigit(commandLine[i]) || commandLine[i] == '_' || commandLine[i] == '-'))
+            {
+                i++;
+            }
+
+            // Must have at least one flag character and be followed by a quote
+            if (i <= position + 1 || i >= commandLine.Length || commandLine[i] != '"')
+            {
+                return false;
+            }
+
+            // Check if after the quote we have a path (drive letter or UNC)
+            int afterQuote = i + 1;
+            if (afterQuote >= commandLine.Length)
+            {
+                return false;
+            }
+
+            // Check for drive letter pattern (X:)
+            if (afterQuote + 1 < commandLine.Length &&
+                char.IsLetter(commandLine[afterQuote]) &&
+                commandLine[afterQuote + 1] == ':')
+            {
+                return true;
+            }
+
+            // Check for UNC path (\\)
+            return afterQuote + 1 < commandLine.Length &&
+                commandLine[afterQuote] == '\\' &&
+                commandLine[afterQuote + 1] == '\\';
+        }
+
+        /// <summary>
+        /// Parses a flag with a quoted path pattern, preserving the quotes (e.g., -sfx_o"C:\Path" remains as-is).
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position (updated as parsing progresses).</param>
+        /// <returns>The parsed argument with quotes preserved.</returns>
+        private static string ParseFlagWithQuotedPath(ReadOnlySpan<char> commandLine, ref int position)
+        {
+            StringBuilder result = new();
+
+            // Parse the flag prefix (- or / followed by flag name)
+            while (position < commandLine.Length && commandLine[position] != '"')
+            {
+                _ = result.Append(commandLine[position]);
+                position++;
+            }
+
+            // Append the opening quote
+            if (position < commandLine.Length && commandLine[position] == '"')
+            {
+                _ = result.Append(commandLine[position]);
+                position++;
+            }
+
+            // Parse until we find the closing quote or end of argument
+            while (position < commandLine.Length)
+            {
+                char c = commandLine[position];
+
+                if (c == '"')
+                {
+                    // Check for escaped quote ("")
+                    if (position + 1 < commandLine.Length && commandLine[position + 1] == '"')
+                    {
+                        _ = result.Append('"');
+                        position += 2;
+                        continue;
+                    }
+
+                    // Closing quote - append it and finish
+                    _ = result.Append(c);
+                    position++;
+                    break;
+                }
+                else if (c == '\\')
+                {
+                    // Handle backslash sequences
+                    int backslashStart = position;
+                    while (position < commandLine.Length && commandLine[position] == '\\')
+                    {
+                        position++;
+                    }
+                    int backslashCount = position - backslashStart;
+
+                    // Backslashes are preserved as-is regardless of what follows
+                    _ = result.Append('\\', backslashCount);
+                }
+                else
+                {
+                    _ = result.Append(c);
+                    position++;
+                }
+            }
+
+            return result.ToString();
         }
 
         /// <summary>
@@ -706,8 +828,91 @@ namespace PSADT.ProcessManagement
                 }
             }
 
+            // Check for flag+path pattern (e.g., -sfx_oC:\Path\To\Output).
+            // This handles cases like 7-Zip's -sfx_o"C:\Path" where the path is attached to the flag.
+            if (TryEscapeFlagWithAttachedPath(argument, out string escaped))
+            {
+                return escaped;
+            }
+
             // For all other cases, use the standard strict escaping.
             return EscapeArgumentStrict(argument);
+        }
+
+        /// <summary>
+        /// Attempts to escape an argument that follows the pattern of a flag with an attached path value.
+        /// </summary>
+        /// <param name="argument">The argument to check and potentially escape.</param>
+        /// <param name="escaped">The escaped argument if the pattern matches, otherwise empty.</param>
+        /// <returns>True if the argument matched the flag+path pattern and was escaped, false otherwise.</returns>
+        /// <remarks>
+        /// This handles scenarios like 7-Zip's -sfx_o parameter where the value is attached directly
+        /// to the flag without a space, e.g., -sfx_oC:\Program Files\Output should become
+        /// -sfx_o"C:\Program Files\Output" rather than "-sfx_oC:\Program Files\Output".
+        /// </remarks>
+        private static bool TryEscapeFlagWithAttachedPath(string argument, out string escaped)
+        {
+            escaped = string.Empty;
+
+            // Must start with - or /.
+            if (argument.Length < 3 || (argument[0] != '-' && argument[0] != '/'))
+            {
+                return false;
+            }
+
+            // Find where the flag name ends and a path value begins.
+            // Look for a drive letter pattern (X:) or UNC path (\\).
+            // Skip if we encounter an = sign before the path (that's a key=value pattern).
+            int valueStart = -1;
+            for (int i = 1; i < argument.Length - 1; i++)
+            {
+                // If we find an equals sign before a path, this is a key=value pattern, not flag+path.
+                if (argument[i] == '=')
+                {
+                    return false;
+                }
+
+                // Check for drive letter pattern: letter followed by colon.
+                if (char.IsLetter(argument[i]) && argument[i + 1] == ':')
+                {
+                    valueStart = i;
+                    break;
+                }
+
+                // Check for UNC path start.
+                if (argument[i] == '\\' && i + 1 < argument.Length && argument[i + 1] == '\\')
+                {
+                    valueStart = i;
+                    break;
+                }
+            }
+
+            // Need at least one character for the flag name.
+            if (valueStart <= 1)
+            {
+                return false;
+            }
+
+            string flagPart = argument.Substring(0, valueStart);
+            string valuePart = argument.Substring(valueStart);
+
+            // If the path portion is already quoted (flag ends with " and value ends with "),
+            // return the argument as-is without additional escaping.
+            if (flagPart.EndsWith("\"") && valuePart.EndsWith("\""))
+            {
+                escaped = argument;
+                return true;
+            }
+
+            // Only apply special handling if the value needs quoting (contains spaces or quotes).
+            if (!valuePart.Any(static c => IsWhitespace(c) || c == '"'))
+            {
+                return false;
+            }
+
+            // Escape only the value part and combine with the flag.
+            escaped = flagPart + EscapeArgumentStrict(valuePart);
+            return true;
         }
 
         /// <summary>

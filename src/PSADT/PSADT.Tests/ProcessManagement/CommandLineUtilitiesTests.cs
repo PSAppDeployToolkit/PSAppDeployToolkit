@@ -1374,5 +1374,130 @@ namespace PSADT.Tests.ProcessManagement
             // Assert
             Assert.Equal(expected, result);
         }
+
+        /// <summary>
+        /// Tests that flag+path arguments (like 7-Zip's -sfx_o parameter) are escaped correctly.
+        /// When a flag has a path attached without a space, only the path portion should be quoted.
+        /// </summary>
+        [Theory]
+        [InlineData(new[] { "-sfx_oC:\\Program Files\\Output" }, "-sfx_o\"C:\\Program Files\\Output\"")]
+        [InlineData(new[] { "-sfx_oC:\\My Path\\file.exe" }, "-sfx_o\"C:\\My Path\\file.exe\"")]
+        [InlineData(new[] { "/DC:\\Program Files\\App" }, "/D\"C:\\Program Files\\App\"")]
+        [InlineData(new[] { "-output\\\\server\\shared folder\\file.txt" }, "-output\"\\\\server\\shared folder\\file.txt\"")]
+        [InlineData(new[] { "--pathC:\\Simple\\Path" }, "--pathC:\\Simple\\Path")] // No spaces, no quoting needed
+        [InlineData(new[] { "-oC:\\NoSpaces\\file.exe" }, "-oC:\\NoSpaces\\file.exe")] // No spaces, no quoting needed
+        public void ArgumentListToCommandLine_FlagWithAttachedPath_EscapesOnlyPathPortion(string[] args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that flag+path arguments that are already quoted are returned unchanged.
+        /// This handles the case where the caller passes an argument like -sfx_o"C:\Path\To\Output"
+        /// with embedded quotes that should be preserved as-is.
+        /// </summary>
+        [Theory]
+        [InlineData(new[] { "-sfx_o\"C:\\Path\\To\\Output\"" }, "-sfx_o\"C:\\Path\\To\\Output\"")]
+        [InlineData(new[] { "/D\"C:\\Program Files\\App\"" }, "/D\"C:\\Program Files\\App\"")]
+        [InlineData(new[] { "-output\"\\\\server\\share\\folder\"" }, "-output\"\\\\server\\share\\folder\"")]
+        [InlineData(new[] { "--path\"C:\\Already Quoted\\Path\"" }, "--path\"C:\\Already Quoted\\Path\"")]
+        public void ArgumentListToCommandLine_FlagWithAlreadyQuotedPath_PreservesQuotes(string[] args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests round-trip parsing for flag+path arguments to ensure they are preserved correctly.
+        /// This is critical for tools like 7-Zip that require -sfx_o"path" format.
+        /// In compatible mode, the quotes are preserved as part of the argument.
+        /// </summary>
+        [Theory]
+        [InlineData("-sfx_o\"C:\\Program Files\\Output\"", new[] { "-sfx_o\"C:\\Program Files\\Output\"" })]
+        [InlineData("-sfx_o\"C:\\My Path\\file.exe\"", new[] { "-sfx_o\"C:\\My Path\\file.exe\"" })]
+        [InlineData("/D\"C:\\Program Files\\App\"", new[] { "/D\"C:\\Program Files\\App\"" })]
+        [InlineData("-output\"\\\\server\\share\\folder\"", new[] { "-output\"\\\\server\\share\\folder\"" })]
+        public void CommandLineToArgumentList_FlagWithQuotedPath_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+
+        /// <summary>
+        /// Tests full round-trip for 7-Zip style flag+path arguments.
+        /// Parses the command line, converts back, and verifies the format is correct.
+        /// In compatible mode, quotes are preserved as part of the argument.
+        /// </summary>
+        [Fact]
+        public void FlagWithAttachedPath_RoundTrip_PreservesFormat()
+        {
+            // Arrange - Original command line with 7-Zip style flag+path
+            string original = "-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"";
+
+            // Act - Parse to arguments
+            IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(original);
+
+            // Assert - Should parse to single argument with quotes preserved
+            _ = Assert.Single(parsed);
+            Assert.Equal("-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"", parsed[0]);
+
+            // Act - Convert back to command line
+            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
+
+            // Assert - Should be identical to original (quotes already present, preserved as-is)
+            Assert.Equal(original, recreated);
+
+            // Act - Parse again to verify round-trip
+            IReadOnlyList<string> reparsed = CommandLineUtilities.CommandLineToArgumentList(recreated);
+
+            // Assert - Should match original parsed arguments
+            Assert.Equal(parsed, reparsed);
+        }
+
+        /// <summary>
+        /// Tests that regular arguments starting with - or / are not incorrectly treated as flag+path.
+        /// </summary>
+        [Theory]
+        [InlineData(new[] { "-flag" }, "-flag")]
+        [InlineData(new[] { "/option" }, "/option")]
+        [InlineData(new[] { "-flag", "value" }, "-flag value")]
+        [InlineData(new[] { "--long-flag=value" }, "--long-flag=value")]
+        [InlineData(new[] { "-D=value" }, "-D=value")]
+        public void ArgumentListToCommandLine_RegularFlags_NotTreatedAsFlagWithPath(string[] args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests real-world 7-Zip command line scenario with multiple arguments.
+        /// </summary>
+        [Fact]
+        public void ArgumentListToCommandLine_SevenZipScenario_EscapedCorrectly()
+        {
+            // Arrange - Test the specific flag+path argument
+            string sfxArg = "-sfx_oC:\\Program Files\\My App\\";
+            string[] testArgs = [sfxArg];
+
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(testArgs)!;
+
+            // Assert - The path portion should be quoted, not the entire argument
+            Assert.Equal("-sfx_o\"C:\\Program Files\\My App\\\\\"", result);
+        }
     }
 }
