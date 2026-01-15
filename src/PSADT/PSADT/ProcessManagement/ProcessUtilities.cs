@@ -356,7 +356,8 @@ namespace PSADT.ProcessManagement
         /// <returns></returns>
         public static string GetProcessCommandLine(int processId)
         {
-            return GetProcessCommandLine(Process.GetProcessById(processId));
+            using Process process = Process.GetProcessById(processId);
+            return GetProcessCommandLine(process);
         }
 
         /// <summary>
@@ -407,7 +408,8 @@ namespace PSADT.ProcessManagement
         /// <returns></returns>
         public static string GetProcessImageName(int processId)
         {
-            return GetProcessImageName(Process.GetProcessById(processId), null);
+            using Process process = Process.GetProcessById(processId);
+            return GetProcessImageName(process, null);
         }
     }
 }
