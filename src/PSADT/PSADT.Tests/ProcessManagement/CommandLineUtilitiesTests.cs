@@ -755,8 +755,8 @@ namespace PSADT.Tests.ProcessManagement
                    "\"a b \\\" c \\ d e f\"")]
         [InlineData(new[] { "arg1", "arg2 with \"quotes\"", "arg3" },
                    "arg1 \"arg2 with \\\"quotes\\\"\" arg3")]
-        [InlineData(new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=C:\\Program Files\\My App\\" },
-                   "msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn \"TARGETDIR=C:\\Program Files\\My App\\\\\"")]
+        [InlineData(new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=\"C:\\Program Files\\My App\\\"" },
+                   "msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn TARGETDIR=\"C:\\Program Files\\My App\\\"")]
         public void ArgumentListToCommandLine_ComplexRealWorldScenarios_EscapedCorrectly(string[] argv, string expected)
         {
             // Act
@@ -1033,10 +1033,11 @@ namespace PSADT.Tests.ProcessManagement
 
         /// <summary>
         /// Tests ArgumentListToCommandLine with real-world UNC scenarios to verify proper escaping.
+        /// Key=value arguments are preserved without quotes to support tools like NSIS.
         /// </summary>
         [Theory]
         [InlineData(new[] { "\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe", "/S", "/D=C:\\Program Files\\MyApp" },
-                   "\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S \"/D=C:\\Program Files\\MyApp\"")]
+                   "\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S /D=C:\\Program Files\\MyApp")]
         [InlineData(new[] { "msiexec.exe", "/i", "\\\\server\\msi-packages\\Application Suite.msi", "/qn", "TARGETDIR=\\\\server\\app-installs\\Application\\" },
                    "msiexec.exe /i \"\\\\server\\msi-packages\\Application Suite.msi\" /qn TARGETDIR=\\\\server\\app-installs\\Application\\")]
         [InlineData(new[] { "powershell.exe", "-File", "\\\\scripts-server\\powershell\\Deploy-Application.ps1", "-ApplicationPath", "\\\\apps-server\\applications\\MyApp\\" },
@@ -1167,7 +1168,7 @@ namespace PSADT.Tests.ProcessManagement
                    new[] { "\\\\server\\share\\folder with spaces\\app.exe", "/option" })]
         [InlineData("\\\\file-server\\shared folder\\setup files\\installer.msi /quiet",
                    new[] { "\\\\file-server\\shared folder\\setup files\\installer.msi", "/quiet" })]
-        [InlineData("\\\\domain.local\\software distribution\\My Application Suite\\setup.exe TARGETDIR=C:\\Program Files",
+        [InlineData("\\\\domain.local\\software distribution\\My Application Suite\\setup.exe TARGETDIR=\"C:\\Program Files\"",
                    new[] { "\\\\domain.local\\software distribution\\My Application Suite\\setup.exe", "TARGETDIR=\"C:\\Program Files\"" })]
         public void CommandLineToArgumentList_UncPathDetection_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
@@ -1372,6 +1373,46 @@ namespace PSADT.Tests.ProcessManagement
         {
             // Act
             IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that NSIS-style /D= parameter is preserved without quotes when parsing.
+        /// NSIS explicitly requires: "It must be the last parameter used in the command line and must not
+        /// contain any quotes, even if the path contains spaces."
+        /// </summary>
+        [Theory]
+        [InlineData("/D=C:\\Program Files\\NSIS",
+                   new[] { "/D=C:\\Program Files\\NSIS" })]
+        [InlineData("setup.exe /S /D=C:\\Program Files\\My App",
+                   new[] { "setup.exe", "/S", "/D=C:\\Program Files\\My App" })]
+        public void CommandLineToArgumentList_NsisStyleParameter_PreservesUnquotedFormat(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that NSIS-style /D= parameter is preserved without quotes when converting back to command line.
+        /// NSIS explicitly requires: "It must be the last parameter used in the command line and must not
+        /// contain any quotes, even if the path contains spaces."
+        /// </summary>
+        [Theory]
+        [InlineData(new[] { "C:\\Windows\\notepad.exe", "/D=C:\\Program Files\\NSIS" },
+                   "C:\\Windows\\notepad.exe /D=C:\\Program Files\\NSIS")]
+        [InlineData(new[] { "setup.exe", "/S", "/D=C:\\Program Files\\My App" },
+                   "setup.exe /S /D=C:\\Program Files\\My App")]
+        [InlineData(new[] { "installer.exe", "TARGETDIR=C:\\Program Files\\App" },
+                   "installer.exe TARGETDIR=C:\\Program Files\\App")]
+        public void ArgumentListToCommandLine_NsisStyleKeyValue_PreservesUnquotedFormat(string[] args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
 
             // Assert
             Assert.Equal(expected, result);

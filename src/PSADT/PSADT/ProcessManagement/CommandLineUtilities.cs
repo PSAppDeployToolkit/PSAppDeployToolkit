@@ -363,8 +363,10 @@ namespace PSADT.ProcessManagement
                 else
                 {
                     // Parse unquoted value - might be a path with spaces.
+                    // Preserve the original format without adding quotes, as some tools (e.g., NSIS's /D= parameter)
+                    // require unquoted paths even when they contain spaces.
                     string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    _ = value.Contains(" ") && !value.StartsWith("\"") ? result.Append('"').Append(value).Append('"') : result.Append(value);
+                    _ = result.Append(value);
                 }
             }
             return result.ToString();
@@ -782,8 +784,8 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>This method ensures compatibility with parsers that handle quoted values in key-value
         /// pairs. If the value in a key-value pair is already quoted, it is assumed to be correctly formatted and
-        /// returned as-is. For all other cases, strict escaping is applied to ensure the argument is properly
-        /// formatted.</remarks>
+        /// returned as-is. If the value is unquoted (even with spaces), it is preserved as-is to support tools
+        /// like NSIS that require unquoted paths. For all other cases, strict escaping is applied.</remarks>
         /// <param name="argument">The command-line argument to escape. Can be a key-value pair (e.g., "key=value") or a single value.</param>
         /// <returns>A string representing the escaped argument. If the argument is <see langword="null"/>, returns an empty
         /// quoted string (<c>""</c>). If the argument is a key-value pair with a quoted value, the original argument is
@@ -796,7 +798,7 @@ namespace PSADT.ProcessManagement
                 return "\"\"";
             }
 
-            // Check if the argument is a key-value pair where the value is already quoted.
+            // Check if the argument is a key-value pair.
             int equalsPos = argument.IndexOf("=");
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
@@ -805,6 +807,14 @@ namespace PSADT.ProcessManagement
                 {
                     // The value is already quoted. We can return the argument as-is,
                     // as our compatible parser will handle it correctly.
+                    return argument;
+                }
+                else
+                {
+                    // Value is not quoted - preserve as-is to support tools like NSIS
+                    // that require unquoted paths even when they contain spaces.
+                    // The caller has explicitly provided an unquoted key=value argument,
+                    // so we respect that format.
                     return argument;
                 }
             }
