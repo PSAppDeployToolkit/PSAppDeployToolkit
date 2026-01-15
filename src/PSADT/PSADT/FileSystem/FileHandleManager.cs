@@ -229,7 +229,7 @@ namespace PSADT.FileSystem
             // Loop through all handles and return list of open file handles.
             try
             {
-                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsStructure<SYSTEM_HANDLE_INFORMATION_EX>();
+                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsSpan().AsStructure<SYSTEM_HANDLE_INFORMATION_EX>();
                 ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
                 using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
                 ConcurrentBag<FileHandleInfo> openHandles = [];
