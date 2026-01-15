@@ -377,20 +377,19 @@ namespace PSADT.ProcessManagement
             Span<byte> imageNamePtr = stackalloc byte[processIdInfo.ImageName.MaximumLength + 2]; imageNamePtr.Clear();
 
             // Assign the ImageName buffer and perform the query again.
-            char[] imageNameCharArray;
+            string imageName;
             unsafe
             {
                 fixed (byte* pImageName = imageNamePtr)
                 {
                     processIdInfo.ImageName.Buffer = (char*)pImageName;
                     _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageNameCharArray = [.. processIdInfo.ImageName.Buffer.AsSpan()];
+                    imageName = processIdInfo.ImageName.Buffer.ToString().TrimRemoveNull();
                     processIdInfo.ImageName.Buffer = null;
                 }
             }
 
             // If we have a lookup table, replace the NT path with the drive letter before returning.
-            string imageName = new string(imageNameCharArray).TrimRemoveNull();
             if (ntPathLookupTable is not null)
             {
                 string ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
