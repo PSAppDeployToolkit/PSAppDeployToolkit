@@ -1398,15 +1398,15 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
-        /// Tests that flag+path arguments that are already quoted have quotes stripped if not needed.
+        /// Tests that flag+path arguments that are already quoted are returned unchanged.
         /// This handles the case where the caller passes an argument like -sfx_o"C:\Path\To\Output"
-        /// with embedded quotes - if the path has no spaces, the quotes are stripped.
+        /// with embedded quotes that should be preserved as-is.
         /// </summary>
         [Theory]
-        [InlineData(new[] { "-sfx_o\"C:\\Path\\To\\Output\"" }, "-sfx_oC:\\Path\\To\\Output")] // No spaces, quotes stripped
-        [InlineData(new[] { "/D\"C:\\Program Files\\App\"" }, "/D\"C:\\Program Files\\App\"")] // Has spaces, quotes preserved
-        [InlineData(new[] { "-output\"\\\\server\\share\\folder\"" }, "-output\\\\server\\share\\folder")] // No spaces, quotes stripped
-        [InlineData(new[] { "--path\"C:\\Already Quoted\\Path\"" }, "--path\"C:\\Already Quoted\\Path\"")] // Has spaces, quotes preserved
+        [InlineData(new[] { "-sfx_o\"C:\\Path\\To\\Output\"" }, "-sfx_o\"C:\\Path\\To\\Output\"")]
+        [InlineData(new[] { "/D\"C:\\Program Files\\App\"" }, "/D\"C:\\Program Files\\App\"")]
+        [InlineData(new[] { "-output\"\\\\server\\share\\folder\"" }, "-output\"\\\\server\\share\\folder\"")]
+        [InlineData(new[] { "--path\"C:\\Already Quoted\\Path\"" }, "--path\"C:\\Already Quoted\\Path\"")]
         public void ArgumentListToCommandLine_FlagWithAlreadyQuotedPath_PreservesQuotes(string[] args, string expected)
         {
             // Act
@@ -1419,14 +1419,13 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests round-trip parsing for flag+path arguments to ensure they are preserved correctly.
         /// This is critical for tools like 7-Zip that require -sfx_o"path" format.
-        /// In compatible mode, quotes are preserved only if the path needs them (contains spaces).
+        /// In compatible mode, the quotes are preserved as part of the argument.
         /// </summary>
         [Theory]
         [InlineData("-sfx_o\"C:\\Program Files\\Output\"", new[] { "-sfx_o\"C:\\Program Files\\Output\"" })]
         [InlineData("-sfx_o\"C:\\My Path\\file.exe\"", new[] { "-sfx_o\"C:\\My Path\\file.exe\"" })]
         [InlineData("/D\"C:\\Program Files\\App\"", new[] { "/D\"C:\\Program Files\\App\"" })]
-        [InlineData("-output\"\\\\server\\share\\folder\"", new[] { "-output\\\\server\\share\\folder" })] // No spaces, quotes removed
-        [InlineData("-sfx_o\"C:\\NoSpaces\\Path\"", new[] { "-sfx_oC:\\NoSpaces\\Path" })] // No spaces, quotes removed
+        [InlineData("-output\"\\\\server\\share\\folder\"", new[] { "-output\"\\\\server\\share\\folder\"" })]
         public void CommandLineToArgumentList_FlagWithQuotedPath_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
@@ -1440,25 +1439,25 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests full round-trip for 7-Zip style flag+path arguments.
         /// Parses the command line, converts back, and verifies the format is correct.
-        /// In compatible mode, quotes are preserved only if needed (path has spaces).
+        /// In compatible mode, quotes are preserved as part of the argument.
         /// </summary>
         [Fact]
         public void FlagWithAttachedPath_RoundTrip_PreservesFormat()
         {
-            // Arrange - Original command line with 7-Zip style flag+path (with spaces)
+            // Arrange - Original command line with 7-Zip style flag+path
             string original = "-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"";
 
             // Act - Parse to arguments
             IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(original);
 
-            // Assert - Should parse to single argument with quotes preserved (path has spaces)
+            // Assert - Should parse to single argument with quotes preserved
             _ = Assert.Single(parsed);
             Assert.Equal("-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"", parsed[0]);
 
             // Act - Convert back to command line
             string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
 
-            // Assert - Should be identical to original (quotes preserved since path has spaces)
+            // Assert - Should be identical to original (quotes already present, preserved as-is)
             Assert.Equal(original, recreated);
 
             // Act - Parse again to verify round-trip
@@ -1466,30 +1465,6 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert - Should match original parsed arguments
             Assert.Equal(parsed, reparsed);
-        }
-
-        /// <summary>
-        /// Tests that flag+path arguments with unnecessary quotes have those quotes stripped.
-        /// If the path doesn't contain spaces, the quotes are not needed and are removed.
-        /// </summary>
-        [Fact]
-        public void FlagWithAttachedPath_UnnecessaryQuotes_StripsQuotes()
-        {
-            // Arrange - Original command line with quoted path that doesn't need quotes
-            string original = "-sfx_o\"C:\\Path\\To\\Output\"";
-
-            // Act - Parse to arguments
-            IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(original);
-
-            // Assert - Should parse to single argument with quotes stripped (no spaces in path)
-            _ = Assert.Single(parsed);
-            Assert.Equal("-sfx_oC:\\Path\\To\\Output", parsed[0]);
-
-            // Act - Convert back to command line
-            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
-
-            // Assert - Should not have quotes (path doesn't need them)
-            Assert.Equal("-sfx_oC:\\Path\\To\\Output", recreated);
         }
 
         /// <summary>

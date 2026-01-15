@@ -214,20 +214,21 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="commandLine">The command line span.</param>
         /// <param name="position">The current position (updated as parsing progresses).</param>
-        /// <returns>The parsed argument with quotes preserved only if needed.</returns>
+        /// <returns>The parsed argument with quotes preserved.</returns>
         private static string ParseFlagWithQuotedPath(ReadOnlySpan<char> commandLine, ref int position)
         {
             // Parse the flag prefix (- or / followed by flag name)
-            StringBuilder flagPart = new(); StringBuilder pathPart = new();
+            StringBuilder result = new();
             while (position < commandLine.Length && commandLine[position] != '"')
             {
-                _ = flagPart.Append(commandLine[position]);
+                _ = result.Append(commandLine[position]);
                 position++;
             }
 
-            // Skip the opening quote
+            // Append the opening quote
             if (position < commandLine.Length && commandLine[position] == '"')
             {
+                _ = result.Append(commandLine[position]);
                 position++;
             }
 
@@ -240,12 +241,13 @@ namespace PSADT.ProcessManagement
                     // Check for escaped quote ("")
                     if (position + 1 < commandLine.Length && commandLine[position + 1] == '"')
                     {
-                        _ = pathPart.Append('"');
+                        _ = result.Append('"');
                         position += 2;
                         continue;
                     }
 
-                    // Closing quote - skip it and finish
+                    // Closing quote - append it and finish
+                    _ = result.Append(c);
                     position++;
                     break;
                 }
@@ -260,19 +262,15 @@ namespace PSADT.ProcessManagement
                     int backslashCount = position - backslashStart;
 
                     // Backslashes are preserved as-is regardless of what follows
-                    _ = pathPart.Append('\\', backslashCount);
+                    _ = result.Append('\\', backslashCount);
                 }
                 else
                 {
-                    _ = pathPart.Append(c);
+                    _ = result.Append(c);
                     position++;
                 }
             }
-
-            // Check if the path actually needs quoting (contains spaces, tabs, or quotes)
-            string path = pathPart.ToString();
-            bool needsQuotes = path.Any(static c => IsWhitespace(c) || c == '"');
-            return needsQuotes ? $"{flagPart}\"{path}\"" : $"{flagPart}{path}";
+            return result.ToString();
         }
 
         /// <summary>
@@ -876,19 +874,12 @@ namespace PSADT.ProcessManagement
             }
 
             // If the path portion is already quoted (flag ends with " and value ends with "),
-            // check if the quotes are actually needed.
+            // return the argument as-is without additional escaping.
             string flagPart = argument.Substring(0, valueStart);
             string valuePart = argument.Substring(valueStart);
             if (flagPart.EndsWith("\"") && valuePart.EndsWith("\""))
             {
-                // Extract the actual flag (without trailing quote) and path (without trailing quote)
-                string actualFlag = flagPart.Substring(0, flagPart.Length - 1);
-                string actualPath = valuePart.Substring(0, valuePart.Length - 1);
-
-                // Check if the path needs quoting (contains spaces, tabs, or quotes)
-                bool needsQuotes = actualPath.Any(static c => IsWhitespace(c) || c == '"');
-
-                escaped = needsQuotes ? $"{actualFlag}\"{actualPath}\"" : $"{actualFlag}{actualPath}";
+                escaped = argument;
                 return true;
             }
 
