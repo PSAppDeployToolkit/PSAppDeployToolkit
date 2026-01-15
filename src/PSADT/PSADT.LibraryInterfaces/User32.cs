@@ -169,7 +169,16 @@ namespace PSADT.LibraryInterfaces
         /// <returns>The identifier of the thread that created the specified window.</returns>
         internal static uint GetWindowThreadProcessId(HWND hWnd, out uint lpdwProcessId)
         {
-            uint res = PInvoke.GetWindowThreadProcessId(hWnd, out lpdwProcessId);
+            uint res;
+            unsafe
+            {
+                fixed (uint* p = &lpdwProcessId)
+                {
+                    [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+                    static extern uint GetWindowThreadProcessId(HWND hWnd, uint* lpdwProcessId);
+                    res = GetWindowThreadProcessId(hWnd, p);
+                }
+            }
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
