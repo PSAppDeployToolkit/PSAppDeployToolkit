@@ -47,6 +47,24 @@ namespace PSADT.ProcessManagement
             // Inline lambda to get the command line from the given process.
             static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
+                // Inline lambda to get the file path from the given process.
+                static string GetProcessFilePath(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
+                {
+                    // Try and get the file path from the MainModule first, falling back to the image name if we can't.
+                    try
+                    {
+                        if (process.MainModule is not null)
+                        {
+                            return process.MainModule.FileName;
+                        }
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        return GetProcessImageName(process, ntPathLookupTable);
+                    }
+                    return GetProcessImageName(process, ntPathLookupTable);
+                }
+
                 // Get the command line from the cache if we have it.
                 if (processArgvMap.TryGetValue(process, out string[]? argv))
                 {
@@ -83,18 +101,18 @@ namespace PSADT.ProcessManagement
                 {
                     if (argv?.Length > 0)
                     {
-                        if (!Path.GetExtension(argv[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                        if (!argv[0].Contains(process.ProcessName, StringComparison.OrdinalIgnoreCase) && !argv[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            argv = [.. (new[] { GetProcessImageName(process, ntPathLookupTable) }).Concat(argv)];
+                            argv = [.. (new[] { GetProcessFilePath(process, ntPathLookupTable) }).Concat(argv)];
                         }
-                        else if (!Path.IsPathRooted(argv[0]) || !File.Exists(argv[0]))
+                        else
                         {
-                            argv[0] = GetProcessImageName(process, ntPathLookupTable);
+                            argv[0] = GetProcessFilePath(process, ntPathLookupTable);
                         }
                     }
                     else
                     {
-                        argv = [GetProcessImageName(process, ntPathLookupTable)];
+                        argv = [GetProcessFilePath(process, ntPathLookupTable)];
                     }
                 }
                 catch
