@@ -867,5 +867,17 @@ namespace PSADT.LibraryInterfaces
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastWin32Error)
                 : res;
         }
+
+        /// <summary>
+        /// Retrieves the file attributes for the specified file or directory path.
+        /// </summary>
+        /// <param name="lpFileName">The full path to the file or directory for which to retrieve attributes. This parameter cannot be null or an
+        /// empty string.</param>
+        /// <returns>A value of type FILE_FLAGS_AND_ATTRIBUTES that describes the attributes of the specified file or directory.</returns>
+        internal static FILE_FLAGS_AND_ATTRIBUTES GetFileAttributes(string lpFileName)
+        {
+            uint res = PInvoke.GetFileAttributes(lpFileName);
+            return res == PInvoke.INVALID_FILE_ATTRIBUTES ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : (FILE_FLAGS_AND_ATTRIBUTES)res;
+        }
     }
 }
