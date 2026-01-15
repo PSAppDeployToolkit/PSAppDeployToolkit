@@ -332,7 +332,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="process"></param>
         /// <returns></returns>
-        public static string GetProcessCommandLine(Process process)
+        internal static string GetProcessCommandLine(Process process)
         {
             // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
             if (process is null)
