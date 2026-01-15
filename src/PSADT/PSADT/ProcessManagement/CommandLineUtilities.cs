@@ -337,35 +337,26 @@ namespace PSADT.ProcessManagement
                 // Check if the value starts with a quote.
                 if (commandLine[position] == '"')
                 {
-                    // Remember where the quoted value starts
+                    // This is a quoted value. We want to preserve the quotes as part of the argument.
+                    // We can use ParseSingleArgument to correctly find the end of the quoted value,
+                    // accounting for escaped quotes and other complexities.
                     int valueStartPosition = position;
 
-                    // Parse the quoted value to get its content.
+                    // Create a temporary copy of the position to be advanced by ParseSingleArgument.
                     int tempPosition = position;
+
+                    // Rebuild the quoted value with proper escaping if needed.
                     string quotedValue = ParseSingleArgument(commandLine, ref tempPosition);
                     string convertedValue = ConvertPosixPathToWindows(quotedValue);
-
-                    // Check if the value actually needs quoting (contains spaces, tabs, or quotes)
-                    bool needsQuotes = convertedValue.Any(static c => IsWhitespace(c) || c == '"');
-                    if (needsQuotes)
+                    if (convertedValue != quotedValue)
                     {
-                        // Value needs quotes - check if POSIX conversion happened
-                        if (convertedValue != quotedValue)
-                        {
-                            // The value was converted from POSIX, so we need to rebuild the quoted portion.
-                            _ = result.Append('"').Append(convertedValue).Append('"');
-                        }
-                        else
-                        {
-                            // Preserve the original raw format to maintain exact semantics
-                            string quotedPath = commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString();
-                            _ = result.Append(quotedPath);
-                        }
+                        // The value was converted from POSIX, so we need to rebuild the quoted portion.
+                        _ = result.Append('"').Append(convertedValue).Append('"');
                     }
                     else
                     {
-                        // Value doesn't need quotes - use it without quotes
-                        _ = result.Append(convertedValue);
+                        // Append the raw slice of the command line that represents the entire quoted value.
+                        string quotedPath = commandLine.Slice(valueStartPosition, tempPosition - valueStartPosition).ToString(); _ = result.Append(quotedPath);
                     }
 
                     // Update the main position to continue parsing after this key-value pair.
@@ -811,25 +802,12 @@ namespace PSADT.ProcessManagement
             int equalsPos = argument.IndexOf("=");
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
-                string key = argument.Substring(0, equalsPos);
                 string value = argument.Substring(equalsPos + 1);
-                if (value.StartsWith("\"") && value.EndsWith("\"") && value.Length >= 2)
+                if (value.StartsWith("\"") && value.EndsWith("\""))
                 {
-                    // Extract the actual value content (without the outer quotes)
-                    string valueContent = value.Substring(1, value.Length - 2);
-
-                    // Check if the value actually needs quoting (contains spaces, tabs, or quotes)
-                    bool needsQuotes = valueContent.Any(static c => IsWhitespace(c) || c == '"');
-                    if (needsQuotes)
-                    {
-                        // Value needs quotes - return as-is
-                        return argument;
-                    }
-                    else
-                    {
-                        // Value doesn't need quotes - strip them
-                        return $"{key}={valueContent}";
-                    }
+                    // The value is already quoted. We can return the argument as-is,
+                    // as our compatible parser will handle it correctly.
+                    return argument;
                 }
             }
 
