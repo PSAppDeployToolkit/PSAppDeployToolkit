@@ -371,14 +371,8 @@ namespace PSADT.ProcessManagement
                 }
             }
 
-            // Validate we received something valid from the buffer. This function is known to return garbage.
-            string imageName = new string(imageNameCharArray).TrimRemoveNull();
-            if (!imageName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Querying the image name for process [{process.ProcessName} ({process.Id})] returned an invalid result of [{imageName}]. Raw char values: [{string.Join(", ", imageNameCharArray)}]");
-            }
-
             // If we have a lookup table, replace the NT path with the drive letter before returning.
+            string imageName = new string(imageNameCharArray).TrimRemoveNull();
             if (ntPathLookupTable is not null)
             {
                 string ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
