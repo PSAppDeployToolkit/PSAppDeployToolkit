@@ -40,6 +40,7 @@ GetDpiForMonitor
 GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
+GetFileAttributes
 GetFileType
 GetForegroundWindow
 GetLastInputInfo
@@ -109,6 +110,7 @@ IMMDeviceEnumerator
 INFINITE
 InitializeAcl
 InitializeProcThreadAttributeList
+INVALID_FILE_ATTRIBUTES
 INVALID_HANDLE_VALUE
 IsIconic
 IsProcessInJob
