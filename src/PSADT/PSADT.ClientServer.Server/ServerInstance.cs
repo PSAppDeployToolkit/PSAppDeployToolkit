@@ -99,7 +99,7 @@ namespace PSADT.ClientServer
                     throw new ApplicationException("The opened client process is not properly responding to commands.");
                 }
             }
-            catch (InvalidDataException ex) when (null == _clientProcess?.Task)
+            catch (InvalidDataException ex) when (_clientProcess?.Task is null)
             {
                 throw new ApplicationException("The opened client process is not properly responding to commands.", ex);
             }
@@ -132,7 +132,7 @@ namespace PSADT.ClientServer
         internal void Close(bool force = false)
         {
             // Confirm that the server instance is open and has not been closed already.
-            if (null == _clientProcessCts || null == _clientProcess)
+            if (_clientProcessCts is null || _clientProcess is null)
             {
                 throw new InvalidOperationException("The server instance is not open or has already been closed.");
             }
@@ -149,7 +149,7 @@ namespace PSADT.ClientServer
             finally
             {
                 // Close the log writer and wait for it to finish.
-                if (null != _logWriterTaskCts && null != _logWriterTask)
+                if (_logWriterTaskCts is not null && _logWriterTask is not null)
                 {
                     _logWriterTaskCts.Cancel();
                     try
@@ -564,7 +564,7 @@ namespace PSADT.ClientServer
             if (disposing)
             {
                 // Close the client process if it is running.
-                if (null != _clientProcess)
+                if (_clientProcess is not null)
                 {
                     Close();
                 }
@@ -717,7 +717,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning => null != _clientProcess && !_clientProcess.Process.HasExited;
+        public bool IsRunning => _clientProcess is not null && !_clientProcess.Process.HasExited;
 
         /// <summary>
         /// Represents the character used to separate command parameters in pipe communication.

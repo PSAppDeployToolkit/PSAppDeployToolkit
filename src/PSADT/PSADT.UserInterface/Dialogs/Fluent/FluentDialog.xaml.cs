@@ -141,7 +141,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
 
             // Initialize countdown if specified
-            if (null != _countdownDuration)
+            if (_countdownDuration is not null)
             {
                 _countdownTimer = new(CountdownTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
                 CountdownStackPanel.Visibility = Visibility.Visible;
@@ -826,7 +826,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void InitializeCountdown()
         {
             // Return early if there's no countdown to set.
-            if (null == _countdownTimer)
+            if (_countdownTimer is null)
             {
                 return;
             }

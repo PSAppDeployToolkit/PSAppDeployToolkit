@@ -35,7 +35,7 @@ namespace PSADT.ProcessManagement
         internal void Stop()
         {
             // We can't stop the polling task if it's not running.
-            if (null == _pollingTask)
+            if (_pollingTask is null)
             {
                 throw new InvalidOperationException("The polling task is not running.");
             }
@@ -162,7 +162,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Indicates whether the service is running or not.
         /// </summary>
-        internal bool IsRunning => null != _pollingTask;
+        internal bool IsRunning => _pollingTask is not null;
 
         /// <summary>
         /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
