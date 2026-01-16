@@ -103,7 +103,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = new char[65536];
             uint res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-            return new([.. buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name))]);
+            return new([.. buffer.Slice(0, (int)res).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(name => !string.IsNullOrWhiteSpace(name))]);
         }
 
         /// <summary>
