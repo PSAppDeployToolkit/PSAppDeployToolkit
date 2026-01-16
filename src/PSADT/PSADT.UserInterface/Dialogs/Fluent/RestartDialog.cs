@@ -22,7 +22,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Title = options.Strings.Title;
 
             // Set up UI
-            if (null != _countdownDuration)
+            if (_countdownDuration is not null)
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, options.Strings.MessageRestart);
                 CountdownHeadingTextBlock.Text = options.Strings.TimeRemaining;

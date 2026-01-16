@@ -761,7 +761,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        res = PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, null != psidOwner ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, null != psidGroup ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                        res = PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner is not null ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, psidGroup is not null ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
                     }
                 }
             }
@@ -826,7 +826,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        res = PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, null != pOwner ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, null != pGroup ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, null != pDacl ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, null != pSacl ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, null != Args ? Args.Value.ToPointer() : null);
+                        res = PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, Args is not null ? Args.Value.ToPointer() : null);
                     }
                 }
             }

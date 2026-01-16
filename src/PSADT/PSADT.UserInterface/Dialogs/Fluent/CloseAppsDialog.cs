@@ -225,7 +225,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
-                if (null != _logWriter)
+                if (_logWriter is not null)
                 {
                     _logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
                     _logWriter.Flush();
@@ -247,7 +247,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else
             {
-                if (null != _logWriter)
+                if (_logWriter is not null)
                 {
                     _logWriter.Write("Previously detected running processes are no longer running.");
                     _logWriter.Flush();
@@ -285,7 +285,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             base.FluentDialog_Loaded(sender, e);
 
             // Initialize the running process service and set up event handlers.
-            if (null != _runningProcessService)
+            if (_runningProcessService is not null)
             {
                 _runningProcessService.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
             }
@@ -327,7 +327,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 Dispatcher.Invoke(() =>
                 {
-                    DialogResult = _forcedCountdown && (null == _runningProcessService || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText)
+                    DialogResult = _forcedCountdown && (_runningProcessService is null || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText)
                         ? CloseAppsDialogResult.Continue
                         : _forcedCountdown && DeferralsAvailable()
                             ? CloseAppsDialogResult.Defer
@@ -460,7 +460,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             if (disposing)
             {
-                if (null != _runningProcessService)
+                if (_runningProcessService is not null)
                 {
                     _runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
                 }

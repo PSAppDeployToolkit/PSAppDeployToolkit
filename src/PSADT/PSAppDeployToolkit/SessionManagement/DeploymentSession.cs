@@ -570,7 +570,7 @@ namespace PSAppDeployToolkit.SessionManagement
 
 
                 // Announce provided deployment script info.
-                if (null != _appScriptVersion)
+                if (_appScriptVersion is not null)
                 {
                     WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
                 }
@@ -584,7 +584,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 }
                 if (!string.IsNullOrWhiteSpace(_deployAppScriptFriendlyName))
                 {
-                    if (null != _deployAppScriptVersion)
+                    if (_deployAppScriptVersion is not null)
                     {
                         WriteLogEntry($"[{_deployAppScriptFriendlyName}] script version is [{_deployAppScriptVersion}].");
                     }
