@@ -15,7 +15,7 @@ function Add-ADTEdgeExtension
 
         This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
 
-        This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+        This should not be used in conjunction with Edge Management Service or "Configure extension management settings" as configured via Group Policy or Intune as they leverage the same registry key to configure Edge extensions.
 
     .PARAMETER ExtensionID
         The ID of the extension to add.
