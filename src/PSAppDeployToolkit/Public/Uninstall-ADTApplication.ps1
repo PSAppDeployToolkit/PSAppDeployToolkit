@@ -354,7 +354,7 @@ function Uninstall-ADTApplication
                     Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]."
                     try
                     {
-                        Start-ADTProcess @sapParams -ErrorAction $OriginalErrorAction
+                        Start-ADTProcess @sapParams -CreateNoWindow:($uninstallProperty.Equals('QuietUninstallString')) -ErrorAction $OriginalErrorAction
                     }
                     catch
                     {
