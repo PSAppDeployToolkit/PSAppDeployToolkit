@@ -297,12 +297,30 @@ namespace PSADT.ClientServer
                 using (BinaryWriter outputWriter = new(outputPipeClient, ServerInstance.DefaultEncoding))
                 using (BinaryReader inputReader = new(inputPipeClient, ServerInstance.DefaultEncoding))
                 using (BinaryWriter logWriter = new(logPipeClient, ServerInstance.DefaultEncoding))
+                using (PipeEncryption encryption = new())
+                using (PipeEncryption logEncryption = new())
                 {
-                    // Helper method to reduce some boilerplate.
+                    // Perform ECDH key exchange for encrypted communication.
+                    try
+                    {
+                        encryption.PerformClientKeyExchange(outputWriter, inputReader);
+                        logEncryption.PerformClientKeyExchange(outputWriter, inputReader);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ClientException("Failed to establish encrypted communication with the server process.", ClientExitCode.EncryptionError, ex);
+                    }
+
+                    // Helper method to reduce some boilerplate for writing encrypted results.
                     void WriteResult(string result)
                     {
-                        outputWriter.Write(result);
-                        outputWriter.Flush();
+                        encryption.WriteEncrypted(outputWriter, result);
+                    }
+
+                    // Create an encrypted log action delegate for passing to components that need to log.
+                    void WriteLog(string message)
+                    {
+                        logEncryption.WriteEncrypted(logWriter, message);
                     }
 
                     // Initialize variables needed throughout the loop.
@@ -316,17 +334,16 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                // Split the line on the pipe operator, it's our delimiter for args. We don't
-                                // use a switch here so it's easier to break the while loop if we're exiting.
-                                string[] parts = inputReader.ReadString().Split(ServerInstance.ArgumentSeparator);
+                                // Read and decrypt the command, then split on the delimiter for args.
+                                string[] parts = encryption.ReadEncrypted(inputReader).Split(ServerInstance.ArgumentSeparator);
 
                                 // Process the command in the first part. We never let an exception here kill the pipe.
                                 try
                                 {
                                     if (parts[0] == "InitCloseAppsDialog")
                                     {
-                                        // Deserialize the process definitions if we have them, then right back that we were successful.
-                                        closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ReadOnlyCollection<ProcessDefinition>>(parts[1]) : null, logWriter);
+                                        // Deserialize the process definitions if we have them, then write back that we were successful.
+                                        closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ReadOnlyCollection<ProcessDefinition>>(parts[1]) : null, WriteLog);
                                         WriteResult(SerializeObject(true));
                                     }
                                     else if (parts[0] == "PromptToCloseApps")
@@ -345,7 +362,7 @@ namespace PSADT.ClientServer
                                         }
 
                                         // Perform the operation to prompt the user to close apps and write back that we were successful.
-                                        PromptToCloseApps(closeAppsDialogState.RunningProcessService.RunningProcesses, promptToCloseTimeout, logWriter);
+                                        PromptToCloseApps(closeAppsDialogState.RunningProcessService.RunningProcesses, promptToCloseTimeout, WriteLog);
                                         WriteResult(SerializeObject(true));
                                     }
                                     else if (parts[0] == "ShowModalDialog")
@@ -841,8 +858,8 @@ namespace PSADT.ClientServer
         /// <param name="runningProcesses">A read-only list of <see cref="RunningProcess"/> objects representing the processes to be closed.</param>
         /// <param name="promptToCloseTimeout">The maximum duration to wait for a user to save their work and close the application's windows, specified as
         /// a <see cref="TimeSpan"/>.</param>
-        /// <param name="logWriter">A <see cref="StreamWriter"/> used to log the actions and results of the method.</param>
-        private static void PromptToCloseApps(IReadOnlyList<RunningProcess> runningProcesses, TimeSpan promptToCloseTimeout, BinaryWriter logWriter)
+        /// <param name="logAction">A delegate used to log the actions and results of the method.</param>
+        private static void PromptToCloseApps(IReadOnlyList<RunningProcess> runningProcesses, TimeSpan promptToCloseTimeout, Action<string> logAction)
         {
             foreach (RunningProcess runningApp in runningProcesses)
             {
@@ -856,16 +873,14 @@ namespace PSADT.ClientServer
                         try
                         {
                             // Try to bring the window to the front before closing. This doesn't always work.
-                            logWriter.Write($"Stopping process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] and prompt to save if there is work to be saved (timeout in [{promptToCloseTimeout}] seconds)...");
-                            logWriter.Flush();
+                            logAction($"Stopping process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] and prompt to save if there is work to be saved (timeout in [{promptToCloseTimeout}] seconds)...");
                             try
                             {
                                 WindowTools.BringWindowToFront((HWND)window.WindowHandle);
                             }
                             catch (Exception ex) when (ex.Message is not null)
                             {
-                                logWriter.Write($"2{ServerInstance.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
-                                logWriter.Flush();
+                                logAction($"2{ServerInstance.ArgumentSeparator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
                             }
 
                             // Close out the main window and spin until completion.
@@ -888,32 +903,27 @@ namespace PSADT.ClientServer
                                 // Test whether we succeeded.
                                 if (openWindow.Count > 0)
                                 {
-                                    logWriter.Write($"2{ServerInstance.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
-                                    logWriter.Flush();
+                                    logAction($"2{ServerInstance.ArgumentSeparator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
                                 }
                                 else
                                 {
-                                    logWriter.Write($"Window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}] was successfully closed.");
-                                    logWriter.Flush();
+                                    logAction($"Window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}] was successfully closed.");
                                 }
                             }
                             else
                             {
-                                logWriter.Write($"3{ServerInstance.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
-                                logWriter.Flush();
+                                logAction($"3{ServerInstance.ArgumentSeparator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
                             }
                         }
                         catch (Exception ex) when (ex.Message is not null)
                         {
-                            logWriter.Write($"3{ServerInstance.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
-                            logWriter.Flush();
+                            logAction($"3{ServerInstance.ArgumentSeparator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
                         }
                     }
                 }
                 else
                 {
-                    logWriter.Write($"Stopping process {runningApp.Process.ProcessName}...");
-                    logWriter.Flush();
+                    logAction($"Stopping process {runningApp.Process.ProcessName}...");
                     try
                     {
                         if (!runningApp.Process.HasExited)

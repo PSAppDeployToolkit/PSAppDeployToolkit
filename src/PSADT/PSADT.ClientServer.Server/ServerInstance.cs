@@ -50,6 +50,8 @@ namespace PSADT.ClientServer
             _outputWriter = new(_outputServer, DefaultEncoding);
             _inputReader = new(_inputServer, DefaultEncoding);
             _logReader = new(_logServer, DefaultEncoding);
+            _encryption = new();
+            _logEncryption = new();
         }
 
         /// <summary>
@@ -88,6 +90,17 @@ namespace PSADT.ClientServer
                 _outputServer.DisposeLocalCopyOfClientHandle();
                 _inputServer.DisposeLocalCopyOfClientHandle();
                 _logServer.DisposeLocalCopyOfClientHandle();
+            }
+
+            // Perform ECDH key exchange for encrypted communication.
+            try
+            {
+                _encryption.PerformServerKeyExchange(_outputWriter, _inputReader);
+                _logEncryption.PerformServerKeyExchange(_outputWriter, _inputReader);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Failed to establish encrypted communication with the client process.", ex);
             }
 
             // Confirm the client starts and is ready to receive commands.
@@ -569,6 +582,10 @@ namespace PSADT.ClientServer
                     Close();
                 }
 
+                // Dispose encryption objects.
+                _encryption.Dispose();
+                _logEncryption.Dispose();
+
                 // Kill all input.
                 _inputReader.Dispose();
                 _inputReader = null!;
@@ -629,22 +646,21 @@ namespace PSADT.ClientServer
         /// <returns>An object of type <typeparamref name="T"/> representing the deserialized result of the command execution.</returns>
         private T Invoke<T>(string command)
         {
-            // Send the command off to the client.
+            // Send the encrypted command to the client.
             try
             {
-                _outputWriter.Write(command);
-                _outputWriter.Flush();
+                _encryption.WriteEncrypted(_outputWriter, command);
             }
             catch (IOException ex)
             {
                 throw new InvalidDataException("An error occurred while writing to the output stream.", ex);
             }
 
-            // Read the client's response.
+            // Read and decrypt the client's response.
             string response;
             try
             {
-                response = _inputReader.ReadString();
+                response = _encryption.ReadEncrypted(_inputReader);
             }
             catch (EndOfStreamException ex)
             {
@@ -673,8 +689,8 @@ namespace PSADT.ClientServer
             {
                 try
                 {
-                    // Only log the message if a deployment session is active.
-                    if (_logReader.ReadString() is string line && ModuleDatabase.IsDeploymentSessionActive())
+                    // Read and decrypt the log message, then process it if a deployment session is active.
+                    if (_logEncryption.ReadEncrypted(_logReader) is string line && ModuleDatabase.IsDeploymentSessionActive())
                     {
                         // Test the line for a log severity.
                         if (line.Contains(ArgumentSeparator.ToString()))
@@ -828,6 +844,20 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
         /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
         private CancellationTokenSource? _logWriterTaskCts;
+
+        /// <summary>
+        /// Provides ECDH-based encryption for the main command/response pipe communication.
+        /// </summary>
+        /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
+        /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
+        private readonly PipeEncryption _encryption;
+
+        /// <summary>
+        /// Provides ECDH-based encryption for the log pipe communication.
+        /// </summary>
+        /// <remarks>This separate encryption instance is used for the log channel to allow independent
+        /// encrypted communication for logging purposes.</remarks>
+        private readonly PipeEncryption _logEncryption;
 
         /// <summary>
         /// Represents the source identifier for logging related to the "Show-ADTModalDialog" functionality.

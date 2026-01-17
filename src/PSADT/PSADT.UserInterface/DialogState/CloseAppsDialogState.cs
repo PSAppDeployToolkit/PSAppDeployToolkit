@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using PSADT.ProcessManagement;
 
 namespace PSADT.UserInterface.DialogState
@@ -19,17 +18,17 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
-        /// <param name="logWriter">An optional <see cref="BinaryWriter"/> for logging purposes.</param>
-        internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, BinaryWriter? logWriter)
+        /// <param name="logAction">An optional delegate for logging messages. If null, logging is disabled.</param>
+        internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, Action<string>? logAction)
         {
             // Only initialise these variables if they're not null.
             if (closeProcesses?.Count > 0)
             {
                 RunningProcessService = new(closeProcesses);
             }
-            if (logWriter is not null)
+            if (logAction is not null)
             {
-                LogWriter = logWriter;
+                LogAction = logAction;
             }
         }
 
@@ -42,11 +41,11 @@ namespace PSADT.UserInterface.DialogState
         internal readonly RunningProcessService? RunningProcessService;
 
         /// <summary>
-        /// Represents a writable stream used for logging operations.
+        /// Represents a delegate used for logging operations.
         /// </summary>
-        /// <remarks>This field is intended for internal use only and may be null if logging is disabled
-        /// or not configured.</remarks>
-        internal readonly BinaryWriter? LogWriter;
+        /// <remarks>This delegate is intended for internal use only and may be null if logging is disabled
+        /// or not configured. When invoked, it writes the provided message to the configured logging destination.</remarks>
+        internal readonly Action<string>? LogAction;
 
         /// <summary>
         /// A stopwatch used to track the remaining time for a countdown operation.
