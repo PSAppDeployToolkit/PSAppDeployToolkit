@@ -19,6 +19,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER DefaultValue
         The default value to show in the text box.
 
+    .PARAMETER SecureInput
+        Indicates input should be masked (i.e. for password use).
+
     .PARAMETER Message
         The message text to be displayed on the prompt.
 
@@ -113,15 +116,20 @@ function Show-ADTInstallationPrompt
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_DefaultValue')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_SecureInput')]
         [System.Management.Automation.SwitchParameter]$RequestInput,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'ShowInputDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_DefaultValue')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultValue = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DefaultValue,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_SecureInput')]
+        [System.Management.Automation.SwitchParameter]$SecureInput,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Message = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -336,6 +344,10 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
+                if ($SecureInput)
+                {
+                    $dialogOptions.Add('SecureInput', !!$SecureInput)
+                }
                 $dialogOptions = if ($RequestInput)
                 {
                     [PSADT.UserInterface.DialogOptions.InputDialogOptions]$dialogOptions
@@ -346,10 +358,11 @@ function Show-ADTInstallationPrompt
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
+                $dialogType = $PSCmdlet.ParameterSetName.Replace('Show', [System.Management.Automation.Language.NullString]::Value).Split('_')[0]
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Message]."
-                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', [System.Management.Automation.Language.NullString]::Value) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $dialogType -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 
@@ -365,7 +378,7 @@ function Show-ADTInstallationPrompt
                 {
                     $result = try
                     {
-                        Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', [System.Management.Automation.Language.NullString]::Value) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                        Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $dialogType -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
                     }
                     catch [System.ApplicationException]
                     {
