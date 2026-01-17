@@ -33,6 +33,9 @@ function Get-ADTUserProfiles
     .PARAMETER IncludeIISAppPoolProfiles
         Include IIS AppPool profiles. Excluded by default as they don't parse well.
 
+    .PARAMETER IncludeEpmProfiles
+        Include Endpoint Privilege Management (EPM) profiles. Excluded by default as they don't parse well.
+
     .PARAMETER ExcludeDefaultUser
         Exclude the Default User.
 
@@ -106,6 +109,9 @@ function Get-ADTUserProfiles
         [System.Management.Automation.SwitchParameter]$IncludeIISAppPoolProfiles,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]
+        [System.Management.Automation.SwitchParameter]$IncludeEpmProfiles,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
 
         [Parameter(Mandatory = $false)]
@@ -142,6 +148,10 @@ function Get-ADTUserProfiles
             if (!$IncludeIISAppPoolProfiles)
             {
                 82  # IIS AppPool
+            }
+            if (!$IncludeEpmProfiles)
+            {
+                110  # EPM SID
             }
         ))))"
     }
