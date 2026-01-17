@@ -15,6 +15,8 @@ function Uninstall-ADTApplication
 
         Enumerates the registry for installed applications via Get-ADTApplication, matching the specified application name and uninstalls that application using its uninstall string, with the ability to specify additional uninstall parameters also.
 
+        The application will be uninstalled using its QuietUninstallString where possible. If it doesn't exist, is null, or is otherwise invalid, the UninstallString will be used.
+
     .PARAMETER InstalledApplication
         Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
 
