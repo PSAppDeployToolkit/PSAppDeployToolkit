@@ -611,6 +611,19 @@ function Start-ADTMsiProcess
                     }
                 }
 
+                # Build the full log path used with msiexec.exe.
+                $msiLogFile = if ($logPath)
+                {
+                    if ($logFile -notmatch $Action)
+                    {
+                        "$($logPath)_$($Action)"
+                    }
+                    else
+                    {
+                        $logPath
+                    }
+                }
+
                 # Set the installation parameters.
                 if ($adtSession -and $adtSession.IsNonInteractive())
                 {
@@ -624,47 +637,41 @@ function Start-ADTMsiProcess
                 }
 
                 # Build the MSI parameters.
-                switch ($action)
+                switch ($Action)
                 {
                     Install
                     {
                         $option = '/i'
-                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
                     Uninstall
                     {
                         $option = '/x'
-                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiUninstallDefaultParams
                         break
                     }
                     Patch
                     {
                         $option = '/update'
-                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
                     { $_ -eq 'Repair' -and $RepairMode -eq 'Reinstall' }
                     {
                         $option = '/i'
-                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = "$msiInstallDefaultParams REINSTALL=ALL REINSTALLMODE=$(if ($RepairFromSource) {'v'})omus"
                         break
                     }
                     { $_ -eq 'Repair' -and $RepairMode -eq 'Repair' }
                     {
                         $option = "/f$(if ($RepairFromSource) {'vomus'})"
-                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
                     ActiveSetup
                     {
                         $option = '/fups'
-                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $null
                         break
                     }
@@ -730,7 +737,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Add reinstallmode and reinstall variable for Patch.
-                if ($action -eq 'Patch')
+                if ($Action -eq 'Patch')
                 {
                     $msiArgs.Add('REINSTALLMODE=ecmus')
                     $msiArgs.Add('REINSTALL=ALL')
