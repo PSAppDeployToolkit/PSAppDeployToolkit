@@ -3,6 +3,7 @@ using System.Collections;
 using System.Globalization;
 using System.IO;
 using PSADT.UserInterface.Dialogs;
+using PSADT.Utilities;
 using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -50,15 +51,15 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Test that the specified image paths are valid.
-            if (!File.Exists(appIconImage))
+            if (!(MiscUtilities.GetBase64StringBytes(appIconImage)?.Length > 0) && !File.Exists(appIconImage))
             {
                 throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
             }
-            if (!File.Exists(appIconDarkImage))
+            if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
             {
                 throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
             }
-            if (!File.Exists(appBannerImage))
+            if (!(MiscUtilities.GetBase64StringBytes(appBannerImage)?.Length > 0) && !File.Exists(appBannerImage))
             {
                 throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
             }

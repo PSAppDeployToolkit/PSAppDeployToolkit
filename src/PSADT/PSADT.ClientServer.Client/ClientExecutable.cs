@@ -200,16 +200,28 @@ namespace PSADT.ClientServer
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
                     // Provided value is a registry key path.
-                    if ((argvDictValue.LastIndexOf('\\') is int valueDivider && valueDivider == -1) || Registry.GetValue(argvDictValue.Substring(0, valueDivider), argvDictValue.Substring(valueDivider + 1), null) is not string argvDictContent)
+                    int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
+                    string valueName = argvDictValue.Substring(lastBackslashIndex + 1);
+                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex), true);
+                    if (registryKey.GetValue(valueName, null) is not string argvDictContent)
                     {
                         throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
+                    }
+                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
+                    {
+                        registryKey.DeleteValue(valueName);
                     }
                     arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
                 }
                 else if (File.Exists(argvDictValue))
                 {
                     // Provided value is a file path.
-                    arguments = DeserializeString<Dictionary<string, string>>(File.ReadAllText(argvDictValue));
+                    string argvDictContent = File.ReadAllText(argvDictValue);
+                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
+                    {
+                        File.Delete(argvDictValue);
+                    }
+                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
                 }
                 else
                 {

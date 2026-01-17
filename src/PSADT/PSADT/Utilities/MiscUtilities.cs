@@ -36,5 +36,28 @@ namespace PSADT.Utilities
         {
             return value is not null ? string.Join("\n", TrimLeadingTrailingLines(value.Split('\n'))) : throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary>
+        /// Converts a Base64-encoded string to its corresponding byte array representation.
+        /// </summary>
+        /// <param name="base64String">The string that is encoded with base-64 digits. Cannot be null, empty, or consist only of white-space
+        /// characters.</param>
+        /// <returns>A byte array containing the decoded data, or null if the input is not a valid Base64 string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64String"/> is null, empty, or consists only of white-space characters.</exception>
+        public static byte[]? GetBase64StringBytes(string base64String)
+        {
+            if (string.IsNullOrWhiteSpace(base64String))
+            {
+                throw new ArgumentNullException(nameof(base64String));
+            }
+            try
+            {
+                return Convert.FromBase64String(base64String);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
     }
 }

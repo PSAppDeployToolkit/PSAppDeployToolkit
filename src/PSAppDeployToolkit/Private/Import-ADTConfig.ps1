@@ -36,6 +36,12 @@ function Private:Import-ADTConfig
                 $asset.Value | & $MyInvocation.MyCommand; continue
             }
 
+            # Skip if the path is a Base64 string.
+            if ($null -ne [PSADT.Utilities.MiscUtilities]::GetBase64StringBytes($asset.Value))
+            {
+                continue
+            }
+
             # Skip if the path is fully qualified.
             if ([System.IO.Path]::IsPathRooted($asset.Value))
             {

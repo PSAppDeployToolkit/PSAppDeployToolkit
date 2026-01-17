@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -443,8 +444,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached icon if available, otherwise load and cache it before returning it.
             if (!iconCache.TryGetValue(path, out Icon? icon))
             {
-                using Icon source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new(path);
-                icon = (Icon)source.Clone();
+                if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
+                {
+                    using MemoryStream ms = new(base64Bytes);
+                    using Bitmap base64Bitmap = (Bitmap)Image.FromStream(ms);
+                    using Icon base64Icon = DrawingUtilities.ConvertBitmapToIcon(base64Bitmap);
+                    icon = (Icon)base64Icon.Clone();
+                }
+                else
+                {
+                    using Icon source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new(path);
+                    icon = (Icon)source.Clone();
+                }
                 iconCache.Add(path, icon);
             }
             return icon;
@@ -460,8 +471,17 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Use a cached image if available, otherwise load and cache it before returning it.
             if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                using Image source = Image.FromFile(path);
-                image = (Bitmap)source.Clone();
+                if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
+                {
+                    using MemoryStream ms = new(base64Bytes);
+                    using Image base64Image = Image.FromStream(ms);
+                    image = (Bitmap)base64Image.Clone();
+                }
+                else
+                {
+                    using Image source = Image.FromFile(path);
+                    image = (Bitmap)source.Clone();
+                }
                 imageCache.Add(path, image);
             }
             return image;
