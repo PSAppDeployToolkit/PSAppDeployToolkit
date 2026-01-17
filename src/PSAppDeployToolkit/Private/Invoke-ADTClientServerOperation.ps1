@@ -311,12 +311,27 @@ function Private:Invoke-ADTClientServerOperation
             $PSBoundParameters.Options = [PSADT.ClientServer.DataSerialization]::SerializeToString($Options)
         }
 
+        # Build out parameters to store in the user's registry. When using Base64 logos, the path length can easily by exceeded.
+        $argvRegPath = if ($PSBoundParameters.Count -gt 0)
+        {
+            # Copy everything into a new dictionary as Newtonsoft won't handle a PSBoundParametersDictionary properly.
+            $csArgsDictionary = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
+            $PSBoundParameters.GetEnumerator() | & {
+                process
+                {
+                    $csArgsDictionary.Add($_.Key, $_.Value)
+                }
+            }
+            Set-ADTRegistryKey -Key ($csArgsRegPath = "HKEY_CURRENT_USER\SOFTWARE\PSAppDeployToolkit") -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString($csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
+            "$csArgsRegPath\$csArgsRegValue"
+        }
+
         # Set up the parameters for Start-ADTProcessAsUser.
         $sapauParams = @{
-            Username = $User.NTAccount
+            RunAsActiveUser = $User
             UseHighestAvailableToken = $true
             DenyUserTermination = $true
-            ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
+            ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($argvRegPath) { "-ArgumentsDictionary"; $argvRegPath; '-RemoveArgumentsDictionaryStorage'; 1 })
             WorkingDirectory = [System.Environment]::SystemDirectory
             MsiExecWaitTime = 1
             CreateNoWindow = $true
@@ -328,12 +343,12 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ($NoWait)
             {
-                Start-ADTProcessAsUser @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait
+                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait
                 return
             }
             else
             {
-                Start-ADTProcessAsUser @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -PassThru
+                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -PassThru
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]

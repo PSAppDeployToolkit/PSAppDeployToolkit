@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices.ComTypes;
+using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
@@ -38,6 +39,39 @@ namespace PSADT.RegistryManagement
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(keyPath, REG_SAM_FLAGS.KEY_READ | REG_SAM_FLAGS.KEY_WRITE);
             _ = AdvApi32.RegRenameKey(hKey, subKeyName, newKeyName);
+        }
+
+        /// <summary>
+        /// Retrieves a read-only registry key corresponding to the specified registry path.
+        /// </summary>
+        /// <remarks>The returned registry key is opened in read-only mode. The method supports both full
+        /// and abbreviated hive names. The caller is responsible for disposing the returned <see cref="RegistryKey"/>
+        /// when it is no longer needed.</remarks>
+        /// <param name="keyPath">The full registry key path, including the hive name (e.g., "HKEY_LOCAL_MACHINE\Software\MyApp"). Abbreviated
+        /// hive names such as "HKLM" are also supported. Cannot be null or empty.</param>
+        /// <param name="writable">Indicates whether the returned <see cref="RegistryKey"/> should be opened with write access.</param>
+        /// <returns>A read-only <see cref="RegistryKey"/> object representing the specified registry key.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="keyPath"/> is null, empty, not in a valid format, specifies an unrecognized hive,
+        /// or if the specified registry key does not exist.</exception>
+        internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable)
+        {
+            keyPath = keyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null);
+            int firstBackslashIndex = keyPath.IndexOf('\\');
+            if (firstBackslashIndex == -1)
+            {
+                throw new ArgumentException("Invalid registry key format.", nameof(keyPath));
+            }
+            string hiveName = keyPath.Substring(0, firstBackslashIndex);
+            RegistryKey baseKey = hiveName switch
+            {
+                "HKEY_LOCAL_MACHINE" or "HKLM" => Registry.LocalMachine,
+                "HKEY_CURRENT_USER" or "HKCU" => Registry.CurrentUser,
+                "HKEY_CLASSES_ROOT" or "HKCR" => Registry.ClassesRoot,
+                "HKEY_USERS" or "HKU" => Registry.Users,
+                "HKEY_CURRENT_CONFIG" or "HKCC" => Registry.CurrentConfig,
+                _ => throw new ArgumentException($"Invalid registry hive: {hiveName}", nameof(keyPath)),
+            };
+            return baseKey.OpenSubKey(keyPath.Substring(firstBackslashIndex + 1), writable) ?? throw new ArgumentException("The specified registry key does not exist.", nameof(keyPath)); ;
         }
 
         /// <summary>
