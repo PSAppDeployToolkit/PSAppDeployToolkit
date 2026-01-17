@@ -119,5 +119,10 @@
         /// The client operation failed due to an invalid request being made.
         /// </summary>
         InvalidRequest = 28,
+
+        /// <summary>
+        /// The client operation failed due to an encryption key exchange or cryptographic error.
+        /// </summary>
+        EncryptionError = 29,
     }
 }

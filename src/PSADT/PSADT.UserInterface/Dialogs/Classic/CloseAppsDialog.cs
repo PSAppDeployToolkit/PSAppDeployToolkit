@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -160,10 +159,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelCountdown);
                 }
 
-                // Set up the log writer if we have one.
-                if (state.LogWriter is not null)
+                // Set up the log action if we have one.
+                if (state.LogAction is not null)
                 {
-                    logWriter = state.LogWriter;
+                    logAction = state.LogAction;
                 }
             }
 
@@ -320,11 +319,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (e.ProcessesToClose.Count > 0)
                 {
                     string[] runningApps = [.. e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
-                    if (logWriter is not null)
-                    {
-                        logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
-                        logWriter.Flush();
-                    }
+                    logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
                     toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
                     richTextBoxCloseProcesses.Lines = runningApps;
                     labelCountdownMessage.Text = countdownClose;
@@ -339,11 +334,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    if (logWriter is not null)
-                    {
-                        logWriter.Write("Previously detected running processes are no longer running.");
-                        logWriter.Flush();
-                    }
+                    logAction?.Invoke("Previously detected running processes are no longer running.");
                     toolTipButtonContinue.RemoveAll();
                     labelCountdownMessage.Text = countdownDefer;
                     flowLayoutPanelCloseApps.Visible = false;
@@ -410,10 +401,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private readonly bool hideCloseButton;
 
         /// <summary>
-        /// Represents the underlying writer used for logging operations.
+        /// Represents the delegate used for logging operations.
         /// </summary>
-        /// <remarks>This field holds a reference to a <see cref="StreamWriter"/> instance, which is used
-        /// to write log entries. If <c>null</c>, logging operations may be disabled or unavailable.</remarks>
-        private readonly BinaryWriter? logWriter;
+        /// <remarks>This delegate is invoked to write log messages. If <c>null</c>, logging operations
+        /// are disabled.</remarks>
+        private readonly Action<string>? logAction;
     }
 }

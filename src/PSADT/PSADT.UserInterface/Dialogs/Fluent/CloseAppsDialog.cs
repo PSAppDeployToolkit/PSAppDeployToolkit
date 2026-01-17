@@ -122,9 +122,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
             UpdateRunningProcesses();
-            if (state.LogWriter is not null)
+            if (state.LogAction is not null)
             {
-                _logWriter = state.LogWriter;
+                _logAction = state.LogAction;
             }
             UpdateDeferralValues();
 
@@ -225,11 +225,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
-                if (_logWriter is not null)
-                {
-                    _logWriter.Write($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
-                    _logWriter.Flush();
-                }
+                _logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 if (!_hideCloseButton)
@@ -247,11 +243,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else
             {
-                if (_logWriter is not null)
-                {
-                    _logWriter.Write("Previously detected running processes are no longer running.");
-                    _logWriter.Flush();
-                }
+                _logAction?.Invoke("Previously detected running processes are no longer running.");
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
@@ -438,11 +430,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly bool _hideCloseButton;
 
         /// <summary>
-        /// Represents the underlying <see cref="StreamWriter"/> used for logging operations.
+        /// Represents the delegate used for logging operations.
         /// </summary>
-        /// <remarks>This field is used internally to write log messages to a stream. It may be null if
-        /// logging is disabled or the stream has not been initialized.</remarks>
-        private readonly BinaryWriter? _logWriter;
+        /// <remarks>This delegate is invoked to write log messages. It may be null if
+        /// logging is disabled or not configured.</remarks>
+        private readonly Action<string>? _logAction;
 
         /// <summary>
         /// App/process icon cache for improved performance
