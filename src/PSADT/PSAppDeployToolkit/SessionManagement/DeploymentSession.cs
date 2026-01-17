@@ -483,7 +483,20 @@ namespace PSAppDeployToolkit.SessionManagement
                 // Append subfolder path if configured to do so.
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
+                    // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
                     _logPath = Directory.CreateDirectory(Path.Combine(_logPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", null))).FullName;
+
+                    // Check how many hierarchy levels to keep based on configuration.
+                    DirectoryInfo[] hierarchyDirectories = [.. new DirectoryInfo(_logPath).Parent!.GetDirectories().Where(d => !d.FullName.Equals(_logPath, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
+                    int logMaxHierarchy = (int)configToolkit["LogMaxHierarchy"]!;
+                    int hierarchyDirectoriesCount = hierarchyDirectories.Length;
+                    if (hierarchyDirectoriesCount > logMaxHierarchy)
+                    {
+                        foreach (DirectoryInfo directory in hierarchyDirectories.Take(hierarchyDirectoriesCount - logMaxHierarchy))
+                        {
+                            directory.Delete(true);
+                        }
+                    }
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {

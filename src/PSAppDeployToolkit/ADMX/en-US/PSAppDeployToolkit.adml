@@ -41,6 +41,8 @@
 			<string id="LogAppend_Explain">Specify if an existing log file should be appended to.</string>
 			<string id="LogDebugMessage_Display">LogDebugMessage</string>
 			<string id="LogDebugMessage_Explain">Specify if debug messages such as bound parameters passed to a function should be logged.</string>
+			<string id="LogMaxHierarchy_Display">LogMaxHierarchy</string>
+			<string id="LogMaxHierarchy_Explain">Specify maximum number of previous log files to retain.</string>
 			<string id="LogMaxHistory_Display">LogMaxHistory</string>
 			<string id="LogMaxHistory_Explain">Specify maximum number of previous log files to retain.</string>
 			<string id="LogMaxSize_Display">LogMaxSize</string>
@@ -185,6 +187,9 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			</presentation>
 			<presentation id="FileCopyMode">
 				<dropdownList refId="FileCopyMode" noSort="true" defaultItem="0">FileCopyMode</dropdownList>
+			</presentation>
+			<presentation id="LogMaxHierarchy">
+				<decimalTextBox refId="LogMaxHierarchy">LogMaxHierarchy</decimalTextBox>
 			</presentation>
 			<presentation id="LogMaxHistory">
 				<decimalTextBox refId="LogMaxHistory">LogMaxHistory</decimalTextBox>

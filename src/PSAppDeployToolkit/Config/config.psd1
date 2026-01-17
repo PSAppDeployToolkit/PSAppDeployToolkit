@@ -52,6 +52,9 @@
         # Specify if debug messages such as bound parameters passed to a function should be logged.
         LogDebugMessage = $false
 
+        # Specify the maximum amount of hierarchical structures to maintain when LogToHierarchy is true.
+        LogMaxHierarchy = 3
+
         # Specify maximum number of previous log files to retain.
         LogMaxHistory = 10
 
