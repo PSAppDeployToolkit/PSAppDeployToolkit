@@ -53,7 +53,7 @@ function Copy-ADTFile
         Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination'.
 
     .EXAMPLE
-        Copy-ADTFile -Path 'C:\Path\Folder' -Destination 'D:\Destination\Folder' -Recurse
+        Copy-ADTFile -Path 'C:\Path\Folder' -Destination 'D:\Destination' -Recurse
 
         Recursively copies the folder 'Folder' from 'C:\Path' to 'D:\Destination'.
 
