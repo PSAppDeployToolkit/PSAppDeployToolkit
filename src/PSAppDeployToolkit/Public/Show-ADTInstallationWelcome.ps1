@@ -100,6 +100,9 @@ function Show-ADTInstallationWelcome
     .PARAMETER RequiredDiskSpace
         Specify required disk space in MB, used in combination with CheckDiskSpace.
 
+    .PARAMETER PassThru
+        Returns the user's prompt choice to the caller for further decision making.
+
     .INPUTS
         None
 
@@ -674,7 +677,37 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Silent, and with a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = 'Specify required disk space in MB, used in combination with [-CheckDiskSpace].')]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.UInt32]]$RequiredDiskSpace
+        [System.Nullable[System.UInt32]]$RequiredDiskSpace,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with no modifying options.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with deferral allowed.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, and with a continue countdown irrespective of deferrals.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, with a continue countdown irrespective of deferrals, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and with a close processes countdown if the user has no available deferrals.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and with deferral allowed irrespective of whether processes to close are open.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a continue/defer countdown depending on whether processes to close are open or not.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a close processes countdown if the user has no available deferrals.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and with deferral allowed only if the processes to close are open.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a continue/defer countdown depending on whether processes to close are open or not.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a close processes countdown if the user has no available deferrals.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = "Returns the user's prompt choice to the caller for further decision making.")]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     dynamicparam
@@ -1074,7 +1107,7 @@ function Show-ADTInstallationWelcome
 
                     # Spin until apps are closed, countdown elapses, or deferrals are exhausted.
                     $sessionClosed = $false
-                    while (($runningApps = Get-ADTRunningProcessesUserCanClose) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningApps = Get-ADTRunningProcessesUserCanClose) -or (($promptResult -ne [PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Defer) -and ($promptResult -ne [PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Close)))
                     {
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                         if ($AllowDefer)
@@ -1229,7 +1262,7 @@ function Show-ADTInstallationWelcome
                             }
                             return
                         }
-                        elseif (!$promptResult.Equals('TerminatedTryAgain'))
+                        elseif (!$OnDefer.Equals('TerminatedTryAgain'))
                         {
                             # We should never get here. It means the dialog result we received was entirely unexpected.
                             $naerParams = @{
@@ -1275,6 +1308,12 @@ function Show-ADTInstallationWelcome
                         $baaeParams.Add('WindowLocation', $WindowLocation)
                     }
                     Block-ADTAppExecution @baaeParams
+                }
+
+                # Return the dialog result if we have it (non-silent) and the caller has asked for it.
+                if ($PassThru -and ($null -ne $promptResult))
+                {
+                    return $promptResult
                 }
             }
             catch
