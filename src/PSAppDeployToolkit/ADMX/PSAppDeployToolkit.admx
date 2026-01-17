@@ -157,6 +157,13 @@
 				<delete />
 			</disabledValue>
 		</policy>
+		<policy name="LogMaxHierarchy" class="Machine" displayName="$(string.LogMaxHierarchy_Display)" explainText="$(string.LogMaxHierarchy_Explain)" presentation="$(presentation.LogMaxHierarchy)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="LogMaxHierarchy" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogMaxHierarchy" required="true" />
+			</elements>
+		</policy>
 		<policy name="LogMaxHistory" class="Machine" displayName="$(string.LogMaxHistory_Display)" explainText="$(string.LogMaxHistory_Explain)" presentation="$(presentation.LogMaxHistory)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
