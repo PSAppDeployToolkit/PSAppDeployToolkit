@@ -15,7 +15,7 @@ function Uninstall-ADTApplication
 
         Enumerates the registry for installed applications via Get-ADTApplication, matching the specified application name and uninstalls that application using its uninstall string, with the ability to specify additional uninstall parameters also.
 
-        The application will be uninstalled using its QuietUninstallString where possible. If it doesn't exist, is null, or is otherwise invalid, the UninstallString will be used.
+        The application will be uninstalled using its QuietUninstallString where possible. If it doesn't exist, is null, is invalid, or `-ForceUninstallString` is specified, the UninstallString will be used.
 
     .PARAMETER InstalledApplication
         Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
@@ -37,6 +37,9 @@ function Uninstall-ADTApplication
 
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
+
+    .PARAMETER ForceUninstallString
+        Forcibly uses the UninstallString instead of QuietUninstallString.
 
     .PARAMETER ArgumentList
         Overrides the default MSI parameters specified in the config.psd1 file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
@@ -153,6 +156,9 @@ function Uninstall-ADTApplication
         [Parameter(Mandatory = $false, ParameterSetName = 'Search', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ForceUninstallString,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -292,7 +298,7 @@ function Uninstall-ADTApplication
                 else
                 {
                     # Set up the FilePath to use for the uninstall.
-                    $uninstallProperty = if (![System.String]::IsNullOrWhiteSpace($removeApplication.QuietUninstallStringFilePath))
+                    $uninstallProperty = if (![System.String]::IsNullOrWhiteSpace($removeApplication.QuietUninstallStringFilePath) -and !$ForceUninstallString)
                     {
                         "QuietUninstallString"
                     }
