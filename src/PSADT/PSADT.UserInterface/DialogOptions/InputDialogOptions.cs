@@ -17,7 +17,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="options"></param>
         public InputDialogOptions(Hashtable options) : base(options)
         {
-            // Just set our one and only field.
             if (options.ContainsKey("InitialInputText"))
             {
                 if (options["InitialInputText"] is not string initialInputText || string.IsNullOrWhiteSpace(initialInputText))
@@ -25,6 +24,14 @@ namespace PSADT.UserInterface.DialogOptions
                     throw new ArgumentOutOfRangeException("InitialInputText value is not valid.", (Exception?)null);
                 }
                 InitialInputText = initialInputText;
+            }
+            if (options.ContainsKey("SecureInput"))
+            {
+                if (options["SecureInput"] is not bool secureInput)
+                {
+                    throw new ArgumentOutOfRangeException("SecureInput value is not valid.", (Exception?)null);
+                }
+                SecureInput = secureInput;
             }
         }
 
@@ -59,11 +66,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="minimizeWindows">A value indicating whether all other windows should be minimized when the dialog is displayed.</param>
         /// <param name="initialInputText">The initial text displayed in the input field of the dialog. If <see langword="null"/>, the input field is
         /// empty.</param>
+        /// <param name="secureInput">A value indicating whether the input should be masked (for passwords or sensitive data).</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
-        private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
+        private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText, bool secureInput) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             InitialInputText = initialInputText;
+            SecureInput = secureInput;
         }
 
         /// <summary>
@@ -71,5 +80,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [JsonProperty]
         public string? InitialInputText { get; }
+
+        /// <summary>
+        /// Indicates whether the input should be masked (for passwords or sensitive data).
+        /// </summary>
+        [JsonProperty]
+        public bool SecureInput { get; }
     }
 }
