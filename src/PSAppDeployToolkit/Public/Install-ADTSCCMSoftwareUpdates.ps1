@@ -39,6 +39,8 @@ function Install-ADTSCCMSoftwareUpdates
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -48,7 +50,7 @@ function Install-ADTSCCMSoftwareUpdates
         https://psappdeploytoolkit.com/docs/reference/functions/Install-ADTSCCMSoftwareUpdates
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -111,6 +113,10 @@ function Install-ADTSCCMSoftwareUpdates
             {
                 # Install missing updates.
                 Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
+                if (!$PSCmdlet.ShouldProcess("[$($CMMissingUpdates.Count)] SCCM software updates", 'Install'))
+                {
+                    return
+                }
                 if (!($result = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -MethodName InstallUpdates -Arguments @{ CCMUpdates = $CMMissingUpdates }))
                 {
                     $naerParams = @{

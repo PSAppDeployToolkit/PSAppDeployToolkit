@@ -40,6 +40,8 @@ function Remove-ADTEdgeExtension
 
         This function is provided as a template to remove an extension for Microsoft Edge. This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -49,7 +51,7 @@ function Remove-ADTEdgeExtension
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTEdgeExtension
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -77,8 +79,11 @@ function Remove-ADTEdgeExtension
                 }
 
                 # If the deploymentmode is Remove, remove the extension from the list.
-                $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress)
+                if ($PSCmdlet.ShouldProcess("Edge Extension [$ExtensionID]", 'Remove extension'))
+                {
+                    $installedExtensions.PSObject.Properties.Remove($ExtensionID)
+                    $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress)
+                }
             }
             catch
             {

@@ -31,6 +31,8 @@ function Disable-ADTTerminalServerInstallMode
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -40,7 +42,7 @@ function Disable-ADTTerminalServerInstallMode
         https://psappdeploytoolkit.com/docs/reference/functions/Disable-ADTTerminalServerInstallMode
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )
@@ -55,6 +57,10 @@ function Disable-ADTTerminalServerInstallMode
         if (![PSADT.TerminalServices.TerminalServerUtilities]::InAppInstallMode())
         {
             Write-ADTLogEntry -Message "This terminal server is already in user execute mode."
+            return
+        }
+        if (!$PSCmdlet.ShouldProcess('Terminal Server', 'Disable install mode'))
+        {
             return
         }
 

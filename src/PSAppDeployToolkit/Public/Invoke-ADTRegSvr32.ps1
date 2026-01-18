@@ -42,6 +42,8 @@ function Invoke-ADTRegSvr32
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -51,7 +53,7 @@ function Invoke-ADTRegSvr32
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTRegSvr32
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -91,6 +93,10 @@ function Invoke-ADTRegSvr32
     process
     {
         Write-ADTLogEntry -Message "$Action DLL file [$FilePath]."
+        if (!$PSCmdlet.ShouldProcess("DLL [$FilePath]", $Action))
+        {
+            return
+        }
         try
         {
             try

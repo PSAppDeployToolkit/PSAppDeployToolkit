@@ -160,6 +160,8 @@ function Start-ADTMsiProcess
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -169,7 +171,7 @@ function Start-ADTMsiProcess
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -806,6 +808,10 @@ function Start-ADTMsiProcess
             try
             {
                 # Commence the MSI operation, then refresh Explorer as Windows does not consistently update environment variables created by MSIs.
+                if (!$PSCmdlet.ShouldProcess($(if ($FilePath) { "MSI/MSP [$FilePath]" } else { "MSI ProductCode [$ProductCode]" }), $Action))
+                {
+                    return
+                }
                 $result = Start-ADTProcess @ExecuteProcessSplat
                 if (!$NoDesktopRefresh)
                 {

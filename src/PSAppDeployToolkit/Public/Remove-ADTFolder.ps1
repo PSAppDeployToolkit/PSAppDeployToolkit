@@ -48,6 +48,8 @@ function Remove-ADTFolder
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -59,7 +61,7 @@ function Remove-ADTFolder
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -133,7 +135,10 @@ function Remove-ADTFolder
                     if (!$DisableRecursion)
                     {
                         Write-ADTLogEntry -Message "Deleting folder [$item] recursively..."
-                        Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force -Recurse
+                        if ($PSCmdlet.ShouldProcess($item, 'Delete folder recursively'))
+                        {
+                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force -Recurse
+                        }
                         continue
                     }
 
@@ -141,7 +146,10 @@ function Remove-ADTFolder
                     Write-ADTLogEntry -Message "Deleting folder [$item] without recursion..."
                     if (!($ListOfChildItems = Get-ChildItem -LiteralPath $item -Force))
                     {
-                        Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force
+                        if ($PSCmdlet.ShouldProcess($item, 'Delete empty folder'))
+                        {
+                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item -Force
+                        }
                         continue
                     }
 

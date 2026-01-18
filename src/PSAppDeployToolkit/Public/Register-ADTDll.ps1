@@ -34,6 +34,8 @@ function Register-ADTDll
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -43,7 +45,7 @@ function Register-ADTDll
         https://psappdeploytoolkit.com/docs/reference/functions/Register-ADTDll
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -64,6 +66,10 @@ function Register-ADTDll
 
     process
     {
+        if (!$PSCmdlet.ShouldProcess("DLL [$FilePath]", 'Register'))
+        {
+            return
+        }
         try
         {
             Invoke-ADTRegSvr32 @PSBoundParameters -Action Register

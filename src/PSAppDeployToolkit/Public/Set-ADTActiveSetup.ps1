@@ -87,6 +87,8 @@ function Set-ADTActiveSetup
 
         Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -96,7 +98,7 @@ function Set-ADTActiveSetup
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTActiveSetup
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'Create')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Create')]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
@@ -489,6 +491,10 @@ function Set-ADTActiveSetup
                 # Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system.
                 if ($PurgeActiveSetupKey)
                 {
+                    if (!$PSCmdlet.ShouldProcess("Active Setup Key [$Key]", 'Remove'))
+                    {
+                        return
+                    }
                     # HLKM first.
                     Write-ADTLogEntry -Message "Removing Active Setup entry [$HKLMRegKey]."
                     Remove-ADTRegistryKey -Key $HKLMRegKey -Recurse
@@ -609,6 +615,10 @@ function Set-ADTActiveSetup
                 }
 
                 # Create the Active Setup entry in the registry.
+                if (!$PSCmdlet.ShouldProcess("Active Setup Key [$Key]", 'Create'))
+                {
+                    return
+                }
                 Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$HKLMRegKey]."
                 Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKLMRegKey
 

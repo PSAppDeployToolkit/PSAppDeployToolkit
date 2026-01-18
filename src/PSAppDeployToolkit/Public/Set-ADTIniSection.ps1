@@ -60,6 +60,8 @@ function Set-ADTIniSection
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -69,7 +71,7 @@ function Set-ADTIniSection
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSection
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -158,10 +160,11 @@ function Set-ADTIniSection
                     $writeContent = $Content
                 }
 
-                $logContent = $Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } }
-                Write-ADTLogEntry -Message "$(('Writing', 'Overwriting')[$Overwrite.ToBool()]) INI section: [FilePath = $FilePath] [Section = $Section] Content:$logContent"
-
-                [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $writeContent)
+                Write-ADTLogEntry -Message "$(('Writing', 'Overwriting')[$Overwrite.ToBool()]) INI section: [FilePath = $FilePath] [Section = $Section] Content:$($Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } })"
+                if ($PSCmdlet.ShouldProcess("$FilePath\$Section", "$(('Write', 'Overwrite')[$Overwrite.ToBool()]) INI section"))
+                {
+                    [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $writeContent)
+                }
             }
             catch
             {

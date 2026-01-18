@@ -57,6 +57,8 @@ function Remove-ADTFileFromUserProfiles
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -68,7 +70,7 @@ function Remove-ADTFileFromUserProfiles
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
@@ -122,8 +124,12 @@ function Remove-ADTFileFromUserProfiles
     {
         foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
-            $RemoveFileSplat.Path = $pathVar.Value | & { process { Join-Path -Path $UserProfilePath -ChildPath $_ } }
             Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
+            if (!$PSCmdlet.ShouldProcess($UserProfilePath, "Remove $($pathVar.Name) [$($pathVar.Value)] from user profile"))
+            {
+                continue
+            }
+            $RemoveFileSplat.Path = $pathVar.Value | & { process { Join-Path -Path $UserProfilePath -ChildPath $_ } }
             try
             {
                 try

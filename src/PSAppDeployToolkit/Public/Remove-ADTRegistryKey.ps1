@@ -71,6 +71,8 @@ function Remove-ADTRegistryKey
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -80,7 +82,7 @@ function Remove-ADTRegistryKey
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTRegistryKey
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -142,13 +144,19 @@ function Remove-ADTRegistryKey
                     if ($Recurse)
                     {
                         Write-ADTLogEntry -Message "Deleting registry key recursively [$($pathParam.($PSCmdlet.ParameterSetName))]."
-                        $null = Remove-Item @pathParam -Force -Recurse
+                        if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.ParameterSetName), 'Delete registry key recursively'))
+                        {
+                            $null = Remove-Item @pathParam -Force -Recurse
+                        }
                     }
                     elseif (!(Get-ChildItem @pathParam))
                     {
                         # Check if there are subkeys of the path, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
                         Write-ADTLogEntry -Message "Deleting registry key [$($pathParam.($PSCmdlet.ParameterSetName))]."
-                        $null = Remove-Item @pathParam -Force
+                        if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.ParameterSetName), 'Delete registry key'))
+                        {
+                            $null = Remove-Item @pathParam -Force
+                        }
                     }
                     else
                     {
@@ -170,6 +178,10 @@ function Remove-ADTRegistryKey
                         return
                     }
                     Write-ADTLogEntry -Message "Deleting registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name]."
+                    if (!$PSCmdlet.ShouldProcess("$($pathParam.($PSCmdlet.ParameterSetName))\$Name", 'Delete registry value'))
+                    {
+                        return
+                    }
                     $null = if ($Name -eq '(Default)')
                     {
                         # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.

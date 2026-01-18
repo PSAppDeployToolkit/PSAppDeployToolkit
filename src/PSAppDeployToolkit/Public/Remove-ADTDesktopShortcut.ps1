@@ -43,6 +43,8 @@ function Remove-ADTDesktopShortcut
     .NOTES
         An active ADT session is required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -54,7 +56,7 @@ function Remove-ADTDesktopShortcut
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'SinceSessionStart', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'RemoveAllShortcuts', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $false, ParameterSetName = "SinceSessionStart")]
@@ -149,6 +151,10 @@ function Remove-ADTDesktopShortcut
                         $failures = foreach ($shortcut in $shortcuts)
                         {
                             Write-ADTLogEntry -Message "Removing shortcut [$($shortcut.Name)]."
+                            if (!$PSCmdlet.ShouldProcess($shortcut.FullName, 'Delete desktop shortcut'))
+                            {
+                                continue
+                            }
                             try
                             {
                                 try

@@ -34,6 +34,8 @@ function Remove-ADTContentFromCache
     .NOTES
         An active ADT session is required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -43,7 +45,7 @@ function Remove-ADTContentFromCache
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTContentFromCache
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -75,6 +77,10 @@ function Remove-ADTContentFromCache
         }
 
         Write-ADTLogEntry -Message "Removing cache folder [$LiteralPath]."
+        if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Remove cache folder'))
+        {
+            return
+        }
         try
         {
             try
