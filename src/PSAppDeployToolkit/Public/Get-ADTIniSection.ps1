@@ -85,17 +85,12 @@ function Get-ADTIniSection
             {
                 # Get the section from the INI file
                 $iniSection = [PSADT.Utilities.IniUtilities]::GetSection($FilePath, $Section)
-
                 if ($null -eq $iniSection -or $iniSection.Count -eq 0)
                 {
                     Write-ADTLogEntry -Message "INI section is empty."
+                    return
                 }
-                else
-                {
-                    $logContent = $iniSection.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } }
-                    Write-ADTLogEntry -Message "INI section content: $logContent"
-                }
-
+                Write-ADTLogEntry -Message "INI section content: $($iniSection.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } })"
                 return $iniSection
             }
             catch
