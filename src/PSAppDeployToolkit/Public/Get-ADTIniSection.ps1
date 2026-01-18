@@ -43,7 +43,7 @@ function Get-ADTIniSection
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniValue
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniSection
     #>
 
     [CmdletBinding()]
