@@ -328,20 +328,41 @@ namespace PSADT.ProcessManagement
                 {
                     // Generate an explicit access control entry (ACE) for the user SID.
                     pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
-                    EXPLICIT_ACCESS_W ea = new()
+                    TRUSTEE_W aceTrustee = new()
                     {
-                        grfAccessPermissions = (uint)(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),
-                        grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
-                        grfInheritance = ACE_FLAGS.NO_INHERITANCE,
-                        Trustee = new()
-                        {
-                            TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
-                            ptstrName = new(pinnedUserSid.DangerousGetHandle())
-                        }
+                        TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
+                        ptstrName = new(pinnedUserSid.DangerousGetHandle()),
                     };
 
-                    // Apply the ACL and potentially change the owner of the client process.
-                    _ = AdvApi32.SetEntriesInAcl([ea], out LocalFreeSafeHandle pAcl);
+                    // Create a DENY ACE for dangerous permissions that could be used for code injection or process manipulation.
+                    EXPLICIT_ACCESS_W denyAce = new()
+                    {
+                        grfAccessPermissions = (uint)(
+                            PROCESS_ACCESS_RIGHTS.PROCESS_TERMINATE |                    // Prevent termination
+                            PROCESS_ACCESS_RIGHTS.PROCESS_VM_WRITE |                     // Prevent memory writes (code injection)
+                            PROCESS_ACCESS_RIGHTS.PROCESS_VM_OPERATION |                 // Prevent memory operations
+                            PROCESS_ACCESS_RIGHTS.PROCESS_CREATE_THREAD |                // Prevent remote thread creation
+                            PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE |                   // Prevent handle duplication attacks
+                            PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION |              // Prevent process info modification
+                            PROCESS_ACCESS_RIGHTS.PROCESS_SUSPEND_RESUME),               // Prevent suspend/resume manipulation
+                        grfAccessMode = ACCESS_MODE.DENY_ACCESS,
+                        grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                        Trustee = aceTrustee,
+                    };
+
+                    // Create a GRANT ACE for limited permissions (query and synchronize only).
+                    EXPLICIT_ACCESS_W grantAce = new()
+                    {
+                        grfAccessPermissions = (uint)(
+                            PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION |    // Allow querying limited info
+                            PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),                  // Allow synchronization
+                        grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
+                        grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                        Trustee = aceTrustee,
+                    };
+
+                    // Apply the ACL and potentially change the owner of the client process. DENY ACEs are processed before GRANT ACEs by Windows.
+                    _ = AdvApi32.SetEntriesInAcl([denyAce, grantAce], out LocalFreeSafeHandle pAcl);
                     using (pAcl)
                     {
                         if (changeOwner)
