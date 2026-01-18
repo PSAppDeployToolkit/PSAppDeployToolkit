@@ -15,24 +15,29 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="InputDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public InputDialogOptions(Hashtable options) : base(options)
+        public InputDialogOptions(Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
+            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
+            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
+            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
+            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
+            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
+            options["Language"] is CultureInfo language ? language : null!,
+            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
+            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
+            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
+            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
+            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
+            options["MessageText"] is string messageText ? messageText : string.Empty,
+            options["MessageAlignment"] is DialogMessageAlignment messageAlignment ? messageAlignment : null,
+            options["ButtonLeftText"] is string buttonLeftText ? buttonLeftText : null,
+            options["ButtonMiddleText"] is string buttonMiddleText ? buttonMiddleText : null,
+            options["ButtonRightText"] is string buttonRightText ? buttonRightText : null,
+            options["Icon"] is DialogSystemIcon icon ? icon : null,
+            options["MinimizeWindows"] is bool minimizeWindows && minimizeWindows,
+            options["InitialInputText"] is string initialInputText ? initialInputText : null,
+            options["SecureInput"] is bool secureInput && secureInput)
         {
-            if (options.ContainsKey("InitialInputText"))
-            {
-                if (options["InitialInputText"] is not string initialInputText || string.IsNullOrWhiteSpace(initialInputText))
-                {
-                    throw new ArgumentOutOfRangeException("InitialInputText value is not valid.", (Exception?)null);
-                }
-                InitialInputText = initialInputText;
-            }
-            if (options.ContainsKey("SecureInput"))
-            {
-                if (options["SecureInput"] is not bool secureInput)
-                {
-                    throw new ArgumentOutOfRangeException("SecureInput value is not valid.", (Exception?)null);
-                }
-                SecureInput = secureInput;
-            }
         }
 
         /// <summary>
@@ -67,7 +72,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="initialInputText">The initial text displayed in the input field of the dialog. If <see langword="null"/>, the input field is
         /// empty.</param>
         /// <param name="secureInput">A value indicating whether the input should be masked (for passwords or sensitive data).</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText, bool secureInput) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {

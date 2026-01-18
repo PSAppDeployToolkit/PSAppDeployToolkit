@@ -15,39 +15,24 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public ProgressDialogOptions(Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
+        public ProgressDialogOptions(Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
+            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
+            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
+            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
+            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
+            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
+            options["Language"] is CultureInfo language ? language : null!,
+            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
+            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
+            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
+            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
+            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
+            options["ProgressMessageText"] is string progressMessageText ? progressMessageText : string.Empty,
+            options["ProgressDetailMessageText"] is string progressDetailMessageText ? progressDetailMessageText : string.Empty,
+            options["ProgressPercentage"] is double progressPercentage ? progressPercentage : null,
+            options["MessageAlignment"] is DialogMessageAlignment messageAlignment ? messageAlignment : null)
         {
-            // Nothing here is allowed to be null.
-            if (options["ProgressMessageText"] is not string progressMessageText || string.IsNullOrWhiteSpace(progressMessageText))
-            {
-                throw new ArgumentNullException("ProgressMessageText value is null or invalid.", (Exception?)null);
-            }
-            if (options["ProgressDetailMessageText"] is not string progressDetailMessageText || string.IsNullOrWhiteSpace(progressDetailMessageText))
-            {
-                throw new ArgumentNullException("ProgressDetailMessageText value is null or invalid.", (Exception?)null);
-            }
-
-            // Test and set optional values.
-            if (options.ContainsKey("ProgressPercentage"))
-            {
-                if (options["ProgressPercentage"] is not double progressPercentage)
-                {
-                    throw new ArgumentOutOfRangeException("ProgressPercentage value is not valid.", (Exception?)null);
-                }
-                ProgressPercentage = progressPercentage;
-            }
-            if (options.ContainsKey("MessageAlignment"))
-            {
-                if (options["MessageAlignment"] is not DialogMessageAlignment messageAlignment)
-                {
-                    throw new ArgumentOutOfRangeException("MessageAlignment value is not valid.", (Exception?)null);
-                }
-                MessageAlignment = messageAlignment;
-            }
-
-            // The hashtable was correctly defined, assign the remaining values.
-            ProgressMessageText = progressMessageText;
-            ProgressDetailMessageText = progressDetailMessageText;
         }
 
         /// <summary>
@@ -78,12 +63,20 @@ namespace PSADT.UserInterface.DialogOptions
         /// is used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="progressMessageText"/> or <paramref name="progressDetailMessageText"/> is <see
         /// langword="null"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            ProgressMessageText = progressMessageText ?? throw new ArgumentNullException(nameof(progressMessageText));
-            ProgressDetailMessageText = progressDetailMessageText ?? throw new ArgumentNullException(nameof(progressDetailMessageText));
+            if (string.IsNullOrWhiteSpace(progressMessageText))
+            {
+                throw new ArgumentNullException(nameof(progressMessageText), "ProgressMessageText value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(progressDetailMessageText))
+            {
+                throw new ArgumentNullException(nameof(progressDetailMessageText), "ProgressDetailMessageText value is null or invalid.");
+            }
+
+            ProgressMessageText = progressMessageText;
+            ProgressDetailMessageText = progressDetailMessageText;
             ProgressPercentage = progressPercentage;
             MessageAlignment = messageAlignment;
         }

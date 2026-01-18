@@ -17,42 +17,24 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="deploymentType"></param>
         /// <param name="options"></param>
-        public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
+        public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
+            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
+            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
+            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
+            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
+            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
+            options["Language"] is CultureInfo language ? language : null!,
+            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
+            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
+            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
+            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
+            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
+            options["Strings"] is Hashtable strings && strings.Count > 0 ? new RestartDialogStrings(strings, deploymentType) : null!,
+            options["CountdownDuration"] is TimeSpan countdownDuration ? countdownDuration : null,
+            options["CountdownNoMinimizeDuration"] is TimeSpan countdownNoMinimizeDuration ? countdownNoMinimizeDuration : null,
+            options["CustomMessageText"] is string customMessageText ? customMessageText : null)
         {
-            // Nothing here is allowed to be null.
-            if (options["Strings"] is not Hashtable strings || strings.Count == 0)
-            {
-                throw new ArgumentNullException("Strings value is null or invalid.", (Exception?)null);
-            }
-
-            // Test and set optional values.
-            if (options.ContainsKey("CountdownDuration"))
-            {
-                if (options["CountdownDuration"] is not TimeSpan countdownDuration)
-                {
-                    throw new ArgumentOutOfRangeException("CountdownDuration value is not valid.", (Exception?)null);
-                }
-                CountdownDuration = countdownDuration;
-            }
-            if (options.ContainsKey("CountdownNoMinimizeDuration"))
-            {
-                if (options["CountdownNoMinimizeDuration"] is not TimeSpan countdownNoMinimizeDuration)
-                {
-                    throw new ArgumentOutOfRangeException("CountdownNoMinimizeDuration value is not valid.", (Exception?)null);
-                }
-                CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
-            }
-            if (options.ContainsKey("CustomMessageText"))
-            {
-                if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
-                {
-                    throw new ArgumentOutOfRangeException("CustomMessageText value is not valid.", (Exception?)null);
-                }
-                CustomMessageText = customMessageText;
-            }
-
-            // The hashtable was correctly defined, assign the remaining values.
-            Strings = new(strings, deploymentType);
         }
 
         /// <summary>
@@ -82,11 +64,9 @@ namespace PSADT.UserInterface.DialogOptions
         /// behavior is used.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            // Nothing here is allowed to be null.
             Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
             CountdownDuration = countdownDuration;
             CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
@@ -129,46 +109,15 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings"></param>
             /// <param name="deploymentType"></param>
             /// <exception cref="ArgumentNullException"></exception>
-            internal RestartDialogStrings(Hashtable strings, DeploymentType deploymentType)
+            internal RestartDialogStrings(Hashtable strings, DeploymentType deploymentType) : this(
+                strings["Title"] is string title ? title : string.Empty,
+                strings["Message"] is Hashtable messageTable && messageTable[deploymentType.ToString()] is string message ? message : string.Empty,
+                strings["MessageTime"] is string messageTime ? messageTime : string.Empty,
+                strings["MessageRestart"] is string messageRestart ? messageRestart : string.Empty,
+                strings["TimeRemaining"] is string timeRemaining ? timeRemaining : string.Empty,
+                strings["ButtonRestartNow"] is string buttonRestartNow ? buttonRestartNow : string.Empty,
+                strings["ButtonRestartLater"] is string buttonRestartLater ? buttonRestartLater : string.Empty)
             {
-                // Nothing here is allowed to be null.
-                if (strings["Title"] is not string title || string.IsNullOrWhiteSpace(title))
-                {
-                    throw new ArgumentNullException("Title value is null or invalid.", (Exception?)null);
-                }
-                if (strings["Message"] is not Hashtable messageTable || messageTable[deploymentType.ToString()] is not string message || string.IsNullOrWhiteSpace(message))
-                {
-                    throw new ArgumentNullException("Message value is null or invalid.", (Exception?)null);
-                }
-                if (strings["MessageTime"] is not string messageTime || string.IsNullOrWhiteSpace(messageTime))
-                {
-                    throw new ArgumentNullException("MessageTime value is null or invalid.", (Exception?)null);
-                }
-                if (strings["MessageRestart"] is not string messageRestart || string.IsNullOrWhiteSpace(messageRestart))
-                {
-                    throw new ArgumentNullException("MessageRestart value is null or invalid.", (Exception?)null);
-                }
-                if (strings["TimeRemaining"] is not string timeRemaining || string.IsNullOrWhiteSpace(timeRemaining))
-                {
-                    throw new ArgumentNullException("TimeRemaining value is null or invalid.", (Exception?)null);
-                }
-                if (strings["ButtonRestartNow"] is not string buttonRestartNow || string.IsNullOrWhiteSpace(buttonRestartNow))
-                {
-                    throw new ArgumentNullException("ButtonRestartNow value is null or invalid.", (Exception?)null);
-                }
-                if (strings["ButtonRestartLater"] is not string buttonRestartLater || string.IsNullOrWhiteSpace(buttonRestartLater))
-                {
-                    throw new ArgumentNullException("ButtonRestartLater value is null or invalid.", (Exception?)null);
-                }
-
-                // The hashtable was correctly defined, assign the remaining values.
-                Title = title;
-                Message = message;
-                MessageTime = messageTime;
-                MessageRestart = messageRestart;
-                TimeRemaining = timeRemaining;
-                ButtonRestartNow = buttonRestartNow;
-                ButtonRestartLater = buttonRestartLater;
             }
 
             /// <summary>
@@ -185,17 +134,45 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="buttonRestartNow">The label for the "Restart Now" button. Cannot be <see langword="null"/>.</param>
             /// <param name="buttonRestartLater">The label for the "Restart Later" button. Cannot be <see langword="null"/>.</param>
             /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
             [JsonConstructor]
             private RestartDialogStrings(string title, string message, string messageTime, string messageRestart, string timeRemaining, string buttonRestartNow, string buttonRestartLater)
             {
-                Title = title ?? throw new ArgumentNullException(nameof(title), "Title value is null or invalid.");
-                Message = message ?? throw new ArgumentNullException(nameof(message), "Message value is null or invalid.");
-                MessageTime = messageTime ?? throw new ArgumentNullException(nameof(messageTime), "MessageTime value is null or invalid.");
-                MessageRestart = messageRestart ?? throw new ArgumentNullException(nameof(messageRestart), "MessageRestart value is null or invalid.");
-                TimeRemaining = timeRemaining ?? throw new ArgumentNullException(nameof(timeRemaining), "TimeRemaining value is null or invalid.");
-                ButtonRestartNow = buttonRestartNow ?? throw new ArgumentNullException(nameof(buttonRestartNow), "ButtonRestartNow value is null or invalid.");
-                ButtonRestartLater = buttonRestartLater ?? throw new ArgumentNullException(nameof(buttonRestartLater), "ButtonRestartLater value is null or invalid.");
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    throw new ArgumentNullException(nameof(title), "Title value is null or invalid.");
+                }
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    throw new ArgumentNullException(nameof(message), "Message value is null or invalid.");
+                }
+                if (string.IsNullOrWhiteSpace(messageTime))
+                {
+                    throw new ArgumentNullException(nameof(messageTime), "MessageTime value is null or invalid.");
+                }
+                if (string.IsNullOrWhiteSpace(messageRestart))
+                {
+                    throw new ArgumentNullException(nameof(messageRestart), "MessageRestart value is null or invalid.");
+                }
+                if (string.IsNullOrWhiteSpace(timeRemaining))
+                {
+                    throw new ArgumentNullException(nameof(timeRemaining), "TimeRemaining value is null or invalid.");
+                }
+                if (string.IsNullOrWhiteSpace(buttonRestartNow))
+                {
+                    throw new ArgumentNullException(nameof(buttonRestartNow), "ButtonRestartNow value is null or invalid.");
+                }
+                if (string.IsNullOrWhiteSpace(buttonRestartLater))
+                {
+                    throw new ArgumentNullException(nameof(buttonRestartLater), "ButtonRestartLater value is null or invalid.");
+                }
+
+                Title = title;
+                Message = message;
+                MessageTime = messageTime;
+                MessageRestart = messageRestart;
+                TimeRemaining = timeRemaining;
+                ButtonRestartNow = buttonRestartNow;
+                ButtonRestartLater = buttonRestartLater;
             }
 
             /// <summary>
