@@ -366,6 +366,75 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Creates a new process and its primary thread using the specified application name, command line, security
+        /// attributes, environment, and startup information.
+        /// </summary>
+        /// <remarks>This method is a low-level wrapper for the Windows CreateProcess API and requires
+        /// careful management of memory and handles. The caller is responsible for ensuring that all parameters meet
+        /// the requirements of the underlying Windows API. On failure, a Win32 exception is thrown with details from
+        /// the last error code.</remarks>
+        /// <param name="lpApplicationName">The name of the module to execute. If this parameter is null, the module name must be the first white
+        /// space–delimited token in <paramref name="lpCommandLine"/>.</param>
+        /// <param name="lpCommandLine">A span containing the command line to execute, including the application name and any arguments. The span
+        /// must be null-terminated.</param>
+        /// <param name="lpProcessAttributes">A reference to a <see cref="SECURITY_ATTRIBUTES"/> structure that determines whether the returned process
+        /// handle can be inherited by child processes. If null, the handle cannot be inherited.</param>
+        /// <param name="lpThreadAttributes">A reference to a <see cref="SECURITY_ATTRIBUTES"/> structure that determines whether the returned thread
+        /// handle can be inherited by child processes. If null, the handle cannot be inherited.</param>
+        /// <param name="bInheritHandles">Indicates whether each handle in the calling process is inherited by the new process. Specify <see
+        /// langword="true"/> to inherit handles; otherwise, <see langword="false"/>.</param>
+        /// <param name="dwCreationFlags">A set of flags that control the priority class and creation of the process. This parameter can be a
+        /// combination of <see cref="PROCESS_CREATION_FLAGS"/> values.</param>
+        /// <param name="lpEnvironment">A handle to an environment block for the new process. If null, the new process uses the environment of the
+        /// calling process.</param>
+        /// <param name="lpCurrentDirectory">The full path to the current directory for the new process. If null, the new process uses the current
+        /// directory of the calling process.</param>
+        /// <param name="lpStartupInfoEx">A reference to a <see cref="STARTUPINFOEXW"/> structure that specifies the window station, desktop, standard
+        /// handles, and attributes for the new process.</param>
+        /// <param name="lpProcessInformation">When this method returns, contains a <see cref="PROCESS_INFORMATION"/> structure with information about the
+        /// newly created process and its primary thread.</param>
+        /// <returns>A <see cref="BOOL"/> value that is <see langword="true"/> if the process is created successfully; otherwise,
+        /// <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not empty and does not contain a null terminator.</exception>
+        internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        {
+            if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
+            {
+                throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
+            }
+            bool lpEnvironmentAddRef = false;
+            try
+            {
+                BOOL res;
+                unsafe
+                {
+                    fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
+                    fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
+                    fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
+                    {
+                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
+                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
+                        lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                        res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                        if (!res)
+                        {
+                            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                        }
+                        lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                    }
+                }
+                return res;
+            }
+            finally
+            {
+                if (lpEnvironmentAddRef)
+                {
+                    lpEnvironment?.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
         /// Associates a process with a job object, enabling the job object to manage and limit the process according to
         /// its configuration.
         /// </summary>

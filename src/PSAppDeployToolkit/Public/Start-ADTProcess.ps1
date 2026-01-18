@@ -728,7 +728,7 @@ function Start-ADTProcess
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
                     $DenyUserTermination,
-                    $false,
+                    $null,
                     $UseUnelevatedToken,
                     $UseShellExecute,
                     $Verb,
