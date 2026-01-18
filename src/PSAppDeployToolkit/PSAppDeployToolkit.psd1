@@ -136,6 +136,7 @@
         'Out-ADTPowerShellEncodedCommand'
         'Register-ADTDll'
         'Remove-ADTContentFromCache'
+        'Remove-ADTDesktopShortcut'
         'Remove-ADTEdgeExtension'
         'Remove-ADTEnvironmentVariable'
         'Remove-ADTFile'
