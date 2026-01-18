@@ -59,6 +59,8 @@ function Mount-ADTWimFile
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -68,7 +70,7 @@ function Mount-ADTWimFile
         https://psappdeploytoolkit.com/docs/reference/functions/Mount-ADTWimFile
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Index')]
@@ -151,6 +153,10 @@ function Mount-ADTWimFile
     {
         # Announce commencement.
         Write-ADTLogEntry -Message "Mounting WIM file [$ImagePath] to [$Path]."
+        if (!$PSCmdlet.ShouldProcess("WIM [$ImagePath] to [$Path]", 'Mount'))
+        {
+            return
+        }
         try
         {
             try

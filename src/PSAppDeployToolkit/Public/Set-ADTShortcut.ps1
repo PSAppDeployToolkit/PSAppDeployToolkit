@@ -61,6 +61,8 @@ function Set-ADTShortcut
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -70,7 +72,7 @@ function Set-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTShortcut
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
@@ -128,6 +130,10 @@ function Set-ADTShortcut
     process
     {
         Write-ADTLogEntry -Message "Changing shortcut [$LiteralPath]."
+        if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Modify shortcut'))
+        {
+            return
+        }
         try
         {
             try

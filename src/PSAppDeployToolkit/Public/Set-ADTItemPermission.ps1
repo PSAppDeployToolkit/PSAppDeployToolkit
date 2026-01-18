@@ -91,6 +91,8 @@ function Set-ADTItemPermission
 
         Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -100,7 +102,7 @@ function Set-ADTItemPermission
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTItemPermission
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
@@ -176,6 +178,10 @@ function Set-ADTItemPermission
                 if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
                 {
                     Write-ADTLogEntry -Message "Setting specifieds ACL on path [$LiteralPath]."
+                    if (!$PSCmdlet.ShouldProcess("Path [$LiteralPath]", 'Set ACL'))
+                    {
+                        return
+                    }
                     [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $AccessControlList)
                     return
                 }
@@ -187,6 +193,10 @@ function Set-ADTItemPermission
                 if ($EnableInheritance)
                 {
                     Write-ADTLogEntry -Message "Enabling Inheritance on path [$LiteralPath]."
+                    if (!$PSCmdlet.ShouldProcess("Path [$LiteralPath]", 'Enable inheritance'))
+                    {
+                        return
+                    }
                     $Acl.SetAccessRuleProtection($false, $true)
                     if ($RemoveExplicitRules)
                     {
@@ -212,11 +222,19 @@ function Set-ADTItemPermission
                 # Disable inheritance if asked to do so.
                 if ($DisableInheritance)
                 {
+                    if (!$PSCmdlet.ShouldProcess("Path [$LiteralPath]", 'Disable inheritance'))
+                    {
+                        return
+                    }
                     $Acl.SetAccessRuleProtection($true, $true); [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
                     $Acl = Get-Acl -LiteralPath $pathInfo.FullName
                 }
 
                 # Apply permissions on each user.
+                if (!$PSCmdlet.ShouldProcess("Path [$LiteralPath]", 'Modify permissions'))
+                {
+                    return
+                }
                 foreach ($Username in $User.Trim())
                 {
                     # Return early if the string is empty.

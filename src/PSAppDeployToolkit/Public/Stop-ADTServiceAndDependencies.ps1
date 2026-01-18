@@ -46,6 +46,8 @@ function Stop-ADTServiceAndDependencies
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -55,7 +57,7 @@ function Stop-ADTServiceAndDependencies
         https://psappdeploytoolkit.com/docs/reference/functions/Stop-ADTServiceAndDependencies
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
@@ -103,7 +105,11 @@ function Stop-ADTServiceAndDependencies
                 {
                     $PSBoundParameters.Name = $InputObject.Name
                 }
-                Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+                $serviceName = if ($pipelining) { $InputObject.Name } else { $Name }
+                if ($PSCmdlet.ShouldProcess($serviceName, 'Stop service and dependencies'))
+                {
+                    Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+                }
             }
             catch
             {

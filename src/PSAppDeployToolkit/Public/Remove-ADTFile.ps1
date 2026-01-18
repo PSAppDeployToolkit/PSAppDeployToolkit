@@ -47,6 +47,8 @@ function Remove-ADTFile
 
         This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -58,7 +60,7 @@ function Remove-ADTFile
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -133,12 +135,19 @@ function Remove-ADTFile
                                 continue
                             }
                             Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
+                            if ($PSCmdlet.ShouldProcess($Item, 'Delete folder recursively'))
+                            {
+                                $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
+                            }
                         }
                         else
                         {
                             Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
+                            if ($PSCmdlet.ShouldProcess($Item, 'Delete file'))
+                            {
+                                $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
+                            }
                         }
-                        $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
                     }
                     catch
                     {

@@ -144,6 +144,8 @@ function Start-ADTProcessAsUser
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -153,7 +155,7 @@ function Start-ADTProcessAsUser
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'Default_CreateWindow_Wait')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Default_CreateWindow_Wait')]
     [OutputType([PSADT.ProcessManagement.ProcessResult])]
     param
     (
@@ -346,6 +348,10 @@ function Start-ADTProcessAsUser
         $null = $PSBoundParameters.Remove('Username')
 
         # Just farm it out to Start-ADTProcess as it can do it all.
+        if (!$PSCmdlet.ShouldProcess("Process [$FilePath] as user [$($runAsActiveUser.NTAccount)]", 'Execute'))
+        {
+            return
+        }
         try
         {
             if (($result = Start-ADTProcess @PSBoundParameters) -and $PassThru)

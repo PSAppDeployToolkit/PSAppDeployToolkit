@@ -63,6 +63,8 @@ function New-ADTShortcut
 
         Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -72,7 +74,7 @@ function New-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTShortcut
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -192,6 +194,10 @@ function New-ADTShortcut
 
                 # Build out the shortcut.
                 Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
+                if (!$PSCmdlet.ShouldProcess($FullPath, "Create shortcut to [$TargetPath]"))
+                {
+                    return
+                }
                 if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
                 {
                     [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"

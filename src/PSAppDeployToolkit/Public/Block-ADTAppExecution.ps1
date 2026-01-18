@@ -45,6 +45,8 @@ function Block-ADTAppExecution
 
         It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to block applications.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -54,7 +56,7 @@ function Block-ADTAppExecution
         https://psappdeploytoolkit.com/docs/reference/functions/Block-ADTAppExecution
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
@@ -167,6 +169,10 @@ function Block-ADTAppExecution
 
                 # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
                 Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
+                if (!$PSCmdlet.ShouldProcess("Scheduled Task [$taskName]", 'Create'))
+                {
+                    return
+                }
                 try
                 {
                     $nstParams = @{
@@ -187,6 +193,10 @@ function Block-ADTAppExecution
                 foreach ($process in $Processes.Name)
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
+                    if (!$PSCmdlet.ShouldProcess("Process [$process]", 'Block execution'))
+                    {
+                        continue
+                    }
                     if ([System.IO.Path]::IsPathRooted($process))
                     {
                         $basePath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$($process -replace '^.+\\')"

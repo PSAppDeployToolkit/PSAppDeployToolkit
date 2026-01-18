@@ -88,6 +88,8 @@ function Copy-ADTFileToUserProfiles
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -97,7 +99,7 @@ function Copy-ADTFileToUserProfiles
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFileToUserProfiles
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'CalculatedProfiles')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'CalculatedProfiles')]
     param (
         [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
@@ -218,7 +220,10 @@ function Copy-ADTFileToUserProfiles
             }
             $dest = (Join-Path -Path $UserProfile."$BasePath`Path" -ChildPath $Destination).Trim()
             Write-ADTLogEntry -Message "Copying path [$Path] to $($dest):"
-            Copy-ADTFile -Path $sourcePaths -Destination $dest @CopyFileSplat
+            if ($PSCmdlet.ShouldProcess($dest, "Copy files from [$sourcePaths] to user profile [$($UserProfile.NTAccount)]"))
+            {
+                Copy-ADTFile -Path $sourcePaths -Destination $dest @CopyFileSplat
+            }
         }
 
         # Finalize function.

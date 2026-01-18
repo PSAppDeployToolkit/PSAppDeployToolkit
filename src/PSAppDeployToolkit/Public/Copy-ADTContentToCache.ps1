@@ -44,6 +44,8 @@ function Copy-ADTContentToCache
 
         This can be done using `Remove-ADTFile -LiteralPath "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -53,7 +55,7 @@ function Copy-ADTContentToCache
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTContentToCache
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -82,6 +84,10 @@ function Copy-ADTContentToCache
         if (!(Test-Path -LiteralPath $LiteralPath -PathType Container))
         {
             Write-ADTLogEntry -Message "Creating cache folder [$LiteralPath]."
+            if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Create cache folder'))
+            {
+                return
+            }
             try
             {
                 try
@@ -106,6 +112,10 @@ function Copy-ADTContentToCache
 
         # Copy the toolkit content to the cache folder.
         Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$LiteralPath]."
+        if (!$PSCmdlet.ShouldProcess($LiteralPath, "Copy toolkit content from [$scriptDir]"))
+        {
+            return
+        }
         try
         {
             try

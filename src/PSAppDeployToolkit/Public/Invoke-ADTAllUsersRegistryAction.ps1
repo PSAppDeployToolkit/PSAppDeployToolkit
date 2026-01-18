@@ -65,6 +65,8 @@ function Invoke-ADTAllUsersRegistryAction
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -74,7 +76,7 @@ function Invoke-ADTAllUsersRegistryAction
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTAllUsersRegistryAction
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -156,7 +158,10 @@ function Invoke-ADTAllUsersRegistryAction
 
                     # Invoke changes against registry.
                     Write-ADTLogEntry -Message "Executing scriptblock to modify HKCU registry settings for [$($UserProfile.NTAccount)]."
-                    ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $ScriptBlock
+                    if ($PSCmdlet.ShouldProcess("User [$($UserProfile.NTAccount)] registry hive", 'Modify'))
+                    {
+                        ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $ScriptBlock
+                    }
                 }
                 catch
                 {

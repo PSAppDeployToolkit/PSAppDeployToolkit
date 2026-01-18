@@ -50,6 +50,8 @@ function New-ADTZipFile
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
@@ -59,7 +61,7 @@ function New-ADTZipFile
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTZipFile
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -121,24 +123,33 @@ function New-ADTZipFile
                 if ((Test-Path -LiteralPath $DestinationPath -PathType Leaf) -and $Force)
                 {
                     Write-ADTLogEntry -Message "An archive at the destination path already exists, deleting file [$DestinationPath]."
-                    $null = Remove-Item -LiteralPath $DestinationPath -Force
+                    if ($PSCmdlet.ShouldProcess($DestinationPath, 'Delete existing archive'))
+                    {
+                        $null = Remove-Item -LiteralPath $DestinationPath -Force
+                    }
                 }
 
                 # Create the archive file.
                 Write-ADTLogEntry -Message "Compressing [$sourcePath] to destination path [$DestinationPath]..."
-                Compress-Archive @PSBoundParameters
+                if ($PSCmdlet.ShouldProcess($DestinationPath, "Create zip archive from [$sourcePath]"))
+                {
+                    Compress-Archive @PSBoundParameters
+                }
 
                 # If option was selected, recursively delete the source directory after successfully archiving the contents.
                 if ($RemoveSourceAfterArchiving)
                 {
-                    try
+                    Write-ADTLogEntry -Message "Recursively deleting [$sourcePath] as contents have been successfully archived."
+                    if ($PSCmdlet.ShouldProcess($sourcePath, 'Delete source after archiving'))
                     {
-                        Write-ADTLogEntry -Message "Recursively deleting [$sourcePath] as contents have been successfully archived."
-                        $null = Remove-Item -LiteralPath $Directory -Recurse -Force
-                    }
-                    catch
-                    {
-                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to recursively delete [$sourcePath]." -ErrorAction SilentlyContinue
+                        try
+                        {
+                            $null = Remove-Item -LiteralPath $Directory -Recurse -Force
+                        }
+                        catch
+                        {
+                            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to recursively delete [$sourcePath]." -ErrorAction SilentlyContinue
+                        }
                     }
                 }
 
