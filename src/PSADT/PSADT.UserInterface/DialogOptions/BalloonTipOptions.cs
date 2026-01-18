@@ -2,6 +2,7 @@
 using System.Collections;
 using System.IO;
 using System.Windows.Forms;
+using PSADT.Utilities;
 using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -66,7 +67,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(trayIcon), "TrayIcon value is null or invalid.");
             }
-            if (!File.Exists(trayIcon))
+            if (!(MiscUtilities.GetBase64StringBytes(trayIcon)?.Length > 0) && !File.Exists(trayIcon))
             {
                 throw new FileNotFoundException("The specified AppIconImage cannot be found", trayIcon);
             }
