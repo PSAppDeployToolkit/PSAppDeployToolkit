@@ -18,102 +18,20 @@ namespace PSADT.UserInterface.DialogOptions
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        internal BaseOptions(Hashtable options)
+        internal BaseOptions(Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
+            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
+            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
+            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
+            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
+            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
+            options["Language"] is CultureInfo language ? language : null!,
+            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
+            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
+            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
+            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
+            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null)
         {
-            // Nothing here is allowed to be null.
-            if (options["AppTitle"] is not string appTitle || string.IsNullOrWhiteSpace(appTitle))
-            {
-                throw new ArgumentNullException("AppTitle value is null or invalid.", (Exception?)null);
-            }
-            if (options["Subtitle"] is not string subTitle || string.IsNullOrWhiteSpace(subTitle))
-            {
-                throw new ArgumentNullException("Subtitle value is null or invalid.", (Exception?)null);
-            }
-            if (options["AppIconImage"] is not string appIconImage || string.IsNullOrWhiteSpace(appIconImage))
-            {
-                throw new ArgumentNullException("AppIconImage value is null or invalid.", (Exception?)null);
-            }
-            if (options["AppIconDarkImage"] is not string appIconDarkImage || string.IsNullOrWhiteSpace(appIconDarkImage))
-            {
-                throw new ArgumentNullException("AppIconDarkImage value is null or invalid.", (Exception?)null);
-            }
-            if (options["AppBannerImage"] is not string appBannerImage || string.IsNullOrWhiteSpace(appBannerImage))
-            {
-                throw new ArgumentNullException("AppBannerImage value is null or invalid.", (Exception?)null);
-            }
-            if (options["DialogTopMost"] is not bool dialogTopMost)
-            {
-                throw new ArgumentNullException("DialogTopMost value is null or invalid.", (Exception?)null);
-            }
-            if (options["Language"] is not CultureInfo language)
-            {
-                throw new ArgumentNullException("Language value is null or invalid.", (Exception?)null);
-            }
-
-            // Test that the specified image paths are valid.
-            if (!(MiscUtilities.GetBase64StringBytes(appIconImage)?.Length > 0) && !File.Exists(appIconImage))
-            {
-                throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
-            }
-            if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
-            {
-                throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
-            }
-            if (!(MiscUtilities.GetBase64StringBytes(appBannerImage)?.Length > 0) && !File.Exists(appBannerImage))
-            {
-                throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
-            }
-
-            // Test and set optional values.
-            if (options.ContainsKey("DialogAllowMove"))
-            {
-                if (options["DialogAllowMove"] is not bool dialogAllowMove)
-                {
-                    throw new ArgumentOutOfRangeException("DialogAllowMove value is not valid.", (Exception?)null);
-                }
-                DialogAllowMove = dialogAllowMove;
-            }
-            if (options.ContainsKey("DialogExpiryDuration"))
-            {
-                if (options["DialogExpiryDuration"] is not TimeSpan dialogExpiryDuration)
-                {
-                    throw new ArgumentOutOfRangeException("DialogExpiryDuration value is not valid.", (Exception?)null);
-                }
-                DialogExpiryDuration = dialogExpiryDuration;
-            }
-            if (options.ContainsKey("DialogPersistInterval"))
-            {
-                if (options["DialogPersistInterval"] is not TimeSpan dialogPersistInterval)
-                {
-                    throw new ArgumentOutOfRangeException("DialogPersistInterval value is not valid.", (Exception?)null);
-                }
-                DialogPersistInterval = dialogPersistInterval;
-            }
-            if (options.ContainsKey("FluentAccentColor"))
-            {
-                if (options["FluentAccentColor"] is not int fluentAccentColor)
-                {
-                    throw new ArgumentOutOfRangeException("FluentAccentColor value is not valid.", (Exception?)null);
-                }
-                FluentAccentColor = fluentAccentColor;
-            }
-            if (options.ContainsKey("DialogPosition"))
-            {
-                if (options["DialogPosition"] is not DialogPosition dialogPosition)
-                {
-                    throw new ArgumentOutOfRangeException("DialogPosition value is not valid.", (Exception?)null);
-                }
-                DialogPosition = dialogPosition;
-            }
-
-            // The hashtable was correctly defined, assign the remaining values.
-            AppTitle = appTitle;
-            Subtitle = subTitle;
-            AppIconImage = appIconImage;
-            AppIconDarkImage = appIconDarkImage;
-            AppBannerImage = appBannerImage;
-            DialogTopMost = dialogTopMost;
-            Language = language;
         }
 
         /// <summary>
@@ -139,13 +57,52 @@ namespace PSADT.UserInterface.DialogOptions
         [JsonConstructor]
         protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
-            AppTitle = appTitle ?? throw new ArgumentNullException(nameof(appTitle), "AppTitle cannot be null or empty.");
-            Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle), "Subtitle cannot be null or empty.");
-            AppIconImage = appIconImage ?? throw new ArgumentNullException(nameof(appIconImage), "AppIconImage cannot be null or empty.");
-            AppIconDarkImage = appIconDarkImage ?? throw new ArgumentNullException(nameof(appIconDarkImage), "AppIconDarkImage cannot be null or empty.");
-            AppBannerImage = appBannerImage ?? throw new ArgumentNullException(nameof(appBannerImage), "AppBannerImage cannot be null or empty.");
-            Language = language ?? throw new ArgumentNullException(nameof(language), "Language cannot be null.");
+            if (string.IsNullOrWhiteSpace(appTitle))
+            {
+                throw new ArgumentNullException(nameof(appTitle), "AppTitle value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(subtitle))
+            {
+                throw new ArgumentNullException(nameof(subtitle), "Subtitle value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(appIconImage))
+            {
+                throw new ArgumentNullException(nameof(appIconImage), "AppIconImage value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(appIconDarkImage))
+            {
+                throw new ArgumentNullException(nameof(appIconDarkImage), "AppIconDarkImage value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(appBannerImage))
+            {
+                throw new ArgumentNullException(nameof(appBannerImage), "AppBannerImage value is null or invalid.");
+            }
+            if (language is null)
+            {
+                throw new ArgumentNullException(nameof(language), "Language value is null or invalid.");
+            }
+
+            // Test that the specified image paths are valid.
+            if (!(MiscUtilities.GetBase64StringBytes(appIconImage)?.Length > 0) && !File.Exists(appIconImage))
+            {
+                throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
+            }
+            if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
+            {
+                throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
+            }
+            if (!(MiscUtilities.GetBase64StringBytes(appBannerImage)?.Length > 0) && !File.Exists(appBannerImage))
+            {
+                throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
+            }
+
+            AppTitle = appTitle;
+            Subtitle = subtitle;
+            AppIconImage = appIconImage;
+            AppIconDarkImage = appIconDarkImage;
+            AppBannerImage = appBannerImage;
             DialogTopMost = dialogTopMost;
+            Language = language;
             FluentAccentColor = fluentAccentColor;
             DialogPosition = dialogPosition;
             DialogAllowMove = dialogAllowMove;

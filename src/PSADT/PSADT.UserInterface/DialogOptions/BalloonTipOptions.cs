@@ -32,75 +32,64 @@ namespace PSADT.UserInterface.DialogOptions
         /// cref="ToolTipIcon"/> value representing the icon displayed in the balloon tip.</description> </item> </list></param>
         /// <exception cref="ArgumentNullException">Thrown if any required key in <paramref name="options"/> is missing, null, or contains an invalid value.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the file specified by the <c>TrayIcon</c> key does not exist.</exception>
-        public BalloonTipOptions(Hashtable options)
+        public BalloonTipOptions(Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["TrayTitle"] is string trayTitle ? trayTitle : string.Empty,
+            options["TrayIcon"] is string trayIcon ? trayIcon : string.Empty,
+            options["BalloonTipTitle"] is string balloonTipTitle ? balloonTipTitle : string.Empty,
+            options["BalloonTipText"] is string balloonTipText ? balloonTipText : string.Empty,
+            options["BalloonTipIcon"] is ToolTipIcon balloonTipIcon ? balloonTipIcon : (ToolTipIcon)(-1),
+            options["BalloonTipTime"] is uint balloonTipTime ? balloonTipTime : uint.MaxValue)
         {
-            // Nothing here is allowed to be null.
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            if (options["TrayTitle"] is not string trayTitle || string.IsNullOrWhiteSpace(trayTitle))
-            {
-                throw new ArgumentNullException("TrayTitle value is null or invalid.", (Exception?)null);
-            }
-            if (options["TrayIcon"] is not string trayIcon || string.IsNullOrWhiteSpace(trayIcon))
-            {
-                throw new ArgumentNullException("TrayIcon value is null or invalid.", (Exception?)null);
-            }
-            if (options["BalloonTipTitle"] is not string balloonTipTitle || string.IsNullOrWhiteSpace(balloonTipTitle))
-            {
-                throw new ArgumentNullException("BalloonTipTitle value is null or invalid.", (Exception?)null);
-            }
-            if (options["BalloonTipText"] is not string balloonTipText || string.IsNullOrWhiteSpace(balloonTipText))
-            {
-                throw new ArgumentNullException("BalloonTipText value is null or invalid.", (Exception?)null);
-            }
-            if (options["BalloonTipIcon"] is not ToolTipIcon balloonTipIcon)
-            {
-                throw new ArgumentNullException("BalloonTipIcon value is null or invalid.", (Exception?)null);
-            }
-            if (options["BalloonTipTime"] is not uint balloonTipTime)
-            {
-                throw new ArgumentNullException("BalloonTipTime value is null or invalid.", (Exception?)null);
-            }
+        }
 
-            // Test that the specified image paths are valid.
+        /// <summary>
+        /// Primary constructor that validates and initializes all properties.
+        /// </summary>
+        /// <remarks>This constructor contains all validation logic and is used by both the Hashtable
+        /// constructor and JSON deserialization.</remarks>
+        /// <param name="trayTitle">The title of the system tray application.</param>
+        /// <param name="trayIcon">The path to the system tray icon.</param>
+        /// <param name="balloonTipTitle">The title of the balloon tip notification.</param>
+        /// <param name="balloonTipText">The text content of the balloon tip notification.</param>
+        /// <param name="balloonTipIcon">The icon to display in the balloon tip notification.</param>
+        /// <param name="balloonTipTime">The duration, in milliseconds, for which the balloon tip is displayed.</param>
+        /// <exception cref="ArgumentNullException">Thrown if any required parameter is null, empty, or whitespace.</exception>
+        /// <exception cref="FileNotFoundException">Thrown if the specified tray icon file does not exist.</exception>
+        [JsonConstructor]
+        private BalloonTipOptions(string trayTitle, string trayIcon, string balloonTipTitle, string balloonTipText, ToolTipIcon balloonTipIcon, uint balloonTipTime)
+        {
+            if (string.IsNullOrWhiteSpace(trayTitle))
+            {
+                throw new ArgumentNullException(nameof(trayTitle), "TrayTitle value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(trayIcon))
+            {
+                throw new ArgumentNullException(nameof(trayIcon), "TrayIcon value is null or invalid.");
+            }
             if (!File.Exists(trayIcon))
             {
                 throw new FileNotFoundException("The specified AppIconImage cannot be found", trayIcon);
             }
-
-            // The hashtable was correctly defined, assign the remaining values.
+            if (string.IsNullOrWhiteSpace(balloonTipTitle))
+            {
+                throw new ArgumentNullException(nameof(balloonTipTitle), "BalloonTipTitle value is null or invalid.");
+            }
+            if (string.IsNullOrWhiteSpace(balloonTipText))
+            {
+                throw new ArgumentNullException(nameof(balloonTipText), "BalloonTipText value is null or invalid.");
+            }
+            if ((int)balloonTipIcon == -1)
+            {
+                throw new ArgumentNullException(nameof(balloonTipIcon), "BalloonTipIcon value is null or invalid.");
+            }
+            if (balloonTipTime == uint.MaxValue)
+            {
+                throw new ArgumentNullException(nameof(balloonTipTime), "BalloonTipTime value is null or invalid.");
+            }
             TrayTitle = trayTitle;
             TrayIcon = trayIcon;
             BalloonTipTitle = balloonTipTitle;
             BalloonTipText = balloonTipText;
-            BalloonTipIcon = balloonTipIcon;
-            BalloonTipTime = balloonTipTime;
-        }
-
-        /// <summary>
-        /// Represents configuration options for displaying a balloon tip notification in the system tray.
-        /// </summary>
-        /// <remarks>This class encapsulates the settings required to display a balloon tip, including
-        /// titles, text, icons, and the duration for which the balloon tip is displayed. The constructor is private and
-        /// intended for deserialization purposes using the <see cref="JsonConstructorAttribute"/>.</remarks>
-        /// <param name="trayTitle">The title of the system tray application. Cannot be <see langword="null"/>.</param>
-        /// <param name="trayIcon">The path to the system tray icon. Cannot be <see langword="null"/>.</param>
-        /// <param name="balloonTipTitle">The title of the balloon tip notification. Cannot be <see langword="null"/>.</param>
-        /// <param name="balloonTipText">The text content of the balloon tip notification. Cannot be <see langword="null"/>.</param>
-        /// <param name="balloonTipIcon">The icon to display in the balloon tip notification.</param>
-        /// <param name="balloonTipTime">The duration, in milliseconds, for which the balloon tip is displayed.</param>
-        /// <exception cref="ArgumentNullException">Thrown if any of the following parameters are <see langword="null"/>: <paramref name="trayTitle"/>,
-        /// <paramref name="trayIcon"/>, <paramref name="balloonTipTitle"/>, or <paramref name="balloonTipText"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
-        [JsonConstructor]
-        private BalloonTipOptions(string trayTitle, string trayIcon, string balloonTipTitle, string balloonTipText, ToolTipIcon balloonTipIcon, uint balloonTipTime)
-        {
-            TrayTitle = trayTitle ?? throw new ArgumentNullException(nameof(trayTitle));
-            TrayIcon = trayIcon ?? throw new ArgumentNullException(nameof(trayIcon));
-            BalloonTipTitle = balloonTipTitle ?? throw new ArgumentNullException(nameof(balloonTipTitle));
-            BalloonTipText = balloonTipText ?? throw new ArgumentNullException(nameof(balloonTipText));
             BalloonTipIcon = balloonTipIcon;
             BalloonTipTime = balloonTipTime;
         }

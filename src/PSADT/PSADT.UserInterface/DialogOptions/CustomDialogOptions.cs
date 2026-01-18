@@ -15,69 +15,27 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public CustomDialogOptions(Hashtable options) : base(options ?? throw new ArgumentNullException(nameof(options)))
+        public CustomDialogOptions(Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
+            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
+            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
+            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
+            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
+            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
+            options["Language"] is CultureInfo language ? language : null!,
+            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
+            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
+            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
+            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
+            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
+            options["MessageText"] is string messageText ? messageText : string.Empty,
+            options["MessageAlignment"] is DialogMessageAlignment messageAlignment ? messageAlignment : null,
+            options["ButtonLeftText"] is string buttonLeftText ? buttonLeftText : null,
+            options["ButtonMiddleText"] is string buttonMiddleText ? buttonMiddleText : null,
+            options["ButtonRightText"] is string buttonRightText ? buttonRightText : null,
+            options["Icon"] is DialogSystemIcon icon ? icon : null,
+            options["MinimizeWindows"] is bool minimizeWindows && minimizeWindows)
         {
-            // Nothing here is allowed to be null.
-            if (options["MessageText"] is not string messageText || string.IsNullOrWhiteSpace(messageText))
-            {
-                throw new ArgumentNullException("MessageText value is null or invalid.", (Exception?)null);
-            }
-            if (options["MinimizeWindows"] is not bool minimizeWindows)
-            {
-                throw new ArgumentNullException("MinimizeWindows value is null or invalid.", (Exception?)null);
-            }
-
-            // Test and set optional values.
-            if (options.ContainsKey("MessageAlignment"))
-            {
-                if (options["MessageAlignment"] is not DialogMessageAlignment messageAlignment)
-                {
-                    throw new ArgumentOutOfRangeException("MessageAlignment value is not valid.", (Exception?)null);
-                }
-                MessageAlignment = messageAlignment;
-            }
-            if (options.ContainsKey("ButtonLeftText"))
-            {
-                if (options["ButtonLeftText"] is not string buttonLeftText || string.IsNullOrWhiteSpace(buttonLeftText))
-                {
-                    throw new ArgumentOutOfRangeException("ButtonLeftText value is not valid.", (Exception?)null);
-                }
-                ButtonLeftText = buttonLeftText;
-            }
-            if (options.ContainsKey("ButtonMiddleText"))
-            {
-                if (options["ButtonMiddleText"] is not string buttonMiddleText || string.IsNullOrWhiteSpace(buttonMiddleText))
-                {
-                    throw new ArgumentOutOfRangeException("ButtonMiddleText value is not valid.", (Exception?)null);
-                }
-                ButtonMiddleText = buttonMiddleText;
-            }
-            if (options.ContainsKey("ButtonRightText"))
-            {
-                if (options["ButtonRightText"] is not string buttonRightText || string.IsNullOrWhiteSpace(buttonRightText))
-                {
-                    throw new ArgumentOutOfRangeException("ButtonRightText value is not valid.", (Exception?)null);
-                }
-                ButtonRightText = buttonRightText;
-            }
-            if (options.ContainsKey("Icon"))
-            {
-                if (options["Icon"] is not DialogSystemIcon icon)
-                {
-                    throw new ArgumentOutOfRangeException("Icon value is not valid.", (Exception?)null);
-                }
-                Icon = icon;
-            }
-
-            // The hashtable was correctly defined, assign the remaining values.
-            MessageText = messageText;
-            MinimizeWindows = minimizeWindows;
-
-            // At least one button must be defined before we finish.
-            if (string.IsNullOrWhiteSpace(ButtonLeftText) && string.IsNullOrWhiteSpace(ButtonMiddleText) && string.IsNullOrWhiteSpace(ButtonRightText))
-            {
-                throw new ArgumentNullException("At least one button must be defined.", (Exception?)null);
-            }
         }
 
         /// <summary>
@@ -114,7 +72,18 @@ namespace PSADT.UserInterface.DialogOptions
         [JsonConstructor]
         protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText), "MessageText cannot be null or empty.");
+            if (string.IsNullOrWhiteSpace(messageText))
+            {
+                throw new ArgumentNullException(nameof(messageText), "MessageText value is null or invalid.");
+            }
+
+            // At least one button must be defined.
+            if (string.IsNullOrWhiteSpace(buttonLeftText) && string.IsNullOrWhiteSpace(buttonMiddleText) && string.IsNullOrWhiteSpace(buttonRightText))
+            {
+                throw new ArgumentException("At least one button must be defined.");
+            }
+
+            MessageText = messageText;
             MessageAlignment = messageAlignment;
             ButtonLeftText = buttonLeftText;
             ButtonMiddleText = buttonMiddleText;

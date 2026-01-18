@@ -19,25 +19,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        public HelpConsoleOptions(Hashtable options)
+        public HelpConsoleOptions(Hashtable options) : this(
+            (options ?? throw new ArgumentNullException(nameof(options)))["ExecutionPolicy"] is ExecutionPolicy executionPolicy ? executionPolicy : (ExecutionPolicy)(-1),
+            options["Modules"] is IReadOnlyList<ModuleSpecification> modules
+                ? new ReadOnlyCollection<Hashtable>([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version?.ToString() }, { "Guid", m.Guid } })])
+                : null!)
         {
-            // Nothing here is allowed to be null.
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            if (options["ExecutionPolicy"] is not ExecutionPolicy executionPolicy)
-            {
-                throw new ArgumentNullException("ExecutionPolicy value is null or invalid.", (Exception?)null);
-            }
-            if (options["Modules"] is not IReadOnlyList<ModuleSpecification> modules || modules.Count == 0 || modules.Any(static m => string.IsNullOrWhiteSpace(m.Name) || m.Guid is null || m.Version is null))
-            {
-                throw new ArgumentNullException("Modules value is null or invalid.", (Exception?)null);
-            }
-
-            // The hashtable was correctly defined, assign the remaining values.
-            ExecutionPolicy = executionPolicy;
-            ModuleData = new([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version.ToString() }, { "Guid", m.Guid } })]);
         }
 
         /// <summary>
@@ -47,12 +34,20 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="executionPolicy">The execution policy to be applied. This determines the level of permissions granted during execution.</param>
         /// <param name="moduleData">A read-only collection of hashtables containing module-specific data. Cannot be null.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="moduleData"/> is null.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This constructor is used for deserialisation.")]
         [JsonConstructor]
         private HelpConsoleOptions(ExecutionPolicy executionPolicy, ReadOnlyCollection<Hashtable> moduleData)
         {
+            if ((int)executionPolicy == -1)
+            {
+                throw new ArgumentNullException(nameof(executionPolicy), "ExecutionPolicy value is null or invalid.");
+            }
+            if (moduleData is null || moduleData.Count == 0 || moduleData.Any(static m => m["ModuleName"] is not string name || string.IsNullOrWhiteSpace(name) || m["Guid"] is null || m["ModuleVersion"] is null))
+            {
+                throw new ArgumentNullException(nameof(moduleData), "Modules value is null or invalid.");
+            }
+
             ExecutionPolicy = executionPolicy;
-            ModuleData = moduleData ?? throw new ArgumentNullException(nameof(moduleData));
+            ModuleData = moduleData;
         }
 
         /// <summary>
