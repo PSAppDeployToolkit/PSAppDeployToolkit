@@ -20,17 +20,15 @@ MyKey2=MyValue2
     }
 
     Context 'Functionality' {
-        It 'Should return a Section' {
+        It 'Should return a section' {
             $IniSection = Get-ADTIniSection -FilePath $IniPath -Section 'MySection'
             $IniSection | Should -BeOfType 'System.Collections.Specialized.OrderedDictionary' # May change to 'System.Collections.Generic.Dictionary[string,string]'
             $IniSection.MyKey | Should -Be 'MyValue'
             $IniSection.MyKey2 | Should -Be 'MyValue2'
         }
-        It 'Should return an empty section' {
-            #$IniSection = Get-ADTIniSection -FilePath $IniPath -Section 'MyEmptySection' | Should -BeNullOrEmpty    # To be used if the function should retun $null for an empty section, currently it returns an empty ordered dictionary.
+        It 'Should return null' {
             $IniSection = Get-ADTIniSection -FilePath $IniPath -Section 'MyEmptySection'
-            $IniSection | Should -BeOfType 'System.Collections.Specialized.OrderedDictionary' # May change to 'System.Collections.Generic.Dictionary[string,string]'
-            $IniSection.Count | Should -Be 0
+            $IniSection | Should -BeNullOrEmpty
         }
     }
 
