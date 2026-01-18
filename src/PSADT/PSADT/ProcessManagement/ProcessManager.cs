@@ -144,7 +144,11 @@ namespace PSADT.ProcessManagement
                     }
 
                     // If we're to read the output, we create pipes for stdout and stderr.
-                    bool inheritHandles = launchInfo.InheritHandles;
+                    // Build a list of handles that need to be inherited by the child process.
+                    List<IntPtr> handlesToInherit = launchInfo.HandlesToInherit?.Count > 0
+                        ? [.. launchInfo.HandlesToInherit]
+                        : [];
+
                     if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                     {
                         hStdOutRead = new(PipeDirection.In, HandleInheritability.Inheritable);
@@ -158,7 +162,8 @@ namespace PSADT.ProcessManagement
                         startupInfo.hStdInput = HANDLE.INVALID_HANDLE_VALUE;
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
                         startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
-                        inheritHandles = true;
+                        handlesToInherit.Add(startupInfo.hStdOutput);
+                        handlesToInherit.Add(startupInfo.hStdError);
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
@@ -176,7 +181,7 @@ namespace PSADT.ProcessManagement
                                 {
                                     startupInfo.lpDesktop = new(pDesktop);
                                     OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                                    CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                                    CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                     startupInfo.lpDesktop = null;
                                 }
                             }
@@ -187,13 +192,25 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using SafeFileHandle hPrimaryToken = ProcessToken.GetUnelevatedToken();
                         OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                        CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, inheritHandles, launchInfo.InheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi);
+                        CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
                         OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                        _ = Kernel32.CreateProcess(filePath, ref commandSpan, null, null, inheritHandles, creationFlags, null, workingDirectory, startupInfo, out pi);
+                        if (handlesToInherit.Count > 0)
+                        {
+                            (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit.AsReadOnly(), forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);
+                            using (hAttributeList)
+                            using (pinnedHandles)
+                            {
+                                _ = Kernel32.CreateProcess(filePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, workingDirectory, startupInfoEx, out pi);
+                            }
+                        }
+                        else
+                        {
+                            _ = Kernel32.CreateProcess(filePath, ref commandSpan, null, null, false, creationFlags, null, workingDirectory, startupInfo, out pi);
+                        }
                     }
 
                     // Start tracking the process and allow it to resume execution.
@@ -682,8 +699,8 @@ namespace PSADT.ProcessManagement
         /// <param name="hPrimaryToken">The primary token representing the user context under which the process will be created.</param>
         /// <param name="filePath">The fully qualified path to the executable file for the new process.</param>
         /// <param name="commandLine">The command line to be executed by the new process.</param>
-        /// <param name="inheritHandles">Specifies whether the new process inherits handles from the calling process.</param>
-        /// <param name="callerUsingHandles">The caller is passing anonymous handles to the process, so cannot use CreateProcessWithToken().</param>
+        /// <param name="handlesToInherit">An optional array of specific handles that the child process should inherit. When specified,
+        /// a STARTUPINFOEX with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used to limit inheritance to these handles only.</param>
         /// <param name="creationFlags">Flags that control the priority class and the creation of the process.</param>
         /// <param name="lpEnvironment">A handle to the environment block for the new process. Can be <see langword="null"/> to use the environment
         /// of the calling process.</param>
@@ -695,49 +712,45 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, bool inheritHandles, bool callerUsingHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, ReadOnlyCollection<IntPtr>? handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
+            // Determine if we need handle inheritance.
+            bool needsHandleInheritance = handlesToInherit?.Count > 0;
+
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
-            // When the caller provides anonymous handles, we need to use CreateProcessAsUser() since it has bInheritHandles.
+            // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             if (CanUseCreateProcessAsUser(hPrimaryToken) is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted))
             {
-                if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted && TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid)
+                // When creating a process for another user, if the token's Session Id differs from the caller's and
+                // the current process is part of a job object, we can only do so if JOB_OBJECT_LIMIT_BREAKAWAY_OK
+                // was specified by the process that set up the job in the first place. Some vendors like VMware do
+                // not specify this flag when setting up their job object, therefore we can't run our client/server code.
+                // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
+                // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
+                // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
+                bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted && TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid;
+                if (forceBreakaway)
                 {
-                    // When creating a process for another user, if the token's Session Id differs from the caller's and
-                    // the current process is part of a job object, we can only do so if JOB_OBJECT_LIMIT_BREAKAWAY_OK
-                    // was specified by the process that set up the job in the first place. Some vendors like VMware do
-                    // not specify this flag when setting up their job object, therefore we can't run our client/server code.
-                    // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
-                    // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
-                    // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
                     if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                     {
                         throw new UnauthorizedAccessException(CreateProcessUsingTokenStatusMessages[CreateProcessUsingTokenStatus.SeTcbPrivilege]);
                     }
                     PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-                    unsafe
+                }
+
+                // Ensure necessary privileges are enabled.
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+
+                // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
+                if (needsHandleInheritance || forceBreakaway)
+                {
+                    // Create the extended startup info with the necessary attributes.
+                    (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
+                    using (hAttributeList)
+                    using (pinnedHandles)
                     {
-                        using SafeProcThreadAttributeListHandle hAttributeList = SafeProcThreadAttributeListHandle.Alloc(1);
-                        EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
-                        _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&extendedFlag, 1)));
-                        bool hAttributeListAddRef = false;
-                        try
-                        {
-                            hAttributeList.DangerousAddRef(ref hAttributeListAddRef);
-                            STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
-                            startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
-                            startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
-                            _ = AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, inheritHandles || callerUsingHandles, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
-                        }
-                        finally
-                        {
-                            if (hAttributeListAddRef)
-                            {
-                                hAttributeList.DangerousRelease();
-                            }
-                        }
+                        _ = AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
                     }
                 }
                 else if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK)
@@ -745,20 +758,18 @@ namespace PSADT.ProcessManagement
                     // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
                     // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
                     // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
                     if (TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid)
                     {
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                     }
-                    _ = AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, inheritHandles || callerUsingHandles, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                    _ = AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                 }
                 else
                 {
                     throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
                 }
             }
-            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK && !callerUsingHandles)
+            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK && !needsHandleInheritance)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
                 _ = AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
@@ -775,6 +786,98 @@ namespace PSADT.ProcessManagement
                     exceptionMessage += $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}";
                 }
                 throw new InvalidOperationException(exceptionMessage);
+            }
+        }
+
+        /// <summary>
+        /// Creates a STARTUPINFOEX structure with the specified process thread attributes.
+        /// </summary>
+        /// <remarks>This method allocates and initializes a STARTUPINFOEX structure with the specified
+        /// attributes. The attribute list can include handle inheritance lists and extended process creation flags.
+        /// The caller is responsible for disposing of the returned attribute list handle.</remarks>
+        /// <param name="startupInfo">The base STARTUPINFOW structure to extend.</param>
+        /// <param name="handlesToInherit">An optional array of handles that the child process should inherit.</param>
+        /// <param name="forceBreakaway">If true, adds the EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY attribute.</param>
+        /// <param name="pinnedHandles">When this method returns, contains the pinned GC handle for the handles array, or null if no handles were specified.</param>
+        /// <returns>A tuple containing the STARTUPINFOEXW structure and the SafeProcThreadAttributeListHandle.</returns>
+        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, ReadOnlyCollection<IntPtr>? handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
+        {
+            // Calculate the number of attributes needed.
+            bool hasHandleInheritance = handlesToInherit?.Count > 0;
+            uint attributeCount = 0;
+            if (hasHandleInheritance)
+            {
+                attributeCount++;
+            }
+            if (forceBreakaway)
+            {
+                attributeCount++;
+            }
+
+            // Validate that at least one attribute is specified.
+            if (attributeCount == 0)
+            {
+                throw new ArgumentException("At least one attribute must be specified.");
+            }
+
+            // Allocate the attribute list.
+            SafeProcThreadAttributeListHandle hAttributeList = SafeProcThreadAttributeListHandle.Alloc(attributeCount);
+            try
+            {
+                // Add handle list attribute if handles are specified.
+                if (hasHandleInheritance)
+                {
+                    pinnedHandles = SafePinnedGCHandle.Alloc([.. handlesToInherit!]);
+                    bool pinnedHandlesAddRef = false;
+                    try
+                    {
+                        // The handle list needs to be passed as a pointer to an array of handles.
+                        pinnedHandles.DangerousAddRef(ref pinnedHandlesAddRef);
+                        IntPtr handlesPtr = pinnedHandles.DangerousGetHandle();
+                        int handleListSize = handlesToInherit.Count * IntPtr.Size;
+                        unsafe
+                        {
+                            _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_HANDLE_LIST, new ReadOnlySpan<byte>((void*)handlesPtr, handleListSize));
+                        }
+                    }
+                    catch
+                    {
+                        pinnedHandles.Dispose();
+                        throw;
+                    }
+                    finally
+                    {
+                        if (pinnedHandlesAddRef)
+                        {
+                            pinnedHandles.DangerousRelease();
+                        }
+                    }
+                }
+                else
+                {
+                    pinnedHandles = null;
+                }
+
+                // Add extended flags attribute if force breakaway is requested.
+                if (forceBreakaway)
+                {
+                    unsafe
+                    {
+                        EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
+                        _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&extendedFlag, 1)));
+                    }
+                }
+
+                // Create the STARTUPINFOEXW structure.
+                STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
+                startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
+                startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
+                return (startupInfoEx, hAttributeList);
+            }
+            catch
+            {
+                hAttributeList.Dispose();
+                throw;
             }
         }
 

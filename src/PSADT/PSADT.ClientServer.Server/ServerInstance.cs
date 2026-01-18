@@ -15,6 +15,7 @@ using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
+using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Logging;
@@ -66,17 +67,26 @@ namespace PSADT.ClientServer
         public void Open()
         {
             // Start the server to listen for incoming connections and process data.
+            bool outputServerClientSafePipeHandleAddRef = false;
+            bool inputServerClientSafePipeHandleAddRef = false;
+            bool logServerClientSafePipeHandleAddRef = false;
             try
             {
+                _outputServer.ClientSafePipeHandle.DangerousAddRef(ref outputServerClientSafePipeHandleAddRef);
+                _inputServer.ClientSafePipeHandle.DangerousAddRef(ref inputServerClientSafePipeHandleAddRef);
+                _logServer.ClientSafePipeHandle.DangerousAddRef(ref logServerClientSafePipeHandleAddRef);
+                string outputServerClientSafePipeHandle = _outputServer.GetClientHandleAsString();
+                string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
+                string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
                 _clientProcess = ProcessManager.LaunchAsync(new(
                     _assemblyLocation,
-                    ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
+                    ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
                     Environment.SystemDirectory,
                     RunAsActiveUser,
                     UseLinkedAdminToken,
                     UseHighestAvailableToken,
                     denyUserTermination: true,
-                    inheritHandles: true,
+                    handlesToInherit: [NumericalUtilities.ParseIntPtr(outputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(inputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(logServerClientSafePipeHandle)],
                     createNoWindow: true,
                     waitForChildProcesses: true,
                     killChildProcessesWithParent: true,
@@ -87,8 +97,20 @@ namespace PSADT.ClientServer
             }
             finally
             {
+                if (outputServerClientSafePipeHandleAddRef)
+                {
+                    _outputServer.ClientSafePipeHandle.DangerousRelease();
+                }
                 _outputServer.DisposeLocalCopyOfClientHandle();
+                if (inputServerClientSafePipeHandleAddRef)
+                {
+                    _inputServer.ClientSafePipeHandle.DangerousRelease();
+                }
                 _inputServer.DisposeLocalCopyOfClientHandle();
+                if (logServerClientSafePipeHandleAddRef)
+                {
+                    _logServer.ClientSafePipeHandle.DangerousRelease();
+                }
                 _logServer.DisposeLocalCopyOfClientHandle();
             }
 
