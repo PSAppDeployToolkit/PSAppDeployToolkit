@@ -203,76 +203,6 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Converts an array of command-line arguments into a read-only dictionary of key-value pairs.
-        /// </summary>
-        /// <remarks>Each key in the input must start with a hyphen ('-'), and its value must immediately
-        /// follow as a separate argument. If a key is not followed by a valid value (e.g., null, empty, or another
-        /// key-like argument), the method writes an error message to the standard error stream and terminates the
-        /// application with an exit code indicating invalid arguments.</remarks>
-        /// <param name="argv">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-') and
-        /// followed by its corresponding value as a separate argument.</param>
-        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
-        /// arguments.</returns>
-        private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
-        {
-            // Loop through arguments and match argument names to their values.
-            Dictionary<string, string> arguments = [];
-            for (int i = 0; i < argv.Length; i++)
-            {
-                if (!argv[i].StartsWith("-"))
-                {
-                    continue;
-                }
-                string key = argv[i].Substring(1).Trim();
-                string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
-                if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
-                {
-                    throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
-                }
-                arguments.Add(key, value);
-            }
-
-            // Check whether an ArgumentsDictionary was provided.
-            if (arguments.TryGetValue("ArgumentsDictionary", out string? argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
-            {
-                if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
-                {
-                    // Provided value is a registry key path.
-                    int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
-                    string valueName = argvDictValue.Substring(lastBackslashIndex + 1);
-                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex), true);
-                    if (registryKey.GetValue(valueName, null) is not string argvDictContent)
-                    {
-                        throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
-                    }
-                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
-                    {
-                        registryKey.DeleteValue(valueName);
-                    }
-                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
-                }
-                else if (File.Exists(argvDictValue))
-                {
-                    // Provided value is a file path.
-                    string argvDictContent = File.ReadAllText(argvDictValue);
-                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
-                    {
-                        File.Delete(argvDictValue);
-                    }
-                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
-                }
-                else
-                {
-                    // Assume anything else is a literal Base64-encoded string.
-                    arguments = DeserializeString<Dictionary<string, string>>(argvDictValue);
-                }
-            }
-
-            // This data should never change once read, so return read-only.
-            return new(arguments);
-        }
-
-        /// <summary>
         /// Enters client-server mode by establishing communication through input and output pipes.
         /// </summary>
         /// <remarks>This method initializes anonymous pipe clients for input and output communication 
@@ -733,6 +663,76 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments)))),
                 DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
             };
+        }
+
+        /// <summary>
+        /// Converts an array of command-line arguments into a read-only dictionary of key-value pairs.
+        /// </summary>
+        /// <remarks>Each key in the input must start with a hyphen ('-'), and its value must immediately
+        /// follow as a separate argument. If a key is not followed by a valid value (e.g., null, empty, or another
+        /// key-like argument), the method writes an error message to the standard error stream and terminates the
+        /// application with an exit code indicating invalid arguments.</remarks>
+        /// <param name="argv">An array of strings representing command-line arguments. Each key must be prefixed with a hyphen ('-') and
+        /// followed by its corresponding value as a separate argument.</param>
+        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
+        /// arguments.</returns>
+        private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
+        {
+            // Loop through arguments and match argument names to their values.
+            Dictionary<string, string> arguments = [];
+            for (int i = 0; i < argv.Length; i++)
+            {
+                if (!argv[i].StartsWith("-"))
+                {
+                    continue;
+                }
+                string key = argv[i].Substring(1).Trim();
+                string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
+                if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
+                {
+                    throw new ClientException($"The argument [{argv[i]}] has an invalid value.", ClientExitCode.InvalidArguments);
+                }
+                arguments.Add(key, value);
+            }
+
+            // Check whether an ArgumentsDictionary was provided.
+            if (arguments.TryGetValue("ArgumentsDictionary", out string? argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
+            {
+                if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
+                {
+                    // Provided value is a registry key path.
+                    int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
+                    string valueName = argvDictValue.Substring(lastBackslashIndex + 1);
+                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex), true);
+                    if (registryKey.GetValue(valueName, null) is not string argvDictContent)
+                    {
+                        throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
+                    }
+                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
+                    {
+                        registryKey.DeleteValue(valueName);
+                    }
+                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
+                }
+                else if (File.Exists(argvDictValue))
+                {
+                    // Provided value is a file path.
+                    string argvDictContent = File.ReadAllText(argvDictValue);
+                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
+                    {
+                        File.Delete(argvDictValue);
+                    }
+                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
+                }
+                else
+                {
+                    // Assume anything else is a literal Base64-encoded string.
+                    arguments = DeserializeString<Dictionary<string, string>>(argvDictValue);
+                }
+            }
+
+            // This data should never change once read, so return read-only.
+            return new(arguments);
         }
 
         /// <summary>
