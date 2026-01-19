@@ -1,6 +1,6 @@
-﻿using PSAppDeployToolkit.Logging;
+﻿using System;
+using PSAppDeployToolkit.Logging;
 using Newtonsoft.Json;
-using System;
 
 namespace PSADT.ClientServer.Payloads
 {

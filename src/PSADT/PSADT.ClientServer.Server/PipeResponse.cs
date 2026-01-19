@@ -51,7 +51,7 @@ namespace PSADT.ClientServer
         /// <returns>A new <see cref="PipeResponse"/> instance indicating success.</returns>
         internal static PipeResponse Ok<T>(T result)
         {
-            return new PipeResponse(result);
+            return new(result);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace PSADT.ClientServer
         /// <returns>A new <see cref="PipeResponse"/> instance indicating success.</returns>
         internal static PipeResponse Ok()
         {
-            return new PipeResponse();
+            return new();
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace PSADT.ClientServer
         /// <returns>A new <see cref="PipeResponse"/> instance indicating failure.</returns>
         internal static PipeResponse Fail(Exception error)
         {
-            return new PipeResponse(null, error);
+            return new(null, error);
         }
     }
 }
