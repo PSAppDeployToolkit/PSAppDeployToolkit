@@ -87,7 +87,7 @@ namespace PSADT.ProcessManagement
             {
                 _ = Kernel32.SetInformationJobObject(job, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
                 {
-                    BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION
+                    BasicLimitInformation = new()
                     {
                         LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
                     }
@@ -245,9 +245,9 @@ namespace PSADT.ProcessManagement
                 // Build the command line for the process.
                 OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out string? arguments, out string? workingDirectory, out Span<char> commandSpan);
                 commandLine = commandSpan.ToString().TrimRemoveNull();
-                process = new Process
+                process = new()
                 {
-                    StartInfo = new ProcessStartInfo
+                    StartInfo = new()
                     {
                         FileName = filePath,
                         Arguments = arguments,
@@ -858,7 +858,7 @@ namespace PSADT.ProcessManagement
                         int handleListSize = handlesToInherit.Count * IntPtr.Size;
                         unsafe
                         {
-                            _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_HANDLE_LIST, new ReadOnlySpan<byte>((void*)handlesPtr, handleListSize));
+                            _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_HANDLE_LIST, new((void*)handlesPtr, handleListSize));
                         }
                     }
                     catch
