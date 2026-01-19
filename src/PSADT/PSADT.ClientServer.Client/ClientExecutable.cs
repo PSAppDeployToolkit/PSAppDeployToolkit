@@ -617,7 +617,7 @@ namespace PSADT.ClientServer
                 ProcessHandle? handle;
                 try
                 {
-                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Path.GetDirectoryName(filePath)));
+                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory));
                 }
                 finally
                 {

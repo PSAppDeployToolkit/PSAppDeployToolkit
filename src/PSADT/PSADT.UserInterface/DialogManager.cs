@@ -384,6 +384,11 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Specifies the registry key name used to store the block execution command.
+        /// </summary>
+        public const string BlockExecutionRegistryKeyName = "BlockExecutionCommand";
+
+        /// <summary>
         /// Gets the text for the button used to block execution in a dialog.
         /// </summary>
         public const string BlockExecutionButtonText = "OK";
