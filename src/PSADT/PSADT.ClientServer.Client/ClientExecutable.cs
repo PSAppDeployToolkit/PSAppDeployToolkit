@@ -531,7 +531,7 @@ namespace PSADT.ClientServer
                                         case PipeCommand.GetEnvironmentVariable:
                                             {
                                                 EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
-                                                WriteSuccess(Environment.GetEnvironmentVariable(payload.Name, EnvironmentVariableTarget.User));
+                                                WriteSuccess(Environment.GetEnvironmentVariable(payload.Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
                                                 break;
                                             }
 
