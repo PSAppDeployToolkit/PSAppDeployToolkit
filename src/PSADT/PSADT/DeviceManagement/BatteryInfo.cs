@@ -12,7 +12,7 @@ namespace PSADT.DeviceManagement
     /// system-level information about the device's power and battery state. <para> Use the <see cref="Get"/> method to
     /// obtain an instance of <see cref="BatteryInfo"/> populated with the current battery and power-related data.
     /// </para></remarks>
-    public sealed class BatteryInfo
+    public sealed record BatteryInfo
     {
         /// <summary>
         /// Retrieves the current battery information.

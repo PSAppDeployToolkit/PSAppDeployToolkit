@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents the base class for shortcuts, containing common properties.
     /// </summary>
-    public abstract class ShortcutBase
+    public abstract record ShortcutBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutBase"/> class with optional properties.

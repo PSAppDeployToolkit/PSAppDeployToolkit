@@ -9,7 +9,7 @@ namespace PSADT.ClientServer
     /// operations. It extends <see cref="InvalidOperationException"/> to provide additional context for server-related
     /// errors.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
-    internal class ServerException : InvalidOperationException
+    internal sealed class ServerException : InvalidOperationException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerException"/> class with a specified error message.

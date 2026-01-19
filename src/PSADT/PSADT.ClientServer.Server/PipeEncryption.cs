@@ -17,7 +17,7 @@ namespace PSADT.ClientServer
     /// must complete the key exchange before encryption or decryption operations can be performed. This class is not
     /// thread-safe; callers should ensure appropriate synchronization if used concurrently. Dispose the instance when
     /// finished to securely erase sensitive key material.</remarks>
-    public sealed class PipeEncryption : IDisposable
+    public sealed record PipeEncryption : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PipeEncryption"/> class with a new ECDH key pair.
