@@ -18,6 +18,7 @@ using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
+using PSAppDeployToolkit.Logging;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
@@ -121,11 +122,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
+            _logAction = state.LogAction;
             UpdateRunningProcesses();
-            if (state.LogAction is not null)
-            {
-                _logAction = state.LogAction;
-            }
             UpdateDeferralValues();
 
             // Set the dialog result to a default value.
@@ -225,7 +223,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
-                _logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
+                _logAction.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info);
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 if (!_hideCloseButton)
@@ -243,7 +241,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else
             {
-                _logAction?.Invoke("Previously detected running processes are no longer running.");
+                _logAction.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
@@ -430,11 +428,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly bool _hideCloseButton;
 
         /// <summary>
-        /// Represents the delegate used for logging operations.
+        /// Represents the delegate used for logging operations with severity.
         /// </summary>
-        /// <remarks>This delegate is invoked to write log messages. It may be null if
-        /// logging is disabled or not configured.</remarks>
-        private readonly Action<string>? _logAction;
+        /// <remarks>This delegate is invoked to write log messages with optional severity.</remarks>
+        private readonly Action<string, LogSeverity> _logAction;
 
         /// <summary>
         /// App/process icon cache for improved performance

@@ -9,6 +9,7 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
+using PSAppDeployToolkit.Logging;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -159,11 +160,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelCountdown);
                 }
 
-                // Set up the log action if we have one.
-                if (state.LogAction is not null)
-                {
-                    logAction = state.LogAction;
-                }
+                // Set up the log action.
+                logAction = state.LogAction;
             }
 
             // Resume the dialog now that we've applied any options.
@@ -319,7 +317,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (e.ProcessesToClose.Count > 0)
                 {
                     string[] runningApps = [.. e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
-                    logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
+                    logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...", LogSeverity.Info);
                     toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
                     richTextBoxCloseProcesses.Lines = runningApps;
                     labelCountdownMessage.Text = countdownClose;
@@ -334,7 +332,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    logAction?.Invoke("Previously detected running processes are no longer running.");
+                    logAction?.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
                     toolTipButtonContinue.RemoveAll();
                     labelCountdownMessage.Text = countdownDefer;
                     flowLayoutPanelCloseApps.Visible = false;
@@ -401,10 +399,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private readonly bool hideCloseButton;
 
         /// <summary>
-        /// Represents the delegate used for logging operations.
+        /// Represents the delegate used for logging operations with severity.
         /// </summary>
-        /// <remarks>This delegate is invoked to write log messages. If <c>null</c>, logging operations
-        /// are disabled.</remarks>
-        private readonly Action<string>? logAction;
+        /// <remarks>This delegate is invoked to write log messages with optional severity.</remarks>
+        private readonly Action<string, LogSeverity>? logAction;
     }
 }

@@ -86,11 +86,7 @@ function Get-ADTEnvironmentVariable
                             return
                         }
                         Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$($runAsActiveUser.NTAccount)]"))."
-                        if (($result = Invoke-ADTClientServerOperation -GetEnvironmentVariable -User $runAsActiveUser -Variable $Variable) -eq [PSADT.ClientServer.CommonUtilities]::ArgumentSeparator)
-                        {
-                            return
-                        }
-                        return $result
+                        return Invoke-ADTClientServerOperation -GetEnvironmentVariable -User $runAsActiveUser -Variable $Variable
                     }
                     Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$Target]"))."
                     return [System.Environment]::GetEnvironmentVariable($Variable, $Target)

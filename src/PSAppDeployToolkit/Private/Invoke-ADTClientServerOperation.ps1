@@ -401,9 +401,20 @@ function Private:Invoke-ADTClientServerOperation
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
+        if ($return.StdOut.Count -gt 1)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The client/server process returned an invalid result.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'ClientServerResultInvalid'
+                TargetObject = $return
+                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
 
         # Deserialise the result for returning to the caller.
-        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut)
+        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0])
     }
 
     # Test that the received result is valid and expected.
@@ -420,7 +431,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable)$')
+    if (($result -ne [PSADT.ClientServer.ServerInstance]::SuccessSentinel) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable)$'))
     {
         return $result
     }
