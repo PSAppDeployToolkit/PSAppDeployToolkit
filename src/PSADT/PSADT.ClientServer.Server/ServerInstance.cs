@@ -530,9 +530,9 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="variable"></param>
         /// <returns></returns>
-        public string? GetEnvironmentVariable(string variable)
+        public string GetEnvironmentVariable(string variable)
         {
-            return (string?)Invoke(PipeCommand.GetEnvironmentVariable, new EnvironmentVariablePayload(variable));
+            return (string)Invoke(PipeCommand.GetEnvironmentVariable, new EnvironmentVariablePayload(variable))!;
         }
 
         /// <summary>
