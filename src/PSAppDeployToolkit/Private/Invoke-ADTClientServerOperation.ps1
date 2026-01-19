@@ -431,7 +431,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (($result -ne [PSADT.ClientServer.ServerInstance]::SuccessSentinel) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable)$'))
+    if ((![System.String]::IsNullOrWhiteSpace(($result | Out-String))) -and ($result -ne [PSADT.ClientServer.ServerInstance]::SuccessSentinel) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable)$'))
     {
         return $result
     }
