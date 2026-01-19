@@ -112,27 +112,59 @@ namespace PSADT.ClientServer
                     }
                     else if (arg is "/SendKeys" or "/sk")
                     {
-                        Console.WriteLine(SendKeys(ArgvToDictionary(argv)));
+                        SendKeysOptions options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)));
+                        HWND hwnd = (HWND)options.WindowHandle;
+                        WindowTools.BringWindowToFront(hwnd);
+                        if (!User32.IsWindowEnabled(hwnd))
+                        {
+                            throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+                        }
+                        System.Windows.Forms.SendKeys.SendWait(options.Keys);
+                        Console.WriteLine(SerializeObject(true));
                         return (int)ClientExitCode.Success;
                     }
                     else if (arg is "/GetEnvironmentVariable" or "/gev")
                     {
-                        Console.WriteLine(GetEnvironmentVariable(ArgvToDictionary(argv)));
+                        if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+                        {
+                            throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+                        }
+                        Console.WriteLine(SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
                         return (int)ClientExitCode.Success;
                     }
                     else if (arg is "/SetEnvironmentVariable" or "/sev")
                     {
-                        Console.WriteLine(SetEnvironmentVariable(ArgvToDictionary(argv)));
+                        if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+                        {
+                            throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+                        }
+                        if (!arguments.TryGetValue("Value", out string? value) || string.IsNullOrWhiteSpace(value))
+                        {
+                            throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
+                        }
+                        Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
+                        Console.WriteLine(SerializeObject(true));
                         return (int)ClientExitCode.Success;
                     }
                     else if (arg is "/RemoveEnvironmentVariable" or "/rev")
                     {
-                        Console.WriteLine(RemoveEnvironmentVariable(ArgvToDictionary(argv)));
+                        if (!ArgvToDictionary(argv).TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+                        {
+                            throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+                        }
+                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
+                        Console.WriteLine(SerializeObject(true));
                         return (int)ClientExitCode.Success;
                     }
                     else if (arg is "/SilentRestart" or "/sr")
                     {
-                        Console.WriteLine(SilentRestart(ArgvToDictionary(argv)));
+                        if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
+                        {
+                            throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
+                        }
+                        Thread.Sleep(delayValue * 1000);
+                        DeviceUtilities.RestartComputer();
+                        Console.WriteLine(SerializeObject(true));
                         return (int)ClientExitCode.Success;
                     }
                     else if (arg is "/GetLastInputTime" or "/glit")
@@ -704,104 +736,6 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Sends a sequence of keystrokes to the specified window.
-        /// </summary>
-        /// <remarks>This method brings the specified window to the foreground and ensures it is enabled 
-        /// before sending the keystrokes. If the window is disabled, such as when a modal dialog is displayed, an <see
-        /// cref="InvalidOperationException"/> is thrown.</remarks>
-        /// <param name="arguments">A read-only dictionary containing the arguments required for the operation. The dictionary must include a
-        /// serialized representation of the options,  which specify the target window handle and the keys to send.</param>
-        /// <returns><see langword="true"/> if the operation completes successfully.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the target window is disabled, preventing the keystrokes from being sent.</exception>
-        private static string SendKeys(IReadOnlyDictionary<string, string> arguments)
-        {
-            // Deserialise the received options.
-            SendKeysOptions options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(arguments));
-
-            // Bring the window to the front and make sure it's enabled.
-            HWND hwnd = (HWND)options.WindowHandle;
-            WindowTools.BringWindowToFront(hwnd);
-            if (!User32.IsWindowEnabled(hwnd))
-            {
-                throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
-            }
-
-            // Send the keys and write back that we were successful.
-            System.Windows.Forms.SendKeys.SendWait(options.Keys);
-            return SerializeObject(true);
-        }
-
-        /// <summary>
-        /// Retrieves the value of an environment variable specified by the "Variable" key in the provided arguments dictionary.
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ClientException"></exception>
-        private static string GetEnvironmentVariable(ReadOnlyDictionary<string, string> arguments)
-        {
-            return !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable)
-                ? throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments)
-                : SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
-        }
-
-        /// <summary>
-        /// Sets an environment variable specified by the "Variable" and "Value" keys in the provided arguments dictionary.
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ClientException"></exception>
-        private static string SetEnvironmentVariable(ReadOnlyDictionary<string, string> arguments)
-        {
-            if (!arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
-            {
-                throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
-            }
-            if (!arguments.TryGetValue("Value", out string? value) || string.IsNullOrWhiteSpace(value))
-            {
-                throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
-            }
-            Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
-            return SerializeObject(true);
-        }
-
-        /// <summary>
-        /// Removes an environment variable specified by the "Variable" key in the provided arguments dictionary.
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ClientException"></exception>
-        private static string RemoveEnvironmentVariable(ReadOnlyDictionary<string, string> arguments)
-        {
-            if (!arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
-            {
-                throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
-            }
-            Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
-            return SerializeObject(true);
-        }
-
-        /// <summary>
-        /// Restarts the computer silently after a specified delay.
-        /// </summary>
-        /// <remarks>This method pauses execution for the specified delay duration before initiating the
-        /// restart. Ensure that the <c>"Delay"</c> argument is provided and valid to avoid exceptions.</remarks>
-        /// <param name="arguments">A read-only dictionary containing the arguments for the restart operation. The dictionary must include a
-        /// key named <c>"Delay"</c> with a non-empty, valid integer value representing the delay in seconds before the
-        /// restart.</param>
-        /// <returns><see langword="true"/> if the restart operation was successfully initiated.</returns>
-        /// <exception cref="ClientException">Thrown if the <c>"Delay"</c> argument is missing, empty, or invalid.</exception>
-        private static string SilentRestart(ReadOnlyDictionary<string, string> arguments)
-        {
-            if (!arguments.TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
-            {
-                throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
-            }
-            Thread.Sleep(delayValue * 1000);
-            DeviceUtilities.RestartComputer();
-            return SerializeObject(true);
-        }
-
-        /// <summary>
         /// Retrieves the value of the "Options" key from the provided arguments dictionary.
         /// </summary>
         /// <remarks>This method ensures that the "Options" key exists and its value is valid. If the key
@@ -811,7 +745,7 @@ namespace PSADT.ClientServer
         /// <returns>The value associated with the "Options" key in the dictionary.</returns>
         /// <exception cref="ClientException">Thrown if the "Options" key is missing, null, or contains only whitespace.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        private static string GetOptionsFromArguments(IReadOnlyDictionary<string, string> arguments)
+        private static string GetOptionsFromArguments(ReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we have options and they're not null/invalid.
             if (!arguments.TryGetValue("Options", out string? options))
