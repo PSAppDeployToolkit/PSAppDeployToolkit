@@ -33,7 +33,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// The required data for displaying an app to close on the CloseAppsDialog.
         /// This class is deliberately public as it's required by WPF to be so.
         /// </summary>
-        public sealed class AppToClose
+        public sealed record AppToClose
         {
             /// <summary>
             /// Constructor for the ProcessToClose class.

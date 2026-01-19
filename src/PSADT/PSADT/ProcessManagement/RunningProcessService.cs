@@ -10,8 +10,19 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    internal sealed class RunningProcessService(ReadOnlyCollection<ProcessDefinition> processDefinitions) : IDisposable
+    internal sealed record RunningProcessService : IDisposable
     {
+        /// <summary>
+        /// Initializes a new instance of the RunningProcessService class with the specified process definitions.
+        /// </summary>
+        /// <param name="processDefinitions">A read-only collection of process definitions to be managed by the service. Must contain at least one
+        /// element.</param>
+        /// <exception cref="ArgumentNullException">Thrown if processDefinitions is null or contains no elements.</exception>
+        internal RunningProcessService(ReadOnlyCollection<ProcessDefinition> processDefinitions)
+        {
+            _processDefinitions = processDefinitions?.Count > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+        }
+
         /// <summary>
         /// Starts the polling task to check for running processes.
         /// </summary>
@@ -227,7 +238,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The caller's specified process definitions.
         /// </summary>
-        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions = processDefinitions?.Count > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+        private readonly ReadOnlyCollection<ProcessDefinition> _processDefinitions;
 
         /// <summary>
         /// The interval at which to poll for running processes.

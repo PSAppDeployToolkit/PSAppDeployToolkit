@@ -13,7 +13,7 @@ namespace PSADT.ClientServer
     /// programmatic handling or process termination.</remarks>
     [Serializable]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
-    internal class ClientException : InvalidOperationException
+    internal sealed class ClientException : InvalidOperationException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientException"/> class with a specified error message
@@ -50,7 +50,7 @@ namespace PSADT.ClientServer
 #if NET8_0_OR_GREATER
         [Obsolete(DiagnosticId = "SYSLIB0051")]
 #endif
-        protected ClientException(SerializationInfo info, StreamingContext context) : base(info, context)
+        private ClientException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
