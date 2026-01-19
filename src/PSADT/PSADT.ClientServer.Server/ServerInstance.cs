@@ -570,16 +570,16 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Retrieves the result of the client process task.
         /// </summary>
-        /// <remarks>This method blocks the current thread if <paramref name="iKnowWhatImDoing"/> is <see
+        /// <remarks>This method blocks the current thread if <paramref name="confirm"/> is <see
         /// langword="true"/>. Use with caution, as blocking the thread can lead to deadlocks or performance issues in
         /// asynchronous environments.</remarks>
-        /// <param name="iKnowWhatImDoing">A value indicating whether the caller understands the risks of blocking the current thread. If <see
+        /// <param name="confirm">A value indicating whether the caller understands the risks of blocking the current thread. If <see
         /// langword="true"/>, the method will synchronously wait for the client process task to complete.</param>
-        /// <returns>The result of the client process task if <paramref name="iKnowWhatImDoing"/> is <see langword="true"/>; 
+        /// <returns>The result of the client process task if <paramref name="confirm"/> is <see langword="true"/>; 
         /// otherwise, <see langword="null"/>.</returns>
-        public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing)
+        public ProcessResult GetClientProcessResult(bool confirm)
         {
-            return iKnowWhatImDoing ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
+            return confirm ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
         }
 
         /// <summary>
