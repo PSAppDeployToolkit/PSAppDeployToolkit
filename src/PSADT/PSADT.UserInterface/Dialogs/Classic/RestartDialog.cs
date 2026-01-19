@@ -170,7 +170,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 remaining = TimeSpan.Zero;
             }
-            Invoke(() => labelCountdown.Text = FormatTime(remaining));
+            _ = Invoke(() => labelCountdown.Text = FormatTime(remaining));
             if (remaining <= TimeSpan.Zero)
             {
                 Invoke(buttonRestartNow.PerformClick);
