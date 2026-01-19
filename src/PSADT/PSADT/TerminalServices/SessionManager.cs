@@ -180,7 +180,7 @@ namespace PSADT.TerminalServices
         /// Retrieves the security identifier (SID) associated with a specified session and user account.
         /// </summary>
         /// <remarks>This method attempts multiple approaches to retrieve the SID, including translating
-        /// the user account to a SID,  querying the user's token if the necessary privileges are enabled, and
+        /// the user account to a SID, querying the user's token if the necessary privileges are enabled, and
         /// retrieving group policy information. If none of these methods succeed, the method returns <see
         /// langword="null"/>.</remarks>
         /// <param name="sessionid">The ID of the session for which the SID is being retrieved.</param>

@@ -559,7 +559,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
         /// </summary>
-        /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task,  or <see
+        /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see
         /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public AggregateException? GetLogWriterException()
@@ -691,14 +691,8 @@ namespace PSADT.ClientServer
                 throw new InvalidDataException("An error occurred while reading from the input stream.", ex);
             }
 
-            // If the response indicates failure, rethrow the error.
-            if (response.Error is not null)
-            {
-                throw new ServerException("The client process returned an exception.", response.Error);
-            }
-
-            // Return the result to the caller.
-            return response.Result;
+            // If the response indicates failure, rethrow the error, otherwise just return the result.
+            return response.Error is null ? response.Result : throw new ServerException("The client process returned an exception.", response.Error);
         }
 
         /// <summary>

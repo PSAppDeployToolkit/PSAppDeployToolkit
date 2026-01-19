@@ -7,7 +7,7 @@ namespace PSADT.LibraryInterfaces
     /// Specifies the different commands that can be used to show a window in a Windows environment.
     /// </summary>
     /// <remarks>This enumeration provides a set of constants that define how a window should be shown. These
-    /// commands are typically used with functions that manipulate window visibility and state,  such as showing,
+    /// commands are typically used with functions that manipulate window visibility and state, such as showing,
     /// hiding, minimizing, or maximizing a window. Each command corresponds to a specific action or state change for a
     /// window.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
