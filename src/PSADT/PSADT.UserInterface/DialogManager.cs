@@ -14,6 +14,7 @@ using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
 using PSADT.Utilities;
+using PSAppDeployToolkit.Logging;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -42,32 +43,28 @@ namespace PSADT.UserInterface
                 stopProcessService = true;
             }
 
-            // Perform logging if we have a log action.
-            if (state.LogAction is not null)
+            // Announce whether there's apps to close.
+            IReadOnlyList<ProcessToClose>? procsRunning = state.RunningProcessService?.ProcessesToClose;
+            if (procsRunning?.Count > 0)
             {
-                // Announce whether there's apps to close.
-                IReadOnlyList<ProcessToClose>? procsRunning = state.RunningProcessService?.ProcessesToClose;
+                state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...", LogSeverity.Info);
+            }
+
+            // Announce the current countdown information.
+            if (options.CountdownDuration is not null)
+            {
+                TimeSpan? elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
+                if (elapsed < TimeSpan.Zero)
+                {
+                    elapsed = TimeSpan.Zero;
+                }
                 if (procsRunning?.Count > 0)
                 {
-                    state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...");
+                    state.LogAction($"Close applications countdown has [{elapsed}] seconds remaining.", LogSeverity.Info);
                 }
-
-                // Announce the current countdown information.
-                if (options.CountdownDuration is not null)
+                else
                 {
-                    TimeSpan? elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
-                    if (elapsed < TimeSpan.Zero)
-                    {
-                        elapsed = TimeSpan.Zero;
-                    }
-                    if (procsRunning?.Count > 0)
-                    {
-                        state.LogAction($"Close applications countdown has [{elapsed}] seconds remaining.");
-                    }
-                    else
-                    {
-                        state.LogAction($"Countdown has [{elapsed}] seconds remaining.");
-                    }
+                    state.LogAction($"Countdown has [{elapsed}] seconds remaining.", LogSeverity.Info);
                 }
             }
 
@@ -75,19 +72,19 @@ namespace PSADT.UserInterface
             CloseAppsDialogResult result = ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state);
 
             // Perform some result logging before returning.
-            if ((state.LogAction is not null) && (options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
+            if ((options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
             {
                 if (result == CloseAppsDialogResult.Close)
                 {
-                    state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).");
+                    state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).", LogSeverity.Info);
                 }
                 else if (result == CloseAppsDialogResult.Defer)
                 {
-                    state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.");
+                    state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.", LogSeverity.Info);
                 }
                 else if (result == CloseAppsDialogResult.Continue)
                 {
-                    state.LogAction("Countdown timer has elapsed and no processes running. Force continue.");
+                    state.LogAction("Countdown timer has elapsed and no processes running. Force continue.", LogSeverity.Info);
                 }
             }
 
