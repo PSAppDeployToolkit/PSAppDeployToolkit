@@ -264,13 +264,13 @@ namespace PSADT.ClientServer
                 using (BinaryWriter outputWriter = new(outputPipeClient, ServerInstance.DefaultEncoding))
                 using (BinaryReader inputReader = new(inputPipeClient, ServerInstance.DefaultEncoding))
                 using (BinaryWriter logWriter = new(logPipeClient, ServerInstance.DefaultEncoding))
-                using (PipeEncryption encryption = new())
+                using (PipeEncryption ioEncryption = new())
                 using (PipeEncryption logEncryption = new())
                 {
                     // Perform ECDH key exchange for encrypted communication.
                     try
                     {
-                        encryption.PerformClientKeyExchange(outputWriter, inputReader);
+                        ioEncryption.PerformClientKeyExchange(outputWriter, inputReader);
                         logEncryption.PerformClientKeyExchange(outputWriter, inputReader);
                     }
                     catch (Exception ex)
@@ -281,11 +281,11 @@ namespace PSADT.ClientServer
                     // Set up writer helper methods.
                     void WriteSuccess<T>(T result)
                     {
-                        encryption.WriteEncrypted(outputWriter, DataSerialization.SerializeToString(PipeResponse.Ok(result)));
+                        ioEncryption.WriteEncrypted(outputWriter, DataSerialization.SerializeToString(PipeResponse.Ok(result)));
                     }
                     void WriteError(Exception ex)
                     {
-                        encryption.WriteEncrypted(outputWriter, DataSerialization.SerializeToString(PipeResponse.Fail(ex)));
+                        ioEncryption.WriteEncrypted(outputWriter, DataSerialization.SerializeToString(PipeResponse.Fail(ex)));
                     }
                     void WriteLog(string message, LogSeverity severity, string source)
                     {
@@ -301,7 +301,7 @@ namespace PSADT.ClientServer
                             try
                             {
                                 // Read and decrypt the request, then deserialize the DTO.
-                                PipeRequest request = DeserializeString<PipeRequest>(encryption.ReadEncrypted(inputReader));
+                                PipeRequest request = DeserializeString<PipeRequest>(ioEncryption.ReadEncrypted(inputReader));
 
                                 // Process the command. We never let an exception here kill the pipe.
                                 try

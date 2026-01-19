@@ -50,7 +50,7 @@ namespace PSADT.ClientServer
             _outputWriter = new(_outputServer, DefaultEncoding);
             _inputReader = new(_inputServer, DefaultEncoding);
             _logReader = new(_logServer, DefaultEncoding);
-            _encryption = new();
+            _ioEncryption = new();
             _logEncryption = new();
         }
 
@@ -116,7 +116,7 @@ namespace PSADT.ClientServer
             // Perform ECDH key exchange for encrypted communication.
             try
             {
-                _encryption.PerformServerKeyExchange(_outputWriter, _inputReader);
+                _ioEncryption.PerformServerKeyExchange(_outputWriter, _inputReader);
                 _logEncryption.PerformServerKeyExchange(_outputWriter, _inputReader);
             }
             catch (Exception ex)
@@ -594,7 +594,7 @@ namespace PSADT.ClientServer
                 }
 
                 // Dispose encryption objects.
-                _encryption.Dispose();
+                _ioEncryption.Dispose();
                 _logEncryption.Dispose();
 
                 // Kill all input.
@@ -644,7 +644,7 @@ namespace PSADT.ClientServer
             // Send the encrypted request to the client.
             try
             {
-                _encryption.WriteEncrypted(_outputWriter, DataSerialization.SerializeToString(new PipeRequest(command, payload)));
+                _ioEncryption.WriteEncrypted(_outputWriter, DataSerialization.SerializeToString(new PipeRequest(command, payload)));
             }
             catch (IOException ex)
             {
@@ -655,7 +655,7 @@ namespace PSADT.ClientServer
             PipeResponse response;
             try
             {
-                response = DataSerialization.DeserializeFromString<PipeResponse>(_encryption.ReadEncrypted(_inputReader));
+                response = DataSerialization.DeserializeFromString<PipeResponse>(_ioEncryption.ReadEncrypted(_inputReader));
             }
             catch (EndOfStreamException ex)
             {
@@ -844,7 +844,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
         /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
-        private readonly PipeEncryption _encryption;
+        private readonly PipeEncryption _ioEncryption;
 
         /// <summary>
         /// Provides ECDH-based encryption for the log pipe communication.
