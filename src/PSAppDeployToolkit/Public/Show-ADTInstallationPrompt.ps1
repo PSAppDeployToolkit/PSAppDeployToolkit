@@ -231,6 +231,19 @@ function Show-ADTInstallationPrompt
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
+        # Throw a terminating error if we're trying to retrieve a password without an active session.
+        if (!$SecureInput -and !$adtSession)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new('An active deployment session is required for a secure input dialog.')
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'SecureInputWithoutActiveSession'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please ensure there is an active deployment session and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
