@@ -584,41 +584,42 @@ namespace PSADT.Tests.ProcessManagement
         /// This ensures that ArgumentListToCommandLine followed by CommandLineToArgumentList
         /// preserves the original arguments exactly.
         /// </summary>
-        public static IEnumerable<object[]> SystematicRoundTripTestData()
+        public static TheoryData<string[]> SystematicRoundTripTestData()
         {
-            yield return new object[] { new[] { "a", "b" } };
-            yield return new object[] { new[] { "a b", "c" } };
-            yield return new object[] { new[] { "a\tb", "c" } };
-            yield return new object[] { new[] { "a\"b" } };
-            yield return new object[] { new[] { "a\\b" } };
-            yield return new object[] { new[] { "a\\\\b" } };
-            yield return new object[] { new[] { "a\\\"b" } };
-            yield return new object[] { new[] { "a b", "c d" } };
-            yield return new object[] { new[] { "a\\", "b" } };
-            yield return new object[] { new[] { "a\\\\", "b" } };
-            yield return new object[] { new[] { "a b c" } };
-            yield return new object[] { new[] { "a", "b c" } };
-            yield return new object[] { new[] { "a", "b\tc" } };
-            yield return new object[] { new[] { "a", "b\"c" } };
-            yield return new object[] { new[] { "a", "b\\" } };
-            yield return new object[] { new[] { "a", "b\\\\" } };
-            yield return new object[] { new[] { "a", "b\\c" } };
-            yield return new object[] { new[] { "a", "b\\\\c" } };
-            yield return new object[] { new[] { "a", "b\\\"c" } };
-            yield return new object[] { new[] { "C:\\Program Files\\App\\" } };
-            yield return new object[] { new[] { "C:\\Path\\", "arg with space" } };
-            yield return new object[] { new[] { "argument with \"quotes\"" } };
-            yield return new object[] { new[] { "argument with \"\"escaped quotes\"\"" } };
-            yield return new object[] { new[] { "c:\\Path with spaces\\trailing_backslash\\" } };
-            yield return new object[] { new[] { "program", "arg1", "arg2" } };
-            yield return new object[] { new[] { "complex\"arg", "with\\backslashes", "and spaces" } };
+            return [
+                ["a", "b"],
+                ["a b", "c"],
+                ["a\tb", "c"],
+                ["a\"b"],
+                ["a\\b"],
+                ["a\\\\b"],
+                ["a\\\"b"],
+                ["a b", "c d"],
+                ["a\\", "b"],
+                ["a\\\\", "b"],
+                ["a b c"],
+                ["a", "b c"],
+                ["a", "b\tc"],
+                ["a", "b\"c"],
+                ["a", "b\\"],
+                ["a", "b\\\\"],
+                ["a", "b\\c"],
+                ["a", "b\\\\c"],
+                ["a", "b\\\"c"],
+                ["C:\\Program Files\\App\\"],
+                ["C:\\Path\\", "arg with space"],
+                ["argument with \"quotes\""],
+                ["argument with \"\"escaped quotes\"\""],
+                ["c:\\Path with spaces\\trailing_backslash\\"],
+                ["program", "arg1", "arg2"],
+                ["complex\"arg", "with\\backslashes", "and spaces"]
+            ];
         }
 
         /// <summary>
         /// Tests systematic round-trip conversion using MemberData for comprehensive coverage.
         /// This test ensures that arguments can be converted to command line and back without loss.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1042:The member referenced by the MemberData attribute returns untyped data rows", Justification = "Too hard to change for now.")]
         [Theory]
         [MemberData(nameof(SystematicRoundTripTestData))]
         public void SystematicRoundTrip_ArgumentListToCommandLineAndBack_PreservesArguments(string[] originalArgv)
@@ -964,25 +965,26 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests round-trip scenarios for UNC paths to ensure they are preserved accurately.
         /// </summary>
-        public static IEnumerable<object[]> UncPathRoundTripTestData()
+        public static TheoryData<string[]> UncPathRoundTripTestData()
         {
-            yield return new object[] { new[] { "\\\\server\\share" } };
-            yield return new object[] { new[] { "\\\\server\\share\\file.txt" } };
-            yield return new object[] { new[] { "\\\\server name\\share name" } };
-            yield return new object[] { new[] { "\\\\server\\share with spaces\\file.txt" } };
-            yield return new object[] { new[] { "\\\\server\\share\\" } };
-            yield return new object[] { new[] { "\\\\server\\share\\folder with spaces\\" } };
-            yield return new object[] { new[] { "\\\\server\\share\\file\"name.txt" } };
-            yield return new object[] { new[] { "\\\\server\\share \"with quotes\"\\file.txt" } };
-            yield return new object[] { new[] { "\\\\server\\share\\folder\\", "local-file.txt", "\\\\other-server\\other-share\\target.txt" } };
-            yield return new object[] { new[] { "\\\\domain.com\\dfs-share\\deep\\folder\\structure\\file.extension" } };
+            return [
+                ["\\\\server\\share"],
+                ["\\\\server\\share\\file.txt"],
+                ["\\\\server name\\share name"],
+                ["\\\\server\\share with spaces\\file.txt"],
+                ["\\\\server\\share\\"],
+                ["\\\\server\\share\\folder with spaces\\"],
+                ["\\\\server\\share\\file\"name.txt"],
+                ["\\\\server\\share \"with quotes\"\\file.txt"],
+                ["\\\\server\\share\\folder\\", "local-file.txt", "\\\\other-server\\other-share\\target.txt"],
+                ["\\\\domain.com\\dfs-share\\deep\\folder\\structure\\file.extension"],
+            ];
         }
 
         /// <summary>
         /// Tests UNC path round-trip scenarios to ensure perfect preservation.
         /// These tests verify that UNC paths can be converted to command line and back without any loss.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1042:The member referenced by the MemberData attribute returns untyped data rows", Justification = "Too hard to change for now.")]
         [Theory]
         [MemberData(nameof(UncPathRoundTripTestData))]
         public void UncPaths_RoundTripConversion_PreservesExactArguments(string[] originalArgs)
