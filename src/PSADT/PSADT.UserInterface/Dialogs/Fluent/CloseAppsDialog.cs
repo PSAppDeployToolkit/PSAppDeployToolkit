@@ -122,9 +122,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
-            _logAction = state.LogAction;
             UpdateRunningProcesses();
             UpdateDeferralValues();
+            _logAction = state.LogAction;
 
             // Set the dialog result to a default value.
             DialogResult = CloseAppsDialogResult.Timeout;
@@ -223,7 +223,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
-                _logAction.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info);
+                _logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info);
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 if (!_hideCloseButton)
@@ -241,7 +241,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else
             {
-                _logAction.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
+                _logAction?.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
