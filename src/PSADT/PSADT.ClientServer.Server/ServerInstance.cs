@@ -171,13 +171,31 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("The server instance is not open or has already been closed.");
             }
 
-            // Ensure the client process closes no matter what.
-            bool? closed = null;
+            // Shut down the client if it's running.
+            int exitCode = -1;
             try
             {
-                if (!force && IsRunning && !(closed = (bool)Invoke(PipeCommand.Close)!).Value)
+                if (IsRunning)
                 {
-                    throw new ApplicationException("The opened client process did not properly respond to the close command.");
+                    if (!force)
+                    {
+                        if (!(bool)Invoke(PipeCommand.Close)!)
+                        {
+                            throw new ApplicationException("The opened client process did not properly respond to the close command.");
+                        }
+                        if ((exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode) != 0)
+                        {
+                            throw new ApplicationException($"The client process exited with a non-zero exit code: {exitCode}.");
+                        }
+                    }
+                    else
+                    {
+                        _clientProcessCts.Cancel();
+                    }
+                }
+                else
+                {
+                    exitCode = 0;
                 }
             }
             finally
@@ -203,18 +221,25 @@ namespace PSADT.ClientServer
                     }
                 }
 
-                // Close the client process and wait for it to exit.
-                if (closed is null || !closed.Value)
-                {
-                    _clientProcessCts.Cancel();
-                }
+                // Clean up the client process resources.
                 try
                 {
-                    _ = _clientProcess.Task.GetAwaiter().GetResult();
-                }
-                catch (TaskCanceledException)
-                {
-                    // The client process task was canceled, which is expected when closing the server instance.
+                    // We only need to cancel if we didn't get an exit code already.
+                    if (exitCode == -1)
+                    {
+                        if (!_clientProcessCts.IsCancellationRequested)
+                        {
+                            _clientProcessCts.Cancel();
+                        }
+                        try
+                        {
+                            exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode;
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            // The client process task was canceled, which is expected when closing the server instance.
+                        }
+                    }
                 }
                 finally
                 {
