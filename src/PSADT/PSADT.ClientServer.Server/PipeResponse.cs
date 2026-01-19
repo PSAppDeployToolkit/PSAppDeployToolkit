@@ -55,15 +55,6 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Creates a successful response without result data.
-        /// </summary>
-        /// <returns>A new <see cref="PipeResponse"/> instance indicating success.</returns>
-        internal static PipeResponse Ok()
-        {
-            return new();
-        }
-
-        /// <summary>
         /// Creates a failure response with the specified error.
         /// </summary>
         /// <param name="error">The exception that caused the failure.</param>
