@@ -507,7 +507,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 if (string.IsNullOrWhiteSpace(_logName))
                 {
-                    _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}{(isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log";
+                    _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}{(!isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log";
                 }
                 _logName = invalidChars.Replace(_logName, string.Empty);
                 string logFile = Path.Combine(_logPath, _logName);
