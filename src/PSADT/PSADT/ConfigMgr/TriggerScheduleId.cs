@@ -4,7 +4,7 @@
     /// Represents the identifiers for various scheduled tasks and cycles in a system.
     /// </summary>
     /// <remarks>This enumeration defines unique identifiers for different types of tasks and cycles, such as
-    /// inventory collection,  policy evaluation, software updates, and other system operations. Each identifier
+    /// inventory collection, policy evaluation, software updates, and other system operations. Each identifier
     /// corresponds to a specific scheduled operation that can be triggered within the system.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "The lack of a zero value is correct here.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type here is correct for the represented values.")]

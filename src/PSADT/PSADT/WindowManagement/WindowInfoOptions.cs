@@ -48,7 +48,7 @@ namespace PSADT.WindowManagement
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
         /// </summary>
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
-        /// array is null or empty,  no filtering is applied. This member is intended for internal use and should not be
+        /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
         [JsonProperty]
         public IReadOnlyList<string>? ParentProcessFilter { get; }
