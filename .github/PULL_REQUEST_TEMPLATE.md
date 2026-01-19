@@ -17,7 +17,7 @@ Fixes: <https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/12345>
 
 ## Checklist
 
-- [ ] I am pulling to the **develop** branch
+- [ ] I am pulling to the **main** branch
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
