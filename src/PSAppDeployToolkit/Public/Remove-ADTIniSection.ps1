@@ -13,6 +13,8 @@ function Remove-ADTIniSection
     .DESCRIPTION
         Opens an INI file and removes the specified section.
 
+        Please note that the INI file provided cannot have a byte order mark (BOM) present as the underlying Win32 API cannot process it correctly.
+
     .PARAMETER FilePath
         Path to the INI file.
 
