@@ -42,16 +42,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
                 Environment.SetEnvironmentVariable("PSModulePath", null);
 
-                // Set up a PowerShell initial session state.
+                // Set up a PowerShell environment and populate the ComboBox with our modules.
                 InitialSessionState iss = InitialSessionState.CreateDefault2();
                 iss.ExecutionPolicy = options.ExecutionPolicy;
                 iss.ImportPSModule(options.Modules);
-
-                // Set up a runspace and open it for usage.
-                runspace = RunspaceFactory.CreateRunspace(iss);
-                runspace.Open();
-
-                // Populate the ComboBox with our modules.
+                (runspace = RunspaceFactory.CreateRunspace(iss)).Open();
                 using (PowerShell ps = PowerShell.Create())
                 {
                     ps.Runspace = runspace;
@@ -79,11 +74,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 FormClosed += (sender, e) =>
                 {
                     // Ensure the runspace is closed when the form is closed.
-                    if (runspace is not null && runspace.RunspaceStateInfo.State == RunspaceState.Opened)
+                    if (runspace?.RunspaceStateInfo.State == RunspaceState.Opened)
                     {
                         runspace.Close();
                         runspace.Dispose();
-                        runspace = null!;
                     }
                 };
 
@@ -101,6 +95,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <remarks>A runspace is a container for the execution environment of PowerShell commands. This
         /// field is initialized before use and should not be null during runtime.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
-        private Runspace runspace = null!;
+        private readonly Runspace runspace = null!;
     }
 }
