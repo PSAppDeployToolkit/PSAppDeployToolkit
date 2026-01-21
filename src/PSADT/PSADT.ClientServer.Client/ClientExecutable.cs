@@ -68,23 +68,13 @@ namespace PSADT.ClientServer
             }
             catch (ClientException ex)
             {
-                // We've caught our own error. Write it out and exit with its code.
-                if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Path.GetFileNameWithoutExtension(typeof(ClientExecutable).Assembly.Location) + ".Launcher", StringComparison.OrdinalIgnoreCase))
-                {
-                    Environment.FailFast($"Failed to perform the requested operation with error code [{ex.HResult}].\nException Info: {ex}", ex);
-                }
-                Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
-                return ex.HResult;
+                // We've caught our own error. Write it out, the error handler will get the exit code out of it.
+                return InvokeMainErrorHandler(ex, $"Failed to perform the requested operation with error code [{ex.HResult}].");
             }
             catch (Exception ex) when (ex.Message is not null)
             {
                 // This block is here as a fail-safe and should never be reached.
-                if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Path.GetFileNameWithoutExtension(typeof(ClientExecutable).Assembly.Location) + ".Launcher", StringComparison.OrdinalIgnoreCase))
-                {
-                    Environment.FailFast($"An unexpected exception occurred with HRESULT [{ex.HResult}].\nException Info: {ex}", ex);
-                }
-                Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
-                return (int)ClientExitCode.Unknown;
+                return InvokeMainErrorHandler(ex, $"An unexpected exception occurred with HRESULT [{ex.HResult}].", ClientExitCode.Unknown);
             }
         }
 
@@ -167,15 +157,15 @@ namespace PSADT.ClientServer
                     // Set up writer helper methods.
                     void WriteSuccess<T>(T result)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, DataSerialization.SerializeToString(PipeResponse.Ok(result)));
+                        ioEncryption.WriteEncrypted(outputWriter, SerializeObject(PipeResponse.Ok(result)));
                     }
                     void WriteError(Exception ex)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, DataSerialization.SerializeToString(PipeResponse.Fail(ex)));
+                        ioEncryption.WriteEncrypted(outputWriter, SerializeObject(PipeResponse.Fail(ex)));
                     }
                     void WriteLog(string message, LogSeverity severity, string source)
                     {
-                        logEncryption.WriteEncrypted(logWriter, DataSerialization.SerializeToString(new LogMessagePayload(message, severity, source)));
+                        logEncryption.WriteEncrypted(logWriter, SerializeObject(new LogMessagePayload(message, severity, source)));
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
@@ -186,10 +176,8 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                // Read and decrypt the request, then deserialize the DTO.
+                                // Read, decrypt, deserialize, then process the request. We never let an exception here kill the pipe.
                                 PipeRequest request = DeserializeString<PipeRequest>(ioEncryption.ReadEncrypted(inputReader));
-
-                                // Process the command. We never let an exception here kill the pipe.
                                 try
                                 {
                                     switch (request.Command)
@@ -209,8 +197,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.InitCloseAppsDialog:
                                             {
-                                                InitCloseAppsDialogPayload? payload = (InitCloseAppsDialogPayload?)request.Payload;
-                                                closeAppsDialogState = new(payload?.ProcessDefinitions, WriteLog);
+                                                closeAppsDialogState = new(((InitCloseAppsDialogPayload?)request.Payload)?.ProcessDefinitions, WriteLog);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -295,17 +282,7 @@ namespace PSADT.ClientServer
                                         case PipeCommand.ShowModalDialog:
                                             {
                                                 ShowModalDialogPayload payload = (ShowModalDialogPayload)request.Payload!;
-                                                object result = payload.DialogType switch
-                                                {
-                                                    DialogType.CloseAppsDialog => DialogManager.ShowCloseAppsDialog(payload.DialogStyle, (CloseAppsDialogOptions)payload.Options, closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)),
-                                                    DialogType.DialogBox => DialogManager.ShowDialogBox((DialogBoxOptions)payload.Options),
-                                                    DialogType.HelpConsole => DialogManager.ShowHelpConsole((HelpConsoleOptions)payload.Options),
-                                                    DialogType.InputDialog => DialogManager.ShowInputDialog(payload.DialogStyle, (InputDialogOptions)payload.Options),
-                                                    DialogType.CustomDialog => DialogManager.ShowCustomDialog(payload.DialogStyle, (CustomDialogOptions)payload.Options),
-                                                    DialogType.RestartDialog => DialogManager.ShowRestartDialog(payload.DialogStyle, (RestartDialogOptions)payload.Options),
-                                                    DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{payload.DialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
-                                                };
-                                                WriteSuccess(result);
+                                                WriteSuccess(InvokeModalDialog(payload.DialogType, payload.DialogStyle, payload.Options, closeAppsDialogState));
                                                 break;
                                             }
 
@@ -340,8 +317,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.ShowBalloonTip:
                                             {
-                                                ShowBalloonTipPayload payload = (ShowBalloonTipPayload)request.Payload!;
-                                                DialogManager.ShowBalloonTip(payload.Options);
+                                                DialogManager.ShowBalloonTip(((ShowBalloonTipPayload)request.Payload!).Options);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -362,23 +338,13 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.SendKeys:
                                             {
-                                                SendKeysPayload payload = (SendKeysPayload)request.Payload!;
-                                                HWND hwnd = (HWND)payload.Options.WindowHandle;
-                                                WindowTools.BringWindowToFront(hwnd);
-                                                if (!User32.IsWindowEnabled(hwnd))
-                                                {
-                                                    throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
-                                                }
-                                                System.Windows.Forms.SendKeys.SendWait(payload.Options.Keys);
-                                                WriteSuccess(true);
+                                                WriteSuccess(SendKeys(((SendKeysPayload)request.Payload!).Options));
                                                 break;
                                             }
 
                                         case PipeCommand.GetProcessWindowInfo:
                                             {
-                                                GetProcessWindowInfoPayload payload = (GetProcessWindowInfoPayload)request.Payload!;
-                                                ReadOnlyCollection<WindowInfo> windowInfo = WindowUtilities.GetProcessWindowInfo(payload.Options);
-                                                WriteSuccess(windowInfo);
+                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(((GetProcessWindowInfoPayload)request.Payload!).Options));
                                                 break;
                                             }
 
@@ -403,8 +369,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.GetEnvironmentVariable:
                                             {
-                                                EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
-                                                WriteSuccess(Environment.GetEnvironmentVariable(payload.Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                                WriteSuccess(Environment.GetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
                                                 break;
                                             }
 
@@ -418,8 +383,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.RemoveEnvironmentVariable:
                                             {
-                                                EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
-                                                Environment.SetEnvironmentVariable(payload.Name, null, EnvironmentVariableTarget.User);
+                                                Environment.SetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, null, EnvironmentVariableTarget.User);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -521,15 +485,7 @@ namespace PSADT.ClientServer
                 }
                 else if (arg is "/SendKeys" or "/sk")
                 {
-                    SendKeysOptions options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)));
-                    HWND hwnd = (HWND)options.WindowHandle;
-                    WindowTools.BringWindowToFront(hwnd);
-                    if (!User32.IsWindowEnabled(hwnd))
-                    {
-                        throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
-                    }
-                    System.Windows.Forms.SendKeys.SendWait(options.Keys);
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SendKeys(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetEnvironmentVariable" or "/gev")
@@ -657,16 +613,63 @@ namespace PSADT.ClientServer
             }
 
             // Show the dialog and return the serialised result for the caller to handle.
+            return SerializeObject(InvokeModalDialog(dialogType, dialogStyle, DeserializeString<object>(GetOptionsFromArguments(arguments)), closeAppsDialogState));
+        }
+
+        /// <summary>
+        /// Displays a modal dialog of the specified type and style, using the provided options and optional state
+        /// information.
+        /// </summary>
+        /// <remarks>The caller is responsible for providing the correct options and state objects
+        /// matching the selected dialog type. Passing an incorrect type for the options or state parameters may result
+        /// in a runtime exception. Not all dialog types require a style or state parameter; these are only used for
+        /// dialog types that support them.</remarks>
+        /// <param name="dialogType">The type of dialog to display. Must be a supported value of <see cref="DialogType"/>.</param>
+        /// <param name="dialogStyle">The visual style or presentation mode to use for the dialog. This parameter is required for dialog types
+        /// that support styling.</param>
+        /// <param name="options">An options object containing configuration data specific to the selected dialog type. The object must be of
+        /// the appropriate type for the dialog (for example, <see cref="CloseAppsDialogOptions"/> for <see
+        /// cref="DialogType.CloseAppsDialog"/>).</param>
+        /// <param name="closeAppsDialogState">An optional state object required when displaying a CloseAppsDialog. Must be of type <see
+        /// cref="CloseAppsDialogState"/> if <paramref name="dialogType"/> is <see cref="DialogType.CloseAppsDialog"/>;
+        /// otherwise, this parameter is ignored.</param>
+        /// <returns>An object representing the result of the dialog interaction. The type and meaning of the return value depend
+        /// on the dialog type displayed.</returns>
+        /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
+        /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
+        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, object options, BaseState? closeAppsDialogState = null)
+        {
             return dialogType switch
             {
-                DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState))),
-                DialogType.DialogBox => SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.HelpConsole => SerializeObject(DialogManager.ShowHelpConsole(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.InputDialog => SerializeObject(DialogManager.ShowInputDialog(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.CustomDialog => SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(GetOptionsFromArguments(arguments)))),
-                DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments)))),
+                DialogType.CloseAppsDialog => DialogManager.ShowCloseAppsDialog(dialogStyle, (CloseAppsDialogOptions)options, (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)),
+                DialogType.DialogBox => DialogManager.ShowDialogBox((DialogBoxOptions)options),
+                DialogType.HelpConsole => DialogManager.ShowHelpConsole((HelpConsoleOptions)options),
+                DialogType.InputDialog => DialogManager.ShowInputDialog(dialogStyle, (InputDialogOptions)options),
+                DialogType.CustomDialog => DialogManager.ShowCustomDialog(dialogStyle, (CustomDialogOptions)options),
+                DialogType.RestartDialog => DialogManager.ShowRestartDialog(dialogStyle, (RestartDialogOptions)options),
                 DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
             };
+        }
+
+        /// <summary>
+        /// Sends a sequence of keystrokes to the specified window using the provided options.
+        /// </summary>
+        /// <remarks>This method brings the target window to the foreground before sending the keystrokes.
+        /// The keystrokes are sent synchronously and may not be processed if the window is not ready to receive
+        /// input.</remarks>
+        /// <param name="options">An object that specifies the target window handle and the keys to send. The window must be enabled to
+        /// receive input.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the target window is disabled, such as when a modal dialog is shown.</exception>
+        private static bool SendKeys(SendKeysOptions options)
+        {
+            HWND hwnd = (HWND)options.WindowHandle;
+            WindowTools.BringWindowToFront(hwnd);
+            if (!User32.IsWindowEnabled(hwnd))
+            {
+                throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+            }
+            System.Windows.Forms.SendKeys.SendWait(options.Keys);
+            return true;
         }
 
         /// <summary>
@@ -799,6 +802,34 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
+        }
+
+        /// <summary>
+        /// Handles an unhandled exception by reporting the error and determining the process exit code.
+        /// </summary>
+        /// <remarks>If the current process is a launcher, the method terminates the process immediately
+        /// using Environment.FailFast. Otherwise, it writes the serialized exception to the standard error
+        /// stream.</remarks>
+        /// <param name="exception">The exception that triggered the error handler. Cannot be null.</param>
+        /// <param name="message">A descriptive message to include in the error report.</param>
+        /// <param name="exitCode">An optional exit code to use when terminating the process. If null, the exception's HResult is used.</param>
+        /// <returns>An integer representing the process exit code. Returns the specified exit code if provided; otherwise,
+        /// returns the HResult of the exception.</returns>
+        private static int InvokeMainErrorHandler(Exception exception, string message, ClientExitCode? exitCode = null)
+        {
+            if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Path.GetFileNameWithoutExtension(typeof(ClientExecutable).Assembly.Location) + ".Launcher", StringComparison.OrdinalIgnoreCase))
+            {
+                Environment.FailFast($"{message.TrimEnd('.')}.\nException Info: {exception}", exception);
+            }
+            try
+            {
+                Console.Error.WriteLine(DataSerialization.SerializeToString(exception));
+            }
+            catch (Exception ex) when (ex.Message is not null)
+            {
+                Environment.FailFast($"An unexpected exception occurred while serializing main exception [{ex}].\nException Info: {exception}", exception);
+            }
+            return (int?)exitCode ?? exception.HResult;
         }
     }
 }
