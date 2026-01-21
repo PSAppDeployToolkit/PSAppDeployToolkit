@@ -9,8 +9,16 @@ using Windows.Win32.System.RemoteDesktop;
 namespace PSADT.LibraryInterfaces.SafeHandles
 {
     /// <summary>
-    /// Represents a wrapper for an environment block handle that ensures the handle is properly released.
+    /// Provides a safe handle for Windows Terminal Services (WTS) memory blocks allocated by native APIs, ensuring
+    /// proper release of unmanaged resources.
     /// </summary>
+    /// <remarks>This class is intended for internal use when working with WTS-related native memory
+    /// allocations. It ensures that memory is released using the appropriate WTS API based on the type of data. The
+    /// handle should not be used after it has been released.</remarks>
+    /// <param name="handle">The native pointer to the WTS memory block to be managed by the handle.</param>
+    /// <param name="type">The WTS type class that determines the structure of the memory block.</param>
+    /// <param name="length">The length, in bytes, of the memory block referenced by the handle.</param>
+    /// <param name="ownsHandle">true to indicate that the handle is responsible for releasing the memory block; otherwise, false.</param>
     internal sealed class SafeWtsExHandle(IntPtr handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsExHandle>(handle, length, ownsHandle)
     {
         /// <summary>
