@@ -187,7 +187,7 @@ namespace PSADT.ProcessManagement
             }
             if (disposing)
             {
-                Stop(); _mutex.Dispose(); _mutex = null!;
+                Stop(); _mutex.Dispose();
             }
             _disposed = true;
         }
@@ -233,7 +233,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The mutex used to synchronize access to the running processes list.
         /// </summary>
-        private SemaphoreSlim _mutex = new(1, 1);
+        private readonly SemaphoreSlim _mutex = new(1, 1);
 
         /// <summary>
         /// The caller's specified process definitions.

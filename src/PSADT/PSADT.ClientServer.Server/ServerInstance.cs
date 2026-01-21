@@ -50,8 +50,7 @@ namespace PSADT.ClientServer
             _outputWriter = new(_outputServer, DefaultEncoding);
             _inputReader = new(_inputServer, DefaultEncoding);
             _logReader = new(_logServer, DefaultEncoding);
-            _ioEncryption = new();
-            _logEncryption = new();
+            _ioEncryption = new(); _logEncryption = new();
         }
 
         /// <summary>
@@ -619,26 +618,18 @@ namespace PSADT.ClientServer
                 }
 
                 // Dispose encryption objects.
-                _ioEncryption.Dispose();
                 _logEncryption.Dispose();
+                _ioEncryption.Dispose();
 
-                // Kill all input.
-                _inputReader.Dispose();
-                _inputReader = null!;
-                _inputServer.Dispose();
-                _inputServer = null!;
-
-                // Kill all output.
-                _outputWriter.Dispose();
-                _outputWriter = null!;
-                _outputServer.Dispose();
-                _outputServer = null!;
-
-                // Kill all logging.
+                // Dispose readers and writers.
                 _logReader.Dispose();
-                _logReader = null!;
+                _inputReader.Dispose();
+                _outputWriter.Dispose();
+
+                // Dispose pipe servers.
                 _logServer.Dispose();
-                _logServer = null!;
+                _inputServer.Dispose();
+                _outputServer.Dispose();
             }
             _disposed = true;
         }
@@ -791,7 +782,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used to manage the server stream for logging purposes. It provides a
         /// communication channel between processes, allowing data to be sent from the server to a connected
         /// client.</remarks>
-        private AnonymousPipeServerStream _logServer;
+        private readonly AnonymousPipeServerStream _logServer;
 
         /// <summary>
         /// Represents a server-side anonymous pipe stream for reading data.
@@ -799,7 +790,7 @@ namespace PSADT.ClientServer
         /// <remarks>This pipe stream is initialized with an input direction and inheritable handle
         /// settings, allowing it to be used for inter-process communication where the handle can be passed to a child
         /// process.</remarks>
-        private AnonymousPipeServerStream _inputServer;
+        private readonly AnonymousPipeServerStream _inputServer;
 
         /// <summary>
         /// Represents the server side of an anonymous pipe used for interprocess communication.
@@ -807,26 +798,40 @@ namespace PSADT.ClientServer
         /// <remarks>This pipe server is initialized with an output direction and allows the handle to be
         /// inherited by child processes. It is typically used to send data from the current process to another
         /// process.</remarks>
-        private AnonymousPipeServerStream _outputServer;
+        private readonly AnonymousPipeServerStream _outputServer;
 
         /// <summary>
         /// Represents the stream reader used to read log data.
         /// </summary>
         /// <remarks>This field is intended for internal use and provides access to the underlying stream
         /// for reading log information. It is not exposed publicly.</remarks>
-        private BinaryReader _logReader;
+        private readonly BinaryReader _logReader;
 
         /// <summary>
         /// Represents the <see cref="StreamReader"/> used to read input data from a stream.
         /// </summary>
         /// <remarks>This field is read-only and is intended for internal use to process input streams.</remarks>
-        private BinaryReader _inputReader;
+        private readonly BinaryReader _inputReader;
 
         /// <summary>
         /// Represents the output stream writer used for writing data to a stream.
         /// </summary>
         /// <remarks>This field is read-only and is intended to be used internally for managing output operations.</remarks>
-        private BinaryWriter _outputWriter;
+        private readonly BinaryWriter _outputWriter;
+
+        /// <summary>
+        /// Provides ECDH-based encryption for the main command/response pipe communication.
+        /// </summary>
+        /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
+        /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
+        private readonly PipeEncryption _ioEncryption;
+
+        /// <summary>
+        /// Provides ECDH-based encryption for the log pipe communication.
+        /// </summary>
+        /// <remarks>This separate encryption instance is used for the log channel to allow independent
+        /// encrypted communication for logging purposes.</remarks>
+        private readonly PipeEncryption _logEncryption;
 
         /// <summary>
         /// Represents an asynchronous operation that retrieves the result of a client process.
@@ -857,20 +862,6 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
         /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
         private CancellationTokenSource? _logWriterTaskCts;
-
-        /// <summary>
-        /// Provides ECDH-based encryption for the main command/response pipe communication.
-        /// </summary>
-        /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
-        /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
-        private readonly PipeEncryption _ioEncryption;
-
-        /// <summary>
-        /// Provides ECDH-based encryption for the log pipe communication.
-        /// </summary>
-        /// <remarks>This separate encryption instance is used for the log channel to allow independent
-        /// encrypted communication for logging purposes.</remarks>
-        private readonly PipeEncryption _logEncryption;
 
         /// <summary>
         /// Represents the file path of the assembly named "PSADT.ClientServer.Client.exe" currently loaded in the
