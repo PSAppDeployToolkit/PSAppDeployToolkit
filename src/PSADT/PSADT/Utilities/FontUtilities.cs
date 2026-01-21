@@ -5,7 +5,7 @@ using Windows.Win32.Foundation;
 using System.IO;
 
 
-namespace PSADT.FontManagement
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Provides methods for managing font resources.
