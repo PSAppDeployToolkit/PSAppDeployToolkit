@@ -64,19 +64,12 @@ namespace PSADT.Utilities
         /// <param name="fontFilePath">The full path to the font file.</param>
         /// <returns>True if the font was removed successfully; otherwise, false.</returns>
         /// ///
-        public static bool RemoveFont(string fontFilePath)
+        public static void RemoveFont(string fontFilePath)
         {
-            // Remove the font resource
-            // We don't check for file existence here because the file might be gone, but the resource still registered
-            bool result = NativeMethods.RemoveFontResource(fontFilePath);
-
-            if (result)
-            {
-                // Notify all top-level windows that the font table has changed
-                _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE, (WPARAM)0, (LPARAM)0);
-            }
-
-            return result;
+            // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.
+            // See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-removefontresourcew#parameters for more details.
+            _ = NativeMethods.RemoveFontResource(fontFilePath);
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
         }
     }
 }
