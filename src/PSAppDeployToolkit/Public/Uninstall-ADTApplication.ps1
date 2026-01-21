@@ -247,7 +247,6 @@ function Uninstall-ADTApplication
             ExitOnProcessFailure = $ExitOnProcessFailure
             ExpandEnvironmentVariables = $true
             WaitForMsiExec = $true
-            CreateNoWindow = $true
             PassThru = $PassThru
         }
         if ($PSBoundParameters.ContainsKey('SuccessExitCodes'))
@@ -364,7 +363,7 @@ function Uninstall-ADTApplication
                     }
                     try
                     {
-                        Start-ADTProcess @sapParams -CreateNoWindow:($uninstallProperty.Equals('QuietUninstallString')) -ErrorAction $OriginalErrorAction
+                        Start-ADTProcess @sapParams -CreateNoWindow:(![PSADT.FileSystem.ExecutableInfo]::Get($sapParams.FilePath).Subsystem.Equals([PSADT.LibraryInterfaces.IMAGE_SUBSYSTEM]::IMAGE_SUBSYSTEM_WINDOWS_GUI)) -ErrorAction $OriginalErrorAction
                     }
                     catch
                     {
