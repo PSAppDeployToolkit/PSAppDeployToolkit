@@ -1,4 +1,5 @@
-﻿using Windows.Win32;
+﻿using System;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 
 namespace PSADT.LibraryInterfaces
@@ -15,15 +16,8 @@ namespace PSADT.LibraryInterfaces
         /// <returns>If the function succeeds, the return value specifies the number of fonts added. If the function fails, the return value is zero.</returns>
         internal static int AddFontResource(string lpFilename)
         {
-            unsafe
-            {
-                fixed (char* lpFilenamePtr = lpFilename)
-                {
-                    int res = PInvoke.AddFontResource((PCWSTR)lpFilenamePtr);
-                    // AddFontResource returns 0 on failure, but does not SetLastError.
-                    return res;
-                }
-            }
+            int res = PInvoke.AddFontResource(lpFilename);
+            return res != 0 ? res : throw new InvalidOperationException("The call to AddFontResource() failed.");
         }
 
         /// <summary>
@@ -33,15 +27,8 @@ namespace PSADT.LibraryInterfaces
         /// <returns>If the function succeeds, the return value is nonzero. If the function fails, the return value is zero.</returns>
         internal static BOOL RemoveFontResource(string lpFileName)
         {
-            unsafe
-            {
-                fixed (char* lpFileNamePtr = lpFileName)
-                {
-                    BOOL res = PInvoke.RemoveFontResource((PCWSTR)lpFileNamePtr);
-                    // RemoveFontResource returns 0 on failure, but does not SetLastError.
-                    return res;
-                }
-            }
+            BOOL res = PInvoke.RemoveFontResource(lpFileName);
+            return res != 0 ? res : throw new InvalidOperationException("The call to RemoveFontResource() failed.");
         }
     }
 }
