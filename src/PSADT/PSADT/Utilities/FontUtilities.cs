@@ -7,6 +7,7 @@ using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace PSADT.Utilities
@@ -106,7 +107,8 @@ namespace PSADT.Utilities
         /// <returns>A string containing the title of the font if present; otherwise, null.</returns>
         public static string? GetFontTitle(string fontFilePath)
         {
-            _ = Shell32.SHGetPropertyStoreFromParsingName(fontFilePath, null, GETPROPERTYSTOREFLAGS.GPS_DEFAULT, out IPropertyStore store);
+            _ = Shell32.SHCreateItemFromParsingName(fontFilePath, null, out IShellItem2 shellItem);
+            shellItem.GetPropertyStore(GETPROPERTYSTOREFLAGS.GPS_DEFAULT, out IPropertyStore store);
             store.GetValue(in PInvoke.PKEY_Title, out SafePropVariantHandle pv);
             using (pv)
             {

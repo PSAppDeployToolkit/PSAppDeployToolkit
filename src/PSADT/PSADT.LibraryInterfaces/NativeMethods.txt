@@ -113,6 +113,7 @@ InitializeAcl
 InitializeProcThreadAttributeList
 INVALID_FILE_ATTRIBUTES
 INVALID_HANDLE_VALUE
+IShellItem2
 IsIconic
 IsProcessInJob
 IsWindowEnabled
@@ -354,6 +355,7 @@ SetLastError
 SetNamedSecurityInfo
 SetSecurityInfo
 SHChangeNotify
+SHCreateItemFromParsingName
 SHGetImageList
 SHGetPropertyStoreFromParsingName
 SHGFI_FLAGS

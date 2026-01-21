@@ -227,5 +227,29 @@ namespace PSADT.LibraryInterfaces
             ppv = (IPropertyStore)ppvLocal;
             return res;
         }
+
+        /// <summary>
+        /// Creates a Shell item object from a specified parsing name and retrieves a COM interface pointer of the
+        /// requested type.
+        /// </summary>
+        /// <remarks>This method is a generic wrapper for the native SHCreateItemFromParsingName function,
+        /// allowing callers to specify the desired COM interface type as a generic parameter. The caller is responsible
+        /// for ensuring that the requested type T is supported by the Shell item. If the parsing name does not resolve
+        /// to a valid item or the interface is not supported, the method returns a failure HRESULT and ppv is set to
+        /// null.</remarks>
+        /// <typeparam name="T">The type of interface to retrieve. Must be a COM interface type.</typeparam>
+        /// <param name="pszPath">The parsing name of the item to create. This is typically a file system path or other Shell namespace path.
+        /// Cannot be null.</param>
+        /// <param name="pbc">An optional bind context used for resolving the parsing name. Pass null to use the default context.</param>
+        /// <param name="ppv">When this method returns, contains an instance of type T representing the requested interface for the
+        /// created Shell item.</param>
+        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
+        internal static HRESULT SHCreateItemFromParsingName<T>(string pszPath, IBindCtx? pbc, out T ppv) where T : class
+        {
+            Guid riid = typeof(T).GUID;
+            HRESULT res = PInvoke.SHCreateItemFromParsingName(pszPath, pbc, in riid, out object ppvLocal).ThrowOnFailure();
+            ppv = (T)ppvLocal;
+            return res;
+        }
     }
 }
