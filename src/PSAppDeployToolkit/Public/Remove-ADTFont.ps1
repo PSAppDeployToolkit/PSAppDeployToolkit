@@ -16,9 +16,6 @@ function Remove-ADTFont
     .PARAMETER Name
         The name of the font file (e.g., 'arial.ttf') or the font name as it appears in the registry.
 
-    .PARAMETER IgnoreErrors
-        Ignore errors during removal and continue.
-
     .INPUTS
         None
 
@@ -47,17 +44,13 @@ function Remove-ADTFont
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$Name,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$IgnoreErrors
+        [System.String[]]$Name
     )
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
         $fontsDir = [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'Fonts')
-        $fontsRegKeyPath = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
+        $fontsRegKeyPath = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
     }
 
     process
@@ -68,68 +61,45 @@ function Remove-ADTFont
             {
                 try
                 {
+                    # Check if the provided name is a registry value name or a file name, respectively.
                     Write-ADTLogEntry -Message "Removing font [$fontName]..."
-
-                    $fileName = $fontName
-                    $registryName = $null
-
-                    # Check if the provided name is a registry value name or a file name
-                    if (Test-Path -LiteralPath (Join-Path $fontsDir $fontName))
+                    $fileName = $null; $registryName = $null
+                    if (Test-Path -Name (Join-Path $fontsDir $fontName))
                     {
-                        # It's a file name, we need to find the registry key that points to it
-                        $fileName = $fontName
-
-                        # Search registry for value data matching filename
-                        $regValues = Get-ADTRegistryKey -Key $fontsRegKeyPath
-                        if ($regValues)
+                        # Get filename from registry.
+                        $registryName = $fontName
+                        if (!($fileName = Get-ADTRegistryKey -Key $fontsRegKeyPath -Name $registryName))
                         {
-                            $registryName = $regValues.PSObject.Properties | Where-Object { $_.Name -notlike 'PS*' -and $_.Value -eq $fileName } | Select-Object -First 1 -ExpandProperty Name
+                            $naerParams = @{
+                                Exception = [System.ArgumentException]::new("Font [$fontName] not found in registry or Fonts folder.")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                                ErrorId = 'FontNotFoundError'
+                                TargetObject = $fontName
+                                RecommendedAction = "Please confirm the supplied value is correct and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
                         }
                     }
                     else
                     {
-                        # Assume it's a registry name (Font Title)
-                        $registryName = $fontName
-
-                        # Get filename from registry
-                        try
+                        # Search registry for value data matching filename.
+                        $fileName = $fontName
+                        if (($regValues = Get-ADTRegistryKey -Key $fontsRegKeyPath))
                         {
-                            $fileName = Get-ADTRegistryKey -Key $fontsRegKeyPath -Name $registryName -ErrorAction Stop
-                            if (-not $fileName)
-                            {
-                                throw "Registry value not found"
-                            }
-                        }
-                        catch
-                        {
-                            # If not found in registry directly, maybe it was just a file name that doesn't exist?
-                            Write-ADTLogEntry -Message "Font [$fontName] not found in registry or Fonts folder." -Severity 2
-                            continue
+                            $registryName = $regValues.PSObject.Properties | & { process { if (!$_.Name.StartsWith('PS*') -and ($_.Value -eq $fileName)) { return $_ } } } | Select-Object -First 1 -ExpandProperty Name
                         }
                     }
 
-                    $fontFilePath = Join-Path $fontsDir $fileName
-
-                    # 1. Remove font resource
-                    $result = [PSADT.FontManagement.FontUtilities]::RemoveFont($fontFilePath)
-
-                    if (-not $result)
-                    {
-                        Write-ADTLogEntry -Message "Failed to remove font resource for [$fontFilePath]. It may not be loaded." -Severity 2
-                    }
-
-                    # 2. Delete registry value
+                    # Remove font resource, delete registry value and remove remaining file.
+                    $null = [PSADT.Utilities.FontUtilities]::RemoveFont(($fontFilePath = Join-Path $fontsDir $fileName))
                     if ($registryName)
                     {
                         Remove-ADTRegistryKey -Key $fontsRegKeyPath -Name $registryName
                     }
-
-                    # 3. Delete file
                     if (Test-Path -LiteralPath $fontFilePath)
                     {
-                        Remove-Item -LiteralPath $fontFilePath -Force -ErrorAction Stop
+                        Remove-Item -LiteralPath $fontFilePath -Force
                     }
-
                     Write-ADTLogEntry -Message "Successfully uninstalled font [$fontName]."
                 }
                 catch
@@ -145,9 +115,9 @@ function Remove-ADTFont
                     ErrorRecord = $_
                     LogMessage = "Failed to uninstall font [$fontName]."
                 }
-                if ($IgnoreErrors)
+                if ($PSBoundParameters.ContainsKey('ErrorAction'))
                 {
-                    $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                    $iafehParams.Add('ErrorAction', $PSBoundParameters.ErrorAction)
                 }
                 Invoke-ADTFunctionErrorHandler @iafehParams
             }

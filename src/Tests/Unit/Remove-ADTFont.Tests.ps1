@@ -307,7 +307,7 @@ Describe 'Remove-ADTFont' {
             }
         }
 
-        It 'Should continue with -IgnoreErrors when a removal fails' {
+        It 'Should continue with -ErrorAction SilentlyContinue when a removal fails' {
             $script:TestFonts = @()
             $script:TestFonts += $script:TestFont
             $script:TestFonts += Install-TestFont -Extension '.ttf'
@@ -315,7 +315,7 @@ Describe 'Remove-ADTFont' {
             $nonExistentFont = "NonExistent_$([guid]::NewGuid().ToString('N')).ttf"
 
             # Mix of valid fonts and non-existent font
-            { Remove-ADTFont -Name @($script:TestFonts[0].FileName, $nonExistentFont, $script:TestFonts[1].FileName) -IgnoreErrors -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Remove-ADTFont -Name @($script:TestFonts[0].FileName, $nonExistentFont, $script:TestFonts[1].FileName) -ErrorAction SilentlyContinue } | Should -Not -Throw
 
             # Valid fonts should be removed
             $script:TestFonts[0].FilePath | Should -Not -Exist
