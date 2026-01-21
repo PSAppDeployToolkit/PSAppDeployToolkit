@@ -317,6 +317,7 @@ namespace PSADT.ClientServer
                                         case PipeCommand.Close:
                                             {
                                                 WriteSuccess(true);
+                                                Environment.Exit(0);
                                                 return;
                                             }
 
