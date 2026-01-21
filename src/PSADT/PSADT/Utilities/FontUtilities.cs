@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using PSADT.LibraryInterfaces;
@@ -34,31 +35,23 @@ namespace PSADT.Utilities
         /// <param name="fontFilePaths">The full path to the font file.</param>
         /// <returns>True if the font was removed successfully; otherwise, false.</returns>
         /// ///
-        public static int AddFonts(ReadOnlyCollection<string> fontFilePaths)
+        public static IReadOnlyDictionary<string, int> AddFonts(IReadOnlyList<string> fontFilePaths)
         {
             if (fontFilePaths is null)
             {
                 throw new ArgumentNullException(nameof(fontFilePaths));
             }
-
-            int result = 0;
+            Dictionary<string, int> fontResults = [];
             foreach (string fontFilePath in fontFilePaths)
             {
                 if (!File.Exists(fontFilePath))
                 {
                     throw new FileNotFoundException("Font file not found.", fontFilePath);
                 }
-
-                // Add the font resource
-                result += Gdi32.AddFontResource(fontFilePath);
+                fontResults.Add(fontFilePath, Gdi32.AddFontResource(fontFilePath));
             }
-
-            if (result > 0)
-            {
-                // Notify all top-level windows that the font table has changed
-                _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE, (WPARAM)0, (LPARAM)0);
-            }
-            return result;
+            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
+            return new ReadOnlyDictionary<string, int>(fontResults);
         }
 
         /// <summary>
