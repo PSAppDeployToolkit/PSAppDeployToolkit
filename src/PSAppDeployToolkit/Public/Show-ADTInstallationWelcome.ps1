@@ -748,8 +748,10 @@ function Show-ADTInstallationWelcome
 
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $initialized = $false
-        $retries = 0
+        $welcomeState = @{
+            Initialized = $false
+            Retries = 0
+        }
 
         # Set up DeploymentType if not specified.
         $DeploymentType = if ($adtSession)
@@ -780,9 +782,9 @@ function Show-ADTInstallationWelcome
         function Show-ADTWelcomePrompt
         {
             # Initialise the dialog's state if we haven't already done so.
-            if ($initialized.Equals($false))
+            if (!$welcomeState.Initialized)
             {
-                (Get-Variable -Name initialized).Value = if ($CloseProcesses)
+                $welcomeState.Initialized = if ($CloseProcesses)
                 {
                     Invoke-ADTClientServerOperation -InitCloseAppsDialog -User $runAsActiveUser -CloseProcesses $CloseProcesses
                 }
@@ -805,13 +807,13 @@ function Show-ADTInstallationWelcome
             }
             catch [System.ApplicationException]
             {
-                if ($retries -ge 3)
+                if ($welcomeState.Retries -ge 3)
                 {
                     throw
                 }
                 Write-ADTLogEntry -Message "The client/server process was terminated unexpectedly.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
-                Write-ADTLogEntry -Message "Retrying user client/server process again [$((++(Get-Variable -Name retries).Value))/3] times..."
-                (Get-Variable -Name initialized).Value = $false
+                Write-ADTLogEntry -Message "Retrying user client/server process again [$((++$welcomeState.Retries))/3] times..."
+                $welcomeState.Initialized = $false
                 return "TerminatedTryAgain"
             }
         }
