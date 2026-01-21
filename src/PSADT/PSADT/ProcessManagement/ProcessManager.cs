@@ -442,8 +442,8 @@ namespace PSADT.ProcessManagement
                 }
                 finally
                 {
-                    // Only dispose of the handle when we don't own it or the process has already closed.
-                    if (!launchInfo.UseShellExecute || exitCode != TimeoutExitCode || !launchInfo.NoTerminateOnTimeout)
+                    // Only dispose of the handle when we don't own it.
+                    if (!launchInfo.UseShellExecute)
                     {
                         hProcess.Dispose();
                     }
