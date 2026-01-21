@@ -64,121 +64,7 @@ namespace PSADT.ClientServer
                     _ = DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
                     throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
                 }
-                foreach (string arg in argv)
-                {
-                    if (arg is "/ShowModalDialog" or "/smd")
-                    {
-                        Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/ShowBalloonTip" or "/sbt")
-                    {
-                        DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/GetProcessWindowInfo" or "/gpwi")
-                    {
-                        Console.WriteLine(SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/GetUserNotificationState" or "/guns")
-                    {
-                        Console.WriteLine(SerializeObject(ShellUtilities.GetUserNotificationState()));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
-                    {
-                        Console.WriteLine(SerializeObject(ShellUtilities.GetForegroundWindowProcessId()));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
-                    {
-                        ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/MinimizeAllWindows" or "/maw")
-                    {
-                        ShellUtilities.MinimizeAllWindows();
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/RestoreAllWindows" or "/raw")
-                    {
-                        ShellUtilities.RestoreAllWindows();
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/SendKeys" or "/sk")
-                    {
-                        SendKeysOptions options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)));
-                        HWND hwnd = (HWND)options.WindowHandle;
-                        WindowTools.BringWindowToFront(hwnd);
-                        if (!User32.IsWindowEnabled(hwnd))
-                        {
-                            throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
-                        }
-                        System.Windows.Forms.SendKeys.SendWait(options.Keys);
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/GetEnvironmentVariable" or "/gev")
-                    {
-                        if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
-                        {
-                            throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
-                        }
-                        Console.WriteLine(SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/SetEnvironmentVariable" or "/sev")
-                    {
-                        if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
-                        {
-                            throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
-                        }
-                        if (!arguments.TryGetValue("Value", out string? value) || string.IsNullOrWhiteSpace(value))
-                        {
-                            throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
-                        }
-                        Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/RemoveEnvironmentVariable" or "/rev")
-                    {
-                        if (!ArgvToDictionary(argv).TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
-                        {
-                            throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
-                        }
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/SilentRestart" or "/sr")
-                    {
-                        if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
-                        {
-                            throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
-                        }
-                        Thread.Sleep(delayValue * 1000);
-                        DeviceUtilities.RestartComputer();
-                        Console.WriteLine(SerializeObject(true));
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/GetLastInputTime" or "/glit")
-                    {
-                        Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
-                        return (int)ClientExitCode.Success;
-                    }
-                    else if (arg is "/ClientServer" or "/cs")
-                    {
-                        EnterClientServerMode(ArgvToDictionary(argv));
-                        return (int)ClientExitCode.Success;
-                    }
-                }
-                throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
+                return argv.Any(static arg => arg is "/ClientServer" or "/cs") ? EnterClientServerMode(ArgvToDictionary(argv)) : EnterStandaloneMode(argv);
             }
             catch (ClientException ex)
             {
@@ -211,7 +97,7 @@ namespace PSADT.ClientServer
         /// appropriate exit code.</remarks>
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
         /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
-        private static void EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
+        private static int EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
             if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || string.IsNullOrWhiteSpace(outputPipeHandle))
@@ -318,7 +204,7 @@ namespace PSADT.ClientServer
                                             {
                                                 WriteSuccess(true);
                                                 Environment.Exit(0);
-                                                return;
+                                                return (int)ClientExitCode.Success;
                                             }
 
                                         case PipeCommand.InitCloseAppsDialog:
@@ -560,12 +446,143 @@ namespace PSADT.ClientServer
                     {
                         closeAppsDialogState?.Dispose();
                     }
+                    return (int)ClientExitCode.Success;
                 }
             }
             catch (Exception ex)
             {
                 throw new ClientException($"Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
+        }
+
+        /// <summary>
+        /// Parses and executes a standalone command-line operation based on the specified arguments.
+        /// </summary>
+        /// <remarks>This method is intended for use in standalone or command-line scenarios where a
+        /// single operation is performed per invocation. Supported operations include showing dialogs, managing
+        /// environment variables, interacting with windows, and system actions such as restarting the computer. The
+        /// specific operation is determined by the presence of recognized command-line switches in the arguments
+        /// array.</remarks>
+        /// <param name="argv">An array of command-line arguments that specify the operation to perform and any required options.</param>
+        /// <returns>An integer exit code indicating the result of the operation. Returns 0 for success or a nonzero value for
+        /// error conditions.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if an operation cannot be completed due to the current state, such as attempting to send keys to a
+        /// disabled window.</exception>
+        /// <exception cref="ClientException">Thrown if required arguments are missing, invalid, or if the specified arguments do not correspond to a
+        /// supported operation.</exception>
+        private static int EnterStandaloneMode(string[] argv)
+        {
+            // Parse the arguments and execute the requested operation.
+            foreach (string arg in argv)
+            {
+                if (arg is "/ShowModalDialog" or "/smd")
+                {
+                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/ShowBalloonTip" or "/sbt")
+                {
+                    DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetProcessWindowInfo" or "/gpwi")
+                {
+                    Console.WriteLine(SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetUserNotificationState" or "/guns")
+                {
+                    Console.WriteLine(SerializeObject(ShellUtilities.GetUserNotificationState()));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
+                {
+                    Console.WriteLine(SerializeObject(ShellUtilities.GetForegroundWindowProcessId()));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
+                {
+                    ShellUtilities.RefreshDesktopAndEnvironmentVariables();
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/MinimizeAllWindows" or "/maw")
+                {
+                    ShellUtilities.MinimizeAllWindows();
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/RestoreAllWindows" or "/raw")
+                {
+                    ShellUtilities.RestoreAllWindows();
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/SendKeys" or "/sk")
+                {
+                    SendKeysOptions options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)));
+                    HWND hwnd = (HWND)options.WindowHandle;
+                    WindowTools.BringWindowToFront(hwnd);
+                    if (!User32.IsWindowEnabled(hwnd))
+                    {
+                        throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+                    }
+                    System.Windows.Forms.SendKeys.SendWait(options.Keys);
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetEnvironmentVariable" or "/gev")
+                {
+                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+                    {
+                        throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+                    }
+                    Console.WriteLine(SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/SetEnvironmentVariable" or "/sev")
+                {
+                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+                    {
+                        throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+                    }
+                    if (!arguments.TryGetValue("Value", out string? value) || string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
+                    }
+                    Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/RemoveEnvironmentVariable" or "/rev")
+                {
+                    if (!ArgvToDictionary(argv).TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
+                    {
+                        throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
+                    }
+                    Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/SilentRestart" or "/sr")
+                {
+                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
+                    {
+                        throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
+                    }
+                    Thread.Sleep(delayValue * 1000);
+                    DeviceUtilities.RestartComputer();
+                    Console.WriteLine(SerializeObject(true));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetLastInputTime" or "/glit")
+                {
+                    Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
+                    return (int)ClientExitCode.Success;
+                }
+            }
+            throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
         }
 
         /// <summary>
