@@ -232,7 +232,7 @@ function Show-ADTInstallationPrompt
         }
 
         # Throw a terminating error if we're trying to retrieve a password without an active session.
-        if (!$SecureInput -and !$adtSession)
+        if ($SecureInput -and !$adtSession)
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new('An active deployment session is required for a secure input dialog.')
