@@ -22,12 +22,19 @@ namespace PSADT.WindowManagement
         /// filtering is applied based on window handles.</param>
         /// <param name="parentProcessFilter">An optional array of strings specifying parent process names to filter. If <see langword="null"/>, no
         /// filtering is applied based on parent processes.</param>
+        /// <param name="parentProcessIdFilter">A list of parent process IDs to include in the filter. Only windows whose parent process ID matches any of
+        /// these values will be considered. Can be null to disable parent process ID filtering.</param>
+        /// <param name="parentProcessMainWindowHandleFilter">A list of main window handles for parent processes to include in the filter. Only windows whose parent
+        /// process main window handle matches any of these values will be considered. Can be null to disable this
+        /// filtering.</param>
         [JsonConstructor]
-        public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
+        public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter, IReadOnlyList<nint>? windowHandleFilter, IReadOnlyList<string>? parentProcessFilter, IReadOnlyList<int> parentProcessIdFilter, IReadOnlyList<nint> parentProcessMainWindowHandleFilter)
         {
             WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. windowTitleFilter]) : null;
             WindowHandleFilter = windowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>([.. windowHandleFilter]) : null;
             ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. parentProcessFilter]) : null;
+            ParentProcessIdFilter = parentProcessIdFilter?.Count > 0 ? new ReadOnlyCollection<int>([.. parentProcessIdFilter]) : null;
+            ParentProcessMainWindowHandleFilter = parentProcessMainWindowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>([.. parentProcessMainWindowHandleFilter]) : null;
         }
 
         /// <summary>
@@ -52,5 +59,22 @@ namespace PSADT.WindowManagement
         /// accessed directly.</remarks>
         [JsonProperty]
         public IReadOnlyList<string>? ParentProcessFilter { get; }
+
+        /// <summary>
+        /// Gets the list of parent process IDs to use as a filter when selecting processes.
+        /// </summary>
+        /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
+        /// read-only.</remarks>
+        [JsonProperty]
+        public IReadOnlyList<int>? ParentProcessIdFilter { get; }
+
+        /// <summary>
+        /// Gets the collection of main window handles used to filter parent processes.
+        /// </summary>
+        /// <remarks>This property provides a read-only list of native window handles (HWND) that are used
+        /// to identify or filter parent processes based on their main window. The list may be empty if no filters are
+        /// applied.</remarks>
+        [JsonProperty]
+        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter { get; }
     }
 }
