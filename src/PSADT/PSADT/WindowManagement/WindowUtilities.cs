@@ -26,52 +26,41 @@ namespace PSADT.WindowManagement
         /// matching one or more of the specified handles will be included.</param>
         /// <param name="parentProcessFilter">An optional array of process names to filter the results. Only windows associated with processes whose
         /// names match one or more of the specified names will be included.</param>
+        /// <param name="parentProcessIdFilter">A collection of process IDs to filter parent processes. Only windows belonging to processes with IDs in this
+        /// collection are included. If empty, no filtering by process ID is applied.</param>
+        /// <param name="parentProcessMainWindowHandleFilter">A collection of main window handles to filter parent processes. Only windows belonging to processes whose
+        /// main window handle is in this collection are included. If empty, no filtering by main window handle is
+        /// applied.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the visible windows that match
         /// the specified filters. If no filters are provided, all visible windows are included.</returns>
-        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null)
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<int>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null)
         {
-            // Get the list of processes based on the provided filters.
-            Process[] processes = [.. windowHandleFilter is not null && parentProcessFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
-                            windowHandleFilter is not null ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle)) :
-                            parentProcessFilter is not null ? Process.GetProcesses().Where(p => parentProcessFilter.Contains(p.ProcessName)) :
-                            Process.GetProcesses()];
-
-            // Create a list to hold the window information.
-            Regex? windowTitleRegex = windowTitleFilter is not null ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
-            List<WindowInfo> windowInfos = [];
-            foreach (HWND window in WindowTools.EnumWindows())
+            // Get the list of processes based on the provided filters and start finding applicable windows.
+            Process[] processes = [.. Process.GetProcesses().Where(p => p.MainWindowHandle != IntPtr.Zero && parentProcessFilter?.Any(f => f.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase)) != false && parentProcessIdFilter?.Contains(p.Id) != false && parentProcessMainWindowHandleFilter?.Contains(p.MainWindowHandle) != false)];
+            List<WindowInfo> windows = []; Regex? windowTitleRegex = windowTitleFilter is not null ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
+            foreach (HWND windowHandle in windowHandleFilter is not null ? WindowTools.EnumWindows().Where(w => windowHandleFilter.Contains(w) && User32.IsWindowVisible(w)) : WindowTools.EnumWindows().Where(static w => User32.IsWindowVisible(w)))
             {
-                // Continue if window isn't visible.
-                if (!User32.IsWindowVisible(window))
+                // Return early if we can't find a process for this window.
+                uint parentProcessId = WindowTools.GetWindowThreadProcessId(windowHandle);
+                if (processes.FirstOrDefault(p => p.Id == parentProcessId) is not Process parentProcess)
                 {
                     continue;
                 }
 
                 // Continue if the window doesn't have any text.
-                if (WindowTools.GetWindowText(window) is not string windowText || string.IsNullOrWhiteSpace(windowText))
+                if (WindowTools.GetWindowText(windowHandle) is not string windowTitle)
                 {
                     continue;
                 }
 
                 // Continue if the visible window title doesn't match our filter.
-                if (windowTitleRegex is not null && !windowTitleRegex.IsMatch(windowText))
+                if (windowTitleRegex?.IsMatch(windowTitle) == false)
                 {
                     continue;
                 }
-
-                // Continue if the window doesn't have an associated process.
-                Process? process = processes.FirstOrDefault(p => p.Id == WindowTools.GetWindowThreadProcessId(window));
-                if (process is null)
-                {
-                    continue;
-                }
-
-                // Add the window information to the list.
-                windowInfos.Add(new(windowText!, window, process.ProcessName, process.MainWindowHandle, process.Id));
+                windows.Add(new(windowTitle, windowHandle, parentProcess.ProcessName, parentProcess.Id, parentProcess.MainWindowHandle));
             }
-
-            // Return the list of window information.
-            return windowInfos.AsReadOnly();
+            return windows.AsReadOnly();
         }
 
         /// <summary>
@@ -86,7 +75,7 @@ namespace PSADT.WindowManagement
         /// filters. The list will be empty if no windows match the criteria.</returns>
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
-            return GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter);
+            return GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter, options.ParentProcessIdFilter, options.ParentProcessMainWindowHandleFilter);
         }
     }
 }

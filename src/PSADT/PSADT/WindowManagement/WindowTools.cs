@@ -57,7 +57,6 @@ namespace PSADT.WindowManagement
         /// Brings the specified window to the foreground.
         /// </summary>
         /// <param name="hWnd">A handle to the window.</param>
-        /// <returns>True if the window was brought to the foreground; otherwise, false.</returns>
         internal static void BringWindowToFront(HWND hWnd)
         {
             // Throw if we have a null or zero handle.
