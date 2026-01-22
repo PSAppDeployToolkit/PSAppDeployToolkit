@@ -65,7 +65,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         internal string? ToStringUni(int offset = 0)
         {
             ConfirmStateValidity(offset);
-            return Marshal.PtrToStringUni(handle + offset);
+            return Marshal.PtrToStringUni(handle + offset)?.Trim() is string result && !string.IsNullOrWhiteSpace(result) ? result : null;
         }
 
         /// <summary>
