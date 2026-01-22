@@ -210,7 +210,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             {
                 throw new ArgumentException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].", nameof(data));
             }
-            Marshal.Copy(data, startIndex, handle, data.Length);
+            Marshal.Copy(data, startIndex, handle, data.Length - startIndex);
             return (TSelf)this;
         }
 
