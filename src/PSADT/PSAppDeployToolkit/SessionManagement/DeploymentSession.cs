@@ -88,7 +88,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 LogHostOutputToStdStreams = (bool)configToolkit["LogHostOutputToStdStreams"]!;
 
                 // Set up other variable values based on incoming dictionary.
-                if (parameters is not null && parameters.Count > 0)
+                if (parameters?.Count > 0)
                 {
                     if (parameters.TryGetValue("DeploymentType", out object? paramValue) && (paramValue is not null))
                     {
@@ -768,7 +768,7 @@ namespace PSAppDeployToolkit.SessionManagement
                         WriteLogEntry("Detected OOBE in progress but toolkit is configured to not adjust deployment mode.");
                     }
                 }
-                else if (Process.GetProcessesByName("WWAHost") is Process[] wwaHostProcesses && wwaHostProcesses.Length > 0)
+                else if (Process.GetProcessesByName("WWAHost") is { Length: > 0 } wwaHostProcesses)
                 {
                     // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
                     WriteLogEntry("The WWAHost process is running, checking ESP User Account setup phase.");

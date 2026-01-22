@@ -265,7 +265,7 @@ namespace PSADT.ClientServer
                                                 }
 
                                                 // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
-                                                if (failures.Count == 0 && closeAppsDialogState.RunningProcessService.RunningProcesses is IReadOnlyList<RunningProcess> runningApps && runningApps.Count > 0)
+                                                if (failures.Count == 0 && closeAppsDialogState.RunningProcessService.RunningProcesses is { Count: > 0 } runningApps)
                                                 {
                                                     closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
                                                     foreach (RunningProcess runningApp in closeAppsDialogState.RunningProcessService.RunningProcesses)
