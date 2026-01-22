@@ -3,8 +3,10 @@ using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.System.Com;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.Shell.PropertiesSystem;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.LibraryInterfaces
@@ -202,6 +204,27 @@ namespace PSADT.LibraryInterfaces
             Guid riid = typeof(IImageList).GUID;
             HRESULT res = PInvoke.SHGetImageList((int)iImageList, in riid, out object ppvObjLocal).ThrowOnFailure();
             ppvObj = (IImageList)ppvObjLocal;
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves a property store for a shell item specified by its parsing name.
+        /// </summary>
+        /// <remarks>The caller is responsible for releasing the returned IPropertyStore interface when it
+        /// is no longer needed. This method is typically used to access or modify properties of shell items, such as
+        /// files or folders, without opening them.</remarks>
+        /// <param name="pszPath">The parsing name of the shell item for which to retrieve the property store. This is typically a file system
+        /// path or other shell namespace path. Cannot be null.</param>
+        /// <param name="pbc">An optional binding context used to control the parsing operation, or null to use default parsing behavior.</param>
+        /// <param name="flags">A combination of flags that specify the type and behavior of the property store to retrieve.</param>
+        /// <param name="ppv">When this method returns, contains the property store interface for the specified item, if the call
+        /// succeeds.</param>
+        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
+        internal static HRESULT SHGetPropertyStoreFromParsingName(string pszPath, IBindCtx? pbc, GETPROPERTYSTOREFLAGS flags, out IPropertyStore ppv)
+        {
+            Guid riid = typeof(IPropertyStore).GUID;
+            HRESULT res = PInvoke.SHGetPropertyStoreFromParsingName(pszPath, pbc, flags, in riid, out object ppvLocal).ThrowOnFailure();
+            ppv = (IPropertyStore)ppvLocal;
             return res;
         }
     }

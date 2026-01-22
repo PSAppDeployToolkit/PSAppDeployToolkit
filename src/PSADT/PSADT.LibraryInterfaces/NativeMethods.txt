@@ -204,6 +204,7 @@ PID_SUBJECT
 PID_TEMPLATE
 PID_TITLE
 PID_WORDCOUNT
+PKEY_Title
 POLICY_ACCOUNT_DOMAIN_INFO
 POLICY_AUDIT_LOG_ADMIN
 POLICY_CREATE_ACCOUNT
@@ -246,6 +247,8 @@ PROCESS_ACCESS_RIGHTS
 PROCESS_BASIC_INFORMATION
 PROCESS_INFORMATION
 ProcessIdToSessionId
+PropVariantClear
+PropVariantToStringAlloc
 QueryDosDevice
 QueryInformationJobObject
 QueryServiceStatusEx
@@ -352,6 +355,7 @@ SetNamedSecurityInfo
 SetSecurityInfo
 SHChangeNotify
 SHGetImageList
+SHGetPropertyStoreFromParsingName
 SHGFI_FLAGS
 SHGSI_FLAGS
 SHIL_EXTRALARGE

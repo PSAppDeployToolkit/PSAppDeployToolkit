@@ -109,30 +109,9 @@ function Add-ADTFont
                             Copy-Item -LiteralPath $fileItem.FullName -Destination $destPath -Force
                         }
 
-                        # Register font resource.
+                        # Register font resource and set up the font name correctly in the registry.
                         $null = [PSADT.Utilities.FontUtilities]::AddFont($destPath)
-
-                        # Try to get font title using Shell.Application.
-                        $fontTitle = $fileItem.BaseName
-                        try
-                        {
-                            $shell = New-Object -ComObject Shell.Application
-                            $folder = $shell.Namespace($fileItem.DirectoryName)
-                            $fileObj = $folder.ParseName($fileItem.Name)
-                            # Column 21 is typically 'Title' or 'Font title' in Windows
-                            $shellTitle = $folder.GetDetailsOf($fileObj, 21)
-                            if (-not [string]::IsNullOrEmpty($shellTitle))
-                            {
-                                $fontTitle = $shellTitle
-                            }
-                        }
-                        catch
-                        {
-                            Write-ADTLogEntry -Message "Could not retrieve font title from metadata, using filename..." -Severity 2
-                        }
-
-                        # Set up the font name correctly in the registry.
-                        $regName = "$fontTitle$($fontTypes[$extension])"
+                        $regName = "$([PSADT.Utilities.FontUtilities]::GetFontTitle($destPath))$($fontTypes[$extension])"
                         Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name
                         Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.Name)] as [$regName]."
                     }
