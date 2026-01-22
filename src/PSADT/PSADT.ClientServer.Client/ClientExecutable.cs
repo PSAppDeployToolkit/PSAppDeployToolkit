@@ -212,7 +212,7 @@ namespace PSADT.ClientServer
 
                                                 // Get all the windows that haven't failed on us and start closing them.
                                                 TimeSpan promptToSaveTimeout = ((PromptToCloseAppsPayload)request.Payload!).Timeout; List<nint> failures = [];
-                                                while (WindowUtilities.GetProcessWindowInfo(null, null, null, [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process.Id)]).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
+                                                while (closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process).ToArray() is { Length: > 0 } processes && WindowUtilities.GetProcessWindowInfo(processes).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
                                                 {
                                                     // Start gracefully closing each open window.
                                                     foreach (WindowInfo window in windows)
@@ -249,7 +249,7 @@ namespace PSADT.ClientServer
                                                         Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
                                                         while (true)
                                                         {
-                                                            if (WindowUtilities.GetProcessWindowInfo(null, [window.WindowHandle]).Count == 0)
+                                                            if (WindowUtilities.GetProcessWindowInfo([runningApp.Id], [window.WindowHandle]).Count == 0)
                                                             {
                                                                 closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{runningApp.ProcessName}] was successfully closed.", LogSeverity.Info);
                                                                 break;
