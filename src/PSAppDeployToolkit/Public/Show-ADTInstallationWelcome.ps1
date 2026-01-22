@@ -1193,7 +1193,7 @@ function Show-ADTInstallationWelcome
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "The parameter [-PromptToSave] was specified, prompting user to close the application(s)."
+                                    Write-ADTLogEntry -Message "The parameter [-PromptToSave] was specified, prompting user to close the application(s) with [$($adtConfig.UI.PromptToSaveTimeout)] timeout."
                                     Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
 
