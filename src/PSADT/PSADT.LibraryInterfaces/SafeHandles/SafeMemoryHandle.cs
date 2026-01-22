@@ -227,6 +227,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <exception cref="ObjectDisposedException">Thrown when the handle has been disposed or is invalid.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
         /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make a mess.")]
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
             ConfirmStateValidity(offset);
@@ -239,10 +240,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             {
                 throw new ArgumentException("Offset must be aligned to the size of the type T.", nameof(offset));
             }
-            unsafe
-            {
-                return new((void*)(handle + offset), length);
-            }
+            return (handle + offset).AsReadOnlySpan<T>(length);
         }
 
         /// <summary>

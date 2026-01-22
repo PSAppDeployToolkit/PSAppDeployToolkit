@@ -26,6 +26,7 @@ DestroyEnvironmentBlock
 DuplicateHandle
 DuplicateTokenEx
 DwmGetColorizationColor
+DWriteCreateFactory
 EnableMenuItem
 EnumProcessModules
 EnumWindows
@@ -97,6 +98,7 @@ HTVSCROLL
 HTZOOM
 HWND_BROADCAST
 IAudioSessionManager2
+IDWriteFactory
 IMAGE_DOS_HEADER
 IMAGE_DOS_SIGNATURE
 IMAGE_LIST_DRAW_STYLE

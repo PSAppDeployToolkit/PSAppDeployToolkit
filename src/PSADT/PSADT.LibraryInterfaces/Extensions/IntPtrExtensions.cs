@@ -32,5 +32,23 @@ namespace PSADT.LibraryInterfaces.Extensions
                 return ref Unsafe.AsRef<T>((void*)unchecked(handle + offset));
             }
         }
+
+        /// <summary>
+        /// Creates a read-only span of type T from the specified memory address, length, and optional byte offset.
+        /// </summary>
+        /// <remarks>The caller is responsible for ensuring that the memory region referenced by handle
+        /// and offset is valid and remains accessible for the lifetime of the returned span. Using an invalid or
+        /// out-of-bounds handle or offset may result in undefined behavior.</remarks>
+        /// <typeparam name="T">The type of elements in the span. Must be an unmanaged type.</typeparam>
+        /// <param name="handle">A pointer represented as an IntPtr to the start of the memory region.</param>
+        /// <param name="length">The number of elements of type T in the span.</param>
+        /// <returns>A ReadOnlySpan{T} representing the specified region of memory.</returns>
+        internal static ReadOnlySpan<T> AsReadOnlySpan<T>(this IntPtr handle, int length) where T : unmanaged
+        {
+            unsafe
+            {
+                return new ReadOnlySpan<T>((void*)handle, length);
+            }
+        }
     }
 }
