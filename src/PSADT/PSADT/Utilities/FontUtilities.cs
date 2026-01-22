@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.Foundation;
-using System.IO;
-
 
 namespace PSADT.Utilities
 {
@@ -24,16 +23,8 @@ namespace PSADT.Utilities
             {
                 throw new FileNotFoundException("Font file not found.", fontFilePath);
             }
-
-            // Add the font resource
             int result = Gdi32.AddFontResource(fontFilePath);
-
-            if (result > 0)
-            {
-                // Notify all top-level windows that the font table has changed
-                _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE, (WPARAM)0, (LPARAM)0);
-            }
-
+            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
             return result;
         }
 

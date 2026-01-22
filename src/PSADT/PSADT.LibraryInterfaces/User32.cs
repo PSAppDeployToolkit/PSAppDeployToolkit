@@ -274,7 +274,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lParam">The message-specific second parameter, passed as a string. Can be null.</param>
         /// <returns>A value of type LRESULT that indicates the result of the message processing. The meaning of the return value
         /// depends on the message sent.</returns>
-        internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
+        internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam = null, string? lParam = null)
         {
             unsafe
             {
