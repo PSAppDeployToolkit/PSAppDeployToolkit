@@ -199,7 +199,8 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetImageList(SHIL_SIZE iImageList, out IImageList ppvObj)
         {
-            HRESULT res = PInvoke.SHGetImageList((int)iImageList, new("46EB5926-582E-4017-9FDF-E8998DAA0950"), out object ppvObjLocal).ThrowOnFailure();
+            Guid riid = typeof(IImageList).GUID;
+            HRESULT res = PInvoke.SHGetImageList((int)iImageList, in riid, out object ppvObjLocal).ThrowOnFailure();
             ppvObj = (IImageList)ppvObjLocal;
             return res;
         }
