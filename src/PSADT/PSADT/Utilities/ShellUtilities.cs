@@ -67,7 +67,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
         internal static void MinimizeAllWindows()
         {
-            _ = User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
         internal static void RestoreAllWindows()
         {
-            _ = User32.SendMessage(User32.FindWindow(Shell_TrayWnd, null), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
         }
 
         /// <summary>
@@ -184,10 +184,15 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Represents the class name of the Windows taskbar.
+        /// Retrieves the window handle for the Windows taskbar (system tray).
         /// </summary>
-        /// <remarks>This constant is used to identify the taskbar window in Windows operating
-        /// systems.</remarks>
-        private const string Shell_TrayWnd = "Shell_TrayWnd";
+        /// <remarks>This method is intended for internal use when interacting with the Windows shell. The
+        /// returned handle can be used with other Windows API functions that require a reference to the taskbar
+        /// window.</remarks>
+        /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
+        private static HWND GetTrayWindowHandle()
+        {
+            return User32.FindWindow("Shell_TrayWnd", null);
+        }
     }
 }
