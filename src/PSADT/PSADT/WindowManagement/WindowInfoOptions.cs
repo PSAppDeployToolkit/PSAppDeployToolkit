@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 
@@ -30,6 +31,29 @@ namespace PSADT.WindowManagement
         [JsonConstructor]
         public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter, IReadOnlyList<nint>? windowHandleFilter, IReadOnlyList<string>? parentProcessFilter, IReadOnlyList<int> parentProcessIdFilter, IReadOnlyList<nint> parentProcessMainWindowHandleFilter)
         {
+            // Ensure list inputs are not empty if they're not null.
+            if (windowTitleFilter?.Count == 0)
+            {
+                throw new ArgumentException("The window title filter list cannot be empty.", nameof(windowTitleFilter));
+            }
+            if (windowHandleFilter?.Count == 0)
+            {
+                throw new ArgumentException("The window handle filter list cannot be empty.", nameof(windowHandleFilter));
+            }
+            if (parentProcessFilter?.Count == 0)
+            {
+                throw new ArgumentException("The parent process filter list cannot be empty.", nameof(parentProcessFilter));
+            }
+            if (parentProcessIdFilter?.Count == 0)
+            {
+                throw new ArgumentException("The parent process ID filter list cannot be empty.", nameof(parentProcessIdFilter));
+            }
+            if (parentProcessMainWindowHandleFilter?.Count == 0)
+            {
+                throw new ArgumentException("The parent process main window handle filter list cannot be empty.", nameof(parentProcessMainWindowHandleFilter));
+            }
+
+            // Assign read-only collections or null based on input.
             WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. windowTitleFilter]) : null;
             WindowHandleFilter = windowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>([.. windowHandleFilter]) : null;
             ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. parentProcessFilter]) : null;
