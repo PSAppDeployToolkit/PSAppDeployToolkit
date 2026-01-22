@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
-using PSADT.LibraryInterfaces.SafeHandles;
-using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.UI.Shell;
-using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace PSADT.Utilities
 {
@@ -95,29 +90,6 @@ namespace PSADT.Utilities
                 _ = Gdi32.RemoveFontResource(fontFilePath);
             }
             _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
-        }
-
-        /// <summary>
-        /// Retrieves the title metadata from a font file, if available.
-        /// </summary>
-        /// <remarks>This method reads the 'Title' property from the font file's metadata using Windows
-        /// Shell APIs. If the font file does not contain title information, the method returns null. The method does
-        /// not validate the font file format; ensure the file path points to a valid font file.</remarks>
-        /// <param name="fontFilePath">The full path to the font file from which to extract the title. Cannot be null or empty.</param>
-        /// <returns>A string containing the title of the font if present; otherwise, null.</returns>
-        public static string? GetFontTitle(string fontFilePath)
-        {
-            _ = Shell32.SHCreateItemFromParsingName(fontFilePath, null, out IShellItem2 shellItem);
-            shellItem.GetPropertyStore(GETPROPERTYSTOREFLAGS.GPS_DEFAULT, out IPropertyStore store);
-            store.GetValue(in PInvoke.PKEY_Title, out SafePropVariantHandle pv);
-            using (pv)
-            {
-                _ = PropSys.PropVariantToStringAlloc(pv, out SafeCoTaskMemoryHandle ppszOut);
-                using (ppszOut)
-                {
-                    return ppszOut.ToStringUni();
-                }
-            }
         }
     }
 }

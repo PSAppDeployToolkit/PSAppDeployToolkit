@@ -3,10 +3,8 @@ using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
-using Windows.Win32.System.Com;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
-using Windows.Win32.UI.Shell.PropertiesSystem;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.LibraryInterfaces
@@ -204,51 +202,6 @@ namespace PSADT.LibraryInterfaces
             Guid riid = typeof(IImageList).GUID;
             HRESULT res = PInvoke.SHGetImageList((int)iImageList, in riid, out object ppvObjLocal).ThrowOnFailure();
             ppvObj = (IImageList)ppvObjLocal;
-            return res;
-        }
-
-        /// <summary>
-        /// Retrieves a property store for a shell item specified by its parsing name.
-        /// </summary>
-        /// <remarks>The caller is responsible for releasing the returned IPropertyStore interface when it
-        /// is no longer needed. This method is typically used to access or modify properties of shell items, such as
-        /// files or folders, without opening them.</remarks>
-        /// <param name="pszPath">The parsing name of the shell item for which to retrieve the property store. This is typically a file system
-        /// path or other shell namespace path. Cannot be null.</param>
-        /// <param name="pbc">An optional binding context used to control the parsing operation, or null to use default parsing behavior.</param>
-        /// <param name="flags">A combination of flags that specify the type and behavior of the property store to retrieve.</param>
-        /// <param name="ppv">When this method returns, contains the property store interface for the specified item, if the call
-        /// succeeds.</param>
-        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
-        internal static HRESULT SHGetPropertyStoreFromParsingName(string pszPath, IBindCtx? pbc, GETPROPERTYSTOREFLAGS flags, out IPropertyStore ppv)
-        {
-            Guid riid = typeof(IPropertyStore).GUID;
-            HRESULT res = PInvoke.SHGetPropertyStoreFromParsingName(pszPath, pbc, flags, in riid, out object ppvLocal).ThrowOnFailure();
-            ppv = (IPropertyStore)ppvLocal;
-            return res;
-        }
-
-        /// <summary>
-        /// Creates a Shell item object from a specified parsing name and retrieves a COM interface pointer of the
-        /// requested type.
-        /// </summary>
-        /// <remarks>This method is a generic wrapper for the native SHCreateItemFromParsingName function,
-        /// allowing callers to specify the desired COM interface type as a generic parameter. The caller is responsible
-        /// for ensuring that the requested type T is supported by the Shell item. If the parsing name does not resolve
-        /// to a valid item or the interface is not supported, the method returns a failure HRESULT and ppv is set to
-        /// null.</remarks>
-        /// <typeparam name="T">The type of interface to retrieve. Must be a COM interface type.</typeparam>
-        /// <param name="pszPath">The parsing name of the item to create. This is typically a file system path or other Shell namespace path.
-        /// Cannot be null.</param>
-        /// <param name="pbc">An optional bind context used for resolving the parsing name. Pass null to use the default context.</param>
-        /// <param name="ppv">When this method returns, contains an instance of type T representing the requested interface for the
-        /// created Shell item.</param>
-        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
-        internal static HRESULT SHCreateItemFromParsingName<T>(string pszPath, IBindCtx? pbc, out T ppv) where T : class
-        {
-            Guid riid = typeof(T).GUID;
-            HRESULT res = PInvoke.SHCreateItemFromParsingName(pszPath, pbc, in riid, out object ppvLocal).ThrowOnFailure();
-            ppv = (T)ppvLocal;
             return res;
         }
     }
