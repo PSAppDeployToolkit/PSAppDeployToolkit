@@ -23,16 +23,8 @@ namespace PSADT.Utilities
             {
                 throw new FileNotFoundException("Font file not found.", fontFilePath);
             }
-
-            // Add the font resource
             int result = NativeMethods.AddFontResource(fontFilePath);
-
-            if (result > 0)
-            {
-                // Notify all top-level windows that the font table has changed
-                _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE, (WPARAM)0, (LPARAM)0);
-            }
-
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
             return result;
         }
 
