@@ -119,7 +119,6 @@ InitializeAcl
 InitializeProcThreadAttributeList
 INVALID_FILE_ATTRIBUTES
 INVALID_HANDLE_VALUE
-IShellItem2
 IsIconic
 IsProcessInJob
 IsWindowEnabled
@@ -222,7 +221,6 @@ PID_SUBJECT
 PID_TEMPLATE
 PID_TITLE
 PID_WORDCOUNT
-PKEY_Title
 POLICY_ACCOUNT_DOMAIN_INFO
 POLICY_AUDIT_LOG_ADMIN
 POLICY_CREATE_ACCOUNT
@@ -266,8 +264,6 @@ PROCESS_ACCESS_RIGHTS
 PROCESS_BASIC_INFORMATION
 PROCESS_INFORMATION
 ProcessIdToSessionId
-PropVariantClear
-PropVariantToStringAlloc
 QueryDosDevice
 QueryFullProcessImageName
 QueryInformationJobObject
@@ -376,9 +372,7 @@ SetNamedSecurityInfo
 SetSecurityInfo
 SetTokenInformation
 SHChangeNotify
-SHCreateItemFromParsingName
 SHGetImageList
-SHGetPropertyStoreFromParsingName
 SHGFI_FLAGS
 SHGSI_FLAGS
 SHIL_EXTRALARGE
