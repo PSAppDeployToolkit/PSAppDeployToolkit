@@ -104,7 +104,7 @@ Describe 'Add-ADTFont' {
             $testFont = New-TestFontFile -Extension '.ttf'
             $script:InstalledFontFile = Split-Path $testFont -Leaf
 
-            Add-ADTFont -Path $testFont
+            Add-ADTFont -LiteralPath $testFont
 
             # Verify file was copied to Fonts directory
             Join-Path $script:FontsDir $script:InstalledFontFile | Should -Exist
@@ -123,7 +123,7 @@ Describe 'Add-ADTFont' {
             $testFont = New-TestFontFile -Extension '.ttc'
             $script:InstalledFontFile = Split-Path $testFont -Leaf
 
-            Add-ADTFont -Path $testFont
+            Add-ADTFont -LiteralPath $testFont
 
             # Verify file was copied to Fonts directory
             Join-Path $script:FontsDir $script:InstalledFontFile | Should -Exist
@@ -142,7 +142,7 @@ Describe 'Add-ADTFont' {
             $testFont = New-TestFontFile -Extension '.otf'
             $script:InstalledFontFile = Split-Path $testFont -Leaf
 
-            Add-ADTFont -Path $testFont
+            Add-ADTFont -LiteralPath $testFont
 
             # Verify file was copied to Fonts directory
             Join-Path $script:FontsDir $script:InstalledFontFile | Should -Exist
@@ -169,18 +169,18 @@ Describe 'Add-ADTFont' {
             # Small delay to ensure timestamp would change if file was overwritten
             Start-Sleep -Milliseconds 100
 
-            Add-ADTFont -Path $testFont
+            Add-ADTFont -LiteralPath $testFont
 
             # Verify file was not overwritten (same timestamp)
             (Get-Item $destPath).LastWriteTime | Should -Be $originalWriteTime
         }
 
-        It 'Should skip unsupported file types with warning' {
+        It 'Should skip unsupported file types with exception' {
             $unsupportedFile = Join-Path $TestDrive 'test.txt'
             Set-Content -Path $unsupportedFile -Value 'not a font'
 
-            # Should not throw, just skip
-            { Add-ADTFont -Path $unsupportedFile } | Should -Not -Throw
+            # Should throw
+            { Add-ADTFont -LiteralPath $unsupportedFile } | Should -Throw
 
             # File should not be in Fonts directory
             Join-Path $script:FontsDir 'test.txt' | Should -Not -Exist
@@ -221,7 +221,7 @@ Describe 'Add-ADTFont' {
             Copy-Item $font2 (Join-Path $script:TestFontDir $font2Name)
             $script:InstalledFontFiles += $font2Name
 
-            Add-ADTFont -Path $script:TestFontDir
+            Add-ADTFont -LiteralPath $script:TestFontDir
 
             # Verify both fonts were installed
             Join-Path $script:FontsDir $font1Name | Should -Exist
@@ -239,7 +239,7 @@ Describe 'Add-ADTFont' {
             Set-Content -Path (Join-Path $script:TestFontDir 'readme.txt') -Value 'test'
             Set-Content -Path (Join-Path $script:TestFontDir 'config.xml') -Value '<config/>'
 
-            Add-ADTFont -Path $script:TestFontDir
+            Add-ADTFont -LiteralPath $script:TestFontDir
 
             # Font should be installed
             Join-Path $script:FontsDir $fontName | Should -Exist
@@ -253,7 +253,7 @@ Describe 'Add-ADTFont' {
             $emptyDir = Join-Path $TestDrive 'EmptyFontDir'
             New-Item -Path $emptyDir -ItemType Directory -Force | Out-Null
 
-            { Add-ADTFont -Path $emptyDir } | Should -Not -Throw
+            { Add-ADTFont -LiteralPath $emptyDir } | Should -Not -Throw
         }
     }
 
@@ -291,7 +291,7 @@ Describe 'Add-ADTFont' {
             Copy-Item $font2 (Join-Path $script:SubDir $font2Name)
             $script:InstalledFontFiles += $font2Name
 
-            Add-ADTFont -Path $script:TestFontDir -Recurse
+            Add-ADTFont -LiteralPath $script:TestFontDir -Recurse
 
             # Both fonts should be installed
             Join-Path $script:FontsDir $font1Name | Should -Exist
@@ -311,7 +311,7 @@ Describe 'Add-ADTFont' {
             Copy-Item $font2 (Join-Path $script:SubDir $font2Name)
             # Don't add to cleanup list since it shouldn't be installed
 
-            Add-ADTFont -Path $script:TestFontDir
+            Add-ADTFont -LiteralPath $script:TestFontDir
 
             # Root font should be installed
             Join-Path $script:FontsDir $font1Name | Should -Exist
@@ -356,7 +356,7 @@ Describe 'Add-ADTFont' {
             # Create a non-matching file (would need .otf source)
             Set-Content -Path (Join-Path $script:TestFontDir 'notafont.txt') -Value 'test'
 
-            Add-ADTFont -Path (Join-Path $script:TestFontDir '*.ttf')
+            Add-ADTFont -LiteralPath (Join-Path $script:TestFontDir '*.ttf')
 
             # .ttf files should be installed
             Join-Path $script:FontsDir $font1Name | Should -Exist
@@ -401,7 +401,7 @@ Describe 'Add-ADTFont' {
             $font2Name = Split-Path $font2 -Leaf
             $script:InstalledFontFiles += $font2Name
 
-            Add-ADTFont -Path @($font1, $font2)
+            Add-ADTFont -LiteralPath @($font1, $font2)
 
             Join-Path $script:FontsDir $font1Name | Should -Exist
             Join-Path $script:FontsDir $font2Name | Should -Exist
@@ -410,10 +410,10 @@ Describe 'Add-ADTFont' {
 
     Context 'Error Handling' {
         It 'Should throw error for non-existent path' {
-            { Add-ADTFont -Path 'C:\NonExistent\Font.ttf' } | Should -Throw
+            { Add-ADTFont -LiteralPath 'C:\NonExistent\Font.ttf' } | Should -Throw
         }
 
-        It 'Should continue with -IgnoreErrors when a file fails' {
+        It 'Should continue with -ErrorAction SilentlyContinue when a file fails' {
             $script:InstalledFontFiles = @()
 
             # Create a valid font
@@ -422,7 +422,7 @@ Describe 'Add-ADTFont' {
             $script:InstalledFontFiles += $validFontName
 
             # This should not throw and should install the valid font
-            { Add-ADTFont -Path @('C:\NonExistent\Font.ttf', $validFont) -IgnoreErrors -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Add-ADTFont -LiteralPath @('C:\NonExistent\Font.ttf', $validFont) -ErrorAction SilentlyContinue } | Should -Not -Throw
 
             # Valid font should still be installed
             Join-Path $script:FontsDir $validFontName | Should -Exist
@@ -446,7 +446,7 @@ Describe 'Add-ADTFont' {
             $script:InstalledFontFile = Split-Path $testFont -Leaf
             $destPath = Join-Path $script:FontsDir $script:InstalledFontFile
 
-            Add-ADTFont -Path $testFont
+            Add-ADTFont -LiteralPath $testFont
 
             # Verify the font was registered with the system
             # We can verify this by checking the file exists and registry entry was created

@@ -12,16 +12,14 @@ function Add-ADTFont
 
     .DESCRIPTION
         Installs a font file to the system by copying it to the Windows Fonts directory, registering it with the system, and creating the registry entry.
+
         Supports .ttf, .ttc, and .otf file types.
 
-    .PARAMETER Path
+    .PARAMETER LiteralPath
         The path to the font file or directory containing font files.
 
     .PARAMETER Recurse
         Recursively search for font files in subdirectories.
-
-    .PARAMETER IgnoreErrors
-        Ignore errors during installation and continue.
 
     .INPUTS
         None
@@ -30,12 +28,12 @@ function Add-ADTFont
         None
 
     .EXAMPLE
-        Add-ADTFont -Path "$($adtSession.DirFiles)\MyFont.ttf"
+        Add-ADTFont -LiteralPath "$($adtSession.DirFiles)\MyFont.ttf"
 
         Installs the MyFont.ttf font file.
 
     .EXAMPLE
-        Add-ADTFont -Path "$($adtSession.DirFiles)\Fonts" -Recurse
+        Add-ADTFont -LiteralPath "$($adtSession.DirFiles)\Fonts" -Recurse
 
         Installs all font files in the Fonts directory and its subdirectories.
 
@@ -56,20 +54,17 @@ function Add-ADTFont
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SupportsWildcards()]
-        [Alias('FullName')]
-        [System.String[]]$Path,
+        [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Recurse,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$IgnoreErrors
+        [System.Management.Automation.SwitchParameter]$Recurse
     )
 
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $fontsDir = [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'Fonts')
+        $fontsRegKeyPath = 'Microsoft.Win32.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
 
         # Dictionary to map extensions to registry suffixes
         $fontTypes = @{
@@ -77,85 +72,47 @@ function Add-ADTFont
             '.ttc' = ' (TrueType)'
             '.otf' = ' (OpenType)'
         }
-
-        $fontsDir = [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'Fonts')
-        $fontsRegKeyPath = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
     }
 
     process
     {
-        foreach ($item in $Path)
+        foreach ($item in $LiteralPath)
         {
             try
             {
                 try
                 {
-                    Write-ADTLogEntry -Message "Installing font [$item]..."
-
-                    $resolvedPath = Resolve-Path -Path $item -ErrorAction Stop
-
-                    # If it's a directory, get files
-                    if (Test-Path -Path $resolvedPath -PathType Container)
+                    # Test whether we've got a file or directory.
+                    $resolvedPath = Resolve-Path -Path $item
+                    if (Test-Path -Path $resolvedPath -PathType Leaf)
                     {
-                        $searchParams = @{
-                            Path = $resolvedPath
-                            File = $true
-                        }
-                        if ($Recurse) { $searchParams['Recurse'] = $true }
-
-                        $files = Get-ChildItem @searchParams
-
-                        foreach ($file in $files)
-                        {
-                            if ($fontTypes.ContainsKey($file.Extension.ToLower()))
-                            {
-                                Add-ADTFont -Path $file.FullName -IgnoreErrors:$IgnoreErrors
-                                Write-ADTLogEntry -Message "Installed font [$($file.Name)]..."
-                            }
-                            else
-                            {
-                                Write-ADTLogEntry -Message "File [$($file.Name)] is not a supported font type. Skipping." -Severity 2
-                            }
-                        }
-                    }
-                    else
-                    {
-                        # It's a file
+                        # If we're here, it's a file. Make sure it's valid before proceeding.
                         $fileItem = Get-Item -LiteralPath $resolvedPath -Force
                         $extension = $fileItem.Extension.ToLower()
-
-                        if (-not $fontTypes.ContainsKey($extension))
+                        if (!$fontTypes.ContainsKey($extension))
                         {
-                            Write-ADTLogEntry -Message "File [$($fileItem.Name)] is not a supported font type. Skipping." -Severity 2
-                            continue
-                        }
-
-                        Write-ADTLogEntry -Message "Installing font [$($fileItem.Name)]..."
-
-                        # 1. Copy file to Fonts directory
-                        $destPath = Join-Path -Path $fontsDir -ChildPath $fileItem.Name
-
-                        if (-not (Test-Path -LiteralPath $destPath))
-                        {
-                            Copy-Item -LiteralPath $fileItem.FullName -Destination $destPath -Force -ErrorAction Stop
-                        }
-
-                        # 2. Register font resource
-                        try
-                        {
-                            $result = [PSADT.FontManagement.FontUtilities]::AddFont($destPath)
-
-                            if ($result -eq 0)
-                            {
-                                throw "Failed to add font resource. Return code: $result"
+                            $naerParams = @{
+                                Exception = [System.ArgumentException]::new("File [$($fileItem.Name)] is not a supported font type.")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                                ErrorId = 'FontFileUnsupportedExtensionError'
+                                TargetObject = $fileItem
+                                RecommendedAction = "Please confirm the supplied value is correct and try again."
                             }
-                        }
-                        catch
-                        {
-                            throw "Error calling AddFont: $_"
+                            throw (New-ADTErrorRecord @naerParams)
                         }
 
-                        # Try to get font title using Shell.Application
+                        # Copy file to Fonts directory.
+                        Write-ADTLogEntry -Message "Installing font [$($fileItem.Name)]..."
+                        $destPath = Join-Path -Path $fontsDir -ChildPath $fileItem.Name
+                        if (!(Test-Path -LiteralPath $destPath))
+                        {
+                            Copy-Item -LiteralPath $fileItem.FullName -Destination $destPath -Force
+                        }
+
+                        # Register font resource.
+                        $null = [PSADT.Utilities.FontUtilities]::AddFont($destPath)
+
+                        # Try to get font title using Shell.Application.
                         $fontTitle = $fileItem.BaseName
                         try
                         {
@@ -174,11 +131,29 @@ function Add-ADTFont
                             Write-ADTLogEntry -Message "Could not retrieve font title from metadata, using filename..." -Severity 2
                         }
 
+                        # Set up the font name correctly in the registry.
                         $regName = "$fontTitle$($fontTypes[$extension])"
-
-                        Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name -ErrorAction Stop
-
+                        Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name
                         Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.Name)] as [$regName]."
+                    }
+                    elseif (Test-Path -Path $resolvedPath -PathType Container)
+                    {
+                        # We've got a directory. Get all the files and pipe them through.
+                        $null = $PSBoundParameters.Remove('LiteralPath')
+                        Get-ChildItem -Path $resolvedPath -File -Recurse:$Recurse | Add-ADTFont @PSBoundParameters
+                        continue
+                    }
+                    else
+                    {
+                        # Whatever we have isn't valid. Throw and let the caller handle it.
+                        $naerParams = @{
+                            Exception = [System.ArgumentException]::new("The specified LiteralPath of [$item] could not be found.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                            ErrorId = 'LiteralPathInvalidError'
+                            TargetObject = $item
+                            RecommendedAction = "Please confirm the supplied value is correct and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
                 }
                 catch
@@ -194,9 +169,9 @@ function Add-ADTFont
                     ErrorRecord = $_
                     LogMessage = "Failed to install font [$item]."
                 }
-                if ($IgnoreErrors)
+                if ($PSBoundParameters.ContainsKey('ErrorAction'))
                 {
-                    $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                    $iafehParams.Add('ErrorAction', $PSBoundParameters.ErrorAction)
                 }
                 Invoke-ADTFunctionErrorHandler @iafehParams
             }
