@@ -736,7 +736,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning => _clientProcess is not null && !_clientProcess.Process.HasExited;
+        public bool IsRunning => _clientProcess?.Process.HasExited == false;
 
         /// <summary>
         /// Represents the sentinel character used to indicate a successful operation or status.

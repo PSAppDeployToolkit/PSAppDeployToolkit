@@ -96,7 +96,7 @@ namespace PSAppDeployToolkit.Logging
             {
                 _ = Directory.CreateDirectory(logFileDirectory);
             }
-            if (scriptSection is not null && string.IsNullOrWhiteSpace(scriptSection))
+            if (string.IsNullOrWhiteSpace(scriptSection))
             {
                 scriptSection = null;
             }

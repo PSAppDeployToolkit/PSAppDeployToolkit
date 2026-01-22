@@ -37,7 +37,7 @@ namespace PSADT.UserInterface
         {
             // Start the RunningProcessService if it is not already running.
             bool stopProcessService = false;
-            if (state.RunningProcessService is not null && !state.RunningProcessService.IsRunning)
+            if (state.RunningProcessService?.IsRunning == false)
             {
                 state.RunningProcessService.Start();
                 stopProcessService = true;

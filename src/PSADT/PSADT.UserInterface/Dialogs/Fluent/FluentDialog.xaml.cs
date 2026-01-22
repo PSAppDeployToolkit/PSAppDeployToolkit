@@ -128,14 +128,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetDialogIcon();
 
             // Set the expiry timer if specified.
-            if (options.DialogExpiryDuration is not null && options.DialogExpiryDuration.Value != TimeSpan.Zero)
+            if (options.DialogExpiryDuration > TimeSpan.Zero)
             {
                 _expiryTimer = new DispatcherTimer { Interval = options.DialogExpiryDuration.Value };
                 _expiryTimer.Tick += (sender, e) => CloseDialog();
             }
 
             // PersistPrompt timer code.
-            if (options.DialogPersistInterval is not null && options.DialogPersistInterval.Value != TimeSpan.Zero)
+            if (options.DialogPersistInterval > TimeSpan.Zero)
             {
                 _persistTimer = new DispatcherTimer { Interval = options.DialogPersistInterval.Value };
                 _persistTimer.Tick += PersistTimer_Tick;

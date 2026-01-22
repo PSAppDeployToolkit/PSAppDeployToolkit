@@ -551,7 +551,7 @@ namespace PSADT.LibraryInterfaces
             bool OldAclAddRef = false;
             try
             {
-                if (OldAcl is not null && !OldAcl.IsClosed)
+                if (OldAcl?.IsClosed == false)
                 {
                     OldAcl.DangerousAddRef(ref OldAclAddRef);
                 }
