@@ -115,7 +115,7 @@ function Show-ADTDialogBox
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long to show the message prompt before aborting.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long (in seconds) to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {
@@ -146,11 +146,11 @@ function Show-ADTDialogBox
         }
         $Timeout = if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
-            [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
+            $adtConfig.UI.DefaultTimeout
         }
         else
         {
-            [System.TimeSpan]::FromSeconds($PSBoundParameters.Timeout)
+            $PSBoundParameters.Timeout
         }
     }
 
@@ -179,7 +179,7 @@ function Show-ADTDialogBox
                     DialogButtons = $Buttons
                     DialogDefaultButton = $DefaultButton
                     DialogTopMost = !$NotTopMost
-                    DialogExpiryDuration = $Timeout
+                    DialogExpiryDuration = $Timeout * 1000
                     DialogIcon = $Icon
                 }
                 if ($PSBoundParameters.ContainsKey('Icon'))
