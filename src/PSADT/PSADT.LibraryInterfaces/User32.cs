@@ -426,7 +426,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="wLanguageId">The language identifier for the text in the message box. Use 0 for the system default language.</param>
         /// <param name="dwTimeout">The timeout duration after which the message box will automatically close if no user action is taken.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the user's response to the message box.</returns>
-        internal static MESSAGEBOX_RESULT MessageBoxTimeout(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, TimeSpan dwTimeout)
+        internal static MESSAGEBOX_RESULT MessageBoxTimeout(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwTimeout)
         {
             if (string.IsNullOrWhiteSpace(lpText))
             {
@@ -436,13 +436,9 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(lpCaption), "Message caption cannot be null or empty.");
             }
-            if (dwTimeout < TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(dwTimeout), "Timeout duration cannot be negative.");
-            }
             [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
-            MESSAGEBOX_RESULT res = MessageBoxTimeoutW(hWnd, lpText, lpCaption, uType, wLanguageId, (uint)dwTimeout.TotalMilliseconds);
+            MESSAGEBOX_RESULT res = MessageBoxTimeoutW(hWnd, lpText, lpCaption, uType, wLanguageId, dwTimeout);
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 

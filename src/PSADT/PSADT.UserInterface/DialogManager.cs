@@ -297,7 +297,7 @@ namespace PSADT.UserInterface
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button clicked by the user.</returns>
-        internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, TimeSpan Timeout)
+        internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
         {
             return (DialogBoxResult)ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : 0), Timeout);
         }
@@ -310,7 +310,7 @@ namespace PSADT.UserInterface
         /// <param name="Options">A MESSAGEBOX_RESULT value that specifies the buttons and icons to display in the message box.</param>
         /// <param name="Timeout">An optional <see cref="TimeSpan"/> value that specifies the duration after which the message box will automatically close. If not specified, the message box will remain open until the user interacts with it.</param>
         /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
-        internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default)
+        internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, uint Timeout = 0)
         {
             return InvokeDialogAction(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
         }

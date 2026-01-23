@@ -22,7 +22,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["DialogDefaultButton"] is DialogBoxDefaultButton dialogDefaultButton ? dialogDefaultButton : (DialogBoxDefaultButton)uint.MaxValue,
             options["DialogIcon"] is DialogBoxIcon dialogIcon ? dialogIcon : null,
             options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
-            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : TimeSpan.MinValue)
+            options["DialogExpiryDuration"] is uint dialogExpiryDuration ? dialogExpiryDuration : null)
         {
         }
 
@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// dialog box is topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
         [JsonConstructor]
-        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, TimeSpan dialogExpiryDuration)
+        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint? dialogExpiryDuration)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
             {
@@ -59,7 +59,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(dialogDefaultButton), "DialogDefaultButton value is null or invalid.");
             }
-            if (dialogExpiryDuration == TimeSpan.MinValue)
+            if (dialogExpiryDuration == null)
             {
                 throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
             }
@@ -70,7 +70,7 @@ namespace PSADT.UserInterface.DialogOptions
             DialogDefaultButton = dialogDefaultButton;
             DialogIcon = dialogIcon;
             DialogTopMost = dialogTopMost;
-            DialogExpiryDuration = dialogExpiryDuration;
+            DialogExpiryDuration = dialogExpiryDuration.Value;
         }
 
         /// <summary>
@@ -113,6 +113,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
         [JsonProperty]
-        public TimeSpan DialogExpiryDuration { get; }
+        public uint DialogExpiryDuration { get; }
     }
 }

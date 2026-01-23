@@ -891,13 +891,9 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="WAIT_EVENT"/> value indicating the result of the wait operation. Possible values include <see
         /// cref="WAIT_EVENT.WAIT_OBJECT_0"/> for a signaled state, <see cref="WAIT_EVENT.WAIT_TIMEOUT"/> for a timeout,
         /// or <see cref="WAIT_EVENT.WAIT_ABANDONED"/> for an abandoned mutex.</returns>
-        internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, TimeSpan dwMilliseconds)
+        internal static WAIT_EVENT WaitForSingleObject(SafeHandle hHandle, uint dwMilliseconds)
         {
-            if (dwMilliseconds <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(dwMilliseconds), "The timeout must be greater than zero.");
-            }
-            WAIT_EVENT res = PInvoke.WaitForSingleObject(hHandle, (uint)dwMilliseconds.TotalMilliseconds);
+            WAIT_EVENT res = PInvoke.WaitForSingleObject(hHandle, dwMilliseconds);
             return res == WAIT_EVENT.WAIT_FAILED ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
