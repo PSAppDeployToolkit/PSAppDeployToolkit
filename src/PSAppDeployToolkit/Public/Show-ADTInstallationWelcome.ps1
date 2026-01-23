@@ -1264,7 +1264,7 @@ function Show-ADTInstallationWelcome
                             }
                             return
                         }
-                        elseif (!$OnDefer.Equals('TerminatedTryAgain'))
+                        elseif (!$promptResult.Equals('TerminatedTryAgain'))
                         {
                             # We should never get here. It means the dialog result we received was entirely unexpected.
                             $naerParams = @{
