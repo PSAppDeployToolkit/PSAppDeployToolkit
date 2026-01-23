@@ -446,12 +446,13 @@ namespace PSADT.LibraryInterfaces
         /// Sets the specified window as the foreground window.
         /// </summary>
         /// <param name="hWnd">A handle to the window to be set as the foreground window.</param>
+        /// <param name="throwOnError">If <see langword="true"/>, an exception is thrown if the operation fails; otherwise, the method returns <see langword="false"/> on failure.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the operation fails to set the specified window as the foreground window.</exception>
-        internal static BOOL SetForegroundWindow(HWND hWnd)
+        internal static BOOL SetForegroundWindow(HWND hWnd, bool throwOnError = true)
         {
             BOOL res = PInvoke.SetForegroundWindow(hWnd);
-            return !res ? throw new InvalidOperationException($"Failed to set the window as foreground.") : res;
+            return !res && throwOnError ? throw new InvalidOperationException($"Failed to set the window as foreground.") : res;
         }
 
         /// <summary>
