@@ -31,9 +31,10 @@ namespace PSADT.Utilities
             _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "TraySettings");
 
             // Terminate the StartMenuExperienceHost to refresh the start menu. Windows restarts this process instantly.
-            foreach (RunningProcess runningProc in ProcessUtilities.GetRunningProcesses([new("StartMenuExperienceHost")]))
+            foreach (RunningProcessInfo runningProcessInfo in RunningProcessInfo.Get(new ProcessDefinition("StartMenuExperienceHost")))
             {
-                using Process process = runningProc.Process; process.Kill();
+                using Process process = runningProcessInfo.Process;
+                process.Kill();
             }
         }
 
