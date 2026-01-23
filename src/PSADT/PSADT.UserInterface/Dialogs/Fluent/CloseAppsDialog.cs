@@ -317,11 +317,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 Dispatcher.Invoke(() =>
                 {
-                    DialogResult = _forcedCountdown && (_runningProcessService is null || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText)
+                    DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText && !_hideCloseButton))
                         ? CloseAppsDialogResult.Continue
                         : _forcedCountdown && DeferralsAvailable()
                             ? CloseAppsDialogResult.Defer
-                            : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
+                            : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText
+                                ? CloseAppsDialogResult.Close
+                                : CloseAppsDialogResult.Continue;
                     CloseDialog();
                 });
             }

@@ -280,24 +280,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 Invoke(() =>
                 {
-                    if (forcedCountdown && (runningProcessService is null || richTextBoxCloseProcesses.Lines.Length == 0))
+                    if (forcedCountdown && (runningProcessService is null || (richTextBoxCloseProcesses.Lines.Length == 0 && !hideCloseButton)))
                     {
                         buttonContinue.PerformClick();
                     }
-                    else if (forcedCountdown && flowLayoutPanelDialog.Controls.Contains(flowLayoutPanelDeferral) && buttonDefer.Enabled)
+                    else if (forcedCountdown && buttonDefer.Enabled)
                     {
                         buttonDefer.PerformClick();
                     }
+                    else if (buttonCloseProcesses.CanFocus)
+                    {
+                        buttonCloseProcesses.PerformClick();
+                    }
                     else
                     {
-                        if (buttonCloseProcesses.CanFocus)
-                        {
-                            buttonCloseProcesses.PerformClick();
-                        }
-                        else
-                        {
-                            buttonContinue.PerformClick();
-                        }
+                        buttonContinue.PerformClick();
                     }
                 });
             }
