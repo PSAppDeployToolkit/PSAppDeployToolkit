@@ -289,7 +289,7 @@ namespace PSADT.ProcessManagement
                     {
                         _ = Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
-                    if (launchInfo.PriorityClass is not null && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
                         process.PriorityClass = launchInfo.PriorityClass.Value;
                     }

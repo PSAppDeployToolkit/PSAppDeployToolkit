@@ -10,7 +10,6 @@ using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.Security
 {
@@ -19,23 +18,6 @@ namespace PSADT.Security
     /// </summary>
 	internal static class PrivilegeManager
     {
-        /// <summary>
-        /// Ensures that a security token is enabled.
-        /// </summary>
-        /// <param name="privilege"></param>
-        internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
-        {
-            using SafeProcessHandle cProcessSafeHandle = Kernel32.GetCurrentProcess();
-            _ = AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hProcessToken);
-            using (hProcessToken)
-            {
-                if (!IsPrivilegeEnabled(hProcessToken, privilege))
-                {
-                    EnablePrivilege(hProcessToken, privilege);
-                }
-            }
-        }
-
         /// <summary>
         /// Retrieves a read-only collection of privileges associated with the specified token.
         /// </summary>
@@ -198,25 +180,19 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Tests whether the current process has the specified access rights to a process handle.
+        /// Ensures that a security token is enabled.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="accessRights"></param>
-        /// <returns></returns>
-        internal static bool TestProcessAccessRights(SafeProcessHandle token, PROCESS_ACCESS_RIGHTS accessRights)
+        /// <param name="privilege"></param>
+        internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
             using SafeProcessHandle cProcessSafeHandle = Kernel32.GetCurrentProcess();
-            try
+            _ = AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hProcessToken);
+            using (hProcessToken)
             {
-                BOOL res = Kernel32.DuplicateHandle(cProcessSafeHandle, token, cProcessSafeHandle, out SafeFileHandle newHandle, accessRights, false, 0);
-                using (newHandle)
+                if (!IsPrivilegeEnabled(hProcessToken, privilege))
                 {
-                    return res;
+                    EnablePrivilege(hProcessToken, privilege);
                 }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
             }
         }
     }
