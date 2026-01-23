@@ -50,7 +50,7 @@ function Install-ADTMSUpdates
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(Test-Path -LiteralPath $_ -PathType Container))
+                if (!(Test-Path -LiteralPath $_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
                 }
@@ -64,16 +64,23 @@ function Install-ADTMSUpdates
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if (!($updates = Get-ChildItem -Path "$LiteralPath\*.msu" -Recurse -ErrorAction Ignore))
+        if (!($updates = if ([System.IO.Directory]::Exists($LiteralPath)) { Get-ChildItem @PSBoundParameters -Filter *.msu -Recurse -ErrorAction Ignore } else { $LiteralPath }))
         {
-            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified directory contains no updates.'))
+            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified path contains no updates.'))
         }
     }
 
     process
     {
         # Get all hotfixes and install if required.
-        Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$LiteralPath]."
+        if ($updates -isnot [System.String])
+        {
+            Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$LiteralPath]."
+        }
+        else
+        {
+            Write-ADTLogEntry -Message "Installing Microsoft Update [$updates]."
+        }
         foreach ($update in $updates)
         {
             if ($PSCmdlet.ShouldProcess("Microsoft Update [$($update.Name)]", 'Install'))
