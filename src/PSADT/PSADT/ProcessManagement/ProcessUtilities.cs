@@ -206,7 +206,7 @@ namespace PSADT.ProcessManagement
                             _ = AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
                             using (hToken)
                             {
-                                username = TokenManager.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
+                                username = TokenUtilities.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
                             }
                         }
                         catch (Exception ex) when (ex.Message is not null)

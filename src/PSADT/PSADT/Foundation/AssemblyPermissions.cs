@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
 using PSADT.FileSystem;
-using PSADT.ProcessManagement;
+using PSADT.Security;
 
 namespace PSADT.Foundation
 {
@@ -43,7 +43,7 @@ namespace PSADT.Foundation
             }
 
             // Get the primary token for the user if they have a valid session ID, then proceed to check and remediate file system permissions.
-            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? ProcessToken.GetUserPrimaryToken(runAsActiveUser, useLinkedAdminToken, useHighestAvailableToken) : null;
+            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? TokenManager.GetUserPrimaryToken(runAsActiveUser, useLinkedAdminToken, useHighestAvailableToken) : null;
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
             foreach (FileInfo path in _assemblies.Concat(extraPaths ?? []))
             {

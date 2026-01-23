@@ -171,7 +171,7 @@ namespace PSADT.ProcessManagement
                     if (launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid)
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                        using SafeFileHandle hPrimaryToken = ProcessToken.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
                         _ = UserEnv.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                         using (lpEnvironment)
                         {
@@ -190,7 +190,7 @@ namespace PSADT.ProcessManagement
                     else if ((launchInfo.RunAsActiveUser is not null && launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser && !launchInfo.UseLinkedAdminToken && !launchInfo.UseHighestAvailableToken) || (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin))
                     {
                         // We're running elevated but have been asked to de-elevate.
-                        using SafeFileHandle hPrimaryToken = ProcessToken.GetUnelevatedToken();
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
                         OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
                         CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
@@ -648,7 +648,7 @@ namespace PSADT.ProcessManagement
 
             // Test whether the token's SID is the same as the caller's SID.
             // If it is, the following job object checks are not necessary.
-            if (TokenManager.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid)
+            if (TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid)
             {
                 return CreateProcessUsingTokenStatus.OK;
             }
@@ -749,7 +749,7 @@ namespace PSADT.ProcessManagement
                 // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
                 // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
                 // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
-                bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted && TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid;
+                bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted && TokenUtilities.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid;
                 if (forceBreakaway)
                 {
                     if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
@@ -779,7 +779,7 @@ namespace PSADT.ProcessManagement
                     // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
                     // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
                     // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-                    if (TokenManager.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid)
+                    if (TokenUtilities.GetTokenSid(hPrimaryToken) != AccountUtilities.CallerSid)
                     {
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                     }

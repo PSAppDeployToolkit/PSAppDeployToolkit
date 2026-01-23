@@ -195,7 +195,7 @@ namespace PSADT.TerminalServices
                 _ = WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken);
                 using (hUserToken)
                 {
-                    return TokenManager.GetTokenSid(hUserToken);
+                    return TokenUtilities.GetTokenSid(hUserToken);
                 }
             }
 
@@ -230,7 +230,7 @@ namespace PSADT.TerminalServices
                             _ = AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
                             using (hProcessToken)
                             {
-                                return TokenManager.GetTokenSid(hProcessToken);
+                                return TokenUtilities.GetTokenSid(hProcessToken);
                             }
                         }
                     }
@@ -268,7 +268,7 @@ namespace PSADT.TerminalServices
                 _ = WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken); using (hUserToken)
                 using (SafeFileHandle hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
                 {
-                    return TokenManager.IsTokenAdministrative(hPrimaryToken);
+                    return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
                 }
             }
             return AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
