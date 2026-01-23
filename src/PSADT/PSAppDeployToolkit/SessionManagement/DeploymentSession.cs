@@ -879,7 +879,7 @@ namespace PSAppDeployToolkit.SessionManagement
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
-                        if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose) is var runningProcs && (runningProcs.Count == 0))
+                        if (RunningProcessInfo.Get(_appProcessesToClose) is var runningProcesses && (runningProcesses.Count == 0))
                         {
                             if (!forceProcessDetection)
                             {
@@ -893,7 +893,7 @@ namespace PSAppDeployToolkit.SessionManagement
                         }
                         else
                         {
-                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcs.Select(static p => p.Process.ProcessName).Distinct())}'] were found to be running and will require closure.");
+                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcesses.Select(static p => p.Process.ProcessName).Distinct())}'] were found to be running and will require closure.");
                         }
                     }
                     else

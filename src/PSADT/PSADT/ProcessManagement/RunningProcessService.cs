@@ -113,7 +113,7 @@ namespace PSADT.ProcessManagement
         private void RefreshCachedProcessLists()
         {
             // Update the list of running processes.
-            _runningProcesses = ProcessUtilities.GetRunningProcesses(_processDefinitions);
+            _runningProcesses = RunningProcessInfo.Get(_processDefinitions);
             _processesToClose = new ReadOnlyCollection<ProcessToClose>([.. _runningProcesses.GroupBy(p => p.FileName, StringComparer.OrdinalIgnoreCase).Select(p => new ProcessToClose(p.First()))]);
         }
 
@@ -125,7 +125,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Event that is raised when the list of running processes changes.
         /// </summary>
-        internal IReadOnlyList<RunningProcess> RunningProcesses
+        internal IReadOnlyList<RunningProcessInfo> RunningProcesses
         {
             get
             {
@@ -203,7 +203,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the list of running processes.
         /// </summary>
-        private IReadOnlyList<RunningProcess> _runningProcesses = [];
+        private IReadOnlyList<RunningProcessInfo> _runningProcesses = [];
 
         /// <summary>
         /// Gets the list of processes to display on a CloseAppsDialog.

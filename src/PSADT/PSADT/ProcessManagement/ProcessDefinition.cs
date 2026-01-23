@@ -52,6 +52,6 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the filter script for the process.
         /// </summary>
-        public Func<RunningProcess, bool>? Filter { get; }
+        public Func<RunningProcessInfo, bool>? Filter { get; }
     }
 }

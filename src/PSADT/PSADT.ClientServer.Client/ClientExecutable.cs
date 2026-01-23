@@ -211,21 +211,21 @@ namespace PSADT.ClientServer
                                                 }
 
                                                 // Get all the windows that haven't failed on us and start closing them.
-                                                TimeSpan promptToSaveTimeout = ((PromptToCloseAppsPayload)request.Payload!).Timeout; List<nint> failures = [];
-                                                while (closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process).ToArray() is { Length: > 0 } processes && WindowUtilities.GetProcessWindowInfo(processes).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
+                                                TimeSpan promptToSaveTimeout = ((PromptToCloseAppsPayload)request.Payload!).Timeout; List<nint> failures = []; Process[] runningProcesses;
+                                                while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
                                                 {
                                                     // Start gracefully closing each open window.
                                                     foreach (WindowInfo window in windows)
                                                     {
-                                                        Process runningApp = Process.GetProcessById(window.ParentProcessId);
-                                                        closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{runningApp.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
+                                                        Process process = Process.GetProcessById(window.ParentProcessId);
+                                                        closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
                                                         try
                                                         {
                                                             WindowTools.BringWindowToFront((HWND)window.WindowHandle);
                                                         }
                                                         catch (Exception ex) when (ex.Message is not null)
                                                         {
-                                                            closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{runningApp.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
+                                                            closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
                                                             failures.Add(window.WindowHandle);
                                                             continue;
                                                         }
@@ -233,14 +233,14 @@ namespace PSADT.ClientServer
                                                         // Attempt to close out the process's main window.
                                                         try
                                                         {
-                                                            if (!runningApp.CloseMainWindow())
+                                                            if (!process.CloseMainWindow())
                                                             {
                                                                 throw new InvalidOperationException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.");
                                                             }
                                                         }
                                                         catch (Exception ex) when (ex.Message is not null)
                                                         {
-                                                            closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{runningApp.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
+                                                            closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
                                                             failures.Add(window.WindowHandle);
                                                             continue;
                                                         }
@@ -249,14 +249,14 @@ namespace PSADT.ClientServer
                                                         Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
                                                         while (true)
                                                         {
-                                                            if (WindowUtilities.GetProcessWindowInfo([runningApp.Id], [window.WindowHandle]).Count == 0)
+                                                            if (WindowUtilities.GetProcessWindowInfo([process.Id], [window.WindowHandle]).Count == 0)
                                                             {
-                                                                closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{runningApp.ProcessName}] was successfully closed.", LogSeverity.Info);
+                                                                closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
                                                                 break;
                                                             }
                                                             if (promptToCloseStopwatch.Elapsed >= promptToSaveTimeout)
                                                             {
-                                                                closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{runningApp.ProcessName}] to close.", LogSeverity.Warning);
+                                                                closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
                                                                 break;
                                                             }
                                                             Thread.Sleep(2000);
@@ -265,16 +265,16 @@ namespace PSADT.ClientServer
                                                 }
 
                                                 // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
-                                                if (failures.Count == 0 && closeAppsDialogState.RunningProcessService.RunningProcesses is { Count: > 0 } runningApps)
+                                                if (failures.Count == 0 && runningProcesses.Length > 0)
                                                 {
                                                     closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
-                                                    foreach (RunningProcess runningApp in closeAppsDialogState.RunningProcessService.RunningProcesses)
+                                                    foreach (Process process in runningProcesses)
                                                     {
-                                                        closeAppsDialogState.LogAction($"Stopping process {runningApp.Process.ProcessName}...", LogSeverity.Info);
-                                                        if (!runningApp.Process.HasExited)
+                                                        closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
+                                                        if (!process.HasExited)
                                                         {
-                                                            runningApp.Process.Kill();
-                                                            runningApp.Process.WaitForExit();
+                                                            process.Kill();
+                                                            process.WaitForExit();
                                                         }
                                                     }
                                                 }
