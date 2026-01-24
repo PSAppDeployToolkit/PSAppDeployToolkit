@@ -235,7 +235,7 @@ namespace PSADT.ClientServer
                                                         {
                                                             if (!process.CloseMainWindow())
                                                             {
-                                                                throw new InvalidOperationException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.");
+                                                                throw new ClientException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.", ClientExitCode.PromptToSaveFailure);
                                                             }
                                                         }
                                                         catch (Exception ex) when (ex.Message is not null)
@@ -662,14 +662,14 @@ namespace PSADT.ClientServer
         /// input.</remarks>
         /// <param name="options">An object that specifies the target window handle and the keys to send. The window must be enabled to
         /// receive input.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the target window is disabled, such as when a modal dialog is shown.</exception>
+        /// <exception cref="ClientException">Thrown if the target window is disabled, such as when a modal dialog is shown.</exception>
         private static bool SendKeys(SendKeysOptions options)
         {
             HWND hwnd = (HWND)options.WindowHandle;
             WindowTools.BringWindowToFront(hwnd);
             if (!User32.IsWindowEnabled(hwnd))
             {
-                throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+                throw new ClientException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.", ClientExitCode.SendKeysWindowNotEnabled);
             }
             System.Windows.Forms.SendKeys.SendWait(options.Keys);
             return true;
