@@ -10,6 +10,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using PSADT.Utilities;
 using Windows.Win32.Security;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.Security
 {
@@ -122,8 +123,12 @@ namespace PSADT.Security
             {
                 throw new InvalidOperationException("Cannot retrieve an unelevated token when running as the local system account.");
             }
-            using Process cProcess = Process.GetProcessById((int)ShellUtilities.GetExplorerProcessId()); using SafeProcessHandle cProcessSafeHandle = cProcess.SafeHandle;
-            _ = AdvApi32.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
+            if (!AccountUtilities.CallerIsAdmin)
+            {
+                throw new InvalidOperationException("The current process is already running with an unelevated token.");
+            }
+            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId());
+            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
             using (hProcessToken)
             {
                 if (TokenUtilities.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
