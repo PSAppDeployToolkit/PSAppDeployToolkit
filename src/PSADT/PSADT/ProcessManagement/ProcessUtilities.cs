@@ -23,44 +23,28 @@ namespace PSADT.ProcessManagement
     public static class ProcessUtilities
     {
         /// <summary>
-        /// Retrieves the process identifier (PID) of the specified service.
+        /// Retrieves the parent process of the specified process.
         /// </summary>
-        /// <remarks>This method queries the service control manager to obtain the process ID of the
-        /// service. Ensure that the service is running before calling this method, as it will only return a valid
-        /// process ID for active services.</remarks>
-        /// <param name="service">The <see cref="ServiceController"/> representing the service for which to obtain the process ID.</param>
-        /// <returns>The process ID of the specified service.</returns>
-        public static uint GetServiceProcessId(ServiceController service)
+        /// <remarks>This method uses system-level information to identify the parent process. The caller
+        /// must ensure that the provided process is valid and accessible.</remarks>
+        /// <param name="process">The process for which to retrieve the parent process. Must not be null.</param>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
+        public static Process GetParentProcess(Process process)
         {
-            if (service is null)
-            {
-                throw new ArgumentNullException(nameof(service), "Service cannot be null.");
-            }
-            using CloseServiceHandleSafeHandle scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
-            using CloseServiceHandleSafeHandle svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
-            _ = AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
-            ref SERVICE_STATUS_PROCESS serviceStatus = ref buffer.AsStructure<SERVICE_STATUS_PROCESS>();
-            return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
-                ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
-                : dwProcessId;
+            // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
+            return process is null ? throw new ArgumentNullException(nameof(process), "Process cannot be null.") : GetParentProcess(process.SafeHandle);
         }
 
         /// <summary>
-        /// Retrieves the parent process of the specified process handle.
+        /// Retrieves the parent process of the specified process by its process identifier.
         /// </summary>
-        /// <remarks>This method uses the NtQueryInformationProcess function to retrieve information about
-        /// the specified process. Ensure that the provided process handle is valid and has the required
-        /// permissions.</remarks>
-        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose parent process is to be retrieved.
-        /// The handle must have the necessary access rights to query process information.</param>
-        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
-        public static Process GetParentProcess(SafeHandle hProcess)
+        /// <param name="processId">The identifier of the process whose parent process is to be retrieved. Must correspond to a running process.</param>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process. Returns <c>null</c>
+        /// if the parent process cannot be determined.</returns>
+        public static Process GetParentProcess(int processId)
         {
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
-            _ = NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
-            ref PROCESS_BASIC_INFORMATION pbi = ref buffer.AsStructure<PROCESS_BASIC_INFORMATION>();
-            return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+            using Process process = Process.GetProcessById(processId);
+            return GetParentProcess(process);
         }
 
         /// <summary>
@@ -73,19 +57,6 @@ namespace PSADT.ProcessManagement
         {
             using SafeProcessHandle hProcess = Kernel32.GetCurrentProcess();
             return GetParentProcess(hProcess);
-        }
-
-        /// <summary>
-        /// Retrieves the parent process of the specified process.
-        /// </summary>
-        /// <remarks>This method uses system-level information to identify the parent process. The caller
-        /// must ensure that the provided process is valid and accessible.</remarks>
-        /// <param name="proc">The process for which to retrieve the parent process. Must not be null.</param>
-        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
-        public static Process GetParentProcess(Process proc)
-        {
-            // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
-            return proc is null ? throw new ArgumentNullException(nameof(proc), "Process cannot be null.") : GetParentProcess(proc.SafeHandle);
         }
 
         /// <summary>
@@ -122,11 +93,16 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the command line arguments of a process given its process ID.
+        /// Retrieves the full command-line string used to start the specified process.
         /// </summary>
-        /// <param name="process"></param>
-        /// <returns></returns>
-        internal static string GetProcessCommandLine(Process process)
+        /// <remarks>This method requires that the caller has sufficient permissions to query information
+        /// about the target process. If the process has already exited or access is denied, the returned string may be
+        /// empty.</remarks>
+        /// <param name="process">The process for which to obtain the command-line arguments. Must not be null.</param>
+        /// <returns>A string containing the complete command-line used to launch the specified process. Returns an empty string
+        /// if the command-line cannot be retrieved.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        public static string GetProcessCommandLine(Process process)
         {
             // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
             if (process is null)
@@ -144,10 +120,14 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the command line arguments of a process given its process ID.
+        /// Retrieves the command-line string used to start the process with the specified process ID.
         /// </summary>
-        /// <param name="processId"></param>
-        /// <returns></returns>
+        /// <remarks>This method may require elevated permissions to access information about certain
+        /// processes. If the process has already exited or access is denied, the result may be null.</remarks>
+        /// <param name="processId">The unique identifier of the process whose command-line arguments are to be retrieved. Must refer to a
+        /// currently running process.</param>
+        /// <returns>A string containing the full command-line used to start the specified process, or null if the command-line
+        /// cannot be determined.</returns>
         public static string GetProcessCommandLine(int processId)
         {
             using Process process = Process.GetProcessById(processId);
@@ -155,11 +135,64 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the image name of a process given its process ID.
+        /// Retrieves the full file system path of the executable image for the specified process.
         /// </summary>
-        /// <param name="process"></param>
-        /// <param name="ntPathLookupTable"></param>
-        /// <returns></returns>
+        /// <param name="process">The process for which to obtain the image file path. Must not be null.</param>
+        /// <returns>A string containing the full path to the process's executable image. Returns an empty string if the image
+        /// name cannot be determined.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
+        public static string GetProcessImageName(Process process)
+        {
+            return process is null ? throw new ArgumentNullException(nameof(process), "Process cannot be null.") : GetProcessImageName(process, null);
+        }
+
+        /// <summary>
+        /// Retrieves the file name of the main executable module for the process specified by its identifier.
+        /// </summary>
+        /// <remarks>If the process has already exited or the identifier does not correspond to an
+        /// existing process, an exception will be thrown. This method accesses process information and may require
+        /// appropriate permissions.</remarks>
+        /// <param name="processId">The unique identifier of the process whose image file name is to be retrieved. Must refer to a running
+        /// process.</param>
+        /// <returns>A string containing the full path to the executable file of the specified process.</returns>
+        public static string GetProcessImageName(int processId)
+        {
+            using Process process = Process.GetProcessById(processId);
+            return GetProcessImageName(process, null);
+        }
+
+        /// <summary>
+        /// Retrieves the parent process of the specified process handle.
+        /// </summary>
+        /// <remarks>This method uses the NtQueryInformationProcess function to retrieve information about
+        /// the specified process. Ensure that the provided process handle is valid and has the required
+        /// permissions.</remarks>
+        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose parent process is to be retrieved.
+        /// The handle must have the necessary access rights to query process information.</param>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
+        internal static Process GetParentProcess(SafeHandle hProcess)
+        {
+            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
+            _ = NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
+            ref PROCESS_BASIC_INFORMATION pbi = ref buffer.AsStructure<PROCESS_BASIC_INFORMATION>();
+            return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+        }
+
+        /// <summary>
+        /// Retrieves the full image file path of the specified process, optionally converting NT device paths to drive
+        /// letter paths using a lookup table.
+        /// </summary>
+        /// <remarks>This method is intended for internal use and relies on low-level system queries to
+        /// obtain the process image path. If the process is running under a different user context or has restricted
+        /// access, the returned path may be unavailable or incomplete.</remarks>
+        /// <param name="process">The process for which to obtain the image file path. Must not be null and must reference a valid, running
+        /// process.</param>
+        /// <param name="ntPathLookupTable">An optional lookup table mapping NT device names to drive letters. If provided, NT device paths in the image
+        /// name are replaced with corresponding drive letters.</param>
+        /// <returns>A string containing the full image file path of the specified process. If a lookup table is provided, the
+        /// path will use drive letters instead of NT device names.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if a lookup table is provided and the NT device name derived from the image path cannot be found in
+        /// the table.</exception>
         internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
@@ -196,14 +229,27 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the image name of a process given its process ID.
+        /// Retrieves the process identifier (PID) of the specified service.
         /// </summary>
-        /// <param name="processId"></param>
-        /// <returns></returns>
-        public static string GetProcessImageName(int processId)
+        /// <remarks>This method queries the service control manager to obtain the process ID of the
+        /// service. Ensure that the service is running before calling this method, as it will only return a valid
+        /// process ID for active services.</remarks>
+        /// <param name="service">The <see cref="ServiceController"/> representing the service for which to obtain the process ID.</param>
+        /// <returns>The process ID of the specified service.</returns>
+        internal static uint GetServiceProcessId(ServiceController service)
         {
-            using Process process = Process.GetProcessById(processId);
-            return GetProcessImageName(process, null);
+            if (service is null)
+            {
+                throw new ArgumentNullException(nameof(service), "Service cannot be null.");
+            }
+            using CloseServiceHandleSafeHandle scm = AdvApi32.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
+            using CloseServiceHandleSafeHandle svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
+            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
+            _ = AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
+            ref SERVICE_STATUS_PROCESS serviceStatus = ref buffer.AsStructure<SERVICE_STATUS_PROCESS>();
+            return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
+                ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
+                : dwProcessId;
         }
     }
 }
