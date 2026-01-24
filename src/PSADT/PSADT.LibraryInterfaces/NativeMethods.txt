@@ -13,6 +13,9 @@ AuthzInitializeContextFromToken
 AuthzInitializeResourceManager
 BringWindowToTop
 CloseHandle
+CoCreateInstance
+CoInitializeEx
+CoUninitialize
 CreateEnvironmentBlock
 CreateFile
 CreateIoCompletionPort
@@ -96,6 +99,7 @@ HTVSCROLL
 HTZOOM
 HWND_BROADCAST
 IAudioSessionManager2
+IExecAction
 IMAGE_DOS_HEADER
 IMAGE_DOS_SIGNATURE
 IMAGE_LIST_DRAW_STYLE
@@ -116,6 +120,7 @@ IsIconic
 IsProcessInJob
 IsWindowEnabled
 IsWindowVisible
+ITaskService
 JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS
 JOB_OBJECT_MSG_ACTIVE_PROCESS_LIMIT
 JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO
@@ -372,6 +377,7 @@ STATUS_PIPE_DISCONNECTED
 STATUS_SUCCESS
 STATUS_TIMEOUT
 STILL_ACTIVE
+TASK_CREATION
 TaskDialog
 TD_ERROR_ICON
 TD_INFORMATION_ICON

@@ -3,6 +3,7 @@
     /// <summary>
     /// Represents the exit codes that can be returned by the application to indicate the result of its execution.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This is not a bitfield...")]
     public enum ClientExitCode : int
     {
         /// <summary>
@@ -46,6 +47,11 @@
         InvalidResult = 7,
 
         /// <summary>
+        /// The calling user is not authorized to perform the requested operation.
+        /// </summary>
+        InvalidCaller = 8,
+
+        /// <summary>
         /// The client operation failed because no dialog was specified.
         /// </summary>
         NoDialogType = 10,
@@ -84,6 +90,11 @@
         /// The window to which keys were to be sent is not enabled.
         /// </summary>
         SendKeysWindowNotEnabled = 17,
+
+        /// <summary>
+        /// The client failed to retrieve the linked admin token for the requested session Id.
+        /// </summary>
+        LinkedAdminTokenFailure = 18,
 
         /// <summary>
         /// The client operation failed because no output pipe was specified.

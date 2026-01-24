@@ -8,12 +8,14 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.ClientServer.Payloads;
 using PSADT.DeviceManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.RegistryManagement;
+using PSADT.Security;
 using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
@@ -23,6 +25,7 @@ using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Logging;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.ClientServer
 {
@@ -540,6 +543,11 @@ namespace PSADT.ClientServer
                     Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
                     return (int)ClientExitCode.Success;
                 }
+                else if (arg is "/TokenBroker" or "/tb")
+                {
+                    BrokerTokenForCaller(ArgvToDictionary(argv));
+                    return (int)ClientExitCode.Success;
+                }
             }
             throw new ClientException("The specified arguments were unable to be resolved into a type of operation.", ClientExitCode.InvalidMode);
         }
@@ -673,6 +681,111 @@ namespace PSADT.ClientServer
             }
             System.Windows.Forms.SendKeys.SendWait(options.Keys);
             return true;
+        }
+
+        /// <summary>
+        /// Brokers a security token for a caller process by duplicating a user token and transmitting it over a named
+        /// pipe. This operation is restricted to processes running as the Local System account.
+        /// </summary>
+        /// <remarks>This method is intended for internal use in scenarios where a privileged process
+        /// needs to broker a user token to another process securely. The operation requires elevated privileges and
+        /// should only be invoked in trusted environments. The method communicates with the target process via a named
+        /// pipe and expects all required arguments to be present and valid.</remarks>
+        /// <param name="arguments">A read-only dictionary containing the required arguments for token brokering. Must include the following
+        /// keys: 'PipeName' (the name of the pipe to connect to), 'ProcessId' (the ID of the target process),
+        /// 'SessionId' (the session ID for the user token), 'UseLinkedAdminToken' (whether to use the linked
+        /// administrator token), and 'UseHighestAvailableToken' (whether to use the highest available token). All
+        /// values must be non-null and non-whitespace.</param>
+        /// <exception cref="ClientException">Thrown if the caller is not running as the Local System account, or if any required argument is missing,
+        /// invalid, or cannot be parsed.</exception>
+        private static void BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
+        {
+            // Confirm we're running as the SYSTEM account before proceeding.
+            if (!AccountUtilities.CallerIsLocalSystem)
+            {
+                throw new ClientException("Token brokering can only be performed when running as the Local System account.", ClientExitCode.InvalidCaller);
+            }
+
+            // Read our arguments and make sure they're all valid.
+            if (!arguments.TryGetValue("PipeName", out string? pipeName) || string.IsNullOrWhiteSpace(pipeName))
+            {
+                throw new ClientException("The 'PipeName' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+            }
+            if (!arguments.TryGetValue("ProcessId", out string? processIdStr) || string.IsNullOrWhiteSpace(processIdStr) || !uint.TryParse(processIdStr, out uint processId))
+            {
+                throw new ClientException("The 'ProcessId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+            }
+            if (!arguments.TryGetValue("SessionId", out string? sessionIdStr) || string.IsNullOrWhiteSpace(sessionIdStr) || !uint.TryParse(sessionIdStr, out uint sessionId))
+            {
+                throw new ClientException("The 'SessionId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+            }
+            if (!arguments.TryGetValue("UseLinkedAdminToken", out string? useLinkedAdminTokenStr) || string.IsNullOrWhiteSpace(useLinkedAdminTokenStr) || !bool.TryParse(useLinkedAdminTokenStr, out bool useLinkedAdminToken))
+            {
+                throw new ClientException("The 'UseLinkedAdminTokenStr' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+            }
+            if (!arguments.TryGetValue("UseHighestAvailableToken", out string? useHighestAvailableTokenStr) || string.IsNullOrWhiteSpace(useHighestAvailableTokenStr) || !bool.TryParse(useHighestAvailableTokenStr, out bool useHighestAvailableToken))
+            {
+                throw new ClientException("The 'UseHighestAvailableTokenStr' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+            }
+
+            // Confirm the session Id is greater than 0; we never want to broker SYSTEM tokens.
+            if (sessionId == 0)
+            {
+                throw new ClientException("Brokering of the Local System session token is not permitted.", ClientExitCode.InvalidArguments);
+            }
+
+            // Connect to the named pipe server.
+            using NamedPipeClientStream pipe = new(".", pipeName, PipeDirection.InOut, PipeOptions.None);
+            pipe.Connect();
+
+            // Get the user's token from the WTS subsystem.
+            _ = WtsApi32.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
+            SafeFileHandle hPrimaryToken;
+            using (hUserToken)
+            {
+                if (useLinkedAdminToken || useHighestAvailableToken)
+                {
+                    try
+                    {
+                        hPrimaryToken = TokenManager.GetLinkedPrimaryToken(hUserToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!useHighestAvailableToken)
+                        {
+                            throw new ClientException("Failed to get linked admin token.", ClientExitCode.LinkedAdminTokenFailure, ex);
+                        }
+                        hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
+                    }
+                }
+                else
+                {
+                    hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
+                }
+            }
+
+            // Duplicate the token to the specified process ID.
+            SafeFileHandle hDupToken;
+            using (SafeFileHandle hSourceProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
+            using (SafeProcessHandle hCurrentProcess = Kernel32.GetCurrentProcess())
+            using (hPrimaryToken)
+            {
+                _ = Kernel32.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+            }
+
+            // Write the duplicated token to the pipe.
+            using (hDupToken)
+            {
+                if (IntPtr.Size == 8)
+                {
+                    pipe.WriteByte(8); pipe.Write(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt64()), 0, 8);
+                }
+                else
+                {
+                    pipe.WriteByte(4); pipe.Write(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt32()), 0, 4);
+                }
+            }
+            pipe.Flush(); pipe.WaitForPipeDrain();
         }
 
         /// <summary>
