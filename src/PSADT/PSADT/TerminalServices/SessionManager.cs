@@ -44,7 +44,7 @@ namespace PSADT.TerminalServices
                 List<SessionInfo> sessions = new(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
-                    ref WTS_SESSION_INFOW session = ref pSessionInfoSpan.Slice(objLength * i).AsStructure<WTS_SESSION_INFOW>();
+                    ref readonly WTS_SESSION_INFOW session = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFOW>();
                     if (GetSessionInfo(in session) is SessionInfo sessionInfo)
                     {
                         sessions.Add(sessionInfo);
@@ -86,7 +86,7 @@ namespace PSADT.TerminalServices
                     }
                     else if (typeof(T) == typeof(WTSINFOEXW))
                     {
-                        return (T)(object)pBuffer.AsStructure<WTSINFOEXW>();
+                        return (T)(object)pBuffer.AsReadOnlyStructure<WTSINFOEXW>();
                     }
                     else
                     {
@@ -209,7 +209,7 @@ namespace PSADT.TerminalServices
                     int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
                     for (int i = 0; i < pProcessInfo.Length / objLength; i++)
                     {
-                        ref WTS_PROCESS_INFOW process = ref pProcessInfoSpan.Slice(objLength * i).AsStructure<WTS_PROCESS_INFOW>();
+                        ref readonly WTS_PROCESS_INFOW process = ref pProcessInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_PROCESS_INFOW>();
                         if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
                         {
                             return process.pUserSid.ToSecurityIdentifier();

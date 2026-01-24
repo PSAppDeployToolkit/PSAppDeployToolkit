@@ -55,7 +55,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_ELEVATION>()];
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
-            ref TOKEN_ELEVATION tokenElevation = ref buffer.AsStructure<TOKEN_ELEVATION>();
+            ref readonly TOKEN_ELEVATION tokenElevation = ref buffer.AsReadOnlyStructure<TOKEN_ELEVATION>();
             return tokenElevation.TokenIsElevated != 0;
         }
 
@@ -76,7 +76,7 @@ namespace PSADT.Security
 
             // Now grab the token's SID as requested.
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
-            ref TOKEN_USER tokenUser = ref buffer.AsStructure<TOKEN_USER>();
+            ref readonly TOKEN_USER tokenUser = ref buffer.AsReadOnlyStructure<TOKEN_USER>();
             return tokenUser.User.Sid.ToSecurityIdentifier();
         }
 

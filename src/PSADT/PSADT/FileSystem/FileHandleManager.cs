@@ -184,13 +184,13 @@ namespace PSADT.FileSystem
             _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
 
             // Read the number of types from the buffer and store the built-out dictionary.
-            ref OBJECT_TYPES_INFORMATION typesInfo = ref typesBufferPtr.AsStructure<OBJECT_TYPES_INFORMATION>();
+            ref readonly OBJECT_TYPES_INFORMATION typesInfo = ref typesBufferPtr.AsReadOnlyStructure<OBJECT_TYPES_INFORMATION>();
             uint typesCount = typesInfo.NumberOfTypes; Dictionary<ushort, string> typeTable = new((int)typesCount);
             int ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsStructure<OBJECT_TYPE_INFORMATION>();
+                ref readonly OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsReadOnlyStructure<OBJECT_TYPE_INFORMATION>();
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
@@ -229,14 +229,14 @@ namespace PSADT.FileSystem
             // Loop through all handles and return list of open file handles.
             try
             {
-                ref SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsSpan().AsStructure<SYSTEM_HANDLE_INFORMATION_EX>();
+                ref readonly SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsSpan().AsReadOnlyStructure<SYSTEM_HANDLE_INFORMATION_EX>();
                 ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
                 using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
                 ConcurrentBag<FileHandleInfo> openHandles = [];
                 _ = Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
-                    ref SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i)).AsStructure<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+                    ref readonly SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i)).AsReadOnlyStructure<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
                     if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                     {
                         return;
@@ -334,7 +334,7 @@ namespace PSADT.FileSystem
                             {
                                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
                             }
-                            ref OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsStructure<OBJECT_NAME_INFORMATION>();
+                            ref readonly OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsReadOnlyStructure<OBJECT_NAME_INFORMATION>();
                             objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
                         }
                         finally
