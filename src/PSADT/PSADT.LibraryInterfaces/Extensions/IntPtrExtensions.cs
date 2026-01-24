@@ -25,7 +25,7 @@ namespace PSADT.LibraryInterfaces.Extensions
         /// <param name="offset">The byte offset from <paramref name="handle"/> at which the structure of type <typeparamref name="T"/> is
         /// located. The offset must be zero or positive.</param>
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified memory address and offset.</returns>
-        internal static ref T AsStructure<T>(this IntPtr handle, int offset = 0) where T : unmanaged
+        internal static ref readonly T AsReadOnlyStructure<T>(this IntPtr handle, int offset = 0) where T : unmanaged
         {
             unsafe
             {

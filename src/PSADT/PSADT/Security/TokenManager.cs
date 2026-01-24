@@ -170,7 +170,7 @@ namespace PSADT.Security
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_LINKED_TOKEN>()];
             _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-            ref TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsStructure<TOKEN_LINKED_TOKEN>();
+            ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
             return new(tokenLinkedToken.LinkedToken, true);
         }
 

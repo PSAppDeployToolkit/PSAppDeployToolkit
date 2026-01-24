@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
@@ -115,7 +116,7 @@ namespace PSADT.ProcessManagement
             // Fill the buffer, then retrieve the actual command line string.
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
             _ = NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
-            ref UNICODE_STRING unicodeString = ref buffer.AsStructure<UNICODE_STRING>();
+            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
             return unicodeString.Buffer.ToString().TrimRemoveNull();
         }
 
@@ -174,7 +175,7 @@ namespace PSADT.ProcessManagement
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
             _ = NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
-            ref PROCESS_BASIC_INFORMATION pbi = ref buffer.AsStructure<PROCESS_BASIC_INFORMATION>();
+            ref readonly PROCESS_BASIC_INFORMATION pbi = ref buffer.AsReadOnlyStructure<PROCESS_BASIC_INFORMATION>();
             return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
         }
 
@@ -197,7 +198,7 @@ namespace PSADT.ProcessManagement
         {
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
             Span<byte> processIdInfoPtr = stackalloc byte[NtDll.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]]; processIdInfoPtr.Clear();
-            ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref processIdInfoPtr.AsStructure<SYSTEM_PROCESS_ID_INFORMATION>();
+            ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
             processIdInfo.ProcessId = new(process.Id);
 
             // Perform initial query so we can reallocate with the required length.
@@ -246,7 +247,7 @@ namespace PSADT.ProcessManagement
             using CloseServiceHandleSafeHandle svc = AdvApi32.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
             _ = AdvApi32.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
-            ref SERVICE_STATUS_PROCESS serviceStatus = ref buffer.AsStructure<SERVICE_STATUS_PROCESS>();
+            ref readonly SERVICE_STATUS_PROCESS serviceStatus = ref buffer.AsReadOnlyStructure<SERVICE_STATUS_PROCESS>();
             return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
                 ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
                 : dwProcessId;

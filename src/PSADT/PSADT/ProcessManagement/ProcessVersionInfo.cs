@@ -126,7 +126,7 @@ namespace PSADT.ProcessManagement
             // If we got a valid version resource, parse it.
             // Read the version information from the resource.
             _ = Version32.VerQueryValue(versionResource, @"\", out IntPtr fixedInfoPtr, out _);
-            FixedFileInfo = fixedInfoPtr.AsStructure<VS_FIXEDFILEINFO>();
+            FixedFileInfo = fixedInfoPtr.AsReadOnlyStructure<VS_FIXEDFILEINFO>();
             FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
             FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
             FileBuildPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionLS);
@@ -178,7 +178,7 @@ namespace PSADT.ProcessManagement
             // Get all process modules, then return the first one (main module).
             _ = PsApi.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
             _ = PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
-            ref HMODULE hModule = ref moduleBuffer.AsStructure<HMODULE>();
+            ref readonly HMODULE hModule = ref moduleBuffer.AsReadOnlyStructure<HMODULE>();
             _ = PsApi.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
             return moduleInfo;
         }
@@ -299,7 +299,7 @@ namespace PSADT.ProcessManagement
             int langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
-                ref Version32.LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsStructure<Version32.LANGANDCODEPAGE>();
+                ref readonly Version32.LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsReadOnlyStructure<Version32.LANGANDCODEPAGE>();
                 translationCombinations.Add(langAndCodePage.ToTranslationTableString());
             }
 

@@ -46,7 +46,7 @@ namespace PSADT.AccountManagement
                 _ = AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out SafeLsaFreeMemoryHandle buf);
                 using (buf)
                 {
-                    ref POLICY_ACCOUNT_DOMAIN_INFO policyAccountDomainInfo = ref buf.AsStructure<POLICY_ACCOUNT_DOMAIN_INFO>();
+                    ref readonly POLICY_ACCOUNT_DOMAIN_INFO policyAccountDomainInfo = ref buf.AsReadOnlyStructure<POLICY_ACCOUNT_DOMAIN_INFO>();
                     LocalAccountDomainSid = policyAccountDomainInfo.DomainSid.ToSecurityIdentifier();
                 }
             }

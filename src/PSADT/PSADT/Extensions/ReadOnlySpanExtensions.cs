@@ -19,7 +19,7 @@ namespace PSADT.Extensions
         /// <param name="span">The read-only span of bytes to interpret as a structure of type T. The span must be at least as large as the
         /// size of T.</param>
         /// <returns>A reference to the structure of type T at the start of the span.</returns>
-        internal static ref T AsStructure<T>(this ReadOnlySpan<byte> span)
+        internal static ref readonly T AsReadOnlyStructure<T>(this ReadOnlySpan<byte> span) where T : unmanaged
         {
             return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span));
         }
