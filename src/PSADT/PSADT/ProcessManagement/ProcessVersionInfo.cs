@@ -44,6 +44,18 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves version information for the process with the specified process identifier.
+        /// </summary>
+        /// <param name="processId">The unique identifier of the process for which to retrieve version information. Must correspond to a running
+        /// process.</param>
+        /// <returns>A <see cref="ProcessVersionInfo"/> object containing version information for the specified process.</returns>
+        public static ProcessVersionInfo GetVersionInfo(int processId)
+        {
+            using Process process = Process.GetProcessById(processId);
+            return new(process, null, null);
+        }
+
+        /// <summary>
         /// Retrieves version information for the specified process.
         /// </summary>
         /// <remarks>This method provides a convenient way to access version information for a process, 
@@ -95,17 +107,14 @@ namespace PSADT.ProcessManagement
             }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
 
-            // Set initial values. This is the minimum required to create a valid ProcessVersionInfo object.
-            FileName = !string.IsNullOrWhiteSpace(filePath) ? filePath! : ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.GetNtPathLookupTable());
-            Process = process;
-
             // Get the main module base address and read the version resource from memory.
-            ReadOnlySpan<byte> versionResource;
-            using (SafeFileHandle processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
+            FileName = !string.IsNullOrWhiteSpace(filePath) ? filePath! : process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.GetNtPathLookupTable()); ReadOnlySpan<byte> versionResource;
+            using (SafeFileHandle processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
             {
                 try
                 {
-                    versionResource = ReadVersionResource(processHandle, GetMainModuleInfo(processHandle));
+                    MODULEINFO moduleInfo = GetMainModuleInfo(processHandle);
+                    versionResource = ReadVersionResource(processHandle, in moduleInfo);
                 }
                 catch
                 {
@@ -519,14 +528,6 @@ namespace PSADT.ProcessManagement
         /// Gets information about a private version of the file.
         /// </summary>
         public string? PrivateBuild { get; }
-
-        /// <summary>
-        /// Represents the process associated with the current operation.
-        /// </summary>
-        /// <remarks>This field provides access to the underlying process object, allowing inspection and
-        /// control of the process's execution. It is read-only and should be used to retrieve information about the
-        /// process or to perform operations such as starting, stopping, or monitoring the process.</remarks>
-        public Process Process { get; }
 
         /// <summary>
         /// Gets the build number of the product this file is associated with.

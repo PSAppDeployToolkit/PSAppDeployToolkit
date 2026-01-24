@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Security;
@@ -39,24 +40,6 @@ namespace PSADT.ProcessManagement
             // Inline lambda to get the command line from the given process.
             static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
-                // Inline lambda to get the file path from the given process.
-                static string GetProcessFilePath(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
-                {
-                    // Try and get the file path from the MainModule first, falling back to the image name if we can't.
-                    try
-                    {
-                        if (process.MainModule is not null)
-                        {
-                            return process.MainModule.FileName;
-                        }
-                    }
-                    catch (Exception ex) when (ex.Message is not null)
-                    {
-                        return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable);
-                    }
-                    return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable);
-                }
-
                 // Get the command line from the cache if we have it.
                 if (processArgvMap.TryGetValue(process, out string[]? argv))
                 {
@@ -95,16 +78,16 @@ namespace PSADT.ProcessManagement
                     {
                         if (!argv[0].Contains(process.ProcessName, StringComparison.OrdinalIgnoreCase) && !argv[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            argv = [.. (new[] { GetProcessFilePath(process, ntPathLookupTable) }).Concat(argv)];
+                            argv = [.. (new[] { process.GetFilePath(ntPathLookupTable) }).Concat(argv)];
                         }
                         else
                         {
-                            argv[0] = GetProcessFilePath(process, ntPathLookupTable);
+                            argv[0] = process.GetFilePath(ntPathLookupTable);
                         }
                     }
                     else
                     {
-                        argv = [GetProcessFilePath(process, ntPathLookupTable)];
+                        argv = [process.GetFilePath(ntPathLookupTable)];
                     }
                 }
                 catch
