@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
+using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
@@ -9,7 +10,11 @@ using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using PSADT.Utilities;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Security;
+using Windows.Win32.System.Com;
+using Windows.Win32.System.TaskScheduler;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.Security
@@ -43,57 +48,104 @@ namespace PSADT.Security
         /// logged on or does not have an active session.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the linked administrative token cannot be retrieved and <paramref
         /// name="useHighestAvailableToken"/> is <see langword="false"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No idea, but the compiler just doesn't understand that this is OK.")]
         internal static SafeFileHandle GetUserPrimaryToken(RunAsActiveUser runAsActiveUser, bool useLinkedAdminToken, bool useHighestAvailableToken)
         {
-            // Internal helper to make the compiler happier.
-            SafeFileHandle GetPrimaryFromUserToken(SafeFileHandle userToken)
+            // Validate parameters.
+            if (runAsActiveUser is null)
             {
-                if (useLinkedAdminToken || useHighestAvailableToken)
-                {
-                    try
-                    {
-                        return GetLinkedPrimaryToken(userToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!useHighestAvailableToken)
-                        {
-                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
-                        }
-                    }
-                }
-                return GetPrimaryToken(userToken);
+                throw new ArgumentNullException(nameof(runAsActiveUser));
             }
 
-            // Get the user's token.
+            // Confirm that the caller is an administrator.
+            if (!AccountUtilities.CallerIsAdmin)
+            {
+                throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.");
+            }
+
+            // Get the user's token. If we're not local system, we need to use the token broker.
             if (!AccountUtilities.CallerIsLocalSystem)
             {
-                // When we're not local system, we need to find the user's Explorer process and get its token.
+                // Set up the pipe server and start the client/server token broker process.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
-                foreach (Process explorerProcess in Process.GetProcessesByName("explorer").Where(p => p.SessionId == runAsActiveUser.SessionId).OrderBy(static p => p.StartTime))
+                string pipeName = $"PSADT.ClientServer.Client_TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
+                PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new(AccountUtilities.LocalSystemSid, PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite, AccessControlType.Allow));
+                using NamedPipeServerStream pipe = CreateNamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 0, 0, pipeSecurity);
+                _ = Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
+                Guid CLSID_TaskScheduler = new("0F87369F-A4E5-4CFC-BD3E-73E6154572DD");
+                try
                 {
+                    // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
+                    _ = Ole32.CoCreateInstance(in CLSID_TaskScheduler, null, CLSCTX.CLSCTX_INPROC_SERVER, out ITaskService servicePtr);
+                    servicePtr.Connect(null, null, null, null);
+
+                    // Set up the task as required.
+                    BSTR folderName = (BSTR)Marshal.StringToBSTR(@"\");
+                    BSTR taskName = (BSTR)Marshal.StringToBSTR(pipeName);
+                    BSTR userId = (BSTR)Marshal.StringToBSTR(AccountUtilities.LocalSystemSid.Value);
+                    BSTR path = (BSTR)Marshal.StringToBSTR(typeof(TokenManager).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe"));
+                    BSTR args = (BSTR)Marshal.StringToBSTR($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {runAsActiveUser.SessionId} -UseLinkedAdminToken {useLinkedAdminToken} -UseHighestAvailableToken {useHighestAvailableToken}");
                     try
                     {
-                        using (explorerProcess) using (SafeProcessHandle explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                        // Create a new task definition.
+                        servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
+                        servicePtr.NewTask(0, out ITaskDefinition taskDefinition);
+                        taskDefinition.Actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC, out IAction action);
+                        IExecAction execAction = (IExecAction)action;
+                        taskDefinition.Principal.UserId = userId;
+                        taskDefinition.Principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                        execAction.Path = path;
+                        execAction.Arguments = args;
+
+                        // Register and start the task, then delete it. It'll keep running until it exits.
+                        rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
+                        try
                         {
-                            _ = AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
-                            if (TokenUtilities.GetTokenSid(hProcessToken) == runAsActiveUser.SID)
-                            {
-                                using (hProcessToken)
-                                {
-                                    return GetPrimaryFromUserToken(hProcessToken);
-                                }
-                            }
+                            task.Run(null, out _);
+                        }
+                        finally
+                        {
+                            rootFolder.DeleteTask(taskName, 0);
                         }
                     }
-                    catch
+                    finally
                     {
-                        // It's possible the process may be inaccessible if Explorer is elevated by EPM but the caller is not.
-                        continue;
-                        throw;
+                        // Free all binary strings.
+                        Marshal.FreeBSTR(args);
+                        Marshal.FreeBSTR(path);
+                        Marshal.FreeBSTR(userId);
+                        Marshal.FreeBSTR(taskName);
+                        Marshal.FreeBSTR(folderName);
                     }
                 }
+                finally
+                {
+                    // Uninitialize the COM library for the current thread.
+                    PInvoke.CoUninitialize();
+                }
+
+                // Wait for the token broker to connect.
+                using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
+                pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
+
+                // Read the token length from the pipe.
+                if (pipe.ReadByte() is int tokenLength && tokenLength == -1)
+                {
+                    throw new InvalidOperationException("No token length received from the token broker.");
+                }
+                if (tokenLength is not 4 and not 8)
+                {
+                    throw new InvalidOperationException("Invalid token length received from the token broker.");
+                }
+
+                // Read the token from the pipe.
+                byte[] tokenBuf = new byte[tokenLength];
+                if (pipe.Read(tokenBuf, 0, tokenLength) != tokenLength)
+                {
+                    throw new InvalidOperationException("Invalid token received from the token broker.");
+                }
+
+                // Return the token handle.
+                return new((nint)(tokenLength == 8 ? BitConverter.ToInt64(tokenBuf, 0) : BitConverter.ToInt32(tokenBuf, 0)), true);
             }
             else
             {
@@ -102,10 +154,23 @@ namespace PSADT.Security
                 _ = WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out SafeFileHandle hUserToken);
                 using (hUserToken)
                 {
-                    return GetPrimaryFromUserToken(hUserToken);
+                    if (useLinkedAdminToken || useHighestAvailableToken)
+                    {
+                        try
+                        {
+                            return GetLinkedPrimaryToken(hUserToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (!useHighestAvailableToken)
+                            {
+                                throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
+                            }
+                        }
+                    }
+                    return GetPrimaryToken(hUserToken);
                 }
             }
-            throw new InvalidOperationException($"Failed to retrieve a primary token for user [{runAsActiveUser.NTAccount}]. Ensure the user is logged on and has an active session.");
         }
 
         /// <summary>
@@ -209,6 +274,35 @@ namespace PSADT.Security
                 return GetPrimaryToken(tokenHandle);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Creates a new instance of a named pipe server stream with the specified configuration parameters.
+        /// </summary>
+        /// <remarks>This method allows fine-grained control over the creation of a named pipe server,
+        /// including security, buffer sizes, and transmission mode. The caller is responsible for managing the lifetime
+        /// and disposal of the returned stream. The pipe name must not conflict with existing named pipes on the
+        /// system.</remarks>
+        /// <param name="pipeName">The name of the pipe to create. This value must be unique on the system and cannot be null or empty.</param>
+        /// <param name="direction">The direction of the pipe, indicating whether the pipe supports reading, writing, or both.</param>
+        /// <param name="maxNumberOfServerInstances">The maximum number of server instances that can simultaneously share the same pipe name. Must be greater
+        /// than zero.</param>
+        /// <param name="transmissionMode">The transmission mode for the pipe, specifying how data is transmitted through the pipe (byte or message
+        /// mode).</param>
+        /// <param name="options">Pipe options that modify the behavior of the pipe, such as asynchronous operation or write-through.</param>
+        /// <param name="inBufferSize">The size, in bytes, of the input buffer for the pipe. Must be a positive integer.</param>
+        /// <param name="outBufferSize">The size, in bytes, of the output buffer for the pipe. Must be a positive integer.</param>
+        /// <param name="pipeSecurity">An optional PipeSecurity object that specifies access control for the pipe. If null, default security is
+        /// applied.</param>
+        /// <returns>A NamedPipeServerStream instance configured with the specified parameters and ready to accept client
+        /// connections.</returns>
+        private static NamedPipeServerStream CreateNamedPipeServerStream(string pipeName, PipeDirection direction, int maxNumberOfServerInstances, PipeTransmissionMode transmissionMode, PipeOptions options, int inBufferSize, int outBufferSize, PipeSecurity? pipeSecurity)
+        {
+#if !NETFRAMEWORK
+            return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
+#else
+            return new NamedPipeServerStream(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
+#endif
         }
     }
 }

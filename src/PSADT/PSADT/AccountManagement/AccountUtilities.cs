@@ -62,6 +62,7 @@ namespace PSADT.AccountManagement
                 }
                 wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
             }
+            LocalSystemSid = wellKnownSids[WellKnownSidType.LocalSystemSid];
             WellKnownSidLookupTable = new(wellKnownSids);
 
             // Determine if the caller is the local system account.
@@ -194,6 +195,14 @@ namespace PSADT.AccountManagement
         /// Gets a read-only list of privileges associated with the caller.
         /// </summary>
         public static readonly IReadOnlyList<SE_PRIVILEGE> CallerPrivileges = PrivilegeManager.GetPrivileges();
+
+        /// <summary>
+        /// Represents the security identifier (SID) for the local system account (NT AUTHORITY\SYSTEM).
+        /// </summary>
+        /// <remarks>This SID is commonly used to grant permissions to the local system account, which has
+        /// extensive privileges on the local computer. Use this value when specifying access control or auditing rules
+        /// that should apply to the system account.</remarks>
+        public static readonly SecurityIdentifier LocalSystemSid;
 
         /// <summary>
         /// Represents the security identifier (SID) for the local account domain.
