@@ -322,7 +322,7 @@ function Private:Invoke-ADTClientServerOperation
                     $csArgsDictionary.Add($_.Key, $_.Value)
                 }
             }
-            Set-ADTRegistryKey -Key ($csArgsRegPath = "HKEY_CURRENT_USER\SOFTWARE\PSAppDeployToolkit") -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString($csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
+            Set-ADTRegistryKey -Key ($csArgsRegPath = "HKEY_CURRENT_USER\SOFTWARE\PSAppDeployToolkit") -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
             "$csArgsRegPath\$csArgsRegValue"
         }
 

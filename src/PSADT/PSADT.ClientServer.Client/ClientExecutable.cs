@@ -722,7 +722,7 @@ namespace PSADT.ClientServer
                     {
                         registryKey.DeleteValue(valueName);
                     }
-                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
+                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }
                 else if (File.Exists(argvDictValue))
                 {
@@ -732,12 +732,12 @@ namespace PSADT.ClientServer
                     {
                         File.Delete(argvDictValue);
                     }
-                    arguments = DeserializeString<Dictionary<string, string>>(argvDictContent);
+                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }
                 else
                 {
                     // Assume anything else is a literal Base64-encoded string.
-                    arguments = DeserializeString<Dictionary<string, string>>(argvDictValue);
+                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictValue);
                 }
             }
 
