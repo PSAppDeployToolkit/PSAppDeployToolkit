@@ -116,7 +116,7 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID of the specified process as a string.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="hProcess"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if <paramref name="hProcess"/> is closed or invalid.</exception>
-        public static string GetApplicationUserModelId(SafeHandle hProcess)
+        internal static string GetApplicationUserModelId(SafeHandle hProcess)
         {
             if (hProcess is null)
             {
