@@ -720,7 +720,7 @@ namespace PSADT.ProcessManagement
         /// <param name="hPrimaryToken">The primary token representing the user context under which the process will be created.</param>
         /// <param name="filePath">The fully qualified path to the executable file for the new process.</param>
         /// <param name="commandLine">The command line to be executed by the new process.</param>
-        /// <param name="handlesToInherit">An optional array of specific handles that the child process should inherit. When specified,
+        /// <param name="handlesToInherit">An array of specific handles that the child process should inherit. When specified,
         /// a STARTUPINFOEX with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used to limit inheritance to these handles only.</param>
         /// <param name="creationFlags">Flags that control the priority class and the creation of the process.</param>
         /// <param name="lpEnvironment">A handle to the environment block for the new process. Can be <see langword="null"/> to use the environment
@@ -733,11 +733,8 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, ReadOnlyCollection<IntPtr>? handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static void CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, ReadOnlyCollection<IntPtr> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
-            // Determine if we need handle inheritance.
-            bool needsHandleInheritance = handlesToInherit?.Count > 0;
-
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             if (CanUseCreateProcessAsUser(hPrimaryToken) is CreateProcessUsingTokenStatus canUseCreateProcessAsUser && (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted))
@@ -764,7 +761,7 @@ namespace PSADT.ProcessManagement
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
-                if (needsHandleInheritance || forceBreakaway)
+                if (handlesToInherit.Count > 0 || forceBreakaway)
                 {
                     // Create the extended startup info with the necessary attributes.
                     (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
@@ -790,7 +787,7 @@ namespace PSADT.ProcessManagement
                     throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
                 }
             }
-            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK && !needsHandleInheritance)
+            else if (CanUseCreateProcessWithToken() is CreateProcessUsingTokenStatus canUseCreateProcessWithToken && canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK && handlesToInherit.Count == 0)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
                 _ = AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
@@ -817,14 +814,14 @@ namespace PSADT.ProcessManagement
         /// attributes. The attribute list can include handle inheritance lists and extended process creation flags.
         /// The caller is responsible for disposing of the returned attribute list handle.</remarks>
         /// <param name="startupInfo">The base STARTUPINFOW structure to extend.</param>
-        /// <param name="handlesToInherit">An optional array of handles that the child process should inherit.</param>
+        /// <param name="handlesToInherit">An array of handles that the child process should inherit.</param>
         /// <param name="forceBreakaway">If true, adds the EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY attribute.</param>
         /// <param name="pinnedHandles">When this method returns, contains the pinned GC handle for the handles array, or null if no handles were specified.</param>
         /// <returns>A tuple containing the STARTUPINFOEXW structure and the SafeProcThreadAttributeListHandle.</returns>
-        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, ReadOnlyCollection<IntPtr>? handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
+        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, ReadOnlyCollection<IntPtr> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
         {
             // Calculate the number of attributes needed.
-            bool hasHandleInheritance = handlesToInherit?.Count > 0;
+            bool hasHandleInheritance = handlesToInherit.Count > 0;
             uint attributeCount = 0;
             if (hasHandleInheritance)
             {
@@ -848,7 +845,7 @@ namespace PSADT.ProcessManagement
                 // Add handle list attribute if handles are specified.
                 if (hasHandleInheritance)
                 {
-                    pinnedHandles = SafePinnedGCHandle.Alloc([.. handlesToInherit!]);
+                    pinnedHandles = SafePinnedGCHandle.Alloc([.. handlesToInherit]);
                     bool pinnedHandlesAddRef = false;
                     try
                     {
