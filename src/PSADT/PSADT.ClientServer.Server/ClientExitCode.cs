@@ -76,6 +76,16 @@
         NoCloseAppsDialogState = 15,
 
         /// <summary>
+        /// The CloseMainWindow() call to close a process failed.
+        /// </summary>
+        PromptToSaveFailure = 16,
+
+        /// <summary>
+        /// The window to which keys were to be sent is not enabled.
+        /// </summary>
+        SendKeysWindowNotEnabled = 17,
+
+        /// <summary>
         /// The client operation failed because no output pipe was specified.
         /// </summary>
         NoOutputPipe = 20,
