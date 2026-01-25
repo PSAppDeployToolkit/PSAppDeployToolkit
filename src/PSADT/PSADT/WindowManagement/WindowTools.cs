@@ -65,6 +65,12 @@ namespace PSADT.WindowManagement
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
 
+            // Minimise the window first to ensure it comes to the front.
+            if (!PInvoke.IsIconic(hWnd))
+            {
+                _ = PInvoke.ShowWindow(hWnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_MINIMIZE);
+            }
+
             // Restore the window if it's minimized.
             if (PInvoke.IsIconic(hWnd))
             {
