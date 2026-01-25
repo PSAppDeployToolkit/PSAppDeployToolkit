@@ -149,7 +149,10 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Ensure the permissions are correct on all files before proceeding.
-    Set-ADTClientServerProcessPermissions -User $User
+    if (!$Script:ADT.ClientServerProcess)
+    {
+        Set-ADTClientServerProcessPermissions -User $User
+    }
 
     # Go into client/server mode if a session is active and we're not asked to wait.
     if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
