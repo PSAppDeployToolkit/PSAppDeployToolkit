@@ -71,28 +71,34 @@ jobs:
       shell: powershell
       run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
 
+    - name: Make timestamp
+      id: ts
+      shell: powershell
+      run: |
+        "stamp=$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', $null) -replace '\.\d+')" >> $env:GITHUB_OUTPUT
+
     - name: Upload module
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
-        name: PSAppDeployToolkit_ModuleOnly
+        name: PSAppDeployToolkit_ModuleOnly_${{ steps.ts.outputs.stamp }}
         path: .\src\Artifacts\Module
         if-no-files-found: error
         compression-level: 9
         overwrite: true
 
     - name: Upload v3 module template
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
-        name: PSAppDeployToolkit_Template_v3
+        name: PSAppDeployToolkit_Template_v3_${{ steps.ts.outputs.stamp }}
         path: .\src\Artifacts\Template_v3
         if-no-files-found: error
         compression-level: 9
         overwrite: true
 
     - name: Upload v4 module template
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
-        name: PSAppDeployToolkit_Template_v4
+        name: PSAppDeployToolkit_Template_v4_${{ steps.ts.outputs.stamp }}
         path: .\src\Artifacts\Template_v4
         if-no-files-found: error
         compression-level: 9
