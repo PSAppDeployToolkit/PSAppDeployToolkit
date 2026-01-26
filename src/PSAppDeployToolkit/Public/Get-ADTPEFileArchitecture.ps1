@@ -89,7 +89,7 @@ function Get-ADTPEFileArchitecture
         # Grab and cache all files.
         $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            $gciParams = @{$PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+            $gciParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
             Get-ChildItem @gciParams -File
         }
         else
