@@ -107,7 +107,7 @@ function New-ADTZipFile
         }
 
         # Get the specified source variable.
-        $sourcePath = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly
+        $sourcePath = $PSBoundParameters.($PSCmdlet.ParameterSetName)
     }
 
     process
