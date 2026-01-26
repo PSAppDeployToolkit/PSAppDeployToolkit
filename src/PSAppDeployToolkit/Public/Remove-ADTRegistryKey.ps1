@@ -114,7 +114,7 @@ function Remove-ADTRegistryKey
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-        $pathParam = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+        $pathParam = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters.($PSCmdlet.ParameterSetName) }
     }
 
     process
