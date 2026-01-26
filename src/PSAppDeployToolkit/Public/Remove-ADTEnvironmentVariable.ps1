@@ -96,14 +96,14 @@ function Remove-ADTEnvironmentVariable
                     Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable] for [$Target]"))."
                     if ($PSCmdlet.ShouldProcess("$Variable (Target: $Target)", 'Remove environment variable'))
                     {
-                        [System.Environment]::SetEnvironmentVariable($Variable, [System.Management.Automation.Language.NullString]::Value, $Target)
+                        [PSADT.Utilities.EnvironmentUtilities]::RemoveEnvironmentVariable($Variable, $Target)
                     }
                     return;
                 }
                 Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable]"))."
                 if ($PSCmdlet.ShouldProcess($Variable, 'Remove environment variable'))
                 {
-                    [System.Environment]::SetEnvironmentVariable($Variable, [System.Management.Automation.Language.NullString]::Value)
+                    [PSADT.Utilities.EnvironmentUtilities]::RemoveEnvironmentVariable($Variable)
                 }
                 return;
             }

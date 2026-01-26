@@ -22,6 +22,9 @@ function Set-ADTEnvironmentVariable
     .PARAMETER Target
         The target of the variable to set. This can be the machine, user, or process.
 
+    .PARAMETER Expandable
+        Indicates that the environment variable should be written to the registry using a REG_EXPAND_SZ type to support environment variables.
+
     .INPUTS
         None
 
@@ -69,7 +72,10 @@ function Set-ADTEnvironmentVariable
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.EnvironmentVariableTarget]$Target
+        [System.EnvironmentVariableTarget]$Target,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Expandable
     )
 
     begin
@@ -96,21 +102,21 @@ function Set-ADTEnvironmentVariable
                         Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$($runAsActiveUser.NTAccount)] to [$Value]"))."
                         if ($PSCmdlet.ShouldProcess("$Variable (User: $($runAsActiveUser.NTAccount))", "Set environment variable to [$Value]"))
                         {
-                            Invoke-ADTClientServerOperation -SetEnvironmentVariable -User $runAsActiveUser -Variable $Variable -Value $Value
+                            Invoke-ADTClientServerOperation -SetEnvironmentVariable -User $runAsActiveUser -Variable $Variable -Value $Value -Expandable:$Expandable
                         }
                         return
                     }
                     Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$Target] to [$Value]"))."
                     if ($PSCmdlet.ShouldProcess("$Variable (Target: $Target)", "Set environment variable to [$Value]"))
                     {
-                        [System.Environment]::SetEnvironmentVariable($Variable, $Value, $Target)
+                        [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable($Variable, $Value, $Target, !!$Expandable)
                     }
                     return
                 }
                 Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] to [$Value]"))."
                 if ($PSCmdlet.ShouldProcess($Variable, "Set environment variable to [$Value]"))
                 {
-                    [System.Environment]::SetEnvironmentVariable($Variable, $Value)
+                    [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable($Variable, $Value, !!$Expandable)
                 }
                 return
             }

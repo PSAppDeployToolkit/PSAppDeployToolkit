@@ -39,6 +39,21 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
+        /// Notifies all top-level windows that the environment variables have changed by broadcasting a system setting
+        /// change message.
+        /// </summary>
+        /// <remarks>This method is intended for use when environment variables are modified at runtime
+        /// and other applications or components need to be informed of the change. It does not update environment
+        /// variables for already running processes; it only sends a notification to allow interested parties to respond
+        /// accordingly.</remarks>
+        internal static void RefreshEnvironmentVariables()
+        {
+            // Notify all top-level windows that the environment variables have changed.
+            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero);
+            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
+        }
+
+        /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
@@ -48,8 +63,7 @@ namespace PSADT.Utilities
             RefreshDesktop();
 
             // Notify all top-level windows that the environment variables have changed.
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero);
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
+            RefreshEnvironmentVariables();
         }
 
         /// <summary>

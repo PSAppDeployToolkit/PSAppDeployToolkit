@@ -42,20 +42,20 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envHostVersionBuildLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.BuildLabel) { $variables.envHostVersionSemantic.BuildLabel }))
     $variables.Add('envAllUsersProfile', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::ApplicationData))
-    $variables.Add('envArchitecture', [System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))
+    $variables.Add('envArchitecture', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))
     $variables.Add('envCommonDesktop', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonDesktopDirectory))
     $variables.Add('envCommonDocuments', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonDocuments))
     $variables.Add('envCommonStartMenuPrograms', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonPrograms))
     $variables.Add('envCommonStartMenu', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonStartMenu))
     $variables.Add('envCommonStartUp', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonStartup))
     $variables.Add('envCommonTemplates', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonTemplates))
-    $variables.Add('envHomeDrive', [System.Environment]::GetEnvironmentVariable('HOMEDRIVE'))
-    $variables.Add('envHomePath', [System.Environment]::GetEnvironmentVariable('HOMEPATH'))
-    $variables.Add('envHomeShare', [System.Environment]::GetEnvironmentVariable('HOMESHARE'))
+    $variables.Add('envHomeDrive', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('HOMEDRIVE'))
+    $variables.Add('envHomePath', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('HOMEPATH'))
+    $variables.Add('envHomeShare', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('HOMESHARE'))
     $variables.Add('envLocalAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData))
     $variables.Add('envLogicalDrives', [System.Collections.Generic.IReadOnlyList[System.String]][System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.Environment]::GetLogicalDrives())
     $variables.Add('envProgramData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
-    $variables.Add('envPublic', [System.Environment]::GetEnvironmentVariable('PUBLIC'))
+    $variables.Add('envPublic', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PUBLIC'))
     $variables.Add('envSystemDrive', [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory).TrimEnd('\'))
     $variables.Add('envSystemRoot', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))
     $variables.Add('envTemp', [System.IO.Path]::GetTempPath())
@@ -88,7 +88,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envLogonServer', $null)
     $variables.Add('MachineDomainController', $null)
     $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
-    $variables.Add('envUserDNSDomain', ([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
+    $variables.Add('envUserDNSDomain', ([PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
     $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpperInvariant() }))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpperInvariant())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
@@ -108,7 +108,7 @@ function Private:New-ADTEnvironmentTable
         # Set the logon server and remove backslashes at the beginning.
         $variables.envLogonServer = try
         {
-            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
+            [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
         }
         catch
         {
@@ -154,8 +154,8 @@ function Private:New-ADTEnvironmentTable
         }
         else
         {
-            $variables.Add('envProgramFiles', [System.Environment]::GetEnvironmentVariable('ProgramW6432'))
-            $variables.Add('envCommonProgramFiles', [System.Environment]::GetEnvironmentVariable('CommonProgramW6432'))
+            $variables.Add('envProgramFiles', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('ProgramW6432'))
+            $variables.Add('envCommonProgramFiles', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('CommonProgramW6432'))
             $variables.Add('envSysNativeDirectory', (Join-Path -Path ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows)) -ChildPath sysnative))
             $variables.Add('envSYSWOW64Directory', [System.Environment]::SystemDirectory)
         }
