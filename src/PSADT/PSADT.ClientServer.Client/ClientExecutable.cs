@@ -382,7 +382,7 @@ namespace PSADT.ClientServer
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
                                                 EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
-                                                EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable);
+                                                EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable, payload.Append, payload.Remove);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -517,7 +517,15 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
-                    EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable);
+                    if (!arguments.TryGetValue("Append", out string? appendStr) || string.IsNullOrWhiteSpace(appendStr) || !bool.TryParse(appendStr, out bool append))
+                    {
+                        throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                    }
+                    if (!arguments.TryGetValue("Remove", out string? removeStr) || string.IsNullOrWhiteSpace(removeStr) || !bool.TryParse(removeStr, out bool remove))
+                    {
+                        throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                    }
+                    EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable, append, remove);
                     Console.WriteLine(SerializeObject(true));
                     return (int)ClientExitCode.Success;
                 }

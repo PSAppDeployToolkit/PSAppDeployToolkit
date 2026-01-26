@@ -27,17 +27,34 @@ namespace PSADT.ClientServer.Payloads
         internal readonly bool Expandable;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnvironmentVariablePayload"/> class.
+        /// Gets a value indicating whether data should be appended to an existing resource rather than overwriting it.
         /// </summary>
-        /// <param name="name">The name of the environment variable.</param>
-        /// <param name="value">The value to set for the environment variable.</param>
-        /// <param name="expandable">Indicates whether the value is expandable.</param>
+        [JsonProperty]
+        internal readonly bool Append;
+
+        /// <summary>
+        /// Gets a value indicating whether the associated item should be removed.
+        /// </summary>
+        [JsonProperty]
+        internal readonly bool Remove;
+
+        /// <summary>
+        /// Initializes a new instance of the EnvironmentVariablePayload class with the specified environment variable
+        /// name, value, and options for expansion, appending, or removal.
+        /// </summary>
+        /// <param name="name">The name of the environment variable. Cannot be null.</param>
+        /// <param name="value">The value to assign to the environment variable, or null to indicate no value.</param>
+        /// <param name="expandable">true to mark the value as expandable (e.g., to allow variable substitution); otherwise, false.</param>
+        /// <param name="append">true to append the value to the existing environment variable; otherwise, false.</param>
+        /// <param name="remove">true to indicate that the environment variable should be removed; otherwise, false.</param>
         [JsonConstructor]
-        internal EnvironmentVariablePayload(string name, string? value = null, bool expandable = false)
+        internal EnvironmentVariablePayload(string name, string? value = null, bool expandable = false, bool append = false, bool remove = false)
         {
             Name = name;
             Value = value;
             Expandable = expandable;
+            Append = append;
+            Remove = remove;
         }
     }
 }

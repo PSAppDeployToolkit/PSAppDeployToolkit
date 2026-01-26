@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using Microsoft.Win32;
 
 namespace PSADT.Utilities
@@ -85,18 +86,33 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Sets the value of an environment variable for the specified target.
+        /// Sets, appends to, or removes an environment variable for the specified target scope.
         /// </summary>
-        /// <remarks>If the environment variable does not exist, it will be created. If <paramref
-        /// name="value"/> is null, the environment variable will be removed from the specified target. Changes to user
-        /// or machine environment variables may require administrative privileges and may not take effect until a new
-        /// process is started.</remarks>
-        /// <param name="variable">The name of the environment variable to set. Cannot be null or empty.</param>
-        /// <param name="value">The value to assign to the environment variable. If null, the variable will be deleted.</param>
-        /// <param name="target">An enumeration value that specifies the location where the environment variable is set, such as the current
-        /// process, user, or machine.</param>
-        /// <param name="expandable">If set to <see langword="true"/>, the value will be treated as an expandable string (e.g., it can contain references to other environment variables).</param>
-        public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable = false)
+        /// <remarks>When appending or removing, the environment variable is treated as a
+        /// semicolon-delimited list. For user and machine targets, changes are persisted in the Windows registry and
+        /// may require a restart or logoff to take effect for new processes. Setting a variable to null or whitespace
+        /// deletes it. This method refreshes environment variables in the current process after modification.</remarks>
+        /// <param name="variable">The name of the environment variable to set, append to, or remove. Cannot be null, empty, contain only
+        /// whitespace, start with a null character, contain the '=' character, or exceed length limits.</param>
+        /// <param name="value">The value to assign to the environment variable. If <paramref name="append"/> or <paramref name="remove"/>
+        /// is <see langword="true"/>, this value is used for appending or removing from a semicolon-delimited list. If
+        /// null or whitespace, the variable is deleted.</param>
+        /// <param name="target">The scope in which to set the environment variable. Can be <see cref="EnvironmentVariableTarget.Process"/>,
+        /// <see cref="EnvironmentVariableTarget.User"/>, or <see cref="EnvironmentVariableTarget.Machine"/>.</param>
+        /// <param name="expandable">Indicates whether the value should be stored as an expandable string, allowing references to other
+        /// environment variables (e.g., "%PATH%").</param>
+        /// <param name="append">If <see langword="true"/>, appends <paramref name="value"/> to the existing semicolon-delimited value of the
+        /// environment variable, unless it already exists.</param>
+        /// <param name="remove">If <see langword="true"/>, removes <paramref name="value"/> from the existing semicolon-delimited value of
+        /// the environment variable.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="variable"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="variable"/> is empty, contains only whitespace, starts with a null character,
+        /// contains the '=' character, exceeds length limits, or if both <paramref name="append"/> and <paramref
+        /// name="remove"/> are <see langword="true"/>. Also thrown if attempting to append or remove with a null
+        /// <paramref name="value"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the registry key for the specified target cannot be opened, or if <paramref name="target"/> is
+        /// <see cref="EnvironmentVariableTarget.Process"/>.</exception>
+        public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable = false, bool append = false, bool remove = false)
         {
             // Use the built-in method for process-level variables.
             if (target == EnvironmentVariableTarget.Process)
@@ -105,7 +121,7 @@ namespace PSADT.Utilities
                 return;
             }
 
-            // Validate the variable name.
+            // Validate all inputs.
             if (variable == null)
             {
                 throw new ArgumentNullException(nameof(variable));
@@ -130,11 +146,57 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentException("Environment variable name cannot contain equal character.");
             }
+            if (append && remove)
+            {
+                throw new ArgumentException("Cannot both append and remove from an environment variable.");
+            }
 
             // Treat empty or whitespace-only values as null (deletion).
             if (string.IsNullOrWhiteSpace(value) || value![0] == '\0')
             {
                 value = null;
+            }
+
+            // Handle removing/appending values from/to semicolon-delimited lists.
+            if (remove)
+            {
+                // If the existing value when split results in an empty list, remove it and return.
+                if (value is null)
+                {
+                    throw new ArgumentException("Cannot remove a null environment variable value.");
+                }
+                string? existingValue = GetEnvironmentVariable(variable);
+                if (existingValue is null || string.IsNullOrWhiteSpace(existingValue))
+                {
+                    return;
+                }
+                string[] existingParts = [.. existingValue.Split([';'], StringSplitOptions.RemoveEmptyEntries).Where(static p => !string.IsNullOrWhiteSpace(p)).Select(static p => p.Trim())];
+                if (existingParts.Length == 0)
+                {
+                    RemoveEnvironmentVariable(variable, target);
+                    return;
+                }
+
+                // Return early if the value to remove is not found.
+                string[] updatedParts = Array.FindAll(existingParts, part => !part.Equals(value.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (updatedParts.Length == existingParts.Length)
+                {
+                    return;
+                }
+                value = string.Join(";", updatedParts);
+            }
+            if (append)
+            {
+                // Append the new value to the existing one if the existing value does not already contain it.
+                if (value is null)
+                {
+                    throw new ArgumentException("Cannot append to a null environment variable value.");
+                }
+                string? existingValue = GetEnvironmentVariable(variable);
+                if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = existingValue + ";" + value;
+                }
             }
 
             // Set the environment variable in the registry for user or machine targets.
