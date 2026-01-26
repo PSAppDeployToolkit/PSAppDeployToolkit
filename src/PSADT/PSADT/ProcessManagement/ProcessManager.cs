@@ -23,6 +23,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -501,7 +502,7 @@ namespace PSADT.ProcessManagement
         /// and the values are their corresponding values as strings.</returns>
         private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary()
         {
-            return new(Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
+            return new(EnvironmentUtilities.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
         }
 
         /// <summary>

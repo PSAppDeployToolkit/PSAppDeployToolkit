@@ -4,6 +4,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.Utilities;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -40,7 +41,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 // Null out PSModulePath to prevent any module conflicts.
                 // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
-                Environment.SetEnvironmentVariable("PSModulePath", null);
+                EnvironmentUtilities.RemoveEnvironmentVariable("PSModulePath");
 
                 // Set up a PowerShell environment and populate the ComboBox with our modules.
                 InitialSessionState iss = InitialSessionState.CreateDefault2();

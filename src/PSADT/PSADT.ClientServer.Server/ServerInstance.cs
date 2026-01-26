@@ -525,31 +525,33 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Retrieves the value of a specified environment variable.
+        /// Retrieves the value of the specified environment variable from the remote environment.
         /// </summary>
-        /// <param name="variable"></param>
-        /// <returns></returns>
+        /// <param name="variable">The name of the environment variable to retrieve. Cannot be null or empty.</param>
+        /// <returns>The value of the specified environment variable, or null if the variable is not found.</returns>
         public string GetEnvironmentVariable(string variable)
         {
             return (string)Invoke(PipeCommand.GetEnvironmentVariable, new EnvironmentVariablePayload(variable))!;
         }
 
         /// <summary>
-        /// Sets the value of a specified environment variable.
+        /// Sets the value of an environment variable for the current process.
         /// </summary>
-        /// <param name="variable"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public bool SetEnvironmentVariable(string variable, string value)
+        /// <param name="variable">The name of the environment variable to set. Cannot be null or empty.</param>
+        /// <param name="value">The value to assign to the environment variable. If null, the variable is deleted.</param>
+        /// <param name="expandable">true to treat the value as expandable (containing environment variable references such as %PATH%);
+        /// otherwise, false.</param>
+        /// <returns>true if the environment variable was set successfully; otherwise, false.</returns>
+        public bool SetEnvironmentVariable(string variable, string value, bool expandable)
         {
-            return (bool)Invoke(PipeCommand.SetEnvironmentVariable, new EnvironmentVariablePayload(variable, value))!;
+            return (bool)Invoke(PipeCommand.SetEnvironmentVariable, new EnvironmentVariablePayload(variable, value, expandable))!;
         }
 
         /// <summary>
-        /// Removes a specified environment variable for the user.
+        /// Removes the specified environment variable from the current environment.
         /// </summary>
-        /// <param name="variable"></param>
-        /// <returns></returns>
+        /// <param name="variable">The name of the environment variable to remove. Cannot be null or empty.</param>
+        /// <returns>true if the environment variable was successfully removed; otherwise, false.</returns>
         public bool RemoveEnvironmentVariable(string variable)
         {
             return (bool)Invoke(PipeCommand.RemoveEnvironmentVariable, new EnvironmentVariablePayload(variable))!;

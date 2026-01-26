@@ -375,21 +375,21 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.GetEnvironmentVariable:
                                             {
-                                                WriteSuccess(Environment.GetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
                                                 break;
                                             }
 
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
                                                 EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
-                                                Environment.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User);
+                                                EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable);
                                                 WriteSuccess(true);
                                                 break;
                                             }
 
                                         case PipeCommand.RemoveEnvironmentVariable:
                                             {
-                                                Environment.SetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, null, EnvironmentVariableTarget.User);
+                                                EnvironmentUtilities.RemoveEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -500,7 +500,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    Console.WriteLine(SerializeObject(Environment.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
+                    Console.WriteLine(SerializeObject(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SetEnvironmentVariable" or "/sev")
@@ -513,7 +513,11 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
+                    if (!arguments.TryGetValue("Expandable", out string? expandableStr) || string.IsNullOrWhiteSpace(expandableStr) || !bool.TryParse(expandableStr, out bool expandable))
+                    {
+                        throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                    }
+                    EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable);
                     Console.WriteLine(SerializeObject(true));
                     return (int)ClientExitCode.Success;
                 }
@@ -523,7 +527,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
+                    EnvironmentUtilities.RemoveEnvironmentVariable(variable, EnvironmentVariableTarget.User);
                     Console.WriteLine(SerializeObject(true));
                     return (int)ClientExitCode.Success;
                 }
