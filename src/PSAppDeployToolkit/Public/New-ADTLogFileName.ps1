@@ -16,6 +16,9 @@ function New-ADTLogFileName
     .PARAMETER Discriminator
         The identifier to pre-format the log file name with.
 
+    .PARAMETER FileNameOnly
+        If specified, just returns a log file name without and preceeding path.
+
     .INPUTS
         None
 
@@ -46,20 +49,29 @@ function New-ADTLogFileName
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Discriminator
+        [System.String]$Discriminator,
+
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.SwitchParameter]$FileNameOnly
     )
 
     # Generate the new log file name based on the active session information.
     try
     {
-        return (Get-ADTSession).NewLogFileName($Discriminator)
+        $adtSession = Get-ADTSession
     }
     catch
     {
         $PSCmdlet.ThrowTerminatingError($_)
     }
+    if ($FileNameOnly)
+    {
+        return $adtSession.NewLogFileName($Discriminator)
+    }
+    return [System.IO.Path]::Combine($adtSession.LogPath, $adtSession.NewLogFileName($Discriminator))
 }
