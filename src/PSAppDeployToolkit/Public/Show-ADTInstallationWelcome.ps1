@@ -828,7 +828,9 @@ function Show-ADTInstallationWelcome
             # Show the dialog and return the result.
             try
             {
-                return Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType CloseAppsDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                $result = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType CloseAppsDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
+                $welcomeState.Retries = 0
+                return $result
             }
             catch [System.ApplicationException]
             {
