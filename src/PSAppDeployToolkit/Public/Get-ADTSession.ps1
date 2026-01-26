@@ -19,7 +19,7 @@ function Get-ADTSession
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        ADTSession
+        PSAppDeployToolkit.SessionManagement.DeploymentSession
 
         Returns the most recent session object from the ADT module data.
 

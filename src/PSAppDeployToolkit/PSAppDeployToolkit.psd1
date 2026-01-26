@@ -127,6 +127,7 @@
         'Mount-ADTWimFile'
         'New-ADTErrorRecord'
         'New-ADTFolder'
+        'New-ADTLogFileName'
         'New-ADTMsiTransform'
         'New-ADTShortcut'
         'New-ADTTemplate'

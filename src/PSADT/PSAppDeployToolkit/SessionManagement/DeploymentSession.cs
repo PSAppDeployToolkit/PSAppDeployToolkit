@@ -505,11 +505,8 @@ namespace PSAppDeployToolkit.SessionManagement
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                if (string.IsNullOrWhiteSpace(_logName))
-                {
-                    _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}{(!isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log";
-                }
-                _logName = invalidChars.Replace(_logName, string.Empty);
+                DefaultLogName = invalidChars.Replace($"{_installName}_{{0}}_{_deploymentType}{(!isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log", string.Empty);
+                _logName = !string.IsNullOrWhiteSpace(_logName) ? invalidChars.Replace(_logName, string.Empty) : NewLogFileName(appDeployToolkitName);
                 string logFile = Path.Combine(_logPath, _logName);
                 FileInfo logFileInfo = new(logFile);
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
@@ -565,7 +562,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using StreamWriter logFileWriter = new(Path.Combine(_logPath, LogName), true, LogUtilities.LogEncoding);
+                    using StreamWriter logFileWriter = new(Path.Combine(_logPath, _logName), true, LogUtilities.LogEncoding);
                     foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
                     {
                         logFileWriter.WriteLine(line);
@@ -1248,6 +1245,17 @@ namespace PSAppDeployToolkit.SessionManagement
         }
 
         /// <summary>
+        /// Generates a new log file name using the specified discriminator value.
+        /// </summary>
+        /// <param name="discriminator">A string value used to distinguish the log file name. Typically represents a unique identifier or context
+        /// for the log file. Cannot be null.</param>
+        /// <returns>A string containing the formatted log file name that incorporates the specified discriminator.</returns>
+        public string NewLogFileName(string discriminator)
+        {
+            return string.Format(CultureInfo.InvariantCulture, DefaultLogName, discriminator);
+        }
+
+        /// <summary>
         /// Gets the deployment status.
         /// </summary>
         /// <returns>The deployment status.</returns>
@@ -1544,6 +1552,11 @@ namespace PSAppDeployToolkit.SessionManagement
         /// Gets the registry path used for getting/setting deferral information.
         /// </summary>
         private readonly string RegKeyDeferHistory;
+
+        /// <summary>
+        /// Gets the default log file name, used when no override is specified.
+        /// </summary>
+        private readonly string DefaultLogName;
 
         /// <summary>
         /// Bitfield with settings for this deployment.
