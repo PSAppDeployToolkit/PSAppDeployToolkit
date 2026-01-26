@@ -264,7 +264,7 @@ function Show-ADTInstallationPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', (Get-ADTStringTable).InstallationPrompt.Subtitle.($DeploymentType.ToString()))
+            $PSBoundParameters.Add('Subtitle', (Get-ADTStringTable -SessionState $PSCmdlet.SessionState).InstallationPrompt.Subtitle.($DeploymentType.ToString()))
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {

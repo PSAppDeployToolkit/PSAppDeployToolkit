@@ -13,6 +13,9 @@ function Get-ADTStringTable
     .DESCRIPTION
         The Get-ADTStringTable function returns the string database if it has been initialized. If the string database is not initialized, it throws an error indicating that Initialize-ADTModule should be called before using this function.
 
+    .PARAMETER SessionState
+        The SessionState in which to expand variables from if specified.
+
     .INPUTS
         None
 
@@ -45,6 +48,9 @@ function Get-ADTStringTable
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SessionState]$SessionState
     )
 
     # Return the string database if initialized.
@@ -58,6 +64,14 @@ function Get-ADTStringTable
             RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
+    # Return a copied hashtable with variables expanded if a SessionState is provided, otherwise just return a reference to what we've got.
+    if ($PSBoundParameters.ContainsKey('SessionState'))
+    {
+        $strings = [PSADT.ClientServer.DataSerialization]::DeserializeFromString([PSADT.ClientServer.DataSerialization]::SerializeToString($Script:ADT.Strings))
+        Expand-ADTVariablesInHashtable -Hashtable $strings -SessionState $SessionState
+        return $strings
     }
     return $Script:ADT.Strings
 }

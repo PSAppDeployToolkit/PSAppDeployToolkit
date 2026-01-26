@@ -739,7 +739,7 @@ function Show-ADTInstallationWelcome
     {
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtStrings = Get-ADTStringTable
+        $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
