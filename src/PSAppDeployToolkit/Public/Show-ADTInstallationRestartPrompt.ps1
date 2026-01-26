@@ -117,7 +117,7 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtStrings = Get-ADTStringTable
+        $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()

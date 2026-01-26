@@ -142,7 +142,7 @@ function Show-ADTInstallationProgress
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtStrings = Get-ADTStringTable
+        $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
         $errRecord = $null
 
         # Set up DeploymentType.

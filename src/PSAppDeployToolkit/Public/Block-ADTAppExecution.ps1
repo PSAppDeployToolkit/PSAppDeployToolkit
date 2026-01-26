@@ -77,7 +77,7 @@ function Block-ADTAppExecution
             $adtSession = Get-ADTSession
             $adtEnv = Get-ADTEnvironmentTable
             $adtConfig = Get-ADTConfig
-            $adtStrings = Get-ADTStringTable
+            $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
         }
         catch
         {
