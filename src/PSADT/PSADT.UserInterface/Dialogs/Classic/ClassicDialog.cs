@@ -190,6 +190,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Start the persist timer if it's available.
             persistTimer?.Start();
             expiryTimer?.Start();
+
+            // Set the NoWait success flag as the caller may be waiting for it.
+            DialogManager.SetNoWaitSuccess();
         }
 
         /// <summary>
