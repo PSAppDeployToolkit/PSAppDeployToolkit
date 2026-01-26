@@ -16,6 +16,9 @@ function Copy-ADTFile
     .PARAMETER Path
         Path of the file to copy. Multiple paths can be specified.
 
+    .PARAMETER LiteralPath
+        Literal path of the file to copy. Multiple paths can be specified.
+
     .PARAMETER Destination
         Destination Path of the file to copy.
 
@@ -84,10 +87,15 @@ function Copy-ADTFile
     [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
-        [Parameter(Mandatory = $true, Position = 0)]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
         [System.String[]]$Path,
+
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, Position = 1)]
         [ValidateNotNullOrEmpty()]
@@ -145,7 +153,6 @@ function Copy-ADTFile
                 else
                 {
                     $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
-
                     if ($Recurse -and !$Flatten)
                     {
                         # Add /E to Robocopy parameters if it is not already included.
@@ -181,12 +188,13 @@ function Copy-ADTFile
     {
         if ($FileCopyMode -eq 'Robocopy')
         {
-            foreach ($srcPath in $Path)
+            foreach ($srcPath in $PSBoundParameters.($PSCmdlet.ParameterSetName))
             {
                 try
                 {
                     # Determine whether the path exists before continuing. This will throw a suitable error for us.
-                    $null = Get-Item -Path $srcPath -Force
+                    $pathSplat = @{ $PSCmdlet.ParameterSetName = $srcPath }
+                    $null = Get-Item @pathSplat -Force
 
                     # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path.
                     if (!(Test-Path -LiteralPath $Destination -PathType Container))
@@ -196,13 +204,14 @@ function Copy-ADTFile
                     }
 
                     # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native PowerShell.
-                    if (Test-Path -Path $srcPath -PathType Container)
+                    if (Test-Path @pathSplat -PathType Container)
                     {
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $robocopySource = (Get-Item -Path $srcPath.TrimEnd('\') -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath (Split-Path -Path $srcPath -Leaf)).Trim()
+                        $getItemSplat = @{ $PSCmdlet.ParameterSetName = $srcPath.TrimEnd('\') }
+                        $robocopySource = (Get-Item @getItemSplat -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath (Split-Path @pathSplat -Leaf)).Trim()
                         $robocopyFile = '*'
                     }
                     else
@@ -211,7 +220,7 @@ function Copy-ADTFile
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $ParentPath = Split-Path -Path $srcPath -Parent
+                        $ParentPath = Split-Path @pathSplat -Parent
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                         {
                             $ExecutionContext.SessionState.Path.CurrentLocation.Path
@@ -221,7 +230,7 @@ function Copy-ADTFile
                             (Get-Item -LiteralPath $ParentPath -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         }
                         $robocopyDestination = (Get-Item -LiteralPath $Destination.TrimEnd('\') -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyFile = (Split-Path -Path $srcPath -Leaf)
+                        $robocopyFile = (Split-Path @pathSplat -Leaf)
                     }
 
                     # Set up copy operation.
@@ -366,14 +375,15 @@ function Copy-ADTFile
         }
         elseif ($FileCopyMode -eq 'Native')
         {
-            foreach ($srcPath in $Path)
+            foreach ($srcPath in $PSBoundParameters.($PSCmdlet.ParameterSetName))
             {
                 try
                 {
                     try
                     {
                         # Determine whether the path exists before continuing. This will throw a suitable error for us.
-                        $null = Get-Item -Path $srcPath -Force
+                        $pathSplat = @{ $PSCmdlet.ParameterSetName = $srcPath }
+                        $null = Get-Item @pathSplat -Force
 
                         # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist.
                         if ((![System.IO.Path]::HasExtension($Destination) -or ([System.IO.Path]::HasExtension($Destination) -and ![System.IO.Path]::GetFileNameWithoutExtension($Destination))) -and !(Test-Path -LiteralPath $Destination -PathType Container))
@@ -404,7 +414,7 @@ function Copy-ADTFile
                         $null = if ($Flatten)
                         {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                            if ($srcPaths = Get-ChildItem -Path $srcPath -File -Recurse -Force -ErrorAction Ignore)
+                            if ($srcPaths = Get-ChildItem @pathSplat -File -Recurse -Force -ErrorAction Ignore)
                             {
                                 if ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
                                 {
@@ -417,7 +427,7 @@ function Copy-ADTFile
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
                             if ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
                             {
-                                Copy-Item -Path $srcPath -Recurse @ciParams
+                                Copy-Item @pathSplat -Recurse @ciParams
                             }
                         }
                         else
@@ -425,7 +435,7 @@ function Copy-ADTFile
                             Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
                             if ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
                             {
-                                Copy-Item -Path $srcPath @ciParams
+                                Copy-Item @pathSplat @ciParams
                             }
                         }
 
