@@ -334,8 +334,8 @@ function Private:Invoke-ADTClientServerOperation
                     $csArgsDictionary.Add($_.Key, $_.Value)
                 }
             }
-            Set-ADTRegistryKey -Key ($csArgsRegPath = "HKEY_CURRENT_USER\SOFTWARE\PSAppDeployToolkit") -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
-            "$csArgsRegPath\$csArgsRegValue"
+            Set-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
+            "$([PSADT.UserInterface.DialogManager]::UserRegistryPath)\$csArgsRegValue"
         }
 
         # Set up the parameters for Start-ADTProcessAsUser.
@@ -355,7 +355,28 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ($NoWait)
             {
-                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait
+                Remove-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -InformationAction SilentlyContinue
+                $sapResult = Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait -PassThru;
+                $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
+                while ($true)
+                {
+                    if ((Get-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -InformationAction SilentlyContinue) -eq 1)
+                    {
+                        break
+                    }
+                    if ($noWaitTimer.ElapsedMilliseconds -ge 15000)
+                    {
+                        $naerParams = @{
+                            Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ClientServerNoWaitTimeoutExceeded'
+                            TargetObject = $sapResult
+                            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                        }
+                        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    }
+                    [System.Threading.Thread]::Sleep(1000)
+                }
                 return
             }
             else

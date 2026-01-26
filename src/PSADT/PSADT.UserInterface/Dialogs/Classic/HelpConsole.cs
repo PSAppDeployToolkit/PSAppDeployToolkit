@@ -88,6 +88,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     comboBox.SelectedIndex = 0;
                 }
             }
+
+            // Set the NoWait success flag as the caller may be waiting for it.
+            Load += (sender, e) => DialogManager.SetNoWaitSuccess();
         }
 
         /// <summary>

@@ -281,6 +281,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Start the timers if specified
             _persistTimer?.Start();
             _expiryTimer?.Start();
+
+            // Set the NoWait success flag as the caller may be waiting for it.
+            DialogManager.SetNoWaitSuccess();
         }
 
         /// <summary>

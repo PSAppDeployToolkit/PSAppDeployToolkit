@@ -268,6 +268,7 @@ namespace PSADT.UserInterface
             // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
             using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Dialogs.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
             using ManualResetEventSlim balloonTipClosed = new();
+            notifyIcon.BalloonTipShown += (_, _) => SetNoWaitSuccess();
             notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
             notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
             notifyIcon.ShowBalloonTip((int)options.BalloonTipTime, options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);
@@ -350,6 +351,17 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Marks the operation as successful by setting the corresponding registry value to indicate a no-wait state.
+        /// </summary>
+        /// <remarks>This method updates a specific registry key to signal that a no-wait operation has
+        /// completed successfully. It is intended for internal use and should not be called directly by external
+        /// code.</remarks>
+        internal static void SetNoWaitSuccess()
+        {
+            Registry.SetValue(UserRegistryPath, NoWaitRegistryValueName, 1, RegistryValueKind.DWord);
+        }
+
+        /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.
         /// </summary>
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
@@ -392,6 +404,16 @@ namespace PSADT.UserInterface
         /// Gets the text for the button used to block execution in a dialog.
         /// </summary>
         public const string BlockExecutionButtonText = "OK";
+
+        /// <summary>
+        /// Specifies the registry path used for storing PSAppDeployToolkit configuration settings for the current user.
+        /// </summary>
+        public const string UserRegistryPath = "HKEY_CURRENT_USER\\SOFTWARE\\PSAppDeployToolkit";
+
+        /// <summary>
+        /// Specifies the registry value name used to indicate that the operation should not wait for success.
+        /// </summary>
+        public const string NoWaitRegistryValueName = "NoWaitSuccess";
 
         /// <summary>
         /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as
