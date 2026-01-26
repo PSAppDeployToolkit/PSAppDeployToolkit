@@ -535,16 +535,25 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Sets the value of an environment variable for the current process.
+        /// Sets, appends to, or removes an environment variable with the specified name and value.
         /// </summary>
-        /// <param name="variable">The name of the environment variable to set. Cannot be null or empty.</param>
-        /// <param name="value">The value to assign to the environment variable. If null, the variable is deleted.</param>
-        /// <param name="expandable">true to treat the value as expandable (containing environment variable references such as %PATH%);
-        /// otherwise, false.</param>
-        /// <returns>true if the environment variable was set successfully; otherwise, false.</returns>
-        public bool SetEnvironmentVariable(string variable, string value, bool expandable)
+        /// <remarks>If <paramref name="remove"/> is <see langword="true"/>, the environment variable is
+        /// removed regardless of the values of <paramref name="value"/>, <paramref name="expandable"/>, or <paramref
+        /// name="append"/>. If <paramref name="append"/> is <see langword="true"/>, the specified value is appended to
+        /// the existing value, if any. Use <paramref name="expandable"/> to indicate that the value contains references
+        /// to other environment variables (such as %PATH%).</remarks>
+        /// <param name="variable">The name of the environment variable to set, append to, or remove. Cannot be null or empty.</param>
+        /// <param name="value">The value to assign to the environment variable. If <paramref name="remove"/> is <see langword="true"/>,
+        /// this parameter is ignored.</param>
+        /// <param name="expandable">true to mark the variable as expandable (e.g., allows references to other environment variables within its
+        /// value); otherwise, false.</param>
+        /// <param name="append">true to append the specified value to the existing value of the environment variable; otherwise, false to
+        /// overwrite the value.</param>
+        /// <param name="remove">true to remove the environment variable; otherwise, false to set or append the value.</param>
+        /// <returns>true if the operation succeeds; otherwise, false.</returns>
+        public bool SetEnvironmentVariable(string variable, string value, bool expandable, bool append, bool remove)
         {
-            return (bool)Invoke(PipeCommand.SetEnvironmentVariable, new EnvironmentVariablePayload(variable, value, expandable))!;
+            return (bool)Invoke(PipeCommand.SetEnvironmentVariable, new EnvironmentVariablePayload(variable, value, expandable, append, remove))!;
         }
 
         /// <summary>

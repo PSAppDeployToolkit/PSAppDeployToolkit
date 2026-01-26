@@ -129,6 +129,12 @@ function Private:Invoke-ADTClientServerOperation
         [System.String]$Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
+        [System.Management.Automation.SwitchParameter]$Append,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
+        [System.Management.Automation.SwitchParameter]$Remove,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [System.Management.Automation.SwitchParameter]$Expandable,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
@@ -250,7 +256,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('SetEnvironmentVariable'))
             {
-                $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariable($Variable, $Value, !!$Expandable)
+                $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariable($Variable, $Value, !!$Expandable, !!$Append, !!$Remove)
             }
             elseif ($PSBoundParameters.ContainsKey('Options'))
             {

@@ -22,6 +22,12 @@ function Set-ADTEnvironmentVariable
     .PARAMETER Target
         The target of the variable to set. This can be the machine, user, or process.
 
+    .PARAMETER Append
+        Specifies the value should be appended to an existing value if present.
+
+    .PARAMETER Remove
+        Specifies the value should be removed from an existing value if present.
+
     .PARAMETER Expandable
         Indicates that the environment variable should be written to the registry using a REG_EXPAND_SZ type to support environment variables.
 
@@ -59,7 +65,7 @@ function Set-ADTEnvironmentVariable
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTEnvironmentVariable
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(DefaultParameterSetName = 'None', SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -73,6 +79,12 @@ function Set-ADTEnvironmentVariable
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.EnvironmentVariableTarget]$Target,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Append')]
+        [System.Management.Automation.SwitchParameter]$Append,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Remove')]
+        [System.Management.Automation.SwitchParameter]$Remove,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Expandable
@@ -102,21 +114,21 @@ function Set-ADTEnvironmentVariable
                         Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$($runAsActiveUser.NTAccount)] to [$Value]"))."
                         if ($PSCmdlet.ShouldProcess("$Variable (User: $($runAsActiveUser.NTAccount))", "Set environment variable to [$Value]"))
                         {
-                            Invoke-ADTClientServerOperation -SetEnvironmentVariable -User $runAsActiveUser -Variable $Variable -Value $Value -Expandable:$Expandable
+                            Invoke-ADTClientServerOperation -SetEnvironmentVariable -User $runAsActiveUser -Variable $Variable -Value $Value -Append:$Append -Remove:$Remove -Expandable:$Expandable
                         }
                         return
                     }
                     Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$Target] to [$Value]"))."
                     if ($PSCmdlet.ShouldProcess("$Variable (Target: $Target)", "Set environment variable to [$Value]"))
                     {
-                        [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable($Variable, $Value, $Target, !!$Expandable)
+                        [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable($Variable, $Value, $Target, !!$Expandable, !!$Append, !!$Remove)
                     }
                     return
                 }
                 Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] to [$Value]"))."
                 if ($PSCmdlet.ShouldProcess($Variable, "Set environment variable to [$Value]"))
                 {
-                    [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable($Variable, $Value, !!$Expandable)
+                    [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable($Variable, $Value, !!$Expandable, !!$Append, !!$Remove)
                 }
                 return
             }
