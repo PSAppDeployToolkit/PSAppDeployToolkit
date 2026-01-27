@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -843,7 +842,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
                     }
-                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
+                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && bool.Parse(removeStorage))
                     {
                         registryKey.DeleteValue(valueName);
                     }
@@ -853,7 +852,7 @@ namespace PSADT.ClientServer
                 {
                     // Provided value is a file path.
                     string argvDictContent = File.ReadAllText(argvDictValue);
-                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && int.Parse(removeStorage, CultureInfo.InvariantCulture) > 0)
+                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && bool.Parse(removeStorage))
                     {
                         File.Delete(argvDictValue);
                     }

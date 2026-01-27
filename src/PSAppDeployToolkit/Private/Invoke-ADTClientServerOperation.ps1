@@ -324,7 +324,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Build out parameters to store in the user's registry. When using Base64 logos, the path length can easily by exceeded.
-        $argvRegPath = if ($PSBoundParameters.Count -gt 0)
+        $csoArguments = if ($PSBoundParameters.Count -gt 0)
         {
             # Copy everything into a new dictionary as Newtonsoft won't handle a PSBoundParametersDictionary properly.
             $csArgsDictionary = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
@@ -335,7 +335,10 @@ function Private:Invoke-ADTClientServerOperation
                 }
             }
             Set-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
-            "$([PSADT.UserInterface.DialogManager]::UserRegistryPath)\$csArgsRegValue"
+            @{
+                ArgumentsDictionary = "$([PSADT.UserInterface.DialogManager]::UserRegistryPath)\$csArgsRegValue"
+                RemoveArgumentsDictionaryStorage = $true
+            }
         }
 
         # Set up the parameters for Start-ADTProcessAsUser.
@@ -343,7 +346,7 @@ function Private:Invoke-ADTClientServerOperation
             RunAsActiveUser = $User
             UseHighestAvailableToken = $true
             DenyUserTermination = $true
-            ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($argvRegPath) { "-ArgumentsDictionary"; $argvRegPath; '-RemoveArgumentsDictionaryStorage'; 1 })
+            ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
             MsiExecWaitTime = 1
             CreateNoWindow = $true
