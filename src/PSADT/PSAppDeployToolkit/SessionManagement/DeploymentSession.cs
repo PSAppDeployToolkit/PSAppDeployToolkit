@@ -705,19 +705,13 @@ namespace PSAppDeployToolkit.SessionManagement
 
 
                 #endregion
-                #region TestSessionViability
+                #region TestAdminRights
 
 
                 // Check current permissions and exit if not running with Administrator rights.
                 if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
                 {
                     throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
-                }
-
-                // Check if the caller explicitly wants interactivity but we can't do it.
-                if (_deployMode == DeployMode.Interactive && RunAsActiveUser is null && !IsProcessUserInteractive)
-                {
-                    throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
 
 
@@ -935,6 +929,17 @@ namespace PSAppDeployToolkit.SessionManagement
 
                 // Check deployment type (install/uninstall).
                 WriteLogEntry($"Deployment type is [{_deploymentType}].");
+
+
+                #endregion
+                #region TestSessionViability
+
+
+                // Check if the caller explicitly wants interactivity but we can't do it.
+                if (_deployMode != DeployMode.Silent && RunAsActiveUser is null && !IsProcessUserInteractive)
+                {
+                    throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
+                }
 
 
                 #endregion
