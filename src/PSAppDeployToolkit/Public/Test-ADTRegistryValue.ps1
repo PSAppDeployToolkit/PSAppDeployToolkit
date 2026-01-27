@@ -70,7 +70,7 @@ function Test-ADTRegistryValue
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.Security.Principal.SecurityIdentifier]$SID,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node

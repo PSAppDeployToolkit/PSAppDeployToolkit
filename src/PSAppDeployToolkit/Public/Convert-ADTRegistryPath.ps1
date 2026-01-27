@@ -68,7 +68,7 @@ function Convert-ADTRegistryPath
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.Security.Principal.SecurityIdentifier]$SID,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node
