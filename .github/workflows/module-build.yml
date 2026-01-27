@@ -99,12 +99,12 @@ jobs:
       id: ts
       shell: powershell
       run: |
-        "suffix=$($env:GITHUB_REF_NAME.Split('/')[-1])__$($env:GITHUB_SHA.Substring(0, 7))_$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', $null) -replace '\.\d+')" >> $env:GITHUB_OUTPUT
+        "suffix=$(if ($env:GITHUB_REF_NAME -match 'merge$') {$env:GITHUB_REF_NAME.Split('/')[-2]} else {$env:GITHUB_REF_NAME.Split('/')[-1]})_$($env:GITHUB_SHA.Substring(0, 7))_$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', $null) -replace '\.\d+')" >> $env:GITHUB_OUTPUT
 
     - name: Upload module
       uses: actions/upload-artifact@v6
       with:
-        name: PSAppDeployToolkit_ModuleOnly_${{ steps.ts.outputs.suffix }}
+        name: PSAppDeployToolkit_ModuleOnly__${{ steps.ts.outputs.suffix }}
         path: .\src\Artifacts\Module
         if-no-files-found: error
         compression-level: 9
