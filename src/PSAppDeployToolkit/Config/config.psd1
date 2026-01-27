@@ -10,7 +10,7 @@
         Banner = '..\Assets\Banner.Classic.png'
 
         # Specify optional filename or Base64 string of the tray icon.
-        TrayIcon = $null
+        TaskbarIcon = $null
     }
 
     MSI = @{

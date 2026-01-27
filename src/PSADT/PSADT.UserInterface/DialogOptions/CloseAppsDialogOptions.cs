@@ -23,7 +23,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
             options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
             options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTrayIconImage"] is string appTrayIconImage ? appTrayIconImage : null,
+            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
             options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
             options["Language"] is CultureInfo language ? language : null!,
             options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
@@ -56,7 +56,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="appIconImage">The path or URI to the application's icon image used in the dialog.</param>
         /// <param name="appIconDarkImage">The path or URI to the application's dark mode icon image used in the dialog.</param>
         /// <param name="appBannerImage">The path or URI to the banner image displayed in the dialog.</param>
-        /// <param name="appTrayIconImage">The path or URI to the application's tray icon image used in the dialog. If <see langword="null"/>,
+        /// <param name="appTaskbarIconImage">The path or URI to the application's tray icon image used in the dialog. If <see langword="null"/>,
         /// the default tray icon is used.</param>
         /// <param name="dialogTopMost">A value indicating whether the dialog should always appear on top of other windows.</param>
         /// <param name="language">The culture information used for localizing the dialog.</param>
@@ -80,7 +80,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogAllowMinimize">A value indicating whether the dialog can be minimized by the user.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
         [JsonConstructor]
-        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTrayIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTrayIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
+        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
             DeferralsRemaining = deferralsRemaining;

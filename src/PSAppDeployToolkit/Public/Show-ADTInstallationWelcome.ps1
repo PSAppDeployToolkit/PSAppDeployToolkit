@@ -1045,7 +1045,7 @@ function Show-ADTInstallationWelcome
                         AppIconImage = $adtConfig.Assets.Logo
                         AppIconDarkImage = $adtConfig.Assets.LogoDark
                         AppBannerImage = $adtConfig.Assets.Banner
-                        AppTrayIconImage = $adtConfig.Assets.TrayIcon
+                        AppTaskbarIconImage = $adtConfig.Assets.TaskbarIcon
                         DialogTopMost = !$NotTopMost
                         Language = $Script:ADT.Language
                         MinimizeWindows = !!$MinimizeWindows

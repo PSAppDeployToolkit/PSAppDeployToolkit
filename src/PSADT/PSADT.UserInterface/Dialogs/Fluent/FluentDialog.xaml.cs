@@ -119,9 +119,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonRight.Visibility = Visibility.Collapsed;
 
             // Set up the app's tray icon if an override has been specified.
-            if (options.AppTrayIconImage is not null)
+            if (options.AppTaskbarIconImage is not null)
             {
-                Icon = _appTrayIcon = GetIcon(options.AppTrayIconImage);
+                Icon = _appTaskbarIcon = GetIcon(options.AppTaskbarIconImage);
             }
 
             // Set up everything related to the dialog icon.
@@ -687,7 +687,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void SetDialogIcon()
         {
             AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
-            if (_appTrayIcon is null)
+            if (_appTaskbarIcon is null)
             {
                 Icon = AppIconImage.Source;
             }
@@ -1020,9 +1020,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private HwndSource? _hwndSource;
 
         /// <summary>
-        /// The application tray icon bitmap source, if AppTrayIconImage was specified.
+        /// The application tray icon bitmap source, if AppTaskbarIconImage was specified.
         /// </summary>
-        private readonly BitmapSource? _appTrayIcon;
+        private readonly BitmapSource? _appTaskbarIcon;
 
         /// <summary>
         /// A read-only dictionary that caches dialog icons for different application themes.
