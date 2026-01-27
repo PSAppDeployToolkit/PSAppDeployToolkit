@@ -78,12 +78,6 @@ function Convert-ADTRegistryPath
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-        # Suppress logging output unless the caller has said otherwise.
-        if (!$PSBoundParameters.ContainsKey('InformationAction'))
-        {
-            $InformationPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        }
     }
 
     process
@@ -158,7 +152,6 @@ function Convert-ADTRegistryPath
                     }
                     throw (New-ADTErrorRecord @naerParams)
                 }
-                Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
                 return $Key
             }
             catch
