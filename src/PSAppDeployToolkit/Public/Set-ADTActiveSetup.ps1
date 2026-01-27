@@ -243,7 +243,7 @@ function Set-ADTActiveSetup
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$SID
+                [System.Security.Principal.SecurityIdentifier]$SID
             )
 
             # Internal worker for parsing the version number out.
@@ -439,7 +439,7 @@ function Set-ADTActiveSetup
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+                [System.Security.Principal.SecurityIdentifier]$SID,
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]

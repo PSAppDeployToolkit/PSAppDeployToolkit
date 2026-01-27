@@ -122,7 +122,7 @@ function Set-ADTRegistryKey
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$SID
+        [System.Security.Principal.SecurityIdentifier]$SID
     )
 
     begin
