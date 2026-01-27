@@ -714,8 +714,18 @@ function Show-ADTInstallationWelcome
     {
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
         $adtConfig = Get-ADTConfig
+
+        # Initialise the string table.
+        $sessionState = if ($adtSession)
+        {
+            $adtSession.SessionState
+        }
+        if ($null -eq $sessionState)
+        {
+            $sessionState = $PSCmdlet.SessionState
+        }
+        $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()

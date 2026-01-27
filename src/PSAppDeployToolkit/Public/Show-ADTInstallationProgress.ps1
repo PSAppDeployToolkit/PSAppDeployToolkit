@@ -142,8 +142,18 @@ function Show-ADTInstallationProgress
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
         $errRecord = $null
+
+        # Initialise the string table.
+        $sessionState = if ($adtSession)
+        {
+            $adtSession.SessionState
+        }
+        if ($null -eq $sessionState)
+        {
+            $sessionState = $PSCmdlet.SessionState
+        }
+        $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
         [System.String]$deploymentType = if ($adtSession)
