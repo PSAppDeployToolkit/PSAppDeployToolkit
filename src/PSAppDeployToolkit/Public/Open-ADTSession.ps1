@@ -165,7 +165,7 @@ function Open-ADTSession
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SessionState]$SessionState = $PSCmdlet.SessionState,
+        [System.Management.Automation.SessionState]$SessionState,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateNotNullOrEmpty()]
@@ -380,10 +380,16 @@ function Open-ADTSession
         $callerInvocation = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo } }
         $noExitOnClose = $callerInvocation -and !$callerInvocation.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
 
+        # Set up the SessionState if one wasn't provided.
+        if (!$PSBoundParameters.ContainsKey('SessionState'))
+        {
+            $PSBoundParameters.SessionState = $SessionState = $PSCmdlet.SessionState
+        }
+
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
         {
-            [System.String[]]$PSBoundParameters.ScriptDirectory = if (!$Script:ADT.Initialized -or !$Script:ADT.Directories.Script)
+            [System.String[]]$PSBoundParameters.ScriptDirectory = $ScriptDirectory = if (!$Script:ADT.Initialized -or !$Script:ADT.Directories.Script)
             {
                 if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
                 {
@@ -471,7 +477,7 @@ function Open-ADTSession
         {
             try
             {
-                $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
+                $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $compatibilityMode)
                 $Script:ADT.Sessions.Add($adtSession)
             }
             catch

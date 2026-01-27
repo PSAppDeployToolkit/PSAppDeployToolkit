@@ -71,20 +71,32 @@ function Block-ADTAppExecution
 
     begin
     {
-        # Get everything we need before commencing.
+        # Confirm we've got an active session before proceeding.
         try
         {
             $adtSession = Get-ADTSession
-            $adtEnv = Get-ADTEnvironmentTable
-            $adtConfig = Get-ADTConfig
-            $adtStrings = Get-ADTStringTable -SessionState $PSCmdlet.SessionState
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+
+        # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $taskName = $adtEnv.InvalidScheduledTaskNameCharsRegExPattern.Replace("$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps", [System.String]::Empty)
+        $adtEnv = Get-ADTEnvironmentTable
+        $adtConfig = Get-ADTConfig
+
+        # Initialise the string table.
+        $sessionState = if ($adtSession)
+        {
+            $adtSession.SessionState
+        }
+        if ($null -eq $sessionState)
+        {
+            $sessionState = $PSCmdlet.SessionState
+        }
+        $adtStrings = Get-ADTStringTable -SessionState $SessionState
     }
 
     process

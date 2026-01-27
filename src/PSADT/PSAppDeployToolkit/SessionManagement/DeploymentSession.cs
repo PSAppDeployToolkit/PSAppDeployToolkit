@@ -44,8 +44,8 @@ namespace PSAppDeployToolkit.SessionManagement
         /// </summary>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         /// <param name="noExitOnClose">Indicates that the shell shouldn't exit on the last session closure.</param>
-        /// <param name="callerSessionState">The caller session state.</param>
-        public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, SessionState? callerSessionState = null)
+        /// <param name="compatibilityMode">Indicates whether compatibility mode is enabled.</param>
+        public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, bool? compatibilityMode = null)
         {
             try
             {
@@ -90,7 +90,11 @@ namespace PSAppDeployToolkit.SessionManagement
                 // Set up other variable values based on incoming dictionary.
                 if (parameters?.Count > 0)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out object? paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("SessionState", out object? paramValue) && (paramValue is not null))
+                    {
+                        SessionState = (SessionState)paramValue;
+                    }
+                    if (parameters.TryGetValue("DeploymentType", out paramValue) && (paramValue is not null))
                     {
                         _deploymentType = (DeploymentType)paramValue;
                     }
@@ -241,6 +245,14 @@ namespace PSAppDeployToolkit.SessionManagement
                             forceProcessDetection = true;
                         }
                     }
+                }
+                if (compatibilityMode.HasValue && compatibilityMode.Value)
+                {
+                    if (SessionState is null)
+                    {
+                        throw new InvalidOperationException("SessionState is not available to set compatibility mode variables.");
+                    }
+                    Settings |= DeploymentSettings.CompatibilityMode;
                 }
                 if (noExitOnClose.HasValue && noExitOnClose.Value)
                 {
@@ -612,7 +624,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", (string[])adtDirectories.Properties["Strings"].Value)}'].");
 
                 // Announce session instantiation mode.
-                if (callerSessionState is not null)
+                if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))
                 {
                     WriteLogEntry($"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
                     WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverity.Warning);
@@ -944,17 +956,16 @@ namespace PSAppDeployToolkit.SessionManagement
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-                if (callerSessionState is not null)
+                if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))
                 {
                     foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
-                        callerSessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
+                        SessionState!.PSVariable.Set(new(property.Name, property.GetValue(this)));
                     }
                     foreach (FieldInfo field in typeof(DeploymentSession).GetFields())
                     {
-                        callerSessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
+                        SessionState!.PSVariable.Set(new(field.Name, field.GetValue(this)));
                     }
-                    CallerSessionState = callerSessionState;
                 }
 
 
@@ -1451,8 +1462,8 @@ namespace PSAppDeployToolkit.SessionManagement
         /// <returns></returns>
         private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
         {
-            return CallerSessionState is not null
-                ? (T)CallerSessionState.PSVariable.GetValue(propertyName)
+            return Settings.HasFlag(DeploymentSettings.CompatibilityMode)
+                ? (T)SessionState!.PSVariable.GetValue(propertyName)
                 : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
         }
 
@@ -1464,7 +1475,10 @@ namespace PSAppDeployToolkit.SessionManagement
         /// <param name="propertyName"></param>
         private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
         {
-            CallerSessionState?.PSVariable.Set(new(propertyName, value));
+            if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))
+            {
+                SessionState!.PSVariable.Set(new(propertyName, value));
+            }
             BackingFields[propertyName!].SetValue(this, value);
         }
 
@@ -1527,11 +1541,6 @@ namespace PSAppDeployToolkit.SessionManagement
         /// Buffer for log entries.
         /// </summary>
         private readonly List<LogEntry> LogBuffer = [];
-
-        /// <summary>
-        /// Gets the caller's SessionState from value that was supplied during object instantiation.
-        /// </summary>
-        private readonly SessionState? CallerSessionState;
 
         /// <summary>
         /// Gets the mounted WIM files within this session.
@@ -1815,6 +1824,11 @@ namespace PSAppDeployToolkit.SessionManagement
         /// Gets a value indicating whether administrative privileges are required.
         /// </summary>
         public bool RequireAdmin => GetPropertyValue<bool>();
+
+        /// <summary>
+        /// Gets the caller's SessionState from value that was supplied during object instantiation.
+        /// </summary>
+        public SessionState? SessionState { get; }
 
 
         #endregion
