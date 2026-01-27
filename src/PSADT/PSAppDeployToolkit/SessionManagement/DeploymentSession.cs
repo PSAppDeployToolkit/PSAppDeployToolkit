@@ -870,7 +870,7 @@ namespace PSAppDeployToolkit.SessionManagement
                 }
 
                 // Evaluate processes to close if they're specified.
-                if (forceProcessDetection || _appProcessesToClose.Count > 0)
+                if (_appProcessesToClose.Count > 0 || forceProcessDetection)
                 {
                     if (deployModeChanged)
                     {
@@ -904,9 +904,29 @@ namespace PSAppDeployToolkit.SessionManagement
                         WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
                     }
                 }
+                else if (_deployAppScriptVersion is null || _deployAppScriptVersion >= new Version(4, 2, 0))
+                {
+                    if (deployModeChanged)
+                    {
+                        WriteLogEntry($"No processes were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
+                    }
+                    if (_deployMode != DeployMode.Auto)
+                    {
+                        WriteLogEntry($"No processes were specified as requiring closure but deployment mode was explicitly set to [{_deployMode}].");
+                    }
+                    else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
+                    {
+                        WriteLogEntry($"No processes were specified as requiring closure, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                        deployModeChanged = true;
+                    }
+                    else
+                    {
+                        WriteLogEntry("No processes were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
+                    }
+                }
                 else
                 {
-                    WriteLogEntry($"No processes were specified as requiring closure.");
+                    WriteLogEntry($"No processes were specified as requiring closure, not adjusting DeployMode as DeployAppScriptVersion is less than [4.2.0].");
                 }
 
                 // If we're still in Auto mode, then set the deployment mode to Interactive.
