@@ -825,33 +825,20 @@ Add-BuildTask Build {
     Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Directory | Where-Object -Property Name -NE -Value lib | Get-ChildItem -Filter *.pdb -Recurse | Remove-Item -Force
     Write-Build Gray '        ...PDB removal completed.'
 
-    # Sign our files if we're running on a branch enabled for code-signing.
-    if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop|4\.1\.x)$')))
-    {
-        if (!(Get-Command -Name 'azuresigntool' -ErrorAction Ignore))
-        {
-            throw 'AzureSignTool not found.'
-        }
-        Write-Build Gray '        Signing module...'
-        Get-ChildItem -Path $Script:BuildModuleRoot -Include '*.ps*1', 'PSAppDeployToolkit.dll', 'PSADT*.dll', 'PSADT*.exe', 'iNKORE.UI.WPF*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
-        & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 -ifl FilesToSign.txt
-    }
-    else
-    {
-        Write-Build Yellow '        Not running main or develop branch in GitHub Actions, skipping code signing...'
-    }
-
     # Create our templates.
-    Write-Build Gray '        Creating templates...'
-    $spParams = @{
-        FilePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
-        ArgumentList = "$(if (!$canSign) {"-ExecutionPolicy Bypass "})-NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -Name '$Script:BuildModuleRoot'; $([System.String]::Join('; ', (3, 4).ForEach({"New-ADTTemplate -Destination '$Script:ArtifactsPath' -Name 'Template_v$_' -Version $_"})))"
-        NoNewWindow = $true
-        Wait = $true
-    }
-    if ((Start-Process @spParams -PassThru).ExitCode -ne 0)
+    if ($env:GITHUB_ACTIONS -ne 'true')
     {
-        throw "Failed to generate frontend templates."
+        Write-Build Gray '        Creating templates...'
+        $spParams = @{
+            FilePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
+            ArgumentList = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -Name '$Script:BuildModuleRoot'; $([System.String]::Join('; ', (3, 4).ForEach({"New-ADTTemplate -Destination '$Script:ArtifactsPath' -Name 'Template_v$_' -Version $_"})))"
+            NoNewWindow = $true
+            Wait = $true
+        }
+        if ((Start-Process @spParams -PassThru).ExitCode -ne 0)
+        {
+            throw "Failed to generate frontend templates."
+        }
     }
     Write-Build Green '      ...Build Complete!'
 }
