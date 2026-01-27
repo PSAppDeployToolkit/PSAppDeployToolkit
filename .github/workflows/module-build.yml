@@ -75,7 +75,7 @@ jobs:
       id: ts
       shell: powershell
       run: |
-        "suffix=$($env:GITHUB_HEAD_REF.Split('/')[-1])_$($env:GITHUB_SHA.Substring(0, 7))_$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', $null) -replace '\.\d+')" >> $env:GITHUB_OUTPUT
+        "suffix=$($env:GITHUB_REF_NAME.Split('/')[-1])__$($env:GITHUB_SHA.Substring(0, 7))_$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', $null) -replace '\.\d+')" >> $env:GITHUB_OUTPUT
 
     - name: Upload module
       uses: actions/upload-artifact@v6
