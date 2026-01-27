@@ -143,6 +143,7 @@ function Block-ADTAppExecution
                     AppIconImage = $adtConfig.Assets.Logo
                     AppIconDarkImage = $adtConfig.Assets.LogoDark
                     AppBannerImage = $adtConfig.Assets.Banner
+                    AppTrayIconImage = $adtConfig.Assets.TrayIcon
                     DialogTopMost = $true
                     Language = $Script:ADT.Language
                     MinimizeWindows = $false

@@ -29,7 +29,7 @@ function Private:Set-ADTClientServerProcessPermissions
                     (Get-ADTConfig).Assets.Values.GetEnumerator() | & {
                         process
                         {
-                            if ($null -eq [PSADT.Utilities.MiscUtilities]::GetBase64StringBytes($_))
+                            if (![System.String]::IsNullOrWhiteSpace($_) -and ($null -eq [PSADT.Utilities.MiscUtilities]::GetBase64StringBytes($_)))
                             {
                                 return $_
                             }

@@ -48,7 +48,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Base properties.
                 SuspendLayout();
                 Text = StripFormattingTags(options.AppTitle);
-                Icon = GetIcon(options.AppIconImage);
+                Icon = GetIcon(options.AppTrayIconImage ?? options.AppIconImage);
                 TopMost = options.DialogTopMost;
                 ActiveControl = buttonDefault;
                 FormClosing += Form_FormClosing;

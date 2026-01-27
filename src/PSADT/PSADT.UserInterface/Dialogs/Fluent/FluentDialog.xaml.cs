@@ -118,6 +118,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonMiddle.Visibility = Visibility.Collapsed;
             ButtonRight.Visibility = Visibility.Collapsed;
 
+            // Set up the app's tray icon if an override has been specified.
+            if (options.AppTrayIconImage is not null)
+            {
+                Icon = _appTrayIcon = GetIcon(options.AppTrayIconImage);
+            }
+
             // Set up everything related to the dialog icon.
             _dialogBitmapCache = new(new Dictionary<ApplicationTheme, BitmapSource>()
             {
@@ -680,7 +686,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// displaying the application icon.</remarks>
         private void SetDialogIcon()
         {
-            Icon = AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
+            AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
+            if (_appTrayIcon is null)
+            {
+                Icon = AppIconImage.Source;
+            }
         }
 
         /// <summary>
@@ -1008,6 +1018,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// access to the window handle source. It is typically used in scenarios involving advanced window management
         /// or interoperation with native code.</remarks>
         private HwndSource? _hwndSource;
+
+        /// <summary>
+        /// The application tray icon bitmap source, if AppTrayIconImage was specified.
+        /// </summary>
+        private readonly BitmapSource? _appTrayIcon;
 
         /// <summary>
         /// A read-only dictionary that caches dialog icons for different application themes.
