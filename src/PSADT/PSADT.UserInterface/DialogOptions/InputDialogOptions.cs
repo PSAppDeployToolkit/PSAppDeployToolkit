@@ -21,7 +21,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
             options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
             options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTrayIconImage"] is string appTrayIconImage ? appTrayIconImage : null,
+            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
             options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
             options["Language"] is CultureInfo language ? language : null!,
             options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
@@ -50,7 +50,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="appIconImage">The path to the application's icon image used in the dialog.</param>
         /// <param name="appIconDarkImage">The path to the application's dark mode icon image used in the dialog.</param>
         /// <param name="appBannerImage">The path to the banner image displayed in the dialog.</param>
-        /// <param name="appTrayIconImage">The path to the application's tray icon image used in the dialog. If <see langword="null"/>,
+        /// <param name="appTaskbarIconImage">The path to the application's tray icon image used in the dialog. If <see langword="null"/>,
         /// the default tray icon is used.</param>
         /// <param name="dialogTopMost">A value indicating whether the dialog should always appear on top of other windows.</param>
         /// <param name="language">The culture information used for localizing the dialog.</param>
@@ -76,7 +76,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// empty.</param>
         /// <param name="secureInput">A value indicating whether the input should be masked (for passwords or sensitive data).</param>
         [JsonConstructor]
-        private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTrayIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText, bool secureInput) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTrayIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
+        private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText, bool secureInput) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             InitialInputText = initialInputText;
             SecureInput = secureInput;

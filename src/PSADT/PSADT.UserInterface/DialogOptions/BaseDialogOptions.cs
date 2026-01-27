@@ -24,7 +24,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
             options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
             options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTrayIconImage"] is string appTrayIconImage ? appTrayIconImage : null,
+            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
             options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
             options["Language"] is CultureInfo language ? language : null!,
             options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
@@ -46,7 +46,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="appIconImage">The path to the application's icon image. Cannot be null or empty.</param>
         /// <param name="appIconDarkImage">The path to the application's dark mode icon image. Cannot be null or empty.</param>
         /// <param name="appBannerImage">The path to the application's banner image. Cannot be null or empty.</param>
-        /// <param name="appTrayIconImage">The path to the application's tray icon image. Can be null or empty.</param>
+        /// <param name="appTaskbarIconImage">The path to the application's tray icon image. Can be null or empty.</param>
         /// <param name="dialogTopMost">Indicates whether the dialog should always appear on top of other windows.</param>
         /// <param name="language">The culture information representing the language for the dialog. Cannot be null.</param>
         /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
         [JsonConstructor]
-        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTrayIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
             {
@@ -98,14 +98,14 @@ namespace PSADT.UserInterface.DialogOptions
                 throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
             }
 
-            // AppTrayIconImage is optional, so only validate it if it has a value.
-            if (!string.IsNullOrWhiteSpace(appTrayIconImage))
+            // AppTaskbarIconImage is optional, so only validate it if it has a value.
+            if (!string.IsNullOrWhiteSpace(appTaskbarIconImage))
             {
-                if (!(MiscUtilities.GetBase64StringBytes(appTrayIconImage!)?.Length > 0) && !File.Exists(appTrayIconImage))
+                if (!(MiscUtilities.GetBase64StringBytes(appTaskbarIconImage!)?.Length > 0) && !File.Exists(appTaskbarIconImage))
                 {
-                    throw new FileNotFoundException("The specified AppTrayIconImage cannot be found", appTrayIconImage);
+                    throw new FileNotFoundException("The specified AppTaskbarIconImage cannot be found", appTaskbarIconImage);
                 }
-                AppTrayIconImage = appTrayIconImage;
+                AppTaskbarIconImage = appTaskbarIconImage;
             }
 
             // Set all remaining properties.
@@ -157,7 +157,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the file path or resource identifier for the application's tray icon image.
         /// </summary>
         [JsonProperty]
-        public string? AppTrayIconImage { get; }
+        public string? AppTaskbarIconImage { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.

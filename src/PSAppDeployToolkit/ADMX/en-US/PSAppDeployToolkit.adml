@@ -13,8 +13,8 @@
 			<string id="LogoDark_Explain">Specify filename or Base64 string of the logo (for dark mode).</string>
 			<string id="Banner_Display">Banner</string>
 			<string id="Banner_Explain">Specify filename or Base64 string of the banner (Classic-only).</string>
-			<string id="TrayIcon_Display">TrayIcon</string>
-			<string id="TrayIcon_Explain">Specify optional filename or Base64 string of the banner (Classic-only).</string>
+			<string id="TaskbarIcon_Display">TaskbarIcon</string>
+			<string id="TaskbarIcon_Explain">Specify optional filename or Base64 string of the banner (Classic-only).</string>
 			<string id="MSI_Category">MSI</string>
 			<string id="InstallParams_Display">InstallParams</string>
 			<string id="InstallParams_Explain">MSI install parameters used in interactive mode.</string>
@@ -144,9 +144,9 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 					<label>Banner</label>
 				</textBox>
 			</presentation>
-			<presentation id="TrayIcon">
-				<textBox refId="TrayIcon">
-					<label>TrayIcon</label>
+			<presentation id="TaskbarIcon">
+				<textBox refId="TaskbarIcon">
+					<label>TaskbarIcon</label>
 				</textBox>
 			</presentation>
 			<presentation id="InstallParams">

@@ -37,7 +37,7 @@ function Private:Import-ADTConfig
             }
 
             # Skip if the value is null (some are optional).
-            if ($asset.Name -eq 'TrayIcon' -and [System.String]::IsNullOrWhiteSpace($asset.Value))
+            if ($asset.Name -eq 'TaskbarIcon' -and [System.String]::IsNullOrWhiteSpace($asset.Value))
             {
                 continue
             }
