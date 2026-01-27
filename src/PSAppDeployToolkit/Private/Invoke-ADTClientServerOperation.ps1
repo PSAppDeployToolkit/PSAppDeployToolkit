@@ -358,12 +358,12 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ($NoWait)
             {
-                Remove-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -InformationAction SilentlyContinue
+                Remove-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -SID $User.SID -InformationAction SilentlyContinue
                 $sapResult = Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait -PassThru;
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
                 while ($true)
                 {
-                    if ((Get-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -InformationAction SilentlyContinue) -eq 1)
+                    if ((Get-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -SID $User.SID -InformationAction SilentlyContinue) -eq 1)
                     {
                         break
                     }
