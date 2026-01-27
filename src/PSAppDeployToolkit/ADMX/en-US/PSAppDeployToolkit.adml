@@ -8,11 +8,13 @@
 			<string id="SUPPORTED_Windows_10_0_RS1_Definition">At least Windows Server 2016, Windows 10 Version 1607</string>
 			<string id="Assets_Category">Assets</string>
 			<string id="Logo_Display">Logo</string>
-			<string id="Logo_Explain">Specify filename of the logo.</string>
-			<string id="LogoDark_Display">Logo (Dark Mode)</string>
-			<string id="LogoDark_Explain">Specify filename of the logo (for dark mode).</string>
+			<string id="Logo_Explain">Specify filename or Base64 string of the logo.</string>
+			<string id="LogoDark_Display">LogoDark</string>
+			<string id="LogoDark_Explain">Specify filename or Base64 string of the logo (for dark mode).</string>
 			<string id="Banner_Display">Banner</string>
-			<string id="Banner_Explain">Specify filename of the banner (Classic-only).</string>
+			<string id="Banner_Explain">Specify filename or Base64 string of the banner (Classic-only).</string>
+			<string id="TrayIcon_Display">TrayIcon</string>
+			<string id="TrayIcon_Explain">Specify optional filename or Base64 string of the banner (Classic-only).</string>
 			<string id="MSI_Category">MSI</string>
 			<string id="InstallParams_Display">InstallParams</string>
 			<string id="InstallParams_Explain">MSI install parameters used in interactive mode.</string>
@@ -140,6 +142,11 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<presentation id="Banner">
 				<textBox refId="Banner">
 					<label>Banner</label>
+				</textBox>
+			</presentation>
+			<presentation id="TrayIcon">
+				<textBox refId="TrayIcon">
+					<label>TrayIcon</label>
 				</textBox>
 			</presentation>
 			<presentation id="InstallParams">

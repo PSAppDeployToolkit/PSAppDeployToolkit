@@ -36,6 +36,12 @@ function Private:Import-ADTConfig
                 $asset.Value | & $MyInvocation.MyCommand; continue
             }
 
+            # Skip if the value is null (some are optional).
+            if ($asset.Name -eq 'TrayIcon' -and [System.String]::IsNullOrWhiteSpace($asset.Value))
+            {
+                continue
+            }
+
             # Skip if the path is a Base64 string.
             if ($null -ne [PSADT.Utilities.MiscUtilities]::GetBase64StringBytes($asset.Value))
             {

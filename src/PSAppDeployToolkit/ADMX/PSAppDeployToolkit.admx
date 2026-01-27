@@ -46,6 +46,13 @@
 				<text id="Banner" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="Banner" required="true" expandable="true" />
 			</elements>
 		</policy>
+		<policy name="TrayIcon" class="Machine" displayName="$(string.TrayIcon_Display)" explainText="$(string.TrayIcon_Explain)" presentation="$(presentation.TrayIcon)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets">
+			<parentCategory ref="Assets" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="TrayIcon" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="TrayIcon" required="true" expandable="true" />
+			</elements>
+		</policy>
 		<policy name="InstallParams" class="Machine" displayName="$(string.InstallParams_Display)" explainText="$(string.InstallParams_Explain)" presentation="$(presentation.InstallParams)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
 			<parentCategory ref="MSI" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
