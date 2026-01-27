@@ -130,7 +130,7 @@ function Convert-ADTRegistryPath
                 }
 
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-                if ($PSBoundParameters.ContainsKey('SID'))
+                if ($PSBoundParameters.ContainsKey('SID') -and !$SID.Equals([PSADT.AccountManagement.AccountUtilities]::CallerSid))
                 {
                     if ($Key -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\')
                     {
