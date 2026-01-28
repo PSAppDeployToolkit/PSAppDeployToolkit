@@ -94,7 +94,6 @@ function Copy-ADTFile
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
         [ValidateNotNullOrEmpty()]
-        [SupportsWildcards()]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, Position = 1)]
