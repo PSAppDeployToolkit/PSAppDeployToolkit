@@ -30,7 +30,7 @@ function Test-ADTMutexAvailability
         System.Boolean. Returns $true if the current thread acquires an exclusive lock on the named mutex, $false otherwise.
 
     .EXAMPLE
-        Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime 5000000
+        Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime 00:00:05
 
     .EXAMPLE
         Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Minutes 5)

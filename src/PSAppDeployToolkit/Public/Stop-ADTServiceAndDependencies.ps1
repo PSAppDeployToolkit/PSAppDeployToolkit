@@ -43,6 +43,17 @@ function Stop-ADTServiceAndDependencies
 
         Stops the Windows Update service and its dependencies.
 
+    .EXAMPLE
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00
+
+        Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
+
+    .EXAMPLE
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait (New-TimeSpan -Minutes 1)
+
+        Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
+
+
     .NOTES
         An active ADT session is NOT required to use this function.
 

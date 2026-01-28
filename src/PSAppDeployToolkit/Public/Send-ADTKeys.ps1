@@ -46,6 +46,11 @@ function Send-ADTKeys
         Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
 
     .EXAMPLE
+        Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' WaitDuration 00:00:05
+
+        Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
+
+    .EXAMPLE
         Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' WaitDuration (New-TimeSpan -Seconds 5)
 
         Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
