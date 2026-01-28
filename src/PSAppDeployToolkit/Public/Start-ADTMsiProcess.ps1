@@ -632,7 +632,7 @@ function Start-ADTMsiProcess
                 {
                     if ($logFile -notmatch $Action)
                     {
-                        "$($logPath)_$($Action)"
+                        [System.IO.Path]::Combine([System.IO.Directory]::GetParent($logPath).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($logPath))_$($Action)$([System.IO.Path]::GetExtension($logPath))")
                     }
                     else
                     {
@@ -699,11 +699,11 @@ function Start-ADTMsiProcess
                     # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                     if (!(Test-ADTCallerIsAdmin))
                     {
-                        $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))
+                        $msiLogFile = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($msiLogFile).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($msiLogFile))_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))$([System.IO.Path]::GetExtension($msiLogFile))")
                     }
                     elseif ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
                     {
-                        $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)
+                        $msiLogFile = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($msiLogFile).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($msiLogFile))_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)$([System.IO.Path]::GetExtension($msiLogFile))")
                     }
 
                     # Append ".log" to the MSI logfile path and enclose in quotes.
