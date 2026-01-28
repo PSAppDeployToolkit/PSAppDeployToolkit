@@ -268,7 +268,7 @@ namespace PSADT.UserInterface
             // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
             using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Dialogs.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
             using ManualResetEventSlim balloonTipClosed = new();
-            notifyIcon.BalloonTipShown += (_, _) => SetNoWaitSuccess();
+            notifyIcon.BalloonTipShown += (_, _) => SetClientServerOperationSuccess();
             notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
             notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
             notifyIcon.ShowBalloonTip((int)options.BalloonTipTime, options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);
@@ -356,9 +356,9 @@ namespace PSADT.UserInterface
         /// <remarks>This method updates a specific registry key to signal that a no-wait operation has
         /// completed successfully. It is intended for internal use and should not be called directly by external
         /// code.</remarks>
-        internal static void SetNoWaitSuccess()
+        internal static void SetClientServerOperationSuccess()
         {
-            Registry.SetValue(UserRegistryPath, NoWaitRegistryValueName, 1, RegistryValueKind.DWord);
+            Registry.SetValue(UserRegistryPath, OperationSuccessRegistryValueName, 1, RegistryValueKind.DWord);
         }
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Specifies the registry value name used to indicate that the operation should not wait for success.
         /// </summary>
-        public const string NoWaitRegistryValueName = "NoWaitSuccess";
+        public const string OperationSuccessRegistryValueName = "ClientServerOperationSuccess";
 
         /// <summary>
         /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as

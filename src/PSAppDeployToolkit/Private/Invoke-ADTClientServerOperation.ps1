@@ -365,7 +365,7 @@ function Private:Invoke-ADTClientServerOperation
                 $arkParams = @{
                     InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                     LiteralPath = [PSADT.UserInterface.DialogManager]::UserRegistryPath
-                    Name = [PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName
+                    Name = [PSADT.UserInterface.DialogManager]::OperationSuccessRegistryValueName
                     SID = $User.SID
                 }
                 Remove-ADTRegistryKey @arkParams

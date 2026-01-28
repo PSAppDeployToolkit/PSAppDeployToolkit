@@ -289,7 +289,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             _expiryTimer?.Start();
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            DialogManager.SetNoWaitSuccess();
+            DialogManager.SetClientServerOperationSuccess();
         }
 
         /// <summary>
