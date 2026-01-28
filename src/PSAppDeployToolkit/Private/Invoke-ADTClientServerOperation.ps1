@@ -356,15 +356,27 @@ function Private:Invoke-ADTClientServerOperation
         # Farm this out to a new process.
         $return = try
         {
+            # For -NoWait operations, we want to ensure the operation was successful before continuing.
+            # Some platforms clean up the local cache before a dialog can appears, causing breaks.
             if ($NoWait)
             {
-                Remove-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -SID $User.SID -InformationAction SilentlyContinue
+                # Remove any previous success flags before starting the process.
+                $arkParams = @{
+                    InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                    LiteralPath = [PSADT.UserInterface.DialogManager]::UserRegistryPath
+                    Name = [PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName
+                    SID = $User.SID
+                }
+                Remove-ADTRegistryKey @arkParams
                 $sapResult = Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait -PassThru;
+
+                # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
                 while ($true)
                 {
-                    if ((Get-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ([PSADT.UserInterface.DialogManager]::NoWaitRegistryValueName) -SID $User.SID -InformationAction SilentlyContinue) -eq 1)
+                    if ((Get-ADTRegistryKey @arkParams) -eq 1)
                     {
+                        Remove-ADTRegistryKey @arkParams
                         break
                     }
                     if ($noWaitTimer.ElapsedMilliseconds -ge 15000)
