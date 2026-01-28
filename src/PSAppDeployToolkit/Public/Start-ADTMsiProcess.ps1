@@ -539,45 +539,48 @@ function Start-ADTMsiProcess
                 {
                     $LogFileName.Trim()
                 }
-                elseif ($InstalledApplication)
+                elseif (!$adtSession -or !$adtSession.DisableLogging)
                 {
-                    if ($msiPatchData)
+                    if ($InstalledApplication)
                     {
-                        if ($msiPatchData.ChildNodes.LocalName.Contains('UpdatedVersion'))
+                        if ($msiPatchData)
                         {
-                            (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + ($msiPatchData.UpdatedVersion | Select-Object -First 1))) -replace '\s+'
+                            if ($msiPatchData.ChildNodes.LocalName.Contains('UpdatedVersion'))
+                            {
+                                (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + ($msiPatchData.UpdatedVersion | Select-Object -First 1))) -replace '\s+'
+                            }
+                            else
+                            {
+                                (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                            }
                         }
                         else
                         {
-                            (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                            if (![System.String]::IsNullOrWhiteSpace($InstalledApplication.DisplayVersion))
+                            {
+                                (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
+                            }
+                            else
+                            {
+                                (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                            }
                         }
                     }
-                    else
+                    elseif ($msiPropertyTable)
                     {
-                        if (![System.String]::IsNullOrWhiteSpace($InstalledApplication.DisplayVersion))
+                        if ($msiPropertyTable.ContainsKey('ProductVersion'))
                         {
-                            (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
+                            (Remove-ADTInvalidFileNameChars -Name ($msiPropertyTable.ProductName + '_' + $msiPropertyTable.ProductVersion)) -replace '\s+'
                         }
                         else
                         {
-                            (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
+                            (Remove-ADTInvalidFileNameChars -Name $msiPropertyTable.ProductName) -replace '\s+'
                         }
-                    }
-                }
-                elseif ($msiPropertyTable)
-                {
-                    if ($msiPropertyTable.ContainsKey('ProductVersion'))
-                    {
-                        (Remove-ADTInvalidFileNameChars -Name ($msiPropertyTable.ProductName + '_' + $msiPropertyTable.ProductVersion)) -replace '\s+'
-                    }
-                    else
-                    {
-                        (Remove-ADTInvalidFileNameChars -Name $msiPropertyTable.ProductName) -replace '\s+'
                     }
                 }
 
                 # Build the log path to use.
-                $logPath = if ($logFile -and ($PSBoundParameters.ContainsKey('LogFileName') -or !$adtSession -or !$adtSession.DisableLogging))
+                $logPath = if ($logFile)
                 {
                     # Don't bother with a directory if the log file is fully qualified.
                     if (![System.IO.Path]::IsPathRooted($logFile))
