@@ -210,7 +210,7 @@ function Copy-ADTFile
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
                         $getItemSplat = @{ $PSCmdlet.ParameterSetName = $srcPath.TrimEnd('\') }
                         $robocopySource = (Get-Item @getItemSplat -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath (Split-Path @pathSplat -Leaf)).Trim()
+                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath ([System.IO.Path]::GetFileName($($pathSplat.Values)))).Trim()
                         $robocopyFile = '*'
                     }
                     else
@@ -219,7 +219,7 @@ function Copy-ADTFile
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $ParentPath = Split-Path @pathSplat -Parent
+                        $ParentPath = Split-Path @pathSplat
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                         {
                             $ExecutionContext.SessionState.Path.CurrentLocation.Path
@@ -229,7 +229,7 @@ function Copy-ADTFile
                             (Get-Item -LiteralPath $ParentPath -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         }
                         $robocopyDestination = (Get-Item -LiteralPath $Destination.TrimEnd('\') -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyFile = (Split-Path @pathSplat -Leaf)
+                        $robocopyFile = [System.IO.Path]::GetFileName($($pathSplat.Values))
                     }
 
                     # Set up copy operation.
