@@ -706,10 +706,10 @@ function Start-ADTMsiProcess
                         $msiLogFile = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($msiLogFile).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($msiLogFile))_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)$([System.IO.Path]::GetExtension($msiLogFile))")
                     }
 
-                    # Append ".log" to the MSI logfile path and enclose in quotes.
-                    if ([System.IO.Path]::GetExtension($msiLogFile) -ne '.log')
+                    # Append ".log" to the MSI logfile if it has no extension.
+                    if ([System.String]::IsNullOrWhiteSpace([System.IO.Path]::GetExtension($msiLogFile)))
                     {
-                        $msiLogFile = "`"$($msiLogFile + '.log')`""
+                        $msiLogFile += '.log'
                     }
                 }
 
@@ -777,11 +777,11 @@ function Start-ADTMsiProcess
                 {
                     if ($LoggingOptions)
                     {
-                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$LoggingOptions $msiLogFile"))
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$LoggingOptions `"$msiLogFile`""))
                     }
                     else
                     {
-                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$($adtConfig.MSI.LoggingOptions) $msiLogFile"))
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$($adtConfig.MSI.LoggingOptions) `"$msiLogFile`""))
                     }
                 }
 
