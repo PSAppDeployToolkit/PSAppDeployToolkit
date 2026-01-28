@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
-using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.SafeHandles;
@@ -60,18 +59,6 @@ namespace PSADT.ProcessManagement
             uint? processId;
             string commandLine;
 
-            // Determine whether the process we're starting is a console app or not. This is important
-            // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
-            bool cliApp;
-            try
-            {
-                cliApp = ExecutableInfo.Get(launchInfo.FilePath).Subsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
-            }
-            catch (Exception ex) when (ex.Message is not null)
-            {
-                cliApp = launchInfo.CreateNoWindow || !launchInfo.UseShellExecute;
-            }
-
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
@@ -97,6 +84,7 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
+            bool cliApp = launchInfo.IsCliApplication || (!launchInfo.IsCliApplication && (launchInfo.CreateNoWindow || !launchInfo.UseShellExecute));
             if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (launchInfo.RunAsActiveUser is not null))
             {
                 AnonymousPipeServerStream? hStdOutRead = null;
