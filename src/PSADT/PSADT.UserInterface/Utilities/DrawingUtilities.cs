@@ -57,24 +57,24 @@ namespace PSADT.UserInterface.Utilities
                 img.Save(msImg, ImageFormat.Png);
                 using MemoryStream msIco = new();
                 using BinaryWriter bw = new(msIco);
-                bw.Write((short)0);           //0-1 reserved
-                bw.Write((short)1);           //2-3 image type, 1 = icon, 2 = cursor
-                bw.Write((short)1);           //4-5 number of images
-                bw.Write((byte)img.Width);    //6 image width
-                bw.Write((byte)img.Height);   //7 image height
-                bw.Write((byte)0);            //8 number of colors
-                bw.Write((byte)0);            //9 reserved
-                bw.Write((short)0);           //10-11 color planes
-                bw.Write((short)32);          //12-13 bits per pixel
-                bw.Write((int)msImg.Length);  //14-17 size of image data
-                bw.Write(22);                 //18-21 offset of image data
+                bw.Write((short)0);           // 0-1 reserved
+                bw.Write((short)1);           // 2-3 image type, 1 = icon, 2 = cursor
+                bw.Write((short)1);           // 4-5 number of images
+                bw.Write((byte)img.Width);    // 6 image width
+                bw.Write((byte)img.Height);   // 7 image height
+                bw.Write((byte)0);            // 8 number of colors
+                bw.Write((byte)0);            // 9 reserved
+                bw.Write((short)0);           // 10-11 color planes
+                bw.Write((short)32);          // 12-13 bits per pixel
+                bw.Write((int)msImg.Length);  // 14-17 size of image data
+                bw.Write(22);                 // 18-21 offset of image data
                 bw.Write(msImg.ToArray());    // write image data
                 bw.Flush();
                 _ = bw.Seek(0, SeekOrigin.Begin);
                 return new(msIco);
             }
 
-            // Ensure the incoming image is < 128px in width/height.
+            // Ensure the incoming image is <128px in width/height.
             if ((img.Width > 128) || (img.Height > 128))
             {
                 using Bitmap resizedImg = ResizeBitmap(img, 128, 128);
