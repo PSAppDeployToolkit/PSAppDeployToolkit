@@ -599,6 +599,10 @@ function Start-ADTMsiProcess
                         {
                             # Get the log directory from the session. This will factor in
                             # whether we're compressing logs, or logging to a subfolder.
+                            if (!(Test-Path -LiteralPath $adtSession.LogPath -PathType Container))
+                            {
+                                $null = [System.IO.Directory]::CreateDirectory($adtSession.LogPath)
+                            }
                             (Join-Path -Path $adtSession.LogPath -ChildPath $logFile).Trim()
                         }
                         else
