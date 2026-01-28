@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 
@@ -125,6 +126,21 @@ namespace PSADT.ProcessManagement
                 WindowStyle = WindowStyleMap[System.Diagnostics.ProcessWindowStyle.Hidden];
                 ProcessWindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 CreateNoWindow = true;
+            }
+
+            // Determine the type of file we're launching.
+            try
+            {
+                // Try to get it directly from the PE header.
+                ImageSubsystem = ExecutableInfo.Get(FilePath).Subsystem;
+            }
+            catch (Exception ex) when (ex.Message is not null)
+            {
+                // Assume we've got a GUI-based app unless its extension indicates otherwise.
+                string filePathExtension = Path.GetExtension(FilePath);
+                ImageSubsystem = filePathExtension.Equals(".com", StringComparison.OrdinalIgnoreCase) || filePathExtension.Equals(".bat", StringComparison.OrdinalIgnoreCase) || filePathExtension.Equals(".cmd", StringComparison.OrdinalIgnoreCase)
+                    ? IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI
+                    : IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
             }
 
             // Set remaining parameters.
@@ -262,5 +278,15 @@ namespace PSADT.ProcessManagement
         /// Gets whether to not end the process upon CancellationToken expiring.
         /// </summary>
         public bool NoTerminateOnTimeout { get; }
+
+        /// <summary>
+        /// Gets the subsystem required to run the image.
+        /// </summary>
+        public IMAGE_SUBSYSTEM ImageSubsystem { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the application is a command-line interface (CLI) application.
+        /// </summary>
+        public bool IsCliApplication => ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
     }
 }
