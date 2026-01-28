@@ -150,31 +150,7 @@ function Invoke-ADTRegSvr32
                 }
 
                 # Register the DLL file and measure the success.
-                if (($ExecuteResult = Start-ADTProcess -FilePath $RegSvr32Path -ArgumentList $ActionParameters -WindowStyle Hidden -PassThru).ExitCode -ne 0)
-                {
-                    if ($ExecuteResult.ExitCode -eq 60002)
-                    {
-                        $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("Start-ADTProcess function failed with exit code [$($ExecuteResult.ExitCode)].")
-                            Category = [System.Management.Automation.ErrorCategory]::OperationStopped
-                            ErrorId = 'ProcessInvocationError'
-                            TargetObject = "$FilePath $ActionParameters"
-                            RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
-                    else
-                    {
-                        $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("regsvr32.exe failed with exit code [$($ExecuteResult.ExitCode)].")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'ProcessInvocationError'
-                            TargetObject = "$FilePath $ActionParameters"
-                            RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
-                }
+                Start-ADTProcess -FilePath $RegSvr32Path -ArgumentList $ActionParameters -CreateNoWindow -SuccessExitCodes 0
             }
             catch
             {
