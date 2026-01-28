@@ -577,7 +577,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Build the log path to use.
-                $logPath = if ($logFile)
+                $logPath = if ($logFile -and ($PSBoundParameters.ContainsKey('LogFileName') -or !$adtSession -or !$adtSession.DisableLogging))
                 {
                     # Don't bother with a directory if the log file is fully qualified.
                     if (![System.IO.Path]::IsPathRooted($logFile))
