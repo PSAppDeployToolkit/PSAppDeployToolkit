@@ -90,7 +90,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            Load += (sender, e) => DialogManager.SetNoWaitSuccess();
+            Load += (sender, e) => DialogManager.SetClientServerOperationSuccess();
         }
 
         /// <summary>
