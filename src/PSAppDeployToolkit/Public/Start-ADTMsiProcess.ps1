@@ -579,37 +579,44 @@ function Start-ADTMsiProcess
                 # Build the log path to use.
                 $logPath = if ($logFile)
                 {
-                    # Determine whether or not we use the NoAdminRights pathway.
-                    $logPathProperty = ('LogPath', 'LogPathNoAdminRights')[$PSBoundParameters.ContainsKey('RunAsActiveUser')]
-
-                    # A defined MSI log path is considered an override.
-                    if (![System.String]::IsNullOrWhiteSpace($adtConfig.MSI.$logPathProperty))
+                    # Don't bother with a directory if the log file is fully qualified.
+                    if (![System.IO.Path]::IsPathRooted($logFile))
                     {
-                        # Create the Log directory if it doesn't already exist.
-                        if (!(Test-Path -LiteralPath $adtConfig.MSI.$logPathProperty -PathType Container))
+                        # A defined MSI log path is considered an override.
+                        $logPathProperty = ('LogPath', 'LogPathNoAdminRights')[$PSBoundParameters.ContainsKey('RunAsActiveUser')]
+                        if (![System.String]::IsNullOrWhiteSpace($adtConfig.MSI.$logPathProperty))
                         {
-                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.$logPathProperty)
-                        }
+                            # Create the Log directory if it doesn't already exist.
+                            if (!(Test-Path -LiteralPath $adtConfig.MSI.$logPathProperty -PathType Container))
+                            {
+                                $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.$logPathProperty)
+                            }
 
-                        # Build the log file path.
-                        (Join-Path -Path $adtConfig.MSI.$logPathProperty -ChildPath $logFile).Trim()
-                    }
-                    elseif ($adtSession -and !$PSBoundParameters.ContainsKey('RunAsActiveUser'))
-                    {
-                        # Get the log directory from the session. This will factor in
-                        # whether we're compressing logs, or logging to a subfolder.
-                        (Join-Path -Path $adtSession.LogPath -ChildPath $logFile).Trim()
+                            # Build the log file path.
+                            (Join-Path -Path $adtConfig.MSI.$logPathProperty -ChildPath $logFile).Trim()
+                        }
+                        elseif ($adtSession -and !$PSBoundParameters.ContainsKey('RunAsActiveUser'))
+                        {
+                            # Get the log directory from the session. This will factor in
+                            # whether we're compressing logs, or logging to a subfolder.
+                            (Join-Path -Path $adtSession.LogPath -ChildPath $logFile).Trim()
+                        }
+                        else
+                        {
+                            # Fall back to the toolkit's LogPath.
+                            if (!(Test-Path -LiteralPath $adtConfig.Toolkit.$logPathProperty -PathType Container))
+                            {
+                                $null = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.$logPathProperty)
+                            }
+
+                            # Build the log file path.
+                            (Join-Path -Path $adtConfig.Toolkit.$logPathProperty -ChildPath $logFile).Trim()
+                        }
                     }
                     else
                     {
-                        # Fall back to the toolkit's LogPath.
-                        if (!(Test-Path -LiteralPath $adtConfig.Toolkit.$logPathProperty -PathType Container))
-                        {
-                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.$logPathProperty)
-                        }
-
-                        # Build the log file path.
-                        (Join-Path -Path $adtConfig.Toolkit.$logPathProperty -ChildPath $logFile).Trim()
+                        # Log path is already fully qualified.
+                        $logFile
                     }
                 }
 
