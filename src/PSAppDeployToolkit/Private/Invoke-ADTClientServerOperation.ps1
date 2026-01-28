@@ -351,6 +351,7 @@ function Private:Invoke-ADTClientServerOperation
             MsiExecWaitTime = 1
             CreateNoWindow = $true
             InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+            PassThru = $true
         }
 
         # Farm this out to a new process.
@@ -368,7 +369,7 @@ function Private:Invoke-ADTClientServerOperation
                     SID = $User.SID
                 }
                 Remove-ADTRegistryKey @arkParams
-                $sapResult = Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait -PassThru;
+                $sapResult = Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait;
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -396,7 +397,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -PassThru
+                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe"
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]
