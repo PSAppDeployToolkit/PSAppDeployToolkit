@@ -65,8 +65,8 @@ function Show-ADTInstallationWelcome
         This addresses the issue where Intune retries deployments shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
         Example:
-        - To specify 30 minutes, use: `([System.TimeSpan]::FromMinutes(30))`.
-        - To specify 24 hours, use: `([System.TimeSpan]::FromHours(24))`.
+        - To specify 30 minutes, use: `([System.TimeSpan]::FromMinutes(30))` or `00:30:00`.
+        - To specify 24 hours, use: `([System.TimeSpan]::FromHours(24))` or `1.00:00:00`.
 
     .PARAMETER WindowLocation
         The location of the dialog on the screen.

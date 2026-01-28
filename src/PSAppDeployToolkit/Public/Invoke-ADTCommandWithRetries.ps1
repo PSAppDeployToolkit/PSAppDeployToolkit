@@ -48,9 +48,19 @@ function Invoke-ADTCommandWithRetries
         Downloads the latest WinGet installer to the SupportFiles directory. If the command fails, it will retry 3 times with 5 seconds between each attempt.
 
     .EXAMPLE
+        Invoke-ADTCommandWithRetries Get-FileHash -Path '\\MyShare\MyFile' -MaximumElapsedTime (New-TimeSpan -Seconds 90) -SleepDuration 00:00:01
+
+        Gets the hash of a file on an SMB share. If the connection to the SMB share drops, it will retry the command every 2 seconds until it successfully gets the hash or 90 seconds have passed since the initial attempt.
+
+    .EXAMPLE
         Invoke-ADTCommandWithRetries Get-FileHash -Path '\\MyShare\MyFile' -MaximumElapsedTime (New-TimeSpan -Seconds 90) -SleepDuration (New-TimeSpan -Seconds 1)
 
         Gets the hash of a file on an SMB share. If the connection to the SMB share drops, it will retry the command every 2 seconds until it successfully gets the hash or 90 seconds have passed since the initial attempt.
+
+    .EXAMPLE
+        Invoke-ADTCommandWithRetries Copy-ADTFile -Path '\\MyShare\MyFile' -Destination 'C:\Windows\Temp' -Retries 5 -MaximumElapsedTime 00:00:05
+
+        Copies a file from an SMB share to C:\Windows\Temp. If the connection to the SMB share drops, it will retry the command once every 5 seconds until either 5 attempts have been made or 5 minutes have passed since the initial attempt.
 
     .EXAMPLE
         Invoke-ADTCommandWithRetries Copy-ADTFile -Path '\\MyShare\MyFile' -Destination 'C:\Windows\Temp' -Retries 5 -MaximumElapsedTime (New-TimeSpan -Minutes 5)
