@@ -218,6 +218,18 @@ namespace PSADT.ProcessManagement
                 }
             }
 
+            // Throw if the result is empty. This can be the case when the caller is a 32-bit process on a 64-bit system.
+            if (string.IsNullOrWhiteSpace(imageName))
+            {
+                throw new InvalidOperationException($"The image name query for process ID [{process.Id}] returned a null result.");
+            }
+
+            // Throw if the value doesn't start with \Device\ (indicating an NT path).
+            if (!imageName.StartsWith(@"\Device\", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"The image name [{imageName}] for process ID [{process.Id}] is not a valid NT path.");
+            }
+
             // If we have a lookup table, replace the NT path with the drive letter before returning.
             if (ntPathLookupTable is not null)
             {
