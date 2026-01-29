@@ -72,6 +72,12 @@ Describe 'Copy-ADTFile'-ForEach @(
             "$DestinationPath\test.txt" | Should -Exist
         }
 
+        It 'Copies a single file via -LiteralPath($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
+            Copy-ADTFile -LiteralPath "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
+
+            "$DestinationPath\test.txt" | Should -Exist
+        }
+
         It 'Copies a single file with a new filename ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Copy-ADTFile -Path "$SourcePath\test.txt" -Destination "$DestinationPath\new.txt" -FileCopyMode $FileCopyMode
 
@@ -89,6 +95,14 @@ Describe 'Copy-ADTFile'-ForEach @(
         It 'Copies a file where only filename is supplied prefixed with .\ ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Push-Location $SourcePath
             Copy-ADTFile -Path '.\test.txt' -Destination $DestinationPath -FileCopyMode $FileCopyMode
+            Pop-Location
+
+            "$DestinationPath\test.txt" | Should -Exist
+        }
+
+        It 'Copies a file via LiteralPath where only filename is supplied prefixed with .\ ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
+            Push-Location $SourcePath
+            Copy-ADTFile -LiteralPath '.\test.txt' -Destination $DestinationPath -FileCopyMode $FileCopyMode
             Pop-Location
 
             "$DestinationPath\test.txt" | Should -Exist
@@ -116,6 +130,12 @@ Describe 'Copy-ADTFile'-ForEach @(
             "$DestinationPath\test.txt" | Should -Exist
         }
 
+        It 'Copies a file to and from a UNC path via LiteralPath ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
+            Copy-ADTFile -LiteralPath "$($SourcePath.Replace('C:\', '\\localhost\c$\'))\test.txt" -Destination $DestinationPath.Replace('C:\', '\\localhost\c$\') -FileCopyMode $FileCopyMode
+
+            "$DestinationPath\test.txt" | Should -Exist
+        }
+
         Context 'Tests to be performed with and without recursion/flatten' -ForEach @(
             @{ Recurse = $false; Flatten = $false }
             @{ Recurse = $true; Flatten = $false }
@@ -123,6 +143,34 @@ Describe 'Copy-ADTFile'-ForEach @(
         ) {
             It 'Copies a folder ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
                 Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
+
+                if ($Flatten)
+                {
+                    "$DestinationPath\test.txt" | Should -Exist
+                    "$DestinationPath\test1.txt" | Should -Exist
+                    "$DestinationPath\test2.txt" | Should -Exist
+                    "$DestinationPath\test3.txt" | Should -Exist
+                }
+                else
+                {
+                    if ($FileCopyMode -eq 'Robocopy')
+                    {
+                        # Known issue - "$DestinationPath\Source\test.txt" will only exist when using Robocopy
+                        "$DestinationPath\Source\test.txt" | Should -Exist
+                    }
+                    if ($Recurse)
+                    {
+                        "$DestinationPath\Source\Subfolder1\test1.txt" | Should -Exist
+                    }
+                    else
+                    {
+                        "$DestinationPath\Source\Subfolder1\test1.txt" | Should -Not -Exist
+                    }
+                }
+            }
+
+            It 'Copies a folder via -LiteralPath ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $FileCopyMode = $<FileCopyMode>)' {
+                Copy-ADTFile -LiteralPath $SourcePath -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -FileCopyMode $FileCopyMode
 
                 if ($Flatten)
                 {
