@@ -9,6 +9,7 @@ using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using Windows.Wdk.System.Threading;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -203,18 +204,17 @@ namespace PSADT.ProcessManagement
 
             // Perform initial query so we can reallocate with the required length.
             _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-            Span<byte> imageNamePtr = stackalloc byte[processIdInfo.ImageName.MaximumLength + 2]; imageNamePtr.Clear();
+            Span<char> imageNamePtr = stackalloc char[((processIdInfo.ImageName.MaximumLength + 2) / 2) + 1]; imageNamePtr.Clear();
 
             // Assign the ImageName buffer and perform the query again.
             string imageName;
             unsafe
             {
-                fixed (byte* pImageName = imageNamePtr)
+                fixed (char* pImageName = imageNamePtr)
                 {
-                    processIdInfo.ImageName.Buffer = (char*)pImageName;
+                    processIdInfo.ImageName = new() { Length = 0, MaximumLength = checked((ushort)(imageNamePtr.Length * 2)), Buffer = pImageName };
                     _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageName = processIdInfo.ImageName.Buffer.ToString().TrimRemoveNull();
-                    processIdInfo.ImageName.Buffer = null;
+                    imageName = new string(pImageName, 0, Math.Min(processIdInfo.ImageName.Length / 2, imageNamePtr.Length)).TrimRemoveNull();
                 }
             }
 
