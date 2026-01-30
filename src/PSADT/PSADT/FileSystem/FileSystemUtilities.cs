@@ -27,7 +27,7 @@ namespace PSADT.FileSystem
         /// Returns a lookup table for NT paths to drive letters.
         /// </summary>
         /// <returns></returns>
-        internal static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
+        internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
         {
             Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];

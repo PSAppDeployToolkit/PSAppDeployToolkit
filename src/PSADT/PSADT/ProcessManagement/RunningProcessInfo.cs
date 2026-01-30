@@ -34,7 +34,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null or empty.");
             }
-            ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+            ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.MakeNtPathLookupTable();
             Dictionary<Process, string[]> processArgvMap = [];
 
             // Inline lambda to get the command line from the given process.

@@ -33,9 +33,9 @@ namespace PSADT.Extensions
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.GetNtPathLookupTable());
+                return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
             }
-            return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.GetNtPathLookupTable());
+            return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
         }
     }
 }
