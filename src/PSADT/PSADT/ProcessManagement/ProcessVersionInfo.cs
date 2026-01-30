@@ -321,7 +321,7 @@ namespace PSADT.ProcessManagement
         /// otherwise, <see langword="null"/>.</returns>
         private static string? GetFileVersionLanguage(string codepage)
         {
-            Span<char> szLang = stackalloc char[(int)PInvoke.MAX_PATH];
+            Span<char> szLang = stackalloc char[1024];
             uint len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang);
             string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
             return !string.IsNullOrWhiteSpace(result) ? result : null;
