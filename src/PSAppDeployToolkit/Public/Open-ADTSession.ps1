@@ -121,6 +121,9 @@ function Open-ADTSession
     .PARAMETER NoProcessDetection
         When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no processes to close in the specified AppProcessesToClose list.
 
+    .PARAMETER AllowWowProcess
+        When specified, allows the session to initialize within a Windows on Windows (WOW) process, such as a 32-bit PowerShell instance on a 64-bit operating system.
+
     .PARAMETER PassThru
         Passes the session object through the pipeline.
 
@@ -326,6 +329,9 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoProcessDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$AllowWowProcess,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,

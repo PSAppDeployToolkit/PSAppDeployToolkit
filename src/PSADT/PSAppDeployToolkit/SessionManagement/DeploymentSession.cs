@@ -230,6 +230,10 @@ namespace PSAppDeployToolkit.SessionManagement
                     {
                         Settings |= DeploymentSettings.NoOobeDetection;
                     }
+                    if (parameters.TryGetValue("AllowWowProcess", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.AllowWowProcess;
+                    }
                     if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _logName = (string)paramValue;
@@ -705,13 +709,19 @@ namespace PSAppDeployToolkit.SessionManagement
 
 
                 #endregion
-                #region TestAdminRights
+                #region TestSessionViability
 
 
                 // Check current permissions and exit if not running with Administrator rights.
                 if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
                 {
                     throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
+                }
+
+                // Throw if the process is 32-bit on a 64-bit OS.
+                if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture && !Settings.HasFlag(DeploymentSettings.AllowWowProcess))
+                {
+                    throw new InvalidOperationException("The current PowerShell process is 32-bit on a 64-bit operating system. Please run the deployment script in a 64-bit PowerShell process.");
                 }
 
 
