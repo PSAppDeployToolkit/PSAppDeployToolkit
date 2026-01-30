@@ -24,5 +24,6 @@ namespace PSAppDeployToolkit.SessionManagement
         NoSessionDetection = 1 << 13,
         NoOobeDetection = 1 << 14,
         NoProcessDetection = 1 << 15,
+        AllowWowProcess = 1 << 16,
     }
 }
