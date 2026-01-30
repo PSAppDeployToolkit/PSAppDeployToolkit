@@ -54,6 +54,7 @@ GetPrivateProfileSectionNames
 GetPrivateProfileString
 GetProcAddress
 GetProcessId
+GetProcessImageFileName
 GetProductInfo
 GetQueuedCompletionStatus
 GetShellWindow
@@ -251,6 +252,7 @@ PROCESS_BASIC_INFORMATION
 PROCESS_INFORMATION
 ProcessIdToSessionId
 QueryDosDevice
+QueryFullProcessImageName
 QueryInformationJobObject
 QueryServiceStatusEx
 ReadProcessMemory

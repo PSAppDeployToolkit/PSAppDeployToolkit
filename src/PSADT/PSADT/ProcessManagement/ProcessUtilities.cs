@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
+using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using Windows.Wdk.System.Threading;
@@ -145,7 +146,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
         public static string GetProcessImageName(Process process)
         {
-            return process is null ? throw new ArgumentNullException(nameof(process), "Process cannot be null.") : GetProcessImageName(process, null);
+            return process is null ? throw new ArgumentNullException(nameof(process), "Process cannot be null.") : GetProcessImageName((uint)process.Id);
         }
 
         /// <summary>
@@ -159,8 +160,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A string containing the full path to the executable file of the specified process.</returns>
         public static string GetProcessImageName(int processId)
         {
-            using Process process = Process.GetProcessById(processId);
-            return GetProcessImageName(process, null);
+            return GetProcessImageName((uint)processId);
         }
 
         /// <summary>
@@ -181,26 +181,192 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the full image file path of the specified process, optionally converting NT device paths to drive
-        /// letter paths using a lookup table.
+        /// Retrieves the full image file name of a process specified by its process identifier (PID), using multiple
+        /// fallback methods to maximize compatibility across Windows versions and process types.
         /// </summary>
-        /// <remarks>This method is intended for internal use and relies on low-level system queries to
-        /// obtain the process image path. If the process is running under a different user context or has restricted
-        /// access, the returned path may be unavailable or incomplete.</remarks>
-        /// <param name="process">The process for which to obtain the image file path. Must not be null and must reference a valid, running
-        /// process.</param>
-        /// <param name="ntPathLookupTable">An optional lookup table mapping NT device names to drive letters. If provided, NT device paths in the image
-        /// name are replaced with corresponding drive letters.</param>
-        /// <returns>A string containing the full image file path of the specified process. If a lookup table is provided, the
-        /// path will use drive letters instead of NT device names.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if a lookup table is provided and the NT device name derived from the image path cannot be found in
-        /// the table.</exception>
-        internal static string GetProcessImageName(Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        /// <remarks>This method attempts several approaches to obtain the process image name, including
+        /// kernel and user-mode APIs, to ensure compatibility with different Windows versions and process
+        /// architectures. The returned path may be in NT device format or DOS drive letter format, depending on which
+        /// method succeeds. Callers should be prepared to handle either format.</remarks>
+        /// <param name="processId">The identifier of the process whose image file name is to be retrieved.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to DOS drive letter paths, if applicable. Can be
+        /// empty if no translation is required.</param>
+        /// <returns>A string containing the full path to the process's executable image. The path format may vary depending on
+        /// the method used and system configuration.</returns>
+        /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
+        /// of each failure encountered during the retrieval attempts.</exception>
+        internal static string GetProcessImageName(uint processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
+            // Get the process image name via a waterfall approach.
+            ntPathLookupTable ??= FileSystemUtilities.MakeNtPathLookupTable();
+            try
+            {
+                // Attempt to get the ImageName via a kernel API first as it's reliable for native processes.
+                return QuerySystemProcessIdInformationImageName(processId, ntPathLookupTable);
+            }
+            catch (Exception ex1) when (ex1.Message is not null)
+            {
+                // The kernel API call failed. This can occur when the caller is a 32-bit process on a 64-bit system, etc.
+                try
+                {
+                    // Open a handle to the target process. If this fails, something is seriously wrong and we cannot continue.
+                    using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+                    try
+                    {
+                        // QueryFullProcessImageName is the standard API for this purpose.
+                        return QueryFullProcessImageName(hProcess);
+                    }
+                    catch (Exception ex3) when (ex3.Message is not null)
+                    {
+                        // That failed. Fall back to the Windows XP-era API.
+                        try
+                        {
+                            // Unlike the above, this provides the path in NT device format.
+                            return GetProcessImageFileName(hProcess, ntPathLookupTable);
+                        }
+                        catch (Exception ex4) when (ex4.Message is not null)
+                        {
+                            // That failed too. Go back down to the kernel API level and see how we go.
+                            try
+                            {
+                                // This leverages the documented ProcessImageFileNameWin32 info class.
+                                return QueryProcessImageFileNameWin32(hProcess);
+
+                            }
+                            catch (Exception ex5) when (ex5.Message is not null)
+                            {
+                                // The Win32 API call failed. Try the NT API directly as the last resort.
+                                try
+                                {
+                                    // The NT device path will get translated internally for us.
+                                    return QueryProcessImageFileName(hProcess, ntPathLookupTable);
+                                }
+                                catch (Exception ex6) when (ex6.Message is not null)
+                                {
+                                    throw new AggregateException($"Failed to retrieve the process image name for process ID [{processId}] via all available methods.", ex1, ex3, ex4, ex5, ex6);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex2) when (ex2.Message is not null)
+                {
+                    throw new AggregateException($"Failed to open process ID [{processId}] for querying the image name after the kernel API call failed.", ex1, ex2);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the full image file name of a process specified by its process identifier (PID), using multiple
+        /// fallback methods to maximize compatibility across Windows versions and process types.
+        /// </summary>
+        /// <remarks>This method attempts several approaches to obtain the process image name, including
+        /// kernel and user-mode APIs, to ensure compatibility with different Windows versions and process
+        /// architectures. The returned path may be in NT device format or DOS drive letter format, depending on which
+        /// method succeeds. Callers should be prepared to handle either format.</remarks>
+        /// <param name="processId">The identifier of the process whose image file name is to be retrieved.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to DOS drive letter paths, if applicable. Can be
+        /// empty if no translation is required.</param>
+        /// <returns>A string containing the full path to the process's executable image. The path format may vary depending on
+        /// the method used and system configuration.</returns>
+        /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
+        /// of each failure encountered during the retrieval attempts.</exception>
+        internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
+        {
+            return GetProcessImageName((uint)processId, ntPathLookupTable);
+        }
+
+        /// <summary>
+        /// Retrieves the full path of the executable file for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <returns>A string containing the full path to the executable file of the process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
+        internal static string QueryFullProcessImageName(SafeHandle hProcess)
+        {
+            Span<char> buffer = stackalloc char[1024];
+            _ = Kernel32.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
+            string result = buffer.Slice(0, (int)requiredLength).ToString().TrimRemoveNull();
+            return string.IsNullOrWhiteSpace(result)
+                ? throw new InvalidOperationException("The QueryFullProcessImageName() call returned a null or empty result.")
+                : result;
+        }
+
+        /// <summary>
+        /// Retrieves the full Win32 file system path of the executable image for the specified process.
+        /// </summary>
+        /// <remarks>The returned path is translated from the native NT device path to a Win32 file system
+        /// path using the provided lookup table. This method does not validate whether the process is still running or
+        /// whether the returned path points to an existing file.</remarks>
+        /// <param name="hProcess">A handle to the process whose image file name is to be retrieved. The handle must have the required access
+        /// rights to query information about the process.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to Win32 file system paths. The method uses this
+        /// table to convert the native NT path returned by the system to a standard Win32 path.</param>
+        /// <returns>A string containing the full Win32 file system path of the process's executable image.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the underlying system call does not return a valid image file name.</exception>
+        internal static string GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        {
+            Span<char> buffer = stackalloc char[1024];
+            uint requiredLength = PsApi.GetProcessImageFileName(hProcess, buffer);
+            string result = buffer.Slice(0, (int)requiredLength).ToString().TrimRemoveNull();
+            return string.IsNullOrWhiteSpace(result)
+                ? throw new InvalidOperationException("The GetProcessImageFileName() call returned a null or empty result.")
+                : TranslateNtPathToWin32Path(result, ntPathLookupTable);
+        }
+
+        /// <summary>
+        /// Retrieves the Win32 path of the executable image for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process whose image file name is to be retrieved. The handle must have the required access
+        /// rights to query information about the process.</param>
+        /// <returns>A string containing the Win32 path of the process's executable image, or null if the path cannot be
+        /// determined.</returns>
+        internal static string QueryProcessImageFileNameWin32(SafeHandle hProcess)
+        {
+            return QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32);
+        }
+
+        /// <summary>
+        /// Retrieves the full Win32 file system path of the executable image for the specified process.
+        /// </summary>
+        /// <remarks>If the process is running under a different user context or with restricted
+        /// permissions, the returned path may be inaccessible or incomplete depending on the caller's
+        /// privileges.</remarks>
+        /// <param name="hProcess">A handle to the process whose image file name is to be queried. The handle must have the required access
+        /// rights to query process information.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to map NT device paths to Win32 file system paths. This table is applied to
+        /// translate the native path format returned by the system.</param>
+        /// <returns>A string containing the full Win32 path to the executable image of the specified process.</returns>
+        internal static string QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        {
+            return TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable);
+        }
+
+        /// <summary>
+        /// Retrieves the image file path of the process associated with the specified process ID, returning the path in
+        /// Win32 format.
+        /// </summary>
+        /// <remarks>This method uses the NtQuerySystemInformation API with the SystemProcessIdInformation
+        /// class to obtain the process image path. The returned path is translated from the NT device path to a Win32
+        /// path using the provided lookup table. This method is not supported when called from a 32-bit process on a
+        /// 64-bit system.</remarks>
+        /// <param name="processId">The identifier of the process whose image file path is to be retrieved.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to Win32 file system paths.</param>
+        /// <returns>The Win32-formatted image file path of the specified process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the method is called from a 32-bit process on a 64-bit operating system, if the image name query
+        /// returns a null or empty result, or if the retrieved image name is not a valid NT path.</exception>
+        internal static string QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        {
+            // Throw if we're a 32-bit process on a 64-bit system as we cannot query the image name in that case.
+            if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture)
+            {
+                throw new InvalidOperationException("A 32-bit process cannot call NtQuerySystemInformation() with the [SystemProcessIdInformation] information class on a 64-bit system.");
+            }
+
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
             Span<byte> processIdInfoPtr = stackalloc byte[NtDll.SystemInfoClassSizes[SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation]]; processIdInfoPtr.Clear();
             ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
-            processIdInfo.ProcessId = new(process.Id);
+            processIdInfo.ProcessId = new(processId);
 
             // Perform initial query so we can reallocate with the required length.
             _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
@@ -221,24 +387,37 @@ namespace PSADT.ProcessManagement
             // Throw if the result is empty. This can be the case when the caller is a 32-bit process on a 64-bit system.
             if (string.IsNullOrWhiteSpace(imageName))
             {
-                throw new InvalidOperationException($"The image name query for process ID [{process.Id}] returned a null result.");
+                throw new InvalidOperationException($"The image name query for process ID [{processId}] returned a null result.");
             }
 
             // Throw if the value doesn't start with \Device\ (indicating an NT path).
             if (!imageName.StartsWith(@"\Device\", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"The image name [{imageName}] for process ID [{process.Id}] is not a valid NT path.");
+                throw new InvalidOperationException($"The image name [{imageName}] for process ID [{processId}] is not a valid NT path.");
             }
 
-            // If we have a lookup table, replace the NT path with the drive letter before returning.
-            if (ntPathLookupTable is not null)
-            {
-                string ntDeviceName = $@"\{string.Join(@"\", imageName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
-                    ? throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from image name [{imageName}].")
-                    : imageName.Replace(ntDeviceName, driveLetter);
-            }
-            return imageName;
+            // Return the path in the Win32 path format as the NT device path is inappropriate for most uses.
+            return TranslateNtPathToWin32Path(imageName, ntPathLookupTable);
+        }
+
+        /// <summary>
+        /// Translates an NT device path to its corresponding Win32 path using the specified lookup table.
+        /// </summary>
+        /// <remarks>This method is intended for scenarios where conversion between NT device paths and
+        /// standard Win32 paths is required, such as when working with low-level system APIs or logs. The lookup table
+        /// must contain all NT device names that may appear in the input paths.</remarks>
+        /// <param name="ntPath">The NT device path to translate. This should be a fully qualified NT path, such as
+        /// "\Device\HarddiskVolume1\Windows\System32".</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary that maps NT device names (e.g., "\Device\HarddiskVolume1") to their corresponding
+        /// Win32 drive letters (e.g., "C:").</param>
+        /// <returns>A string containing the Win32 path equivalent of the specified NT device path.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the NT device name derived from the specified path does not exist in the lookup table.</exception>
+        internal static string TranslateNtPathToWin32Path(string ntPath, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        {
+            string ntDeviceName = $@"\{string.Join(@"\", ntPath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+            return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
+                ? throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from NT path [{ntPath}].")
+                : ntPath.Replace(ntDeviceName, driveLetter);
         }
 
         /// <summary>
@@ -263,6 +442,33 @@ namespace PSADT.ProcessManagement
             return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
                 ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
                 : dwProcessId;
+        }
+
+        /// <summary>
+        /// Retrieves the image file name of a process using the specified process information class.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process for which to query the image file name. The handle must have appropriate access
+        /// rights for the requested information.</param>
+        /// <param name="processInfoClass">The type of process information to query, specifying how the image file name should be retrieved.</param>
+        /// <returns>A string containing the image file name of the specified process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the query returns a null or empty result for the specified process information class.</exception>
+        private static string QueryProcessImageFileNameCommon(SafeHandle hProcess, PROCESSINFOCLASS processInfoClass)
+        {
+            // Determine required buffer size.
+            _ = NtDll.NtQueryInformationProcess(hProcess, processInfoClass, null, out uint requiredLength);
+            Span<byte> buffer = stackalloc byte[(int)requiredLength];
+
+            // Perform the query.
+            _ = NtDll.NtQueryInformationProcess(hProcess, processInfoClass, buffer, out _);
+            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
+            string result;
+            unsafe
+            {
+                result = new string(unicodeString.Buffer, 0, Math.Min(unicodeString.Length / 2, unicodeString.MaximumLength / 2)).TrimRemoveNull();
+            }
+            return string.IsNullOrWhiteSpace(result)
+                ? throw new InvalidOperationException($"The NtQueryInformationProcess() call for [{processInfoClass}] returned a null or empty result.")
+                : result;
         }
     }
 }
