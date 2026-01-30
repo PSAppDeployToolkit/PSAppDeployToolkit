@@ -24,37 +24,6 @@ namespace PSADT.FileSystem
     public static class FileSystemUtilities
     {
         /// <summary>
-        /// Returns a lookup table for NT paths to drive letters.
-        /// </summary>
-        /// <returns></returns>
-        internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
-        {
-            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
-            Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
-            foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
-            {
-                try
-                {
-                    _ = Kernel32.QueryDosDevice(driveLetter, targetPath);
-                }
-                catch
-                {
-                    continue;
-                    throw;
-                }
-                foreach (string path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (path.Length > 0 && !lookupTable.ContainsKey(path))
-                    {
-                        lookupTable.Add(path, driveLetter);
-                    }
-                }
-                targetPath.Clear();
-            }
-            return new(lookupTable);
-        }
-
-        /// <summary>
         /// Determines whether the specified file path is valid.
         /// </summary>
         /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
@@ -292,6 +261,37 @@ namespace PSADT.FileSystem
             {
                 _ = AdvApi32.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false, null, PROG_INVOKE_SETTING.ProgressInvokeNever);
             }
+        }
+
+        /// <summary>
+        /// Returns a lookup table for NT paths to drive letters.
+        /// </summary>
+        /// <returns></returns>
+        internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
+        {
+            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
+            Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
+            foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
+            {
+                try
+                {
+                    _ = Kernel32.QueryDosDevice(driveLetter, targetPath);
+                }
+                catch
+                {
+                    continue;
+                    throw;
+                }
+                foreach (string path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (path.Length > 0 && !lookupTable.ContainsKey(path))
+                    {
+                        lookupTable.Add(path, driveLetter);
+                    }
+                }
+                targetPath.Clear();
+            }
+            return new(lookupTable);
         }
 
         /// <summary>
