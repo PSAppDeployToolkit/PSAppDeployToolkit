@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -30,9 +31,8 @@ namespace PSADT.FileSystem
         {
             Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
-            foreach (string drive in Environment.GetLogicalDrives())
+            foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
             {
-                string driveLetter = drive.TrimEnd('\\');
                 try
                 {
                     _ = Kernel32.QueryDosDevice(driveLetter, targetPath);
