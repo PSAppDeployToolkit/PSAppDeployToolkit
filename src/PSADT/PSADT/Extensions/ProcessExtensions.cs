@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using PSADT.FileSystem;
 using PSADT.ProcessManagement;
 
 namespace PSADT.Extensions
@@ -33,9 +32,9 @@ namespace PSADT.Extensions
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
+                return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
             }
-            return ProcessUtilities.GetProcessImageName(process, ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
+            return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
         }
     }
 }

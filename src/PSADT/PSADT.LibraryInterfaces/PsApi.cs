@@ -76,5 +76,23 @@ namespace PSADT.LibraryInterfaces
             }
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
+
+        /// <summary>
+        /// Retrieves the full path of the executable image for the specified process.
+        /// </summary>
+        /// <remarks>This method is typically used to obtain the image file name of a process for
+        /// diagnostic or monitoring purposes. The returned path is in device form (for example,
+        /// '\\Device\\HarddiskVolume1\\Windows\\System32\\notepad.exe').</remarks>
+        /// <param name="hProcess">A handle to the process whose executable image path is to be retrieved. The handle must have the
+        /// PROCESS_QUERY_LIMITED_INFORMATION or PROCESS_QUERY_INFORMATION access right.</param>
+        /// <param name="lpImageFileName">A span of characters that receives the full path to the executable image file. The buffer must be large
+        /// enough to receive the path, including the null terminator.</param>
+        /// <returns>The number of characters written to <paramref name="lpImageFileName"/>, not including the null terminator.
+        /// Returns 0 if the function fails.</returns>
+        internal static uint GetProcessImageFileName(SafeHandle hProcess, Span<char> lpImageFileName)
+        {
+            uint res = PInvoke.GetProcessImageFileName(hProcess, lpImageFileName);
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
     }
 }

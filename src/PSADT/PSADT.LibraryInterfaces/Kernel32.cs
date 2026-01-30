@@ -944,5 +944,26 @@ namespace PSADT.LibraryInterfaces
             uint res = PInvoke.GetFileAttributes(lpFileName);
             return res == PInvoke.INVALID_FILE_ATTRIBUTES ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : (FILE_FLAGS_AND_ATTRIBUTES)res;
         }
+
+        /// <summary>
+        /// Retrieves the full name of the executable image for the specified process.
+        /// </summary>
+        /// <remarks>This method wraps the Windows API QueryFullProcessImageName function. The caller is
+        /// responsible for ensuring that the buffer provided by lpExeName is sufficiently large to hold the full path.
+        /// If the buffer is too small, an exception is thrown.</remarks>
+        /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="dwFlags">A value that specifies the format for the returned process name. This determines whether the name is in
+        /// Win32 or native format.</param>
+        /// <param name="lpExeName">A span of characters that receives the full path to the executable file. The buffer must be large enough to
+        /// receive the path.</param>
+        /// <param name="lpdwSize">When this method returns, contains the number of characters written to lpExeName, not including the null
+        /// terminator.</param>
+        /// <returns>A nonzero value if the function succeeds; otherwise, an exception is thrown.</returns>
+        internal static BOOL QueryFullProcessImageName(SafeHandle hProcess, PROCESS_NAME_FORMAT dwFlags, Span<char> lpExeName, out uint lpdwSize)
+        {
+            lpdwSize = (uint)lpExeName.Length;
+            BOOL res = PInvoke.QueryFullProcessImageName(hProcess, dwFlags, lpExeName, ref lpdwSize);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
     }
 }
