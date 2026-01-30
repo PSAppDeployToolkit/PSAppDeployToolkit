@@ -7,7 +7,6 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 
@@ -52,7 +51,7 @@ namespace PSADT.Security
             uint privilegeCount = tokenPrivileges.PrivilegeCount;
             int bufferOffset = sizeof(uint);
             int increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
-            Span<char> charSpan = stackalloc char[(int)PInvoke.MAX_PATH];
+            Span<char> charSpan = stackalloc char[1024];
             List<SE_PRIVILEGE> privileges = [];
             if (attributes is not null)
             {
