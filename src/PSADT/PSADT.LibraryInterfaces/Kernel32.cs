@@ -944,5 +944,23 @@ namespace PSADT.LibraryInterfaces
             uint res = PInvoke.GetFileAttributes(lpFileName);
             return res == PInvoke.INVALID_FILE_ATTRIBUTES ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : (FILE_FLAGS_AND_ATTRIBUTES)res;
         }
+
+        /// <summary>
+        /// Retrieves information about the system's current usage of both physical and virtual memory.
+        /// </summary>
+        /// <remarks>This method wraps the native GlobalMemoryStatusEx function. The output parameter must
+        /// not be used until the method returns successfully. If the call fails, an exception is thrown.</remarks>
+        /// <param name="lpBuffer">When this method returns, contains a structure that receives information about current memory availability.
+        /// The structure's fields are populated with memory status data.</param>
+        /// <returns>true if the memory status information was successfully retrieved; otherwise, false.</returns>
+        internal static BOOL GlobalMemoryStatusEx(out MEMORYSTATUSEX lpBuffer)
+        {
+            lpBuffer = new MEMORYSTATUSEX
+            {
+                dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>()
+            };
+            BOOL res = PInvoke.GlobalMemoryStatusEx(ref lpBuffer);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
     }
 }
