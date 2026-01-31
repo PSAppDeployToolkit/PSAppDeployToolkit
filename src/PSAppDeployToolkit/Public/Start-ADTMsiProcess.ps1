@@ -534,10 +534,21 @@ function Start-ADTMsiProcess
                     return $(if ($PassThru) { [PSADT.ProcessManagement.ProcessResult]::new(1605) })
                 }
 
+                # Set up the log extension to use. The caller may provide it, but its optional.
+                $logFileExtension = if ($PSBoundParameters.ContainsKey('LogFileName') -and $LogFileName -match '\.(log|txt|out)')
+                {
+                    $Matches.0
+                }
+                else
+                {
+                    '.log'
+                }
+
                 # Set up the log file to use.
                 $logFile = if ($PSBoundParameters.ContainsKey('LogFileName'))
                 {
-                    $LogFileName.Trim()
+                    # Strip any found extension off to make the file name easier to handle.
+                    $LogFileName -replace ([System.Text.RegularExpressions.Regex]::Escape($logFileExtension))
                 }
                 elseif (!$adtSession -or !$adtSession.DisableLogging)
                 {
@@ -627,16 +638,23 @@ function Start-ADTMsiProcess
                     }
                 }
 
-                # Build the full log path used with msiexec.exe.
-                $msiLogFile = if ($logPath)
+                # Post-process the log path if we have one.
+                if ($logPath)
                 {
-                    if ($logFile -notmatch $Action)
+                    # Append the action if the log file doesn't have one.
+                    if ($logFile -notmatch "$Action`$")
                     {
-                        [System.IO.Path]::Combine([System.IO.Directory]::GetParent($logPath).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($logPath))_$($Action)$([System.IO.Path]::GetExtension($logPath))")
+                        $logPath += "_$Action"
                     }
-                    else
+
+                    # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                    if ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
                     {
-                        $logPath
+                        $logPath += "_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)"
+                    }
+                    elseif ((![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -and [System.Environment]::UserInteractive) -or !(Test-ADTCallerIsAdmin))
+                    {
+                        $logPath += "_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))"
                     }
                 }
 
@@ -690,26 +708,6 @@ function Start-ADTMsiProcess
                         $option = '/fups'
                         $msiDefaultParams = $null
                         break
-                    }
-                }
-
-                # Post-process the MSI log file variable.
-                if ($msiLogFile)
-                {
-                    # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                    if (!(Test-ADTCallerIsAdmin))
-                    {
-                        $msiLogFile = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($msiLogFile).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($msiLogFile))_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))$([System.IO.Path]::GetExtension($msiLogFile))")
-                    }
-                    elseif ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
-                    {
-                        $msiLogFile = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($msiLogFile).FullName, "$([System.IO.Path]::GetFileNameWithoutExtension($msiLogFile))_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)$([System.IO.Path]::GetExtension($msiLogFile))")
-                    }
-
-                    # Append ".log" to the MSI logfile if it has no suitable extension.
-                    if ($msiLogFile -notmatch '\.(log|txt|out)')
-                    {
-                        $msiLogFile += '.log'
                     }
                 }
 
@@ -773,15 +771,15 @@ function Start-ADTMsiProcess
                 }
 
                 # Add custom Logging Options if specified, otherwise, add default Logging Options from Config file.
-                if ($msiLogFile)
+                if ($logPath)
                 {
                     if ($LoggingOptions)
                     {
-                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$LoggingOptions `"$msiLogFile`""))
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$LoggingOptions `"$logPath$logFileExtension`""))
                     }
                     else
                     {
-                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$($adtConfig.MSI.LoggingOptions) `"$msiLogFile`""))
+                        $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList("$($adtConfig.MSI.LoggingOptions) `"$logPath$logFileExtension`""))
                     }
                 }
 
