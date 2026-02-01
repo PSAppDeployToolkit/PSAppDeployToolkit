@@ -34,7 +34,8 @@ function Publish-ADTDocusaurusExport
             $null = git add --all 2>$null
 
             # Commit any changes if found.
-            if (git diff --cached 2>$null)
+            $res = git diff --cached 2>$null
+            if ($res)
             {
                 # Set up author details.
                 $null = git config user.email "$env:USERNAME@psappdeploytoolkit.com" 2>$null
