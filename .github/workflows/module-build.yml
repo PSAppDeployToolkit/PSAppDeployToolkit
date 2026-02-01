@@ -94,7 +94,7 @@ jobs:
     - name: Upload v3 module template
       uses: actions/upload-artifact@v6
       with:
-        name: PSAppDeployToolkit_Template_v3_${{ steps.ts.outputs.suffix }}
+        name: PSAppDeployToolkit_Template_v3__${{ steps.ts.outputs.suffix }}
         path: .\src\Artifacts\Template_v3
         if-no-files-found: error
         compression-level: 9
@@ -103,7 +103,7 @@ jobs:
     - name: Upload v4 module template
       uses: actions/upload-artifact@v6
       with:
-        name: PSAppDeployToolkit_Template_v4_${{ steps.ts.outputs.suffix }}
+        name: PSAppDeployToolkit_Template_v4__${{ steps.ts.outputs.suffix }}
         path: .\src\Artifacts\Template_v4
         if-no-files-found: error
         compression-level: 9
