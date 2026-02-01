@@ -38,7 +38,7 @@ function Publish-ADTDocusaurusExport
             {
                 # Do the commit.
                 $commitMsg = "Commit of document changes from https://github.com/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
-                Write-ADTBuildLogEntry -Message "Documents changed, committing as `"$commitMsg`""
+                Write-ADTBuildLogEntry -Message "Documents changed, committing as `"$commitMsg`"."
                 $null = git config user.email "$env:USERNAME@psappdeploytoolkit.com"
                 $null = git config user.name "PSAppDeployToolkit Action Workflow"
                 $null = git commit -q -a -m $commitMsg
