@@ -60,7 +60,8 @@ function Invoke-ADTDotNetCompilation
                     foreach ($sourcePath in $buildItem.SourcePath)
                     {
                         # Translate the Win32 slash into a POSIX slash so git can work on it.
-                        if (!((& $git status --porcelain) -match "^.{3}$([System.Text.RegularExpressions.Regex]::Escape($sourcePath.Replace($Script:ModuleConstants.Paths.Repository, [System.Management.Automation.Language.NullString]::Value).Replace('\','/')))/"))
+                        $gitPath = $sourcePath.Replace("$($Script:ModuleConstants.Paths.Repository)\", [System.Management.Automation.Language.NullString]::Value)
+                        if (!((& $git status --porcelain) -match "^.{3}$([System.Text.RegularExpressions.Regex]::Escape($gitPath.Replace('\','/')))/"))
                         {
                             # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
                             foreach ($outputFile in $buildItem.OutputFile)
@@ -71,10 +72,10 @@ function Invoke-ADTDotNetCompilation
                                 $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
                                 # Get the list of source files modified since the last commit date of the file we're comparing against
-                                if (& $git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $sourcePath | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique)
+                                if (& $git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $gitPath | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } } | Sort-Object -Unique)
                                 {
                                     Write-ADTBuildLogEntry -Message "Files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
-                                    $buildConfigs.Add('Debug')
+                                    $buildConfigs.Insert(0, 'Debug')
                                     break
                                 }
                                 else
@@ -86,13 +87,13 @@ function Invoke-ADTDotNetCompilation
                         else
                         {
                             Write-ADTBuildLogEntry -Message "Uncommitted file changes found under [$sourcePath], debug build required."
-                            $buildConfigs.Add('Debug')
+                            $buildConfigs.Insert(0, 'Debug')
                         }
                     }
                 }
                 else
                 {
-                    $buildConfigs.Add('Debug')
+                    $buildConfigs.Insert(0, 'Debug')
                 }
             }
 
