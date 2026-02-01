@@ -42,14 +42,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
-    - name: NuGet Latest
-      shell: powershell
-      run: Install-PackageProvider -Name NuGet -Confirm:$false -Force -Verbose
-
-    - name: PowerShellGet Latest
-      shell: powershell
-      run: Install-Module -Name PowerShellGet -Repository PSGallery -Force
-
     - name: Cache PowerShell modules
       uses: potatoqualitee/psmodulecache@v6.2.1
       with:
