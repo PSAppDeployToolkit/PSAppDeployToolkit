@@ -7,7 +7,7 @@
 function Initialize-ADTModuleBuild
 {
     # Announce commencement of module build.
-    $Script:ModuleBuildState.StartTime = [System.DateTime]::Now; Show-ADTModuleInitArtwork
+    $Script:ModuleBuildState.StartTime = [System.DateTime]::Now; if ($env:GITHUB_ACTIONS -ne 'true') { Show-ADTModuleInitArtwork }
     $domain = if (($w32cs = CimCmdlets\Get-CimInstance -ClassName Win32_ComputerSystem).PartOfDomain) { $w32cs.Domain }
     $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     try

@@ -111,6 +111,8 @@ try
                     BuildOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts')
                     ModuleOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'Module', 'PSAppDeployToolkit')
                     TestOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'TestOutput')
+                    MarkdownOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'platyPS')
+                    DocusaurusOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'Docusaurus')
                     CodeCoverageOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'CodeCoverage')
                 }).AsReadOnly()
             InitializationArtwork = ([ordered]@{

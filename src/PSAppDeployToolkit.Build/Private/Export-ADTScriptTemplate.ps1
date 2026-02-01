@@ -7,7 +7,7 @@
 function Export-ADTScriptTemplate
 {
     # Return early if we're in a GitHub pipeline.
-    if ($env:GITHUB_ACTIONS -eq 'true')
+    if (($env:GITHUB_ACTIONS -eq 'true') -and !(Get-Variable -Name MyInvocation -Scope 1 -ValueOnly).MyCommand.Name.Equals('Invoke-ADTCustomModuleBuild'))
     {
         return
     }
