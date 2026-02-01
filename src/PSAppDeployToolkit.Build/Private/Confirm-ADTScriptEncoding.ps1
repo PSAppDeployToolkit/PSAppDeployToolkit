@@ -12,7 +12,7 @@ function Confirm-ADTScriptEncoding
     try
     {
         Write-ADTBuildLogEntry -Message "Confirming all PowerShell files are encoded using UTF8-BOM."
-        foreach ($scriptFile in (Get-ChildItem -Path "$($Script:ModuleConstants.Paths.Repository)\*.ps*1" -Recurse -File))
+        foreach ($scriptFile in (Get-ChildItem -Path "$($Script:ModuleConstants.Paths.SourceRoot)\*.ps*1" -Recurse -File))
         {
             # Open the file, read out the first 4 bytes, then close it out.
             Write-ADTBuildLogEntry -Message "Testing file [$($scriptFile.FullName)]."

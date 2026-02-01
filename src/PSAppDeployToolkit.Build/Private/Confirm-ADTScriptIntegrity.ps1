@@ -12,7 +12,7 @@ function Confirm-ADTScriptIntegrity
     {
         # Verify the formatting of all PowerShell script files within the repository.
         Write-ADTBuildLogEntry -Message "Confirming all PowerShell files have no code violations."
-        if ([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]$result = Invoke-ScriptAnalyzer -Path $Script:ModuleConstants.Paths.Repository -ExcludeRule PSUseShouldProcessForStateChangingFunctions, PSUseSingularNouns -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false | & { process { if ((!$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1')) -and (!$_.RuleName.Equals('PSAvoidUsingWriteHost') -or ($_.ScriptPath -notmatch 'PSAppDeployToolkit\.Build'))) { return $_ } } })
+        if ([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]$result = Invoke-ScriptAnalyzer -Path $Script:ModuleConstants.Paths.SourceRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions, PSUseSingularNouns -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false | & { process { if ((!$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1')) -and (!$_.RuleName.Equals('PSAvoidUsingWriteHost') -or ($_.ScriptPath -notmatch 'PSAppDeployToolkit\.Build'))) { return $_ } } })
         {
             Write-ADTBuildLogEntry -Message "PSScriptAnalyzer returned $($result.Count) script formatting violations." -ForegroundColor DarkRed
             Write-ADTScriptAnalyzerOutput -DiagnosticRecord $result
