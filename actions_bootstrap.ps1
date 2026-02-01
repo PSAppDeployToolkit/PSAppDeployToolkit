@@ -1,4 +1,4 @@
-# Bootstrap dependencies
+﻿# Bootstrap dependencies
 
 # https://docs.microsoft.com/powershell/module/packagemanagement/get-packageprovider
 Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
@@ -39,7 +39,8 @@ $modulesToInstall = New-Object System.Collections.Generic.List[object]
 
 
 'Installing PowerShell Modules'
-foreach ($module in $modulesToInstall) {
+foreach ($module in $modulesToInstall)
+{
     $installSplat = @{
         Name               = $module.ModuleName
         RequiredVersion    = $module.ModuleVersion
@@ -49,19 +50,23 @@ foreach ($module in $modulesToInstall) {
         Scope              = 'CurrentUser'
         ErrorAction        = 'Stop'
     }
-    try {
-        if ($module.ModuleName -eq 'Pester' -and ($IsWindows -or $PSVersionTable.PSVersion -le [version]'5.1')) {
+    try
+    {
+        if ($module.ModuleName -eq 'Pester' -and ($IsWindows -or $PSVersionTable.PSVersion -le [version]'5.1'))
+        {
             # special case for Pester certificate mismatch with older Pester versions - https://github.com/pester/Pester/issues/2389
             # this only affects windows builds
             Install-Module @installSplat -SkipPublisherCheck
         }
-        else {
+        else
+        {
             Install-Module @installSplat
         }
         Import-Module -Name $module.ModuleName -ErrorAction Stop
         '  - Successfully installed {0}' -f $module.ModuleName
     }
-    catch {
+    catch
+    {
         $message = 'Failed to install {0}' -f $module.ModuleName
         "  - $message"
         throw

@@ -212,11 +212,11 @@ function Get-ADTApplication
                     }
 
                     # Grab all available uninstall string.
-                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', $null)))
+                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value)))
                     {
                         $uninstallString = $null
                     }
-                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', $null)))
+                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value)))
                     {
                         $quietUninstallString = $null
                     }
