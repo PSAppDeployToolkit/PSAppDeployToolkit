@@ -24,7 +24,7 @@ function Add-ADTEdgeExtension
         The update URL of the extension. This is the URL where the extension will check for updates.
 
     .PARAMETER InstallationMode
-        The installation mode of the extension. Allowed values: blocked, allowed, removed, force_installed, normal_installed.
+        The installation mode of the extension. Allowed values: `blocked`, `allowed`, `removed`, `force_installed`, `normal_installed`.
 
     .PARAMETER MinimumVersionRequired
         The minimum version of the extension required for installation.
