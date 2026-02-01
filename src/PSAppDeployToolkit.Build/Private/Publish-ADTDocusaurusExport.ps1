@@ -15,7 +15,7 @@ function Publish-ADTDocusaurusExport
         $dstBnch = 'main'; $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
         $dstPath = ("$dstBase\docs\reference\functions", "$dstBase\versioned_docs\version-4.0.0\reference\functions")[$env:GITHUB_REF_NAME -match '4\.0\.x']
-        $null = git clone -b $dstBnch $dstRepo $dstBase 2>$null
+        $null = git clone -q -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
         {
             throw "The cloning of the destination repository failed."
@@ -31,20 +31,17 @@ function Publish-ADTDocusaurusExport
         try
         {
             # Add any changes that may exist.
-            $null = git add --all 2>$null
+            $null = git -c core.safecrlf=false add --all
 
             # Commit any changes if found.
-            $res = git diff --cached 2>$null
-            if ($res)
+            if (git diff --cached)
             {
-                # Set up author details.
-                $null = git config user.email "$env:USERNAME@psappdeploytoolkit.com" 2>$null
-                $null = git config user.name "PSAppDeployToolkit Action Workflow" 2>$null
-
                 # Do the commit.
                 $commitMsg = "Commit of document changes from https://github.com/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
                 Write-ADTBuildLogEntry -Message "Documents changed, committing as `"$commitMsg`""
-                $null = git commit -a -m $commitMsg
+                $null = git config user.email "$env:USERNAME@psappdeploytoolkit.com"
+                $null = git config user.name "PSAppDeployToolkit Action Workflow"
+                $null = git commit -q -a -m $commitMsg
                 if ($Global:LASTEXITCODE)
                 {
                     throw "The committing of destination repo changes failed."
@@ -52,7 +49,7 @@ function Publish-ADTDocusaurusExport
 
                 # Push it to the website.
                 Write-ADTBuildLogEntry -Message "Pushing committed changes to origin."
-                $null = git push origin 2>$null
+                $null = git push origin -q
                 if ($Global:LASTEXITCODE)
                 {
                     throw "The pushing of commits from destination repo failed."
