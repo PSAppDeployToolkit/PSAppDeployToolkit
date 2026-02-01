@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace PSADT.ClientServer
 {
@@ -243,7 +242,7 @@ namespace PSADT.ClientServer
         private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
         {
             // HKDF-Extract: PRK = HMAC-Hash(salt, IKM).
-            byte[] info = Encoding.UTF8.GetBytes("PSADT-Pipe-Encryption-v1"); byte[] prk;
+            byte[] info = ServerInstance.DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v1"); byte[] prk;
             using (HMACSHA256 hmac = new(new byte[32])) // salt = zeros
             {
                 prk = hmac.ComputeHash(sharedSecret);

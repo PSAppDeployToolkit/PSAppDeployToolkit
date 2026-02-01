@@ -116,7 +116,7 @@ function Invoke-ADTModuleCompilation
 
             # Strip PDB files from all non-lib locations (we want them in lib for stack traces, etc).
             Write-ADTBuildLogEntry -Message "Removing PDB files from all non-lib locations."
-            Get-ChildItem -LiteralPath $Script:ModuleConstants.Paths.ModuleOutput -Directory | Where-Object -Property Name -NE -Value lib | Get-ChildItem -Filter *.pdb -Recurse | Remove-Item -Force
+            Get-ChildItem -LiteralPath $Script:ModuleConstants.Paths.ModuleOutput -Directory | & { process { if (!$_.Name.Equals('lib')) { return $_ } } } | Get-ChildItem -Filter *.pdb -Recurse | Remove-Item -Force
         }
         else
         {
