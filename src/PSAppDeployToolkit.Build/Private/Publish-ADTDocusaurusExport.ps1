@@ -11,11 +11,11 @@ function Publish-ADTDocusaurusExport
     try
     {
         # Clone the destination repo.
-        Write-ADTBuildLogEntry -Message "Cloning destination repository, please wait..."
+        Write-ADTBuildLogEntry -Message "Cloning destination repository, this may take a while."
         $dstBnch = 'main'; $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
         $dstPath = ("$dstBase\docs\reference\functions", "$dstBase\versioned_docs\version-4.0.0\reference\functions")[$env:GITHUB_REF_NAME -match '4\.0\.x']
-        $null = git clone -b $dstBnch $dstRepo $dstBase
+        $null = git clone -b $dstBnch $dstRepo $dstBase 2>$null
         if ($Global:LASTEXITCODE)
         {
             throw "The cloning of the destination repository failed."
@@ -31,14 +31,14 @@ function Publish-ADTDocusaurusExport
         try
         {
             # Add any changes that may exist.
-            $null = git add --all
+            $null = git add --all 2>$null
 
             # Commit any changes if found.
-            if (git diff --cached)
+            if (git diff --cached 2>$null)
             {
                 # Set up author details.
-                $null = git config user.email "$env:USERNAME@psappdeploytoolkit.com"
-                $null = git config user.name "PSAppDeployToolkit Action Workflow"
+                $null = git config user.email "$env:USERNAME@psappdeploytoolkit.com" 2>$null
+                $null = git config user.name "PSAppDeployToolkit Action Workflow" 2>$null
 
                 # Do the commit.
                 $commitMsg = "Commit of document changes from https://github.com/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
@@ -51,7 +51,7 @@ function Publish-ADTDocusaurusExport
 
                 # Push it to the website.
                 Write-ADTBuildLogEntry -Message "Pushing committed changes to origin."
-                $null = git push origin
+                $null = git push origin 2>$null
                 if ($Global:LASTEXITCODE)
                 {
                     throw "The pushing of commits from destination repo failed."
