@@ -138,6 +138,11 @@ function Invoke-ADTDotNetCompilation
                     foreach ($outputPath in $buildItem.OutputPath)
                     {
                         Write-ADTBuildLogEntry -Message "Copying from [$sourcePath] to [$outputPath], please wait..."
+                        if ($outputPath.EndsWith('lib'))
+                        {
+                            $null = Remove-Item -LiteralPath $outputPath -Force -Recurse -ErrorAction Ignore
+                            $null = [System.IO.Directory]::CreateDirectory($outputPath)
+                        }
                         Copy-Item -Path $sourcePath -Destination $outputPath -Recurse -Force
                     }
                 }
