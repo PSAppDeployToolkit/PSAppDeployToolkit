@@ -54,7 +54,7 @@ namespace PSADT.DeviceManagement
                     ubr = ubrValue;
                 }
                 DisplayVersion = (string?)key.GetValue("DisplayVersion");
-                productName = (string)key.GetValue("ProductName")!;
+                productName = $"Microsoft {(string)key.GetValue("ProductName")!}";
                 editionId = (string?)key.GetValue("EditionID");
             }
 
