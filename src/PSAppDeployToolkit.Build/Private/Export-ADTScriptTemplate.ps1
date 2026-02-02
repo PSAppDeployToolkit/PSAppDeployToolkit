@@ -19,7 +19,7 @@ function Export-ADTScriptTemplate
         Write-ADTBuildLogEntry -Message "Creating frontend templates, this may take a while."
         $spParams = @{
             FilePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
-            ArgumentList = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -Name '$($Script:ModuleConstants.Paths.ModuleOutput)'; $([System.String]::Join('; ', (3, 4).ForEach({"New-ADTTemplate -Destination '$($Script:ModuleConstants.Paths.BuildOutput)' -Name 'Template_v$_' -Version $_"})))"
+            ArgumentList = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -Name '$($Script:ModuleConstants.Paths.ModuleOutput)'; $([System.String]::Join('; ', (3, 4).ForEach({"New-ADTTemplate -Destination '$($Script:ModuleConstants.Paths.BuildOutput)' -Name 'Template_v$_' -Version $_ -Force"})))"
             NoNewWindow = $true
             Wait = $true
         }
