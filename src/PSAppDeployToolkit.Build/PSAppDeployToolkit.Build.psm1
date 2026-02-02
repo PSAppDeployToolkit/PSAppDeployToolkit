@@ -118,7 +118,7 @@ try
                 }).AsReadOnly()
             InitializationArtwork = ([ordered]@{
                     Banner = [System.Text.Encoding]::GetEncoding(437).GetString([System.Convert]::FromBase64String('DQogICAgICAgICAgINvb29vb27sg29vb29vb27sg29vb29u7INvb29vb27sg29vb29vb29u7DQogICAgICAgICAgINvbyc3N29u729vJzc3Nzbzb28nNzdvbu9vbyc3N29u7yM3N29vJzc28DQogICAgICAgICAgINvb29vb28m829vb29vb27vb29vb29vbutvbuiAg29u6ICAg29u6ICAgDQogICAgICAgICAgINvbyc3NzbwgyM3Nzc3b27rb28nNzdvbutvbuiAg29u6ICAg29u6ICAgDQogICAgICAgICAgINvbuiAgICAg29vb29vb27rb27ogINvbutvb29vb28m8ICAg29u6ICAgDQogICAgICAgICAgIMjNvCAgICAgyM3Nzc3NzbzIzbwgIMjNvMjNzc3NzbwgICAgyM28ICAgDQo='))
-                    Subtitle = "   PSAppDeployToolkit: Enterprise App Deployment, Simplified.`n Copyright © 2026 PSAppDeployToolkit Team. All rights reserved.`n ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n"
+                    Subtitle = "   PSAppDeployToolkit: Enterprise App Deployment, Simplified.`n Copyright © 2026 PSAppDeployToolkit Team. All rights reserved.`n --------------------------------------------------------------`n"
                     Style = 'Raster'
                 }).AsReadOnly()
             RequiredModules = ([System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]][Microsoft.PowerShell.Commands.ModuleSpecification[]]$(
