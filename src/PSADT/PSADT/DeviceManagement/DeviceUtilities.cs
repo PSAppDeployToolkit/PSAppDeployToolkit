@@ -19,36 +19,72 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Tests whether the microphone is in use on the current device.
         /// </summary>
-        /// <returns></returns>
+        /// <returns><see langword="true"/> if the microphone is currently in use; otherwise, <see langword="false"/>.</returns>
         public static bool IsMicrophoneInUse()
         {
             // Get the default audio capture device (microphone).
-            IMMDevice microphoneDevice;
+            IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
             try
             {
-                ((IMMDeviceEnumerator)new MMDeviceEnumerator()).GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out microphoneDevice);
-            }
-            catch
-            {
-                return false;
-                throw;
-            }
-
-            // Activate the session manager for the capture device and enumerate through each session.
-            microphoneDevice.Activate(CLSCTX.CLSCTX_INPROC_SERVER, null, out IAudioSessionManager2 sessionManagerObj);
-            IAudioSessionEnumerator sessionEnumerator = sessionManagerObj.GetSessionEnumerator();
-            sessionEnumerator.GetCount(out int sessionCount);
-            for (int i = 0; i < sessionCount; i++)
-            {
-                // Check if the session state is active.
-                sessionEnumerator.GetSession(i, out IAudioSessionControl sessionControl);
-                sessionControl.GetState(out AudioSessionState state);
-                if (state == AudioSessionState.AudioSessionStateActive)
+                // Try to get the default audio endpoint for capture devices. If none exists, return false.
+                IMMDevice microphoneDevice;
+                try
                 {
-                    return true;
+                    deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out microphoneDevice);
+                }
+                catch (Exception ex) when (ex.Message is not null)
+                {
+                    return false;
+                }
+
+                // Activate the session manager for the capture device and enumerate through each session.
+                try
+                {
+                    microphoneDevice.Activate(CLSCTX.CLSCTX_INPROC_SERVER, null, out IAudioSessionManager2 sessionManager);
+                    try
+                    {
+                        IAudioSessionEnumerator sessionEnumerator = sessionManager.GetSessionEnumerator();
+                        try
+                        {
+                            sessionEnumerator.GetCount(out int sessionCount);
+                            for (int i = 0; i < sessionCount; i++)
+                            {
+                                // Check if the session state is active.
+                                sessionEnumerator.GetSession(i, out IAudioSessionControl sessionControl);
+                                try
+                                {
+                                    sessionControl.GetState(out AudioSessionState state);
+                                    if (state == AudioSessionState.AudioSessionStateActive)
+                                    {
+                                        return true;
+                                    }
+                                }
+                                finally
+                                {
+                                    _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(sessionControl);
+                                }
+                            }
+                            return false;
+                        }
+                        finally
+                        {
+                            _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(sessionEnumerator);
+                        }
+                    }
+                    finally
+                    {
+                        _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(sessionManager);
+                    }
+                }
+                finally
+                {
+                    _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(microphoneDevice);
                 }
             }
-            return false;
+            finally
+            {
+                _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(deviceEnumerator);
+            }
         }
 
         /// <summary>
