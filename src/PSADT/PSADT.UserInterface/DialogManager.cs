@@ -373,6 +373,16 @@ namespace PSADT.UserInterface
                 // We only need to do this once when the app is first initialized.
                 ShellUtilities.RefreshDesktop();
 
+                // Register process exit handler to ensure WPF is properly shut down.
+                // This prevents ~2.5 second delays during process termination.
+                AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+                {
+                    if (appInitialized.IsSet && app is not null)
+                    {
+                        app.Dispatcher.InvokeShutdown();
+                    }
+                };
+
                 // Create and start the WPF application thread.
                 appThread = new(() =>
                 {
