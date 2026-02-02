@@ -181,7 +181,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envOSVersionRevision', $(if ($variables.envOSVersion.Revision -ge 0) { $variables.envOSVersion.Revision }))
 
     # Get the operating system type.
-    $variables.Add('envOSProductType', $osInfo.ProductType)
+    $variables.Add('envOSProductType', [System.Int32]$osInfo.ProductType)
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
