@@ -28,5 +28,12 @@ function Write-ADTBuildLogEntry
         [System.DateTime]::Now.ToString('O')
     }
     $null = $PSBoundParameters.Remove('Message')
-    $Message -replace '^', "[$dateTime] " | Write-Host @PSBoundParameters
+    if ([System.Console]::IsOutputRedirected -and ($env:GITHUB_ACTIONS -ne 'true'))
+    {
+        $Message -replace '^', "[$dateTime] " -replace '\x1B\[[0-9;]*m' | Write-Host @PSBoundParameters
+    }
+    else
+    {
+        $Message -replace '^', "[$dateTime] " | Write-Host @PSBoundParameters
+    }
 }

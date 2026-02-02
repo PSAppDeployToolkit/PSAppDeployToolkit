@@ -23,10 +23,6 @@ function Show-ADTModuleInitArtwork
         return
     }
 
-    # Set the output encoding to UTF8 so our characters can render right.
-    $previousOutputEncoding = [System.Console]::OutputEncoding
-    [System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
     # Output ANSI art to console and restore console. This uses the .ForEach() method to avoid introduced pipeline latency.
     $null = if ($Script:ModuleConstants.InitializationArtwork.Style.Equals('Raster'))
     {
@@ -55,5 +51,4 @@ function Show-ADTModuleInitArtwork
 
     # Draw subtitle.
     [System.Console]::WriteLine($Script:ModuleConstants.InitializationArtwork.Subtitle)
-    [System.Console]::OutputEncoding = $previousOutputEncoding
 }
