@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
+using System.IO;
 using PSADT.ClientServer.Converters;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer
 {
@@ -22,6 +22,65 @@ namespace PSADT.ClientServer
     public static class DataSerialization
     {
         /// <summary>
+        /// Serializes the specified object directly to a UTF-8 encoded byte array.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to serialize.</typeparam>
+        /// <param name="obj">The object to serialize. Cannot be null.</param>
+        /// <returns>A UTF-8 encoded byte array containing the JSON representation of the object.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="obj"/> is null.</exception>
+        /// <exception cref="JsonSerializationException">Thrown if serialization fails.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
+        public static byte[] SerializeToBytes<T>(T obj)
+        {
+            // Verify input is not null.
+            if (obj is null || (obj is string str && string.IsNullOrWhiteSpace(str)))
+            {
+                throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
+            }
+
+            // Serialize to memory stream and return the bytes.
+            using MemoryStream ms = new();
+            using (StreamWriter sw = new(ms, DefaultEncoding.Value))
+            using (JsonTextWriter writer = new(sw))
+            {
+                DefaultJsonSerializer.Serialize(writer, obj);
+            }
+            if (ms.ToArray() is { Length: > 0 } result)
+            {
+                return result;
+            }
+            throw new JsonSerializationException("Serialization returned an empty result.");
+        }
+
+        /// <summary>
+        /// Deserializes the specified UTF-8 encoded byte array to an object of type T.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
+        /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
+        /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
+        /// <exception cref="JsonSerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
+        public static T DeserializeFromBytes<T>(byte[] json)
+        {
+            // Verify input is not null or empty.
+            if (json is null || json.Length == 0)
+            {
+                throw new ArgumentNullException(nameof(json), "Input bytes cannot be null or empty.");
+            }
+
+            // Deserialize from memory stream and return the result.
+            using MemoryStream ms = new(json, writable: false);
+            using StreamReader sr = new(ms, DefaultEncoding.Value);
+            using JsonTextReader reader = new(sr);
+            if (DefaultJsonSerializer.Deserialize<T>(reader) is T result)
+            {
+                return result;
+            }
+            throw new JsonSerializationException("Deserialization returned a null result.");
+        }
+
+        /// <summary>
         /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
         /// </summary>
         /// <remarks>This method uses default JSON serialization settings and encodes the resulting JSON
@@ -33,37 +92,11 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static string SerializeToString<T>(T obj)
         {
-            if (obj is null)
+            if (obj is null || (obj is string str && string.IsNullOrWhiteSpace(str)))
             {
                 throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
-            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty).Trim()))
-            {
-                throw new JsonSerializationException("Serialization returned an empty string.");
-            }
-            return Convert.ToBase64String(ServerInstance.DefaultEncoding.GetBytes(res));
-        }
-
-        /// <summary>
-        /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
-        /// </summary>
-        /// <remarks>This method uses default JSON serialization settings and encodes the resulting JSON
-        /// string using UTF-8 before converting it to Base64. The caller can decode the Base64 string and parse the
-        /// JSON to reconstruct the original object.</remarks>
-        /// <param name="obj">The object to serialize. Must not be <see langword="null"/>.</param>
-        /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public static string SerializeToString(object obj)
-        {
-            if (obj is null)
-            {
-                throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
-            }
-            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty).Trim()))
-            {
-                throw new JsonSerializationException("Serialization returned an empty string.");
-            }
-            return Convert.ToBase64String(ServerInstance.DefaultEncoding.GetBytes(res));
+            return Convert.ToBase64String(SerializeToBytes(obj));
         }
 
         /// <summary>
@@ -84,11 +117,7 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
-            if (JsonConvert.DeserializeObject<T>(ServerInstance.DefaultEncoding.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not T res)
-            {
-                throw new JsonSerializationException("Deserialization returned a null result.");
-            }
-            return res;
+            return DeserializeFromBytes<T>(Convert.FromBase64String(base64Json));
         }
 
         /// <summary>
@@ -108,28 +137,13 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
-            if (JsonConvert.DeserializeObject(ServerInstance.DefaultEncoding.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not object res)
-            {
-                throw new JsonSerializationException("Deserialization returned a null result.");
-            }
-            return res;
+            return DeserializeFromBytes<object>(Convert.FromBase64String(base64Json));
         }
 
         /// <summary>
-        /// Provides the default settings for JSON serialization and deserialization using Newtonsoft.Json.
+        /// The cached JsonSerializer instance configured with the default settings.
         /// </summary>
-        /// <remarks>These settings include the following configurations: <list type="bullet">
-        /// <item><description><c>TypeNameHandling.None</c> for security (no type information in JSON).</description></item>
-        /// <item><description>Excludes null values and default values from the serialized output.</description></item>
-        /// <item><description>Custom converters for polymorphic types using discriminator fields.</description></item>
-        /// <item><description>Custom exception converter that validates types against a secure allowlist.</description></item>
-        /// </list> This static field can be used as a standard configuration for JSON serialization across the application.
-        /// <para>
-        /// The custom converters handle polymorphic deserialization securely by using known discriminator fields
-        /// (like <c>PipeCommand</c> and <c>DialogType</c>) to determine the concrete type, rather than relying on
-        /// type information embedded in the JSON.
-        /// </para></remarks>
-        private static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
+        private static readonly JsonSerializer DefaultJsonSerializer = JsonSerializer.Create(new()
         {
             TypeNameHandling = TypeNameHandling.None,
             DefaultValueHandling = DefaultValueHandling.Ignore,
@@ -145,15 +159,6 @@ namespace PSADT.ClientServer
                 new WindowInfoCollectionConverter(),
                 new ProcessDefinitionCollectionConverter(),
             ],
-        };
-
-        /// <summary>
-        /// Represents a regular expression that matches common JSON control characters, including brackets, braces,
-        /// commas, single quotes, and double quotes.
-        /// </summary>
-        /// <remarks>This regular expression uses culture-invariant and case-insensitive matching to
-        /// identify JSON structural characters. It can be used to detect or process control characters in JSON strings
-        /// for validation or parsing purposes.</remarks>
-        private static readonly Regex JsonControlCharacters = new(@"null|\[|\]|\{|\}|\,|""|\'", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        });
     }
 }

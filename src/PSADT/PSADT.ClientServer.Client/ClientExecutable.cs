@@ -139,9 +139,9 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (BinaryWriter outputWriter = new(outputPipeClient, ServerInstance.DefaultEncoding))
-                using (BinaryReader inputReader = new(inputPipeClient, ServerInstance.DefaultEncoding))
-                using (BinaryWriter logWriter = new(logPipeClient, ServerInstance.DefaultEncoding))
+                using (BinaryWriter outputWriter = new(outputPipeClient, DefaultEncoding.Value))
+                using (BinaryReader inputReader = new(inputPipeClient, DefaultEncoding.Value))
+                using (BinaryWriter logWriter = new(logPipeClient, DefaultEncoding.Value))
                 using (PipeEncryption ioEncryption = new())
                 using (PipeEncryption logEncryption = new())
                 {
@@ -159,15 +159,15 @@ namespace PSADT.ClientServer
                     // Set up writer helper methods.
                     void WriteSuccess<T>(T result)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, SerializeObject(PipeResponse.Ok(result)));
+                        ioEncryption.WriteEncrypted(outputWriter, SerializeToBytes(PipeResponse.Ok(result)));
                     }
                     void WriteError(Exception ex)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, SerializeObject(PipeResponse.Fail(ex)));
+                        ioEncryption.WriteEncrypted(outputWriter, SerializeToBytes(PipeResponse.Fail(ex)));
                     }
                     void WriteLog(string message, LogSeverity severity, string source)
                     {
-                        logEncryption.WriteEncrypted(logWriter, SerializeObject(new LogMessagePayload(message, severity, source)));
+                        logEncryption.WriteEncrypted(logWriter, SerializeToBytes(new LogMessagePayload(message, severity, source)));
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
@@ -179,7 +179,7 @@ namespace PSADT.ClientServer
                             try
                             {
                                 // Read, decrypt, deserialize, then process the request. We never let an exception here kill the pipe.
-                                PipeRequest request = DeserializeString<PipeRequest>(ioEncryption.ReadEncrypted(inputReader));
+                                PipeRequest request = DeserializeBytes<PipeRequest>(ioEncryption.ReadEncrypted(inputReader));
                                 try
                                 {
                                     switch (request.Command)
@@ -451,40 +451,40 @@ namespace PSADT.ClientServer
                 else if (arg is "/ShowBalloonTip" or "/sbt")
                 {
                     DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetProcessWindowInfo" or "/gpwi")
                 {
-                    Console.WriteLine(SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
+                    Console.WriteLine(SerializeToString(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetUserNotificationState" or "/guns")
                 {
-                    Console.WriteLine(SerializeObject(ShellUtilities.GetUserNotificationState()));
+                    Console.WriteLine(SerializeToString(ShellUtilities.GetUserNotificationState()));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
                 {
-                    Console.WriteLine(SerializeObject(ShellUtilities.GetForegroundWindowProcessId()));
+                    Console.WriteLine(SerializeToString(ShellUtilities.GetForegroundWindowProcessId()));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
                 {
                     ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/MinimizeAllWindows" or "/maw")
                 {
                     ShellUtilities.MinimizeAllWindows();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RestoreAllWindows" or "/raw")
                 {
                     ShellUtilities.RestoreAllWindows();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SendKeys" or "/sk")
@@ -498,7 +498,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    Console.WriteLine(SerializeObject(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
+                    Console.WriteLine(SerializeToString(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SetEnvironmentVariable" or "/sev")
@@ -524,7 +524,7 @@ namespace PSADT.ClientServer
                         throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable, append, remove);
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RemoveEnvironmentVariable" or "/rev")
@@ -534,7 +534,7 @@ namespace PSADT.ClientServer
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.RemoveEnvironmentVariable(variable, EnvironmentVariableTarget.User);
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SilentRestart" or "/sr")
@@ -545,7 +545,7 @@ namespace PSADT.ClientServer
                     }
                     Thread.Sleep(delayValue * 1000);
                     DeviceUtilities.RestartComputer();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetLastInputTime" or "/glit")
@@ -606,11 +606,11 @@ namespace PSADT.ClientServer
                 }
 
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                if (handle?.Task.GetAwaiter().GetResult() is ProcessResult result)
+                if (handle?.Task.GetAwaiter().GetResult().ExitCode is int exitCode)
                 {
-                    Environment.Exit(result.ExitCode);
+                    Environment.Exit(exitCode);
                 }
-                return SerializeObject(DialogManager.BlockExecutionButtonText);
+                return SerializeToString(DialogManager.BlockExecutionButtonText);
             }
 
             // Confirm we have a DialogType and that it's valid.
@@ -644,7 +644,7 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments)),
                 DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog)
             };
-            return SerializeObject(InvokeModalDialog(dialogType, dialogStyle, options, closeAppsDialogState));
+            return SerializeToString(InvokeModalDialog(dialogType, dialogStyle, options, closeAppsDialogState));
         }
 
         /// <summary>
@@ -903,6 +903,25 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Deserializes the specified byte array into an object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize.</typeparam>
+        /// <param name="input">The UTF-8 encoded byte array representation of the object to deserialize. Cannot be null or empty.</param>
+        /// <returns>An object of type <typeparamref name="T"/> deserialized from the input bytes.</returns>
+        /// <exception cref="ClientException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
+        private static T DeserializeBytes<T>(byte[] input)
+        {
+            try
+            {
+                return DataSerialization.DeserializeFromBytes<T>(input);
+            }
+            catch (Exception ex)
+            {
+                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
+            }
+        }
+
+        /// <summary>
         /// Deserializes the specified string into an object of type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize.</typeparam>
@@ -922,13 +941,32 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Serializes the specified object into a UTF-8 encoded byte array.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to serialize.</typeparam>
+        /// <param name="result">The object to be serialized. Cannot be null.</param>
+        /// <returns>A UTF-8 encoded byte array representation of the serialized object.</returns>
+        /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
+        private static byte[] SerializeToBytes<T>(T result)
+        {
+            try
+            {
+                return DataSerialization.SerializeToBytes(result);
+            }
+            catch (Exception ex)
+            {
+                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
+            }
+        }
+
+        /// <summary>
         /// Serializes the specified object into a string representation.
         /// </summary>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="result">The object to be serialized. Cannot be null.</param>
         /// <returns>A string representation of the serialized object.</returns>
         /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
-        private static string SerializeObject<T>(T result)
+        private static string SerializeToString<T>(T result)
         {
             try
             {

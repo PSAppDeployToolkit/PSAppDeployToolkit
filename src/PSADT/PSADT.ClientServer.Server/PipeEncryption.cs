@@ -95,52 +95,22 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Encrypts a string message using AES-CBC with HMAC-SHA256.
-        /// </summary>
-        /// <param name="plaintext">The plaintext message to encrypt.</param>
-        /// <returns>A byte array containing the IV, ciphertext, and MAC.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
-        public byte[] Encrypt(string plaintext)
-        {
-            // Verify state.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
-
-            // Convert plaintext to bytes and encrypt.
-            byte[] plaintextBytes = ServerInstance.DefaultEncoding.GetBytes(plaintext);
-            return EncryptBytes(plaintextBytes);
-        }
-
-        /// <summary>
-        /// Decrypts a byte array using AES-CBC with HMAC-SHA256 verification.
-        /// </summary>
-        /// <param name="encryptedData">The encrypted data containing IV, ciphertext, and MAC.</param>
-        /// <returns>The decrypted plaintext string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
-        /// <exception cref="CryptographicException">Thrown if MAC verification fails.</exception>
-        public string Decrypt(byte[] encryptedData)
-        {
-            // Verify state and parameters.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
-            if (encryptedData is null)
-            {
-                throw new ArgumentNullException(nameof(encryptedData));
-            }
-
-            // Decrypt and convert to string.
-            byte[] plaintextBytes = DecryptBytes(encryptedData);
-            return ServerInstance.DefaultEncoding.GetString(plaintextBytes);
-        }
-
-        /// <summary>
         /// Encrypts raw bytes using AES-CBC with HMAC-SHA256.
         /// </summary>
         /// <param name="plaintext">The plaintext bytes to encrypt.</param>
         /// <returns>A byte array containing the IV, ciphertext, and MAC.</returns>
-        private byte[] EncryptBytes(byte[] plaintext)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="plaintext"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
+        public byte[] Encrypt(byte[] plaintext)
         {
+            // Verify state and parameters.
+            ThrowIfDisposed();
+            ThrowIfKeyExchangeNotComplete();
+            if (plaintext is null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
             // Set up AES encryption.
             using Aes aes = Aes.Create();
             aes.Key = _encryptionKey!;
@@ -184,8 +154,19 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="encryptedData">The encrypted data containing IV, ciphertext, and MAC.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
-        private byte[] DecryptBytes(byte[] encryptedData)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
+        /// <exception cref="CryptographicException">Thrown if MAC verification fails or data is corrupted.</exception>
+        public byte[] Decrypt(byte[] encryptedData)
         {
+            // Verify state and parameters.
+            ThrowIfDisposed();
+            ThrowIfKeyExchangeNotComplete();
+            if (encryptedData is null)
+            {
+                throw new ArgumentNullException(nameof(encryptedData));
+            }
+
             // Validate input length.
             if (encryptedData.Length < IvSize + MacSize + 1)
             {
@@ -242,7 +223,7 @@ namespace PSADT.ClientServer
         private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
         {
             // HKDF-Extract: PRK = HMAC-Hash(salt, IKM).
-            byte[] info = ServerInstance.DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v1"); byte[] prk;
+            byte[] info = DefaultEncoding.Value.GetBytes("PSADT-Pipe-Encryption-v1"); byte[] prk;
             using (HMACSHA256 hmac = new(new byte[32])) // salt = zeros
             {
                 prk = hmac.ComputeHash(sharedSecret);
@@ -375,7 +356,7 @@ namespace PSADT.ClientServer
             byte[] encryptedResponse = reader.ReadBytes(responseLength);
 
             // Decrypt and verify the response matches the challenge
-            byte[] decryptedResponse = DecryptBytes(encryptedResponse);
+            byte[] decryptedResponse = Decrypt(encryptedResponse);
             if (!ConstantTimeEquals(challenge, decryptedResponse))
             {
                 throw new CryptographicException("Key exchange verification failed: challenge response mismatch.");
@@ -394,26 +375,28 @@ namespace PSADT.ClientServer
             byte[] challenge = reader.ReadBytes(challengeLength);
 
             // Encrypt the challenge and send it back
-            byte[] encryptedResponse = EncryptBytes(challenge);
+            byte[] encryptedResponse = Encrypt(challenge);
             writer.Write(encryptedResponse.Length);
             writer.Write(encryptedResponse);
             writer.Flush();
         }
 
         /// <summary>
-        /// Writes an encrypted string to the binary writer.
+        /// Writes encrypted data to the binary writer.
         /// </summary>
         /// <param name="writer">The binary writer.</param>
-        /// <param name="plaintext">The plaintext to encrypt and write.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> is null.</exception>
-        public void WriteEncrypted(BinaryWriter writer, string plaintext)
+        /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> or <paramref name="plaintext"/> is null.</exception>
+        public void WriteEncrypted(BinaryWriter writer, byte[] plaintext)
         {
             // Verify state and parameters.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
             if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
+            }
+            if (plaintext is null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
             }
 
             // Encrypt and write.
@@ -424,16 +407,14 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Reads and decrypts a string from the binary reader.
+        /// Reads and decrypts data from the binary reader.
         /// </summary>
         /// <param name="reader">The binary reader.</param>
-        /// <returns>The decrypted plaintext string.</returns>
+        /// <returns>The decrypted plaintext bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is null.</exception>
-        public string ReadEncrypted(BinaryReader reader)
+        public byte[] ReadEncrypted(BinaryReader reader)
         {
-            // Verify state and parameters.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
+            // Verify parameters.
             if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));

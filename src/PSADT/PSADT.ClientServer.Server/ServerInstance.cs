@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
@@ -47,9 +46,9 @@ namespace PSADT.ClientServer
             _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _outputWriter = new(_outputServer, DefaultEncoding);
-            _inputReader = new(_inputServer, DefaultEncoding);
-            _logReader = new(_logServer, DefaultEncoding);
+            _outputWriter = new(_outputServer, DefaultEncoding.Value);
+            _inputReader = new(_inputServer, DefaultEncoding.Value);
+            _logReader = new(_logServer, DefaultEncoding.Value);
             _ioEncryption = new(); _logEncryption = new();
         }
 
@@ -88,7 +87,7 @@ namespace PSADT.ClientServer
                     createNoWindow: true,
                     waitForChildProcesses: true,
                     killChildProcessesWithParent: true,
-                    streamEncoding: DefaultEncoding,
+                    streamEncoding: DefaultEncoding.Value,
                     windowStyle: ProcessWindowStyle.Hidden,
                     cancellationToken: (_clientProcessCts = new()).Token
                 ));
@@ -671,7 +670,7 @@ namespace PSADT.ClientServer
             // Send the encrypted request to the client.
             try
             {
-                _ioEncryption.WriteEncrypted(_outputWriter, DataSerialization.SerializeToString(new PipeRequest(command, payload)));
+                _ioEncryption.WriteEncrypted(_outputWriter, DataSerialization.SerializeToBytes(new PipeRequest(command, payload)));
             }
             catch (IOException ex)
             {
@@ -682,7 +681,7 @@ namespace PSADT.ClientServer
             PipeResponse response;
             try
             {
-                response = DataSerialization.DeserializeFromString<PipeResponse>(_ioEncryption.ReadEncrypted(_inputReader));
+                response = DataSerialization.DeserializeFromBytes<PipeResponse>(_ioEncryption.ReadEncrypted(_inputReader));
             }
             catch (EndOfStreamException ex)
             {
@@ -711,10 +710,10 @@ namespace PSADT.ClientServer
                 {
                     // Read and decrypt the log message, then process it if a deployment session is active.
                     // We must read it before if there's a deployment session active to clear the queue.
-                    if (_logEncryption.ReadEncrypted(_logReader) is string encrypted && ModuleDatabase.IsDeploymentSessionActive())
+                    if (_logEncryption.ReadEncrypted(_logReader) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
                     {
                         // Deserialize the log message DTO.
-                        LogMessagePayload logMessage = DataSerialization.DeserializeFromString<LogMessagePayload>(encrypted);
+                        LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
                         ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
                     }
                 }
@@ -770,15 +769,6 @@ namespace PSADT.ClientServer
         /// <remarks>This constant is set to <see langword="true"/> and is intended for internal use to
         /// specify that the highest available token should be utilized in relevant operations.</remarks>
         internal const bool UseHighestAvailableToken = true;
-
-        /// <summary>
-        /// Provides a default instance of UTF8Encoding configured to not emit a byte order mark (BOM) and to throw on
-        /// invalid bytes.
-        /// </summary>
-        /// <remarks>This encoding instance is suitable for scenarios where a BOM should be omitted and
-        /// strict error checking is required. It can be reused to avoid creating multiple identical encoding
-        /// objects.</remarks>
-        internal static UTF8Encoding DefaultEncoding = new(false, true);
 
         /// <summary>
         /// Indicates whether the object has been disposed.
