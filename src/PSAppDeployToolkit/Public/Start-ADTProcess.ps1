@@ -69,7 +69,10 @@ function Start-ADTProcess
         Specifies whether the process should be started with a new window to contain it.
 
     .PARAMETER StreamEncoding
-        Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
+        Specifies the encoding type to use when reading stdin/stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
+
+    .PARAMETER StandardInput
+        Specifies a stirng to write to the process's stdin stream. This is handy for answering known prompts, etc.
 
     .PARAMETER NoStreamLogging
         Don't log any available stdout/stderr data to the log file.
@@ -341,6 +344,15 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
         [System.Text.Encoding]$StreamEncoding,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$StandardInput,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
@@ -740,8 +752,9 @@ function Start-ADTProcess
                     $InheritEnvironmentVariables,
                     $ExpandEnvironmentVariables,
                     $DenyUserTermination,
-                    $null,
                     $UseUnelevatedToken,
+                    $StandardInput,
+                    $null,
                     $UseShellExecute,
                     $Verb,
                     $CreateNoWindow,

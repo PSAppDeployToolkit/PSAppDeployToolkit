@@ -51,7 +51,7 @@ namespace PSADT.ProcessManagement
             {
                 throw new ArgumentNullException(nameof(launchInfo));
             }
-            Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask;
+            Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask, hStdInTask = Task.CompletedTask;
             List<string> stdout = [], stderr = [];
             ConcurrentQueue<string> interleaved = [];
             SafeProcessHandle? hProcess;
@@ -89,10 +89,13 @@ namespace PSADT.ProcessManagement
             {
                 AnonymousPipeServerStream? hStdOutRead = null;
                 AnonymousPipeServerStream? hStdErrRead = null;
+                AnonymousPipeServerStream? hStdInWrite = null;
                 SafePipeHandle? hStdOutWrite = null;
                 SafePipeHandle? hStdErrWrite = null;
+                SafePipeHandle? hStdInRead = null;
                 bool hStdOutWriteAddRef = false;
                 bool hStdErrWriteAddRef = false;
+                bool hStdInReadAddRef = false;
                 try
                 {
                     // Set up the startup information for the process.
@@ -148,11 +151,24 @@ namespace PSADT.ProcessManagement
                         hStdErrWrite = hStdErrRead.ClientSafePipeHandle;
                         hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
                         hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
-                        startupInfo.hStdInput = HANDLE.INVALID_HANDLE_VALUE;
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
                         startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
                         handlesToInherit.Add(startupInfo.hStdOutput);
                         handlesToInherit.Add(startupInfo.hStdError);
+
+                        // Create stdin pipe if we have input data to write.
+                        if (launchInfo.StandardInput?.Count > 0)
+                        {
+                            hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
+                            hStdInRead = hStdInWrite.ClientSafePipeHandle;
+                            hStdInRead.DangerousAddRef(ref hStdInReadAddRef);
+                            startupInfo.hStdInput = (HANDLE)hStdInRead.DangerousGetHandle();
+                            handlesToInherit.Add(startupInfo.hStdInput);
+                        }
+                        else
+                        {
+                            startupInfo.hStdInput = HANDLE.INVALID_HANDLE_VALUE;
+                        }
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
@@ -212,6 +228,12 @@ namespace PSADT.ProcessManagement
                         _ = Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
                     _ = Kernel32.ResumeThread(hThread);
+
+                    // Start the stdin write task after the process has been resumed.
+                    if (hStdInWrite is not null && launchInfo.StandardInput?.Count > 0)
+                    {
+                        hStdInTask = Task.Run(() => WritePipe(hStdInWrite, launchInfo.StandardInput, launchInfo.StreamEncoding));
+                    }
                 }
                 finally
                 {
@@ -223,10 +245,16 @@ namespace PSADT.ProcessManagement
                     {
                         hStdErrWrite!.DangerousRelease();
                     }
+                    if (hStdInReadAddRef)
+                    {
+                        hStdInRead!.DangerousRelease();
+                    }
                     hStdOutWrite?.Dispose(); hStdOutWrite = null;
                     hStdErrWrite?.Dispose(); hStdErrWrite = null;
+                    hStdInRead?.Dispose(); hStdInRead = null;
                     hStdOutRead?.DisposeLocalCopyOfClientHandle();
                     hStdErrRead?.DisposeLocalCopyOfClientHandle();
+                    hStdInWrite?.DisposeLocalCopyOfClientHandle();
                 }
             }
             else
@@ -410,7 +438,7 @@ namespace PSADT.ProcessManagement
                             }
                             else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                             {
-                                await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
+                                await Task.WhenAll(hStdOutTask, hStdErrTask, hStdInTask).ConfigureAwait(false);
                                 _ = Kernel32.GetExitCodeProcess(hProcess, out uint lpExitCode);
                                 exitCode = unchecked((int)lpExitCode);
                                 break;
@@ -420,7 +448,7 @@ namespace PSADT.ProcessManagement
                     else
                     {
                         process.WaitForExit();
-                        await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
+                        await Task.WhenAll(hStdOutTask, hStdErrTask, hStdInTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
                     tcs.SetResult(new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved));
@@ -477,6 +505,27 @@ namespace PSADT.ProcessManagement
                 {
                     interleaved.Enqueue(line);
                     output.Add(line);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes lines to a pipe and closes it when complete.
+        /// </summary>
+        /// <param name="pipeStream">The anonymous pipe server stream to write to.</param>
+        /// <param name="lines">The lines to write to the pipe.</param>
+        /// <param name="encoding">The encoding to use when converting strings to bytes.</param>
+        private static void WritePipe(AnonymousPipeServerStream pipeStream, IReadOnlyList<string> lines, Encoding encoding)
+        {
+            using (pipeStream) using (StreamWriter writer = new(pipeStream, encoding))
+            {
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        writer.WriteLine();
+                    }
+                    writer.Write(lines[i]);
                 }
             }
         }
