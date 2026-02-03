@@ -46,9 +46,6 @@ namespace PSADT.ClientServer
             _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _outputWriter = new(_outputServer, DefaultEncoding.Value);
-            _inputReader = new(_inputServer, DefaultEncoding.Value);
-            _logReader = new(_logServer, DefaultEncoding.Value);
             _ioEncryption = new(); _logEncryption = new();
         }
 
@@ -114,8 +111,8 @@ namespace PSADT.ClientServer
             // Perform ECDH key exchange for encrypted communication.
             try
             {
-                _ioEncryption.PerformServerKeyExchange(_outputWriter, _inputReader);
-                _logEncryption.PerformServerKeyExchange(_outputWriter, _inputReader);
+                _ioEncryption.PerformServerKeyExchange(_outputServer, _inputServer);
+                _logEncryption.PerformServerKeyExchange(_outputServer, _inputServer);
             }
             catch (Exception ex)
             {
@@ -631,11 +628,6 @@ namespace PSADT.ClientServer
                 _logEncryption.Dispose();
                 _ioEncryption.Dispose();
 
-                // Dispose readers and writers.
-                _logReader.Dispose();
-                _inputReader.Dispose();
-                _outputWriter.Dispose();
-
                 // Dispose pipe servers.
                 _logServer.Dispose();
                 _inputServer.Dispose();
@@ -670,7 +662,7 @@ namespace PSADT.ClientServer
             // Send the encrypted request to the client.
             try
             {
-                _ioEncryption.WriteEncrypted(_outputWriter, DataSerialization.SerializeToBytes(new PipeRequest(command, payload)));
+                _ioEncryption.WriteEncrypted(_outputServer, DataSerialization.SerializeToBytes(new PipeRequest(command, payload)));
             }
             catch (IOException ex)
             {
@@ -681,7 +673,7 @@ namespace PSADT.ClientServer
             PipeResponse response;
             try
             {
-                response = DataSerialization.DeserializeFromBytes<PipeResponse>(_ioEncryption.ReadEncrypted(_inputReader));
+                response = DataSerialization.DeserializeFromBytes<PipeResponse>(_ioEncryption.ReadEncrypted(_inputServer));
             }
             catch (EndOfStreamException ex)
             {
@@ -710,7 +702,7 @@ namespace PSADT.ClientServer
                 {
                     // Read and decrypt the log message, then process it if a deployment session is active.
                     // We must read it before if there's a deployment session active to clear the queue.
-                    if (_logEncryption.ReadEncrypted(_logReader) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
+                    if (_logEncryption.ReadEncrypted(_logServer) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
                     {
                         // Deserialize the log message DTO.
                         LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
@@ -801,24 +793,6 @@ namespace PSADT.ClientServer
         /// process.</remarks>
         private readonly AnonymousPipeServerStream _outputServer;
 
-        /// <summary>
-        /// Represents the stream reader used to read log data.
-        /// </summary>
-        /// <remarks>This field is intended for internal use and provides access to the underlying stream
-        /// for reading log information. It is not exposed publicly.</remarks>
-        private readonly BinaryReader _logReader;
-
-        /// <summary>
-        /// Represents the <see cref="StreamReader"/> used to read input data from a stream.
-        /// </summary>
-        /// <remarks>This field is read-only and is intended for internal use to process input streams.</remarks>
-        private readonly BinaryReader _inputReader;
-
-        /// <summary>
-        /// Represents the output stream writer used for writing data to a stream.
-        /// </summary>
-        /// <remarks>This field is read-only and is intended to be used internally for managing output operations.</remarks>
-        private readonly BinaryWriter _outputWriter;
 
         /// <summary>
         /// Provides ECDH-based encryption for the main command/response pipe communication.

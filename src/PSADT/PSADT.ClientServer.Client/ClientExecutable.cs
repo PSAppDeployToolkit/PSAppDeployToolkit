@@ -139,17 +139,14 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (BinaryWriter outputWriter = new(outputPipeClient, DefaultEncoding.Value))
-                using (BinaryReader inputReader = new(inputPipeClient, DefaultEncoding.Value))
-                using (BinaryWriter logWriter = new(logPipeClient, DefaultEncoding.Value))
                 using (PipeEncryption ioEncryption = new())
                 using (PipeEncryption logEncryption = new())
                 {
                     // Perform ECDH key exchange for encrypted communication.
                     try
                     {
-                        ioEncryption.PerformClientKeyExchange(outputWriter, inputReader);
-                        logEncryption.PerformClientKeyExchange(outputWriter, inputReader);
+                        ioEncryption.PerformClientKeyExchange(outputPipeClient, inputPipeClient);
+                        logEncryption.PerformClientKeyExchange(outputPipeClient, inputPipeClient);
                     }
                     catch (Exception ex)
                     {
@@ -159,15 +156,15 @@ namespace PSADT.ClientServer
                     // Set up writer helper methods.
                     void WriteSuccess<T>(T result)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, SerializeToBytes(PipeResponse.Ok(result)));
+                        ioEncryption.WriteEncrypted(outputPipeClient, SerializeToBytes(PipeResponse.Ok(result)));
                     }
                     void WriteError(Exception ex)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, SerializeToBytes(PipeResponse.Fail(ex)));
+                        ioEncryption.WriteEncrypted(outputPipeClient, SerializeToBytes(PipeResponse.Fail(ex)));
                     }
                     void WriteLog(string message, LogSeverity severity, string source)
                     {
-                        logEncryption.WriteEncrypted(logWriter, SerializeToBytes(new LogMessagePayload(message, severity, source)));
+                        logEncryption.WriteEncrypted(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source)));
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
@@ -179,7 +176,7 @@ namespace PSADT.ClientServer
                             try
                             {
                                 // Read, decrypt, deserialize, then process the request. We never let an exception here kill the pipe.
-                                PipeRequest request = DeserializeBytes<PipeRequest>(ioEncryption.ReadEncrypted(inputReader));
+                                PipeRequest request = DeserializeBytes<PipeRequest>(ioEncryption.ReadEncrypted(inputPipeClient));
                                 try
                                 {
                                     switch (request.Command)

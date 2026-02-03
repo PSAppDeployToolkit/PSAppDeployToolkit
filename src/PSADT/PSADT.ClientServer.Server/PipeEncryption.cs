@@ -254,90 +254,83 @@ namespace PSADT.ClientServer
             return output;
         }
 
-
         /// <summary>
         /// Performs key exchange as the server (initiator).
         /// Sends public key first, then receives client's public key, then verifies key agreement.
         /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> or <paramref name="reader"/> is null.</exception>
+        /// <param name="outputStream">The stream to send data.</param>
+        /// <param name="inputStream">The stream to receive data.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
         /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        public void PerformServerKeyExchange(BinaryWriter writer, BinaryReader reader)
+        public void PerformServerKeyExchange(Stream outputStream, Stream inputStream)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
-            if (writer is null)
+            if (outputStream is null)
             {
-                throw new ArgumentNullException(nameof(writer));
+                throw new ArgumentNullException(nameof(outputStream));
             }
-            if (reader is null)
+            if (inputStream is null)
             {
-                throw new ArgumentNullException(nameof(reader));
+                throw new ArgumentNullException(nameof(inputStream));
             }
 
             // Server sends public key first
             byte[] publicKey = GetPublicKey();
-            writer.Write(publicKey.Length);
-            writer.Write(publicKey);
-            writer.Flush();
+            WriteLengthPrefixedBytes(outputStream, publicKey);
 
             // Server receives client's public key
-            int clientKeyLength = reader.ReadInt32();
-            byte[] clientPublicKey = reader.ReadBytes(clientKeyLength);
+            byte[] clientPublicKey = ReadLengthPrefixedBytes(inputStream);
 
             // Derive the shared key
             DeriveSharedKey(clientPublicKey);
 
             // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsServer(writer, reader);
+            VerifyKeyExchangeAsServer(outputStream, inputStream);
         }
 
         /// <summary>
         /// Performs key exchange as the client (responder).
         /// Receives server's public key first, then sends own public key, then verifies key agreement.
         /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> or <paramref name="reader"/> is null.</exception>
+        /// <param name="outputStream">The stream to send data.</param>
+        /// <param name="inputStream">The stream to receive data.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
         /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        public void PerformClientKeyExchange(BinaryWriter writer, BinaryReader reader)
+        public void PerformClientKeyExchange(Stream outputStream, Stream inputStream)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
-            if (writer is null)
+            if (outputStream is null)
             {
-                throw new ArgumentNullException(nameof(writer));
+                throw new ArgumentNullException(nameof(outputStream));
             }
-            if (reader is null)
+            if (inputStream is null)
             {
-                throw new ArgumentNullException(nameof(reader));
+                throw new ArgumentNullException(nameof(inputStream));
             }
 
             // Client receives server's public key first
-            int serverKeyLength = reader.ReadInt32();
-            byte[] serverPublicKey = reader.ReadBytes(serverKeyLength);
+            byte[] serverPublicKey = ReadLengthPrefixedBytes(inputStream);
 
             // Client sends its public key
             byte[] publicKey = GetPublicKey();
-            writer.Write(publicKey.Length);
-            writer.Write(publicKey);
-            writer.Flush();
+            WriteLengthPrefixedBytes(outputStream, publicKey);
 
             // Derive the shared key
             DeriveSharedKey(serverPublicKey);
 
             // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsClient(writer, reader);
+            VerifyKeyExchangeAsClient(outputStream, inputStream);
         }
 
         /// <summary>
         /// Verifies the key exchange as the server by sending a challenge and verifying the client's response.
         /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
+        /// <param name="outputStream">The stream to send data.</param>
+        /// <param name="inputStream">The stream to receive data.</param>
         /// <exception cref="CryptographicException">Thrown if the client's response does not match the expected value.</exception>
-        private void VerifyKeyExchangeAsServer(BinaryWriter writer, BinaryReader reader)
+        private void VerifyKeyExchangeAsServer(Stream outputStream, Stream inputStream)
         {
             // Generate a random challenge
             byte[] challenge = new byte[32];
@@ -347,13 +340,10 @@ namespace PSADT.ClientServer
             }
 
             // Send the challenge (unencrypted - it's random data)
-            writer.Write(challenge.Length);
-            writer.Write(challenge);
-            writer.Flush();
+            WriteLengthPrefixedBytes(outputStream, challenge);
 
             // Read the encrypted response from the client
-            int responseLength = reader.ReadInt32();
-            byte[] encryptedResponse = reader.ReadBytes(responseLength);
+            byte[] encryptedResponse = ReadLengthPrefixedBytes(inputStream);
 
             // Decrypt and verify the response matches the challenge
             byte[] decryptedResponse = Decrypt(encryptedResponse);
@@ -366,33 +356,30 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Verifies the key exchange as the client by receiving a challenge and sending an encrypted response.
         /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        private void VerifyKeyExchangeAsClient(BinaryWriter writer, BinaryReader reader)
+        /// <param name="outputStream">The stream to send data.</param>
+        /// <param name="inputStream">The stream to receive data.</param>
+        private void VerifyKeyExchangeAsClient(Stream outputStream, Stream inputStream)
         {
             // Receive the challenge from the server
-            int challengeLength = reader.ReadInt32();
-            byte[] challenge = reader.ReadBytes(challengeLength);
+            byte[] challenge = ReadLengthPrefixedBytes(inputStream);
 
             // Encrypt the challenge and send it back
             byte[] encryptedResponse = Encrypt(challenge);
-            writer.Write(encryptedResponse.Length);
-            writer.Write(encryptedResponse);
-            writer.Flush();
+            WriteLengthPrefixedBytes(outputStream, encryptedResponse);
         }
 
         /// <summary>
-        /// Writes encrypted data to the binary writer.
+        /// Writes encrypted data to the stream.
         /// </summary>
-        /// <param name="writer">The binary writer.</param>
+        /// <param name="stream">The output stream.</param>
         /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> or <paramref name="plaintext"/> is null.</exception>
-        public void WriteEncrypted(BinaryWriter writer, byte[] plaintext)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
+        public void WriteEncrypted(Stream stream, byte[] plaintext)
         {
             // Verify state and parameters.
-            if (writer is null)
+            if (stream is null)
             {
-                throw new ArgumentNullException(nameof(writer));
+                throw new ArgumentNullException(nameof(stream));
             }
             if (plaintext is null)
             {
@@ -401,29 +388,82 @@ namespace PSADT.ClientServer
 
             // Encrypt and write.
             byte[] encrypted = Encrypt(plaintext);
-            writer.Write(encrypted.Length);
-            writer.Write(encrypted);
-            writer.Flush();
+            WriteLengthPrefixedBytes(stream, encrypted);
         }
 
         /// <summary>
-        /// Reads and decrypts data from the binary reader.
+        /// Reads and decrypts data from the stream.
         /// </summary>
-        /// <param name="reader">The binary reader.</param>
+        /// <param name="stream">The input stream.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is null.</exception>
-        public byte[] ReadEncrypted(BinaryReader reader)
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
+        public byte[] ReadEncrypted(Stream stream)
         {
             // Verify parameters.
-            if (reader is null)
+            if (stream is null)
             {
-                throw new ArgumentNullException(nameof(reader));
+                throw new ArgumentNullException(nameof(stream));
             }
 
             // Read and decrypt.
-            int length = reader.ReadInt32();
-            byte[] encrypted = reader.ReadBytes(length);
+            byte[] encrypted = ReadLengthPrefixedBytes(stream);
             return Decrypt(encrypted);
+        }
+
+        /// <summary>
+        /// Writes a length-prefixed byte array to the stream.
+        /// </summary>
+        /// <param name="stream">The output stream.</param>
+        /// <param name="data">The data to write.</param>
+        private static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
+        {
+            byte[] lengthBytes = BitConverter.GetBytes(data.Length);
+            stream.Write(lengthBytes, 0, 4);
+            stream.Write(data, 0, data.Length);
+            stream.Flush();
+        }
+
+        /// <summary>
+        /// Reads a length-prefixed byte array from the stream.
+        /// </summary>
+        /// <param name="stream">The input stream.</param>
+        /// <returns>The data read from the stream.</returns>
+        /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
+        private static byte[] ReadLengthPrefixedBytes(Stream stream)
+        {
+            // Read the 4-byte length prefix
+            byte[] lengthBytes = new byte[4];
+            int bytesRead = 0;
+            while (bytesRead < 4)
+            {
+                int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
+                }
+                bytesRead += read;
+            }
+
+            // Verify we've received a correct value.
+            int length = BitConverter.ToInt32(lengthBytes, 0);
+            if (length <= 0)
+            {
+                throw new InvalidDataException("Invalid length prefix: negative or zero value.");
+            }
+
+            // Read the data
+            byte[] data = new byte[length];
+            bytesRead = 0;
+            while (bytesRead < length)
+            {
+                int read = stream.Read(data, bytesRead, length - bytesRead);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading data.");
+                }
+                bytesRead += read;
+            }
+            return data;
         }
 
         /// <summary>
