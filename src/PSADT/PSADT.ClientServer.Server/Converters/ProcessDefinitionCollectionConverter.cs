@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using PSADT.ProcessManagement;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -15,25 +15,27 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Reads and converts the JSON to a <see cref="ReadOnlyCollection{ProcessDefinition}"/>.
         /// </summary>
-        public override ReadOnlyCollection<ProcessDefinition>? ReadJson(JsonReader reader, Type objectType, ReadOnlyCollection<ProcessDefinition>? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override ReadOnlyCollection<ProcessDefinition> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            JArray jArray = JArray.Load(reader);
-            if (jArray.Count == 0)
+            if (reader.TokenType == JsonTokenType.Null)
             {
-                throw new JsonSerializationException("ProcessDefinition collection cannot be empty.");
+                throw new JsonException("Cannot deserialize null ProcessDefinition collection.");
             }
-            List<ProcessDefinition> list = new(jArray.Count);
-            foreach (JToken item in jArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
             {
-                list.Add(item.ToObject<ProcessDefinition>(serializer) ?? throw new JsonSerializationException("Failed to deserialize ProcessDefinition item."));
+                throw new JsonException("Expected start of array.");
             }
-            return new(list);
+            List<ProcessDefinition> list = []; while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+            {
+                list.Add(JsonSerializer.Deserialize<ProcessDefinition>(ref reader, options) ?? throw new JsonException("Failed to deserialize ProcessDefinition item."));
+            }
+            return list.Count == 0 ? throw new JsonException("ProcessDefinition collection cannot be empty.") : new(list);
         }
 
         /// <summary>
         /// Writes the collection as JSON.
         /// </summary>
-        public override void WriteJson(JsonWriter writer, ReadOnlyCollection<ProcessDefinition>? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, ReadOnlyCollection<ProcessDefinition> value, JsonSerializerOptions options)
         {
             if (value is null)
             {
@@ -42,7 +44,7 @@ namespace PSADT.ClientServer.Converters
             writer.WriteStartArray();
             foreach (ProcessDefinition item in value)
             {
-                serializer.Serialize(writer, item);
+                JsonSerializer.Serialize(writer, item, options);
             }
             writer.WriteEndArray();
         }

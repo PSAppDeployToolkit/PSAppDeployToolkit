@@ -3,7 +3,7 @@ using System.Collections;
 using System.Globalization;
 using PSADT.UserInterface.Dialogs;
 using PSAppDeployToolkit.SessionManagement;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -97,61 +97,51 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
-        [JsonProperty]
         public CloseAppsDialogStrings Strings { get; }
 
         /// <summary>
         /// The number of deferrals remaining for the user.
         /// </summary>
-        [JsonProperty]
         public uint? DeferralsRemaining { get; }
 
         /// <summary>
         /// The deadline for deferrals.
         /// </summary>
-        [JsonProperty]
         public DateTime? DeferralDeadline { get; }
 
         /// <summary>
         /// Indicates whether the system allows an unlimited number of deferrals.
         /// </summary>
-        [JsonProperty]
         public bool UnlimitedDeferrals { get; }
 
         /// <summary>
         /// Indicates whether the continue button should be implied when all processes have closed.
         /// </summary>
-        [JsonProperty]
         public bool ContinueOnProcessClosure { get; }
 
         /// <summary>
         /// The duration of the countdown before the dialog automatically closes.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? CountdownDuration { get; }
 
         /// <summary>
         /// Specifies whether the countdown is "forced" or not (affects countdown decisions).
         /// </summary>
-        [JsonProperty]
         public bool ForcedCountdown { get; }
 
         /// <summary>
         /// Indicates whether the close button should be hidden.
         /// </summary>
-        [JsonProperty]
         public bool HideCloseButton { get; }
 
         /// <summary>
         /// Indicates whether the dialog allows minimizing.
         /// </summary>
-        [JsonProperty]
         public bool DialogAllowMinimize { get; }
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
-        [JsonProperty]
         public string? CustomMessageText { get; }
 
         /// <summary>
@@ -190,13 +180,11 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
-            [JsonProperty]
             public CloseAppsDialogClassicStrings Classic { get; }
 
             /// <summary>
             /// The strings used for the Fluent CloseAppsDialog.
             /// </summary>
-            [JsonProperty]
             public CloseAppsDialogFluentStrings Fluent { get; }
 
             /// <summary>
@@ -314,73 +302,61 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// Text displayed when only the deferral dialog is to be displayed and there are no applications to close
                 /// </summary>
-                [JsonProperty]
                 public string WelcomeMessage { get; }
 
                 /// <summary>
                 /// Text displayed when prompting to close running programs.
                 /// </summary>
-                [JsonProperty]
                 public string CloseAppsMessage { get; }
 
                 /// <summary>
                 /// Text displayed when a deferral option is available.
                 /// </summary>
-                [JsonProperty]
                 public string ExpiryMessage { get; }
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
-                [JsonProperty]
                 public string DeferralsRemaining { get; }
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
-                [JsonProperty]
                 public string DeferralDeadline { get; }
 
                 /// <summary>
                 /// Text displayed after the deferral options.
                 /// </summary>
-                [JsonProperty]
                 public string ExpiryWarning { get; }
 
                 /// <summary>
                 /// The countdown message displayed at the Welcome Screen to indicate when the deployment will continue if no response from user.
                 /// </summary>
-                [JsonProperty]
                 public string CountdownDefer { get; }
 
                 /// <summary>
                 /// Text displayed when counting down to automatically closing applications.
                 /// </summary>
-                [JsonProperty]
                 public string CountdownClose { get; }
 
                 /// <summary>
                 /// Text displayed on the close button when prompting to close running programs.
                 /// </summary>
-                [JsonProperty]
                 public string ButtonClose { get; }
 
                 /// <summary>
                 /// Text displayed on the defer button when prompting to close running programs
                 /// </summary>
-                [JsonProperty]
                 public string ButtonDefer { get; }
 
                 /// <summary>
                 /// Text displayed on the continue button when prompting to close running programs.
                 /// </summary>
-                [JsonProperty]
                 public string ButtonContinue { get; }
 
                 /// <summary>
                 /// Tooltip text displayed on the continue button when prompting to close running programs.
                 /// </summary>
-                [JsonProperty]
                 public string ButtonContinueTooltip { get; }
             }
 
@@ -471,49 +447,41 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// This is a message to prompt users to save their work.
                 /// </summary>
-                [JsonProperty]
                 public string DialogMessage { get; }
 
                 /// <summary>
                 /// This is a message to when there are no running processes available.
                 /// </summary>
-                [JsonProperty]
                 public string DialogMessageNoProcesses { get; }
 
                 /// <summary>
                 /// A string to describe the automatic start countdown.
                 /// </summary>
-                [JsonProperty]
                 public string AutomaticStartCountdown { get; }
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
-                [JsonProperty]
                 public string DeferralsRemaining { get; }
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
-                [JsonProperty]
                 public string DeferralDeadline { get; }
 
                 /// <summary>
                 /// This is a phrase used to describe the process of deferring a deploymen
                 /// </summary>
-                [JsonProperty]
                 public string ButtonLeftText { get; }
 
                 /// <summary>
                 /// This is a phrase used to describe the process of closing applications and commencing the deployment.
                 /// </summary>
-                [JsonProperty]
                 public string ButtonRightText { get; }
 
                 /// <summary>
                 /// This is a phrase used to describe the process of commencing the deployment.
                 /// </summary>
-                [JsonProperty]
                 public string ButtonLeftTextNoProcesses { get; }
             }
         }

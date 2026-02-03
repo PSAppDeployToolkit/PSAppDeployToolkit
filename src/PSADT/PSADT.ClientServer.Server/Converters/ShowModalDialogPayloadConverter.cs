@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using PSADT.ClientServer.Payloads;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -19,43 +19,64 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Reads and converts the JSON to a <see cref="ShowModalDialogPayload"/> instance.
         /// </summary>
-        public override ShowModalDialogPayload? ReadJson(JsonReader reader, Type objectType, ShowModalDialogPayload? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override ShowModalDialogPayload Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            // Deserialize Options based on DialogType.
-            JObject jObject = JObject.Load(reader);
-            if (jObject["DialogType"]?.ToObject<DialogType>() is not DialogType dialogType || !DialogTypeToOptionsType.TryGetValue(dialogType, out Type? optionsType))
+            // Validate the token type.
+            if (reader.TokenType == JsonTokenType.Null)
             {
-                throw new JsonSerializationException("Missing or invalid DialogType.");
+                throw new JsonException("Cannot deserialize null ShowModalDialogPayload.");
             }
-            if (jObject["DialogStyle"]?.ToObject<DialogStyle>() is not DialogStyle dialogStyle)
+
+            // Get the document from from the reader.
+            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
+            JsonElement root = doc.RootElement;
+
+            // Get the DialogType value.
+            if (!root.TryGetProperty("DialogType", out JsonElement dialogTypeElement))
             {
-                throw new JsonSerializationException("Missing or invalid DialogStyle.");
+                throw new JsonException("Missing or invalid DialogType.");
             }
-            if (jObject["Options"]?.ToObject(optionsType, serializer) is not object options)
+            DialogType dialogType = (DialogType)dialogTypeElement.GetInt32();
+
+            // Get the DialogStyle value.
+            if (!root.TryGetProperty("DialogStyle", out JsonElement dialogStyleElement))
             {
-                throw new JsonSerializationException("Missing or invalid Options.");
+                throw new JsonException("Missing or invalid DialogStyle.");
+            }
+            DialogStyle dialogStyle = (DialogStyle)dialogStyleElement.GetInt32();
+
+            // Get the Options type for the given dialog.
+            if (!DialogTypeToOptionsType.TryGetValue(dialogType, out Type? optionsType))
+            {
+                throw new JsonException($"Unknown DialogType: {dialogType}");
+            }
+            if (!root.TryGetProperty("Options", out JsonElement optionsElement))
+            {
+                throw new JsonException("Missing or invalid Options.");
+            }
+            if (JsonSerializer.Deserialize(optionsElement.GetRawText(), optionsType, options) is not object optionsValue)
+            {
+                throw new JsonException("Failed to deserialize Options.");
             }
 
             // Create and return the ShowModalDialogPayload.
-            return new(dialogType, dialogStyle, options);
+            return new ShowModalDialogPayload(dialogType, dialogStyle, optionsValue);
         }
 
         /// <summary>
         /// Writes the <see cref="ShowModalDialogPayload"/> as JSON.
         /// </summary>
-        public override void WriteJson(JsonWriter writer, ShowModalDialogPayload? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, ShowModalDialogPayload value, JsonSerializerOptions options)
         {
             if (value is null)
             {
                 throw new ArgumentNullException(nameof(value), "Cannot serialize a null ShowModalDialogPayload.");
             }
             writer.WriteStartObject();
-            writer.WritePropertyName("DialogType");
-            serializer.Serialize(writer, value.DialogType);
-            writer.WritePropertyName("DialogStyle");
-            serializer.Serialize(writer, value.DialogStyle);
+            writer.WriteNumber("DialogType", (int)value.DialogType);
+            writer.WriteNumber("DialogStyle", (int)value.DialogStyle);
             writer.WritePropertyName("Options");
-            serializer.Serialize(writer, value.Options);
+            JsonSerializer.Serialize(writer, value.Options, value.Options.GetType(), options);
             writer.WriteEndObject();
         }
 

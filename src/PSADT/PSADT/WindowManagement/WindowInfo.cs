@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.WindowManagement
 {
@@ -29,31 +29,26 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the title of the window.
         /// </summary>
-        [JsonProperty]
         public string WindowTitle { get; }
 
         /// <summary>
         /// Gets the handle to the window.
         /// </summary>
-        [JsonProperty]
         public IntPtr WindowHandle { get; }
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
         /// </summary>
-        [JsonProperty]
         public string ParentProcess { get; }
 
         /// <summary>
         /// Gets the ID of the parent process.
         /// </summary>
-        [JsonProperty]
         public int ParentProcessId { get; }
 
         /// <summary>
         /// Gets the handle to the main window of the parent process.
         /// </summary>
-        [JsonProperty]
         public IntPtr ParentProcessMainWindowHandle { get; }
     }
 }

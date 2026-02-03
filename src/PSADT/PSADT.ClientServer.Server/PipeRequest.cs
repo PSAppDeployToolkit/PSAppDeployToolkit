@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using PSADT.ClientServer.Payloads;
 
 namespace PSADT.ClientServer
@@ -13,7 +13,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// The command to execute on the client.
         /// </summary>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly PipeCommand Command;
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>The payload type varies depending on the command. For commands that don't require
         /// additional data, this field may be null.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly object? Payload;
 
         /// <summary>

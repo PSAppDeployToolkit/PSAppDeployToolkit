@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.WindowManagement
 {
@@ -64,7 +64,6 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the filter criteria for window titles.
         /// </summary>
-        [JsonProperty]
         public IReadOnlyList<string>? WindowTitleFilter { get; }
 
         /// <summary>
@@ -72,7 +71,6 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
-        [JsonProperty]
         public IReadOnlyList<nint>? WindowHandleFilter { get; }
 
         /// <summary>
@@ -81,7 +79,6 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
         /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
-        [JsonProperty]
         public IReadOnlyList<string>? ParentProcessFilter { get; }
 
         /// <summary>
@@ -89,7 +86,6 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
-        [JsonProperty]
         public IReadOnlyList<int>? ParentProcessIdFilter { get; }
 
         /// <summary>
@@ -98,7 +94,6 @@ namespace PSADT.WindowManagement
         /// <remarks>This property provides a read-only list of native window handles (HWND) that are used
         /// to identify or filter parent processes based on their main window. The list may be empty if no filters are
         /// applied.</remarks>
-        [JsonProperty]
         public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter { get; }
     }
 }

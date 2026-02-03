@@ -3,7 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Windows.Forms;
 using PSADT.Utilities;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -98,37 +98,31 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Represents the title displayed on the tray.
         /// </summary>
-        [JsonProperty]
         public string TrayTitle { get; }
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
-        [JsonProperty]
         public string TrayIcon { get; }
 
         /// <summary>
         /// Gets the title text displayed in the balloon tip of a notification.
         /// </summary>
-        [JsonProperty]
         public string BalloonTipTitle { get; }
 
         /// <summary>
         /// Gets the text displayed in the balloon tip of a notification.
         /// </summary>
-        [JsonProperty]
         public string BalloonTipText { get; }
 
         /// <summary>
         /// Gets the icon displayed in the balloon tip associated with the notification.
         /// </summary>
-        [JsonProperty]
         public ToolTipIcon BalloonTipIcon { get; }
 
         /// <summary>
         /// Gets the duration, in milliseconds, that the balloon tip is displayed.
         /// </summary>
-        [JsonProperty]
         public uint BalloonTipTime { get; }
     }
 }

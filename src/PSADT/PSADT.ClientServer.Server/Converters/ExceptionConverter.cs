@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -18,24 +18,27 @@ namespace PSADT.ClientServer.Converters
     /// data. It supports round-trip serialization for most exception types that implement the required serialization
     /// constructor. When deserializing, the converter requires the exception type to be available and to derive from
     /// <see cref="Exception"/>. If the exception type or required constructor is missing, a <see
-    /// cref="JsonSerializationException"/> is thrown. This converter is intended for advanced scenarios such as
+    /// cref="JsonException"/> is thrown. This converter is intended for advanced scenarios such as
     /// logging, diagnostics, or distributed error handling where exception fidelity is important.</remarks>
     internal sealed class ExceptionConverter : JsonConverter<Exception>
     {
         /// <summary>
         /// Reads and converts the JSON to an <see cref="Exception"/> instance.
         /// </summary>
-        public override Exception? ReadJson(JsonReader reader, Type objectType, Exception? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override Exception Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return reader.TokenType == JsonToken.Null
-                ? throw new JsonSerializationException("Cannot deserialize null to Exception.")
-                : DeserializeException(JObject.Load(reader));
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                throw new JsonException("Cannot deserialize null to Exception.");
+            }
+            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
+            return DeserializeException(doc.RootElement);
         }
 
         /// <summary>
         /// Writes the <see cref="Exception"/> as JSON using <see cref="ISerializable"/>.
         /// </summary>
-        public override void WriteJson(JsonWriter writer, Exception? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, Exception value, JsonSerializerOptions options)
         {
             // Validate input.
             if (value is null)
@@ -49,8 +52,7 @@ namespace PSADT.ClientServer.Converters
 
             // Write the JSON.
             writer.WriteStartObject();
-            writer.WritePropertyName("$type");
-            writer.WriteValue(value.GetType().FullName);
+            writer.WriteString("$type", value.GetType().FullName);
 
             // Write all SerializationInfo entries.
             foreach (SerializationEntry entry in info)
@@ -58,57 +60,57 @@ namespace PSADT.ClientServer.Converters
                 writer.WritePropertyName(entry.Name);
                 if (entry.Value is null)
                 {
-                    writer.WriteNull();
+                    writer.WriteNullValue();
                 }
                 else if (entry.Value is Exception innerException)
                 {
                     // Recursively serialize inner exceptions
-                    WriteJson(writer, innerException, serializer);
+                    Write(writer, innerException, options);
                 }
                 else
                 {
                     // Use the serializer for other types
-                    serializer.Serialize(writer, entry.Value);
+                    JsonSerializer.Serialize(writer, entry.Value, entry.Value.GetType(), options);
                 }
             }
             writer.WriteEndObject();
         }
 
         /// <summary>
-        /// Deserializes a JObject to an Exception using the serialization constructor.
+        /// Deserializes a JsonElement to an Exception using the serialization constructor.
         /// </summary>
-        private static Exception DeserializeException(JObject jObject)
+        private static Exception DeserializeException(JsonElement element)
         {
             // Get the exception type and validate.
-            if (jObject["$type"]?.Value<string>() is not string typeName)
+            if (!element.TryGetProperty("$type", out JsonElement typeElement) || typeElement.GetString() is not string typeName)
             {
-                throw new JsonSerializationException("Exception JSON is missing required [$type] property.");
+                throw new JsonException("Exception JSON is missing required [$type] property.");
             }
             if (Type.GetType(typeName, true) is not Type exceptionType)
             {
-                throw new JsonSerializationException($"Exception type [{typeName}] could not be resolved. Ensure the assembly is loaded.");
+                throw new JsonException($"Exception type [{typeName}] could not be resolved. Ensure the assembly is loaded.");
             }
             if (!typeof(Exception).IsAssignableFrom(exceptionType))
             {
-                throw new JsonSerializationException($"Type [{typeName}] does not derive from System.Exception.");
+                throw new JsonException($"Type [{typeName}] does not derive from System.Exception.");
             }
 
             // Find the serialization constructor.
             if (exceptionType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, [typeof(SerializationInfo), typeof(StreamingContext)], null) is not ConstructorInfo serializationCtor)
             {
-                throw new JsonSerializationException($"Exception type [{typeName}] does not have a serialization constructor (SerializationInfo, StreamingContext).");
+                throw new JsonException($"Exception type [{typeName}] does not have a serialization constructor (SerializationInfo, StreamingContext).");
             }
 
             // Build SerializationInfo from the JSON and reconstruct the exception.
             (SerializationInfo info, StreamingContext context) = GetSerializationInfo(exceptionType);
-            foreach (KeyValuePair<string, JToken?> property in jObject)
+            foreach (JsonProperty property in element.EnumerateObject())
             {
-                if (property.Key == "$type" || property.Value is null)
+                if (property.Name == "$type")
                 {
                     continue;
                 }
-                object? value = ConvertJTokenToSerializationValue(property.Key, property.Value);
-                info.AddValue(property.Key, value, value?.GetType() ?? GetExpectedTypeForNullField(property.Key));
+                object? value = ConvertJsonElementToSerializationValue(property.Name, property.Value);
+                info.AddValue(property.Name, value, value?.GetType() ?? GetExpectedTypeForNullField(property.Name));
             }
             return (Exception)serializationCtor.Invoke([info, context]);
         }
@@ -134,81 +136,63 @@ namespace PSADT.ClientServer.Converters
         }
 
         /// <summary>
-        /// Converts a JToken to the appropriate CLR type for SerializationInfo.
+        /// Converts a JsonElement to the appropriate CLR type for SerializationInfo.
         /// </summary>
-        private static object? ConvertJTokenToSerializationValue(string fieldName, JToken token)
+        private static object? ConvertJsonElementToSerializationValue(string fieldName, JsonElement element)
         {
-            return token.Type switch
+            return element.ValueKind switch
             {
                 // Null/undefined
-                JTokenType.Null or JTokenType.Undefined => null,
+                JsonValueKind.Null => null,
 
                 // Primitives
-                JTokenType.Boolean => token.Value<bool>(),
-                JTokenType.Integer => token.Value<long>(),
-                JTokenType.Float => token.Value<double>(),
-                JTokenType.String => token.Value<string>(),
-                JTokenType.Bytes => token.Value<byte[]>(),
-
-                // Date/Time types
-                JTokenType.Date => token.Value<DateTime>(),
-                JTokenType.TimeSpan => token.Value<TimeSpan>(),
-
-                // Other value types
-                JTokenType.Guid => token.Value<Guid>(),
-                JTokenType.Uri => token.Value<Uri>(),
+                JsonValueKind.True => true,
+                JsonValueKind.False => false,
+                JsonValueKind.Number when element.TryGetInt64(out long l) => l,
+                JsonValueKind.Number => element.GetDouble(),
+                JsonValueKind.String when element.TryGetDateTime(out DateTime dt) => dt,
+                JsonValueKind.String => element.GetString(),
 
                 // Complex types - handle specially based on field name
-                JTokenType.Object when fieldName is "InnerException" => DeserializeException((JObject)token),
-                JTokenType.Object when fieldName is "Data" => ConvertJObjectToDictionary((JObject)token),
-                JTokenType.Object => token.ToObject<object>(),
+                JsonValueKind.Object when fieldName is "InnerException" => DeserializeException(element),
+                JsonValueKind.Object when fieldName is "Data" => ConvertJsonElementToDictionary(element),
+                JsonValueKind.Object => JsonSerializer.Deserialize<object>(element.GetRawText()),
 
-                JTokenType.Array when fieldName is "InnerExceptions" => DeserializeInnerExceptions((JArray)token),
-                JTokenType.Array => token.ToObject<object[]>(),
+                JsonValueKind.Array when fieldName is "InnerExceptions" => DeserializeInnerExceptions(element),
+                JsonValueKind.Array => JsonSerializer.Deserialize<object[]>(element.GetRawText()),
 
-                // Raw JSON string
-                JTokenType.Raw => token.ToString(),
-
-                // Structural tokens (shouldn't appear as values in serialization data)
-                JTokenType.None or JTokenType.Constructor or JTokenType.Property or JTokenType.Comment => throw new NotSupportedException($"Unexpected token type: {token.Type}"),
-
-                // Fallback for any future enum values
-                _ => token.ToObject<object>(),
+                // Fallback
+                JsonValueKind.Undefined => throw new JsonException($"Undefined value cannot be deserialized for field [{fieldName}]."),
+                _ => JsonSerializer.Deserialize<object>(element.GetRawText()),
             };
         }
 
         /// <summary>
-        /// Converts a JObject to a dictionary for the Data property.
+        /// Converts a JsonElement to a dictionary for the Data property.
         /// </summary>
-        private static ListDictionary? ConvertJObjectToDictionary(JObject jObject)
+        private static ListDictionary? ConvertJsonElementToDictionary(JsonElement element)
         {
-            if (jObject.Count == 0)
-            {
-                return null;
-            }
             ListDictionary dict = [];
-            foreach (KeyValuePair<string, JToken?> kvp in jObject)
+            foreach (JsonProperty prop in element.EnumerateObject())
             {
-                if (kvp.Value is not null)
-                {
-                    dict.Add(kvp.Key, kvp.Value.Type == JTokenType.String ? kvp.Value.Value<string>() : kvp.Value.ToString());
-                }
+                dict.Add(prop.Name, prop.Value.ValueKind == JsonValueKind.String ? prop.Value.GetString() : prop.Value.GetRawText());
             }
-            return dict;
+            return dict.Count == 0 ? null : dict;
         }
 
         /// <summary>
         /// Deserializes an array of inner exceptions (for AggregateException).
         /// </summary>
-        private static Exception[] DeserializeInnerExceptions(JArray jArray)
+        private static Exception[] DeserializeInnerExceptions(JsonElement element)
         {
-            List<Exception> exceptions = new(jArray.Count);
-            foreach (JToken token in jArray)
+            List<Exception> exceptions = [];
+            foreach (JsonElement item in element.EnumerateArray())
             {
-                if (token is JObject exObj)
+                if (item.ValueKind != JsonValueKind.Object)
                 {
-                    exceptions.Add(DeserializeException(exObj));
+                    throw new JsonException($"Expected object in InnerExceptions array, got {item.ValueKind}.");
                 }
+                exceptions.Add(DeserializeException(item));
             }
             return [.. exceptions];
         }

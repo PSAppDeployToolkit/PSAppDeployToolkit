@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -76,43 +76,36 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppTitle { get; }
 
         /// <summary>
         /// Gets the text of the message.
         /// </summary>
-        [JsonProperty]
         public string MessageText { get; }
 
         /// <summary>
         /// Gets the set of buttons to display in the message box dialog.
         /// </summary>
-        [JsonProperty]
         public DialogBoxButtons DialogButtons { get; }
 
         /// <summary>
         /// Gets the default button that is selected in the dialog box when it is displayed.
         /// </summary>
-        [JsonProperty]
         public DialogBoxDefaultButton DialogDefaultButton { get; }
 
         /// <summary>
         /// Gets the icon displayed in the dialog box.
         /// </summary>
-        [JsonProperty]
         public DialogBoxIcon? DialogIcon { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        [JsonProperty]
         public bool DialogTopMost { get; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        [JsonProperty]
         public uint DialogExpiryDuration { get; }
     }
 }

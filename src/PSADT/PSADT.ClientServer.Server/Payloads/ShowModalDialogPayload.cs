@@ -1,5 +1,5 @@
-﻿using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -11,20 +11,20 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The type of dialog to display.
         /// </summary>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly DialogType DialogType;
 
         /// <summary>
         /// The style of the dialog.
         /// </summary>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly DialogStyle DialogStyle;
 
         /// <summary>
         /// The options for the dialog.
         /// </summary>
         /// <remarks>The concrete type depends on the <see cref="DialogType"/>.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly object Options;
 
         /// <summary>

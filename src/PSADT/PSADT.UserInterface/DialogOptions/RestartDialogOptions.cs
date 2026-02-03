@@ -3,7 +3,7 @@ using System.Collections;
 using System.Globalization;
 using PSADT.UserInterface.Dialogs;
 using PSAppDeployToolkit.SessionManagement;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -78,25 +78,21 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
-        [JsonProperty]
         public RestartDialogStrings Strings { get; }
 
         /// <summary>
         /// The duration for which the countdown will be displayed.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? CountdownDuration { get; }
 
         /// <summary>
         /// The duration for which the countdown will be displayed without minimizing the dialog.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? CountdownNoMinimizeDuration { get; }
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
-        [JsonProperty]
         public string? CustomMessageText { get; }
 
         /// <summary>
@@ -180,43 +176,36 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it.
             /// </summary>
-            [JsonProperty]
             public string Title { get; }
 
             /// <summary>
             /// Text displayed when the device requires a restart.
             /// </summary>
-            [JsonProperty]
             public string Message { get; }
 
             /// <summary>
             /// Text displayed as a prefix to the time remaining, indicating that users should save their work, etc.
             /// </summary>
-            [JsonProperty]
             public string MessageTime { get; }
 
             /// <summary>
             /// Text displayed when indicating when the device will be restarted.
             /// </summary>
-            [JsonProperty]
             public string MessageRestart { get; }
 
             /// <summary>
             /// Text displayed to indicate the amount of time remaining until a restart will occur.
             /// </summary>
-            [JsonProperty]
             public string TimeRemaining { get; }
 
             /// <summary>
             /// Button text for when wanting to restart the device now.
             /// </summary>
-            [JsonProperty]
             public string ButtonRestartNow { get; }
 
             /// <summary>
             /// Button text for allowing the user to restart later.
             /// </summary>
-            [JsonProperty]
             public string ButtonRestartLater { get; }
         }
     }

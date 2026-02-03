@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.ProcessManagement
 {
@@ -40,13 +40,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
-        [JsonProperty]
         public string Name { get; }
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
-        [JsonProperty]
         public string? Description { get; }
 
         /// <summary>

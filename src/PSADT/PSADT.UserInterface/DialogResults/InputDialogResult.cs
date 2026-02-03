@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -23,13 +23,11 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the result of the dialog.
         /// </summary>
-        [JsonProperty]
         public string Result { get; }
 
         /// <summary>
         /// Gets the text entered by the user.
         /// </summary>
-        [JsonProperty]
         public string? Text { get; }
     }
 }

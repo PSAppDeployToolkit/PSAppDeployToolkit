@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.ClientServer
 {
@@ -15,14 +15,14 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>The result type varies depending on the command that was executed.
         /// For commands that don't return data, this field may be null.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly object? Result;
 
         /// <summary>
         /// The exception if the command failed.
         /// </summary>
         /// <remarks>This field is only populated when the command failed.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly Exception? Error;
 
         /// <summary>

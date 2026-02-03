@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -98,43 +98,36 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The custom message to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string MessageText { get; }
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        [JsonProperty]
         public DialogMessageAlignment? MessageAlignment { get; }
 
         /// <summary>
         /// The text for the left button in the dialog.
         /// </summary>
-        [JsonProperty]
         public string? ButtonLeftText { get; }
 
         /// <summary>
         /// The text for the middle button in the dialog.
         /// </summary>
-        [JsonProperty]
         public string? ButtonMiddleText { get; }
 
         /// <summary>
         /// The text for the right button in the dialog.
         /// </summary>
-        [JsonProperty]
         public string? ButtonRightText { get; }
 
         /// <summary>
         /// The icon to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public DialogSystemIcon? Icon { get; }
 
         /// <summary>
         /// Gets a value indicating whether windows should be minimized.
         /// </summary>
-        [JsonProperty]
         public bool MinimizeWindows { get; }
     }
 }

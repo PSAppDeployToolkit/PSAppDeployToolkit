@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using PSADT.ClientServer.Payloads;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -19,37 +19,57 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Reads and converts the JSON to a <see cref="PipeRequest"/> instance.
         /// </summary>
-        public override PipeRequest? ReadJson(JsonReader reader, Type objectType, PipeRequest? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override PipeRequest Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            // Get the command to determine payload type.
-            JObject jObject = JObject.Load(reader);
-            if (jObject["Command"]?.ToObject<PipeCommand>() is not PipeCommand command)
+            // Validate the token type.
+            if (reader.TokenType == JsonTokenType.Null)
             {
-                throw new JsonSerializationException("Missing or invalid Command.");
+                throw new JsonException("Cannot deserialize null PipeRequest.");
             }
 
+            // Get the document from from the reader.
+            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
+            JsonElement root = doc.RootElement;
+
+            // Get the command to determine payload type.
+            if (!root.TryGetProperty("Command", out JsonElement commandElement))
+            {
+                throw new JsonException("Missing or invalid Command.");
+            }
+            PipeCommand command = (PipeCommand)commandElement.GetInt32();
+
             // Deserialize the payload based on the command.
-            return jObject["Payload"] is JToken payloadToken && payloadToken.Type != JTokenType.Null && CommandToPayloadType.TryGetValue(command, out Type? payloadType) && payloadType is not null
-                ? new(command, (IPayload?)payloadToken.ToObject(payloadType, serializer))
-                : (PipeRequest)new(command, null);
+            IPayload? payload = null;
+            if (root.TryGetProperty("Payload", out JsonElement payloadElement) && payloadElement.ValueKind != JsonValueKind.Null)
+            {
+                if (!CommandToPayloadType.TryGetValue(command, out Type? payloadType) || payloadType is null)
+                {
+                    throw new JsonException($"Command [{command}] has a payload but no payload type is registered.");
+                }
+                payload = (IPayload?)JsonSerializer.Deserialize(payloadElement.GetRawText(), payloadType, options);
+                if (payload is null)
+                {
+                    throw new JsonException($"Failed to deserialize payload for command [{command}].");
+                }
+            }
+            return new(command, payload);
         }
 
         /// <summary>
         /// Writes the <see cref="PipeRequest"/> as JSON.
         /// </summary>
-        public override void WriteJson(JsonWriter writer, PipeRequest? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, PipeRequest value, JsonSerializerOptions options)
         {
             if (value is null)
             {
                 throw new ArgumentNullException(nameof(value), "Cannot serialize a null PipeRequest.");
             }
             writer.WriteStartObject();
-            writer.WritePropertyName("Command");
-            serializer.Serialize(writer, value.Command);
+            writer.WriteNumber("Command", (int)value.Command);
             if (value.Payload is not null)
             {
                 writer.WritePropertyName("Payload");
-                serializer.Serialize(writer, value.Payload);
+                JsonSerializer.Serialize(writer, value.Payload, value.Payload.GetType(), options);
             }
             writer.WriteEndObject();
         }

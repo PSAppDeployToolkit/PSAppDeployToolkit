@@ -1,5 +1,5 @@
-﻿using PSADT.WindowManagement;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using PSADT.WindowManagement;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -11,7 +11,7 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The window info options.
         /// </summary>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly WindowInfoOptions Options;
 
         /// <summary>

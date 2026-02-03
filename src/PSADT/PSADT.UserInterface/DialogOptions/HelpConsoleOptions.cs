@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.PowerShell;
 using Microsoft.PowerShell.Commands;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -53,7 +53,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Gets the execution policy that determines how operations are executed.
         /// </summary>
-        [JsonProperty]
         public ExecutionPolicy ExecutionPolicy { get; }
 
         /// <summary>
@@ -69,7 +68,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// Represents a collection of module data.
         /// </summary>
         /// <remarks>This collection is read-only and contains elements of type <see cref="Hashtable"/>.</remarks>
-        [JsonProperty]
         private readonly ReadOnlyCollection<Hashtable> ModuleData;
     }
 }

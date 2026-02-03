@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using PSADT.UserInterface.Dialogs;
 using PSADT.Utilities;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -126,79 +126,66 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppTitle { get; }
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
-        [JsonProperty]
         public string Subtitle { get; }
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppIconImage { get; }
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppIconDarkImage { get; }
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppBannerImage { get; }
 
         /// <summary>
         /// Gets the file path or resource identifier for the application's tray icon image.
         /// </summary>
-        [JsonProperty]
         public string? AppTaskbarIconImage { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        [JsonProperty]
         public bool DialogTopMost { get; }
 
         /// <summary>
         /// Gets the culture information representing the language associated with this instance.
         /// </summary>
-        [JsonProperty]
         public CultureInfo Language { get; }
 
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        [JsonProperty]
         public int? FluentAccentColor { get; }
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
-        [JsonProperty]
         public DialogPosition? DialogPosition { get; }
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
-        [JsonProperty]
         public bool? DialogAllowMove { get; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? DialogExpiryDuration { get; }
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? DialogPersistInterval { get; }
     }
 }

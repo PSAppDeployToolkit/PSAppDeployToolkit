@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.Types
 {
@@ -30,13 +30,11 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the native handle of the window.
         /// </summary>
-        [JsonProperty]
         public nint WindowHandle { get; }
 
         /// <summary>
         /// Represents the keys associated with the current object.
         /// </summary>
-        [JsonProperty]
         public string Keys { get; }
     }
 }

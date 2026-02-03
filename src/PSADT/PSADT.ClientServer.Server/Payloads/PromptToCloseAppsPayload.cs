@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -11,7 +11,7 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The timeout duration for the prompt.
         /// </summary>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly TimeSpan Timeout;
 
         /// <summary>

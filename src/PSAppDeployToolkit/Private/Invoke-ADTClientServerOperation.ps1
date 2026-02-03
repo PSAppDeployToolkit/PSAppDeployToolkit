@@ -198,7 +198,7 @@ function Private:Invoke-ADTClientServerOperation
                 $naerParams = @{
                     Exception = if ($clientResult.StdErr.Count)
                     {
-                        [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr))
+                        [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr[0], [System.Exception]))
                     }
                     else
                     {
@@ -288,7 +288,7 @@ function Private:Invoke-ADTClientServerOperation
             $naerParams = @{
                 Exception = if ($clientResult.StdErr.Count)
                 {
-                    [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr))
+                    [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($clientResult.StdErr[0], [System.Exception]))
                 }
                 else
                 {
@@ -314,6 +314,125 @@ function Private:Invoke-ADTClientServerOperation
     }
     else
     {
+        # Get the expected data return type for the given parameter set. This
+        # way we can throw before doing anything if there's a setup issue.
+        $type = switch ($PSCmdlet.ParameterSetName)
+        {
+            ShowModalDialog
+            {
+                switch ($DialogType)
+                {
+                    CloseAppsDialog
+                    {
+                        [PSADT.UserInterface.DialogResults.CloseAppsDialogResult]
+                        break
+                    }
+                    DialogBox
+                    {
+                        [PSADT.UserInterface.DialogResults.DialogBoxResult]
+                        break
+                    }
+                    HelpConsole
+                    {
+                        [System.Int32]
+                        break
+                    }
+                    InputDialog
+                    {
+                        [PSADT.UserInterface.DialogResults.InputDialogResult]
+                        break
+                    }
+                    CustomDialog
+                    {
+                        [System.String]
+                        break
+                    }
+                    RestartDialog
+                    {
+                        [System.String]
+                        break
+                    }
+                    default
+                    {
+                        $naerParams = @{
+                            Exception = [System.InvalidOperationException]::new("The requested dialog type [$DialogType] is not supported in standalone mode.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                            ErrorId = "$($PSCmdlet.ParameterSetName)Error"
+                            TargetObject = $PSBoundParameters
+                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                        }
+                        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    }
+                }
+            }
+            ShowBalloonTip
+            {
+                [System.Boolean]
+                break
+            }
+            GetProcessWindowInfo
+            {
+                [System.Collections.ObjectModel.ReadOnlyCollection[PSADT.WindowManagement.WindowInfo]]
+                break
+            }
+            GetUserNotificationState
+            {
+                [PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]
+                break
+            }
+            GetForegroundWindowProcessId
+            {
+                [System.UInt32]
+                break
+            }
+            RefreshDesktopAndEnvironmentVariables
+            {
+                [System.Boolean]
+                break
+            }
+            MinimizeAllWindows
+            {
+                [System.Boolean]
+                break
+            }
+            RestoreAllWindows
+            {
+                [System.Boolean]
+                break
+            }
+            SendKeys
+            {
+                [System.Boolean]
+                break
+            }
+            GetEnvironmentVariable
+            {
+                [System.String]
+                break
+            }
+            SetEnvironmentVariable
+            {
+                [System.Boolean]
+                break
+            }
+            RemoveEnvironmentVariable
+            {
+                [System.Boolean]
+                break
+            }
+            default
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The requested client/server operation [$($PSCmdlet.ParameterSetName)] is not supported.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                    ErrorId = "$($PSCmdlet.ParameterSetName)Error"
+                    TargetObject = $PSBoundParameters
+                    RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+        }
+
         # Sanitise $PSBoundParameters, we'll use it to generate our arguments.
         $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
         $null = $PSBoundParameters.Remove('NoWait')
@@ -364,6 +483,7 @@ function Private:Invoke-ADTClientServerOperation
                 # Remove any previous success flags before starting the process.
                 $arkParams = @{
                     InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                    WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                     LiteralPath = [PSADT.UserInterface.DialogManager]::UserRegistryPath
                     Name = [PSADT.UserInterface.DialogManager]::OperationSuccessRegistryValueName
                     SID = $User.SID
@@ -397,7 +517,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe"
+                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -IgnoreExitCodes *
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]
@@ -420,7 +540,7 @@ function Private:Invoke-ADTClientServerOperation
         if ($return.StdErr.Count -ne 0)
         {
             $naerParams = @{
-                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr))
+                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr[0], [System.Exception]))
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = 'ClientServerResultError'
                 TargetObject = $return
@@ -463,7 +583,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Deserialise the result for returning to the caller.
-        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0])
+        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0], $type)
     }
 
     # Test that the received result is valid and expected.

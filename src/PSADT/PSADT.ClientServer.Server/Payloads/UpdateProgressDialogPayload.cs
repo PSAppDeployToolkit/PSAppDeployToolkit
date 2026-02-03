@@ -1,5 +1,5 @@
-﻿using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -12,28 +12,28 @@ namespace PSADT.ClientServer.Payloads
         /// The main progress message.
         /// </summary>
         /// <remarks>When null, the existing message is retained.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly string? Message;
 
         /// <summary>
         /// The detail progress message.
         /// </summary>
         /// <remarks>When null, the existing detail message is retained.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly string? DetailMessage;
 
         /// <summary>
         /// The progress percentage (0-100).
         /// </summary>
         /// <remarks>When null, the existing percentage is retained.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly double? Percentage;
 
         /// <summary>
         /// The message alignment.
         /// </summary>
         /// <remarks>When null, the existing alignment is retained.</remarks>
-        [JsonProperty]
+        [JsonInclude]
         internal readonly DialogMessageAlignment? Alignment;
 
         /// <summary>

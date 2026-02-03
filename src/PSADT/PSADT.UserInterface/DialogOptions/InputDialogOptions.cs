@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -85,13 +85,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The initial text to be displayed in the input field.
         /// </summary>
-        [JsonProperty]
         public string? InitialInputText { get; }
 
         /// <summary>
         /// Indicates whether the input should be masked (for passwords or sensitive data).
         /// </summary>
-        [JsonProperty]
         public bool SecureInput { get; }
     }
 }
