@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using PSADT.ClientServer.Converters;
 
 namespace PSADT.ClientServer
 {
@@ -15,24 +14,13 @@ namespace PSADT.ClientServer
     /// Key features include: <list type="bullet"> <item><description>Serialization of objects to Base64-encoded JSON
     /// strings.</description></item> <item><description>Deserialization of Base64-encoded JSON strings into objects.
     /// </description></item> <item><description>Default JSON serializer settings for consistent
-    /// behavior.</description></item> </list> </para></remarks>
+    /// behavior.</description></item> </list> </para> <para>
+    /// This implementation uses <c>TypeNameHandling.None</c> for security, with custom <see cref="JsonConverter"/>
+    /// classes to handle polymorphic deserialization based on discriminator fields (like <c>PipeCommand</c> and
+    /// <c>DialogType</c>). This approach is fully compliant with CA2326 and CA2327 security rules.
+    /// </para></remarks>
     public static class DataSerialization
     {
-        /// <summary>
-        /// Initializes the <see cref="DataSerialization"/> class and configures default settings to ensure
-        /// compatibility between .NET Core and .NET Framework.
-        /// </summary>
-        /// <remarks>This static constructor sets the default serialization binder to a compatibility
-        /// binder when running on the .NET Framework. This ensures that serialized objects can be properly deserialized
-        /// across different .NET runtime environments.</remarks>
-        static DataSerialization()
-        {
-            // Set the default serialization binder to ensure compatibility between .NET Core and .NET Framework.
-            if (AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(static a => a.FullName?.StartsWith("System.Private.CoreLib", StringComparison.Ordinal) == true) is null)
-            {
-                DefaultJsonSerializerSettings.SerializationBinder = new DotNetCompatibleSerializationBinder();
-            }
-        }
         /// <summary>
         /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
         /// </summary>
@@ -131,22 +119,32 @@ namespace PSADT.ClientServer
         /// Provides the default settings for JSON serialization and deserialization using Newtonsoft.Json.
         /// </summary>
         /// <remarks>These settings include the following configurations: <list type="bullet">
-        /// <item><description>Indented formatting for improved readability.</description></item>
+        /// <item><description><c>TypeNameHandling.None</c> for security (no type information in JSON).</description></item>
         /// <item><description>Excludes null values and default values from the serialized output.</description></item>
-        /// <item><description>Disables type name handling to avoid including type metadata in the
-        /// JSON.</description></item> <item><description>Uses ISO 8601 format for date
-        /// serialization.</description></item> <item><description>Includes a converter for serializing and
-        /// deserializing enums as strings.</description></item> </list> This static field can be used as a standard
-        /// configuration for JSON serialization across the application.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2326:Do not use TypeNameHandling values other than None", Justification = "This is required at this time.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2327:Do not use insecure JsonSerializerSettings", Justification = "This is required at this time.")]
+        /// <item><description>Custom converters for polymorphic types using discriminator fields.</description></item>
+        /// <item><description>Custom exception converter that validates types against a secure allowlist.</description></item>
+        /// </list> This static field can be used as a standard configuration for JSON serialization across the application.
+        /// <para>
+        /// The custom converters handle polymorphic deserialization securely by using known discriminator fields
+        /// (like <c>PipeCommand</c> and <c>DialogType</c>) to determine the concrete type, rather than relying on
+        /// type information embedded in the JSON.
+        /// </para></remarks>
         private static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
         {
-            TypeNameHandling = TypeNameHandling.All,
+            TypeNameHandling = TypeNameHandling.None,
             DefaultValueHandling = DefaultValueHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
-            MissingMemberHandling = MissingMemberHandling.Error,
+            MissingMemberHandling = MissingMemberHandling.Ignore,
             Formatting = Formatting.None,
+            Converters =
+            [
+                new ExceptionConverter(),
+                new PipeRequestConverter(),
+                new PipeResponseConverter(),
+                new ShowModalDialogPayloadConverter(),
+                new WindowInfoCollectionConverter(),
+                new ProcessDefinitionCollectionConverter(),
+            ],
         };
 
         /// <summary>
@@ -157,47 +155,5 @@ namespace PSADT.ClientServer
         /// identify JSON structural characters. It can be used to detect or process control characters in JSON strings
         /// for validation or parsing purposes.</remarks>
         private static readonly Regex JsonControlCharacters = new(@"null|\[|\]|\{|\}|\,|""|\'", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-        /// <summary>
-        /// Provides a serialization binder that ensures compatibility between .NET Core and .NET Framework by
-        /// resolving types with special handling for core library assemblies.
-        /// </summary>
-        /// <remarks>This binder overrides the default type resolution behavior to replace the .NET
-        /// Core-specific core library assembly name ("System.Private.CoreLib") with the .NET Framework equivalent 
-        /// ("mscorlib"). This ensures that types serialized in one runtime environment can be correctly deserialized
-        /// in another.</remarks>
-        private sealed class DotNetCompatibleSerializationBinder : DefaultSerializationBinder
-        {
-            /// <summary>
-            /// Resolves a type from its assembly name and type name, with special handling for core library assemblies.
-            /// </summary>
-            /// <remarks>If the specified assembly name matches the core library assembly, it is
-            /// replaced with the standard mscorlib assembly name. This ensures compatibility when resolving types
-            /// across different runtime environments.</remarks>
-            /// <param name="assemblyName">The name of the assembly containing the type. Can be <see langword="null"/>.</param>
-            /// <param name="typeName">The name of the type to resolve.</param>
-            /// <returns>The <see cref="Type"/> object representing the resolved type.</returns>
-            public override Type BindToType(string? assemblyName, string typeName)
-            {
-                if (assemblyName == CoreLibAssembly)
-                {
-                    assemblyName = MscorlibAssembly;
-                    typeName = typeName.Replace(CoreLibAssembly, MscorlibAssembly);
-                }
-                return base.BindToType(assemblyName, typeName);
-            }
-
-            /// <summary>
-            /// Represents the name of the core library assembly used by the .NET (Core) runtime.
-            /// </summary>
-            private const string CoreLibAssembly = "System.Private.CoreLib";
-
-            /// <summary>
-            /// Represents the name of the mscorlib assembly.
-            /// </summary>
-            /// <remarks>This constant is used to reference the mscorlib assembly, which contains
-            /// fundamental classes and base types used by the .NET Framework.</remarks>
-            private const string MscorlibAssembly = "mscorlib";
-        }
     }
 }

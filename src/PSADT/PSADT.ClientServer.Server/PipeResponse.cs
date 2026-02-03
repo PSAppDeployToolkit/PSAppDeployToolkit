@@ -37,7 +37,7 @@ namespace PSADT.ClientServer
         /// <param name="result">The result data from the command execution.</param>
         /// <param name="error">The exception if the command failed.</param>
         [JsonConstructor]
-        private PipeResponse(object? result, Exception? error)
+        internal PipeResponse(object? result, Exception? error)
         {
             Result = result;
             Error = error;

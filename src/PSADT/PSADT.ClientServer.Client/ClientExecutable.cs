@@ -633,8 +633,18 @@ namespace PSADT.ClientServer
                 throw new ClientException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
             }
 
-            // Show the dialog and return the serialised result for the caller to handle.
-            return SerializeObject(InvokeModalDialog(dialogType, dialogStyle, DeserializeString<object>(GetOptionsFromArguments(arguments)), closeAppsDialogState));
+            // Deserialize the options to the correct type based on DialogType and show the dialog.
+            object options = dialogType switch
+            {
+                DialogType.CloseAppsDialog => DataSerialization.DeserializeFromString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.CustomDialog => DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.DialogBox => DataSerialization.DeserializeFromString<DialogBoxOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.HelpConsole => DataSerialization.DeserializeFromString<HelpConsoleOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.InputDialog => DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.RestartDialog => DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog)
+            };
+            return SerializeObject(InvokeModalDialog(dialogType, dialogStyle, options, closeAppsDialogState));
         }
 
         /// <summary>
