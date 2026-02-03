@@ -84,7 +84,6 @@ namespace PSADT.ClientServer
                     createNoWindow: true,
                     waitForChildProcesses: true,
                     killChildProcessesWithParent: true,
-                    streamEncoding: DefaultEncoding.Value,
                     windowStyle: ProcessWindowStyle.Hidden,
                     cancellationToken: (_clientProcessCts = new()).Token
                 ));
