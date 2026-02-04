@@ -1,13 +1,13 @@
-# PSAppDeployToolkit Copilot Coding Agent Instructions
+﻿# PSAppDeployToolkit Copilot Coding Agent Instructions
 
 ## Repository Overview
 
 **PSAppDeployToolkit** is a PowerShell-based, open-source framework for Windows software deployment that integrates seamlessly with existing deployment solutions (e.g. Microsoft Intune, SCCM, Tanium, BigFix etc.) to enhance the software deployment process. It achieves this by combining a battle-tested prescriptive workflow, an extensive library of functions for common deployment tasks, a customizable branded User Experience, and full-fidelity logging - to produce consistently high deployment success rates of over 98%.
  
 - **Repository Size**: Over 100MB with 150+ PowerShell scripts, PowerShell data files and compiled binaries
-- **Languages**: PowerShell (primary), C# (.NET Framework 4.7.2), XAML for UI  
+- **Languages**: PowerShell (primary), C# (.NET Framework 4.7.2 and .NET 8), XAML for UI  
 - **Target Runtime**: Windows PowerShell 5.1+ and PowerShell 7+
-- **Dependencies**: .NET Framework 4.7.2+, Visual Studio/MSBuild for C# compilation
+- **Dependencies**: .NET Framework 4.7.2+, .NET 8 SDK, Visual Studio for C# development
 - **Exported Functions**: Module public functions have ADT prefix (e.g., Get-ADTApplication)
 
 ## Build System & Validation
@@ -44,7 +44,7 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 
 ### Core Directory Layout
 ```
-/
+/                                      ← Git repository root
 ├── .github/                           # GitHub workflows and templates
 │   └── workflows/module-build.yml     # Main CI/CD pipeline
 ├── .vscode/                           # VS Code configuration
@@ -59,15 +59,55 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 │   │   ├── Config/config.psd1         # Default configuration
 │   │   ├── Frontend/                  # v3 and v4 executable frontends
 │   │   ├── Strings/                   # Localization files
-│   │   └── lib/                       # Compiled C# assemblies
-│   ├── PSADT/                         # C# solution for core libraries
+│   │   └── lib/                       # Compiled C# assemblies (output target)
+│   ├── PSADT/                         # C# solution directory (open this in Visual Studio)
+│   │   ├── PSADT/                     # Core utilities library
+│   │   ├── PSADT.LibraryInterfaces/   # Win32 P/Invoke declarations
+│   │   ├── PSADT.UserInterface/       # WPF Fluent & WinForms Classic dialogs
+│   │   ├── PSADT.ClientServer.Server/ # IPC server for SYSTEM-to-user communication
+│   │   ├── PSADT.ClientServer.Client/ # Client executable for user-context UI
+│   │   ├── PSADT.ClientServer.Client.Launcher/ # GUI launcher (no console)
+│   │   ├── PSAppDeployToolkit/        # PowerShell-specific C# types
+│   │   └── PSADT.Tests/               # xUnit test project
 │   ├── PSADT.Invoke/                  # C# solution for executable wrapper
 │   └── Tests/                         # Pester test suites
 │       ├── Unit/                      # Unit tests
 │       └── Integration/               # Integration tests
 ├── examples/                          # Sample deployment scripts
-├── lib/                               # External libraries (iNKORE.UI.WPF)
+├── lib/                               # External libraries (iNKORE.UI.WPF.Modern)
 └── build.ps1                          # Main module build script
+```
+
+### C# Solution Architecture (src/PSADT/)
+
+All C# projects multi-target **.NET Framework 4.7.2** (Windows PowerShell 5.1) and **.NET 8** (PowerShell 7+).
+
+| Project | Type | Purpose |
+|---------|------|---------|
+| **PSADT.LibraryInterfaces** | Library | Win32 P/Invoke declarations, safe handles, native method wrappers. Uses Microsoft.Windows.CsWin32 source generator. |
+| **PSADT** | Library | Core utilities: process management, file system, security tokens, terminal services, registry, window management, etc. |
+| **PSAppDeployToolkit** | Library | PowerShell-specific: deployment sessions, logging utilities, module database. References System.Management.Automation. |
+| **PSADT.UserInterface** | Library | Dialog management with both WPF Fluent (modern) and WinForms Classic styles. Uses iNKORE.UI.WPF.Modern for Fluent UI. |
+| **PSADT.ClientServer.Server** | Library | IPC server using anonymous pipes, command serialization with System.Text.Json, encrypted communication. |
+| **PSADT.ClientServer.Client** | Exe | Client process spawned in user context to display UI dialogs when PowerShell runs as SYSTEM. |
+| **PSADT.ClientServer.Client.Launcher** | WinExe | GUI launcher that starts the client without a visible console window. |
+| **PSADT.Tests** | Test | xUnit tests with FluentAssertions and coverlet for code coverage. |
+
+### Project Dependencies (bottom-up)
+```
+PSADT.LibraryInterfaces (P/Invoke layer)
+        ↓
+      PSADT (Core utilities)
+        ↓
+PSAppDeployToolkit (PowerShell types) ←────────────┐
+        ↓                                          │
+PSADT.UserInterface (UI dialogs) ←── iNKORE.UI.WPF.Modern (in lib/)
+        ↓                                          │
+PSADT.ClientServer.Server (IPC server) ────────────┘
+        ↓
+PSADT.ClientServer.Client (Client executable)
+        ↓
+PSADT.ClientServer.Client.Launcher (GUI launcher)
 ```
 
 ### Critical Configuration Files
@@ -76,6 +116,24 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 - **CI/CD Pipeline**: `.github/workflows/module-build.yml` (Windows-only GitHub Actions)
 - **PSScriptAnalyzer Rules**: `.vscode/PSScriptAnalyzerSettings.psd1` (PowerShell 5.1 compatibility rules)
 - **Default Config**: `src/PSAppDeployToolkit/Config/config.psd1` (toolkit configuration settings)
+
+## Development Environments
+
+This project uses **two different development environments** depending on what you're working on:
+
+### Visual Studio (C# Development)
+When working on the C# support libraries in Visual Studio:
+- **Solution Location**: `src/PSADT/` directory
+- **Build Method**: Use Visual Studio's standard build (F5, Ctrl+Shift+B, or Build menu)
+- **Test Execution**: Use Visual Studio's Test Explorer for xUnit tests in PSADT.Tests
+- **Output**: Assemblies build to each project's `bin/` directory
+- **Note**: The `build.ps1` script is **NOT** needed when working in Visual Studio on C# code
+
+### VS Code (PowerShell Development)
+When working on the PowerShell module in VS Code:
+- **Build Method**: Run `build.ps1` which handles C# compilation, PowerShell validation, and packaging
+- **Test Execution**: Pester tests in `src/Tests/`
+- **Output**: Compiled assemblies are copied to `src/PSAppDeployToolkit/lib/`
 
 ## Development Workflow
 
