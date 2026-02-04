@@ -11,14 +11,14 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public abstract record BaseOptions
+    public abstract record BaseDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified options.
+        /// Initializes a new instance of the <see cref="BaseDialogOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        internal BaseOptions(Hashtable options) : this(
+        internal BaseDialogOptions(Hashtable options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
             options["Subtitle"] is string subtitle ? subtitle : string.Empty,
             options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
@@ -36,7 +36,7 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified application settings
+        /// Initializes a new instance of the <see cref="BaseDialogOptions"/> class with the specified application settings
         /// and dialog configuration.
         /// </summary>
         /// <remarks>This constructor is protected and intended for use by derived classes. It ensures
@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
         [JsonConstructor]
-        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
             {

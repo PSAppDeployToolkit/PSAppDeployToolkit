@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the CloseAppsDialog.
     /// </summary>
-    public sealed record CloseAppsDialogOptions : BaseOptions
+    public sealed record CloseAppsDialogOptions : BaseDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.

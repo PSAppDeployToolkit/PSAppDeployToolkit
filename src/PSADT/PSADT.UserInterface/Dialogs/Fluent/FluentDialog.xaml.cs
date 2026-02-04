@@ -49,7 +49,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="countdownDuration"></param>
         /// <param name="countdownWarningDuration"></param>
         /// <param name="countdownStopwatch"></param>
-        private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
+        private protected FluentDialog(BaseDialogOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
             // Initialize the window
             InitializeComponent();

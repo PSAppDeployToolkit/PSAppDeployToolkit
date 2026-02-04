@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        internal ClassicDialog(BaseOptions options) : base()
+        internal ClassicDialog(BaseDialogOptions options) : base()
         {
             // Initialise the underlying form as set up by the designer.
             InitializeComponent();
@@ -106,7 +106,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <remarks>The method sets the <see cref="PictureBox.Image"/> property to the banner image specified in <paramref name="options"/>. It also adjusts the size of the <see cref="PictureBox"/> to maintain the aspect ratio of the image, with a fixed width of 450 pixels.</remarks>
         /// <param name="pictureBox">The <see cref="PictureBox"/> to configure. Cannot be <see langword="null"/>.</param>
         /// <param name="options">The options containing the banner image to display. Cannot be <see langword="null"/>.</param>
-        protected void SetPictureBox(PictureBox pictureBox, BaseOptions options)
+        protected void SetPictureBox(PictureBox pictureBox, BaseDialogOptions options)
         {
             double dpiScale = User32.GetDpiForWindow((HWND)Handle) / 96.0;
             pictureBox.Image = GetBanner(options.AppBannerImage);

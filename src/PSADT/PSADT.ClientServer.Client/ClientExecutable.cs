@@ -571,7 +571,7 @@ namespace PSADT.ClientServer
         /// <description><c>DialogStyle</c>: Specifies the style of the dialog. Must be a valid <see
         /// cref="DialogStyle"/> value.</description> </item> <item> <description><c>DialogOptions</c>: A
         /// JSON-serialized string containing the options specific to the dialog type.</description> </item> </list></param>
-        /// <param name="closeAppsDialogState">An optional <see cref="BaseState"/> object representing the state of a Close Apps dialog, if applicable.</param>
+        /// <param name="closeAppsDialogState">An optional <see cref="BaseDialogState"/> object representing the state of a Close Apps dialog, if applicable.</param>
         /// <param name="argv">An optional array of command-line arguments, used for special handling in BlockExecution scenarios.</param>
         /// <returns>A JSON-serialized string representing the result of the dialog. The format and content of the result depend
         /// on the dialog type.</returns>
@@ -580,7 +580,7 @@ namespace PSADT.ClientServer
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
-        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
+        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
@@ -665,7 +665,7 @@ namespace PSADT.ClientServer
         /// on the dialog type displayed.</returns>
         /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
-        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, object options, BaseState? closeAppsDialogState = null)
+        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, object options, BaseDialogState? closeAppsDialogState = null)
         {
             return dialogType switch
             {

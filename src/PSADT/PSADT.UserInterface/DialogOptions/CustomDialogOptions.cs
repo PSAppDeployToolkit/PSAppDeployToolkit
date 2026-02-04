@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the CustomDialog.
     /// </summary>
-    public record CustomDialogOptions : BaseOptions
+    public record CustomDialogOptions : BaseDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.

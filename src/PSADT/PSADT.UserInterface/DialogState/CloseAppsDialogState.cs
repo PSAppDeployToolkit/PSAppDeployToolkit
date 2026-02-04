@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.DialogState
     /// <remarks>This type is used internally to manage the lifecycle of processes that need to be closed. It
     /// provides functionality for tracking running processes and managing countdown operations related to process
     /// closure.</remarks>
-    internal sealed record CloseAppsDialogState : BaseState, IDisposable
+    internal sealed record CloseAppsDialogState : BaseDialogState, IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogState"/> class with the specified processes to close.
