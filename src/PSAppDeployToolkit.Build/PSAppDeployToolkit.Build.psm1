@@ -103,7 +103,6 @@ try
                     Repository = [System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName
                     SourceRoot = [System.IO.Directory]::GetParent($PSScriptRoot).FullName
                     ModuleSource = $PSScriptRoot -replace '\.Build$'
-                    ModuleManifest = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'PSAppDeployToolkit.psd1')
                     AdmxTemplate = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'ADMX', 'PSAppDeployToolkit.admx')
                     ModuleConfig = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'Config')
                     ModuleStrings = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'Strings')
