@@ -55,11 +55,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)src\BannedSymbols.txt" />
   </ItemGroup>
 
   <!-- Common embedded resource for license -->
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\COPYING.Lesser" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)COPYING.Lesser" />
   </ItemGroup>
 </Project>

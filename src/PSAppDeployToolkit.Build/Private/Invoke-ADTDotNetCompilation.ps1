@@ -75,7 +75,7 @@ function Invoke-ADTDotNetCompilation
                                 if (& $git -C $Script:ModuleConstants.Paths.Repository log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $gitPath | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } } | Sort-Object -Unique)
                                 {
                                     Write-ADTBuildLogEntry -Message "Files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
-                                    $buildConfigs.Insert(0, 'Debug')
+                                    $buildConfigs.Add('Debug')
                                     break
                                 }
                                 else
@@ -87,13 +87,13 @@ function Invoke-ADTDotNetCompilation
                         else
                         {
                             Write-ADTBuildLogEntry -Message "Uncommitted file changes found under [$sourcePath], debug build required."
-                            $buildConfigs.Insert(0, 'Debug')
+                            $buildConfigs.Add('Debug')
                         }
                     }
                 }
                 else
                 {
-                    $buildConfigs.Insert(0, 'Debug')
+                    $buildConfigs.Add('Debug')
                 }
             }
 

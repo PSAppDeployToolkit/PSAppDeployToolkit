@@ -71,7 +71,7 @@ try
             DotNetBuildItems = ([System.Collections.ObjectModel.ReadOnlyCollection[System.Collections.Specialized.OrderedDictionary]][System.Collections.Specialized.OrderedDictionary[]]$(
                     ([ordered]@{
                         SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT')
-                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.slnx')
+                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'PSADT.slnx')
                         BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Client.Launcher\bin\Debug\net472')
                         OutputPath = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib')
@@ -87,7 +87,7 @@ try
                     }).AsReadOnly(),
                     ([ordered]@{
                         SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke')
-                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke\PSADT.Invoke.slnx')
+                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'PSADT.Invoke.slnx')
                         BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke\PSADT.Invoke\bin\Release\net472')
                         OutputPath = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v4')
