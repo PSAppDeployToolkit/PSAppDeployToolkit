@@ -30,22 +30,6 @@ namespace PSADT.ClientServer
     public sealed record PipeEncryption : IDisposable
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PipeEncryption"/> class with a new ECDH key pair.
-        /// </summary>
-        public PipeEncryption()
-        {
-#if NET8_0_OR_GREATER
-            _ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
-#else
-            _ecdh = new ECDiffieHellmanCng(256)
-            {
-                KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
-                HashAlgorithm = CngAlgorithm.Sha256
-            };
-#endif
-        }
-
-        /// <summary>
         /// Gets a value indicating whether the key exchange has been completed.
         /// </summary>
         public bool IsKeyExchangeComplete => _encryptionKey is not null;
@@ -596,9 +580,13 @@ namespace PSADT.ClientServer
         /// cref="ECDiffieHellmanCng"/>. The specific implementation may affect
         /// compatibility and available features.</remarks>
 #if NET8_0_OR_GREATER
-        private readonly ECDiffieHellman _ecdh;
+        private readonly ECDiffieHellman _ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
 #else
-        private readonly ECDiffieHellmanCng _ecdh;
+        private readonly ECDiffieHellmanCng _ecdh = new(256)
+        {
+            KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
+            HashAlgorithm = CngAlgorithm.Sha256
+        };
 #endif
 
         /// <summary>
