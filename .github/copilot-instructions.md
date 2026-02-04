@@ -13,43 +13,16 @@
 ## Build System & Validation
 
 ### Required Dependencies
-**ALWAYS install these dependencies first before any build operations:**
-```powershell
-# Bootstrap script (recommended first step)
-./actions_bootstrap.ps1
-
-# Manual dependency installation if bootstrap fails
-Install-Module -Name Pester -RequiredVersion 5.7.1 -Force -Scope CurrentUser
-Install-Module -Name InvokeBuild -Force -Scope CurrentUser  
-Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.24.0 -Force -Scope CurrentUser
-Install-Module -Name platyPS -RequiredVersion 0.14.2 -Force -Scope CurrentUser
-```
+The only build dependency this project has is the .NET SDK, or Visual Studio. For everything else, `build.ps1` handles it.
 
 ### Build Commands (in order of typical execution)
-```powershell
-# Navigate to source directory first
-cd src
-
-# Full build pipeline (takes 10-15 minutes)
-Invoke-Build -File PSAppDeployToolkit.build.ps1
-
-# Quick local testing (2-3 minutes)
-Invoke-Build -Task TestLocal -File PSAppDeployToolkit.build.ps1
-
-# Individual validation steps
-Invoke-Build -Task ValidateRequirements -File PSAppDeployToolkit.build.ps1
-Invoke-Build -Task TestModuleManifest -File PSAppDeployToolkit.build.ps1
-Invoke-Build -Task EncodingCheck -File PSAppDeployToolkit.build.ps1
-Invoke-Build -Task FormattingCheck -File PSAppDeployToolkit.build.ps1
-Invoke-Build -Task Analyze -File PSAppDeployToolkit.build.ps1
-Invoke-Build -Task Test -File PSAppDeployToolkit.build.ps1
-```
+`powershell.exe -ExecutionPolicy Bypass -File build.ps1`
 
 ### Important Build Requirements
-- **Visual Studio/MSBuild**: Required for C# compilation. Build will fail without proper VS installation.
+- **Visual Studio/MSBuild/.NET SDK**: Required for C# compilation. Build will fail without proper VS installation.
 - **PowerShell 5.1+**: Minimum requirement. Scripts are designed for Windows PowerShell compatibility.
 - **File Encoding**: ALL PowerShell files MUST be UTF-8 with BOM. The build will fail on incorrect encoding.
-- **Code Formatting**: Uses Allman/OTBS formatting rules. Run `FormattingCheck` task to validate.
+- **Code Formatting**: Uses Allman/OTBS formatting rules. The build script will validate.
 - **Admin Rights**: Some build steps require elevated privileges for C# compilation and file operations.
 
 ### Quick Module Validation
@@ -72,35 +45,34 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 ### Core Directory Layout
 ```
 /
-├── .github/                    # GitHub workflows and templates
-│   └── workflows/module-build.yml  # Main CI/CD pipeline
-├── .vscode/                    # VS Code configuration
-│   ├── tasks.json              # Pre-configured build tasks
+├── .github/                           # GitHub workflows and templates
+│   └── workflows/module-build.yml     # Main CI/CD pipeline
+├── .vscode/                           # VS Code configuration
+│   ├── tasks.json                     # Pre-configured build tasks
 │   └── PSScriptAnalyzerSettings.psd1  # Linting rules
-├── src/                        # Main source code
-│   ├── PSAppDeployToolkit/     # PowerShell module source
-│   │   ├── PSAppDeployToolkit.psd1  # Module manifest
-│   │   ├── PSAppDeployToolkit.psm1  # Main module file
-│   │   ├── Public/             # Eported functions
-│   │   ├── Private/            # Internal helper functions
-│   │   ├── Config/config.psd1  # Default configuration
-│   │   ├── Frontend/           # v3 and v4 executable wrappers
-│   │   ├── Strings/            # Localization files
-│   │   └── lib/                # Compiled C# assemblies
-│   ├── PSADT/                  # C# solution for core libraries
-│   ├── PSADT.Invoke/           # C# solution for executable wrapper
-│   ├── Tests/                  # Pester test suites
-│   │   ├── Unit/               # Unit tests
-│   │   └── Integration/        # Integration tests
-│   └── PSAppDeployToolkit.build.ps1  # Main build script
-├── examples/                   # Sample deployment scripts
-├── lib/                        # External libraries (iNKORE.UI.WPF)
-└── actions_bootstrap.ps1       # Dependency installation script
+├── src/                               # Main source code
+│   ├── PSAppDeployToolkit/            # PowerShell module source
+│   │   ├── PSAppDeployToolkit.psd1    # Module manifest
+│   │   ├── PSAppDeployToolkit.psm1    # Main module file
+│   │   ├── Public/                    # Exported functions
+│   │   ├── Private/                   # Internal helper functions
+│   │   ├── Config/config.psd1         # Default configuration
+│   │   ├── Frontend/                  # v3 and v4 executable frontends
+│   │   ├── Strings/                   # Localization files
+│   │   └── lib/                       # Compiled C# assemblies
+│   ├── PSADT/                         # C# solution for core libraries
+│   ├── PSADT.Invoke/                  # C# solution for executable wrapper
+│   └── Tests/                         # Pester test suites
+│       ├── Unit/                      # Unit tests
+│       └── Integration/               # Integration tests
+├── examples/                          # Sample deployment scripts
+├── lib/                               # External libraries (iNKORE.UI.WPF)
+└── build.ps1                          # Main module build script
 ```
 
 ### Critical Configuration Files
 - **Module Manifest**: `src/PSAppDeployToolkit/PSAppDeployToolkit.psd1`
-- **Main Build Script**: `src/PSAppDeployToolkit.build.ps1` (comprehensive build pipeline)
+- **Main Build Script**: `build.ps1` (comprehensive build pipeline)
 - **CI/CD Pipeline**: `.github/workflows/module-build.yml` (Windows-only GitHub Actions)
 - **PSScriptAnalyzer Rules**: `.vscode/PSScriptAnalyzerSettings.psd1` (PowerShell 5.1 compatibility rules)
 - **Default Config**: `src/PSAppDeployToolkit/Config/config.psd1` (toolkit configuration settings)
@@ -108,28 +80,17 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 ## Development Workflow
 
 ### Before Making Changes
-1. **ALWAYS run the bootstrap**: `./actions_bootstrap.ps1`
-2. **Test module loading**: `Test-ModuleManifest ./src/PSAppDeployToolkit/PSAppDeployToolkit.psd1`
-3. **Run local tests**: `Invoke-Build -Task TestLocal -File ./src/PSAppDeployToolkit.build.ps1`
+1. **Test module loading**: `Test-ModuleManifest ./src/PSAppDeployToolkit/PSAppDeployToolkit.psd1`
 
 ### During Development  
-- **Code Formatting**: Follow Allman/OTBS style. Use `FormattingCheck` task to validate.
+- **Code Formatting**: Follow Allman/OTBS style. The build script will validate.
 - **Encoding Requirements**: Save all `.ps1`, `.psm1`, `.psd1` files as UTF-8 with BOM.
 - **Function Naming**: All public functions use `ADT` prefix (e.g., `Get-ADTApplication`).
 - **Comment-Based Help**: Required for all public functions with `.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`.
+- **Minimize Unnecessary Changes**: Preserve existing XML documentation comments when refactoring code. Don't strip them unnecessarily, as it makes git diffs noisy and loses valuable documentation. Only modify what's strictly necessary for the structural changes.
 
 ### Testing Strategy
-```powershell
-# Unit tests (preferred for function-specific changes)
-Invoke-Build -Task Test -File ./src/PSAppDeployToolkit.build.ps1
-
-# Single function testing (VS Code task available)
-Import-Module ./src/PSAppDeployToolkit/PSAppDeployToolkit.psd1
-Invoke-Pester './src/Tests/Unit/FunctionName.Tests.ps1' -Output Detailed
-
-# Integration tests (for larger changes)
-Invoke-Build -Task IntegrationTest -File ./src/PSAppDeployToolkit.build.ps1
-```
+`powershell.exe -ExecutionPolicy Bypass -File build.ps1`
 
 ### Common Build Issues & Solutions
 1. **"msbuild.exe command not found"**: Install Visual Studio with MSBuild component
@@ -175,7 +136,6 @@ These instructions are comprehensive and tested. Only search for additional info
 1. **Start small**: Test individual functions before broader changes
 2. **Use VS Code tasks**: Pre-configured tasks in `.vscode/tasks.json` for common operations
 3. **Leverage existing patterns**: Follow patterns in `src/PSAppDeployToolkit/Public/` for new functions
-4. **Test incrementally**: Run `TestLocal` after each significant change
 
 ### File Modification Guidelines
 - **PowerShell files**: Always maintain UTF-8 with BOM encoding
