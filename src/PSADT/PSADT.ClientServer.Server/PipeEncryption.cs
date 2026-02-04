@@ -302,47 +302,107 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Verifies the key exchange as the server by sending a challenge and verifying the client's response.
+        /// Verifies the key exchange as the server using mutual challenge-response authentication.
+        /// Both parties prove they have derived the same shared key.
         /// </summary>
         /// <param name="outputStream">The stream to send data.</param>
         /// <param name="inputStream">The stream to receive data.</param>
         /// <exception cref="CryptographicException">Thrown if the client's response does not match the expected value.</exception>
+        /// <remarks>
+        /// <para>
+        /// The mutual authentication protocol works as follows:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>Server generates and sends a random challenge (challenge_s)</description></item>
+        /// <item><description>Client generates its own challenge (challenge_c) and sends encrypted {challenge_s || challenge_c}</description></item>
+        /// <item><description>Server decrypts and verifies challenge_s, proving the client has the correct key</description></item>
+        /// <item><description>Server sends encrypted challenge_c back to client</description></item>
+        /// <item><description>Client decrypts and verifies challenge_c, proving the server has the correct key</description></item>
+        /// </list>
+        /// <para>
+        /// This ensures both parties have derived the same shared secret and prevents man-in-the-middle attacks
+        /// where an attacker might relay public keys but not be able to derive the shared secret.
+        /// </para>
+        /// </remarks>
         private void VerifyKeyExchangeAsServer(Stream outputStream, Stream inputStream)
         {
-            // Generate a random challenge
-            byte[] challenge = new byte[32];
+            // Generate server's random challenge
+            byte[] serverChallenge = new byte[ChallengeSize];
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
-                rng.GetBytes(challenge);
+                rng.GetBytes(serverChallenge);
             }
 
-            // Send the challenge (unencrypted - it's random data)
-            WriteLengthPrefixedBytes(outputStream, challenge);
+            // Send the server challenge (unencrypted - it's random data)
+            WriteLengthPrefixedBytes(outputStream, serverChallenge);
 
-            // Read the encrypted response from the client
+            // Read the encrypted response from the client containing both challenges
             byte[] encryptedResponse = ReadLengthPrefixedBytes(inputStream);
-
-            // Decrypt and verify the response matches the challenge
             byte[] decryptedResponse = Decrypt(encryptedResponse);
-            if (!ConstantTimeEquals(challenge, decryptedResponse))
+
+            // Verify response length (should contain both challenges)
+            if (decryptedResponse.Length != ChallengeSize * 2)
             {
-                throw new CryptographicException("Key exchange verification failed: challenge response mismatch.");
+                throw new CryptographicException("Key exchange verification failed: invalid response length.");
             }
+
+            // Extract and verify server's challenge from the response
+            byte[] returnedServerChallenge = new byte[ChallengeSize];
+            Buffer.BlockCopy(decryptedResponse, 0, returnedServerChallenge, 0, ChallengeSize);
+            if (!ConstantTimeEquals(serverChallenge, returnedServerChallenge))
+            {
+                throw new CryptographicException("Key exchange verification failed: server challenge mismatch.");
+            }
+
+            // Extract client's challenge and send it back encrypted to prove we have the key
+            byte[] clientChallenge = new byte[ChallengeSize];
+            Buffer.BlockCopy(decryptedResponse, ChallengeSize, clientChallenge, 0, ChallengeSize);
+            byte[] encryptedClientChallenge = Encrypt(clientChallenge);
+            WriteLengthPrefixedBytes(outputStream, encryptedClientChallenge);
         }
 
         /// <summary>
-        /// Verifies the key exchange as the client by receiving a challenge and sending an encrypted response.
+        /// Verifies the key exchange as the client using mutual challenge-response authentication.
+        /// Both parties prove they have derived the same shared key.
         /// </summary>
         /// <param name="outputStream">The stream to send data.</param>
         /// <param name="inputStream">The stream to receive data.</param>
+        /// <exception cref="CryptographicException">Thrown if the server's response does not match the expected value.</exception>
+        /// <remarks>
+        /// <para>
+        /// See <see cref="VerifyKeyExchangeAsServer"/> for the full protocol description.
+        /// </para>
+        /// </remarks>
         private void VerifyKeyExchangeAsClient(Stream outputStream, Stream inputStream)
         {
-            // Receive the challenge from the server
-            byte[] challenge = ReadLengthPrefixedBytes(inputStream);
+            // Receive server's challenge
+            byte[] serverChallenge = ReadLengthPrefixedBytes(inputStream);
 
-            // Encrypt the challenge and send it back
-            byte[] encryptedResponse = Encrypt(challenge);
+            // Generate client's own challenge for mutual authentication
+            byte[] clientChallenge = new byte[ChallengeSize];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(clientChallenge);
+            }
+
+            // Combine both challenges: {server_challenge || client_challenge}
+            byte[] combinedChallenges = new byte[ChallengeSize * 2];
+            Buffer.BlockCopy(serverChallenge, 0, combinedChallenges, 0, ChallengeSize);
+            Buffer.BlockCopy(clientChallenge, 0, combinedChallenges, ChallengeSize, ChallengeSize);
+
+            // Encrypt and send the combined challenges
+            byte[] encryptedResponse = Encrypt(combinedChallenges);
             WriteLengthPrefixedBytes(outputStream, encryptedResponse);
+
+            // Receive server's proof - the encrypted client challenge
+            byte[] encryptedServerProof = ReadLengthPrefixedBytes(inputStream);
+            byte[] decryptedServerProof = Decrypt(encryptedServerProof);
+
+            // Verify server returned our challenge correctly (proves server has the same key)
+            if (!ConstantTimeEquals(clientChallenge, decryptedServerProof))
+            {
+                throw new CryptographicException("Key exchange verification failed: server proof mismatch. Server may not have derived the correct key.");
+            }
         }
 
         /// <summary>
@@ -581,6 +641,15 @@ namespace PSADT.ClientServer
         /// authentication security.
         /// </remarks>
         private const int TagSize = 16;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of the challenge used in mutual authentication.
+        /// </summary>
+        /// <remarks>
+        /// A 32-byte (256-bit) challenge provides strong protection against brute-force attacks
+        /// and ensures cryptographic uniqueness for each key exchange session.
+        /// </remarks>
+        private const int ChallengeSize = 32;
 
         /// <summary>
         /// Maximum allowed message size to prevent denial-of-service attacks via memory exhaustion.
