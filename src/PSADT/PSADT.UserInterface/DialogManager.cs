@@ -366,20 +366,22 @@ namespace PSADT.UserInterface
         /// </summary>
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
-            // Initialize the WPF application if necessary, otherwise just invoke the callback.
+            // Initialize the WPF application if necessary.
             if (!appInitialized.IsSet)
             {
-                // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-                // We only need to do this once when the app is first initialized.
-                ShellUtilities.RefreshDesktop();
-
                 // Register process exit handler to ensure WPF is properly shut down.
                 // This prevents ~2.5 second delays during process termination.
                 AppDomain.CurrentDomain.ProcessExit += (_, _) =>
                 {
                     if (appInitialized.IsSet && app is not null)
                     {
-                        app.Dispatcher.InvokeShutdown();
+                        app.Dispatcher.Invoke(() =>
+                        {
+                            app.Shutdown();
+                        });
+                        appThread?.Join();
+                        appThread = null;
+                        app = null;
                     }
                 };
 
@@ -392,7 +394,10 @@ namespace PSADT.UserInterface
                     };
                     app.Startup += (_, _) =>
                     {
+                        // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
+                        // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                        ShellUtilities.RefreshDesktop();
                         appInitialized.Set();
                     };
                     Environment.ExitCode = app.Run();
@@ -402,7 +407,16 @@ namespace PSADT.UserInterface
                 appThread.Start();
                 appInitialized.Wait();
             }
-            return app!.Dispatcher.Invoke(callback);
+
+            // If we're here and the app isn't initialised, then it's been shut down.
+            // The application cannot be restarted, so we throw back in this situation.
+            if (app is null)
+            {
+                throw new InvalidOperationException("WPF application is not initialized.");
+            }
+
+            // Invoke the callback on the WPF UI thread.
+            return app.Dispatcher.Invoke(callback);
         }
 
         /// <summary>
