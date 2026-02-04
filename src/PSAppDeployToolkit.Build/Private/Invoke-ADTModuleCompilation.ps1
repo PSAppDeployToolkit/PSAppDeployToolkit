@@ -13,10 +13,10 @@ function Invoke-ADTModuleCompilation
         # Compile the project into a singular psm1 file.
         Write-ADTBuildLogEntry -Message "Generating compiled .psm1 file from module sources, please wait..."
         $sourceOnlyData = [ordered]@{
-            'ImportsFirst.ps1' = "$($Script:ModuleConstants.Paths.ModuleSource)\ImportsFirst.ps1"
-            'Private' = "$($Script:ModuleConstants.Paths.ModuleSource)\Private\*.ps1"
-            'Public' = "$($Script:ModuleConstants.Paths.ModuleSource)\Public\*.ps1"
-            'ImportsLast.ps1' = "$($Script:ModuleConstants.Paths.ModuleSource)\ImportsLast.ps1"
+            'ImportsFirst.ps1' = "$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleSource))\ImportsFirst.ps1"
+            'Private' = "$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleSource))\Private\*.ps1"
+            'Public' = "$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleSource))\Public\*.ps1"
+            'ImportsLast.ps1' = "$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleSource))\ImportsLast.ps1"
         }
         $scriptContent = foreach ($file in (Get-ChildItem -Path ([System.String[]]$sourceOnlyData.Values) -Recurse))
         {
@@ -99,7 +99,7 @@ function Invoke-ADTModuleCompilation
             Write-ADTBuildLogEntry "Replacing debug DLLs with release DLL files."
             foreach ($buildItem in $Script:ModuleConstants.DotNetBuildItems)
             {
-                $sourcePath = [System.IO.Path]::Combine($buildItem.BinaryPath.Replace('Debug', 'Release'), '*')
+                $sourcePath = [System.IO.Path]::Combine([System.Management.Automation.WildcardPattern]::Escape($buildItem.BinaryPath.Replace('Debug', 'Release')), '*')
                 foreach ($destPath in $buildItem.OutputPath.Replace($Script:ModuleConstants.Paths.ModuleSource, $Script:ModuleConstants.Paths.ModuleOutput))
                 {
                     Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force

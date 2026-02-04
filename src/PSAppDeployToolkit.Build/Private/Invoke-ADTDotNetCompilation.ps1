@@ -31,7 +31,7 @@ function Invoke-ADTDotNetCompilation
             Write-ADTBuildLogEntry -Message "Unable to locate git.exe on this system, compiling C# project sources unconditionally." -ForegroundColor Yellow
             $testFileChanges = $false
         }
-        if ($testFileChanges -and !(& $git -C $($Script:PSScriptRoot) rev-parse --is-inside-work-tree).Equals('true'))
+        if ($testFileChanges -and !(& $git -C $Script:PSScriptRoot rev-parse --is-inside-work-tree).Equals('true'))
         {
             Write-ADTBuildLogEntry -Message "Not currently building from a git repository, compiling C# project sources unconditionally." -ForegroundColor Yellow
             $testFileChanges = $false
@@ -61,18 +61,18 @@ function Invoke-ADTDotNetCompilation
                     {
                         # Translate the Win32 slash into a POSIX slash so git can work on it.
                         $gitPath = $sourcePath.Replace("$($Script:ModuleConstants.Paths.Repository)\", [System.Management.Automation.Language.NullString]::Value)
-                        if (!((& $git status --porcelain) -match "^.{3}$([System.Text.RegularExpressions.Regex]::Escape($gitPath.Replace('\','/')))/"))
+                        if (!((& $git -C $Script:ModuleConstants.Paths.Repository status --porcelain) -match "^.{3}$([System.Text.RegularExpressions.Regex]::Escape($gitPath.Replace('\','/')))/"))
                         {
                             # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
                             foreach ($outputFile in $buildItem.OutputFile)
                             {
                                 # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
-                                $lastCommitDate = & $git log -1 --format="%ci" -- $outputFile
+                                $lastCommitDate = & $git -C $Script:ModuleConstants.Paths.Repository log -1 --format="%ci" -- $outputFile
                                 $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
                                 $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
                                 # Get the list of source files modified since the last commit date of the file we're comparing against
-                                if (& $git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $gitPath | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } } | Sort-Object -Unique)
+                                if (& $git -C $Script:ModuleConstants.Paths.Repository log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $gitPath | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } } | Sort-Object -Unique)
                                 {
                                     Write-ADTBuildLogEntry -Message "Files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
                                     $buildConfigs.Insert(0, 'Debug')
@@ -134,7 +134,7 @@ function Invoke-ADTDotNetCompilation
                 # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
                 if ($buildType.Equals('Debug'))
                 {
-                    $sourcePath = [System.IO.Path]::Combine($buildItem.BinaryPath, '*')
+                    $sourcePath = [System.IO.Path]::Combine([System.Management.Automation.WildcardPattern]::Escape($buildItem.BinaryPath), '*')
                     foreach ($outputPath in $buildItem.OutputPath)
                     {
                         Write-ADTBuildLogEntry -Message "Copying from [$sourcePath] to [$outputPath], please wait..."
