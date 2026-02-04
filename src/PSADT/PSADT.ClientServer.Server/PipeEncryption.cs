@@ -27,18 +27,125 @@ namespace PSADT.ClientServer
     /// instance when finished to securely erase sensitive key material.
     /// </para>
     /// </remarks>
-    public sealed record PipeEncryption : IDisposable
+    internal sealed record PipeEncryption : IDisposable
     {
         /// <summary>
-        /// Gets a value indicating whether the key exchange has been completed.
+        /// Performs key exchange as the server (initiator).
+        /// Sends public key first, then receives client's public key, then verifies key agreement.
         /// </summary>
-        public bool IsKeyExchangeComplete => _encryptionKey is not null;
+        /// <param name="outputStream">The stream to send data.</param>
+        /// <param name="inputStream">The stream to receive data.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
+        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
+        internal void PerformServerKeyExchange(Stream outputStream, Stream inputStream)
+        {
+            // Verify parameters and state.
+            ThrowIfDisposed();
+            if (outputStream is null)
+            {
+                throw new ArgumentNullException(nameof(outputStream));
+            }
+            if (inputStream is null)
+            {
+                throw new ArgumentNullException(nameof(inputStream));
+            }
+
+            // Server sends public key first
+            byte[] publicKey = GetPublicKey();
+            WriteLengthPrefixedBytes(outputStream, publicKey);
+
+            // Server receives client's public key
+            byte[] clientPublicKey = ReadLengthPrefixedBytes(inputStream);
+
+            // Derive the shared key
+            DeriveSharedKey(clientPublicKey);
+
+            // Verify key agreement with challenge-response
+            VerifyKeyExchangeAsServer(outputStream, inputStream);
+        }
+
+        /// <summary>
+        /// Performs key exchange as the client (responder).
+        /// Receives server's public key first, then sends own public key, then verifies key agreement.
+        /// </summary>
+        /// <param name="outputStream">The stream to send data.</param>
+        /// <param name="inputStream">The stream to receive data.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
+        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
+        internal void PerformClientKeyExchange(Stream outputStream, Stream inputStream)
+        {
+            // Verify parameters and state.
+            ThrowIfDisposed();
+            if (outputStream is null)
+            {
+                throw new ArgumentNullException(nameof(outputStream));
+            }
+            if (inputStream is null)
+            {
+                throw new ArgumentNullException(nameof(inputStream));
+            }
+
+            // Client receives server's public key first
+            byte[] serverPublicKey = ReadLengthPrefixedBytes(inputStream);
+
+            // Client sends its public key
+            byte[] publicKey = GetPublicKey();
+            WriteLengthPrefixedBytes(outputStream, publicKey);
+
+            // Derive the shared key
+            DeriveSharedKey(serverPublicKey);
+
+            // Verify key agreement with challenge-response
+            VerifyKeyExchangeAsClient(outputStream, inputStream);
+        }
+
+        /// <summary>
+        /// Reads and decrypts data from the stream.
+        /// </summary>
+        /// <param name="stream">The input stream.</param>
+        /// <returns>The decrypted plaintext bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
+        internal byte[] ReadEncrypted(Stream stream)
+        {
+            // Verify parameters.
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            // Read and decrypt.
+            byte[] encrypted = ReadLengthPrefixedBytes(stream);
+            return Decrypt(encrypted);
+        }
+
+        /// <summary>
+        /// Writes encrypted data to the stream.
+        /// </summary>
+        /// <param name="stream">The output stream.</param>
+        /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
+        internal void WriteEncrypted(Stream stream, byte[] plaintext)
+        {
+            // Verify state and parameters.
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+            if (plaintext is null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
+            // Encrypt and write.
+            byte[] encrypted = Encrypt(plaintext);
+            WriteLengthPrefixedBytes(stream, encrypted);
+        }
 
         /// <summary>
         /// Gets the local public key for transmission to the remote party.
         /// </summary>
         /// <returns>A byte array containing the exported public key.</returns>
-        public byte[] GetPublicKey()
+        private byte[] GetPublicKey()
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
@@ -54,7 +161,7 @@ namespace PSADT.ClientServer
         /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
-        public void DeriveSharedKey(byte[] remotePublicKey)
+        private void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
@@ -91,7 +198,7 @@ namespace PSADT.ClientServer
         /// <returns>A byte array containing the nonce, ciphertext, and authentication tag.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plaintext"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
-        public byte[] Encrypt(byte[] plaintext)
+        private byte[] Encrypt(byte[] plaintext)
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
@@ -133,7 +240,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
         /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
-        public byte[] Decrypt(byte[] encryptedData)
+        private byte[] Decrypt(byte[] encryptedData)
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
@@ -213,76 +320,6 @@ namespace PSADT.ClientServer
                 SecureZeroMemory(prk);
             }
             return output;
-        }
-
-        /// <summary>
-        /// Performs key exchange as the server (initiator).
-        /// Sends public key first, then receives client's public key, then verifies key agreement.
-        /// </summary>
-        /// <param name="outputStream">The stream to send data.</param>
-        /// <param name="inputStream">The stream to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        public void PerformServerKeyExchange(Stream outputStream, Stream inputStream)
-        {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (outputStream is null)
-            {
-                throw new ArgumentNullException(nameof(outputStream));
-            }
-            if (inputStream is null)
-            {
-                throw new ArgumentNullException(nameof(inputStream));
-            }
-
-            // Server sends public key first
-            byte[] publicKey = GetPublicKey();
-            WriteLengthPrefixedBytes(outputStream, publicKey);
-
-            // Server receives client's public key
-            byte[] clientPublicKey = ReadLengthPrefixedBytes(inputStream);
-
-            // Derive the shared key
-            DeriveSharedKey(clientPublicKey);
-
-            // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsServer(outputStream, inputStream);
-        }
-
-        /// <summary>
-        /// Performs key exchange as the client (responder).
-        /// Receives server's public key first, then sends own public key, then verifies key agreement.
-        /// </summary>
-        /// <param name="outputStream">The stream to send data.</param>
-        /// <param name="inputStream">The stream to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        public void PerformClientKeyExchange(Stream outputStream, Stream inputStream)
-        {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (outputStream is null)
-            {
-                throw new ArgumentNullException(nameof(outputStream));
-            }
-            if (inputStream is null)
-            {
-                throw new ArgumentNullException(nameof(inputStream));
-            }
-
-            // Client receives server's public key first
-            byte[] serverPublicKey = ReadLengthPrefixedBytes(inputStream);
-
-            // Client sends its public key
-            byte[] publicKey = GetPublicKey();
-            WriteLengthPrefixedBytes(outputStream, publicKey);
-
-            // Derive the shared key
-            DeriveSharedKey(serverPublicKey);
-
-            // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsClient(outputStream, inputStream);
         }
 
         /// <summary>
@@ -387,48 +424,6 @@ namespace PSADT.ClientServer
             {
                 throw new CryptographicException("Key exchange verification failed: server proof mismatch. Server may not have derived the correct key.");
             }
-        }
-
-        /// <summary>
-        /// Writes encrypted data to the stream.
-        /// </summary>
-        /// <param name="stream">The output stream.</param>
-        /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
-        public void WriteEncrypted(Stream stream, byte[] plaintext)
-        {
-            // Verify state and parameters.
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-            if (plaintext is null)
-            {
-                throw new ArgumentNullException(nameof(plaintext));
-            }
-
-            // Encrypt and write.
-            byte[] encrypted = Encrypt(plaintext);
-            WriteLengthPrefixedBytes(stream, encrypted);
-        }
-
-        /// <summary>
-        /// Reads and decrypts data from the stream.
-        /// </summary>
-        /// <param name="stream">The input stream.</param>
-        /// <returns>The decrypted plaintext bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
-        public byte[] ReadEncrypted(Stream stream)
-        {
-            // Verify parameters.
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            // Read and decrypt.
-            byte[] encrypted = ReadLengthPrefixedBytes(stream);
-            return Decrypt(encrypted);
         }
 
         /// <summary>
@@ -605,7 +600,7 @@ namespace PSADT.ClientServer
         /// <remarks>This encoding instance does not emit a byte order mark (BOM) and throws exceptions on
         /// invalid bytes. Use this encoding when you require strict UTF-8 validation and do not want a BOM prefix in
         /// encoded output.</remarks>
-        internal static readonly UTF8Encoding DefaultEncoding = new(false, true);
+        private static readonly UTF8Encoding DefaultEncoding = new(false, true);
 
         /// <summary>
         /// Specifies the size, in bytes, of the AES-256 encryption key.
