@@ -1497,9 +1497,9 @@ namespace PSAppDeployToolkit.SessionManagement
         /// <returns></returns>
         private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
         {
-            return Settings.HasFlag(DeploymentSettings.CompatibilityMode)
-                ? (T)SessionState!.PSVariable.GetValue(propertyName)
-                : (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
+            return !Settings.HasFlag(DeploymentSettings.CompatibilityMode)
+                ? (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!)
+                : (T)SessionState!.PSVariable.GetValue(propertyName);
         }
 
         /// <summary>
