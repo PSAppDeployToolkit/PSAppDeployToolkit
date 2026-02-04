@@ -18,8 +18,8 @@ function Test-ADTBuildEnvironment
         }
 
         # Confirm that the module can be found where we expect it.
-        Write-ADTBuildLogEntry -Message "Locating the $($Script:ModuleConstants.ModuleName) module at [$($Script:ModuleConstants.Paths.ModuleManifest)]."
-        $null = Get-Item -LiteralPath $Script:ModuleConstants.Paths.ModuleManifest -ErrorAction Stop
+        Write-ADTBuildLogEntry -Message "Locating the $($Script:ModuleConstants.ModuleName) module at [$([System.Management.Automation.WildcardPattern]::Unescape($Script:ModuleConstants.ModuleSpecification.Name))]."
+        $null = Get-Item -LiteralPath ([System.Management.Automation.WildcardPattern]::Unescape($Script:ModuleConstants.ModuleSpecification.Name)) -ErrorAction Stop
 
         # Confirm that the module manifest is valid.
         Write-ADTBuildLogEntry -Message "Testing the validity of the $($Script:ModuleConstants.ModuleName) module manifest."
