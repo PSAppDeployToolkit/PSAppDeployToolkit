@@ -70,32 +70,32 @@ try
     New-Variable -Name ModuleConstants -Option Constant -Force -Value ([ordered]@{
             DotNetBuildItems = ([System.Collections.ObjectModel.ReadOnlyCollection[System.Collections.Specialized.OrderedDictionary]][System.Collections.Specialized.OrderedDictionary[]]$(
                     ([ordered]@{
-                        SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSADT')
-                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSADT\PSADT.slnx')
-                        BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSADT\PSADT.ClientServer.Client.Launcher\bin\Debug\net472')
+                        SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT')
+                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.slnx')
+                        BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Client.Launcher\bin\Debug\net472')
                         OutputPath = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib')
                             ))
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Launcher.exe'),
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe'),
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Server.dll'),
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib\PSADT.dll'),
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll'),
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\lib\PSAppDeployToolkit.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Launcher.exe'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Server.dll'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.dll'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.UserInterface.dll'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSAppDeployToolkit.dll')
                             ))
                     }).AsReadOnly(),
                     ([ordered]@{
-                        SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSADT.Invoke')
-                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSADT.Invoke\PSADT.Invoke.slnx')
-                        BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSADT.Invoke\PSADT.Invoke\bin\Release\net472')
+                        SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke')
+                        SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke\PSADT.Invoke.slnx')
+                        BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke\PSADT.Invoke\bin\Release\net472')
                         OutputPath = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\Frontend\v4')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\Frontend\v3')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v4')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v3')
                             ))
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe'),
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe')
                             ))
                     }).AsReadOnly()
                 ))
@@ -126,6 +126,7 @@ try
                     @{ ModuleName = 'Pester'; Guid = 'a699dea5-2c73-4616-a270-1f7abb777e71'; ModuleVersion = '5.7.1' }
                 ))
             ModuleName = 'PSAppDeployToolkit'
+            ModuleSpecification = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = [System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'PSAppDeployToolkit.psd1')); Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }
             MinimumPowerShellVersion = [System.Version]'5.1'
             MinimumDotNetSdkVersion = [System.Version]'8.0.11'
             UnitTestOutputFormat = 'NUnitXML'

@@ -85,7 +85,7 @@ try
 
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
-            Manifest = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName PSAppDeployToolkit.psd1
+            Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
             Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]("$PSScriptRoot\lib\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\PSADT.dll", "$PSScriptRoot\lib\PSADT.UserInterface.dll", "$PSScriptRoot\lib\PSADT.ClientServer.Server.dll")
             Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
             Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)

@@ -23,7 +23,7 @@ function Test-ADTBuildEnvironment
 
         # Confirm that the module manifest is valid.
         Write-ADTBuildLogEntry -Message "Testing the validity of the $($Script:ModuleConstants.ModuleName) module manifest."
-        $null = Test-ModuleManifest -Path $Script:ModuleConstants.Paths.ModuleManifest
+        $null = Test-ModuleManifest -Path $Script:ModuleConstants.ModuleSpecification.Name
 
         # Confirm there's no module of the same name already imported.
         Write-ADTBuildLogEntry -Message "Checking whether $($Script:ModuleConstants.ModuleName) is already an imported module."

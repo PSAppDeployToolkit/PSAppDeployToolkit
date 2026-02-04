@@ -12,7 +12,7 @@ function Import-ADTDevelopmentModule
     {
         # We need the module imported for Pester tests, among other things.
         Write-ADTBuildLogEntry -Message "Importing PSApppDeployToolkit development module."
-        $Script:ModuleBuildState.CommandTable = & (Import-Module -Name $Script:ModuleConstants.Paths.ModuleManifest -Global -Force -PassThru) { $CommandTable }
+        $Script:ModuleBuildState.CommandTable = & (Import-Module -FullyQualifiedName $Script:ModuleConstants.ModuleSpecification -Global -Force -PassThru) { $CommandTable }
         Complete-ADTModuleBuildFunction
     }
     catch
