@@ -1173,7 +1173,7 @@ function Show-ADTInstallationWelcome
                                         if ($deferRunIntervalNextTime -gt [System.TimeSpan]::Zero)
                                         {
                                             Write-ADTLogEntry -Message "Next run interval not due until [$(($currentDateTimeLocal + $deferRunIntervalNextTime).ToString('O'))], exiting gracefully."
-                                            $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                                            $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                                         }
                                     }
                                 }
