@@ -139,14 +139,14 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (PipeEncryption ioEncryption = new())
-                using (PipeEncryption logEncryption = new())
+                using (ClientPipeEncryption ioEncryption = new())
+                using (ClientPipeEncryption logEncryption = new())
                 {
                     // Perform ECDH key exchange for encrypted communication.
                     try
                     {
-                        ioEncryption.PerformClientKeyExchange(outputPipeClient, inputPipeClient);
-                        logEncryption.PerformClientKeyExchange(outputPipeClient, inputPipeClient);
+                        ioEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
+                        logEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
                     }
                     catch (Exception ex)
                     {

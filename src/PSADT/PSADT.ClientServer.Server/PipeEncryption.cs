@@ -7,97 +7,35 @@ namespace PSADT.ClientServer
 {
     /// <summary>
     /// Provides secure, authenticated encryption and key exchange for inter-process communication using Elliptic Curve
-    /// Diffie-Hellman (ECDH) and AES-256-GCM. This class enables two parties to establish a shared secret and exchange
-    /// encrypted messages over a pipe or stream.
+    /// Diffie-Hellman (ECDH) and AES-256-GCM.
     /// </summary>
     /// <remarks>
     /// <para>
     /// PipeEncryption manages the full lifecycle of key exchange and message encryption for secure communication
-    /// channels. It supports both server and client roles in the key exchange process, using ECDH to derive a shared
-    /// secret and then expanding it into encryption keys using HKDF.
+    /// channels. It uses ECDH to derive a shared secret and then expands it into encryption keys using HKDF.
     /// </para>
     /// <para>
     /// Messages are encrypted using AES-256-GCM which provides authenticated encryption with associated data (AEAD),
-    /// ensuring both confidentiality and integrity in a single cryptographic operation. This is more efficient and
-    /// secure than separate encryption and MAC operations.
+    /// ensuring both confidentiality and integrity in a single cryptographic operation.
     /// </para>
     /// <para>
-    /// Instances must complete the key exchange before encryption or decryption operations can be performed. This
-    /// class is not thread-safe; callers should ensure appropriate synchronization if used concurrently. Dispose the
-    /// instance when finished to securely erase sensitive key material.
+    /// Use <see cref="ServerPipeEncryption"/> for the server/initiator role and <see cref="ClientPipeEncryption"/>
+    /// for the client/responder role. Instances must complete the key exchange via <see cref="PerformKeyExchange"/>
+    /// before encryption or decryption operations can be performed.
+    /// </para>
+    /// <para>
+    /// This class is not thread-safe; callers should ensure appropriate synchronization if used concurrently.
+    /// Dispose the instance when finished to securely erase sensitive key material.
     /// </para>
     /// </remarks>
-    internal sealed record PipeEncryption : IDisposable
+    internal abstract class PipeEncryption<TSelf> : IDisposable where TSelf : PipeEncryption<TSelf>
     {
         /// <summary>
-        /// Performs key exchange as the server (initiator).
-        /// Sends public key first, then receives client's public key, then verifies key agreement.
+        /// Performs the key exchange with the remote party using the role-specific protocol.
         /// </summary>
-        /// <param name="outputStream">The stream to send data.</param>
-        /// <param name="inputStream">The stream to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        internal void PerformServerKeyExchange(Stream outputStream, Stream inputStream)
-        {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (outputStream is null)
-            {
-                throw new ArgumentNullException(nameof(outputStream));
-            }
-            if (inputStream is null)
-            {
-                throw new ArgumentNullException(nameof(inputStream));
-            }
-
-            // Server sends public key first
-            byte[] publicKey = GetPublicKey();
-            WriteLengthPrefixedBytes(outputStream, publicKey);
-
-            // Server receives client's public key
-            byte[] clientPublicKey = ReadLengthPrefixedBytes(inputStream);
-
-            // Derive the shared key
-            DeriveSharedKey(clientPublicKey);
-
-            // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsServer(outputStream, inputStream);
-        }
-
-        /// <summary>
-        /// Performs key exchange as the client (responder).
-        /// Receives server's public key first, then sends own public key, then verifies key agreement.
-        /// </summary>
-        /// <param name="outputStream">The stream to send data.</param>
-        /// <param name="inputStream">The stream to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="outputStream"/> or <paramref name="inputStream"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        internal void PerformClientKeyExchange(Stream outputStream, Stream inputStream)
-        {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (outputStream is null)
-            {
-                throw new ArgumentNullException(nameof(outputStream));
-            }
-            if (inputStream is null)
-            {
-                throw new ArgumentNullException(nameof(inputStream));
-            }
-
-            // Client receives server's public key first
-            byte[] serverPublicKey = ReadLengthPrefixedBytes(inputStream);
-
-            // Client sends its public key
-            byte[] publicKey = GetPublicKey();
-            WriteLengthPrefixedBytes(outputStream, publicKey);
-
-            // Derive the shared key
-            DeriveSharedKey(serverPublicKey);
-
-            // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsClient(outputStream, inputStream);
-        }
+        /// <param name="outputStream">The stream to send data to the remote party.</param>
+        /// <param name="inputStream">The stream to receive data from the remote party.</param>
+        internal abstract void PerformKeyExchange(Stream outputStream, Stream inputStream);
 
         /// <summary>
         /// Reads and decrypts data from the stream.
@@ -114,8 +52,7 @@ namespace PSADT.ClientServer
             }
 
             // Read and decrypt.
-            byte[] encrypted = ReadLengthPrefixedBytes(stream);
-            return Decrypt(encrypted);
+            return Decrypt(ReadLengthPrefixedBytes(stream));
         }
 
         /// <summary>
@@ -137,15 +74,14 @@ namespace PSADT.ClientServer
             }
 
             // Encrypt and write.
-            byte[] encrypted = Encrypt(plaintext);
-            WriteLengthPrefixedBytes(stream, encrypted);
+            WriteLengthPrefixedBytes(stream, Encrypt(plaintext));
         }
 
         /// <summary>
         /// Gets the local public key for transmission to the remote party.
         /// </summary>
         /// <returns>A byte array containing the exported public key.</returns>
-        private byte[] GetPublicKey()
+        protected byte[] GetPublicKey()
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
@@ -161,7 +97,7 @@ namespace PSADT.ClientServer
         /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
-        private void DeriveSharedKey(byte[] remotePublicKey)
+        protected void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
@@ -197,8 +133,7 @@ namespace PSADT.ClientServer
         /// <param name="plaintext">The plaintext bytes to encrypt.</param>
         /// <returns>A byte array containing the nonce, ciphertext, and authentication tag.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plaintext"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
-        private byte[] Encrypt(byte[] plaintext)
+        protected byte[] Encrypt(byte[] plaintext)
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
@@ -238,9 +173,8 @@ namespace PSADT.ClientServer
         /// <param name="encryptedData">The encrypted data containing nonce, ciphertext, and authentication tag.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
         /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
-        private byte[] Decrypt(byte[] encryptedData)
+        protected byte[] Decrypt(byte[] encryptedData)
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
@@ -280,7 +214,7 @@ namespace PSADT.ClientServer
         /// <param name="sharedSecret">The raw shared secret from ECDH key agreement.</param>
         /// <param name="outputLength">The desired output length in bytes.</param>
         /// <returns>The derived key material.</returns>
-        private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
+        protected static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
         {
             // Use proper HKDF with a context-specific info parameter
             byte[] info = DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
@@ -323,115 +257,11 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Verifies the key exchange as the server using mutual challenge-response authentication.
-        /// Both parties prove they have derived the same shared key.
-        /// </summary>
-        /// <param name="outputStream">The stream to send data.</param>
-        /// <param name="inputStream">The stream to receive data.</param>
-        /// <exception cref="CryptographicException">Thrown if the client's response does not match the expected value.</exception>
-        /// <remarks>
-        /// <para>
-        /// The mutual authentication protocol works as follows:
-        /// </para>
-        /// <list type="number">
-        /// <item><description>Server generates and sends a random challenge (challenge_s)</description></item>
-        /// <item><description>Client generates its own challenge (challenge_c) and sends encrypted {challenge_s || challenge_c}</description></item>
-        /// <item><description>Server decrypts and verifies challenge_s, proving the client has the correct key</description></item>
-        /// <item><description>Server sends encrypted challenge_c back to client</description></item>
-        /// <item><description>Client decrypts and verifies challenge_c, proving the server has the correct key</description></item>
-        /// </list>
-        /// <para>
-        /// This ensures both parties have derived the same shared secret and prevents man-in-the-middle attacks
-        /// where an attacker might relay public keys but not be able to derive the shared secret.
-        /// </para>
-        /// </remarks>
-        private void VerifyKeyExchangeAsServer(Stream outputStream, Stream inputStream)
-        {
-            // Generate server's random challenge
-            byte[] serverChallenge = new byte[ChallengeSize];
-            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(serverChallenge);
-            }
-
-            // Send the server challenge (unencrypted - it's random data)
-            WriteLengthPrefixedBytes(outputStream, serverChallenge);
-
-            // Read the encrypted response from the client containing both challenges
-            byte[] encryptedResponse = ReadLengthPrefixedBytes(inputStream);
-            byte[] decryptedResponse = Decrypt(encryptedResponse);
-
-            // Verify response length (should contain both challenges)
-            if (decryptedResponse.Length != ChallengeSize * 2)
-            {
-                throw new CryptographicException("Key exchange verification failed: invalid response length.");
-            }
-
-            // Extract and verify server's challenge from the response
-            byte[] returnedServerChallenge = new byte[ChallengeSize];
-            Buffer.BlockCopy(decryptedResponse, 0, returnedServerChallenge, 0, ChallengeSize);
-            if (!ConstantTimeEquals(serverChallenge, returnedServerChallenge))
-            {
-                throw new CryptographicException("Key exchange verification failed: server challenge mismatch.");
-            }
-
-            // Extract client's challenge and send it back encrypted to prove we have the key
-            byte[] clientChallenge = new byte[ChallengeSize];
-            Buffer.BlockCopy(decryptedResponse, ChallengeSize, clientChallenge, 0, ChallengeSize);
-            byte[] encryptedClientChallenge = Encrypt(clientChallenge);
-            WriteLengthPrefixedBytes(outputStream, encryptedClientChallenge);
-        }
-
-        /// <summary>
-        /// Verifies the key exchange as the client using mutual challenge-response authentication.
-        /// Both parties prove they have derived the same shared key.
-        /// </summary>
-        /// <param name="outputStream">The stream to send data.</param>
-        /// <param name="inputStream">The stream to receive data.</param>
-        /// <exception cref="CryptographicException">Thrown if the server's response does not match the expected value.</exception>
-        /// <remarks>
-        /// <para>
-        /// See <see cref="VerifyKeyExchangeAsServer"/> for the full protocol description.
-        /// </para>
-        /// </remarks>
-        private void VerifyKeyExchangeAsClient(Stream outputStream, Stream inputStream)
-        {
-            // Receive server's challenge
-            byte[] serverChallenge = ReadLengthPrefixedBytes(inputStream);
-
-            // Generate client's own challenge for mutual authentication
-            byte[] clientChallenge = new byte[ChallengeSize];
-            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(clientChallenge);
-            }
-
-            // Combine both challenges: {server_challenge || client_challenge}
-            byte[] combinedChallenges = new byte[ChallengeSize * 2];
-            Buffer.BlockCopy(serverChallenge, 0, combinedChallenges, 0, ChallengeSize);
-            Buffer.BlockCopy(clientChallenge, 0, combinedChallenges, ChallengeSize, ChallengeSize);
-
-            // Encrypt and send the combined challenges
-            byte[] encryptedResponse = Encrypt(combinedChallenges);
-            WriteLengthPrefixedBytes(outputStream, encryptedResponse);
-
-            // Receive server's proof - the encrypted client challenge
-            byte[] encryptedServerProof = ReadLengthPrefixedBytes(inputStream);
-            byte[] decryptedServerProof = Decrypt(encryptedServerProof);
-
-            // Verify server returned our challenge correctly (proves server has the same key)
-            if (!ConstantTimeEquals(clientChallenge, decryptedServerProof))
-            {
-                throw new CryptographicException("Key exchange verification failed: server proof mismatch. Server may not have derived the correct key.");
-            }
-        }
-
-        /// <summary>
         /// Writes a length-prefixed byte array to the stream.
         /// </summary>
         /// <param name="stream">The output stream.</param>
         /// <param name="data">The data to write.</param>
-        private static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
+        protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
         {
             byte[] lengthBytes = BitConverter.GetBytes(data.Length);
             stream.Write(lengthBytes, 0, 4);
@@ -446,7 +276,7 @@ namespace PSADT.ClientServer
         /// <returns>The data read from the stream.</returns>
         /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
         /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
-        private static byte[] ReadLengthPrefixedBytes(Stream stream)
+        protected static byte[] ReadLengthPrefixedBytes(Stream stream)
         {
             // Read the 4-byte length prefix
             byte[] lengthBytes = new byte[4];
@@ -488,14 +318,35 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Compares two byte arrays in constant time to prevent timing attacks.
+        /// </summary>
+        /// <param name="a">The first byte array.</param>
+        /// <param name="b">The second byte array.</param>
+        /// <returns>True if the arrays are equal; otherwise, false.</returns>
+        protected static bool ConstantTimeEquals(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length)
+            {
+                return false;
+            }
+
+            int result = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                result |= a[i] ^ b[i];
+            }
+            return result == 0;
+        }
+
+        /// <summary>
         /// Throws an exception if the current instance has been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
-        private void ThrowIfDisposed()
+        protected void ThrowIfDisposed()
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(PipeEncryption));
+                throw new ObjectDisposedException(typeof(TSelf).Name);
             }
         }
 
@@ -508,7 +359,7 @@ namespace PSADT.ClientServer
         {
             if (_encryptionKey is null)
             {
-                throw new InvalidOperationException("Key exchange has not been completed. Call DeriveSharedKey first.");
+                throw new InvalidOperationException("Key exchange has not been completed. Call PerformKeyExchange first.");
             }
         }
 
@@ -528,28 +379,7 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Compares two byte arrays in constant time to prevent timing attacks.
-        /// </summary>
-        /// <param name="a">The first byte array.</param>
-        /// <param name="b">The second byte array.</param>
-        /// <returns>True if the arrays are equal; otherwise, false.</returns>
-        private static bool ConstantTimeEquals(byte[] a, byte[] b)
-        {
-            if (a.Length != b.Length)
-            {
-                return false;
-            }
-
-            int result = 0;
-            for (int i = 0; i < a.Length; i++)
-            {
-                result |= a[i] ^ b[i];
-            }
-            return result == 0;
-        }
-
-        /// <summary>
-        /// Releases all resources used by the <see cref="PipeEncryption"/> instance.
+        /// Releases all resources used by the <see cref="PipeEncryption{TSelf}"/> instance.
         /// </summary>
         public void Dispose()
         {
@@ -565,6 +395,16 @@ namespace PSADT.ClientServer
             }
             _disposed = true;
         }
+
+        /// <summary>
+        /// The AES-256 encryption key used for AES-GCM authenticated encryption.
+        /// </summary>
+        private byte[]? _encryptionKey;
+
+        /// <summary>
+        /// Specifies whether the instance has been disposed.
+        /// </summary>
+        private bool _disposed;
 
         /// <summary>
         /// Provides the Elliptic Curve Diffie-Hellman (ECDH) cryptographic implementation used for key agreement
@@ -585,14 +425,13 @@ namespace PSADT.ClientServer
 #endif
 
         /// <summary>
-        /// The AES-256 encryption key used for AES-GCM authenticated encryption.
+        /// Specifies the size, in bytes, of the challenge used in mutual authentication.
         /// </summary>
-        private byte[]? _encryptionKey;
-
-        /// <summary>
-        /// Specifies whether the instance has been disposed.
-        /// </summary>
-        private bool _disposed;
+        /// <remarks>
+        /// A 32-byte (256-bit) challenge provides strong protection against brute-force attacks
+        /// and ensures cryptographic uniqueness for each key exchange session.
+        /// </remarks>
+        protected const int ChallengeSize = 32;
 
         /// <summary>
         /// Represents the default UTF-8 encoding used for text operations within the library.
@@ -624,15 +463,6 @@ namespace PSADT.ClientServer
         /// authentication security.
         /// </remarks>
         private const int TagSize = 16;
-
-        /// <summary>
-        /// Specifies the size, in bytes, of the challenge used in mutual authentication.
-        /// </summary>
-        /// <remarks>
-        /// A 32-byte (256-bit) challenge provides strong protection against brute-force attacks
-        /// and ensures cryptographic uniqueness for each key exchange session.
-        /// </remarks>
-        private const int ChallengeSize = 32;
 
         /// <summary>
         /// Maximum allowed message size to prevent denial-of-service attacks via memory exhaustion.

@@ -110,8 +110,8 @@ namespace PSADT.ClientServer
             // Perform ECDH key exchange for encrypted communication.
             try
             {
-                _ioEncryption.PerformServerKeyExchange(_outputServer, _inputServer);
-                _logEncryption.PerformServerKeyExchange(_outputServer, _inputServer);
+                _ioEncryption.PerformKeyExchange(_outputServer, _inputServer);
+                _logEncryption.PerformKeyExchange(_outputServer, _inputServer);
             }
             catch (Exception ex)
             {
@@ -798,14 +798,14 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
         /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
-        private readonly PipeEncryption _ioEncryption;
+        private readonly ServerPipeEncryption _ioEncryption;
 
         /// <summary>
         /// Provides ECDH-based encryption for the log pipe communication.
         /// </summary>
         /// <remarks>This separate encryption instance is used for the log channel to allow independent
         /// encrypted communication for logging purposes.</remarks>
-        private readonly PipeEncryption _logEncryption;
+        private readonly ServerPipeEncryption _logEncryption;
 
         /// <summary>
         /// Represents an asynchronous operation that retrieves the result of a client process.
