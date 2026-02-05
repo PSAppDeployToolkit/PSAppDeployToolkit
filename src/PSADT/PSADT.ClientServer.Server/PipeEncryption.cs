@@ -78,53 +78,63 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Gets the local public key for transmission to the remote party.
+        /// Reads a length-prefixed byte array from the stream.
         /// </summary>
-        /// <returns>A byte array containing the exported public key.</returns>
-        protected byte[] GetPublicKey()
+        /// <param name="stream">The input stream.</param>
+        /// <returns>The data read from the stream.</returns>
+        /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
+        /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
+        protected static byte[] ReadLengthPrefixedBytes(Stream stream)
         {
-            ThrowIfDisposed();
-#if NET8_0_OR_GREATER
-            return _ecdh.PublicKey.ExportSubjectPublicKeyInfo();
-#else
-            return _ecdh.PublicKey.ToByteArray();
-#endif
+            // Read the 4-byte length prefix
+            byte[] lengthBytes = new byte[4]; int bytesRead = 0;
+            while (bytesRead < 4)
+            {
+                int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
+                }
+                bytesRead += read;
+            }
+
+            // Verify we've received a correct value.
+            int length = BitConverter.ToInt32(lengthBytes, 0);
+            if (length <= 0)
+            {
+                throw new InvalidDataException("Invalid length prefix: negative or zero value.");
+            }
+            if (length > MaxMessageSize)
+            {
+                throw new InvalidDataException($"Message size {length} exceeds maximum allowed size of {MaxMessageSize} bytes.");
+            }
+
+            // Read the data
+            byte[] data = new byte[length];
+            bytesRead = 0;
+            while (bytesRead < length)
+            {
+                int read = stream.Read(data, bytesRead, length - bytesRead);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading data.");
+                }
+                bytesRead += read;
+            }
+            return data;
         }
 
         /// <summary>
-        /// Completes the key exchange by deriving a shared secret from the remote party's public key.
+        /// Writes a length-prefixed byte array to the stream.
         /// </summary>
-        /// <param name="remotePublicKey">The remote party's public key bytes.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
-        protected void DeriveSharedKey(byte[] remotePublicKey)
+        /// <param name="stream">The output stream.</param>
+        /// <param name="data">The data to write.</param>
+        protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
         {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (remotePublicKey is null)
-            {
-                throw new ArgumentNullException(nameof(remotePublicKey));
-            }
-            if (_encryptionKey is not null)
-            {
-                throw new InvalidOperationException("Key exchange has already been completed.");
-            }
-
-            // Import the remote public key and derive shared secret
-#if NET8_0_OR_GREATER
-            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create();
-            remoteEcdh.ImportSubjectPublicKeyInfo(remotePublicKey, out _);
-            byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remoteEcdh.PublicKey);
-#else
-            ECDiffieHellmanPublicKey remotePubKey = ECDiffieHellmanCngPublicKey.FromByteArray(remotePublicKey, CngKeyBlobFormat.EccPublicBlob);
-            byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remotePubKey);
-#endif
-
-            // Derive encryption key using HKDF (only need encryption key for GCM, no separate MAC key)
-            _encryptionKey = DeriveKeyMaterial(sharedSecret, AesKeySize);
-
-            // Clear sensitive data
-            SecureZeroMemory(sharedSecret);
+            byte[] lengthBytes = BitConverter.GetBytes(data.Length);
+            stream.Write(lengthBytes, 0, 4);
+            stream.Write(data, 0, data.Length);
+            stream.Flush();
         }
 
         /// <summary>
@@ -195,7 +205,6 @@ namespace PSADT.ClientServer
             byte[] ciphertext = new byte[ciphertextLength];
             byte[] tag = new byte[TagSize];
             byte[] plaintext = new byte[ciphertextLength];
-
             Buffer.BlockCopy(encryptedData, 0, nonce, 0, NonceSize);
             Buffer.BlockCopy(encryptedData, NonceSize, ciphertext, 0, ciphertextLength);
             Buffer.BlockCopy(encryptedData, NonceSize + ciphertextLength, tag, 0, TagSize);
@@ -209,112 +218,53 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Derives key material from a shared secret using HKDF with SHA-256.
+        /// Gets the local public key for transmission to the remote party.
         /// </summary>
-        /// <param name="sharedSecret">The raw shared secret from ECDH key agreement.</param>
-        /// <param name="outputLength">The desired output length in bytes.</param>
-        /// <returns>The derived key material.</returns>
-        protected static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
+        /// <returns>A byte array containing the exported public key.</returns>
+        protected byte[] GetPublicKey()
         {
-            // Use proper HKDF with a context-specific info parameter
-            byte[] info = DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
-            byte[] salt = new byte[32]; // Zero salt is acceptable per RFC 5869
-
-            // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
-            byte[] prk;
-            using (HMACSHA256 hmac = new(salt))
-            {
-                prk = hmac.ComputeHash(sharedSecret);
-            }
-
-            // HKDF-Expand
-            byte[] output = new byte[outputLength];
-            byte[] previousBlock = [];
-            int offset = 0;
-            byte counter = 1;
-            try
-            {
-                using HMACSHA256 hmac = new(prk);
-                while (offset < outputLength)
-                {
-                    // T(i) = HMAC-Hash(PRK, T(i-1) | info | counter)
-                    byte[] input = new byte[previousBlock.Length + info.Length + 1];
-                    Buffer.BlockCopy(previousBlock, 0, input, 0, previousBlock.Length);
-                    Buffer.BlockCopy(info, 0, input, previousBlock.Length, info.Length);
-                    input[input.Length - 1] = counter++;
-
-                    previousBlock = hmac.ComputeHash(input);
-                    int copyLength = Math.Min(previousBlock.Length, outputLength - offset);
-                    Buffer.BlockCopy(previousBlock, 0, output, offset, copyLength);
-                    offset += copyLength;
-                }
-            }
-            finally
-            {
-                SecureZeroMemory(prk);
-            }
-            return output;
+            ThrowIfDisposed();
+#if NET8_0_OR_GREATER
+            return _ecdh.PublicKey.ExportSubjectPublicKeyInfo();
+#else
+            return _ecdh.PublicKey.ToByteArray();
+#endif
         }
 
         /// <summary>
-        /// Writes a length-prefixed byte array to the stream.
+        /// Completes the key exchange by deriving a shared secret from the remote party's public key.
         /// </summary>
-        /// <param name="stream">The output stream.</param>
-        /// <param name="data">The data to write.</param>
-        protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
+        /// <param name="remotePublicKey">The remote party's public key bytes.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
+        protected void DeriveSharedKey(byte[] remotePublicKey)
         {
-            byte[] lengthBytes = BitConverter.GetBytes(data.Length);
-            stream.Write(lengthBytes, 0, 4);
-            stream.Write(data, 0, data.Length);
-            stream.Flush();
-        }
-
-        /// <summary>
-        /// Reads a length-prefixed byte array from the stream.
-        /// </summary>
-        /// <param name="stream">The input stream.</param>
-        /// <returns>The data read from the stream.</returns>
-        /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
-        /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
-        protected static byte[] ReadLengthPrefixedBytes(Stream stream)
-        {
-            // Read the 4-byte length prefix
-            byte[] lengthBytes = new byte[4];
-            int bytesRead = 0;
-            while (bytesRead < 4)
+            // Verify parameters and state.
+            ThrowIfDisposed();
+            if (remotePublicKey is null)
             {
-                int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
-                if (read == 0)
-                {
-                    throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
-                }
-                bytesRead += read;
+                throw new ArgumentNullException(nameof(remotePublicKey));
+            }
+            if (_encryptionKey is not null)
+            {
+                throw new InvalidOperationException("Key exchange has already been completed.");
             }
 
-            // Verify we've received a correct value.
-            int length = BitConverter.ToInt32(lengthBytes, 0);
-            if (length <= 0)
-            {
-                throw new InvalidDataException("Invalid length prefix: negative or zero value.");
-            }
-            if (length > MaxMessageSize)
-            {
-                throw new InvalidDataException($"Message size {length} exceeds maximum allowed size of {MaxMessageSize} bytes.");
-            }
+            // Import the remote public key and derive shared secret
+#if NET8_0_OR_GREATER
+            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create();
+            remoteEcdh.ImportSubjectPublicKeyInfo(remotePublicKey, out _);
+            byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remoteEcdh.PublicKey);
+#else
+            ECDiffieHellmanPublicKey remotePubKey = ECDiffieHellmanCngPublicKey.FromByteArray(remotePublicKey, CngKeyBlobFormat.EccPublicBlob);
+            byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remotePubKey);
+#endif
 
-            // Read the data
-            byte[] data = new byte[length];
-            bytesRead = 0;
-            while (bytesRead < length)
-            {
-                int read = stream.Read(data, bytesRead, length - bytesRead);
-                if (read == 0)
-                {
-                    throw new EndOfStreamException("Unexpected end of stream while reading data.");
-                }
-                bytesRead += read;
-            }
-            return data;
+            // Derive encryption key using HKDF (only need encryption key for GCM, no separate MAC key)
+            _encryptionKey = DeriveKeyMaterial(sharedSecret, AesKeySize);
+
+            // Clear sensitive data
+            SecureZeroMemory(sharedSecret);
         }
 
         /// <summary>
@@ -364,6 +314,54 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Derives key material from a shared secret using HKDF with SHA-256.
+        /// </summary>
+        /// <param name="sharedSecret">The raw shared secret from ECDH key agreement.</param>
+        /// <param name="outputLength">The desired output length in bytes.</param>
+        /// <returns>The derived key material.</returns>
+        private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
+        {
+            // Use proper HKDF with a context-specific info parameter
+            byte[] info = DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
+            byte[] salt = new byte[32]; // Zero salt is acceptable per RFC 5869
+
+            // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
+            byte[] prk;
+            using (HMACSHA256 hmac = new(salt))
+            {
+                prk = hmac.ComputeHash(sharedSecret);
+            }
+
+            // HKDF-Expand
+            byte[] output = new byte[outputLength];
+            byte[] previousBlock = [];
+            int offset = 0;
+            byte counter = 1;
+            try
+            {
+                using HMACSHA256 hmac = new(prk);
+                while (offset < outputLength)
+                {
+                    // T(i) = HMAC-Hash(PRK, T(i-1) | info | counter)
+                    byte[] input = new byte[previousBlock.Length + info.Length + 1];
+                    Buffer.BlockCopy(previousBlock, 0, input, 0, previousBlock.Length);
+                    Buffer.BlockCopy(info, 0, input, previousBlock.Length, info.Length);
+                    input[input.Length - 1] = counter++;
+
+                    previousBlock = hmac.ComputeHash(input);
+                    int copyLength = Math.Min(previousBlock.Length, outputLength - offset);
+                    Buffer.BlockCopy(previousBlock, 0, output, offset, copyLength);
+                    offset += copyLength;
+                }
+            }
+            finally
+            {
+                SecureZeroMemory(prk);
+            }
+            return output;
+        }
+
+        /// <summary>
         /// Securely zeros a byte array to clear sensitive data from memory.
         /// </summary>
         /// <param name="data">The byte array to zero.</param>
@@ -374,6 +372,7 @@ namespace PSADT.ClientServer
             {
                 data[i] = 0;
             }
+
             // Memory barrier to ensure the writes are visible
             System.Threading.Thread.MemoryBarrier();
         }
