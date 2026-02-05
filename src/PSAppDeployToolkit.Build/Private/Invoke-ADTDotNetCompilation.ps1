@@ -112,7 +112,7 @@ function Invoke-ADTDotNetCompilation
                 & $dotnet msbuild $buildItem.SolutionPath -target:"Rebuild,VSTest" -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m | & {
                     process
                     {
-                        if ([System.String]::IsNullOrWhiteSpace(($message = ($_ -replace '^\s+', "$([System.Char]0x2022) ").Trim())))
+                        if ([System.String]::IsNullOrWhiteSpace(($message = ($_ -replace '^\s+', "> ").Trim())))
                         {
                             return
                         }
