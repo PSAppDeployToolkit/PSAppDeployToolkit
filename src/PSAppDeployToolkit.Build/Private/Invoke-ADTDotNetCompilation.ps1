@@ -50,7 +50,7 @@ function Invoke-ADTDotNetCompilation
         {
             # Only build a debug version if we're outside of a GitHub pipeline.
             $buildConfigs = [System.Collections.Generic.List[System.String]]'Release'
-            if ($env:GITHUB_ACTIONS -ne 'true')
+            if (!(Test-ADTBuildingWithinPipeline))
             {
                 # Build unconditionally if we can't test files.
                 if ($testFileChanges)

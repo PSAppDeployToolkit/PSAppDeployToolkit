@@ -19,7 +19,7 @@ function Write-ADTBuildLogEntry
     )
 
     # Prepend a timestamp onto the message and write it out.
-    $dateTime = if ($env:GITHUB_ACTIONS -eq 'true')
+    $dateTime = if (Test-ADTBuildingWithinPipeline)
     {
         [System.DateTime]::Now.ToUniversalTime().ToString('O')
     }
@@ -28,7 +28,7 @@ function Write-ADTBuildLogEntry
         [System.DateTime]::Now.ToString('O')
     }
     $null = $PSBoundParameters.Remove('Message')
-    if ([System.Console]::IsOutputRedirected -and ($env:GITHUB_ACTIONS -ne 'true'))
+    if ([System.Console]::IsOutputRedirected -and !(Test-ADTBuildingWithinPipeline))
     {
         $Message -replace '^', "[$dateTime] " -replace '\x1B\[[0-9;]*m' | Write-Host @PSBoundParameters
     }
