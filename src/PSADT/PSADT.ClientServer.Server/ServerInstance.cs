@@ -582,9 +582,9 @@ namespace PSADT.ClientServer
         /// langword="true"/>, the method will synchronously wait for the client process task to complete.</param>
         /// <returns>The result of the client process task if <paramref name="confirm"/> is <see langword="true"/>; 
         /// otherwise, <see langword="null"/>.</returns>
-        public ProcessResult GetClientProcessResult(bool confirm)
+        public ProcessResult? GetClientProcessResult(bool confirm)
         {
-            return confirm ? _clientProcess!.Task.GetAwaiter().GetResult() : null!;
+            return confirm ? _clientProcess?.Task.GetAwaiter().GetResult() : null;
         }
 
         /// <summary>
