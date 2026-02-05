@@ -80,9 +80,8 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
 
     ## Variables: Domain Membership
-    $w32cs = Get-CimInstance -ClassName Win32_ComputerSystem -Verbose:$false
-    $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } } | Select-Object -First 1
-    $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
+    $domainInfo = [PSADT.DeviceManagement.DeviceUtilities]::GetDomainStatus()
+    $variables.Add('IsMachinePartOfDomain', $domainInfo.JoinStatus.Equals([PSADT.LibraryInterfaces.NETSETUP_JOIN_STATUS]::NetSetupDomainName))
     $variables.Add('envMachineWorkgroup', $null)
     $variables.Add('envMachineADDomain', $null)
     $variables.Add('envLogonServer', $null)
@@ -90,11 +89,11 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
     $variables.Add('envUserDNSDomain', ([PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
     $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpperInvariant() }))
-    $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpperInvariant())
+    $variables.Add('envComputerName', [System.Net.Dns]::GetHostName().ToUpperInvariant())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain)
     {
-        $variables.envMachineADDomain = $w32csd.ToLowerInvariant()
+        $variables.envMachineADDomain = $domainInfo.DomainOrWorkgroupName.ToLowerInvariant()
         $variables.envComputerNameFQDN = try
         {
             [System.Net.Dns]::GetHostEntry('localhost').HostName
@@ -131,7 +130,7 @@ function Private:New-ADTEnvironmentTable
     }
     else
     {
-        $variables.envMachineWorkgroup = $w32csd.ToUpperInvariant()
+        $variables.envMachineWorkgroup = $domainInfo.DomainOrWorkgroupName.ToUpperInvariant()
     }
 
     # Get the OS Architecture.
@@ -174,9 +173,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Operating System
     $osInfo = Get-ADTOperatingSystemInfo
-    $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem -Verbose:$false))
-    $variables.Add('envOSName', $variables.envOS.Caption.Trim())
-    $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
+    $variables.Add('envOSName', $osInfo.Name)
     $variables.Add('envOSVersion', $osInfo.Version)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
@@ -184,7 +181,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envOSVersionRevision', $(if ($variables.envOSVersion.Revision -ge 0) { $variables.envOSVersion.Revision }))
 
     # Get the operating system type.
-    $variables.Add('envOSProductType', $variables.envOS.ProductType)
+    $variables.Add('envOSProductType', [System.Int32]$osInfo.ProductType)
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
@@ -216,11 +213,12 @@ function Private:New-ADTEnvironmentTable
             }))
 
     ## Variables: Hardware
-    $w32b = Get-CimInstance -ClassName Win32_BIOS -Verbose:$false
-    $w32bVersion = $w32b | Select-Object -ExpandProperty Version -ErrorAction Ignore
-    $w32bSerialNumber = $w32b | Select-Object -ExpandProperty SerialNumber -ErrorAction Ignore
-    $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
-    $variables.Add('envHardwareType', $(if (($w32bVersion -match 'VRTUAL') -or (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*')))
+    $w32bVersion = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.Version
+    $w32bSerialNumber = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.SerialNumber
+    $w32bManufacturer = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.Manufacturer
+    $w32bProductName = [PSADT.DeviceManagement.HardwareInfo]::SystemInformation.ProductName
+    $variables.Add('envSystemRAM', [System.Math]::Round([PSADT.DeviceManagement.DeviceUtilities]::GetTotalSystemMemory() / 1GB))
+    $variables.Add('envHardwareType', $(if (($w32bVersion -match 'VRTUAL') -or (($w32bManufacturer -like '*Microsoft*') -and ($w32bProductName -notlike '*Surface*')))
             {
                 'Virtual:Hyper-V'
             }
@@ -232,15 +230,15 @@ function Private:New-ADTEnvironmentTable
             {
                 'Virtual:Xen'
             }
-            elseif (($w32bSerialNumber -like '*VMware*') -or ($w32cs.Manufacturer -like '*VMWare*'))
+            elseif (($w32bSerialNumber -like '*VMware*') -or ($w32bManufacturer -like '*VMWare*'))
             {
                 'Virtual:VMware'
             }
-            elseif (($w32bSerialNumber -like '*Parallels*') -or ($w32cs.Manufacturer -like '*Parallels*'))
+            elseif (($w32bSerialNumber -like '*Parallels*') -or ($w32bManufacturer -like '*Parallels*'))
             {
                 'Virtual:Parallels'
             }
-            elseif ($w32cs.Model -like '*Virtual*')
+            elseif ($w32bProductName -like '*Virtual*')
             {
                 'Virtual'
             }
@@ -292,13 +290,13 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('IsNetworkServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NetworkServiceSid))
     $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.Groups -contains ([System.Security.Principal.SecurityIdentifier]'S-1-5-6')))
     $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
-    $variables.Add('LocalSystemNTAccount', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName LocalSystemSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
-    $variables.Add('LocalUsersGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinUsersSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
-    $variables.Add('LocalAdministratorsGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinAdministratorsSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
+    $variables.Add('LocalSystemNTAccount', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::LocalSystemSid).Translate([System.Security.Principal.NTAccount]))
+    $variables.Add('LocalUsersGroup', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid).Translate([System.Security.Principal.NTAccount]))
+    $variables.Add('LocalAdministratorsGroup', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid).Translate([System.Security.Principal.NTAccount]))
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
-    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionInfo[]](Get-ADTLoggedOnUser 4>$null))
+    $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionManager]::GetSessionInfo())
     if ($variables.LoggedOnUserSessions)
     {
         $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
