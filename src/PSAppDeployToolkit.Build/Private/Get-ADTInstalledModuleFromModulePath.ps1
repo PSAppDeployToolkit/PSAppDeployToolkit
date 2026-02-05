@@ -77,7 +77,36 @@ function Get-ADTInstalledModuleFromModulePath
 
     # Get each individual ModulePath values. We reverse the array so we can return objects
     # in order of SystemDirectory/ProgramFiles/UserDirectory like PowerShellGet does.
-    [System.Array]::Reverse(($modulePaths = [System.Environment]::GetEnvironmentVariable('PSModulePath').Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Trim()))
+    $modulePaths = [System.Environment]::GetEnvironmentVariable('PSModulePath').Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Trim() | & {
+        begin
+        {
+            # Open collector to reverse at the end.
+            $collector = [System.Collections.Generic.List[System.String]]::new()
+        }
+        process
+        {
+            # Skip over anything null/empty.
+            if ([System.String]::IsNullOrWhiteSpace($_))
+            {
+                return
+            }
+
+            # Skip over any paths that don't exist.
+            if (![System.IO.Directory]::Exists($_))
+            {
+                return
+            }
+
+            # Add this valid path to the collector.
+            $collector.Add($_)
+        }
+        end
+        {
+            # Reverse the list and return it to the caller.
+            $collector.Reverse()
+            return $collector
+        }
+    }
 
     # Cycle through each name provided by the caller.
     foreach ($module in $(if ($Name) { $Name } else { (Get-ChildItem -LiteralPath $modulePaths -Directory).BaseName | Sort-Object -Unique }))
