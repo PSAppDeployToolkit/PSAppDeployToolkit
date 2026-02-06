@@ -97,19 +97,19 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Displays a custom dialog with the specified style and options, and returns the result.
+        /// Displays a custom dialog with the specified style and options, and returns the result as a string.
         /// </summary>
-        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.CustomDialog"/>. The dialog's behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>. When <see cref="CustomDialogOptions.ListItems"/> is populated, the result is a <see cref="DialogResults.CustomDialogResult"/>; otherwise, the result is a <see cref="string"/>.</remarks>
+        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.CustomDialog"/>. The dialog's behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>.</remarks>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
-        /// <returns>A <see cref="string"/> when no list items are configured, or a <see cref="DialogResults.CustomDialogResult"/> when list items are present.</returns>
-        internal static object ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
+        internal static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
             if (options.MinimizeWindows)
             {
                 ShellUtilities.MinimizeAllWindows();
             }
-            object res = ShowModalDialog<object>(DialogType.CustomDialog, dialogStyle, options);
+            string res = ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
                 ShellUtilities.RestoreAllWindows();
