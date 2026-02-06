@@ -3,7 +3,7 @@
 ## Repository Overview
 
 **PSAppDeployToolkit** is a PowerShell-based, open-source framework for Windows software deployment that integrates seamlessly with existing deployment solutions (e.g. Microsoft Intune, SCCM, Tanium, BigFix etc.) to enhance the software deployment process. It achieves this by combining a battle-tested prescriptive workflow, an extensive library of functions for common deployment tasks, a customizable branded User Experience, and full-fidelity logging - to produce consistently high deployment success rates of over 98%.
- 
+
 - **Repository Size**: Over 100MB with 150+ PowerShell scripts, PowerShell data files and compiled binaries
 - **Languages**: PowerShell (primary), C# (.NET Framework 4.7.2 and .NET 8), XAML for UI  
 - **Target Runtime**: Windows PowerShell 5.1+ and PowerShell 7+
@@ -39,7 +39,6 @@ Import-Module ./src/PSAppDeployToolkit/PSAppDeployToolkit.psd1 -Force
 # Run script analysis
 Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscode/PSScriptAnalyzerSettings.psd1
 ```
-
 ## Project Structure & Key Files
 
 ### Core Directory Layout
@@ -77,7 +76,6 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 ├── lib/                               # External libraries (iNKORE.UI.WPF.Modern)
 └── build.ps1                          # Main module build script
 ```
-
 ### C# Solution Architecture (src/PSADT/)
 
 All C# projects multi-target **.NET Framework 4.7.2** (Windows PowerShell 5.1) and **.NET 8** (PowerShell 7+).
@@ -109,7 +107,6 @@ PSADT.ClientServer.Client (Client executable)
         ↓
 PSADT.ClientServer.Client.Launcher (GUI launcher)
 ```
-
 ### Critical Configuration Files
 - **Module Manifest**: `src/PSAppDeployToolkit/PSAppDeployToolkit.psd1`
 - **Main Build Script**: `build.ps1` (comprehensive build pipeline)
@@ -146,6 +143,7 @@ When working on the PowerShell module in VS Code:
 - **Function Naming**: All public functions use `ADT` prefix (e.g., `Get-ADTApplication`).
 - **Comment-Based Help**: Required for all public functions with `.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`.
 - **Minimize Unnecessary Changes**: Preserve existing XML documentation comments when refactoring code. Don't strip them unnecessarily, as it makes git diffs noisy and loses valuable documentation. Only modify what's strictly necessary for the structural changes.
+- **Resource Management**: Use nested try/finally blocks for COM cleanup and resource management rather than flat structures with nullable checks, even if it results in deep indentation.
 
 ### Testing Strategy
 `powershell.exe -ExecutionPolicy Bypass -File build.ps1`
