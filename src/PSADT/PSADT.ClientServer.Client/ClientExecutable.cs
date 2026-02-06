@@ -581,6 +581,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
+                    ClientServerUtilities.SetClientServerOperationSuccess();
                     Console.WriteLine(SerializeToString(GroupPolicyUpdate(force)));
                     return (int)ClientExitCode.Success;
                 }

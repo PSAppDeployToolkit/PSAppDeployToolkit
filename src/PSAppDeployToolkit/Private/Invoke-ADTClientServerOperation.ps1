@@ -462,9 +462,9 @@ function Private:Invoke-ADTClientServerOperation
                     $csArgsDictionary.Add($_.Key, $_.Value)
                 }
             }
-            Set-ADTRegistryKey -LiteralPath ([PSADT.UserInterface.DialogManager]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
+            Set-ADTRegistryKey -LiteralPath ([PSADT.ClientServer.ClientServerUtilities]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
             @{
-                ArgumentsDictionary = "$([PSADT.UserInterface.DialogManager]::UserRegistryPath)\$csArgsRegValue"
+                ArgumentsDictionary = "$([PSADT.ClientServer.ClientServerUtilities]::UserRegistryPath)\$csArgsRegValue"
                 RemoveArgumentsDictionaryStorage = $true
             }
         }
@@ -493,8 +493,8 @@ function Private:Invoke-ADTClientServerOperation
                 $arkParams = @{
                     InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                     WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                    LiteralPath = [PSADT.UserInterface.DialogManager]::UserRegistryPath
-                    Name = [PSADT.UserInterface.DialogManager]::OperationSuccessRegistryValueName
+                    LiteralPath = [PSADT.ClientServer.ClientServerUtilities]::UserRegistryPath
+                    Name = [PSADT.ClientServer.ClientServerUtilities]::OperationSuccessRegistryValueName
                     SID = $User.SID
                 }
                 Remove-ADTRegistryKey @arkParams

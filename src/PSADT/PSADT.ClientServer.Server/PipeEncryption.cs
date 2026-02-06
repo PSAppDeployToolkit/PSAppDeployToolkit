@@ -19,8 +19,7 @@ namespace PSADT.ClientServer
     /// ensuring both confidentiality and integrity in a single cryptographic operation.
     /// </para>
     /// <para>
-    /// Use <see cref="ServerPipeEncryption"/> for the server/initiator role and <see cref="ClientPipeEncryption"/>
-    /// for the client/responder role. Instances must complete the key exchange via <see cref="PerformKeyExchange"/>
+    /// Instances must complete the key exchange via <see cref="PerformKeyExchange"/>
     /// before encryption or decryption operations can be performed.
     /// </para>
     /// <para>

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PSADT.ClientServer</RootNamespace>
+    <AssemblyName>PSADT.ClientServer.Common</AssemblyName>
+    <Product>PSAppDeployToolkit Client/Server Common Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit Client/Server Common Library</AssemblyTitle>
+    <AssemblyDescription>This product is utilised by PSAppDeployToolkit to provide common client/server library support.</AssemblyDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.UserInterface" />
+  </ItemGroup>
+</Project>

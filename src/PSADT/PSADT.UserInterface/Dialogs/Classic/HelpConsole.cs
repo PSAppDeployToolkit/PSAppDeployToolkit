@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using PSADT.ClientServer;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.Utilities;
 
@@ -90,7 +91,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            Load += (sender, e) => DialogManager.SetClientServerOperationSuccess();
+            Load += (sender, e) => ClientServerUtilities.SetClientServerOperationSuccess();
         }
 
         /// <summary>

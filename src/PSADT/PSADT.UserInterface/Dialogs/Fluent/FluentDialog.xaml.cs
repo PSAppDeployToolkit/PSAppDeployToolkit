@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using PSADT.AccountManagement;
+using PSADT.ClientServer;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.Utilities;
@@ -289,7 +290,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             _expiryTimer?.Start();
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            DialogManager.SetClientServerOperationSuccess();
+            ClientServerUtilities.SetClientServerOperationSuccess();
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using PSADT.ClientServer;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
@@ -192,7 +193,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             expiryTimer?.Start();
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            DialogManager.SetClientServerOperationSuccess();
+            ClientServerUtilities.SetClientServerOperationSuccess();
         }
 
         /// <summary>
