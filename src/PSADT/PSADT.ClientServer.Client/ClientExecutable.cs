@@ -403,6 +403,12 @@ namespace PSADT.ClientServer
                                                 break;
                                             }
 
+                                        case PipeCommand.GroupPolicyUpdate:
+                                            {
+                                                WriteSuccess(GroupPolicyUpdate(DeserializeBytes<GroupPolicyUpdatePayload>(payloadBytes).Force));
+                                                break;
+                                            }
+
                                         default:
                                             {
                                                 throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
@@ -567,6 +573,15 @@ namespace PSADT.ClientServer
                 else if (arg is "/TokenBroker" or "/tb")
                 {
                     BrokerTokenForCaller(ArgvToDictionary(argv));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GroupPolicyUpdate" or "/gpu")
+                {
+                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || string.IsNullOrWhiteSpace(forceStr) || !bool.TryParse(forceStr, out bool force))
+                    {
+                        throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                    }
+                    Console.WriteLine(SerializeToString(GroupPolicyUpdate(force)));
                     return (int)ClientExitCode.Success;
                 }
             }
@@ -817,6 +832,31 @@ namespace PSADT.ClientServer
                 }
             }
             pipe.Flush(); pipe.WaitForPipeDrain();
+        }
+
+        /// <summary>
+        /// Runs a Group Policy update on the local machine by invoking the gpupdate utility.
+        /// </summary>
+        /// <param name="force">A value indicating whether to force the update, reapplying all policy settings even if they have not
+        /// changed. If <see langword="true"/>, all settings are reapplied.</param>
+        /// <returns>A <see cref="ProcessResult"/> object that contains the results of the Group Policy update operation.</returns>
+        internal static ProcessResult GroupPolicyUpdate(bool force)
+        {
+            // Build out argument list for gpupdate.exe.
+            List<string> argumentList = ["/Target:User"];
+            if (force)
+            {
+                argumentList.Add("/Force");
+            }
+
+            // Set up the process and return its result.
+            ProcessLaunchInfo launchInfo = new(
+                Path.Combine(Environment.SystemDirectory, "gpupdate.exe"),
+                argumentList,
+                standardInput: ["N"],
+                createNoWindow: true
+            );
+            return ProcessManager.LaunchAsync(launchInfo)!.Task.GetAwaiter().GetResult();
         }
 
         /// <summary>

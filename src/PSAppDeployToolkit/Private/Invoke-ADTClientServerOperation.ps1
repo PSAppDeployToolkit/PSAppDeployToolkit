@@ -64,6 +64,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
         [System.Management.Automation.SwitchParameter]$RemoveEnvironmentVariable,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
+        [System.Management.Automation.SwitchParameter]$GroupPolicyUpdate,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'InitCloseAppsDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ProgressDialogOpen')]
@@ -82,6 +85,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Foundation.RunAsActiveUser]$User,
 
@@ -137,6 +141,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [System.Management.Automation.SwitchParameter]$Expandable,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
+        [System.Management.Automation.SwitchParameter]$Force,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
@@ -147,6 +154,7 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'GroupPolicyUpdate')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
@@ -263,6 +271,10 @@ function Private:Invoke-ADTClientServerOperation
             elseif ($PSCmdlet.ParameterSetName.Equals('SetEnvironmentVariable'))
             {
                 $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariable($Variable, $Value, !!$Expandable, !!$Append, !!$Remove)
+            }
+            elseif ($PSCmdlet.ParameterSetName.Equals('GroupPolicyUpdate'))
+            {
+                $result = $Script:ADT.ClientServerProcess.GroupPolicyUpdate(!!$Force)
             }
             elseif ($PSBoundParameters.ContainsKey('Options'))
             {
@@ -428,6 +440,11 @@ function Private:Invoke-ADTClientServerOperation
             RemoveEnvironmentVariable
             {
                 [System.Boolean]
+                break
+            }
+            GroupPolicyUpdate
+            {
+                [PSADT.ProcessManagement.ProcessResult]
                 break
             }
             default
@@ -610,7 +627,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable)$'))
+    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate)$'))
     {
         return $result
     }

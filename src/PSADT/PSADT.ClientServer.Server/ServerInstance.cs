@@ -562,6 +562,18 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Triggers a Group Policy update on the target system, optionally forcing the update and specifying whether to
+        /// run synchronously or asynchronously.
+        /// </summary>
+        /// <param name="force">true to reapply all policy settings, even those that have not changed; false to update only changed
+        /// settings.</param>
+        /// <returns>A ProcessResult object containing the outcome of the Group Policy update operation.</returns>
+        public ProcessResult GroupPolicyUpdate(bool force)
+        {
+            return Invoke<GroupPolicyUpdatePayload, ProcessResult>(PipeCommand.GroupPolicyUpdate, new(force));
+        }
+
+        /// <summary>
         /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see

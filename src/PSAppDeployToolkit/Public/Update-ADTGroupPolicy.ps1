@@ -11,7 +11,16 @@ function Update-ADTGroupPolicy
         Performs a gpupdate command to refresh Group Policies on the local machine.
 
     .DESCRIPTION
-        This function performs a gpupdate command to refresh Group Policies on the local machine. It updates both Computer and User policies by forcing a refresh using the gpupdate.exe utility.
+        This function performs a gpupdate command to refresh Group Policies on the local machine.
+
+    .PARAMETER Target
+        Specifies that only User or only Computer policy settings are updated. By default, both User and Computer policy settings are updated.
+
+    .PARAMETER Force
+        Reapplies all policy settings. By default, only policy settings that have changed are applied.
+
+    .PARAMETER NoWait
+        Starts the underlying gpupdate.exe call without waiting for it to finish.
 
     .INPUTS
         None
@@ -43,6 +52,17 @@ function Update-ADTGroupPolicy
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Computer', 'User')]
+        [System.String[]]$Target = ('Computer', 'User'),
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$Force,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$NoWait
     )
 
     begin
@@ -53,40 +73,101 @@ function Update-ADTGroupPolicy
 
     process
     {
-        # Handle each target separately so we can report on it.
-        foreach ($target in ('Computer', 'User'))
+        # Handle the Computer target first.
+        if ($Target.Contains('Computer'))
         {
-            try
+            # Set up the parameters for Start-ADTProcess.
+            $sapParams = @{
+                FilePath = "$([System.Environment]::SystemDirectory)\gpupdate.exe"
+                ArgumentList = $('/Target:Computer'; if ($Force) { '/Force' })
+                InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                CreateNoWindow = $true
+                StandardInput = 'N'
+            }
+            if (!$NoWait)
             {
+                Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the Computer"))."
                 try
                 {
-                    # Invoke gpupdate.exe and cache the results. An exit code of 0 is considered successful.
-                    Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
-                    $gpUpdateResult = & "$([System.Environment]::SystemDirectory)\cmd.exe" /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
-                    if (!$Global:LASTEXITCODE)
+                    try
                     {
-                        continue
+                        if (($result = Start-ADTProcess @sapParams -IgnoreExitCodes * -PassThru).ExitCode -ne 0)
+                        {
+                            $naerParams = @{
+                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$result.ExitCode].", $result.ExitCode)
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'GpUpdateComputerFailure'
+                                TargetObject = $result
+                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
                     }
-
-                    # If we're here, we had a bad exit code.
-                    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE].") -Severity 3
-                    $naerParams = @{
-                        Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'GpUpdateFailure'
-                        TargetObject = $gpUpdateResult
-                        RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
                     }
-                    throw (New-ADTErrorRecord @naerParams)
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
                 }
             }
-            catch
+            else
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Write-ADTLogEntry -Message "Updating Group Policies for the Computer without waiting."
+                Start-ADTProcess @sapParams -NoWait
+            }
+        }
+
+        # Handle the User target if specified.
+        if ($Target.Contains('User'))
+        {
+            # Return early if there's no logged on user.
+            if (!($runAsActiveUser = Get-ADTClientServerUser))
+            {
+                Write-ADTLogEntry -Message "Bypassing Group Policy update for the User as there is no active user logged onto the system."
+            }
+
+            # Set up the parameters for Invoke-ADTClientServerOperation.
+            $iacsoParams = @{
+                GroupPolicyUpdate = $true
+                User = $runAsActiveUser
+                Force = $Force
+            }
+            if (!$NoWait)
+            {
+                Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the User"))."
+                try
+                {
+                    try
+                    {
+                        if (($result = Invoke-ADTClientServerOperation @iacsoParams).ExitCode -ne 0)
+                        {
+                            $naerParams = @{
+                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$result.ExitCode].", $result.ExitCode)
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'GpUpdateUserFailure'
+                                TargetObject = $result
+                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
+                }
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                }
+            }
+            else
+            {
+                Write-ADTLogEntry -Message "Updating Group Policies for the Computer without waiting."
+                Invoke-ADTClientServerOperation @iacsoParams -NoWait
             }
         }
     }
