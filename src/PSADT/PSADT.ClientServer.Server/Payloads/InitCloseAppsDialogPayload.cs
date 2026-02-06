@@ -10,17 +10,17 @@ namespace PSADT.ClientServer.Payloads
     internal sealed record InitCloseAppsDialogPayload : IPayload
     {
         /// <summary>
-        /// The collection of process definitions to monitor.
+        /// The collection of process definitions to monitor, or null if no processes need to be monitored.
         /// </summary>
         [JsonInclude]
-        internal readonly ReadOnlyCollection<ProcessDefinition> ProcessDefinitions;
+        internal readonly ReadOnlyCollection<ProcessDefinition>? ProcessDefinitions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InitCloseAppsDialogPayload"/> class.
         /// </summary>
-        /// <param name="processDefinitions">The collection of process definitions to monitor.</param>
+        /// <param name="processDefinitions">The collection of process definitions to monitor, or null if no processes need to be monitored.</param>
         [JsonConstructor]
-        internal InitCloseAppsDialogPayload(ReadOnlyCollection<ProcessDefinition> processDefinitions)
+        internal InitCloseAppsDialogPayload(ReadOnlyCollection<ProcessDefinition>? processDefinitions)
         {
             ProcessDefinitions = processDefinitions;
         }

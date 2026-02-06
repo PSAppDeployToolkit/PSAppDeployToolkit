@@ -43,19 +43,19 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Deserializes the specified UTF-8 encoded byte array to an object of type T.
+        /// Deserializes the specified UTF-8 encoded byte span to an object of type T.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
-        /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
+        /// <param name="json">A UTF-8 encoded byte span containing the JSON to deserialize. Cannot be empty.</param>
         /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is empty.</exception>
         /// <exception cref="JsonException">Thrown if deserialization fails or results in a null object.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public static T DeserializeFromBytes<T>(byte[] json)
+        public static T DeserializeFromBytes<T>(ReadOnlySpan<byte> json)
         {
-            if (json is null || json.Length == 0)
+            if (json.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(json), "Input bytes cannot be null or empty.");
+                throw new ArgumentException("Input bytes cannot be empty.", nameof(json));
             }
             if (JsonSerializer.Deserialize<T>(json, DefaultJsonSerializerOptions) is T result)
             {
@@ -143,8 +143,6 @@ namespace PSADT.ClientServer
             Converters =
             {
                 new ExceptionConverter(),
-                new PipeRequestConverter(),
-                new PipeResponseConverter(),
                 new ShowModalDialogPayloadConverter(),
                 new WindowInfoCollectionConverter(),
                 new ProcessDefinitionCollectionConverter(),

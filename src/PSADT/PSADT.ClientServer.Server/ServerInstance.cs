@@ -122,7 +122,7 @@ namespace PSADT.ClientServer
             bool? opened = null;
             try
             {
-                if (!(opened = (bool)Invoke(PipeCommand.Open)!).Value)
+                if (!(opened = Invoke<bool>(PipeCommand.Open)).Value)
                 {
                     throw new ApplicationException("The opened client process is not properly responding to commands.");
                 }
@@ -173,7 +173,7 @@ namespace PSADT.ClientServer
                 {
                     if (!force)
                     {
-                        if (!(bool)Invoke(PipeCommand.Close)!)
+                        if (!Invoke<bool>(PipeCommand.Close))
                         {
                             throw new ApplicationException("The opened client process did not properly respond to the close command.");
                         }
@@ -268,7 +268,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the dialog was successfully initialized; otherwise, <see langword="false"/>.</returns>
         public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
         {
-            return (bool)Invoke(PipeCommand.InitCloseAppsDialog, closeProcesses is not null ? new InitCloseAppsDialogPayload(closeProcesses) : null)!;
+            return Invoke<InitCloseAppsDialogPayload, bool>(PipeCommand.InitCloseAppsDialog, new(closeProcesses));
         }
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the user agrees to close the applications; otherwise, <see langword="false"/>.</returns>
         public bool PromptToCloseApps(TimeSpan promptToCloseTimeout)
         {
-            return (bool)Invoke(PipeCommand.PromptToCloseApps, new PromptToCloseAppsPayload(promptToCloseTimeout))!;
+            return Invoke<PromptToCloseAppsPayload, bool>(PipeCommand.PromptToCloseApps, new(promptToCloseTimeout));
         }
 
         /// <summary>
@@ -294,7 +294,7 @@ namespace PSADT.ClientServer
         /// information about whether the user chose to close the applications or canceled the operation.</returns>
         public CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
         {
-            return (CloseAppsDialogResult)(long)ShowModalDialog(DialogType.CloseAppsDialog, dialogStyle, options)!;
+            return (CloseAppsDialogResult)ShowModalDialog<long>(DialogType.CloseAppsDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace PSADT.ClientServer
         /// <returns>The user's input as a string, or <see langword="null"/> if the dialog is canceled.</returns>
         public string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
-            return (string)ShowModalDialog(DialogType.CustomDialog, dialogStyle, options)!;
+            return ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace PSADT.ClientServer
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
         public InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options)
         {
-            return (InputDialogResult)ShowModalDialog(DialogType.InputDialog, dialogStyle, options)!;
+            return ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace PSADT.ClientServer
         /// configuration and user interaction.</returns>
         public string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options)
         {
-            return (string)ShowModalDialog(DialogType.RestartDialog, dialogStyle, options)!;
+            return ShowModalDialog<string>(DialogType.RestartDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace PSADT.ClientServer
         /// <returns>A <see cref="DialogBoxResult"/> that represents the result of the user's interaction with the dialog box.</returns>
         public DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
-            return (DialogBoxResult)(long)ShowModalDialog(DialogType.DialogBox, 0, options)!;
+            return (DialogBoxResult)ShowModalDialog<long>(DialogType.DialogBox, 0, options);
         }
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace PSADT.ClientServer
         /// langword="false"/>.</returns>
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
-            return (bool)Invoke(PipeCommand.ShowProgressDialog, new ShowProgressDialogPayload(dialogStyle, options))!;
+            return Invoke<ShowProgressDialogPayload, bool>(PipeCommand.ShowProgressDialog, new(dialogStyle, options));
         }
 
         /// <summary>
@@ -377,7 +377,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
         public bool ProgressDialogOpen()
         {
-            return (bool)Invoke(PipeCommand.ProgressDialogOpen)!;
+            return Invoke<bool>(PipeCommand.ProgressDialogOpen);
         }
 
         /// <summary>
@@ -397,11 +397,11 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully updated; otherwise, <see langword="false"/>.</returns>
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
-            return (bool)Invoke(PipeCommand.UpdateProgressDialog, new UpdateProgressDialogPayload(
+            return Invoke<UpdateProgressDialogPayload, bool>(PipeCommand.UpdateProgressDialog, new(
                 !string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : null,
                 !string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : null,
                 progressPercentage,
-                messageAlignment))!;
+                messageAlignment));
         }
 
         /// <summary>
@@ -413,7 +413,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully closed; otherwise, <see langword="false"/>.</returns>
         public bool CloseProgressDialog()
         {
-            return (bool)Invoke(PipeCommand.CloseProgressDialog)!;
+            return Invoke<bool>(PipeCommand.CloseProgressDialog);
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
-            return (bool)Invoke(PipeCommand.ShowBalloonTip, new ShowBalloonTipPayload(options))!;
+            return Invoke<ShowBalloonTipPayload, bool>(PipeCommand.ShowBalloonTip, new(options));
         }
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         public bool MinimizeAllWindows()
         {
-            return (bool)Invoke(PipeCommand.MinimizeAllWindows)!;
+            return Invoke<bool>(PipeCommand.MinimizeAllWindows);
         }
 
         /// <summary>
@@ -451,7 +451,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if all windows were successfully restored; otherwise, <see langword="false"/>.</returns>
         public bool RestoreAllWindows()
         {
-            return (bool)Invoke(PipeCommand.RestoreAllWindows)!;
+            return Invoke<bool>(PipeCommand.RestoreAllWindows);
         }
 
         /// <summary>
@@ -465,7 +465,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the keystrokes were successfully sent; otherwise, <see langword="false"/>.</returns>
         public bool SendKeys(SendKeysOptions options)
         {
-            return (bool)Invoke(PipeCommand.SendKeys, new SendKeysPayload(options))!;
+            return Invoke<SendKeysPayload, bool>(PipeCommand.SendKeys, new(options));
         }
 
         /// <summary>
@@ -481,7 +481,7 @@ namespace PSADT.ClientServer
         /// specified filters. If no filters are provided, all windows are included in the result.</returns>
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
-            return (ReadOnlyCollection<WindowInfo>)Invoke(PipeCommand.GetProcessWindowInfo, new GetProcessWindowInfoPayload(options))!;
+            return Invoke<GetProcessWindowInfoPayload, ReadOnlyCollection<WindowInfo>>(PipeCommand.GetProcessWindowInfo, new(options));
         }
 
         /// <summary>
@@ -493,7 +493,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         public bool RefreshDesktopAndEnvironmentVariables()
         {
-            return (bool)Invoke(PipeCommand.RefreshDesktopAndEnvironmentVariables)!;
+            return Invoke<bool>(PipeCommand.RefreshDesktopAndEnvironmentVariables);
         }
 
         /// <summary>
@@ -505,7 +505,7 @@ namespace PSADT.ClientServer
         /// <returns>An instance of <see cref="QUERY_USER_NOTIFICATION_STATE"/> representing the user's notification state.</returns>
         public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
-            return (QUERY_USER_NOTIFICATION_STATE)(long)Invoke(PipeCommand.GetUserNotificationState)!;
+            return (QUERY_USER_NOTIFICATION_STATE)Invoke<long>(PipeCommand.GetUserNotificationState);
         }
 
         /// <summary>
@@ -516,7 +516,7 @@ namespace PSADT.ClientServer
         /// <returns>The process ID of the application that owns the foreground window.</returns>
         public uint GetForegroundWindowProcessId()
         {
-            return (uint)(long)Invoke(PipeCommand.GetForegroundWindowProcessId)!;
+            return (uint)Invoke<long>(PipeCommand.GetForegroundWindowProcessId);
         }
 
         /// <summary>
@@ -526,7 +526,7 @@ namespace PSADT.ClientServer
         /// <returns>The value of the specified environment variable, or null if the variable is not found.</returns>
         public string GetEnvironmentVariable(string variable)
         {
-            return (string)Invoke(PipeCommand.GetEnvironmentVariable, new EnvironmentVariablePayload(variable))!;
+            return Invoke<EnvironmentVariablePayload, string>(PipeCommand.GetEnvironmentVariable, new(variable));
         }
 
         /// <summary>
@@ -548,7 +548,7 @@ namespace PSADT.ClientServer
         /// <returns>true if the operation succeeds; otherwise, false.</returns>
         public bool SetEnvironmentVariable(string variable, string value, bool expandable, bool append, bool remove)
         {
-            return (bool)Invoke(PipeCommand.SetEnvironmentVariable, new EnvironmentVariablePayload(variable, value, expandable, append, remove))!;
+            return Invoke<EnvironmentVariablePayload, bool>(PipeCommand.SetEnvironmentVariable, new(variable, value, expandable, append, remove));
         }
 
         /// <summary>
@@ -558,7 +558,7 @@ namespace PSADT.ClientServer
         /// <returns>true if the environment variable was successfully removed; otherwise, false.</returns>
         public bool RemoveEnvironmentVariable(string variable)
         {
-            return (bool)Invoke(PipeCommand.RemoveEnvironmentVariable, new EnvironmentVariablePayload(variable))!;
+            return Invoke<EnvironmentVariablePayload, bool>(PipeCommand.RemoveEnvironmentVariable, new(variable));
         }
 
         /// <summary>
@@ -638,41 +638,85 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Invokes a modal dialog command and sets the appropriate log source.
         /// </summary>
+        /// <typeparam name="TResult">The expected return type from the dialog.</typeparam>
         /// <param name="dialogType">The type of the dialog to display.</param>
         /// <param name="dialogStyle">The style of the dialog to display.</param>
         /// <param name="options">The options to configure the dialog.</param>
         /// <returns>The result from the dialog.</returns>
-        private object? ShowModalDialog(DialogType dialogType, DialogStyle dialogStyle, object options)
+        private TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, object options)
         {
-            return Invoke(PipeCommand.ShowModalDialog, new ShowModalDialogPayload(dialogType, dialogStyle, options));
+            return Invoke<ShowModalDialogPayload, TResult>(PipeCommand.ShowModalDialog, new(dialogType, dialogStyle, options));
         }
 
         /// <summary>
-        /// Executes the specified command and returns the result from the client.
+        /// Executes the specified command without a payload and returns the result from the client.
         /// </summary>
-        /// <remarks>This method sends a <see cref="PipeRequest"/> to the client, processes the
-        /// <see cref="PipeResponse"/>, and returns the result. Callers are responsible for casting
-        /// the result to the expected type.</remarks>
+        /// <typeparam name="TResult">The expected return type from the client.</typeparam>
         /// <param name="command">The command to execute.</param>
-        /// <param name="payload">Optional payload data for the command.</param>
-        /// <returns>The result from the client, or null if no result was returned.</returns>
-        private object? Invoke(PipeCommand command, IPayload? payload = null)
+        /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
+        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
+        private TResult Invoke<TResult>(PipeCommand command)
         {
-            // Send the encrypted request to the client.
+            // Send the request: [1-byte command]
             try
             {
-                _ioEncryption.WriteEncrypted(_outputServer, DataSerialization.SerializeToBytes(new PipeRequest(command, payload)));
+                _ioEncryption.WriteEncrypted(_outputServer, [(byte)command]);
             }
             catch (IOException ex)
             {
                 throw new InvalidDataException("An error occurred while writing to the output stream.", ex);
             }
+            return ReadResponse<TResult>();
+        }
 
-            // Read and decrypt the client's response.
-            PipeResponse response;
+        /// <summary>
+        /// Executes the specified command with a payload and returns the result from the client.
+        /// </summary>
+        /// <remarks>This method sends the command and payload to the client, reads the response,
+        /// and returns the strongly-typed result. The request format is: [1-byte command][serialized payload].
+        /// The response format uses a single byte discriminator:
+        /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or 
+        /// <see cref="ResponseMarker.Error"/> (followed by serialized exception).</remarks>
+        /// <typeparam name="TPayload">The payload type, which must implement <see cref="IPayload"/>.</typeparam>
+        /// <typeparam name="TResult">The expected return type from the client.</typeparam>
+        /// <param name="command">The command to execute.</param>
+        /// <param name="payload">The payload data for the command.</param>
+        /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
+        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
+        private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IPayload
+        {
+            // Build and send the request: [1-byte command][serialized payload]
             try
             {
-                response = DataSerialization.DeserializeFromBytes<PipeResponse>(_ioEncryption.ReadEncrypted(_inputServer));
+                byte[] payloadBytes = DataSerialization.SerializeToBytes(payload);
+                byte[] request = new byte[payloadBytes.Length + 1];
+                request[0] = (byte)command;
+                payloadBytes.CopyTo(request.AsSpan(1));
+                _ioEncryption.WriteEncrypted(_outputServer, request);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidDataException("An error occurred while writing to the output stream.", ex);
+            }
+            return ReadResponse<TResult>();
+        }
+
+        /// <summary>
+        /// Reads and deserializes the response from the client.
+        /// </summary>
+        /// <typeparam name="T">The expected return type from the client.</typeparam>
+        /// <returns>The result from the client, deserialized to type <typeparamref name="T"/>.</returns>
+        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
+        private T ReadResponse<T>()
+        {
+            // Read and decrypt the client's response.
+            byte[] response;
+            try
+            {
+                response = _ioEncryption.ReadEncrypted(_inputServer);
             }
             catch (EndOfStreamException ex)
             {
@@ -682,9 +726,15 @@ namespace PSADT.ClientServer
             {
                 throw new InvalidDataException("An error occurred while reading from the input stream.", ex);
             }
+            if (response.Length < 2)
+            {
+                throw new ServerException("The client process returned an invalid or empty response.");
+            }
 
-            // If the response indicates failure, rethrow the error, otherwise just return the result.
-            return response.Error is null ? response.Result : throw new ServerException("The client process returned an exception.", response.Error);
+            // Deserialize based on the success marker.
+            return response[0] != (byte)ResponseMarker.Success
+                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response.AsSpan(1)))
+                : DataSerialization.DeserializeFromBytes<T>(response.AsSpan(1));
         }
 
         /// <summary>

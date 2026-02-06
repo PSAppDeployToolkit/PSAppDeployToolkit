@@ -156,11 +156,19 @@ namespace PSADT.ClientServer
                     // Set up writer helper methods.
                     void WriteSuccess<T>(T result)
                     {
-                        ioEncryption.WriteEncrypted(outputPipeClient, SerializeToBytes(PipeResponse.Ok(result)));
+                        byte[] data = SerializeToBytes(result);
+                        byte[] response = new byte[data.Length + 1];
+                        response[0] = (byte)ResponseMarker.Success;
+                        data.CopyTo(response.AsSpan(1));
+                        ioEncryption.WriteEncrypted(outputPipeClient, response);
                     }
                     void WriteError(Exception ex)
                     {
-                        ioEncryption.WriteEncrypted(outputPipeClient, SerializeToBytes(PipeResponse.Fail(ex)));
+                        byte[] data = SerializeToBytes(ex);
+                        byte[] response = new byte[data.Length + 1];
+                        response[0] = (byte)ResponseMarker.Error;
+                        data.CopyTo(response.AsSpan(1));
+                        ioEncryption.WriteEncrypted(outputPipeClient, response);
                     }
                     void WriteLog(string message, LogSeverity severity, string source)
                     {
@@ -175,11 +183,17 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                // Read, decrypt, deserialize, then process the request. We never let an exception here kill the pipe.
-                                PipeRequest request = DeserializeBytes<PipeRequest>(ioEncryption.ReadEncrypted(inputPipeClient));
+                                // Read and decrypt the request: [1-byte command][serialized payload]
+                                byte[] requestBytes = ioEncryption.ReadEncrypted(inputPipeClient);
+                                if (requestBytes.Length == 0)
+                                {
+                                    throw new ClientException("Received empty request from server.", ClientExitCode.InvalidRequest);
+                                }
+                                PipeCommand command = (PipeCommand)requestBytes[0];
+                                ReadOnlySpan<byte> payloadBytes = requestBytes.AsSpan(1);
                                 try
                                 {
-                                    switch (request.Command)
+                                    switch (command)
                                     {
                                         case PipeCommand.Open:
                                             {
@@ -195,7 +209,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.InitCloseAppsDialog:
                                             {
-                                                closeAppsDialogState = new(((InitCloseAppsDialogPayload?)request.Payload)?.ProcessDefinitions, WriteLog);
+                                                closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(payloadBytes).ProcessDefinitions, WriteLog);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -209,7 +223,7 @@ namespace PSADT.ClientServer
                                                 }
 
                                                 // Get all the windows that haven't failed on us and start closing them.
-                                                TimeSpan promptToSaveTimeout = ((PromptToCloseAppsPayload)request.Payload!).Timeout; List<nint> failures = []; Process[] runningProcesses;
+                                                TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(payloadBytes).Timeout; List<nint> failures = []; Process[] runningProcesses;
                                                 while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
                                                 {
                                                     // Start gracefully closing each open window.
@@ -282,14 +296,14 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.ShowModalDialog:
                                             {
-                                                ShowModalDialogPayload payload = (ShowModalDialogPayload)request.Payload!;
+                                                ShowModalDialogPayload payload = DeserializeBytes<ShowModalDialogPayload>(payloadBytes);
                                                 WriteSuccess(InvokeModalDialog(payload.DialogType, payload.DialogStyle, payload.Options, closeAppsDialogState));
                                                 break;
                                             }
 
                                         case PipeCommand.ShowProgressDialog:
                                             {
-                                                ShowProgressDialogPayload payload = (ShowProgressDialogPayload)request.Payload!;
+                                                ShowProgressDialogPayload payload = DeserializeBytes<ShowProgressDialogPayload>(payloadBytes);
                                                 DialogManager.ShowProgressDialog(payload.DialogStyle, payload.Options);
                                                 WriteSuccess(DialogManager.ProgressDialogOpen());
                                                 break;
@@ -303,7 +317,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.UpdateProgressDialog:
                                             {
-                                                UpdateProgressDialogPayload payload = (UpdateProgressDialogPayload)request.Payload!;
+                                                UpdateProgressDialogPayload payload = DeserializeBytes<UpdateProgressDialogPayload>(payloadBytes);
                                                 DialogManager.UpdateProgressDialog(payload.Message, payload.DetailMessage, payload.Percentage, payload.Alignment);
                                                 WriteSuccess(true);
                                                 break;
@@ -318,7 +332,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.ShowBalloonTip:
                                             {
-                                                DialogManager.ShowBalloonTip(((ShowBalloonTipPayload)request.Payload!).Options);
+                                                DialogManager.ShowBalloonTip(DeserializeBytes<ShowBalloonTipPayload>(payloadBytes).Options);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -339,13 +353,13 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.SendKeys:
                                             {
-                                                WriteSuccess(SendKeys(((SendKeysPayload)request.Payload!).Options));
+                                                WriteSuccess(SendKeys(DeserializeBytes<SendKeysPayload>(payloadBytes).Options));
                                                 break;
                                             }
 
                                         case PipeCommand.GetProcessWindowInfo:
                                             {
-                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(((GetProcessWindowInfoPayload)request.Payload!).Options));
+                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(payloadBytes).Options));
                                                 break;
                                             }
 
@@ -370,13 +384,13 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.GetEnvironmentVariable:
                                             {
-                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(payloadBytes).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
                                                 break;
                                             }
 
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
-                                                EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
+                                                EnvironmentVariablePayload payload = DeserializeBytes<EnvironmentVariablePayload>(payloadBytes);
                                                 EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable, payload.Append, payload.Remove);
                                                 WriteSuccess(true);
                                                 break;
@@ -384,14 +398,14 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.RemoveEnvironmentVariable:
                                             {
-                                                EnvironmentUtilities.RemoveEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User);
+                                                EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(payloadBytes).Name, EnvironmentVariableTarget.User);
                                                 WriteSuccess(true);
                                                 break;
                                             }
 
                                         default:
                                             {
-                                                throw new ClientException($"The specified command [{request.Command}] is not recognised.", ClientExitCode.InvalidArguments);
+                                                throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
                                             }
                                     }
                                 }
@@ -900,13 +914,13 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Deserializes the specified byte array into an object of type <typeparamref name="T"/>.
+        /// Deserializes the specified byte span into an object of type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize.</typeparam>
-        /// <param name="input">The UTF-8 encoded byte array representation of the object to deserialize. Cannot be null or empty.</param>
+        /// <param name="input">The UTF-8 encoded byte span representation of the object to deserialize. Cannot be empty.</param>
         /// <returns>An object of type <typeparamref name="T"/> deserialized from the input bytes.</returns>
         /// <exception cref="ClientException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
-        private static T DeserializeBytes<T>(byte[] input)
+        private static T DeserializeBytes<T>(ReadOnlySpan<byte> input)
         {
             try
             {
