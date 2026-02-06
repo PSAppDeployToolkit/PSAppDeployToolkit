@@ -67,25 +67,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
         [System.Management.Automation.SwitchParameter]$GroupPolicyUpdate,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'InitCloseAppsDialog')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'ProgressDialogOpen')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'UpdateProgressDialog')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'CloseProgressDialog')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'GetForegroundWindowProcessId')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'MinimizeAllWindows')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'RestoreAllWindows')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'GetEnvironmentVariable')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Foundation.RunAsActiveUser]$User,
 
