@@ -41,12 +41,7 @@ namespace PSADT.ClientServer
         /// stream is set to automatically flush data to ensure timely communication.</remarks>
         public ServerInstance(RunAsActiveUser runAsActiveUser)
         {
-            // Initialize the anonymous pipe streams for inter-process communication.
             RunAsActiveUser = runAsActiveUser ?? throw new ArgumentNullException("User cannot be null.", (Exception?)null);
-            _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
-            _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _ioEncryption = new(); _logEncryption = new();
         }
 
         /// <summary>
@@ -65,7 +60,16 @@ namespace PSADT.ClientServer
                 throw new ObjectDisposedException(nameof(ServerInstance), "Cannot open a connection on a disposed ServerInstance.");
             }
 
+            // Don't re-open if there's already a client process associated with this instance.
+            if (_clientProcessCts is not null || _clientProcess is not null)
+            {
+                throw new InvalidOperationException("The server instance already has an associated client process.");
+            }
+
             // Start the server to listen for incoming connections and process data.
+            _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
+            _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
+            _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
             bool outputServerClientSafePipeHandleAddRef = false;
             bool inputServerClientSafePipeHandleAddRef = false;
             bool logServerClientSafePipeHandleAddRef = false;
@@ -116,8 +120,8 @@ namespace PSADT.ClientServer
             bool? opened = null;
             try
             {
-                _ioEncryption.PerformKeyExchange(_outputServer, _inputServer);
-                _logEncryption.PerformKeyExchange(_outputServer, _inputServer);
+                (_ioEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
+                (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
                 if (!(opened = Invoke<bool>(PipeCommand.Open)).Value)
                 {
                     throw new InvalidOperationException("The opened client process returned an invalid response.");
@@ -248,6 +252,15 @@ namespace PSADT.ClientServer
                     _clientProcessCts.Dispose();
                     _clientProcessCts = null;
                 }
+
+                // Dispose encryption objects.
+                _logEncryption?.Dispose();
+                _ioEncryption?.Dispose();
+
+                // Dispose pipe servers.
+                _logServer?.Dispose();
+                _inputServer?.Dispose();
+                _outputServer?.Dispose();
             }
         }
 
@@ -620,19 +633,7 @@ namespace PSADT.ClientServer
             if (disposing)
             {
                 // Close the client process if it is running.
-                if (_clientProcess is not null)
-                {
-                    Close();
-                }
-
-                // Dispose encryption objects.
-                _logEncryption.Dispose();
-                _ioEncryption.Dispose();
-
-                // Dispose pipe servers.
-                _logServer.Dispose();
-                _inputServer.Dispose();
-                _outputServer.Dispose();
+                Close();
             }
             _disposed = true;
         }
@@ -663,6 +664,12 @@ namespace PSADT.ClientServer
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(ServerInstance), "Cannot invoke a command on a disposed ServerInstance.");
+            }
+
+            // Ensure this object is opened before proceeding.
+            if (_ioEncryption is null || _outputServer is null)
+            {
+                throw new InvalidOperationException("The server instance is not open.");
             }
 
             // Send the request: [1-byte command]
@@ -700,6 +707,12 @@ namespace PSADT.ClientServer
                 throw new ObjectDisposedException(nameof(ServerInstance), "Cannot invoke a command on a disposed ServerInstance.");
             }
 
+            // Ensure this object is opened before proceeding.
+            if (_ioEncryption is null || _outputServer is null)
+            {
+                throw new InvalidOperationException("The server instance is not open.");
+            }
+
             // Build and send the request: [1-byte command][serialized payload]
             try
             {
@@ -725,6 +738,18 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private T ReadResponse<T>()
         {
+            // Don't read anything if the object is disposed.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot read a response from a disposed ServerInstance.");
+            }
+
+            // Ensure this object is opened before proceeding.
+            if (_ioEncryption is null || _inputServer is null)
+            {
+                throw new InvalidOperationException("The server instance is not open.");
+            }
+
             // Read and decrypt the client's response.
             byte[] response;
             try
@@ -756,6 +781,12 @@ namespace PSADT.ClientServer
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(ServerInstance), "Cannot read logs from a disposed ServerInstance.");
+            }
+
+            // Ensure the log encryption and server are initialized before proceeding.
+            if (_logEncryption is null || _logServer is null)
+            {
+                throw new InvalidOperationException("The log reader is not initialized.");
             }
 
             // Read the log stream until cancellation is requested or the end of the stream is reached.
@@ -826,19 +857,12 @@ namespace PSADT.ClientServer
         internal const bool UseHighestAvailableToken = true;
 
         /// <summary>
-        /// Indicates whether the object has been disposed.
+        /// Represents the server side of an anonymous pipe used for interprocess communication.
         /// </summary>
-        /// <remarks>This field is used internally to track the disposal state of the object. It should
-        /// not be accessed directly outside of the class.</remarks>
-        private bool _disposed;
-
-        /// <summary>
-        /// Represents the server side of an anonymous pipe used for inter-process communication.
-        /// </summary>
-        /// <remarks>This field is used to manage the server stream for logging purposes. It provides a
-        /// communication channel between processes, allowing data to be sent from the server to a connected
-        /// client.</remarks>
-        private readonly AnonymousPipeServerStream _logServer;
+        /// <remarks>This pipe server is initialized with an output direction and allows the handle to be
+        /// inherited by child processes. It is typically used to send data from the current process to another
+        /// process.</remarks>
+        private AnonymousPipeServerStream? _outputServer;
 
         /// <summary>
         /// Represents a server-side anonymous pipe stream for reading data.
@@ -846,29 +870,29 @@ namespace PSADT.ClientServer
         /// <remarks>This pipe stream is initialized with an input direction and inheritable handle
         /// settings, allowing it to be used for inter-process communication where the handle can be passed to a child
         /// process.</remarks>
-        private readonly AnonymousPipeServerStream _inputServer;
+        private AnonymousPipeServerStream? _inputServer;
 
         /// <summary>
-        /// Represents the server side of an anonymous pipe used for interprocess communication.
+        /// Represents the server side of an anonymous pipe used for inter-process communication.
         /// </summary>
-        /// <remarks>This pipe server is initialized with an output direction and allows the handle to be
-        /// inherited by child processes. It is typically used to send data from the current process to another
-        /// process.</remarks>
-        private readonly AnonymousPipeServerStream _outputServer;
+        /// <remarks>This field is used to manage the server stream for logging purposes. It provides a
+        /// communication channel between processes, allowing data to be sent from the server to a connected
+        /// client.</remarks>
+        private AnonymousPipeServerStream? _logServer;
 
         /// <summary>
         /// Provides ECDH-based encryption for the main command/response pipe communication.
         /// </summary>
         /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
         /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
-        private readonly ServerPipeEncryption _ioEncryption;
+        private ServerPipeEncryption? _ioEncryption;
 
         /// <summary>
         /// Provides ECDH-based encryption for the log pipe communication.
         /// </summary>
         /// <remarks>This separate encryption instance is used for the log channel to allow independent
         /// encrypted communication for logging purposes.</remarks>
-        private readonly ServerPipeEncryption _logEncryption;
+        private ServerPipeEncryption? _logEncryption;
 
         /// <summary>
         /// Represents an asynchronous operation that retrieves the result of a client process.
@@ -899,6 +923,13 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
         /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
         private CancellationTokenSource? _logWriterTaskCts;
+
+        /// <summary>
+        /// Indicates whether the object has been disposed.
+        /// </summary>
+        /// <remarks>This field is used internally to track the disposal state of the object. It should
+        /// not be accessed directly outside of the class.</remarks>
+        private bool _disposed;
 
         /// <summary>
         /// Represents the file path of the assembly named "PSADT.ClientServer.Client.exe" currently loaded in the

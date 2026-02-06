@@ -164,7 +164,10 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Return the client process's result to the caller.
-        return $clientProcess.Task.GetAwaiter().GetResult()
+        if ($clientResult = $clientProcess.Task.GetAwaiter().GetResult())
+        {
+            return $clientResult
+        }
     }
 
     # If the client/server process is instantiated but no longer running, clean up before continuing.
