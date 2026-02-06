@@ -142,13 +142,17 @@ namespace PSADT.ClientServer
             WriteIndented = false,
             Converters =
             {
+                new CultureInfoConverter(),
+                new EncodingConverter(),
                 new ExceptionConverter(),
+                new IntPtrConverter(),
+                new ProcessDefinitionCollectionConverter(),
+                new ProcessLaunchInfoConverter(),
+                new ProcessResultConverter(),
+                new ReadOnlyDictionaryConverter(),
+                new RunAsActiveUserConverter(),
                 new ShowModalDialogPayloadConverter(),
                 new WindowInfoCollectionConverter(),
-                new ProcessDefinitionCollectionConverter(),
-                new CultureInfoConverter(),
-                new ReadOnlyDictionaryConverter(),
-                new IntPtrConverter(),
             },
         };
     }
