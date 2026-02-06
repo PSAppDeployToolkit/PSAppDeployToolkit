@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using PSADT.ProcessManagement;
@@ -61,29 +62,29 @@ namespace PSADT.DeviceManagement
                                 }
                                 finally
                                 {
-                                    _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(sessionControl);
+                                    _ = Marshal.ReleaseComObject(sessionControl);
                                 }
                             }
                             return false;
                         }
                         finally
                         {
-                            _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(sessionEnumerator);
+                            _ = Marshal.ReleaseComObject(sessionEnumerator);
                         }
                     }
                     finally
                     {
-                        _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(sessionManager);
+                        _ = Marshal.ReleaseComObject(sessionManager);
                     }
                 }
                 finally
                 {
-                    _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(microphoneDevice);
+                    _ = Marshal.ReleaseComObject(microphoneDevice);
                 }
             }
             finally
             {
-                _ = System.Runtime.InteropServices.Marshal.ReleaseComObject(deviceEnumerator);
+                _ = Marshal.ReleaseComObject(deviceEnumerator);
             }
         }
 
