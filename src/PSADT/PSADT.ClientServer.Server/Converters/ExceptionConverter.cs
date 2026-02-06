@@ -86,6 +86,10 @@ namespace PSADT.ClientServer.Converters
             {
                 throw new JsonException("Exception JSON is missing required [$type] property.");
             }
+            if (!IsTrustedExceptionType(typeName))
+            {
+                throw new JsonException($"Exception type [{typeName}] is not from a trusted assembly. Only exceptions from System, Microsoft, and PSADT assemblies are allowed.");
+            }
             if (Type.GetType(typeName, true) is not Type exceptionType)
             {
                 throw new JsonException($"Exception type [{typeName}] could not be resolved. Ensure the assembly is loaded.");
@@ -113,6 +117,32 @@ namespace PSADT.ClientServer.Converters
                 info.AddValue(property.Name, value, value?.GetType() ?? GetExpectedTypeForNullField(property.Name));
             }
             return (Exception)serializationCtor.Invoke([info, context]);
+        }
+
+        /// <summary>
+        /// Validates that the exception type comes from a trusted assembly.
+        /// </summary>
+        /// <param name="assemblyQualifiedTypeName">The assembly-qualified type name to validate.</param>
+        /// <returns>true if the type is from a trusted assembly; otherwise, false.</returns>
+        private static bool IsTrustedExceptionType(string assemblyQualifiedTypeName)
+        {
+            // Find the assembly part of the name (after the first comma).
+            int commaIndex = assemblyQualifiedTypeName.IndexOf(',');
+            if (commaIndex < 0)
+            {
+                return false;
+            }
+
+            // Get the assembly name portion (skip the comma and space) and check against trusted prefixes.
+            string assemblyPart = assemblyQualifiedTypeName.Substring(commaIndex + 1).TrimStart();
+            foreach (string prefix in TrustedAssemblyPrefixes)
+            {
+                if (assemblyPart.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -224,5 +254,19 @@ namespace PSADT.ClientServer.Converters
             ex.GetObjectData(info, context);
 #pragma warning restore SYSLIB0050, SYSLIB0051
         }
+
+        /// <summary>
+        /// Trusted assemblies from which exception types may be loaded during deserialization.
+        /// This is a security measure to prevent arbitrary type instantiation (CA2326/CA2327 mitigation).
+        /// </summary>
+        private static readonly HashSet<string> TrustedAssemblyPrefixes =
+        [
+            "mscorlib,",
+            "System,",
+            "System.",
+            "Microsoft.",
+            "PSADT.",
+            "PSAppDeployToolkit,",
+        ];
     }
 }
