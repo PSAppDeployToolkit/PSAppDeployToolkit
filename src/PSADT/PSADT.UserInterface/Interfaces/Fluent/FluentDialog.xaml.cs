@@ -111,6 +111,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed;
+            ListSelectionStackPanel.Visibility = Visibility.Collapsed;
             CountdownDeferPanelSeparator.Visibility = Visibility.Collapsed;
             DeferRemainingStackPanel.Visibility = Visibility.Collapsed;
             DeferDeadlineStackPanel.Visibility = Visibility.Collapsed;
