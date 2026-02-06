@@ -27,7 +27,6 @@ function Private:Close-ADTClientServerProcess
     }
     try
     {
-        $Script:ADT.ClientServerProcess.Close()
         $Script:ADT.ClientServerProcess.Dispose()
     }
     finally

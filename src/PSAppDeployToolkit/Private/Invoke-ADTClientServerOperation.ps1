@@ -140,6 +140,33 @@ function Private:Invoke-ADTClientServerOperation
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
+    # Internal worker function to extract client/server client process result from the exception.
+    function Get-ADTClientServerClientProcessResult
+    {
+        [CmdletBinding()]
+        param
+        (
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.Management.Automation.ErrorRecord]$ErrorRecord
+        )
+
+        # Return early if we don't have an InnerException.
+        if (!($innerException = $ErrorRecord.Exception | Select-Object -ExpandProperty InnerException -ErrorAction Ignore))
+        {
+            return
+        }
+
+        # Return early if we don't have a ClientProcess.
+        if (!($clientProcess = $innerException | Select-Object -ExpandProperty ClientProcess -ErrorAction Ignore))
+        {
+            return
+        }
+
+        # Return the client process's result to the caller.
+        return $clientProcess.Task.GetAwaiter().GetResult()
+    }
+
     # If the client/server process is instantiated but no longer running, clean up before continuing.
     if ($Script:ADT.ClientServerProcess -and !$Script:ADT.ClientServerProcess.IsRunning)
     {
@@ -179,23 +206,23 @@ function Private:Invoke-ADTClientServerOperation
             {
                 $Script:ADT.ClientServerProcess.Open()
             }
-            catch [System.IO.InvalidDataException]
+            catch
             {
                 # Construct an ErrorRecord using an exception from the client/server process if possible.
-                if ($clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true))
+                if ($result = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
                 {
                     $naerParams = @{
-                        Exception = if ($clientResult.StdErr.Count)
+                        Exception = if ($result.StdErr.Count)
                         {
                             [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr[0], [System.Exception]))
                         }
                         else
                         {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdOut) { " Console Output: [$([System.String]::Join("`n", $clientResult.StdOut))]" })", $_.Exception)
+                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$result.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($result.ExitCode)) { " Exit Code: [$($result.ExitCode)]." })$(if ($result.StdOut) { " Console Output: [$([System.String]::Join("`n", $result.StdOut))]" })", $_.Exception.InnerException)
                         }
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'ClientServerProcessOpenFailure'
-                        TargetObject = $clientResult
+                        TargetObject = $result
                     }
                     $Script:ADT.ClientServerProcess.Dispose()
                     $Script:ADT.ClientServerProcess = $null
@@ -207,12 +234,6 @@ function Private:Invoke-ADTClientServerOperation
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
-            }
-            catch
-            {
-                $Script:ADT.ClientServerProcess.Dispose()
-                $Script:ADT.ClientServerProcess = $null
-                $PSCmdlet.ThrowTerminatingError($_)
             }
 
             # Ensure we properly close the client/server process upon the closure of the last active session.
@@ -279,38 +300,34 @@ function Private:Invoke-ADTClientServerOperation
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
         }
-        catch [System.IO.InvalidDataException]
+        catch
         {
             # Construct an ErrorRecord using an exception from the client/server process if possible.
-            $result = $_; if ($clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true))
+            if ($result = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
             {
                 $naerParams = @{
-                    Exception = if ($clientResult.StdErr.Count)
+                    Exception = if ($result.StdErr.Count)
                     {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($clientResult.StdErr[0], [System.Exception]))
+                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($result.StdErr[0], [System.Exception]))
                     }
                     else
                     {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdOut) { " Console Output: [$([System.String]::Join("`n", $clientResult.StdOut))]" })", $_.Exception)
+                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$result.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($result.ExitCode)) { " Exit Code: [$($result.ExitCode)]." })$(if ($result.StdOut) { " Console Output: [$([System.String]::Join("`n", $result.StdOut))]" })", $_.Exception.InnerException)
                     }
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'ClientServerProcessCommandFailure'
-                    TargetObject = $clientResult
+                    TargetObject = $result
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
             else
             {
-                $PSCmdlet.ThrowTerminatingError(($result = $_))
+                $PSCmdlet.ThrowTerminatingError($_)
             }
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError(($result = $_))
         }
         finally
         {
-            if (($result -is [System.Management.Automation.ErrorRecord]) -and ($result.Exception -is [System.IO.InvalidDataException]))
+            if (($result -is [PSADT.ProcessManagement.ProcessResult]) -and $result.LaunchInfo.FilePath.EndsWith('\PSADT.ClientServer.Client.exe'))
             {
                 Close-ADTClientServerProcess
             }

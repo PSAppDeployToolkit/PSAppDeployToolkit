@@ -57,9 +57,14 @@ namespace PSADT.ClientServer
         /// returning.</remarks>
         /// <exception cref="ApplicationException">Thrown if the client process fails to respond to the initial command, indicating that it is not properly
         /// initialized.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "The use of ApplicationException is acceptable here.")]
         public void Open()
         {
+            // Don't allow opening if the object's been disposed.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot open a connection on a disposed ServerInstance.");
+            }
+
             // Start the server to listen for incoming connections and process data.
             bool outputServerClientSafePipeHandleAddRef = false;
             bool inputServerClientSafePipeHandleAddRef = false;
@@ -107,29 +112,20 @@ namespace PSADT.ClientServer
                 _logServer.DisposeLocalCopyOfClientHandle();
             }
 
-            // Perform ECDH key exchange for encrypted communication.
-            try
-            {
-                _ioEncryption.PerformKeyExchange(_outputServer, _inputServer);
-                _logEncryption.PerformKeyExchange(_outputServer, _inputServer);
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("Failed to establish encrypted communication with the client process.", ex);
-            }
-
             // Confirm the client starts and is ready to receive commands.
             bool? opened = null;
             try
             {
+                _ioEncryption.PerformKeyExchange(_outputServer, _inputServer);
+                _logEncryption.PerformKeyExchange(_outputServer, _inputServer);
                 if (!(opened = Invoke<bool>(PipeCommand.Open)).Value)
                 {
-                    throw new ApplicationException("The opened client process is not properly responding to commands.");
+                    throw new InvalidOperationException("The opened client process returned an invalid response.");
                 }
             }
-            catch (InvalidDataException ex) when (_clientProcess?.Task is null)
+            catch (Exception ex)
             {
-                throw new ApplicationException("The opened client process is not properly responding to commands.", ex);
+                throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess!);
             }
             finally
             {
@@ -156,9 +152,14 @@ namespace PSADT.ClientServer
         /// <exception cref="InvalidOperationException">Thrown if the server instance is not open or has already been closed.</exception>
         /// <exception cref="ApplicationException">Thrown if the client process does not properly respond to the close command and <paramref name="force"/> is <see
         /// langword="false"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "The use of ApplicationException is acceptable here.")]
         internal void Close(bool force = false)
         {
+            // Don't allow closing if the object's been disposed.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot close a connection on a disposed ServerInstance.");
+            }
+
             // Confirm that the server instance is open and has not been closed already.
             if (_clientProcessCts is null || _clientProcess is null)
             {
@@ -175,11 +176,11 @@ namespace PSADT.ClientServer
                     {
                         if (!Invoke<bool>(PipeCommand.Close))
                         {
-                            throw new ApplicationException("The opened client process did not properly respond to the close command.");
+                            throw new InvalidOperationException("The opened client process did not properly respond to the close command.");
                         }
                         if ((exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode) != 0)
                         {
-                            throw new ApplicationException($"The client process exited with a non-zero exit code: {exitCode}.");
+                            throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
                         }
                     }
                     else
@@ -187,9 +188,9 @@ namespace PSADT.ClientServer
                         _clientProcessCts.Cancel();
                     }
                 }
-                else
+                else if ((exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode) != 0)
                 {
-                    exitCode = 0;
+                    throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
                 }
             }
             finally
@@ -237,6 +238,10 @@ namespace PSADT.ClientServer
                 }
                 finally
                 {
+                    while (!_clientProcess.Task.IsCompleted)
+                    {
+                        Thread.Sleep(1);
+                    }
                     _clientProcess.Task.Dispose();
                     _clientProcess.Process.Dispose();
                     _clientProcess = null;
@@ -585,21 +590,6 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Retrieves the result of the client process task.
-        /// </summary>
-        /// <remarks>This method blocks the current thread if <paramref name="confirm"/> is <see
-        /// langword="true"/>. Use with caution, as blocking the thread can lead to deadlocks or performance issues in
-        /// asynchronous environments.</remarks>
-        /// <param name="confirm">A value indicating whether the caller understands the risks of blocking the current thread. If <see
-        /// langword="true"/>, the method will synchronously wait for the client process task to complete.</param>
-        /// <returns>The result of the client process task if <paramref name="confirm"/> is <see langword="true"/>; 
-        /// otherwise, <see langword="null"/>.</returns>
-        public ProcessResult? GetClientProcessResult(bool confirm)
-        {
-            return confirm ? _clientProcess?.Task.GetAwaiter().GetResult() : null;
-        }
-
-        /// <summary>
         /// Releases the resources used by the current instance of the class.
         /// </summary>
         /// <remarks>This method should be called when the instance is no longer needed to free up
@@ -667,17 +657,22 @@ namespace PSADT.ClientServer
         /// <param name="command">The command to execute.</param>
         /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
         /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
-        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private TResult Invoke<TResult>(PipeCommand command)
         {
+            // Don't invoke anything if the object is disposed.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot invoke a command on a disposed ServerInstance.");
+            }
+
             // Send the request: [1-byte command]
             try
             {
                 _ioEncryption.WriteEncrypted(_outputServer, [(byte)command]);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                throw new InvalidDataException("An error occurred while writing to the output stream.", ex);
+                throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
             }
             return ReadResponse<TResult>();
         }
@@ -699,6 +694,12 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IPayload
         {
+            // Don't invoke anything if the object is disposed.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot invoke a command on a disposed ServerInstance.");
+            }
+
             // Build and send the request: [1-byte command][serialized payload]
             try
             {
@@ -708,9 +709,9 @@ namespace PSADT.ClientServer
                 payloadBytes.CopyTo(request.AsSpan(1));
                 _ioEncryption.WriteEncrypted(_outputServer, request);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                throw new InvalidDataException("An error occurred while writing to the output stream.", ex);
+                throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
             }
             return ReadResponse<TResult>();
         }
@@ -728,19 +729,14 @@ namespace PSADT.ClientServer
             byte[] response;
             try
             {
-                response = _ioEncryption.ReadEncrypted(_inputServer);
+                if ((response = _ioEncryption.ReadEncrypted(_inputServer)).Length < 2)
+                {
+                    throw new InvalidOperationException("The client process returned an invalid or empty response.");
+                }
             }
-            catch (EndOfStreamException ex)
+            catch (Exception ex)
             {
-                throw new InvalidDataException("The input stream was unexpectedly closed or no data is available to read.", ex);
-            }
-            catch (IOException ex)
-            {
-                throw new InvalidDataException("An error occurred while reading from the input stream.", ex);
-            }
-            if (response.Length < 2)
-            {
-                throw new ServerException("The client process returned an invalid or empty response.");
+                throw new ServerException("An error occurred while reading from the input stream.", ex, _clientProcess!);
             }
 
             // Deserialize based on the success marker.
@@ -756,6 +752,12 @@ namespace PSADT.ClientServer
         /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
         private void ReadLog()
         {
+            // Don't read anything if the object is disposed.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot read logs from a disposed ServerInstance.");
+            }
+
             // Read the log stream until cancellation is requested or the end of the stream is reached.
             while (!_logWriterTaskCts!.IsCancellationRequested)
             {
@@ -780,10 +782,10 @@ namespace PSADT.ClientServer
                     // The log writer task reached the end of the stream, exit the loop.
                     break;
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
                     // Some kind of read issue occurred that was unexpected.
-                    throw new InvalidDataException("An error occurred while reading from the log stream.", ex);
+                    throw new ServerException("An error occurred while reading from the log stream.", ex);
                 }
             }
         }
@@ -853,7 +855,6 @@ namespace PSADT.ClientServer
         /// inherited by child processes. It is typically used to send data from the current process to another
         /// process.</remarks>
         private readonly AnonymousPipeServerStream _outputServer;
-
 
         /// <summary>
         /// Provides ECDH-based encryption for the main command/response pipe communication.
