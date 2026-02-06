@@ -74,7 +74,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="minimizeWindows">A value indicating whether all other windows should be minimized when the dialog is displayed.</param>
         /// <param name="listItems">The list of items to display for user selection. Cannot be <see langword="null"/>.</param>
         [JsonConstructor]
-        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows, null)
+        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             ListItems = listItems ?? throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
         }
@@ -83,6 +83,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// The list of items to display for user selection.
         /// </summary>
         [JsonProperty]
-        public new IReadOnlyList<string> ListItems { get; }
+        public IReadOnlyList<string> ListItems { get; }
     }
 }
