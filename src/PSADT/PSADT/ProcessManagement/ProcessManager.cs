@@ -519,13 +519,9 @@ namespace PSADT.ProcessManagement
         {
             using (pipeStream) using (StreamWriter writer = new(pipeStream, encoding))
             {
-                for (int i = 0; i < lines.Count; i++)
+                foreach (string line in lines)
                 {
-                    if (i > 0)
-                    {
-                        writer.WriteLine();
-                    }
-                    writer.Write(lines[i]);
+                    writer.WriteLine(line);
                 }
             }
         }
