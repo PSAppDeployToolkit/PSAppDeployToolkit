@@ -52,7 +52,7 @@ namespace PSADT.ClientServer.Converters
 
             // Write the JSON.
             writer.WriteStartObject();
-            writer.WriteString("$type", value.GetType().FullName);
+            writer.WriteString("$type", value.GetType().AssemblyQualifiedName);
 
             // Write all SerializationInfo entries.
             foreach (SerializationEntry entry in info)
