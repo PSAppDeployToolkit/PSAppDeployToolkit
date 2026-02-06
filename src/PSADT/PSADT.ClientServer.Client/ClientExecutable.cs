@@ -660,7 +660,7 @@ namespace PSADT.ClientServer
             }
 
             // Deserialize the options to the correct type based on DialogType and show the dialog.
-            object options = dialogType switch
+            IDialogOptions options = dialogType switch
             {
                 DialogType.CloseAppsDialog => DataSerialization.DeserializeFromString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)),
                 DialogType.CustomDialog => DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments)),
@@ -694,7 +694,7 @@ namespace PSADT.ClientServer
         /// on the dialog type displayed.</returns>
         /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
-        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, object options, BaseDialogState? closeAppsDialogState = null)
+        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
         {
             return dialogType switch
             {

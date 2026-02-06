@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public sealed record DialogBoxOptions
+    public sealed record DialogBoxOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DialogBoxOptions"/> class with the specified options.

@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public abstract record BaseDialogOptions
+    public abstract record BaseDialogOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseDialogOptions"/> class with the specified options.

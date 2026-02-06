@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// including the tray title, tray icon, balloon tip title, text, and icon. Use the <see
     /// cref="BalloonTipOptions(Hashtable)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
-    public sealed record BalloonTipOptions
+    public sealed record BalloonTipOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BalloonTipOptions"/> class using the specified options.

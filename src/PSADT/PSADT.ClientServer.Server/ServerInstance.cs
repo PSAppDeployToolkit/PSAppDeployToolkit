@@ -655,7 +655,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog to display.</param>
         /// <param name="options">The options to configure the dialog.</param>
         /// <returns>The result from the dialog.</returns>
-        private TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, object options)
+        private TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options)
         {
             return Invoke<ShowModalDialogPayload, TResult>(PipeCommand.ShowModalDialog, new(dialogType, dialogStyle, options));
         }

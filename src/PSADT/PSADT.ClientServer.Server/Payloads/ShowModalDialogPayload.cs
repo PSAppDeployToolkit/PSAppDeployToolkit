@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.ClientServer.Payloads
@@ -25,7 +26,7 @@ namespace PSADT.ClientServer.Payloads
         /// </summary>
         /// <remarks>The concrete type depends on the <see cref="DialogType"/>.</remarks>
         [JsonInclude]
-        internal readonly object Options;
+        internal readonly IDialogOptions Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShowModalDialogPayload"/> class.
@@ -34,7 +35,7 @@ namespace PSADT.ClientServer.Payloads
         /// <param name="dialogStyle">The style of the dialog.</param>
         /// <param name="options">The options for the dialog.</param>
         [JsonConstructor]
-        internal ShowModalDialogPayload(DialogType dialogType, DialogStyle dialogStyle, object options)
+        internal ShowModalDialogPayload(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options)
         {
             DialogType = dialogType;
             DialogStyle = dialogStyle;

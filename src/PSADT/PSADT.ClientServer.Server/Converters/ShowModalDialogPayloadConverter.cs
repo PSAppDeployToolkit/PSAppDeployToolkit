@@ -54,7 +54,7 @@ namespace PSADT.ClientServer.Converters
             {
                 throw new JsonException("Missing or invalid Options.");
             }
-            if (JsonSerializer.Deserialize(optionsElement.GetRawText(), optionsType, options) is not object optionsValue)
+            if (JsonSerializer.Deserialize(optionsElement.GetRawText(), optionsType, options) is not IDialogOptions optionsValue)
             {
                 throw new JsonException("Failed to deserialize Options.");
             }

@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public sealed record HelpConsoleOptions
+    public sealed record HelpConsoleOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HelpConsoleOptions"/> class with the specified options.
