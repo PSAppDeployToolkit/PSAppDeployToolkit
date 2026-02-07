@@ -74,15 +74,15 @@ function Show-ADTDialogBox
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogBoxButtons]$Buttons = [PSADT.UserInterface.Dialogs.DialogBoxButtons]::Ok,
+        [PSADT.UserInterface.DialogBoxButtons]$Buttons = [PSADT.UserInterface.DialogBoxButtons]::Ok,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogBoxDefaultButton]$DefaultButton = [PSADT.UserInterface.Dialogs.DialogBoxDefaultButton]::First,
+        [PSADT.UserInterface.DialogBoxDefaultButton]$DefaultButton = [PSADT.UserInterface.DialogBoxDefaultButton]::First,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogBoxIcon]$Icon,
+        [PSADT.UserInterface.DialogBoxIcon]$Icon,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,

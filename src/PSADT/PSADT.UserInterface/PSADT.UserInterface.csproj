@@ -27,22 +27,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.AbortableDialog.cs">
+    <Compile Update="Interfaces\Classic\ClassicBase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\CloseAppsDialog.cs">
+    <Compile Update="Interfaces\Classic\ClassicDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\CustomDialog.cs">
+    <Compile Update="Interfaces\Classic\CloseAppsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\InputDialog.cs">
+    <Compile Update="Interfaces\Classic\CustomDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\ProgressDialog.cs">
+    <Compile Update="Interfaces\Classic\HelpConsole.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Dialogs\Classic\RestartDialog.cs">
+    <Compile Update="Interfaces\Classic\InputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\ProgressDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\RestartDialog.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using PSADT.UserInterface.Dialogs;
 using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions

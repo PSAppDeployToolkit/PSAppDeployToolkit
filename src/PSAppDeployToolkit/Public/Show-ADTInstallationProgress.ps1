@@ -96,11 +96,11 @@ function Show-ADTInstallationProgress
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'Center')]
-        [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment,
+        [PSADT.UserInterface.DialogMessageAlignment]$MessageAlignment,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
+        [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,

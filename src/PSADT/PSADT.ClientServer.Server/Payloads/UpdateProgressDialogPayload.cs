@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
-using PSADT.UserInterface.Dialogs;
+﻿using System.Text.Json.Serialization;
+using PSADT.UserInterface;
 
 namespace PSADT.ClientServer.Payloads
 {

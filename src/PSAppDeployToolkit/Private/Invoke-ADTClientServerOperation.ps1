@@ -81,12 +81,12 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogType]$DialogType,
+        [PSADT.UserInterface.DialogType]$DialogType,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogStyle]$DialogStyle,
+        [PSADT.UserInterface.DialogStyle]$DialogStyle,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
         [ValidateNotNullOrEmpty()]
@@ -102,7 +102,7 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment,
+        [PSADT.UserInterface.DialogMessageAlignment]$MessageAlignment,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'GetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
@@ -185,7 +185,7 @@ function Private:Invoke-ADTClientServerOperation
 
     # Go into client/server mode if a session is active and we're not asked to wait.
     if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
-        [PSADT.UserInterface.Dialogs.DialogType]::CloseAppsDialog.Equals($DialogType) -or
+        [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType) -or
         ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait) -or
         ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User) -and !$NoWait))
     {
@@ -246,7 +246,7 @@ function Private:Invoke-ADTClientServerOperation
         # Invoke the right method depending on the mode.
         try
         {
-            if ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox.Equals($DialogType))
+            if ([PSADT.UserInterface.DialogType]::DialogBox.Equals($DialogType))
             {
                 $result = $Script:ADT.ClientServerProcess.ShowDialogBox($Options)
             }

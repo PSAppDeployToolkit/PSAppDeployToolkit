@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using PSADT.ClientServer.Payloads;
+using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.ClientServer.Converters
 {

@@ -66,7 +66,7 @@ function Block-ADTAppExecution
 
         [Parameter(Mandatory = $false, HelpMessage = 'The location of the dialog on the screen.')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation
+        [PSADT.UserInterface.DialogPosition]$WindowLocation
     )
 
     begin
@@ -150,7 +150,7 @@ function Block-ADTAppExecution
                     DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
                     MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
                     ButtonRightText = [PSADT.UserInterface.DialogManager]::BlockExecutionButtonText
-                    Icon = [PSADT.UserInterface.Dialogs.DialogSystemIcon]::Warning
+                    Icon = [PSADT.UserInterface.DialogSystemIcon]::Warning
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {
@@ -164,7 +164,7 @@ function Block-ADTAppExecution
                 # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.
                 $blockExecArgs = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
                 $blockExecArgs.Add('Options', [PSADT.ClientServer.DataSerialization]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))
-                $blockExecArgs.Add('DialogType', [PSADT.UserInterface.Dialogs.DialogType]::CustomDialog.ToString())
+                $blockExecArgs.Add('DialogType', [PSADT.UserInterface.DialogType]::CustomDialog.ToString())
                 $blockExecArgs.Add('DialogStyle', $adtConfig.UI.DialogStyle)
                 $blockExecArgs.Add('BlockExecution', $true)
 

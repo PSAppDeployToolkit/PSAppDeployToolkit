@@ -133,7 +133,7 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment = [PSADT.UserInterface.Dialogs.DialogMessageAlignment]::Center,
+        [PSADT.UserInterface.DialogMessageAlignment]$MessageAlignment = [PSADT.UserInterface.DialogMessageAlignment]::Center,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -149,11 +149,11 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogSystemIcon]$Icon,
+        [PSADT.UserInterface.DialogSystemIcon]$Icon,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
+        [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowCustomDialog')]
         [System.Management.Automation.SwitchParameter]$NoWait,

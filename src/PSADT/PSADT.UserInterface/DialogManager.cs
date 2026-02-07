@@ -12,7 +12,6 @@ using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
-using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
 using PSADT.Utilities;
 using PSAppDeployToolkit.Logging;
@@ -267,7 +266,7 @@ namespace PSADT.UserInterface
 
             // Don't let this dispose until the balloon tip closes. If it disposes too early, Windows won't show the BalloonTipIcon properly.
             // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
-            using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Dialogs.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
+            using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Interfaces.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
             using ManualResetEventSlim balloonTipClosed = new();
             notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetClientServerOperationSuccess();
             notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
@@ -346,7 +345,7 @@ namespace PSADT.UserInterface
         {
             return InvokeDialogAction(() =>
             {
-                using Dialogs.Classic.HelpConsole helpConsole = new(options);
+                using Interfaces.Classic.HelpConsole helpConsole = new(options);
                 return helpConsole.ShowDialog();
             });
         }
@@ -448,19 +447,19 @@ namespace PSADT.UserInterface
         {
             { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>()
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
-                { DialogType.CustomDialog, static (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, state) => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, state) => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, state) => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, state) => new Interfaces.Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, state) => new Interfaces.Classic.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, state) => new Interfaces.Classic.RestartDialog((RestartDialogOptions)options) },
             })},
             { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>()
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
-                { DialogType.CustomDialog, static (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, state) => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, state) => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, state) => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, state) => new Interfaces.Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, state) => new Interfaces.Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, state) => new Interfaces.Fluent.RestartDialog((RestartDialogOptions)options) },
             })},
         });
 
