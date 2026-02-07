@@ -112,6 +112,7 @@ $ModuleInfo.OnRemove = {
     {
         Unregister-Event -SubscriptionId $Script:ADT.ProcessExitEvent.Id
     }
+    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Clear()
 }
 
 # Determine how long the import took.

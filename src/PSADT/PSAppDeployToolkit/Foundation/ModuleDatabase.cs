@@ -18,15 +18,26 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="InvalidOperationException"></exception>
         public static void Init(PSObject database)
         {
-            if (database is null)
-            {
-                throw new ArgumentNullException(nameof(database), "Database cannot be null.");
-            }
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
-            _database = database; _sessionState = (SessionState)_database.Properties["SessionState"].Value;
+            _database = database ?? throw new ArgumentNullException(nameof(database), "Database cannot be null.");
+        }
+
+        /// <summary>
+        /// Clears the current database instance, resetting the internal state to uninitialized.
+        /// </summary>
+        /// <remarks>Call this method to release the current database and prepare for reinitialization.
+        /// After calling this method, any operations that depend on the database instance may fail until it is
+        /// reinitialized.</remarks>
+        public static void Clear()
+        {
+            if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.ScriptName -and ($_.ScriptName.EndsWith('PSAppDeployToolkit\\PSAppDeployToolkit.psm1') -or $_.ScriptName.EndsWith('PSAppDeployToolkit\\ImportsLast.ps1'))) { return $_ } } }").Invoke().Count.Equals(1))
+            {
+                throw new InvalidOperationException("The InternalDatabase class can only be cleared from within the PSAppDeployToolkit module.");
+            }
+            _database = null;
         }
 
         /// <summary>
@@ -115,7 +126,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="InvalidOperationException"></exception>
         internal static SessionState GetSessionState()
         {
-            return _sessionState ?? throw new InvalidOperationException(pwshErrorMessage);
+            return (SessionState?)_database?.Properties["SessionState"].Value ?? throw new InvalidOperationException(pwshErrorMessage);
         }
 
         /// <summary>
@@ -133,11 +144,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Represents the PSAppDeployToolkit module's internal database.
         /// </summary>
         private static PSObject? _database;
-
-        /// <summary>
-        /// Represents the PSAppDeployToolkit module's SessionState object.
-        /// </summary>
-        private static SessionState? _sessionState;
 
         /// <summary>
         /// Represents the error message displayed when PSAppDeployToolkit functions or methods are used without prior initialization.
