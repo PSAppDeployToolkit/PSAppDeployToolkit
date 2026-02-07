@@ -470,7 +470,7 @@
                             Margin="16,0,16,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Text="Please Select"
+                            Text="Select an item:"
                             TextWrapping="WrapWithOverflow"
                             />
 

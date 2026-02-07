@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -183,6 +183,8 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "ButtonLeftText", listDialogButtonLeftText },
                 { "ButtonRightText", listDialogButtonRightText },
                 { "ListItems", listDialogItems },
+                { "InitialSelectedItem", listDialogItems[0] },
+                { "Strings", (Hashtable)stringTable["ListSelectionPrompt"]! },
                 { "MinimizeWindows", false },
                 { "Language", CultureInfo.CurrentCulture },
                 { "MessageAlignment", DialogMessageAlignment.Left }
