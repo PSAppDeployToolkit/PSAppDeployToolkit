@@ -16,8 +16,28 @@ namespace PSADT.UserInterface.DialogResults
         [JsonConstructor]
         internal ListSelectionDialogResult(string result, string selectedItem)
         {
-            Result = !string.IsNullOrWhiteSpace(result) ? result : throw new ArgumentNullException("Result cannot be null or empty.", (Exception?)null);
-            SelectedItem = !string.IsNullOrWhiteSpace(selectedItem) ? selectedItem : throw new ArgumentNullException("SelectedItem cannot be null or empty.", (Exception?)null);
+            if (result is null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                throw new ArgumentException("Result cannot be empty or whitespace.", nameof(result));
+            }
+
+            if (selectedItem is null)
+            {
+                throw new ArgumentNullException(nameof(selectedItem));
+            }
+
+            if (string.IsNullOrWhiteSpace(selectedItem))
+            {
+                throw new ArgumentException("SelectedItem cannot be empty or whitespace.", nameof(selectedItem));
+            }
+
+            Result = result;
+            SelectedItem = selectedItem;
         }
 
         /// <summary>
