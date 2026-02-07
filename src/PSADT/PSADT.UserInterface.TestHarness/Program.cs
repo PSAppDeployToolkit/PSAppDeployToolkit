@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -45,7 +45,7 @@ namespace PSADT.UserInterface.TestHarness
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
-            bool dialogAllowMove = false;
+            bool dialogAllowMove = true;
             DeploymentType deploymentType = DeploymentType.Install;
 
             ReadOnlyCollection<ProcessDefinition> appsToClose = new(
@@ -91,20 +91,19 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
 
             string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
+            string customDialogButtonLeftText = "LeftButton";
+            string customDialogButtonMiddleText = "MiddleButton";
+            string customDialogButtonRightText = "RightButton";
+
+            string listDialogMessageText = "Please choose how you’d like to use Adobe Creative Cloud on this device. You can change this later in Preferences.";
+            string[] listDialogItems = ["Personal (Individual Plan)", "Team (Creative Cloud for Teams)", "Enterprise (Managed by IT)", "Education (Student / Faculty)", "Shared Device (Lab / Classroom)"];
+            string listDialogButtonLeftText = "OK";
+            string listDialogButtonRightText = "Cancel";
 
             string inputDialogMessageText = "Enter the server name e.g. [italic]remotesvr1.psadt.ca[/italic]";
             string inputDialogTextBox = "YouCompleteMe";
             string inputDialogButtonLeftText = "Continue";
             string inputDialogButtonRightText = "Cancel";
-
-            string ButtonLeftText = "LeftButton";
-            string ButtonMiddleText = "MiddleButton";
-            string ButtonRightText = "RightButton";
-
-            string listDialogMessageText = "Please select your preferred installation configuration from the dropdown below.";
-            string[] listDialogItems = ["Default", "Minimal", "Full", "Custom"];
-            string listDialogButtonLeftText = "OK";
-            string listDialogButtonRightText = "Cancel";
 
             // Set up options for the dialogs
             using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
@@ -148,7 +147,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             CustomDialogOptions customDialogOptions = new(new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color: Cyan #00B7C3
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00B7C3) }, // Accent Color: Cyan #00B7C3
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -158,9 +157,9 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
                 { "MessageText", customDialogMessageText },
-                { "ButtonLeftText", ButtonLeftText },
-                { "ButtonMiddleText", ButtonMiddleText },
-                { "ButtonRightText", ButtonRightText },
+                { "ButtonLeftText", customDialogButtonLeftText },
+                { "ButtonMiddleText", customDialogButtonMiddleText },
+                { "ButtonRightText", customDialogButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
                 { "MinimizeWindows", false },
                 { "Language", CultureInfo.CurrentCulture },
@@ -170,7 +169,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             ListSelectionDialogOptions listSelectionDialogOptions = new(new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF0078D4) }, // Accent Color: Blue #0078D4
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00D326) }, // Accent Color: Blue #00D326
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -228,54 +227,79 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };
 
+            // #################################################################################
+
+            // Show CloseApps Dialog
+
             CloseAppsDialogResult closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
+
+            if (closeAppsResult == CloseAppsDialogResult.Defer)
+            {
+                Environment.Exit(0);
+            }
 
             // #################################################################################
 
-            // Show CloseApps Dialog.
+            // Show Progress Dialog
 
-            if (closeAppsResult != CloseAppsDialogResult.Defer)
+            DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
+
+            Thread.Sleep(3000); // Simulate some work being done
+
+            // Simulate a process with progress updates
+            for (int i = 0; i <= 100; i += 10)
             {
-                // Show Progress Dialog
-                DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
-
-                Thread.Sleep(3000); // Simulate some work being done
-
-                // Simulate a process with progress updates
-                for (int i = 0; i <= 100; i += 10)
-                {
-                    // Update progress
-                    DialogManager.UpdateProgressDialog($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
-                    Thread.Sleep(500);  // Simulate work being done
-                }
-
-                // Close Progress Dialog
-                DialogManager.CloseProgressDialog();
-
-                // #################################################################################
-
-                // Show Custom Dialog
-
-                string customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
-
-                // #################################################################################
-
-                // Show List Selection Dialog
-
-                ListSelectionDialogResult listSelectionResult = DialogManager.ShowListSelectionDialog(dialogStyle, listSelectionDialogOptions);
-
-                // #################################################################################
-
-                // Show Input Dialog
-
-                InputDialogResult inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
-
-                // #################################################################################
-
-                // Show Restart Dialog
+                // Update progress
+                DialogManager.UpdateProgressDialog($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
+                Thread.Sleep(250);  // Simulate work being done
             }
 
+            // Close Progress Dialog
+            DialogManager.CloseProgressDialog();
+
+            // #################################################################################
+
+            // Show Custom Dialog
+
+            string customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
+
+            if (customResult == customDialogButtonRightText)
+            {
+                Environment.Exit(0);
+            }
+
+            // #################################################################################
+
+            // Show List Selection Dialog
+
+            ListSelectionDialogResult listSelectionResult = DialogManager.ShowListSelectionDialog(dialogStyle, listSelectionDialogOptions);
+
+            if (listSelectionResult.Result == listDialogButtonRightText)
+            {
+                Environment.Exit(0);
+            }
+
+            Console.WriteLine(listSelectionResult.SelectedItem?.ToString());
+
+            // #################################################################################
+
+            // Show Input Dialog
+
+            InputDialogResult inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
+
+            if (inputResult.Result == inputDialogButtonRightText)
+            {
+                Environment.Exit(0);
+            }
+
+            Console.WriteLine(inputResult.Text);
+
+            // #################################################################################
+
+            // Show Restart Dialog
             string restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
+
+            // No need to check the result of the Restart Dialog
         }
     }
 }
