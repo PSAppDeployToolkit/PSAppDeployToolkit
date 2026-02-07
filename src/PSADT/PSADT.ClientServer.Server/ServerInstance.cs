@@ -139,6 +139,9 @@ namespace PSADT.ClientServer
                 }
             }
 
+            // Ensure this instance is closed/disposed on process exit.
+            AppDomain.CurrentDomain.ProcessExit += ProcessExit_Handler;
+
             // Set up the log writer task to run in the background.
             _logWriterTask = Task.Run(ReadLog, (_logWriterTaskCts = new()).Token);
         }
@@ -261,6 +264,9 @@ namespace PSADT.ClientServer
                     _logServer?.Dispose();
                     _inputServer?.Dispose();
                     _outputServer?.Dispose();
+
+                    // Unregister the process exit handler.
+                    AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
                 }
             }
         }
@@ -818,6 +824,23 @@ namespace PSADT.ClientServer
                     // Some kind of read issue occurred that was unexpected.
                     throw new ServerException("An error occurred while reading from the log stream.", ex);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the application's process exit event to perform necessary cleanup operations before the process
+        /// terminates.
+        /// </summary>
+        /// <remarks>This handler is intended to be registered with the application's process exit event
+        /// to ensure that resources are properly released when the process is shutting down. It should not be called
+        /// directly.</remarks>
+        /// <param name="sender">The source of the event, typically the current application domain.</param>
+        /// <param name="e">An object that contains the event data.</param>
+        private void ProcessExit_Handler(object? sender, EventArgs e)
+        {
+            if (!_disposed)
+            {
+                Close(true);
             }
         }
 
