@@ -55,6 +55,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER ListItems
         An array of strings to display as a dropdown list for user selection. When specified, a ListSelectionDialog is shown with a ComboBox containing these items. The selected item is included in the returned ListSelectionDialogResult object.
 
+    .PARAMETER DefaultItem
+        The default selected item for the dropdown list. This value must exist in ListItems.
+
     .PARAMETER NoExitOnTimeout
         Specifies whether to not exit the script if the UI times out.
 
@@ -104,7 +107,7 @@ function Show-ADTInstallationPrompt
         Show-ADTInstallationPrompt -RequestInput -DefaultValue 'XXXX' -Message 'Please type in your favourite beer.' -ButtonRightText 'Submit'
 
     .EXAMPLE
-        $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -ButtonRightText 'OK'
+        $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -DefaultItem 'Default' -ButtonRightText 'OK'
         Write-ADTLogEntry "User selected: $($result.SelectedItem)"
 
     .NOTES
@@ -175,6 +178,10 @@ function Show-ADTInstallationPrompt
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ListItems,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DefaultItem,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
@@ -252,6 +259,19 @@ function Show-ADTInstallationPrompt
                 ErrorId = 'SecureInputWithoutActiveSession'
                 TargetObject = $PSBoundParameters
                 RecommendedAction = "Please ensure there is an active deployment session and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
+        # Validate list selection default item.
+        if ($PSCmdlet.ParameterSetName -eq 'ShowListSelectionDialog' -and !($ListItems -contains $DefaultItem))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new('The default item must exist in the list of items.')
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'DefaultItemNotInListItems'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = 'Please ensure [-DefaultItem] matches one of the values supplied via [-ListItems] and try again.'
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
@@ -388,6 +408,8 @@ function Show-ADTInstallationPrompt
                 if ($ListItems)
                 {
                     $dialogOptions.Add('ListItems', [System.String[]]$ListItems)
+                    $dialogOptions.Add('InitialSelectedItem', $DefaultItem)
+                    $dialogOptions.Add('Strings', $adtStrings.ListSelectionPrompt)
                 }
                 $dialogOptions = if ($RequestInput)
                 {
