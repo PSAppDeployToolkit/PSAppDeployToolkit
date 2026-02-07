@@ -39,6 +39,12 @@ try
                 ModuleImport = $null
                 ModuleInit = $null
             }
+            ProcessExitEvent = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -SupportEvent -Action {
+                if ($Script:ADT.ClientServerProcess)
+                {
+                    Close-ADTClientServerProcess
+                }
+            }
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ClientServerProcess = $null
@@ -98,9 +104,13 @@ catch
 
 # Ensure that the client/server process is closed on module remove.
 $ModuleInfo.OnRemove = {
-    if ($ADT.ClientServerProcess)
+    if ($Script:ADT.ClientServerProcess)
     {
         Close-ADTClientServerProcess
+    }
+    if ($Script:ADT.ProcessExitEvent)
+    {
+        Unregister-Event -SubscriptionId $Script:ADT.ProcessExitEvent.Id
     }
 }
 
