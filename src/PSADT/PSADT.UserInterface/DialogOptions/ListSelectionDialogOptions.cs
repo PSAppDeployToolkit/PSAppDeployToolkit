@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using PSADT.UserInterface.Dialogs;
 using Newtonsoft.Json;
 
@@ -37,7 +38,9 @@ namespace PSADT.UserInterface.DialogOptions
             options["ButtonRightText"] is string buttonRightText ? buttonRightText : null,
             options["Icon"] is DialogSystemIcon icon ? icon : null,
             options["MinimizeWindows"] is bool minimizeWindows && minimizeWindows,
-            options["ListItems"] is string[] listItems ? (IReadOnlyList<string>)listItems : null!)
+            options["ListItems"] is string[] listItems ? (IReadOnlyList<string>)listItems : null!,
+            options["InitialSelectedItem"] is string initialSelectedItem ? initialSelectedItem : null!,
+            options["Strings"] is Hashtable strings && strings.Count > 0 ? new ListSelectionDialogStrings(strings) : null)
         {
         }
 
@@ -73,10 +76,15 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="icon">The system icon displayed in the dialog. If <see langword="null"/>, no icon is displayed.</param>
         /// <param name="minimizeWindows">A value indicating whether all other windows should be minimized when the dialog is displayed.</param>
         /// <param name="listItems">The list of items to display for user selection. Cannot be <see langword="null"/>.</param>
+        /// <param name="initialSelectedItem">The item that should be selected by default. Must exist in <paramref name="listItems"/>.</param>
+        /// <param name="strings">The localized strings for the dialog. If <see langword="null"/>, the dialog falls back to XAML defaults.</param>
         [JsonConstructor]
-        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
+        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, string initialSelectedItem, ListSelectionDialogStrings? strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             ListItems = listItems ?? throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
+            InitialSelectedItem = !string.IsNullOrWhiteSpace(initialSelectedItem) ? initialSelectedItem : throw new ArgumentNullException(nameof(initialSelectedItem), "InitialSelectedItem cannot be null or empty for a ListSelectionDialog.");
+            _ = Enumerable.Contains(ListItems, InitialSelectedItem) ? true : throw new ArgumentException("InitialSelectedItem must exist in ListItems.", nameof(initialSelectedItem));
+            Strings = strings;
         }
 
         /// <summary>
@@ -84,5 +92,49 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [JsonProperty]
         public IReadOnlyList<string> ListItems { get; }
+
+        /// <summary>
+        /// The item that should be selected by default.
+        /// </summary>
+        [JsonProperty]
+        public string InitialSelectedItem { get; }
+
+        /// <summary>
+        /// The localized strings for the ListSelectionDialog.
+        /// </summary>
+        [JsonProperty]
+        public ListSelectionDialogStrings? Strings { get; }
+
+        /// <summary>
+        /// Localized strings for the ListSelectionDialog.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
+        public sealed record ListSelectionDialogStrings
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class.
+            /// </summary>
+            /// <param name="strings"></param>
+            internal ListSelectionDialogStrings(Hashtable strings) : this(
+                strings["ListSelectionMessage"] is string listSelectionMessage ? listSelectionMessage : string.Empty)
+            {
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class with the specified strings.
+            /// </summary>
+            /// <param name="listSelectionMessage">The heading text displayed next to the list selection dropdown.</param>
+            [JsonConstructor]
+            private ListSelectionDialogStrings(string listSelectionMessage)
+            {
+                ListSelectionMessage = listSelectionMessage;
+            }
+
+            /// <summary>
+            /// The heading text displayed next to the list selection dropdown.
+            /// </summary>
+            [JsonProperty]
+            public string ListSelectionMessage { get; }
+        }
     }
 }
