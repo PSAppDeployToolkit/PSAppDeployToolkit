@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = '項目を選択してください:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'インストール中です。しばらくお待ちください…'

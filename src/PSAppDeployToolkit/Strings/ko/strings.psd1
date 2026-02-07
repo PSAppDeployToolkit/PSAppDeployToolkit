@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - 앱 제거'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = '항목을 선택하세요:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = '설치 중입니다. 잠시만 기다려주세요…'

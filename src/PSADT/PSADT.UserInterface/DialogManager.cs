@@ -118,6 +118,28 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Displays a list selection dialog with the specified style and options, and returns the result.
+        /// </summary>
+        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.ListSelectionDialog"/>. The dialog's
+        /// behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options to configure the dialog, such as title, message, buttons, and list items.</param>
+        /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
+        internal static ListSelectionDialogResult ShowListSelectionDialog(DialogStyle dialogStyle, ListSelectionDialogOptions options)
+        {
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.MinimizeAllWindows();
+            }
+            ListSelectionDialogResult res = ShowModalDialog<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.RestoreAllWindows();
+            }
+            return res;
+        }
+
+        /// <summary>
         /// Displays an input dialog box with the specified style and options, and returns the result.
         /// </summary>
         /// <remarks>Use this method to prompt the user for input in a modal dialog. The dialog's behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>.</remarks>
@@ -447,6 +469,7 @@ namespace PSADT.UserInterface
                 { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                 { DialogType.CustomDialog, (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, (options, state) => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, (options, state) => new Dialogs.Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
                 { DialogType.ProgressDialog, (options, state) => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, (options, state) => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
             })},
@@ -455,6 +478,7 @@ namespace PSADT.UserInterface
                 { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                 { DialogType.CustomDialog, (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, (options, state) => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, (options, state) => new Dialogs.Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
                 { DialogType.ProgressDialog, (options, state) => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, (options, state) => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
             })},

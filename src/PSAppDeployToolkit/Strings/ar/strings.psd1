@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'اختر عنصرًا:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'التثبيت قيد التقدم. الرجاء الانتظار…'

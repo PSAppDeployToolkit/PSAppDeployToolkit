@@ -35,6 +35,11 @@
         InputDialog,
 
         /// <summary>
+        /// Represents the ListSelectionDialog type.
+        /// </summary>
+        ListSelectionDialog,
+
+        /// <summary>
         /// Represents the ProgressDialog type.
         /// </summary>
         ProgressDialog,

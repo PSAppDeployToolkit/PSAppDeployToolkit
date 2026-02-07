@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Bir öğe seçin:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Kurulum devam ediyor. Lütfen bekleyin…'

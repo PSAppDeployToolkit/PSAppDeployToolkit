@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - App De-installatie'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Selecteer een item:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Installatie wordt uitgevoerd. Even geduld a.u.b…'
