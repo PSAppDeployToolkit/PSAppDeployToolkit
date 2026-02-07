@@ -67,10 +67,12 @@ namespace PSADT.LibraryInterfaces
         /// for the specified information class and cannot be empty.</param>
         /// <param name="ReturnLength">When this method returns, contains the number of bytes written to the SystemInformation buffer or the number
         /// of bytes required if the buffer is too small.</param>
+        /// <param name="retrievingLength">When true, indicates the caller is performing an initial query to determine required buffer size.
+        /// STATUS_INFO_LENGTH_MISMATCH will be allowed without throwing. Default is false.</param>
         /// <returns>An NTSTATUS code indicating the result of the operation. Returns STATUS_SUCCESS if successful, or
         /// STATUS_INFO_LENGTH_MISMATCH if the buffer is too small.</returns>
         /// <exception cref="ArgumentNullException">Thrown if SystemInformation is empty.</exception>
-        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength)
+        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength, bool retrievingLength = false)
         {
             if (SystemInformation.IsEmpty)
             {
@@ -85,7 +87,7 @@ namespace PSADT.LibraryInterfaces
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
                 }
             }
-            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ((!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length))
+            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length))
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
                 : res;
         }
@@ -101,10 +103,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ObjectInformation">A span of bytes that receives the requested information. Must not be empty.</param>
         /// <param name="ReturnLength">When this method returns, contains the number of bytes written to ObjectInformation or required to store the
         /// information, depending on the operation.</param>
+        /// <param name="retrievingLength">When true, indicates the caller is performing an initial query to determine required buffer size.
+        /// STATUS_INFO_LENGTH_MISMATCH will be allowed without throwing. Default is false.</param>
         /// <returns>An NTSTATUS value indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, an
         /// error code is returned.</returns>
         /// <exception cref="ArgumentNullException">Thrown if Handle is null or closed, or if ObjectInformation is empty.</exception>
-        internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out uint ReturnLength)
+        internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out uint ReturnLength, bool retrievingLength = false)
         {
             if (ObjectInformation.IsEmpty)
             {
@@ -124,7 +128,7 @@ namespace PSADT.LibraryInterfaces
                     Handle?.DangerousRelease();
                 }
             }
-            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ((!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length))
+            return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length))
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
                 : res;
         }

@@ -368,8 +368,8 @@ namespace PSADT.ProcessManagement
             ref SYSTEM_PROCESS_ID_INFORMATION processIdInfo = ref Unsafe.As<byte, SYSTEM_PROCESS_ID_INFORMATION>(ref MemoryMarshal.GetReference(processIdInfoPtr));
             processIdInfo.ProcessId = new(processId);
 
-            // Perform initial query so we can reallocate with the required length.
-            _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+            // Perform initial query so we can get the required ImageName buffer length.
+            _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _, retrievingLength: true);
             Span<char> imageNamePtr = stackalloc char[((processIdInfo.ImageName.MaximumLength + 2) / 2) + 1]; imageNamePtr.Clear();
 
             // Assign the ImageName buffer and perform the query again.
