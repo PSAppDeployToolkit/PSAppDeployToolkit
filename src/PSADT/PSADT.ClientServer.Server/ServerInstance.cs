@@ -242,6 +242,7 @@ namespace PSADT.ClientServer
                 }
                 finally
                 {
+                    // Wait for the client process to exit and dispose of its resources.
                     while (!_clientProcess.Task.IsCompleted)
                     {
                         Thread.Sleep(1);
@@ -251,16 +252,16 @@ namespace PSADT.ClientServer
                     _clientProcess = null;
                     _clientProcessCts.Dispose();
                     _clientProcessCts = null;
+
+                    // Dispose encryption objects.
+                    _logEncryption?.Dispose();
+                    _ioEncryption?.Dispose();
+
+                    // Dispose pipe servers.
+                    _logServer?.Dispose();
+                    _inputServer?.Dispose();
+                    _outputServer?.Dispose();
                 }
-
-                // Dispose encryption objects.
-                _logEncryption?.Dispose();
-                _ioEncryption?.Dispose();
-
-                // Dispose pipe servers.
-                _logServer?.Dispose();
-                _inputServer?.Dispose();
-                _outputServer?.Dispose();
             }
         }
 
