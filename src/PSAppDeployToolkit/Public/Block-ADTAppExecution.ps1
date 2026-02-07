@@ -149,7 +149,7 @@ function Block-ADTAppExecution
                     MinimizeWindows = $false
                     DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
                     MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
-                    ButtonRightText = [PSADT.UserInterface.DialogManager]::BlockExecutionButtonText
+                    ButtonRightText = [PSADT.UserInterface.BlockExecution]::ButtonText
                     Icon = [PSADT.UserInterface.DialogSystemIcon]::Warning
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
@@ -169,7 +169,7 @@ function Block-ADTAppExecution
                 $blockExecArgs.Add('BlockExecution', $true)
 
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
-                $blockExecRegPath = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$($adtEnv.appDeployToolkitName)"; $blockExecRegName = [PSADT.UserInterface.DialogManager]::BlockExecutionRegistryKeyName
+                $blockExecRegPath = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$($adtEnv.appDeployToolkitName)"; $blockExecRegName = [PSADT.UserInterface.BlockExecution]::RegistryKeyName
                 $blockExecDbgPath = "`"$($Script:PSScriptRoot)\lib\PSADT.ClientServer.Client.Launcher.exe`" /smd -ArgV $($blockExecRegPath.Split('::')[1])\$blockExecRegName"
 
                 # If the IFEO path is > 255 characters, warn about it and bomb out.

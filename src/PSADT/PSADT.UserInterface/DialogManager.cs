@@ -24,7 +24,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Static class to manage WPF dialogs within a console application.
     /// </summary>
-    public static class DialogManager
+    internal static class DialogManager
     {
         /// <summary>
         /// Displays a dialog prompting the user to close specific applications.
@@ -407,16 +407,6 @@ namespace PSADT.UserInterface
             // Invoke the callback on the WPF UI thread.
             return app.Dispatcher.Invoke(callback);
         }
-
-        /// <summary>
-        /// Specifies the registry key name used to store the block execution command.
-        /// </summary>
-        public const string BlockExecutionRegistryKeyName = "BlockExecutionCommand";
-
-        /// <summary>
-        /// Gets the text for the button used to block execution in a dialog.
-        /// </summary>
-        public const string BlockExecutionButtonText = "OK";
 
         /// <summary>
         /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as
