@@ -635,10 +635,9 @@ namespace PSADT.ClientServer
                 return;
             }
 
-            // Tear down this object.
-            if (disposing)
+            // Close the client process if it is running.
+            if (disposing && _clientProcess is not null)
             {
-                // Close the client process if it is running.
                 Close();
             }
             _disposed = true;
