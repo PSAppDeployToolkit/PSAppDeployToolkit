@@ -16,16 +16,28 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="options">Mandatory options needed to construct the window.</param>
         internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options)
         {
-            // Populate and show the list selection ComboBox.
+            // Enable the ListSelectionStackPanel within the dialog
+            ListSelectionStackPanel.Visibility = Visibility.Visible;
+
+            // Set up UI
+            SetDefaultButton(ButtonLeft);
+            SetAccentButton(ButtonLeft);
+            SetCancelButton(ButtonRight);
+
+            // Populate and show the List Selection ComboBox.
             foreach (string item in options.ListItems)
             {
                 _ = ListSelectionComboBox.Items.Add(item);
             }
-            ListSelectionComboBox.SelectedIndex = 0;
-            ListSelectionStackPanel.Visibility = Visibility.Visible;
+            ListSelectionComboBox.SelectedItem = options.InitialSelectedItem;
+            _ = ListSelectionComboBox.Focus();
 
-            // Set the dialog result to a default value.
-            DialogResult = new ListSelectionDialogResult("Timeout", null);
+            // Set heading text from localized strings if available.
+            if (options.Strings is not null)
+            {
+                ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
+            }
+
         }
 
         /// <summary>
@@ -36,7 +48,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new ListSelectionDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null), ListSelectionComboBox.SelectedItem as string);
+            DialogResult = new ListSelectionDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null), (string)ListSelectionComboBox.SelectedItem);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -48,7 +60,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new ListSelectionDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null), ListSelectionComboBox.SelectedItem as string);
+            DialogResult = new ListSelectionDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null), (string)ListSelectionComboBox.SelectedItem);
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -60,7 +72,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new ListSelectionDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null), ListSelectionComboBox.SelectedItem as string);
+            DialogResult = new ListSelectionDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null), (string)ListSelectionComboBox.SelectedItem);
             base.ButtonRight_Click(sender, e);
         }
     }
