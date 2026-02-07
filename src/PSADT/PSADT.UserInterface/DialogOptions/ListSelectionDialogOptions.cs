@@ -83,7 +83,7 @@ namespace PSADT.UserInterface.DialogOptions
         {
             ListItems = listItems ?? throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
             InitialSelectedItem = !string.IsNullOrWhiteSpace(initialSelectedItem) ? initialSelectedItem : throw new ArgumentNullException(nameof(initialSelectedItem), "InitialSelectedItem cannot be null or empty for a ListSelectionDialog.");
-            _ = Enumerable.Contains(ListItems, InitialSelectedItem) ? true : throw new ArgumentException("InitialSelectedItem must exist in ListItems.", nameof(initialSelectedItem));
+            _ = Enumerable.Contains(ListItems, InitialSelectedItem, StringComparer.CurrentCultureIgnoreCase) ? true : throw new ArgumentException("InitialSelectedItem must exist in ListItems.", nameof(initialSelectedItem));
             Strings = strings;
         }
 
