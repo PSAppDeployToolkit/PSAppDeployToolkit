@@ -77,7 +77,7 @@
             Repair = '修復を完了するには、コンピュータを再起動する必要があります。'
             Uninstall = 'アンインストールを完了するには、コンピュータを再起動する必要があります。'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'カウントダウンの終了時にコンピュータが自動的に再起動されます。'
         MessageTime = '作業内容を保存し、指定時間内に再起動してください。'
         TimeRemaining = '残り時間:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

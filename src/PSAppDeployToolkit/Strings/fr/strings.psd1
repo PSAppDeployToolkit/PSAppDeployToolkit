@@ -77,7 +77,7 @@
             Repair = "Pour que la réparation soit terminée, vous devez redémarrer votre ordinateur."
             Uninstall = "Pour que la désinstallation soit terminée, vous devez redémarrer votre ordinateur."
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Votre ordinateur sera automatiquement redémarré à la fin du compte à rebours.'
         MessageTime = 'Veuillez sauvegarder votre travail et redémarrer dans le temps imparti.'
         TimeRemaining = 'Temps restant:'
@@ -154,6 +154,6 @@
                 Uninstall = "{Toolkit\CompanyName} - Désinstallation de l'application"
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

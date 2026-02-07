@@ -255,7 +255,7 @@ function Show-ADTInstallationRestartPrompt
                 }
                 if ($CustomText)
                 {
-                    $dialogOptions.CustomMessageText = $adtStrings.RestartPrompt.CustomMessage
+                    $dialogOptions.Add('CustomMessageText', $adtStrings.RestartPrompt.CustomMessage)
                 }
                 if ($null -ne $adtConfig.UI.FluentAccentColor)
                 {

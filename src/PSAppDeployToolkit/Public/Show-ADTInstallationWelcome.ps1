@@ -1129,7 +1129,7 @@ function Show-ADTInstallationWelcome
                     }
                     if ($CustomText)
                     {
-                        $dialogOptions.CustomMessageText = $adtStrings.CloseAppsPrompt.CustomMessage
+                        $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
                     }
                     if ($null -ne $CloseProcesses)
                     {

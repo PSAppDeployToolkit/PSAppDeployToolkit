@@ -77,7 +77,7 @@
             Repair = 'Aby byla oprava dokončena, musíte restartovat počítač.'
             Uninstall = 'Aby se odinstalace dokončila, musíte restartovat počítač.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Po skončení odpočítávání bude počítač automaticky restartován.'
         MessageTime = 'Uložte prosím svou práci a restartujte ji ve stanoveném čase.'
         TimeRemaining = 'Zbývající čas:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Odinstalace Aplikace'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

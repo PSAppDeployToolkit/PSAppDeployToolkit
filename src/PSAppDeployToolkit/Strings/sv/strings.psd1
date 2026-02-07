@@ -77,7 +77,7 @@
             Repair = 'För att reparationen ska kunna slutföras måste du starta om datorn.'
             Uninstall = 'För att avinstallationen ska kunna slutföras måste du starta om datorn.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Din dator kommer att startas om automatiskt när nedräkningen är slut.'
         MessageTime = 'Var vänlig spara ditt arbete och starta om datorn innan tiden går ut.'
         TimeRemaining = 'Återstående tid:'
@@ -106,7 +106,7 @@
                 Uninstall = 'Du kan välja att fördröja avinstallationen ett begränsat antal gånger under en begränsad tid:'
             }
             DeferralsRemaining = 'Antal återstående fördröjningar:'
-            DeferralDeadline = 'Deadline:'
+            DeferralDeadline = 'Tidsfrist:'
             ExpiryWarning = 'När antalet fördröjningar är slut eller deadline inträffat är detta alternativ inte längre tillgängligt.'
             CountdownDefer = @{
                 Install = 'Installationen kommer automatiskt att fortsätta om:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Avinstallation av App'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

@@ -77,7 +77,7 @@
             Repair = 'A javítás befejezéséhez újra kell indítania a számítógépet.'
             Uninstall = 'Az eltávolítás befejezéséhez újra kell indítania a számítógépet.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'A visszaszámlálás végén a számítógép automatikusan újraindul.'
         MessageTime = 'Kérjük, mentse el munkáját, és indítsa újra a megadott időn belül.'
         TimeRemaining = 'A hátralévő idő:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

@@ -77,7 +77,7 @@
             Repair = 'Om de reparatie te voltooien, moet u uw computer opnieuw opstarten.'
             Uninstall = 'Om de de-installatie te voltooien, moet u uw computer opnieuw opstarten.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Uw computer wordt automatisch opnieuw opgestart aan het einde van het aftellen.'
         MessageTime = 'Sla uw werk op en start uw computer binnen de toegewezen tijd opnieuw op.'
         TimeRemaining = 'Resterende tijd:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - App De-installatie'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

@@ -77,7 +77,7 @@
             Repair = 'על מנת שהתיקון יסתיים, עליך להפעיל מחדש את המחשב.'
             Uninstall = 'כדי שההסרה תסתיים, עליך להפעיל מחדש את המחשב.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'המחשב שלך יופעל מחדש באופן אוטומטי בתום הספירה לאחור.'
         MessageTime = 'נא לשמור את עבודתך ולהתחיל מחדש תוך הזמן המוקצב.'
         TimeRemaining = 'זמן שנותר:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

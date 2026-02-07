@@ -77,7 +77,7 @@
             Repair = 'Para que a reparação seja concluída, tem de reiniciar o computador.'
             Uninstall = 'Para que a desinstalação seja concluída, tem de reiniciar o computador.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'O seu computador será reiniciado automaticamente no final da contagem decrescente.'
         MessageTime = 'Guarde o seu trabalho e reinicie dentro do tempo previsto.'
         TimeRemaining = 'Tempo restante:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Desinstalação da Aplicação'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

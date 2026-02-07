@@ -77,7 +77,7 @@
             Repair = 'Onarımın tamamlanması için bilgisayarınızı yeniden başlatmanız gerekir.'
             Uninstall = 'Kaldırma işleminin tamamlanması için bilgisayarınızı yeniden başlatmanız gerekir.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Geri sayımın sonunda bilgisayarınız otomatik olarak yeniden başlatılacaktır.'
         MessageTime = 'Lütfen çalışmanızı kaydedin ve ayrılan süre içinde yeniden başlatın.'
         TimeRemaining = 'Kalan süre:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

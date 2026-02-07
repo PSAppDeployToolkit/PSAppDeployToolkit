@@ -77,7 +77,7 @@
             Repair = 'لكي تكتمل عملية الإصلاح، يجب إعادة تشغيل الكمبيوتر.'
             Uninstall = 'لكي تكتمل عملية إلغاء التثبيت، يجب إعادة تشغيل الكمبيوتر.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'سيتم إعادة تشغيل الكمبيوتر تلقائياً في نهاية العد التنازلي.'
         MessageTime = 'يرجى حفظ عملك وإعادة التشغيل خلال الوقت المخصص.'
         TimeRemaining = 'الوقت المتبقي:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }
