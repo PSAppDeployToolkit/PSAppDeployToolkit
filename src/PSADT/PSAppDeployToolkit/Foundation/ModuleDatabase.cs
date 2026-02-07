@@ -47,7 +47,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns><see langword="true"/> if the database is initialized; otherwise, <see langword="false"/>.</returns>
         public static bool IsInitialized()
         {
-            return (bool)_database?.Properties["Initialized"].Value!;
+            return (bool?)_database?.Properties["Initialized"].Value == true;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static IReadOnlyDictionary<string, object> GetEnvironment()
         {
-            return (IReadOnlyDictionary<string, object>)_database?.Properties["Environment"].Value! ?? throw new InvalidOperationException(initErrorMessage);
+            return (IReadOnlyDictionary<string, object>?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static Hashtable GetConfig()
         {
-            return (Hashtable)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject! ?? throw new InvalidOperationException(initErrorMessage);
+            return (Hashtable?)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static Hashtable GetStrings()
         {
-            return (Hashtable)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject! ?? throw new InvalidOperationException(initErrorMessage);
+            return (Hashtable?)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace PSAppDeployToolkit.Foundation
         /// langword="false"/>.</returns>
         public static bool IsDeploymentSessionActive()
         {
-            return ((List<DeploymentSession>)_database?.Properties["Sessions"].Value!).Count > 0;
+            return ((List<DeploymentSession>?)_database?.Properties["Sessions"].Value)?.Count > 0;
         }
 
         /// <summary>
@@ -103,8 +103,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static DeploymentSession GetDeploymentSession()
         {
-            List<DeploymentSession> sessionList = (List<DeploymentSession>)_database?.Properties["Sessions"].Value!;
-            return sessionList.Count == 0
+            return !(_database?.Properties["Sessions"].Value is List<DeploymentSession> sessionList && sessionList.Count > 0)
                 ? throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
                 : sessionList[sessionList.Count - 1];
         }
@@ -127,7 +126,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns></returns>
         internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
         {
-            return new(_sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args));
+            SessionState sessionState = GetSessionState(); return new(sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args));
         }
 
         /// <summary>
