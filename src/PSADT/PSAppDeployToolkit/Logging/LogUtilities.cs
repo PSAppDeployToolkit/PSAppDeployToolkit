@@ -167,6 +167,16 @@ namespace PSAppDeployToolkit.Logging
         }
 
         /// <summary>
+        /// Gets the session's default log file encoding.
+        /// </summary>
+        internal static readonly UTF8Encoding LogEncoding = new(true, true);
+
+        /// <summary>
+        /// Gets the log divider string.
+        /// </summary>
+        internal const string LogDivider = "-------------------------------------------------------------------------------";
+
+        /// <summary>
         /// Gets the log severity colors.
         /// </summary>
         private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
@@ -176,16 +186,6 @@ namespace PSAppDeployToolkit.Logging
             new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
             new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } }),
         ]);
-
-        /// <summary>
-        /// Gets the session's default log file encoding.
-        /// </summary>
-        internal static readonly UTF8Encoding LogEncoding = new(true, true);
-
-        /// <summary>
-        /// Gets the log divider string.
-        /// </summary>
-        internal const string LogDivider = "-------------------------------------------------------------------------------";
 
         /// <summary>
         /// Gets the Write-Host delegate script block.

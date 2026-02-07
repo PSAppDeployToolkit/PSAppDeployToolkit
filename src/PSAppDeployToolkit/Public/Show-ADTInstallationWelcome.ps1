@@ -795,7 +795,7 @@ function Show-ADTInstallationWelcome
         }
         else
         {
-            [PSAppDeployToolkit.SessionManagement.DeploymentType]::Install
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
 
         # Set up remainder if not specified.

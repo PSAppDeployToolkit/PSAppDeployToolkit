@@ -162,7 +162,7 @@ function Show-ADTInstallationProgress
         }
         else
         {
-            [PSAppDeployToolkit.SessionManagement.DeploymentType]::Install
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
 
         # Set up defaults if not specified.

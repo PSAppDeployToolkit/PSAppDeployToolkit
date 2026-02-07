@@ -1,4 +1,4 @@
-﻿namespace PSAppDeployToolkit.SessionManagement
+﻿namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
     /// Status values to determine the overall state/success of a deployment.

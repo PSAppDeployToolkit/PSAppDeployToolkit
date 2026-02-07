@@ -638,17 +638,17 @@ function Start-ADTProcess
             $isSuccessCode = $SuccessExitCodes.Contains($ExitCode)
             $isRestartCode = $RebootExitCodes.Contains($ExitCode)
             $isFailureCode = !$isSuccessCode -and !$isRestartCode
-            if ($isFailureCode -and ($adtSessionStatus -le [PSAppDeployToolkit.SessionManagement.DeploymentStatus]::Error))
+            if ($isFailureCode -and ($adtSessionStatus -le [PSAppDeployToolkit.Foundation.DeploymentStatus]::Error))
             {
                 $adtSession.SetExitCode($ExitCode)
                 return
             }
-            if ($isRestartCode -and ($adtSessionStatus -le [PSAppDeployToolkit.SessionManagement.DeploymentStatus]::RestartRequired))
+            if ($isRestartCode -and ($adtSessionStatus -le [PSAppDeployToolkit.Foundation.DeploymentStatus]::RestartRequired))
             {
                 $adtSession.SetExitCode($ExitCode)
                 return
             }
-            if ($isSuccessCode -and ($adtSessionStatus -le [PSAppDeployToolkit.SessionManagement.DeploymentStatus]::Complete))
+            if ($isSuccessCode -and ($adtSessionStatus -le [PSAppDeployToolkit.Foundation.DeploymentStatus]::Complete))
             {
                 $adtSession.SetExitCode($ExitCode)
                 return

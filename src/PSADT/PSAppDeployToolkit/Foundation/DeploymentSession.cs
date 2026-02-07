@@ -22,12 +22,11 @@ using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
-using PSAppDeployToolkit.Foundation;
 using PSAppDeployToolkit.Logging;
 using PSAppDeployToolkit.Utilities;
 using Windows.Win32.Storage.FileSystem;
 
-namespace PSAppDeployToolkit.SessionManagement
+namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
     /// Represents a deployment session.

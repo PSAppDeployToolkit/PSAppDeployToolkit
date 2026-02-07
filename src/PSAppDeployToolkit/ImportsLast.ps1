@@ -42,7 +42,7 @@ try
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ClientServerProcess = $null
-            Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.SessionManagement.DeploymentSession]]::new()
+            Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.Foundation.DeploymentSession]]::new()
             Environment = $null
             Language = $null
             Config = $null

@@ -1,4 +1,4 @@
-﻿namespace PSAppDeployToolkit.SessionManagement
+﻿namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
     /// The deployment types that a DeploymentSession can be.

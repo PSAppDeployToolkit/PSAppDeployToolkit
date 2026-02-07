@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using PSAppDeployToolkit.SessionManagement;
+using PSAppDeployToolkit.Foundation;
 using System.Text.Json.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
