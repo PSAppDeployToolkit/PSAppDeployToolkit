@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Valitse kohde:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Asennus käynnissä. Odota…'
