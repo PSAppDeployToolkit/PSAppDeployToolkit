@@ -281,7 +281,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 Environment.Exit(0);
             }
 
-            Console.WriteLine(listSelectionResult.SelectedItem?.ToString());
+            Console.WriteLine(listSelectionResult.SelectedItem);
 
             // #################################################################################
 
