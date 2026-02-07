@@ -52,6 +52,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
 
+    .PARAMETER ListItems
+        An array of strings to display as a dropdown list for user selection. When specified, a ListSelectionDialog is shown with a ComboBox containing these items. The selected item is included in the returned ListSelectionDialogResult object.
+
     .PARAMETER NoExitOnTimeout
         Specifies whether to not exit the script if the UI times out.
 
@@ -99,6 +102,10 @@ function Show-ADTInstallationPrompt
 
     .EXAMPLE
         Show-ADTInstallationPrompt -RequestInput -DefaultValue 'XXXX' -Message 'Please type in your favourite beer.' -ButtonRightText 'Submit'
+
+    .EXAMPLE
+        $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -ButtonRightText 'OK'
+        Write-ADTLogEntry "User selected: $($result.SelectedItem)"
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -156,6 +163,7 @@ function Show-ADTInstallationPrompt
         [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowCustomDialog')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShowListSelectionDialog')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
@@ -163,6 +171,10 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ListItems,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
@@ -373,9 +385,17 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('SecureInput', !!$SecureInput)
                 }
+                if ($ListItems)
+                {
+                    $dialogOptions.Add('ListItems', [System.String[]]$ListItems)
+                }
                 $dialogOptions = if ($RequestInput)
                 {
                     [PSADT.UserInterface.DialogOptions.InputDialogOptions]$dialogOptions
+                }
+                elseif ($ListItems)
+                {
+                    [PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]$dialogOptions
                 }
                 else
                 {
