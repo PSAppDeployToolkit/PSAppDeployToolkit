@@ -495,6 +495,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// The result of the dialog.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1061:Do not hide base class methods", Justification = "The redefinition of this field is by design.")]
+        [DefaultValue("Timeout")]
         public new object DialogResult { get; private protected set; } = "Timeout";
 
         /// <summary>

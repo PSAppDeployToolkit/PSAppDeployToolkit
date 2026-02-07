@@ -323,7 +323,7 @@ namespace PSADT.UserInterface
         /// <param name="Title">The title of the task dialog box. This appears in the title bar of the dialog.</param>
         /// <param name="Subtitle">The subtitle of the task dialog box. This appears as a header in the dialog.</param>
         /// <param name="Prompt">The main prompt or message displayed in the dialog box.</param>
-        /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> value.</param>
+        /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid TASKDIALOG_COMMON_BUTTON_FLAGS value.</param>
         /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
         /// <returns>A MESSAGEBOX_RESULT value indicating the button that the user clicked to close the dialog.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
