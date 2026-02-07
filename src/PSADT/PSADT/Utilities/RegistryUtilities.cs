@@ -6,7 +6,7 @@ using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.Registry;
 
-namespace PSADT.RegistryManagement
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Registry utilities using CsWin32.

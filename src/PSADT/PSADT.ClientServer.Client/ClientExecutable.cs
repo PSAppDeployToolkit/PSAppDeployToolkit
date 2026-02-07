@@ -13,7 +13,6 @@ using PSADT.ClientServer.Payloads;
 using PSADT.DeviceManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
-using PSADT.RegistryManagement;
 using PSADT.Security;
 using PSADT.Types;
 using PSADT.UserInterface;
