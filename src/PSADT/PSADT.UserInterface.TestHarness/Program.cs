@@ -101,6 +101,11 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             string ButtonMiddleText = "MiddleButton";
             string ButtonRightText = "RightButton";
 
+            string listDialogMessageText = "Please select your preferred installation configuration from the dropdown below.";
+            string[] listDialogItems = ["Default", "Minimal", "Full", "Custom"];
+            string listDialogButtonLeftText = "OK";
+            string listDialogButtonRightText = "Cancel";
+
             // Set up options for the dialogs
             using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
             Hashtable closeAppsDialogOptions = new()
@@ -157,6 +162,27 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "ButtonMiddleText", ButtonMiddleText },
                 { "ButtonRightText", ButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
+                { "MinimizeWindows", false },
+                { "Language", CultureInfo.CurrentCulture },
+                { "MessageAlignment", DialogMessageAlignment.Left }
+            });
+
+            ListSelectionDialogOptions listSelectionDialogOptions = new(new()
+            {
+                { "DialogExpiryDuration", dialogExpiryDuration },
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF0078D4) }, // Accent Color: Blue #0078D4
+                { "DialogPosition", dialogPosition },
+                { "DialogTopMost", dialogTopMost },
+                { "DialogAllowMove", dialogAllowMove },
+                { "AppTitle", appTitle },
+                { "Subtitle", subtitle },
+                { "AppIconImage", appIconImage },
+                { "AppIconDarkImage", appIconDarkImage },
+                { "AppBannerImage", appBannerImage },
+                { "MessageText", listDialogMessageText },
+                { "ButtonLeftText", listDialogButtonLeftText },
+                { "ButtonRightText", listDialogButtonRightText },
+                { "ListItems", listDialogItems },
                 { "MinimizeWindows", false },
                 { "Language", CultureInfo.CurrentCulture },
                 { "MessageAlignment", DialogMessageAlignment.Left }
@@ -231,6 +257,12 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 // Show Custom Dialog
 
                 string customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
+
+                // #################################################################################
+
+                // Show List Selection Dialog
+
+                ListSelectionDialogResult listSelectionResult = DialogManager.ShowListSelectionDialog(dialogStyle, listSelectionDialogOptions);
 
                 // #################################################################################
 
