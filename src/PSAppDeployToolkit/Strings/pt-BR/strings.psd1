@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Desinstalação do Aplicativo'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Selecione um item:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Instalação em andamento. Por favor, aguarde…'

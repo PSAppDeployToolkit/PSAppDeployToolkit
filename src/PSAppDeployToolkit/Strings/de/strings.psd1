@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Deinstallieren der Anwendung'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Element auswählen:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Installation wird ausgeführt. Bitte warten…'

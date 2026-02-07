@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Απεγκατάσταση εφαρμογών'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Επιλέξτε ένα στοιχείο:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Η εγκατάσταση βρίσκεται σε εξέλιξη. Παρακαλώ περιμένετε…'

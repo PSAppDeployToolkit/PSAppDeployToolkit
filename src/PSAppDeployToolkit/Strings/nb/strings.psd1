@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Velg et element:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Installasjon pågår. Vennligst vent …'

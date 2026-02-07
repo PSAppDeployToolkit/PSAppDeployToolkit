@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = ':בחר פריט'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'התקנה בעיצומה. אנא המתן…'
