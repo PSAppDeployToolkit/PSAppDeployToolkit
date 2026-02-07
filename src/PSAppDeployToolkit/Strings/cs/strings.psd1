@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Odinstalace Aplikace'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Vyberte položku:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Probíhá instalace. Počkejte prosím…'

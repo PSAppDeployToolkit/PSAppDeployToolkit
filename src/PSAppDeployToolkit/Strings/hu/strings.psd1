@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Válasszon egy elemet:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Telepítés folyamatban. Kérjük várjon…'

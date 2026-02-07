@@ -70,6 +70,11 @@
         }
     }
 
+    ListSelectionPrompt = @{
+        # Default message displayed next to the list selection dropdown.
+        ListSelectionMessage = 'Select an item:'
+    }
+
     ProgressPrompt = @{
         # Default message displayed in the progress bar.
         Message = @{
