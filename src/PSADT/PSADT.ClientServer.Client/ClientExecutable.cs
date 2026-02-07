@@ -703,8 +703,9 @@ namespace PSADT.ClientServer
                 DialogType.HelpConsole => DialogManager.ShowHelpConsole((HelpConsoleOptions)options),
                 DialogType.InputDialog => DialogManager.ShowInputDialog(dialogStyle, (InputDialogOptions)options),
                 DialogType.CustomDialog => DialogManager.ShowCustomDialog(dialogStyle, (CustomDialogOptions)options),
+                DialogType.ListSelectionDialog => DialogManager.ShowListSelectionDialog(dialogStyle, (ListSelectionDialogOptions)options),
                 DialogType.RestartDialog => DialogManager.ShowRestartDialog(dialogStyle, (RestartDialogOptions)options),
-                DialogType.ListSelectionDialog or DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
             };
         }
 
