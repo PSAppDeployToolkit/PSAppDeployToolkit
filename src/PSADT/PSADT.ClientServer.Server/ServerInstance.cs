@@ -337,6 +337,20 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Displays a list selection dialog to the user and returns the result of the interaction.
+        /// </summary>
+        /// <remarks>Use this method to present a modal list selection dialog to the user. The dialog's behavior
+        /// and appearance can be customized using the <paramref name="dialogStyle"/> and <paramref name="options"/>
+        /// parameters.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options to configure the list selection dialog, such as the message, buttons, and list items.</param>
+        /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
+        public ListSelectionDialogResult ShowListSelectionDialog(DialogStyle dialogStyle, ListSelectionDialogOptions options)
+        {
+            return (ListSelectionDialogResult)ShowModalDialog(DialogType.ListSelectionDialog, dialogStyle, options)!;
+        }
+
+        /// <summary>
         /// Displays an input dialog to the user and returns the result of the interaction.
         /// </summary>
         /// <remarks>Use this method to present a modal input dialog to the user. The dialog's behavior
