@@ -14,22 +14,20 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="result"></param>
         /// <param name="selectedItem"></param>
         [JsonConstructor]
-        internal ListSelectionDialogResult(string result, string? selectedItem = null)
+        internal ListSelectionDialogResult(string result, string selectedItem)
         {
             Result = !string.IsNullOrWhiteSpace(result) ? result : throw new ArgumentNullException("Result cannot be null or empty.", (Exception?)null);
-            SelectedItem = !string.IsNullOrWhiteSpace(selectedItem) ? selectedItem : null;
+            SelectedItem = !string.IsNullOrWhiteSpace(selectedItem) ? selectedItem : throw new ArgumentNullException("SelectedItem cannot be null or empty.", (Exception?)null);
         }
 
         /// <summary>
         /// Gets the result of the dialog.
         /// </summary>
-        [JsonProperty]
         public string Result { get; }
 
         /// <summary>
         /// Gets the item selected by the user from the list.
         /// </summary>
-        [JsonProperty]
-        public string? SelectedItem { get; }
+        public string SelectedItem { get; }
     }
 }
