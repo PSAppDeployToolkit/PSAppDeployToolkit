@@ -540,7 +540,7 @@ function Private:Invoke-ADTClientServerOperation
                         }
                         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                     }
-                    [System.Threading.Thread]::Sleep(1000)
+                    [System.Threading.Thread]::Sleep(1)
                 }
                 return
             }
