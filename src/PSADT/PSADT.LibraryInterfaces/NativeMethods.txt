@@ -28,6 +28,8 @@ DwmGetColorizationColor
 EnableMenuItem
 EnumProcessModules
 EnumWindows
+FindFirstFileEx
+FindNextFile
 FindWindow
 GENERIC_MAPPING
 GetApplicationUserModelId

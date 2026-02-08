@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.SafeHandles;
@@ -72,6 +75,118 @@ namespace PSADT.FileSystem
 
             // Check for POSIX path (starts with /letter/ where letter is a drive letter).
             return position + 2 < input.Length && input[position] == '/' && char.IsLetter(input[position + 1]) && input[position + 2] == '/';
+        }
+
+        /// <summary>
+        /// Calculates the total logical size, in bytes, of all files within the specified directory and its
+        /// subdirectories.
+        /// </summary>
+        /// <remarks>This method performs a parallel, breadth-first traversal of the directory tree to
+        /// optimize performance and minimize memory usage, especially for large directory structures. Reparse points
+        /// (such as symbolic links, junctions, and mount points) are skipped to avoid cycles. The method does not
+        /// support cancellation or progress reporting. Only the logical file sizes are included; directory sizes and
+        /// metadata are excluded.</remarks>
+        /// <param name="rootPath">The full path to the root directory whose contents will be scanned. Cannot be null, empty, or whitespace.
+        /// The directory must exist.</param>
+        /// <returns>The total logical size, in bytes, of all files within the specified directory and its subdirectories.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="rootPath"/> is null, empty, or consists only of whitespace.</exception>
+        /// <exception cref="DirectoryNotFoundException">Thrown if the directory specified by <paramref name="rootPath"/> does not exist.</exception>
+        public static long GetLogicalSizeBytes(string rootPath)
+        {
+            // Validate the specified input.
+            if (string.IsNullOrWhiteSpace(rootPath))
+            {
+                throw new ArgumentNullException(nameof(rootPath));
+            }
+            if (!Directory.Exists(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))))
+            {
+                throw new DirectoryNotFoundException($"The specified directory does not exist: {rootPath}");
+            }
+
+            // Note: this is a breadth-first parallel enumeration. It is "fire and forget" in that it does not support cancellation, progress,
+            // or partial results. It is optimized for speed and low memory usage on large directory trees with many files and subdirectories.
+            Task[] tasks = new Task[Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32))];
+            long totalBytes = 0; int pendingDirs = 1; int completed = 0;
+            using BlockingCollection<string> queue = [rootPath];
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                tasks[i] = Task.Run(() =>
+                {
+                    foreach (string dir in queue.GetConsumingEnumerable())
+                    {
+                        try
+                        {
+                            // Try to enumerate the directory. If it fails, skip it and move on (e.g. due to access denied, deleted/moved, etc.).\
+                            // Note that we use FindFirstFileEx with FindExInfoBasic and FindExSearchNameMatch to minimize overhead.
+                            FindCloseSafeHandle hFind;
+                            WIN32_FIND_DATAW data;
+                            unsafe
+                            {
+                                hFind = PInvoke.FindFirstFileEx(dir + "\\*", FINDEX_INFO_LEVELS.FindExInfoBasic, &data, FINDEX_SEARCH_OPS.FindExSearchNameMatch, FIND_FIRST_EX_FLAGS.FIND_FIRST_EX_LARGE_FETCH);
+                            }
+                            if (hFind.IsInvalid)
+                            {
+                                hFind.Dispose();
+                                continue;
+                            }
+
+                            // Process the first result and then continue with FindNextFile in a loop until there are no more results. For each subdirectory, add it to the queue for processing.
+                            using (hFind)
+                            {
+                                do
+                                {
+                                    // Validate the file name and skip "." and ".." entries.
+                                    string name = data.cFileName.ToString();
+                                    if (name is "." or "..")
+                                    {
+                                        continue;
+                                    }
+
+                                    // Check if this is a directory or a file. For directories, we add them to the queue for processing. For files, we add their size to the total.
+                                    if (((FileAttributes)data.dwFileAttributes & FileAttributes.Directory) != 0)
+                                    {
+                                        // Skip reparse points (e.g. symbolic links, junctions, mount points) to avoid potential cycles.
+                                        if (((FileAttributes)data.dwFileAttributes & FileAttributes.ReparsePoint) != 0)
+                                        {
+                                            continue;
+                                        }
+
+                                        // Increment the pending directory count before adding to the queue.
+                                        _ = Interlocked.Increment(ref pendingDirs);
+                                        try
+                                        {
+                                            queue.Add(dir + "\\" + name);
+                                        }
+                                        catch
+                                        {
+                                            _ = Interlocked.Decrement(ref pendingDirs);
+                                            throw;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ulong size = ((ulong)data.nFileSizeHigh << 32) | data.nFileSizeLow;
+                                        if (size != 0)
+                                        {
+                                            _ = Interlocked.Add(ref totalBytes, unchecked((long)size));
+                                        }
+                                    }
+                                }
+                                while (PInvoke.FindNextFile(hFind, out data));
+                            }
+                        }
+                        finally
+                        {
+                            if (Interlocked.Decrement(ref pendingDirs) == 0 && Interlocked.Exchange(ref completed, 1) == 0)
+                            {
+                                queue.CompleteAdding();
+                            }
+                        }
+                    }
+                });
+            }
+            Task.WaitAll(tasks);
+            return totalBytes;
         }
 
         /// <summary>
@@ -292,6 +407,25 @@ namespace PSADT.FileSystem
                 targetPath.Clear();
             }
             return new(lookupTable);
+        }
+
+        /// <summary>
+        /// Removes trailing directory separator characters ('\' or '/') from the specified path string, except for root
+        /// paths.
+        /// </summary>
+        /// <remarks>This method preserves root directory paths and only removes trailing separators when
+        /// the path length exceeds three characters. The input string is not validated for null; callers should ensure
+        /// a valid path is provided.</remarks>
+        /// <param name="path">The path string to trim. Must not be null.</param>
+        /// <returns>A string representing the path with trailing directory separators removed. If the path is a root (e.g.,
+        /// 'C:\\'), it is not trimmed.</returns>
+        private static string TrimTrailingSeparators(string path)
+        {
+            while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
+            {
+                path = path.Substring(0, path.Length - 1);
+            }
+            return path;
         }
 
         /// <summary>

@@ -942,27 +942,7 @@ function Show-ADTInstallationWelcome
                     Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
                     if (!$PSBoundParameters.ContainsKey('RequiredDiskSpace'))
                     {
-                        try
-                        {
-                            # Determine the size of the Files folder
-                            $fso = New-Object -ComObject Scripting.FileSystemObject
-                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($scriptDir).Size / 1MB)
-                        }
-                        catch
-                        {
-                            Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                        }
-                        finally
-                        {
-                            $null = try
-                            {
-                                [System.Runtime.InteropServices.Marshal]::ReleaseComObject($fso)
-                            }
-                            catch
-                            {
-                                $null
-                            }
-                        }
+                        $RequiredDiskSpace = [PSADT.FileSystem.FileSystemUtilities]::GetLogicalSizeBytes($scriptDir) / 1MB
                     }
                     if (($freeDiskSpace = Get-ADTFreeDiskSpace) -lt $RequiredDiskSpace)
                     {
