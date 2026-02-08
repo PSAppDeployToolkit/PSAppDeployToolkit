@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -10,7 +10,7 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// Reapplies all policy settings. By default, only policy settings that have changed are applied.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly bool Force;
 
         /// <summary>

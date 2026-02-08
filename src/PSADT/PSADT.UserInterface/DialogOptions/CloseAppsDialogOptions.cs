@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using PSAppDeployToolkit.Foundation;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {

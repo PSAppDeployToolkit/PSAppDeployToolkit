@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text.Json.Serialization;
 using PSAppDeployToolkit.Logging;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -12,19 +12,19 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The log message text.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly string Message;
 
         /// <summary>
         /// The log severity level.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly LogSeverity Severity;
 
         /// <summary>
         /// The source of the log message. Typically matches the PowerShell function's name.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly string Source;
 
         /// <summary>

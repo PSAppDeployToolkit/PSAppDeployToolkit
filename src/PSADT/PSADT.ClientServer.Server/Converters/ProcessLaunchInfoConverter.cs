@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using PSADT.Foundation;
 using PSADT.ProcessManagement;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -18,136 +18,49 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Reads and converts the JSON to a <see cref="ProcessLaunchInfo"/> instance.
         /// </summary>
-        public override ProcessLaunchInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override ProcessLaunchInfo ReadJson(JsonReader reader, Type objectType, ProcessLaunchInfo? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             // Ensure the validity of the JSON structure.
-            if (reader.TokenType == JsonTokenType.Null)
+            if (reader.TokenType == JsonToken.Null)
             {
-                throw new JsonException("Cannot deserialize null ProcessLaunchInfo.");
+                throw new JsonSerializationException("Cannot deserialize null ProcessLaunchInfo.");
             }
-            if (reader.TokenType != JsonTokenType.StartObject)
+            if (reader.TokenType != JsonToken.StartObject)
             {
-                throw new JsonException($"Expected start of object for ProcessLaunchInfo, got {reader.TokenType}.");
+                throw new JsonSerializationException($"Expected start of object for ProcessLaunchInfo, got {reader.TokenType}.");
             }
 
-            // Initialize all properties with defaults.
-            string? filePath = null;
-            List<string>? argumentList = null;
-            string? workingDirectory = null;
-            RunAsActiveUser? runAsActiveUser = null;
-            bool useLinkedAdminToken = false;
-            bool useHighestAvailableToken = false;
-            bool inheritEnvironmentVariables = false;
-            bool expandEnvironmentVariables = false;
-            bool denyUserTermination = false;
-            bool useUnelevatedToken = false;
-            List<string>? standardInput = null;
-            List<IntPtr>? handlesToInherit = null;
-            bool useShellExecute = false;
-            string? verb = null;
-            bool createNoWindow = false;
-            bool waitForChildProcesses = false;
-            bool killChildProcessesWithParent = false;
-            Encoding? streamEncoding = null;
-            ProcessWindowStyle? windowStyle = null;
-            ProcessPriorityClass? priorityClass = null;
-            bool noTerminateOnTimeout = false;
-
-            // Read properties until the end of the object.
-            while (reader.Read())
-            {
-                // Break on end of object.
-                if (reader.TokenType == JsonTokenType.EndObject)
-                {
-                    break;
-                }
-                if (reader.TokenType != JsonTokenType.PropertyName)
-                {
-                    throw new JsonException($"Expected property name, got {reader.TokenType}.");
-                }
-
-                // Handle each property accordingly.
-                string propertyName = reader.GetString() ?? throw new JsonException("Property name cannot be null."); _ = reader.Read();
-                switch (propertyName)
-                {
-                    case "FilePath":
-                        filePath = reader.GetString();
-                        break;
-                    case "ArgumentList":
-                        argumentList = ReadStringList(ref reader, options);
-                        break;
-                    case "WorkingDirectory":
-                        workingDirectory = reader.TokenType != JsonTokenType.Null ? reader.GetString() : null;
-                        break;
-                    case "RunAsActiveUser":
-                        runAsActiveUser = reader.TokenType != JsonTokenType.Null ? JsonSerializer.Deserialize<RunAsActiveUser>(ref reader, options) : null;
-                        break;
-                    case "UseLinkedAdminToken":
-                        useLinkedAdminToken = reader.GetBoolean();
-                        break;
-                    case "UseHighestAvailableToken":
-                        useHighestAvailableToken = reader.GetBoolean();
-                        break;
-                    case "InheritEnvironmentVariables":
-                        inheritEnvironmentVariables = reader.GetBoolean();
-                        break;
-                    case "ExpandEnvironmentVariables":
-                        expandEnvironmentVariables = reader.GetBoolean();
-                        break;
-                    case "DenyUserTermination":
-                        denyUserTermination = reader.GetBoolean();
-                        break;
-                    case "UseUnelevatedToken":
-                        useUnelevatedToken = reader.GetBoolean();
-                        break;
-                    case "StandardInput":
-                        standardInput = ReadStringList(ref reader, options);
-                        break;
-                    case "HandlesToInherit":
-                        handlesToInherit = reader.TokenType != JsonTokenType.Null ? JsonSerializer.Deserialize<List<IntPtr>>(ref reader, options) : null;
-                        break;
-                    case "UseShellExecute":
-                        useShellExecute = reader.GetBoolean();
-                        break;
-                    case "Verb":
-                        verb = reader.TokenType != JsonTokenType.Null ? reader.GetString() : null;
-                        break;
-                    case "CreateNoWindow":
-                        createNoWindow = reader.GetBoolean();
-                        break;
-                    case "WaitForChildProcesses":
-                        waitForChildProcesses = reader.GetBoolean();
-                        break;
-                    case "KillChildProcessesWithParent":
-                        killChildProcessesWithParent = reader.GetBoolean();
-                        break;
-                    case "StreamEncoding":
-                        streamEncoding = reader.TokenType != JsonTokenType.Null ? Encoding.GetEncoding(reader.GetString()!) : null;
-                        break;
-                    case "WindowStyle":
-                        // WindowStyle (SHOW_WINDOW_CMD) is computed from ProcessWindowStyle; skip during deserialization.
-                        reader.Skip();
-                        break;
-                    case "ProcessWindowStyle":
-                        windowStyle = reader.TokenType != JsonTokenType.Null ? (ProcessWindowStyle)Enum.Parse(typeof(ProcessWindowStyle), reader.GetString()!) : null;
-                        break;
-                    case "PriorityClass":
-                        priorityClass = reader.TokenType != JsonTokenType.Null ? (ProcessPriorityClass)Enum.Parse(typeof(ProcessPriorityClass), reader.GetString()!) : null;
-                        break;
-                    case "NoTerminateOnTimeout":
-                        noTerminateOnTimeout = reader.GetBoolean();
-                        break;
-                    default:
-                        // Skip unknown properties for forward compatibility.
-                        reader.Skip();
-                        break;
-                }
-            }
+            // Read out all possible properties.
+            JObject obj = JObject.Load(reader);
+            string? filePath = obj["FilePath"]?.Value<string>();
+            List<string>? argumentList = obj["ArgumentList"]?.ToObject<List<string>>(serializer);
+            string? workingDirectory = obj["WorkingDirectory"]?.Value<string>();
+            RunAsActiveUser? runAsActiveUser = obj["RunAsActiveUser"]?.ToObject<RunAsActiveUser>(serializer);
+            bool useLinkedAdminToken = obj["UseLinkedAdminToken"]?.Value<bool>() ?? false;
+            bool useHighestAvailableToken = obj["UseHighestAvailableToken"]?.Value<bool>() ?? false;
+            bool inheritEnvironmentVariables = obj["InheritEnvironmentVariables"]?.Value<bool>() ?? false;
+            bool expandEnvironmentVariables = obj["ExpandEnvironmentVariables"]?.Value<bool>() ?? false;
+            bool denyUserTermination = obj["DenyUserTermination"]?.Value<bool>() ?? false;
+            bool useUnelevatedToken = obj["UseUnelevatedToken"]?.Value<bool>() ?? false;
+            List<string>? standardInput = obj["StandardInput"]?.ToObject<List<string>>(serializer);
+            List<IntPtr>? handlesToInherit = obj["HandlesToInherit"]?.ToObject<List<IntPtr>>(serializer);
+            bool useShellExecute = obj["UseShellExecute"]?.Value<bool>() ?? false;
+            string? verb = obj["Verb"]?.Value<string>();
+            bool createNoWindow = obj["CreateNoWindow"]?.Value<bool>() ?? false;
+            bool waitForChildProcesses = obj["WaitForChildProcesses"]?.Value<bool>() ?? false;
+            bool killChildProcessesWithParent = obj["KillChildProcessesWithParent"]?.Value<bool>() ?? false;
+            string? streamEncodingName = obj["StreamEncoding"]?.Value<string>();
+            Encoding? streamEncoding = streamEncodingName is not null ? Encoding.GetEncoding(streamEncodingName) : null;
+            string? windowStyleStr = obj["ProcessWindowStyle"]?.Value<string>();
+            ProcessWindowStyle? windowStyle = windowStyleStr is not null ? (ProcessWindowStyle)Enum.Parse(typeof(ProcessWindowStyle), windowStyleStr) : null;
+            string? priorityClassStr = obj["PriorityClass"]?.Value<string>();
+            ProcessPriorityClass? priorityClass = priorityClassStr is not null ? (ProcessPriorityClass)Enum.Parse(typeof(ProcessPriorityClass), priorityClassStr) : null;
+            bool noTerminateOnTimeout = obj["NoTerminateOnTimeout"]?.Value<bool>() ?? false;
 
             // Validate required properties.
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                throw new JsonException("ProcessLaunchInfo requires a non-empty FilePath property.");
+                throw new JsonSerializationException("ProcessLaunchInfo requires a non-empty FilePath property.");
             }
 
             // Return the constructed ProcessLaunchInfo.
@@ -180,133 +93,143 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Writes the <see cref="ProcessLaunchInfo"/> as JSON.
         /// </summary>
-        public override void Write(Utf8JsonWriter writer, ProcessLaunchInfo value, JsonSerializerOptions options)
+        public override void WriteJson(JsonWriter writer, ProcessLaunchInfo? value, JsonSerializer serializer)
         {
             // Ensure the value is not null.
             if (value is null)
             {
-                throw new JsonException("Cannot serialize null ProcessLaunchInfo.");
+                throw new JsonSerializationException("Cannot serialize null ProcessLaunchInfo.");
             }
 
             // Start writing the JSON object.
             writer.WriteStartObject();
 
             // Write required property.
-            writer.WriteString("FilePath", value.FilePath);
+            writer.WritePropertyName("FilePath");
+            writer.WriteValue(value.FilePath);
 
             // Write optional collections.
             if (value.ArgumentList is not null)
             {
                 writer.WritePropertyName("ArgumentList");
-                JsonSerializer.Serialize(writer, value.ArgumentList, options);
+                serializer.Serialize(writer, value.ArgumentList);
             }
 
             // Write optional strings.
             if (value.WorkingDirectory is not null)
             {
-                writer.WriteString("WorkingDirectory", value.WorkingDirectory);
+                writer.WritePropertyName("WorkingDirectory");
+                writer.WriteValue(value.WorkingDirectory);
             }
 
             // Write RunAsActiveUser if present.
             if (value.RunAsActiveUser is not null)
             {
                 writer.WritePropertyName("RunAsActiveUser");
-                JsonSerializer.Serialize(writer, value.RunAsActiveUser, options);
+                serializer.Serialize(writer, value.RunAsActiveUser);
             }
 
             // Write boolean properties (only if true to reduce payload size).
             if (value.UseLinkedAdminToken)
             {
-                writer.WriteBoolean("UseLinkedAdminToken", true);
+                writer.WritePropertyName("UseLinkedAdminToken");
+                writer.WriteValue(true);
             }
             if (value.UseHighestAvailableToken)
             {
-                writer.WriteBoolean("UseHighestAvailableToken", true);
+                writer.WritePropertyName("UseHighestAvailableToken");
+                writer.WriteValue(true);
             }
             if (value.InheritEnvironmentVariables)
             {
-                writer.WriteBoolean("InheritEnvironmentVariables", true);
+                writer.WritePropertyName("InheritEnvironmentVariables");
+                writer.WriteValue(true);
             }
             if (value.ExpandEnvironmentVariables)
             {
-                writer.WriteBoolean("ExpandEnvironmentVariables", true);
+                writer.WritePropertyName("ExpandEnvironmentVariables");
+                writer.WriteValue(true);
             }
             if (value.DenyUserTermination)
             {
-                writer.WriteBoolean("DenyUserTermination", true);
+                writer.WritePropertyName("DenyUserTermination");
+                writer.WriteValue(true);
             }
             if (value.UseUnelevatedToken)
             {
-                writer.WriteBoolean("UseUnelevatedToken", true);
+                writer.WritePropertyName("UseUnelevatedToken");
+                writer.WriteValue(true);
             }
 
             // Write optional collections.
             if (value.StandardInput is not null)
             {
                 writer.WritePropertyName("StandardInput");
-                JsonSerializer.Serialize(writer, value.StandardInput, options);
+                serializer.Serialize(writer, value.StandardInput);
             }
             if (value.HandlesToInherit is not null)
             {
                 writer.WritePropertyName("HandlesToInherit");
-                JsonSerializer.Serialize(writer, value.HandlesToInherit, options);
+                serializer.Serialize(writer, value.HandlesToInherit);
             }
 
             // Write more boolean properties.
             if (value.UseShellExecute)
             {
-                writer.WriteBoolean("UseShellExecute", true);
+                writer.WritePropertyName("UseShellExecute");
+                writer.WriteValue(true);
             }
             if (value.Verb is not null)
             {
-                writer.WriteString("Verb", value.Verb);
+                writer.WritePropertyName("Verb");
+                writer.WriteValue(value.Verb);
             }
             if (value.CreateNoWindow)
             {
-                writer.WriteBoolean("CreateNoWindow", true);
+                writer.WritePropertyName("CreateNoWindow");
+                writer.WriteValue(true);
             }
             if (value.WaitForChildProcesses)
             {
-                writer.WriteBoolean("WaitForChildProcesses", true);
+                writer.WritePropertyName("WaitForChildProcesses");
+                writer.WriteValue(true);
             }
             if (value.KillChildProcessesWithParent)
             {
-                writer.WriteBoolean("KillChildProcessesWithParent", true);
+                writer.WritePropertyName("KillChildProcessesWithParent");
+                writer.WriteValue(true);
             }
 
             // Write encoding using WebName for portability.
-            writer.WriteString("StreamEncoding", value.StreamEncoding.WebName);
+            writer.WritePropertyName("StreamEncoding");
+            writer.WriteValue(value.StreamEncoding.WebName);
 
             // Write enum properties.
             if (value.WindowStyle is not null)
             {
-                writer.WriteString("WindowStyle", value.WindowStyle.Value.ToString());
+                writer.WritePropertyName("WindowStyle");
+                writer.WriteValue(value.WindowStyle.Value.ToString());
             }
             if (value.ProcessWindowStyle is not null)
             {
-                writer.WriteString("ProcessWindowStyle", value.ProcessWindowStyle.Value.ToString());
+                writer.WritePropertyName("ProcessWindowStyle");
+                writer.WriteValue(value.ProcessWindowStyle.Value.ToString());
             }
             if (value.PriorityClass is not null)
             {
-                writer.WriteString("PriorityClass", value.PriorityClass.Value.ToString());
+                writer.WritePropertyName("PriorityClass");
+                writer.WriteValue(value.PriorityClass.Value.ToString());
             }
 
             // Write remaining boolean.
             if (value.NoTerminateOnTimeout)
             {
-                writer.WriteBoolean("NoTerminateOnTimeout", true);
+                writer.WritePropertyName("NoTerminateOnTimeout");
+                writer.WriteValue(true);
             }
 
             // End the JSON object.
             writer.WriteEndObject();
-        }
-
-        /// <summary>
-        /// Reads a JSON array as a list of strings.
-        /// </summary>
-        private static List<string>? ReadStringList(ref Utf8JsonReader reader, JsonSerializerOptions options)
-        {
-            return reader.TokenType != JsonTokenType.Null ? JsonSerializer.Deserialize<List<string>>(ref reader, options) : null;
         }
     }
 }

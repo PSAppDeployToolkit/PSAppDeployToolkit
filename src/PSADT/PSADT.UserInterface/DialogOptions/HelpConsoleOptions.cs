@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.PowerShell;
 using Microsoft.PowerShell.Commands;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {

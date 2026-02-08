@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
-using PSADT.UserInterface;
+﻿using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -12,13 +12,13 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The style of the dialog.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly DialogStyle DialogStyle;
 
         /// <summary>
         /// The progress dialog options.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly ProgressDialogOptions Options;
 
         /// <summary>

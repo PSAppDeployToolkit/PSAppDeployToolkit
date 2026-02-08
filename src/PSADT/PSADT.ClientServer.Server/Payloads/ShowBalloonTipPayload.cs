@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using PSADT.UserInterface.DialogOptions;
+﻿using PSADT.UserInterface.DialogOptions;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -11,7 +11,7 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The balloon tip options.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly BalloonTipOptions Options;
 
         /// <summary>

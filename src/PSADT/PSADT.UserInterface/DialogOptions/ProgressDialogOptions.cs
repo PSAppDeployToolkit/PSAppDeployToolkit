@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {

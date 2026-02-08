@@ -771,8 +771,8 @@ namespace PSADT.ClientServer
 
             // Deserialize based on the success marker.
             return response[0] != (byte)ResponseMarker.Success
-                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response.AsSpan(1)))
-                : DataSerialization.DeserializeFromBytes<T>(response.AsSpan(1));
+                ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
+                : DataSerialization.DeserializeFromBytes<T>(response, 1);
         }
 
         /// <summary>

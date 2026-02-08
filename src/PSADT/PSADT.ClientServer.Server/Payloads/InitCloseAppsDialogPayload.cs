@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.Json.Serialization;
 using PSADT.ProcessManagement;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -12,7 +12,7 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The collection of process definitions to monitor, or null if no processes need to be monitored.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly ReadOnlyCollection<ProcessDefinition>? ProcessDefinitions;
 
         /// <summary>

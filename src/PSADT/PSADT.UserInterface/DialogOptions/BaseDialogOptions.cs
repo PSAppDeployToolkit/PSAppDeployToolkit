@@ -3,7 +3,7 @@ using System.Collections;
 using System.Globalization;
 using System.IO;
 using PSADT.Utilities;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {

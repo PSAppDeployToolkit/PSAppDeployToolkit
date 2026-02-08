@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace PSADT.ClientServer
 {
@@ -321,7 +320,7 @@ namespace PSADT.ClientServer
         private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
         {
             // Use proper HKDF with a context-specific info parameter
-            byte[] info = DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
+            byte[] info = DefaultEncoding.Value.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
             byte[] salt = new byte[32]; // Zero salt is acceptable per RFC 5869
 
             // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
@@ -430,14 +429,6 @@ namespace PSADT.ClientServer
         /// and ensures cryptographic uniqueness for each key exchange session.
         /// </remarks>
         protected const int ChallengeSize = 32;
-
-        /// <summary>
-        /// Represents the default UTF-8 encoding used for text operations within the library.
-        /// </summary>
-        /// <remarks>This encoding instance does not emit a byte order mark (BOM) and throws exceptions on
-        /// invalid bytes. Use this encoding when you require strict UTF-8 validation and do not want a BOM prefix in
-        /// encoded output.</remarks>
-        private static readonly UTF8Encoding DefaultEncoding = new(false, true);
 
         /// <summary>
         /// Specifies the size, in bytes, of the AES-256 encryption key.

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -15,19 +14,19 @@ namespace PSADT.ClientServer.Converters
         /// Reads and converts the JSON to an <see cref="Encoding"/> instance.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public override Encoding Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override Encoding ReadJson(JsonReader reader, Type objectType, Encoding? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            if (reader.TokenType == JsonTokenType.Null)
+            if (reader.TokenType == JsonToken.Null)
             {
-                throw new JsonException("Cannot deserialize null Encoding.");
+                throw new JsonSerializationException("Cannot deserialize null Encoding.");
             }
-            if (reader.TokenType != JsonTokenType.String)
+            if (reader.TokenType != JsonToken.String)
             {
-                throw new JsonException($"Expected string token for Encoding, got {reader.TokenType}.");
+                throw new JsonSerializationException($"Expected string token for Encoding, got {reader.TokenType}.");
             }
-            if (reader.GetString() is not string encodingName || string.IsNullOrWhiteSpace(encodingName))
+            if (reader.Value is not string encodingName || string.IsNullOrWhiteSpace(encodingName))
             {
-                throw new JsonException("Encoding name cannot be null or empty.");
+                throw new JsonSerializationException("Encoding name cannot be null or empty.");
             }
             return Encoding.GetEncoding(encodingName);
         }
@@ -35,13 +34,13 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Writes the <see cref="Encoding"/> as a JSON string containing only the encoding name.
         /// </summary>
-        public override void Write(Utf8JsonWriter writer, Encoding value, JsonSerializerOptions options)
+        public override void WriteJson(JsonWriter writer, Encoding? value, JsonSerializer serializer)
         {
             if (value is null)
             {
-                throw new JsonException("Cannot serialize null Encoding.");
+                throw new JsonSerializationException("Cannot serialize null Encoding.");
             }
-            writer.WriteStringValue(value.WebName);
+            writer.WriteValue(value.WebName);
         }
     }
 }

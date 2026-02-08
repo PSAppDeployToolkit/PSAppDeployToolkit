@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using PSADT.ClientServer.Payloads;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PSADT.ClientServer.Converters
 {
@@ -19,44 +19,41 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Reads and converts the JSON to a <see cref="ShowModalDialogPayload"/> instance.
         /// </summary>
-        public override ShowModalDialogPayload Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override ShowModalDialogPayload ReadJson(JsonReader reader, Type objectType, ShowModalDialogPayload? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             // Validate the token type.
-            if (reader.TokenType == JsonTokenType.Null)
+            if (reader.TokenType == JsonToken.Null)
             {
-                throw new JsonException("Cannot deserialize null ShowModalDialogPayload.");
+                throw new JsonSerializationException("Cannot deserialize null ShowModalDialogPayload.");
             }
-
-            // Get the document from from the reader.
-            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
-            JsonElement root = doc.RootElement;
 
             // Get the DialogType value.
-            if (!root.TryGetProperty("DialogType", out JsonElement dialogTypeElement))
+            JObject obj = JObject.Load(reader);
+            if (obj["DialogType"]?.Value<int>() is not int dialogTypeInt)
             {
-                throw new JsonException("Missing or invalid DialogType.");
+                throw new JsonSerializationException("Missing or invalid DialogType.");
             }
-            DialogType dialogType = (DialogType)dialogTypeElement.GetInt32();
+            DialogType dialogType = (DialogType)dialogTypeInt;
 
             // Get the DialogStyle value.
-            if (!root.TryGetProperty("DialogStyle", out JsonElement dialogStyleElement))
+            if (obj["DialogStyle"]?.Value<int>() is not int dialogStyleInt)
             {
-                throw new JsonException("Missing or invalid DialogStyle.");
+                throw new JsonSerializationException("Missing or invalid DialogStyle.");
             }
-            DialogStyle dialogStyle = (DialogStyle)dialogStyleElement.GetInt32();
+            DialogStyle dialogStyle = (DialogStyle)dialogStyleInt;
 
             // Get the Options type for the given dialog.
             if (!DialogTypeToOptionsType.TryGetValue(dialogType, out Type? optionsType))
             {
-                throw new JsonException($"Unknown DialogType: {dialogType}");
+                throw new JsonSerializationException($"Unknown DialogType: {dialogType}");
             }
-            if (!root.TryGetProperty("Options", out JsonElement optionsElement))
+            if (obj["Options"] is not JToken optionsToken)
             {
-                throw new JsonException("Missing or invalid Options.");
+                throw new JsonSerializationException("Missing or invalid Options.");
             }
-            if (JsonSerializer.Deserialize(optionsElement.GetRawText(), optionsType, options) is not IDialogOptions optionsValue)
+            if (optionsToken.ToObject(optionsType, serializer) is not IDialogOptions optionsValue)
             {
-                throw new JsonException("Failed to deserialize Options.");
+                throw new JsonSerializationException("Failed to deserialize Options.");
             }
 
             // Create and return the ShowModalDialogPayload.
@@ -66,17 +63,19 @@ namespace PSADT.ClientServer.Converters
         /// <summary>
         /// Writes the <see cref="ShowModalDialogPayload"/> as JSON.
         /// </summary>
-        public override void Write(Utf8JsonWriter writer, ShowModalDialogPayload value, JsonSerializerOptions options)
+        public override void WriteJson(JsonWriter writer, ShowModalDialogPayload? value, JsonSerializer serializer)
         {
             if (value is null)
             {
                 throw new ArgumentNullException(nameof(value), "Cannot serialize a null ShowModalDialogPayload.");
             }
             writer.WriteStartObject();
-            writer.WriteNumber("DialogType", (int)value.DialogType);
-            writer.WriteNumber("DialogStyle", (int)value.DialogStyle);
+            writer.WritePropertyName("DialogType");
+            writer.WriteValue((int)value.DialogType);
+            writer.WritePropertyName("DialogStyle");
+            writer.WriteValue((int)value.DialogStyle);
             writer.WritePropertyName("Options");
-            JsonSerializer.Serialize(writer, value.Options, value.Options.GetType(), options);
+            serializer.Serialize(writer, value.Options, value.Options.GetType());
             writer.WriteEndObject();
         }
 

@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using PSADT.Types;
+﻿using PSADT.Types;
+using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -11,7 +11,7 @@ namespace PSADT.ClientServer.Payloads
         /// <summary>
         /// The send keys options.
         /// </summary>
-        [JsonInclude]
+        [JsonProperty]
         internal readonly SendKeysOptions Options;
 
         /// <summary>
