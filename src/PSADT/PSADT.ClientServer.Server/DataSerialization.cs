@@ -149,7 +149,7 @@ namespace PSADT.ClientServer
             using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
             DataContractSerializer serializer = GetSerializer(type);
             using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
-            if (serializer.ReadObject(reader) is not object result)
+            if (serializer.ReadObject(reader, verifyObjectName: false) is not object result)
             {
                 throw new SerializationException("Deserialization returned a null result.");
             }
