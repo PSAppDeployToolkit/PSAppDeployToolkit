@@ -110,7 +110,7 @@ namespace PSADT.FileSystem
             }
             try
             {
-                using SafeFileHandle hFile = Kernel32.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL);
+                using SafeFileHandle hFile = Kernel32.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
                 return !hFile.IsInvalid;
             }
             catch

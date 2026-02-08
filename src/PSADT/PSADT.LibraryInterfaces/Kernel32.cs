@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
@@ -853,14 +854,14 @@ namespace PSADT.LibraryInterfaces
         /// FILE_CREATION_DISPOSITION enumeration to control whether to create a new file, open an existing file, or
         /// overwrite an existing file.</param>
         /// <param name="dwFlagsAndAttributes">The file or device attributes and flags, such as file attributes, security flags, and other special options.
-        /// Specify one or more values from the FILE_FLAGS_AND_ATTRIBUTES enumeration.</param>
+        /// Specify one or more values from the FileAttributes enumeration.</param>
         /// <param name="hTemplateFile">A handle to a template file with the desired attributes to apply to the file being created. Can be null if
         /// no template is needed.</param>
         /// <returns>A SafeFileHandle representing the opened or newly created file, device, or named pipe. The handle is valid
         /// and ready for use. If the operation fails, an exception is thrown.</returns>
-        internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, in SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FILE_FLAGS_AND_ATTRIBUTES dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
+        internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, in SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FileAttributes dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
         {
-            SafeFileHandle res = PInvoke.CreateFile(lpFileName, (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+            SafeFileHandle res = PInvoke.CreateFile(lpFileName, (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, (FILE_FLAGS_AND_ATTRIBUTES)dwFlagsAndAttributes, hTemplateFile);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -938,11 +939,11 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="lpFileName">The full path to the file or directory for which to retrieve attributes. This parameter cannot be null or an
         /// empty string.</param>
-        /// <returns>A value of type FILE_FLAGS_AND_ATTRIBUTES that describes the attributes of the specified file or directory.</returns>
-        internal static FILE_FLAGS_AND_ATTRIBUTES GetFileAttributes(string lpFileName)
+        /// <returns>A value of type FileAttributes that describes the attributes of the specified file or directory.</returns>
+        internal static FileAttributes GetFileAttributes(string lpFileName)
         {
             uint res = PInvoke.GetFileAttributes(lpFileName);
-            return res == PInvoke.INVALID_FILE_ATTRIBUTES ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : (FILE_FLAGS_AND_ATTRIBUTES)res;
+            return res == PInvoke.INVALID_FILE_ATTRIBUTES ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : (FileAttributes)res;
         }
 
         /// <summary>

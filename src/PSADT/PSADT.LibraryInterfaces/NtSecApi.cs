@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.AccessControl;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -72,21 +73,21 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Represents a generic read access right that combines standard read permissions with the ability to view audit information and retrieve private policy information.
         /// </summary>
-        GENERIC_READ = Windows.Win32.Storage.FileSystem.FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_READ | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION,
+        GENERIC_READ = FileSystemRights.ReadPermissions | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION,
 
         /// <summary>
         /// Represents a combination of access rights used to specify generic write permissions.
         /// </summary>
-        GENERIC_WRITE = Windows.Win32.Storage.FileSystem.FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_WRITE | POLICY_TRUST_ADMIN | POLICY_CREATE_ACCOUNT | POLICY_CREATE_SECRET | POLICY_CREATE_PRIVILEGE | POLICY_SET_DEFAULT_QUOTA_LIMITS | POLICY_SET_AUDIT_REQUIREMENTS | POLICY_AUDIT_LOG_ADMIN | POLICY_SERVER_ADMIN,
+        GENERIC_WRITE = FileSystemRights.ReadPermissions | POLICY_TRUST_ADMIN | POLICY_CREATE_ACCOUNT | POLICY_CREATE_SECRET | POLICY_CREATE_PRIVILEGE | POLICY_SET_DEFAULT_QUOTA_LIMITS | POLICY_SET_AUDIT_REQUIREMENTS | POLICY_AUDIT_LOG_ADMIN | POLICY_SERVER_ADMIN,
 
         /// <summary>
         /// Represents a combination of access rights that allow standard execute permissions, viewing local policy information, and looking up policy names.
         /// </summary>
-        GENERIC_EXECUTE = Windows.Win32.Storage.FileSystem.FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_EXECUTE | POLICY_VIEW_LOCAL_INFORMATION | POLICY_LOOKUP_NAMES,
+        GENERIC_EXECUTE = FileSystemRights.ReadPermissions | POLICY_VIEW_LOCAL_INFORMATION | POLICY_LOOKUP_NAMES,
 
         /// <summary>
         /// Represents the access rights required to perform all policy-related operations.
         /// </summary>
-        POLICY_ALL_ACCESS = Windows.Win32.Storage.FileSystem.FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_REQUIRED | POLICY_VIEW_LOCAL_INFORMATION | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION | POLICY_TRUST_ADMIN | POLICY_CREATE_ACCOUNT | POLICY_CREATE_SECRET | POLICY_CREATE_PRIVILEGE | POLICY_SET_DEFAULT_QUOTA_LIMITS | POLICY_SET_AUDIT_REQUIREMENTS | POLICY_AUDIT_LOG_ADMIN | POLICY_SERVER_ADMIN | POLICY_LOOKUP_NAMES,
+        POLICY_ALL_ACCESS = FileSystemRights.Delete | FileSystemRights.ReadPermissions | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership | POLICY_VIEW_LOCAL_INFORMATION | POLICY_VIEW_AUDIT_INFORMATION | POLICY_GET_PRIVATE_INFORMATION | POLICY_TRUST_ADMIN | POLICY_CREATE_ACCOUNT | POLICY_CREATE_SECRET | POLICY_CREATE_PRIVILEGE | POLICY_SET_DEFAULT_QUOTA_LIMITS | POLICY_SET_AUDIT_REQUIREMENTS | POLICY_AUDIT_LOG_ADMIN | POLICY_SERVER_ADMIN | POLICY_LOOKUP_NAMES,
     }
 }

@@ -28,8 +28,6 @@ DwmGetColorizationColor
 EnableMenuItem
 EnumProcessModules
 EnumWindows
-FILE_ACCESS_RIGHTS
-FILE_FLAGS_AND_ATTRIBUTES
 FindWindow
 GENERIC_MAPPING
 GetApplicationUserModelId
