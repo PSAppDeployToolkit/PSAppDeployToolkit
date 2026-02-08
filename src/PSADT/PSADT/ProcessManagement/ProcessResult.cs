@@ -20,9 +20,22 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
+        public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(launchInfo, commandLine, exitCode, stdOut, stdErr, interleaved)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
+        /// </summary>
+        /// <param name="launchInfo">The launch information of the process.</param>
+        /// <param name="commandLine">The command line used to launch the process.</param>
+        /// <param name="exitCode">The exit code of the process.</param>
+        /// <param name="stdOut">The standard output of the process.</param>
+        /// <param name="stdErr">The standard error output of the process.</param>
+        /// <param name="interleaved">The interleaved output of the process.</param>
+        public ProcessResult(ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
+        {
             LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
             CommandLine = !string.IsNullOrWhiteSpace(commandLine) ? commandLine : throw new ArgumentNullException("CommandLine cannot be null.", (Exception?)null);
         }

@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public sealed record HelpConsoleOptions
+    public sealed record HelpConsoleOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HelpConsoleOptions"/> class with the specified options.
@@ -21,9 +21,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="options"></param>
         public HelpConsoleOptions(Hashtable options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["ExecutionPolicy"] is ExecutionPolicy executionPolicy ? executionPolicy : (ExecutionPolicy)(-1),
-            options["Modules"] is IReadOnlyList<ModuleSpecification> modules
-                ? new ReadOnlyCollection<Hashtable>([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version?.ToString() }, { "Guid", m.Guid } })])
-                : null!)
+            options["Modules"] is IReadOnlyList<ModuleSpecification> modules ? new ReadOnlyCollection<Hashtable>([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version?.ToString() }, { "Guid", m.Guid } })]) : null!)
         {
         }
 
@@ -53,7 +51,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Gets the execution policy that determines how operations are executed.
         /// </summary>
-        [JsonProperty]
         public ExecutionPolicy ExecutionPolicy { get; }
 
         /// <summary>
@@ -69,7 +66,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// Represents a collection of module data.
         /// </summary>
         /// <remarks>This collection is read-only and contains elements of type <see cref="Hashtable"/>.</remarks>
-        [JsonProperty]
         private readonly ReadOnlyCollection<Hashtable> ModuleData;
     }
 }

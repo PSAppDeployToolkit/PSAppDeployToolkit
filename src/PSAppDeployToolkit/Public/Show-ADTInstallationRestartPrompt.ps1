@@ -100,7 +100,7 @@ function Show-ADTInstallationRestartPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
+        [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
@@ -163,7 +163,7 @@ function Show-ADTInstallationRestartPrompt
         }
         else
         {
-            [PSAppDeployToolkit.SessionManagement.DeploymentType]::Install
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
 
         # Set up remainder if not specified.
@@ -255,7 +255,7 @@ function Show-ADTInstallationRestartPrompt
                 }
                 if ($CustomText)
                 {
-                    $dialogOptions.CustomMessageText = $adtStrings.RestartPrompt.CustomMessage
+                    $dialogOptions.Add('CustomMessageText', $adtStrings.RestartPrompt.CustomMessage)
                 }
                 if ($null -ne $adtConfig.UI.FluentAccentColor)
                 {

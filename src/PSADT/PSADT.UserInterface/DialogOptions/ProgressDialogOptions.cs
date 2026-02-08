@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using PSADT.UserInterface.Dialogs;
 using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -9,7 +8,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the ProgressDialog.
     /// </summary>
-    public sealed record ProgressDialogOptions : BaseOptions
+    public sealed record ProgressDialogOptions : BaseDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
@@ -87,25 +86,21 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The message to be displayed in the progress dialog, indicating the current status or action being performed.
         /// </summary>
-        [JsonProperty]
         public string ProgressMessageText { get; }
 
         /// <summary>
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
-        [JsonProperty]
         public string ProgressDetailMessageText { get; }
 
         /// <summary>
         /// The percentage value to be displayed on the status bar, if available.
         /// </summary>
-        [JsonProperty]
         public double? ProgressPercentage { get; }
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        [JsonProperty]
         public DialogMessageAlignment? MessageAlignment { get; }
     }
 }

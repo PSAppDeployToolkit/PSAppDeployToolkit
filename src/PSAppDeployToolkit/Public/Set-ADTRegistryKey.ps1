@@ -28,7 +28,7 @@ function Set-ADTRegistryKey
         DWord should be specified as a decimal.
 
     .PARAMETER MultiStringValueMode
-        The mode to operate when working with MultiString objects. The default is replace, but add and remove modes are supported also.
+        The mode to operate when working with MultiString objects. The default is Replace, but Add and Remove modes are supported also.
 
     .PARAMETER Wow6432Node
         Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
@@ -110,8 +110,8 @@ function Set-ADTRegistryKey
         [Microsoft.Win32.RegistryValueKind]$Type,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [PSADT.RegistryManagement.MultiStringValueMode]$MultiStringValueMode = [PSADT.RegistryManagement.MultiStringValueMode]::Replace,
+        [ValidateSet('Replace', 'Add', 'Remove')]
+        [System.String]$MultiStringValueMode = 'Replace',
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -175,18 +175,21 @@ function Set-ADTRegistryKey
                         {
                             return
                         }
-                        if (!$ipParams.ContainsKey('Value')) { $ipParams.Add('Value', $null) }
-                        if (($null -ne $ipParams.Value) -and ($Type -eq [Microsoft.Win32.RegistryValueKind]::MultiString) -and ($MultiStringValueMode -ne [PSADT.RegistryManagement.MultiStringValueMode]::Replace))
+                        if (!$ipParams.ContainsKey('Value'))
+                        {
+                            $ipParams.Add('Value', $null)
+                        }
+                        if (($null -ne $ipParams.Value) -and ($Type -eq [Microsoft.Win32.RegistryValueKind]::MultiString) -and ($MultiStringValueMode -ne 'Replace'))
                         {
                             $currentMultiStringRegValues = $gipResults.$Name
                             $callersMultiStringRegValues = $ipParams.Value
                             $ipParams.Value = switch ($MultiStringValueMode)
                             {
-                                ([PSADT.RegistryManagement.MultiStringValueMode]::Add)
+                                Add
                                 {
                                     $($currentMultiStringRegValues; $callersMultiStringRegValues | & { process { if ($currentMultiStringRegValues -notcontains $_) { return $_ } } })
                                 }
-                                ([PSADT.RegistryManagement.MultiStringValueMode]::Remove)
+                                Remove
                                 {
                                     $($currentMultiStringRegValues | & { process { if ($callersMultiStringRegValues -notcontains $_) { return $_ } } })
                                 }

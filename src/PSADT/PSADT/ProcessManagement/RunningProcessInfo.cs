@@ -105,7 +105,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            string[] processNames = [.. processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant())];
+            string[] processNames = [.. processDefinitions.Select(static p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant())];
             Process[] allProcesses = [.. Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()))];
             List<RunningProcessInfo> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
@@ -200,7 +200,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return an ordered list of running processes to the caller.
-            return new ReadOnlyCollection<RunningProcessInfo>([.. runningProcesses.OrderBy(runningProcess => runningProcess.Description)]);
+            return new ReadOnlyCollection<RunningProcessInfo>([.. runningProcesses.OrderBy(static runningProcess => runningProcess.Description)]);
         }
 
         /// <summary>

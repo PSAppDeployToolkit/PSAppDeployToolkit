@@ -108,7 +108,7 @@
         }
 
         # This is a custom message to display at the Restart window.
-        CustomMessage = ''
+        CustomMessage = $null
 
         # Text displayed when indicating when the device will be restarted.
         MessageRestart = 'Your computer will be automatically restarted at the end of the countdown.'
@@ -239,6 +239,6 @@
         }
 
         # This is a custom message to display at the Welcome Screen window.
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// including the tray title, tray icon, balloon tip title, text, and icon. Use the <see
     /// cref="BalloonTipOptions(Hashtable)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
-    public sealed record BalloonTipOptions
+    public sealed record BalloonTipOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BalloonTipOptions"/> class using the specified options.
@@ -98,37 +98,31 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Represents the title displayed on the tray.
         /// </summary>
-        [JsonProperty]
         public string TrayTitle { get; }
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
-        [JsonProperty]
         public string TrayIcon { get; }
 
         /// <summary>
         /// Gets the title text displayed in the balloon tip of a notification.
         /// </summary>
-        [JsonProperty]
         public string BalloonTipTitle { get; }
 
         /// <summary>
         /// Gets the text displayed in the balloon tip of a notification.
         /// </summary>
-        [JsonProperty]
         public string BalloonTipText { get; }
 
         /// <summary>
         /// Gets the icon displayed in the balloon tip associated with the notification.
         /// </summary>
-        [JsonProperty]
         public ToolTipIcon BalloonTipIcon { get; }
 
         /// <summary>
         /// Gets the duration, in milliseconds, that the balloon tip is displayed.
         /// </summary>
-        [JsonProperty]
         public uint BalloonTipTime { get; }
     }
 }

@@ -9,9 +9,8 @@ using PSADT.ProcessManagement;
 using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
-using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
-using PSAppDeployToolkit.SessionManagement;
+using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.TestHarness
 {

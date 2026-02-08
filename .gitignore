@@ -396,7 +396,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# Catesta ignores
+# Build system ignores
 Archive
 Artifacts
 cov.xml

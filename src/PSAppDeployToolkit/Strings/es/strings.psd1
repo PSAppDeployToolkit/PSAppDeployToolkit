@@ -77,7 +77,7 @@
             Repair = 'Para que la reparación se complete, debe reiniciar su ordenador.'
             Uninstall = 'Para que la desinstalación se complete, debe reiniciar su ordenador.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Su ordenador se reiniciará automáticamente al final de la cuenta atrás.'
         MessageTime = 'Por favor, guarde su trabajo y reinicie dentro del tiempo asignado.'
         TimeRemaining = 'Tiempo restante:'
@@ -119,7 +119,7 @@
                 Uninstall = 'NOTA: El programa o programas se cerrarán automáticamente en:'
             }
             ButtonClose = 'Cerrar &Programas'
-            ButtonDefer = '&Defer'
+            ButtonDefer = '&Aplazar'
             ButtonContinue = '&Continuar'
             ButtonContinueTooltip = 'Sólo seleccione «Continuar» después de cerrar la(s) aplicación(es) arriba indicada(s).'
         }
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Desinstalación de App'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

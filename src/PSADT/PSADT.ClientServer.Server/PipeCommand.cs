@@ -104,5 +104,10 @@
         /// Removes an environment variable.
         /// </summary>
         RemoveEnvironmentVariable,
+
+        /// <summary>
+        /// Performs gpupdate.exe for the user.
+        /// </summary>
+        GroupPolicyUpdate,
     }
 }

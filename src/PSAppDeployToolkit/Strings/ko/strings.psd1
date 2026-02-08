@@ -77,7 +77,7 @@
             Repair = '복구가 완료되려면 컴퓨터를 다시 시작해야 합니다.'
             Uninstall = '제거를 완료하려면 컴퓨터를 다시 시작해야 합니다.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = '카운트다운이 끝나면 컴퓨터가 자동으로 다시 시작됩니다.'
         MessageTime = '작업을 저장하고 할당된 시간 내에 다시 시작하세요.'
         TimeRemaining = '남은 시간:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - 앱 제거'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

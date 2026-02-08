@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0-windows10.0.18362.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0-windows10.0.18362.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
@@ -8,7 +8,7 @@
     <AssemblyTitle>PSAppDeployToolkit Common Support Library</AssemblyTitle>
     <AssemblyDescription>This assembly serves to provide common code and utilities to all areas of PSAppDeployToolkit.</AssemblyDescription>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>SYSLIB1045;SYSLIB1054</NoWarn>
+    <NoWarn>SYSLIB1045</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +30,7 @@
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.18362.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.18362.0'">
     <PackageReference Include="System.DirectoryServices" Version="10.0.2" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.2" />
   </ItemGroup>

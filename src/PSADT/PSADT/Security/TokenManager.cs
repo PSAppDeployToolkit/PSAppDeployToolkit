@@ -9,11 +9,11 @@ using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
-using Windows.Win32.System.Com;
 using Windows.Win32.System.TaskScheduler;
 using Windows.Win32.System.Threading;
 
@@ -70,57 +70,108 @@ namespace PSADT.Security
                 string pipeName = $"PSADT.ClientServer.Client_TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
                 PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new(AccountUtilities.LocalSystemSid, PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite, AccessControlType.Allow));
                 using NamedPipeServerStream pipe = CreateNamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 0, 0, pipeSecurity);
-                _ = Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
-                Guid CLSID_TaskScheduler = new("0F87369F-A4E5-4CFC-BD3E-73E6154572DD");
+
+                // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
+                ITaskService servicePtr = (ITaskService)new TaskScheduler();
                 try
                 {
-                    // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
-                    _ = Ole32.CoCreateInstance(in CLSID_TaskScheduler, null, CLSCTX.CLSCTX_INPROC_SERVER, out ITaskService servicePtr);
-                    servicePtr.Connect(null, null, null, null);
-
                     // Set up the task as required.
-                    BSTR folderName = (BSTR)Marshal.StringToBSTR(@"\");
-                    BSTR taskName = (BSTR)Marshal.StringToBSTR(pipeName);
-                    BSTR userId = (BSTR)Marshal.StringToBSTR(AccountUtilities.LocalSystemSid.Value);
-                    BSTR path = (BSTR)Marshal.StringToBSTR(typeof(TokenManager).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe"));
-                    BSTR args = (BSTR)Marshal.StringToBSTR($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {runAsActiveUser.SessionId} -UseLinkedAdminToken {useLinkedAdminToken} -UseHighestAvailableToken {useHighestAvailableToken}");
+                    using SafeFreeBSTRHandle folderName = SafeFreeBSTRHandle.Alloc(@"\");
+                    servicePtr.Connect(null, null, null, null);
+                    servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
                     try
                     {
-                        // Create a new task definition.
-                        servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
                         servicePtr.NewTask(0, out ITaskDefinition taskDefinition);
-                        taskDefinition.Actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC, out IAction action);
-                        IExecAction execAction = (IExecAction)action;
-                        taskDefinition.Principal.UserId = userId;
-                        taskDefinition.Principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
-                        execAction.Path = path;
-                        execAction.Arguments = args;
-
-                        // Register and start the task, then delete it. It'll keep running until it exits.
-                        rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
                         try
                         {
-                            task.Run(null, out _);
+                            IActionCollection actions = taskDefinition.Actions;
+                            try
+                            {
+                                actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC, out IAction action);
+                                try
+                                {
+                                    IExecAction execAction = (IExecAction)action;
+                                    try
+                                    {
+                                        IPrincipal principal = taskDefinition.Principal;
+                                        try
+                                        {
+                                            using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
+                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(typeof(TokenManager).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe"));
+                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {runAsActiveUser.SessionId} -UseLinkedAdminToken {useLinkedAdminToken} -UseHighestAvailableToken {useHighestAvailableToken}");
+                                            bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
+                                            try
+                                            {
+                                                // Register and start the task, then delete it. It'll keep running until it exits.
+                                                using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
+                                                userId.DangerousAddRef(ref userIdAddRef);
+                                                path.DangerousAddRef(ref pathAddRef);
+                                                args.DangerousAddRef(ref argsAddRef);
+                                                principal.UserId = (BSTR)userId.DangerousGetHandle();
+                                                principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                                                execAction.Path = (BSTR)path.DangerousGetHandle();
+                                                execAction.Arguments = (BSTR)args.DangerousGetHandle();
+                                                rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
+                                                try
+                                                {
+                                                    task.Run(null, out IRunningTask runningTask);
+                                                    _ = Marshal.ReleaseComObject(runningTask);
+                                                }
+                                                finally
+                                                {
+                                                    rootFolder.DeleteTask(taskName, 0);
+                                                    _ = Marshal.ReleaseComObject(task);
+                                                }
+                                            }
+                                            finally
+                                            {
+                                                if (userIdAddRef)
+                                                {
+                                                    userId.DangerousRelease();
+                                                }
+                                                if (pathAddRef)
+                                                {
+                                                    path.DangerousRelease();
+                                                }
+                                                if (argsAddRef)
+                                                {
+                                                    args.DangerousRelease();
+                                                }
+                                            }
+                                        }
+                                        finally
+                                        {
+                                            _ = Marshal.ReleaseComObject(principal);
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        _ = Marshal.ReleaseComObject(execAction);
+                                    }
+                                }
+                                finally
+                                {
+                                    _ = Marshal.ReleaseComObject(action);
+                                }
+                            }
+                            finally
+                            {
+                                _ = Marshal.ReleaseComObject(actions);
+                            }
                         }
                         finally
                         {
-                            rootFolder.DeleteTask(taskName, 0);
+                            _ = Marshal.ReleaseComObject(taskDefinition);
                         }
                     }
                     finally
                     {
-                        // Free all binary strings.
-                        Marshal.FreeBSTR(args);
-                        Marshal.FreeBSTR(path);
-                        Marshal.FreeBSTR(userId);
-                        Marshal.FreeBSTR(taskName);
-                        Marshal.FreeBSTR(folderName);
+                        _ = Marshal.ReleaseComObject(rootFolder);
                     }
                 }
                 finally
                 {
-                    // Uninitialize the COM library for the current thread.
-                    PInvoke.CoUninitialize();
+                    _ = Marshal.ReleaseComObject(servicePtr);
                 }
 
                 // Wait for the token broker to connect.

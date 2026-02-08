@@ -413,7 +413,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = 'The location of the dialog on the screen.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'The location of the dialog on the screen.')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
+        [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = 'Specify whether to block execution of the processes during deployment.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to block execution of the processes during deployment.')]
@@ -795,7 +795,7 @@ function Show-ADTInstallationWelcome
         }
         else
         {
-            [PSAppDeployToolkit.SessionManagement.DeploymentType]::Install
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
 
         # Set up remainder if not specified.
@@ -1129,7 +1129,7 @@ function Show-ADTInstallationWelcome
                     }
                     if ($CustomText)
                     {
-                        $dialogOptions.CustomMessageText = $adtStrings.CloseAppsPrompt.CustomMessage
+                        $dialogOptions.Add('CustomMessageText', $adtStrings.CloseAppsPrompt.CustomMessage)
                     }
                     if ($null -ne $CloseProcesses)
                     {
@@ -1173,7 +1173,7 @@ function Show-ADTInstallationWelcome
                                         if ($deferRunIntervalNextTime -gt [System.TimeSpan]::Zero)
                                         {
                                             Write-ADTLogEntry -Message "Next run interval not due until [$(($currentDateTimeLocal + $deferRunIntervalNextTime).ToString('O'))], exiting gracefully."
-                                            $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                                            $sessionClosed = $true; Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                                         }
                                     }
                                 }

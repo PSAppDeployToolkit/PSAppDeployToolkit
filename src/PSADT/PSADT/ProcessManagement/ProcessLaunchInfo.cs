@@ -31,9 +31,11 @@ namespace PSADT.ProcessManagement
         /// <param name="expandEnvironmentVariables">true to expand environment variables in the file path and arguments before launching the process; otherwise,
         /// false.</param>
         /// <param name="denyUserTermination">true to prevent the user from terminating the process; otherwise, false.</param>
+        /// <param name="useUnelevatedToken">true to attempt to launch the process with an unelevated token; otherwise, false.</param>
+        /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
+        /// The string is encoded using the specified <paramref name="streamEncoding"/> (or the default encoding if not specified).</param>
         /// <param name="handlesToInherit">An optional collection of handles to inherit by the new process. If null, no additional handles are
         /// inherited.</param>
-        /// <param name="useUnelevatedToken">true to attempt to launch the process with an unelevated token; otherwise, false.</param>
         /// <param name="useShellExecute">true to use the operating system shell to start the process; otherwise, false.</param>
         /// <param name="verb">The action to take when starting the process, such as 'runas' or 'open'. If null or whitespace, the default
         /// verb is used.</param>
@@ -59,8 +61,9 @@ namespace PSADT.ProcessManagement
             bool inheritEnvironmentVariables = false,
             bool expandEnvironmentVariables = false,
             bool denyUserTermination = false,
-            IEnumerable<IntPtr>? handlesToInherit = null,
             bool useUnelevatedToken = false,
+            IEnumerable<string>? standardInput = null,
+            IEnumerable<IntPtr>? handlesToInherit = null,
             bool useShellExecute = false,
             string? verb = null,
             bool createNoWindow = false,
@@ -86,13 +89,17 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate all nullable parameters.
+            if (argumentList?.Any() == true)
+            {
+                ArgumentList = new ReadOnlyCollection<string>([.. argumentList]);
+            }
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
                 WorkingDirectory = workingDirectory!.Trim();
             }
-            if (argumentList?.Any() == true)
+            if (standardInput?.Any() == true)
             {
-                ArgumentList = new ReadOnlyCollection<string>([.. argumentList]);
+                StandardInput = new ReadOnlyCollection<string>([.. standardInput]);
             }
             if (handlesToInherit?.Any() == true)
             {
@@ -214,15 +221,21 @@ namespace PSADT.ProcessManagement
         public bool DenyUserTermination { get; }
 
         /// <summary>
+        /// Indicates whether an unelevated token should be used for operations.
+        /// </summary>
+        public bool UseUnelevatedToken { get; }
+
+        /// <summary>
+        /// Gets the lines to write to the process's standard input stream.
+        /// </summary>
+        /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
+        public IReadOnlyList<string>? StandardInput { get; }
+
+        /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
         public IReadOnlyList<IntPtr>? HandlesToInherit { get; }
-
-        /// <summary>
-        /// Indicates whether an unelevated token should be used for operations.
-        /// </summary>
-        public bool UseUnelevatedToken { get; }
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.

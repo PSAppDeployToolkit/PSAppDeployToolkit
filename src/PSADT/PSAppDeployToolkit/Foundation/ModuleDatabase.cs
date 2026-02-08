@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
-using PSAppDeployToolkit.SessionManagement;
 
 namespace PSAppDeployToolkit.Foundation
 {
@@ -19,15 +18,26 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="InvalidOperationException"></exception>
         public static void Init(PSObject database)
         {
-            if (database is null)
-            {
-                throw new ArgumentNullException(nameof(database), "Database cannot be null.");
-            }
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
-            _database = database; _sessionState = (SessionState)_database.Properties["SessionState"].Value;
+            _database = database ?? throw new ArgumentNullException(nameof(database), "Database cannot be null.");
+        }
+
+        /// <summary>
+        /// Clears the current database instance, resetting the internal state to uninitialized.
+        /// </summary>
+        /// <remarks>Call this method to release the current database and prepare for reinitialization.
+        /// After calling this method, any operations that depend on the database instance may fail until it is
+        /// reinitialized.</remarks>
+        public static void Clear()
+        {
+            if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.ScriptName -and ($_.ScriptName.EndsWith('PSAppDeployToolkit\\PSAppDeployToolkit.psm1') -or $_.ScriptName.EndsWith('PSAppDeployToolkit\\ImportsLast.ps1'))) { return $_ } } }").Invoke().Count.Equals(1))
+            {
+                throw new InvalidOperationException("The InternalDatabase class can only be cleared from within the PSAppDeployToolkit module.");
+            }
+            _database = null;
         }
 
         /// <summary>
@@ -48,7 +58,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns><see langword="true"/> if the database is initialized; otherwise, <see langword="false"/>.</returns>
         public static bool IsInitialized()
         {
-            return (bool)_database?.Properties["Initialized"].Value!;
+            return (bool?)_database?.Properties["Initialized"].Value == true;
         }
 
         /// <summary>
@@ -59,7 +69,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static IReadOnlyDictionary<string, object> GetEnvironment()
         {
-            return (IReadOnlyDictionary<string, object>)_database?.Properties["Environment"].Value! ?? throw new InvalidOperationException(initErrorMessage);
+            return (IReadOnlyDictionary<string, object>?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -70,7 +80,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static Hashtable GetConfig()
         {
-            return (Hashtable)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject! ?? throw new InvalidOperationException(initErrorMessage);
+            return (Hashtable?)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -81,7 +91,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static Hashtable GetStrings()
         {
-            return (Hashtable)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject! ?? throw new InvalidOperationException(initErrorMessage);
+            return (Hashtable?)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -93,7 +103,7 @@ namespace PSAppDeployToolkit.Foundation
         /// langword="false"/>.</returns>
         public static bool IsDeploymentSessionActive()
         {
-            return ((List<DeploymentSession>)_database?.Properties["Sessions"].Value!).Count > 0;
+            return ((List<DeploymentSession>?)_database?.Properties["Sessions"].Value)?.Count > 0;
         }
 
         /// <summary>
@@ -104,8 +114,7 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static DeploymentSession GetDeploymentSession()
         {
-            List<DeploymentSession> sessionList = (List<DeploymentSession>)_database?.Properties["Sessions"].Value!;
-            return sessionList.Count == 0
+            return !(_database?.Properties["Sessions"].Value is List<DeploymentSession> sessionList && sessionList.Count > 0)
                 ? throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
                 : sessionList[sessionList.Count - 1];
         }
@@ -117,7 +126,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="InvalidOperationException"></exception>
         internal static SessionState GetSessionState()
         {
-            return _sessionState ?? throw new InvalidOperationException(pwshErrorMessage);
+            return (SessionState?)_database?.Properties["SessionState"].Value ?? throw new InvalidOperationException(pwshErrorMessage);
         }
 
         /// <summary>
@@ -128,18 +137,13 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns></returns>
         internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
         {
-            return new(_sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args));
+            SessionState sessionState = GetSessionState(); return new(sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args));
         }
 
         /// <summary>
         /// Represents the PSAppDeployToolkit module's internal database.
         /// </summary>
         private static PSObject? _database;
-
-        /// <summary>
-        /// Represents the PSAppDeployToolkit module's SessionState object.
-        /// </summary>
-        private static SessionState? _sessionState;
 
         /// <summary>
         /// Represents the error message displayed when PSAppDeployToolkit functions or methods are used without prior initialization.

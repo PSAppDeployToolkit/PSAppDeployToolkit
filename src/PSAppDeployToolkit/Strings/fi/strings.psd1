@@ -77,7 +77,7 @@
             Repair = 'Jotta korjaus saataisiin päätökseen, sinun on käynnistettävä tietokone uudelleen.'
             Uninstall = 'Jotta asennuksen poisto saataisiin päätökseen, sinun on käynnistettävä tietokone uudelleen.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Tietokone käynnistyy automaattisesti uudelleen lähtölaskennan päätyttyä.'
         MessageTime = 'Tallenna työsi ja käynnistä tietokone uudelleen annetussa ajassa.'
         TimeRemaining = 'Jäljellä oleva aika:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

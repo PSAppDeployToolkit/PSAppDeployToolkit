@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Globalization;
 using System.IO;
-using PSADT.UserInterface.Dialogs;
 using PSADT.Utilities;
 using Newtonsoft.Json;
 
@@ -11,14 +10,14 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public abstract record BaseOptions
+    public abstract record BaseDialogOptions : IDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified options.
+        /// Initializes a new instance of the <see cref="BaseDialogOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        internal BaseOptions(Hashtable options) : this(
+        internal BaseDialogOptions(Hashtable options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
             options["Subtitle"] is string subtitle ? subtitle : string.Empty,
             options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
@@ -36,7 +35,7 @@ namespace PSADT.UserInterface.DialogOptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified application settings
+        /// Initializes a new instance of the <see cref="BaseDialogOptions"/> class with the specified application settings
         /// and dialog configuration.
         /// </summary>
         /// <remarks>This constructor is protected and intended for use by derived classes. It ensures
@@ -57,7 +56,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
         [JsonConstructor]
-        protected BaseOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
             {
@@ -126,79 +125,66 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppTitle { get; }
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
-        [JsonProperty]
         public string Subtitle { get; }
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppIconImage { get; }
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppIconDarkImage { get; }
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
-        [JsonProperty]
         public string AppBannerImage { get; }
 
         /// <summary>
         /// Gets the file path or resource identifier for the application's tray icon image.
         /// </summary>
-        [JsonProperty]
         public string? AppTaskbarIconImage { get; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        [JsonProperty]
         public bool DialogTopMost { get; }
 
         /// <summary>
         /// Gets the culture information representing the language associated with this instance.
         /// </summary>
-        [JsonProperty]
         public CultureInfo Language { get; }
 
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        [JsonProperty]
         public int? FluentAccentColor { get; }
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
-        [JsonProperty]
         public DialogPosition? DialogPosition { get; }
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
-        [JsonProperty]
         public bool? DialogAllowMove { get; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? DialogExpiryDuration { get; }
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
-        [JsonProperty]
         public TimeSpan? DialogPersistInterval { get; }
     }
 }

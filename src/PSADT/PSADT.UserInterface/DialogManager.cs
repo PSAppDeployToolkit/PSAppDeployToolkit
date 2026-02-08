@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
+using PSADT.ClientServer;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
-using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
 using PSADT.Utilities;
 using PSAppDeployToolkit.Logging;
@@ -24,7 +24,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Static class to manage WPF dialogs within a console application.
     /// </summary>
-    public static class DialogManager
+    internal static class DialogManager
     {
         /// <summary>
         /// Displays a dialog prompting the user to close specific applications.
@@ -235,7 +235,7 @@ namespace PSADT.UserInterface
         /// <param name="options"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options, BaseState? state = null)
+        private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
         {
             return InvokeDialogAction(() =>
             {
@@ -266,9 +266,9 @@ namespace PSADT.UserInterface
 
             // Don't let this dispose until the balloon tip closes. If it disposes too early, Windows won't show the BalloonTipIcon properly.
             // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
-            using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Dialogs.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
+            using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = Interfaces.Classic.ClassicDialog.GetIcon(options.TrayIcon), Visible = true, };
             using ManualResetEventSlim balloonTipClosed = new();
-            notifyIcon.BalloonTipShown += (_, _) => SetClientServerOperationSuccess();
+            notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetClientServerOperationSuccess();
             notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
             notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
             notifyIcon.ShowBalloonTip((int)options.BalloonTipTime, options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);
@@ -323,7 +323,7 @@ namespace PSADT.UserInterface
         /// <param name="Title">The title of the task dialog box. This appears in the title bar of the dialog.</param>
         /// <param name="Subtitle">The subtitle of the task dialog box. This appears as a header in the dialog.</param>
         /// <param name="Prompt">The main prompt or message displayed in the dialog box.</param>
-        /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> value.</param>
+        /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid TASKDIALOG_COMMON_BUTTON_FLAGS value.</param>
         /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
         /// <returns>A MESSAGEBOX_RESULT value indicating the button that the user clicked to close the dialog.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
@@ -345,20 +345,9 @@ namespace PSADT.UserInterface
         {
             return InvokeDialogAction(() =>
             {
-                using Dialogs.Classic.HelpConsole helpConsole = new(options);
+                using Interfaces.Classic.HelpConsole helpConsole = new(options);
                 return helpConsole.ShowDialog();
             });
-        }
-
-        /// <summary>
-        /// Marks the operation as successful by setting the corresponding registry value to indicate a no-wait state.
-        /// </summary>
-        /// <remarks>This method updates a specific registry key to signal that a no-wait operation has
-        /// completed successfully. It is intended for internal use and should not be called directly by external
-        /// code.</remarks>
-        internal static void SetClientServerOperationSuccess()
-        {
-            Registry.SetValue(UserRegistryPath, OperationSuccessRegistryValueName, 1, RegistryValueKind.DWord);
         }
 
         /// <summary>
@@ -366,12 +355,24 @@ namespace PSADT.UserInterface
         /// </summary>
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
-            // Initialize the WPF application if necessary, otherwise just invoke the callback.
+            // Initialize the WPF application if necessary.
             if (!appInitialized.IsSet)
             {
-                // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-                // We only need to do this once when the app is first initialized.
-                ShellUtilities.RefreshDesktop();
+                // Register process exit handler to ensure WPF is properly shut down.
+                // This prevents ~2.5 second delays during process termination.
+                AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+                {
+                    if (appInitialized.IsSet && app is not null)
+                    {
+                        app.Dispatcher.Invoke(() =>
+                        {
+                            app.Shutdown();
+                        });
+                        appThread?.Join();
+                        appThread = null;
+                        app = null;
+                    }
+                };
 
                 // Create and start the WPF application thread.
                 appThread = new(() =>
@@ -382,7 +383,10 @@ namespace PSADT.UserInterface
                     };
                     app.Startup += (_, _) =>
                     {
+                        // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
+                        // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                        ShellUtilities.RefreshDesktop();
                         appInitialized.Set();
                     };
                     Environment.ExitCode = app.Run();
@@ -392,28 +396,17 @@ namespace PSADT.UserInterface
                 appThread.Start();
                 appInitialized.Wait();
             }
-            return app!.Dispatcher.Invoke(callback);
+
+            // If we're here and the app isn't initialised, then it's been shut down.
+            // The application cannot be restarted, so we throw back in this situation.
+            if (app is null)
+            {
+                throw new InvalidOperationException("WPF application is not initialized.");
+            }
+
+            // Invoke the callback on the WPF UI thread.
+            return app.Dispatcher.Invoke(callback);
         }
-
-        /// <summary>
-        /// Specifies the registry key name used to store the block execution command.
-        /// </summary>
-        public const string BlockExecutionRegistryKeyName = "BlockExecutionCommand";
-
-        /// <summary>
-        /// Gets the text for the button used to block execution in a dialog.
-        /// </summary>
-        public const string BlockExecutionButtonText = "OK";
-
-        /// <summary>
-        /// Specifies the registry path used for storing PSAppDeployToolkit configuration settings for the current user.
-        /// </summary>
-        public const string UserRegistryPath = "HKEY_CURRENT_USER\\SOFTWARE\\PSAppDeployToolkit";
-
-        /// <summary>
-        /// Specifies the registry value name used to indicate that the operation should not wait for success.
-        /// </summary>
-        public const string OperationSuccessRegistryValueName = "ClientServerOperationSuccess";
 
         /// <summary>
         /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as
@@ -440,23 +433,23 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>>()
+        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>>()
         {
-            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>()
+            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>()
             {
-                { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
-                { DialogType.CustomDialog, (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, (options, state) => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
-                { DialogType.ProgressDialog, (options, state) => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, (options, state) => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, state) => new Interfaces.Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, state) => new Interfaces.Classic.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, state) => new Interfaces.Classic.RestartDialog((RestartDialogOptions)options) },
             })},
-            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>()
+            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>()
             {
-                { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
-                { DialogType.CustomDialog, (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, (options, state) => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
-                { DialogType.ProgressDialog, (options, state) => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, (options, state) => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, state) => new Interfaces.Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, state) => new Interfaces.Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, state) => new Interfaces.Fluent.RestartDialog((RestartDialogOptions)options) },
             })},
         });
 

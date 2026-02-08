@@ -39,10 +39,16 @@ try
                 ModuleImport = $null
                 ModuleInit = $null
             }
+            ProcessExitEvent = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -SupportEvent -Action {
+                if ($Script:ADT.ClientServerProcess)
+                {
+                    Close-ADTClientServerProcess
+                }
+            }
             SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ClientServerProcess = $null
-            Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.SessionManagement.DeploymentSession]]::new()
+            Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.Foundation.DeploymentSession]]::new()
             Environment = $null
             Language = $null
             Config = $null
@@ -98,10 +104,15 @@ catch
 
 # Ensure that the client/server process is closed on module remove.
 $ModuleInfo.OnRemove = {
-    if ($ADT.ClientServerProcess)
+    if ($Script:ADT.ClientServerProcess)
     {
         Close-ADTClientServerProcess
     }
+    if ($Script:ADT.ProcessExitEvent)
+    {
+        Unregister-Event -SubscriptionId $Script:ADT.ProcessExitEvent.Id
+    }
+    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Clear()
 }
 
 # Determine how long the import took.

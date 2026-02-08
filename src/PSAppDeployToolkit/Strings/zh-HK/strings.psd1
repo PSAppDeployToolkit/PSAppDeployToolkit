@@ -77,7 +77,7 @@
             Repair = '為了完成維修，您必須重新啟動電腦。'
             Uninstall = '為了讓卸載完成，您必須重新啟動電腦。'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = '您的電腦會在倒數計時結束時自動重新啟動。'
         MessageTime = '請儲存您的工作，並在指定時間內重新啟動。'
         TimeRemaining = '剩餘時間：'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - 應用程式卸載'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

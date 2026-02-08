@@ -13,12 +13,10 @@ using PSADT.ClientServer.Payloads;
 using PSADT.DeviceManagement;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
-using PSADT.RegistryManagement;
 using PSADT.Security;
 using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
@@ -139,17 +137,14 @@ namespace PSADT.ClientServer
             {
                 // Ensure everything is properly disposed of.
                 using (outputPipeClient) using (inputPipeClient) using (logPipeClient)
-                using (BinaryWriter outputWriter = new(outputPipeClient, ServerInstance.DefaultEncoding))
-                using (BinaryReader inputReader = new(inputPipeClient, ServerInstance.DefaultEncoding))
-                using (BinaryWriter logWriter = new(logPipeClient, ServerInstance.DefaultEncoding))
-                using (PipeEncryption ioEncryption = new())
-                using (PipeEncryption logEncryption = new())
+                using (ClientPipeEncryption ioEncryption = new())
+                using (ClientPipeEncryption logEncryption = new())
                 {
                     // Perform ECDH key exchange for encrypted communication.
                     try
                     {
-                        ioEncryption.PerformClientKeyExchange(outputWriter, inputReader);
-                        logEncryption.PerformClientKeyExchange(outputWriter, inputReader);
+                        ioEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
+                        logEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
                     }
                     catch (Exception ex)
                     {
@@ -159,15 +154,23 @@ namespace PSADT.ClientServer
                     // Set up writer helper methods.
                     void WriteSuccess<T>(T result)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, SerializeObject(PipeResponse.Ok(result)));
+                        byte[] data = SerializeToBytes(result);
+                        byte[] response = new byte[data.Length + 1];
+                        response[0] = (byte)ResponseMarker.Success;
+                        data.CopyTo(response.AsSpan(1));
+                        ioEncryption.WriteEncrypted(outputPipeClient, response);
                     }
                     void WriteError(Exception ex)
                     {
-                        ioEncryption.WriteEncrypted(outputWriter, SerializeObject(PipeResponse.Fail(ex)));
+                        byte[] data = SerializeToBytes(ex);
+                        byte[] response = new byte[data.Length + 1];
+                        response[0] = (byte)ResponseMarker.Error;
+                        data.CopyTo(response.AsSpan(1));
+                        ioEncryption.WriteEncrypted(outputPipeClient, response);
                     }
                     void WriteLog(string message, LogSeverity severity, string source)
                     {
-                        logEncryption.WriteEncrypted(logWriter, SerializeObject(new LogMessagePayload(message, severity, source)));
+                        logEncryption.WriteEncrypted(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source)));
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
@@ -178,11 +181,16 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                // Read, decrypt, deserialize, then process the request. We never let an exception here kill the pipe.
-                                PipeRequest request = DeserializeString<PipeRequest>(ioEncryption.ReadEncrypted(inputReader));
+                                // Read and decrypt the request: [1-byte command][serialized payload]
+                                byte[] requestBytes = ioEncryption.ReadEncrypted(inputPipeClient);
+                                if (requestBytes.Length == 0)
+                                {
+                                    throw new ClientException("Received empty request from server.", ClientExitCode.InvalidRequest);
+                                }
+                                PipeCommand command = (PipeCommand)requestBytes[0]; int payloadOffset = 1;
                                 try
                                 {
-                                    switch (request.Command)
+                                    switch (command)
                                     {
                                         case PipeCommand.Open:
                                             {
@@ -193,13 +201,12 @@ namespace PSADT.ClientServer
                                         case PipeCommand.Close:
                                             {
                                                 WriteSuccess(true);
-                                                Environment.Exit(0);
                                                 return (int)ClientExitCode.Success;
                                             }
 
                                         case PipeCommand.InitCloseAppsDialog:
                                             {
-                                                closeAppsDialogState = new(((InitCloseAppsDialogPayload?)request.Payload)?.ProcessDefinitions, WriteLog);
+                                                closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -213,7 +220,7 @@ namespace PSADT.ClientServer
                                                 }
 
                                                 // Get all the windows that haven't failed on us and start closing them.
-                                                TimeSpan promptToSaveTimeout = ((PromptToCloseAppsPayload)request.Payload!).Timeout; List<nint> failures = []; Process[] runningProcesses;
+                                                TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(requestBytes, payloadOffset).Timeout; List<nint> failures = []; Process[] runningProcesses;
                                                 while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
                                                 {
                                                     // Start gracefully closing each open window.
@@ -286,14 +293,14 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.ShowModalDialog:
                                             {
-                                                ShowModalDialogPayload payload = (ShowModalDialogPayload)request.Payload!;
+                                                ShowModalDialogPayload payload = DeserializeBytes<ShowModalDialogPayload>(requestBytes, payloadOffset);
                                                 WriteSuccess(InvokeModalDialog(payload.DialogType, payload.DialogStyle, payload.Options, closeAppsDialogState));
                                                 break;
                                             }
 
                                         case PipeCommand.ShowProgressDialog:
                                             {
-                                                ShowProgressDialogPayload payload = (ShowProgressDialogPayload)request.Payload!;
+                                                ShowProgressDialogPayload payload = DeserializeBytes<ShowProgressDialogPayload>(requestBytes, payloadOffset);
                                                 DialogManager.ShowProgressDialog(payload.DialogStyle, payload.Options);
                                                 WriteSuccess(DialogManager.ProgressDialogOpen());
                                                 break;
@@ -307,7 +314,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.UpdateProgressDialog:
                                             {
-                                                UpdateProgressDialogPayload payload = (UpdateProgressDialogPayload)request.Payload!;
+                                                UpdateProgressDialogPayload payload = DeserializeBytes<UpdateProgressDialogPayload>(requestBytes, payloadOffset);
                                                 DialogManager.UpdateProgressDialog(payload.Message, payload.DetailMessage, payload.Percentage, payload.Alignment);
                                                 WriteSuccess(true);
                                                 break;
@@ -322,7 +329,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.ShowBalloonTip:
                                             {
-                                                DialogManager.ShowBalloonTip(((ShowBalloonTipPayload)request.Payload!).Options);
+                                                DialogManager.ShowBalloonTip(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -343,13 +350,13 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.SendKeys:
                                             {
-                                                WriteSuccess(SendKeys(((SendKeysPayload)request.Payload!).Options));
+                                                WriteSuccess(SendKeys(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options));
                                                 break;
                                             }
 
                                         case PipeCommand.GetProcessWindowInfo:
                                             {
-                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(((GetProcessWindowInfoPayload)request.Payload!).Options));
+                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options));
                                                 break;
                                             }
 
@@ -374,13 +381,13 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.GetEnvironmentVariable:
                                             {
-                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
                                                 break;
                                             }
 
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
-                                                EnvironmentVariablePayload payload = (EnvironmentVariablePayload)request.Payload!;
+                                                EnvironmentVariablePayload payload = DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset);
                                                 EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable, payload.Append, payload.Remove);
                                                 WriteSuccess(true);
                                                 break;
@@ -388,14 +395,20 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.RemoveEnvironmentVariable:
                                             {
-                                                EnvironmentUtilities.RemoveEnvironmentVariable(((EnvironmentVariablePayload)request.Payload!).Name, EnvironmentVariableTarget.User);
+                                                EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
                                                 WriteSuccess(true);
+                                                break;
+                                            }
+
+                                        case PipeCommand.GroupPolicyUpdate:
+                                            {
+                                                WriteSuccess(GroupPolicyUpdate(DeserializeBytes<GroupPolicyUpdatePayload>(requestBytes, payloadOffset).Force));
                                                 break;
                                             }
 
                                         default:
                                             {
-                                                throw new ClientException($"The specified command [{request.Command}] is not recognised.", ClientExitCode.InvalidArguments);
+                                                throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
                                             }
                                     }
                                 }
@@ -452,40 +465,40 @@ namespace PSADT.ClientServer
                 else if (arg is "/ShowBalloonTip" or "/sbt")
                 {
                     DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetProcessWindowInfo" or "/gpwi")
                 {
-                    Console.WriteLine(SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
+                    Console.WriteLine(SerializeToString(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetUserNotificationState" or "/guns")
                 {
-                    Console.WriteLine(SerializeObject(ShellUtilities.GetUserNotificationState()));
+                    Console.WriteLine(SerializeToString(ShellUtilities.GetUserNotificationState()));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
                 {
-                    Console.WriteLine(SerializeObject(ShellUtilities.GetForegroundWindowProcessId()));
+                    Console.WriteLine(SerializeToString(ShellUtilities.GetForegroundWindowProcessId()));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
                 {
                     ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/MinimizeAllWindows" or "/maw")
                 {
                     ShellUtilities.MinimizeAllWindows();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RestoreAllWindows" or "/raw")
                 {
                     ShellUtilities.RestoreAllWindows();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SendKeys" or "/sk")
@@ -499,7 +512,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    Console.WriteLine(SerializeObject(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
+                    Console.WriteLine(SerializeToString(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SetEnvironmentVariable" or "/sev")
@@ -525,7 +538,7 @@ namespace PSADT.ClientServer
                         throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable, append, remove);
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RemoveEnvironmentVariable" or "/rev")
@@ -535,7 +548,7 @@ namespace PSADT.ClientServer
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.RemoveEnvironmentVariable(variable, EnvironmentVariableTarget.User);
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/SilentRestart" or "/sr")
@@ -546,7 +559,7 @@ namespace PSADT.ClientServer
                     }
                     Thread.Sleep(delayValue * 1000);
                     DeviceUtilities.RestartComputer();
-                    Console.WriteLine(SerializeObject(true));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetLastInputTime" or "/glit")
@@ -557,6 +570,16 @@ namespace PSADT.ClientServer
                 else if (arg is "/TokenBroker" or "/tb")
                 {
                     BrokerTokenForCaller(ArgvToDictionary(argv));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GroupPolicyUpdate" or "/gpu")
+                {
+                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || string.IsNullOrWhiteSpace(forceStr) || !bool.TryParse(forceStr, out bool force))
+                    {
+                        throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                    }
+                    ClientServerUtilities.SetClientServerOperationSuccess();
+                    Console.WriteLine(SerializeToString(GroupPolicyUpdate(force)));
                     return (int)ClientExitCode.Success;
                 }
             }
@@ -575,7 +598,7 @@ namespace PSADT.ClientServer
         /// <description><c>DialogStyle</c>: Specifies the style of the dialog. Must be a valid <see
         /// cref="DialogStyle"/> value.</description> </item> <item> <description><c>DialogOptions</c>: A
         /// JSON-serialized string containing the options specific to the dialog type.</description> </item> </list></param>
-        /// <param name="closeAppsDialogState">An optional <see cref="BaseState"/> object representing the state of a Close Apps dialog, if applicable.</param>
+        /// <param name="closeAppsDialogState">An optional <see cref="BaseDialogState"/> object representing the state of a Close Apps dialog, if applicable.</param>
         /// <param name="argv">An optional array of command-line arguments, used for special handling in BlockExecution scenarios.</param>
         /// <returns>A JSON-serialized string representing the result of the dialog. The format and content of the result depend
         /// on the dialog type.</returns>
@@ -584,7 +607,7 @@ namespace PSADT.ClientServer
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
-        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null, string[]? argv = null)
+        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
@@ -607,11 +630,11 @@ namespace PSADT.ClientServer
                 }
 
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                if (handle?.Task.GetAwaiter().GetResult() is ProcessResult result)
+                if (handle?.Task.GetAwaiter().GetResult().ExitCode is int exitCode)
                 {
-                    Environment.Exit(result.ExitCode);
+                    Environment.Exit(exitCode);
                 }
-                return SerializeObject(DialogManager.BlockExecutionButtonText);
+                return SerializeToString(BlockExecution.ButtonText);
             }
 
             // Confirm we have a DialogType and that it's valid.
@@ -634,8 +657,18 @@ namespace PSADT.ClientServer
                 throw new ClientException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
             }
 
-            // Show the dialog and return the serialised result for the caller to handle.
-            return SerializeObject(InvokeModalDialog(dialogType, dialogStyle, DeserializeString<object>(GetOptionsFromArguments(arguments)), closeAppsDialogState));
+            // Deserialize the options to the correct type based on DialogType and show the dialog.
+            IDialogOptions options = dialogType switch
+            {
+                DialogType.CloseAppsDialog => DataSerialization.DeserializeFromString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.CustomDialog => DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.DialogBox => DataSerialization.DeserializeFromString<DialogBoxOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.HelpConsole => DataSerialization.DeserializeFromString<HelpConsoleOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.InputDialog => DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.RestartDialog => DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments)),
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog)
+            };
+            return SerializeToString(InvokeModalDialog(dialogType, dialogStyle, options, closeAppsDialogState));
         }
 
         /// <summary>
@@ -659,7 +692,7 @@ namespace PSADT.ClientServer
         /// on the dialog type displayed.</returns>
         /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
-        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, object options, BaseState? closeAppsDialogState = null)
+        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
         {
             return dialogType switch
             {
@@ -800,6 +833,31 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Runs a Group Policy update on the local machine by invoking the gpupdate utility.
+        /// </summary>
+        /// <param name="force">A value indicating whether to force the update, reapplying all policy settings even if they have not
+        /// changed. If <see langword="true"/>, all settings are reapplied.</param>
+        /// <returns>A <see cref="ProcessResult"/> object that contains the results of the Group Policy update operation.</returns>
+        internal static ProcessResult GroupPolicyUpdate(bool force)
+        {
+            // Build out argument list for gpupdate.exe.
+            List<string> argumentList = ["/Target:User"];
+            if (force)
+            {
+                argumentList.Add("/Force");
+            }
+
+            // Set up the process and return its result.
+            ProcessLaunchInfo launchInfo = new(
+                Path.Combine(Environment.SystemDirectory, "gpupdate.exe"),
+                argumentList,
+                standardInput: ["N"],
+                createNoWindow: true
+            );
+            return ProcessManager.LaunchAsync(launchInfo)!.Task.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Converts an array of command-line arguments into a read-only dictionary of key-value pairs.
         /// </summary>
         /// <remarks>Each key in the input must start with a hyphen ('-'), and its value must immediately
@@ -894,6 +952,26 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Deserializes the specified byte span into an object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize.</typeparam>
+        /// <param name="input">The UTF-8 encoded byte span representation of the object to deserialize. Cannot be empty.</param>
+        /// <param name="offset">The zero-based byte offset in the input span where deserialization should begin.</param>
+        /// <returns>An object of type <typeparamref name="T"/> deserialized from the input bytes.</returns>
+        /// <exception cref="ClientException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
+        private static T DeserializeBytes<T>(byte[] input, int offset)
+        {
+            try
+            {
+                return DataSerialization.DeserializeFromBytes<T>(input, offset);
+            }
+            catch (Exception ex)
+            {
+                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
+            }
+        }
+
+        /// <summary>
         /// Deserializes the specified string into an object of type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize.</typeparam>
@@ -913,13 +991,32 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Serializes the specified object into a UTF-8 encoded byte array.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to serialize.</typeparam>
+        /// <param name="result">The object to be serialized. Cannot be null.</param>
+        /// <returns>A UTF-8 encoded byte array representation of the serialized object.</returns>
+        /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
+        private static byte[] SerializeToBytes<T>(T result)
+        {
+            try
+            {
+                return DataSerialization.SerializeToBytes(result);
+            }
+            catch (Exception ex)
+            {
+                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
+            }
+        }
+
+        /// <summary>
         /// Serializes the specified object into a string representation.
         /// </summary>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="result">The object to be serialized. Cannot be null.</param>
         /// <returns>A string representation of the serialized object.</returns>
         /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
-        private static string SerializeObject<T>(T result)
+        private static string SerializeToString<T>(T result)
         {
             try
             {

@@ -113,7 +113,7 @@ function Get-ADTLoggedOnUser
                             try
                             {
                                 $naerParams = @{
-                                    Exception = [System.InvalidProgramException]::new("Failed to determine whether [$($_.TargetObject.NTAccount)] is a local administrator.", $session.IsLocalAdminException)
+                                    Exception = [System.InvalidProgramException]::new("Failed to determine whether [$($session.NTAccount)] is a local administrator.", $session.IsLocalAdminException)
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                     ErrorId = 'SessionInfoIsLocalAdminError'
                                     TargetObject = $session

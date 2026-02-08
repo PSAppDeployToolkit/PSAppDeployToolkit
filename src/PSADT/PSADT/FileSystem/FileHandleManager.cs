@@ -38,7 +38,7 @@ namespace PSADT.FileSystem
             static int GetObjectTypesBufferSize(int queryBufferSize)
             {
                 Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
-                _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength);
+                _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
                 return (int)requiredLength;
             }
 
@@ -208,7 +208,7 @@ namespace PSADT.FileSystem
             static int GetExtendedHandleBufferSize(int queryBufferSize)
             {
                 Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
-                _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, queryBuffer, out uint requiredLength);
+                _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
                 return (int)requiredLength;
             }
 

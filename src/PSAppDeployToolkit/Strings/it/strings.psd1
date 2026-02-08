@@ -77,7 +77,7 @@
             Repair = "Affinché la riparazione sia completata, deve riavviare il computer."
             Uninstall = "Affinché la disinstallazione sia completata, deve riavviare il computer."
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Il computer verrà automaticamente riavviato al termine del conto alla rovescia.'
         MessageTime = 'Salvi il suo lavoro e riavvii entro il tempo stabilito.'
         TimeRemaining = 'Tempo rimanente:'
@@ -154,6 +154,6 @@
                 Uninstall = "{Toolkit\CompanyName} - Disinstallazione App."
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

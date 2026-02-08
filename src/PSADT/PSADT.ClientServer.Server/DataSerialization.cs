@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System.IO;
+using PSADT.ClientServer.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace PSADT.ClientServer
 {
@@ -15,24 +14,71 @@ namespace PSADT.ClientServer
     /// Key features include: <list type="bullet"> <item><description>Serialization of objects to Base64-encoded JSON
     /// strings.</description></item> <item><description>Deserialization of Base64-encoded JSON strings into objects.
     /// </description></item> <item><description>Default JSON serializer settings for consistent
-    /// behavior.</description></item> </list> </para></remarks>
+    /// behavior.</description></item> </list> </para> <para>
+    /// This implementation uses <c>TypeNameHandling.None</c> for security, with custom <see cref="JsonConverter"/>
+    /// classes to handle polymorphic deserialization based on discriminator fields (like <c>PipeCommand</c> and
+    /// <c>DialogType</c>). This approach is fully compliant with CA2326 and CA2327 security rules.
+    /// </para></remarks>
     public static class DataSerialization
     {
         /// <summary>
-        /// Initializes the <see cref="DataSerialization"/> class and configures default settings to ensure
-        /// compatibility between .NET Core and .NET Framework.
+        /// Serializes the specified object directly to a UTF-8 encoded byte array.
         /// </summary>
-        /// <remarks>This static constructor sets the default serialization binder to a compatibility
-        /// binder when running on the .NET Framework. This ensures that serialized objects can be properly deserialized
-        /// across different .NET runtime environments.</remarks>
-        static DataSerialization()
+        /// <typeparam name="T">The type of the object to serialize.</typeparam>
+        /// <param name="obj">The object to serialize. Cannot be null.</param>
+        /// <returns>A UTF-8 encoded byte array containing the JSON representation of the object.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="obj"/> is null.</exception>
+        /// <exception cref="JsonSerializationException">Thrown if serialization fails.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
+        public static byte[] SerializeToBytes<T>(T obj)
         {
-            // Set the default serialization binder to ensure compatibility between .NET Core and .NET Framework.
-            if (AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(static a => a.FullName?.StartsWith("System.Private.CoreLib", StringComparison.Ordinal) == true) is null)
+            if (obj is null || (obj is string str && string.IsNullOrWhiteSpace(str)))
             {
-                DefaultJsonSerializerSettings.SerializationBinder = new DotNetCompatibleSerializationBinder();
+                throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
+            using MemoryStream ms = new();
+            using (StreamWriter sw = new(ms, DefaultEncoding.Value))
+            using (JsonTextWriter jtw = new(sw))
+            {
+                DefaultJsonSerializer.Serialize(jtw, obj);
+            }
+            if (ms.ToArray() is not { Length: > 0 } result)
+            {
+                throw new JsonSerializationException("Serialization returned an empty result.");
+            }
+            return result;
         }
+
+        /// <summary>
+        /// Deserializes the specified UTF-8 encoded byte array to an object of type T.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
+        /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
+        /// <param name="offset">An optional offset in the byte array to start deserialization from. Default is 0.</param>
+        /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
+        /// <exception cref="JsonSerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
+        public static T DeserializeFromBytes<T>(byte[] json, int offset = 0)
+        {
+            if (offset < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
+            }
+            if (json is null || json.Length <= offset)
+            {
+                throw new ArgumentNullException(nameof(json), "Input bytes cannot be null or empty.");
+            }
+            using MemoryStream ms = new(json, offset, json.Length - offset, false);
+            using StreamReader sr = new(ms, DefaultEncoding.Value);
+            using JsonTextReader jtr = new(sr);
+            if (DefaultJsonSerializer.Deserialize<T>(jtr) is not T result)
+            {
+                throw new JsonSerializationException("Deserialization returned a null result.");
+            }
+            return result;
+        }
+
         /// <summary>
         /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
         /// </summary>
@@ -45,37 +91,11 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static string SerializeToString<T>(T obj)
         {
-            if (obj is null)
+            if (obj is null || (obj is string str && string.IsNullOrWhiteSpace(str)))
             {
                 throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
-            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty).Trim()))
-            {
-                throw new JsonSerializationException("Serialization returned an empty string.");
-            }
-            return Convert.ToBase64String(ServerInstance.DefaultEncoding.GetBytes(res));
-        }
-
-        /// <summary>
-        /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
-        /// </summary>
-        /// <remarks>This method uses default JSON serialization settings and encodes the resulting JSON
-        /// string using UTF-8 before converting it to Base64. The caller can decode the Base64 string and parse the
-        /// JSON to reconstruct the original object.</remarks>
-        /// <param name="obj">The object to serialize. Must not be <see langword="null"/>.</param>
-        /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public static string SerializeToString(object obj)
-        {
-            if (obj is null)
-            {
-                throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
-            }
-            if (JsonConvert.SerializeObject(obj, DefaultJsonSerializerSettings) is not string res || string.IsNullOrWhiteSpace(JsonControlCharacters.Replace(res, string.Empty).Trim()))
-            {
-                throw new JsonSerializationException("Serialization returned an empty string.");
-            }
-            return Convert.ToBase64String(ServerInstance.DefaultEncoding.GetBytes(res));
+            return Convert.ToBase64String(SerializeToBytes(obj));
         }
 
         /// <summary>
@@ -96,11 +116,7 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
-            if (JsonConvert.DeserializeObject<T>(ServerInstance.DefaultEncoding.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not T res)
-            {
-                throw new JsonSerializationException("Deserialization returned a null result.");
-            }
-            return res;
+            return DeserializeFromBytes<T>(Convert.FromBase64String(base64Json));
         }
 
         /// <summary>
@@ -110,94 +126,52 @@ namespace PSADT.ClientServer
         /// deserializes it using the default JSON serializer settings. Ensure that the input string is a valid
         /// Base64-encoded representation of JSON data.</remarks>
         /// <param name="base64Json">The Base64-encoded JSON string to deserialize. This parameter cannot be null or empty.</param>
+        /// <param name="type">The <see cref="Type"/> to deserialize the JSON into. This parameter cannot be null.</param>
         /// <returns>An object representing the deserialized JSON data.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public static object DeserializeFromString(string base64Json)
+        public static object DeserializeFromString(string base64Json, Type type)
         {
             if (string.IsNullOrWhiteSpace(base64Json))
             {
                 throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
             }
-            if (JsonConvert.DeserializeObject(ServerInstance.DefaultEncoding.GetString(Convert.FromBase64String(base64Json)), DefaultJsonSerializerSettings) is not object res)
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type), "Target type cannot be null.");
+            }
+            using MemoryStream ms = new(Convert.FromBase64String(base64Json), false);
+            using StreamReader sr = new(ms, DefaultEncoding.Value);
+            using JsonTextReader jtr = new(sr);
+            if (DefaultJsonSerializer.Deserialize(jtr, type) is not object result)
             {
                 throw new JsonSerializationException("Deserialization returned a null result.");
             }
-            return res;
+            return result;
         }
 
         /// <summary>
-        /// Provides the default settings for JSON serialization and deserialization using Newtonsoft.Json.
+        /// The cached JsonSerializer instance configured with the default settings.
         /// </summary>
-        /// <remarks>These settings include the following configurations: <list type="bullet">
-        /// <item><description>Indented formatting for improved readability.</description></item>
-        /// <item><description>Excludes null values and default values from the serialized output.</description></item>
-        /// <item><description>Disables type name handling to avoid including type metadata in the
-        /// JSON.</description></item> <item><description>Uses ISO 8601 format for date
-        /// serialization.</description></item> <item><description>Includes a converter for serializing and
-        /// deserializing enums as strings.</description></item> </list> This static field can be used as a standard
-        /// configuration for JSON serialization across the application.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2326:Do not use TypeNameHandling values other than None", Justification = "This is required at this time.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2327:Do not use insecure JsonSerializerSettings", Justification = "This is required at this time.")]
-        private static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new()
+        private static readonly JsonSerializer DefaultJsonSerializer = JsonSerializer.Create(new()
         {
-            TypeNameHandling = TypeNameHandling.All,
+            TypeNameHandling = TypeNameHandling.None,
             DefaultValueHandling = DefaultValueHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
             MissingMemberHandling = MissingMemberHandling.Error,
             Formatting = Formatting.None,
-        };
-
-        /// <summary>
-        /// Represents a regular expression that matches common JSON control characters, including brackets, braces,
-        /// commas, single quotes, and double quotes.
-        /// </summary>
-        /// <remarks>This regular expression uses culture-invariant and case-insensitive matching to
-        /// identify JSON structural characters. It can be used to detect or process control characters in JSON strings
-        /// for validation or parsing purposes.</remarks>
-        private static readonly Regex JsonControlCharacters = new(@"null|\[|\]|\{|\}|\,|""|\'", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-        /// <summary>
-        /// Provides a serialization binder that ensures compatibility between .NET Core and .NET Framework by
-        /// resolving types with special handling for core library assemblies.
-        /// </summary>
-        /// <remarks>This binder overrides the default type resolution behavior to replace the .NET
-        /// Core-specific core library assembly name ("System.Private.CoreLib") with the .NET Framework equivalent 
-        /// ("mscorlib"). This ensures that types serialized in one runtime environment can be correctly deserialized
-        /// in another.</remarks>
-        private sealed class DotNetCompatibleSerializationBinder : DefaultSerializationBinder
-        {
-            /// <summary>
-            /// Resolves a type from its assembly name and type name, with special handling for core library assemblies.
-            /// </summary>
-            /// <remarks>If the specified assembly name matches the core library assembly, it is
-            /// replaced with the standard mscorlib assembly name. This ensures compatibility when resolving types
-            /// across different runtime environments.</remarks>
-            /// <param name="assemblyName">The name of the assembly containing the type. Can be <see langword="null"/>.</param>
-            /// <param name="typeName">The name of the type to resolve.</param>
-            /// <returns>The <see cref="Type"/> object representing the resolved type.</returns>
-            public override Type BindToType(string? assemblyName, string typeName)
-            {
-                if (assemblyName == CoreLibAssembly)
-                {
-                    assemblyName = MscorlibAssembly;
-                    typeName = typeName.Replace(CoreLibAssembly, MscorlibAssembly);
-                }
-                return base.BindToType(assemblyName, typeName);
-            }
-
-            /// <summary>
-            /// Represents the name of the core library assembly used by the .NET (Core) runtime.
-            /// </summary>
-            private const string CoreLibAssembly = "System.Private.CoreLib";
-
-            /// <summary>
-            /// Represents the name of the mscorlib assembly.
-            /// </summary>
-            /// <remarks>This constant is used to reference the mscorlib assembly, which contains
-            /// fundamental classes and base types used by the .NET Framework.</remarks>
-            private const string MscorlibAssembly = "mscorlib";
-        }
+            Converters =
+            [
+                new EncodingConverter(),
+                new ExceptionConverter(),
+                new ProcessDefinitionCollectionConverter(),
+                new ProcessLaunchInfoConverter(),
+                new ProcessResultConverter(),
+                new RunAsActiveUserConverter(),
+                new ShowModalDialogPayloadConverter(),
+                new WindowInfoCollectionConverter(),
+            ],
+        });
     }
 }

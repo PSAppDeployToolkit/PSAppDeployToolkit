@@ -201,7 +201,7 @@ function Invoke-ADTMarkdownExport
         {
             for ($i = 0; $i -lt $MissingDocumentation.Count; $i++)
             {
-                $output = ($MissingDocumentation[$i] | Select-Object -Property FileName, LineNumber, Line | Format-List -Property * | Out-String -Width ([System.Int32]::MaxValue)).Trim().Split("`n").Trim() -replace '^', "$([System.Char]0x2022) "
+                $output = ($MissingDocumentation[$i] | Select-Object -Property FileName, LineNumber, Line | Format-List -Property * | Out-String -Width ([System.Int32]::MaxValue)).Trim().Split("`n").Trim() -replace '^', "> "
                 Write-ADTBuildLogEntry -Message "Output for missing documentation MatchInfo [$($i+1)/$($MissingDocumentation.Count)]" -ForegroundColor DarkRed
                 Write-ADTBuildLogEntry -Message $output -ForegroundColor DarkRed
             }
@@ -221,7 +221,7 @@ function Invoke-ADTMarkdownExport
         }
         if ($fSynopsisOutput)
         {
-            Write-ADTBuildLogEntry -Message ("The following files are missing SYNOPSIS:", $fSynopsisOutput -replace '^', "$([System.Char]0x2022) ")
+            Write-ADTBuildLogEntry -Message ("The following files are missing SYNOPSIS:", $fSynopsisOutput -replace '^', "> ")
             throw 'One or more markdown files are missing a SYNOPSIS section.'
         }
         Complete-ADTModuleBuildFunction

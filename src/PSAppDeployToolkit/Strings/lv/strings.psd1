@@ -77,7 +77,7 @@
             Repair = 'Lai labošana tiktu pabeigta, dators jārestartē.'
             Uninstall = 'Lai pabeigtu atinstalēšanu, dators jārestartē.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Jūsu dators tiks automātiski restartēts pēc laika atksaites beigām.'
         MessageTime = 'Lūdzu, saglabājiet savu darbu un restartējiet datoru atļautajā laikā.'
         TimeRemaining = 'Atlikušais laiks:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

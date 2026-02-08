@@ -77,7 +77,7 @@
             Repair = 'For at reparasjonen skal fullføres, må du starte datamaskinen på nytt.'
             Uninstall = 'Du må starte datamaskinen på nytt for at avinstallasjonen skal fullføres.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Datamaskinen startes automatisk på nytt når nedtellingen er over.'
         MessageTime = 'Lagre arbeidet ditt og start på nytt innen den tilmålte tiden.'
         TimeRemaining = 'Gjenværende tid:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

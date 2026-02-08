@@ -77,7 +77,7 @@
             Repair = 'Damit die Reparatur abgeschlossen werden kann, müssen Sie Ihren Computer neu starten.'
             Uninstall = 'Damit die Deinstallation abgeschlossen werden kann, müssen Sie Ihren Computer neu starten.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Ihr Computer wird am Ende des Countdowns automatisch neu gestartet.'
         MessageTime = 'Bitte speichern Sie Ihre Arbeit und starten Sie innerhalb der vorgegebenen Zeit neu.'
         TimeRemaining = 'Restzeit:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Deinstallieren der Anwendung'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

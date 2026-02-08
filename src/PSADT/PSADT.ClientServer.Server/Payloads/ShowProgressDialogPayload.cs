@@ -1,5 +1,5 @@
-﻿using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.Dialogs;
+﻿using PSADT.UserInterface;
+using PSADT.UserInterface.DialogOptions;
 using Newtonsoft.Json;
 
 namespace PSADT.ClientServer.Payloads

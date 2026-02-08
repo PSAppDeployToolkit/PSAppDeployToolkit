@@ -6,44 +6,220 @@ namespace PSADT.ClientServer
 {
     /// <summary>
     /// Provides secure, authenticated encryption and key exchange for inter-process communication using Elliptic Curve
-    /// Diffie-Hellman (ECDH) and AES-CBC with HMAC-SHA256. This class enables two parties to establish a shared secret
-    /// and exchange encrypted messages over a pipe or stream.
+    /// Diffie-Hellman (ECDH) and AES-256-GCM.
     /// </summary>
-    /// <remarks>PipeEncryption manages the full lifecycle of key exchange and message encryption for secure
-    /// communication channels. It supports both server and client roles in the key exchange process, using ECDH to
-    /// derive a shared secret and then expanding it into separate encryption and authentication keys. All messages are
-    /// encrypted with AES-CBC and authenticated with HMAC-SHA256 to ensure confidentiality and integrity. Instances
-    /// must complete the key exchange before encryption or decryption operations can be performed. This class is not
-    /// thread-safe; callers should ensure appropriate synchronization if used concurrently. Dispose the instance when
-    /// finished to securely erase sensitive key material.</remarks>
-    public sealed record PipeEncryption : IDisposable
+    /// <remarks>
+    /// <para>
+    /// PipeEncryption manages the full lifecycle of key exchange and message encryption for secure communication
+    /// channels. It uses ECDH to derive a shared secret and then expands it into encryption keys using HKDF.
+    /// </para>
+    /// <para>
+    /// Messages are encrypted using AES-256-GCM which provides authenticated encryption with associated data (AEAD),
+    /// ensuring both confidentiality and integrity in a single cryptographic operation.
+    /// </para>
+    /// <para>
+    /// Instances must complete the key exchange via <see cref="PerformKeyExchange"/>
+    /// before encryption or decryption operations can be performed.
+    /// </para>
+    /// <para>
+    /// This class is not thread-safe; callers should ensure appropriate synchronization if used concurrently.
+    /// Dispose the instance when finished to securely erase sensitive key material.
+    /// </para>
+    /// </remarks>
+    internal abstract class PipeEncryption<TSelf> : IDisposable where TSelf : PipeEncryption<TSelf>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PipeEncryption"/> class with a new ECDH key pair.
+        /// Performs the key exchange with the remote party using the role-specific protocol.
         /// </summary>
-        public PipeEncryption()
+        /// <param name="outputStream">The stream to send data to the remote party.</param>
+        /// <param name="inputStream">The stream to receive data from the remote party.</param>
+        internal abstract void PerformKeyExchange(Stream outputStream, Stream inputStream);
+
+        /// <summary>
+        /// Reads and decrypts data from the stream.
+        /// </summary>
+        /// <param name="stream">The input stream.</param>
+        /// <returns>The decrypted plaintext bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
+        internal byte[] ReadEncrypted(Stream stream)
         {
-#if NET8_0_OR_GREATER
-            _ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
-#else
-            _ecdh = new ECDiffieHellmanCng(256)
+            // Verify parameters.
+            if (stream is null)
             {
-                KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
-                HashAlgorithm = CngAlgorithm.Sha256
-            };
-#endif
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            // Read and decrypt.
+            return Decrypt(ReadLengthPrefixedBytes(stream));
         }
 
         /// <summary>
-        /// Gets a value indicating whether the key exchange has been completed.
+        /// Writes encrypted data to the stream.
         /// </summary>
-        public bool IsKeyExchangeComplete => _encryptionKey is not null && _macKey is not null;
+        /// <param name="stream">The output stream.</param>
+        /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
+        internal void WriteEncrypted(Stream stream, byte[] plaintext)
+        {
+            // Verify state and parameters.
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+            if (plaintext is null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
+            // Encrypt and write.
+            WriteLengthPrefixedBytes(stream, Encrypt(plaintext));
+        }
+
+        /// <summary>
+        /// Reads a length-prefixed byte array from the stream.
+        /// </summary>
+        /// <param name="stream">The input stream.</param>
+        /// <returns>The data read from the stream.</returns>
+        /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
+        /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
+        protected static byte[] ReadLengthPrefixedBytes(Stream stream)
+        {
+            // Read the 4-byte length prefix
+            byte[] lengthBytes = new byte[4]; int bytesRead = 0;
+            while (bytesRead < 4)
+            {
+                int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
+                }
+                bytesRead += read;
+            }
+
+            // Verify we've received a correct value.
+            int length = BitConverter.ToInt32(lengthBytes, 0);
+            if (length <= 0)
+            {
+                throw new InvalidDataException("Invalid length prefix: negative or zero value.");
+            }
+            if (length > MaxMessageSize)
+            {
+                throw new InvalidDataException($"Message size {length} exceeds maximum allowed size of {MaxMessageSize} bytes.");
+            }
+
+            // Read the data
+            byte[] data = new byte[length];
+            bytesRead = 0;
+            while (bytesRead < length)
+            {
+                int read = stream.Read(data, bytesRead, length - bytesRead);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading data.");
+                }
+                bytesRead += read;
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// Writes a length-prefixed byte array to the stream.
+        /// </summary>
+        /// <param name="stream">The output stream.</param>
+        /// <param name="data">The data to write.</param>
+        protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
+        {
+            byte[] lengthBytes = BitConverter.GetBytes(data.Length);
+            stream.Write(lengthBytes, 0, 4);
+            stream.Write(data, 0, data.Length);
+            stream.Flush();
+        }
+
+        /// <summary>
+        /// Encrypts raw bytes using AES-256-GCM authenticated encryption.
+        /// </summary>
+        /// <param name="plaintext">The plaintext bytes to encrypt.</param>
+        /// <returns>A byte array containing the nonce, ciphertext, and authentication tag.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="plaintext"/> is null.</exception>
+        protected byte[] Encrypt(byte[] plaintext)
+        {
+            // Verify state and parameters.
+            ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
+            if (plaintext is null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
+            // Generate a unique nonce for this encryption operation.
+            byte[] nonce = new byte[NonceSize];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(nonce);
+            }
+
+            // Allocate output buffer: Nonce (12) + Ciphertext (same as plaintext) + Tag (16)
+            byte[] result = new byte[NonceSize + plaintext.Length + TagSize];
+            byte[] ciphertext = new byte[plaintext.Length];
+            byte[] tag = new byte[TagSize];
+
+            // Encrypt using AES-GCM
+            using (AesGcm aesGcm = new(_encryptionKey!, TagSize))
+            {
+                aesGcm.Encrypt(nonce, plaintext, ciphertext, tag);
+            }
+
+            // Combine: Nonce (12) + Ciphertext (variable) + Tag (16)
+            Buffer.BlockCopy(nonce, 0, result, 0, NonceSize);
+            Buffer.BlockCopy(ciphertext, 0, result, NonceSize, ciphertext.Length);
+            Buffer.BlockCopy(tag, 0, result, NonceSize + ciphertext.Length, TagSize);
+            return result;
+        }
+
+        /// <summary>
+        /// Decrypts raw bytes using AES-256-GCM authenticated encryption.
+        /// </summary>
+        /// <param name="encryptedData">The encrypted data containing nonce, ciphertext, and authentication tag.</param>
+        /// <returns>The decrypted plaintext bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
+        /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
+        protected byte[] Decrypt(byte[] encryptedData)
+        {
+            // Verify state and parameters.
+            ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
+            if (encryptedData is null)
+            {
+                throw new ArgumentNullException(nameof(encryptedData));
+            }
+
+            // Validate minimum input length: Nonce (12) + Tag (16) + at least 1 byte of ciphertext
+            if (encryptedData.Length < NonceSize + TagSize + 1)
+            {
+                throw new CryptographicException("Encrypted data is too short.");
+            }
+
+            // Extract nonce, ciphertext, and tag
+            int ciphertextLength = encryptedData.Length - NonceSize - TagSize;
+            byte[] nonce = new byte[NonceSize];
+            byte[] ciphertext = new byte[ciphertextLength];
+            byte[] tag = new byte[TagSize];
+            byte[] plaintext = new byte[ciphertextLength];
+            Buffer.BlockCopy(encryptedData, 0, nonce, 0, NonceSize);
+            Buffer.BlockCopy(encryptedData, NonceSize, ciphertext, 0, ciphertextLength);
+            Buffer.BlockCopy(encryptedData, NonceSize + ciphertextLength, tag, 0, TagSize);
+
+            // Decrypt and verify authentication tag
+            using (AesGcm aesGcm = new(_encryptionKey!, TagSize))
+            {
+                aesGcm.Decrypt(nonce, ciphertext, tag, plaintext);
+            }
+            return plaintext;
+        }
 
         /// <summary>
         /// Gets the local public key for transmission to the remote party.
         /// </summary>
         /// <returns>A byte array containing the exported public key.</returns>
-        public byte[] GetPublicKey()
+        protected byte[] GetPublicKey()
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
@@ -59,7 +235,7 @@ namespace PSADT.ClientServer
         /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
-        public void DeriveSharedKey(byte[] remotePublicKey)
+        protected void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
@@ -82,378 +258,26 @@ namespace PSADT.ClientServer
             byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remotePubKey);
 #endif
 
-            // Derive encryption and MAC keys using HKDF-like expansion
-            byte[] keyMaterial = DeriveKeyMaterial(sharedSecret, AesKeySize + MacKeySize);
-            _encryptionKey = new byte[AesKeySize];
-            _macKey = new byte[MacKeySize];
-            Buffer.BlockCopy(keyMaterial, 0, _encryptionKey, 0, AesKeySize);
-            Buffer.BlockCopy(keyMaterial, AesKeySize, _macKey, 0, MacKeySize);
+            // Derive encryption key using HKDF (only need encryption key for GCM, no separate MAC key)
+            _encryptionKey = DeriveKeyMaterial(sharedSecret, AesKeySize);
 
             // Clear sensitive data
-            ZeroMemory(sharedSecret);
-            ZeroMemory(keyMaterial);
-        }
-
-        /// <summary>
-        /// Encrypts a string message using AES-CBC with HMAC-SHA256.
-        /// </summary>
-        /// <param name="plaintext">The plaintext message to encrypt.</param>
-        /// <returns>A byte array containing the IV, ciphertext, and MAC.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
-        public byte[] Encrypt(string plaintext)
-        {
-            // Verify state.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
-
-            // Convert plaintext to bytes and encrypt.
-            byte[] plaintextBytes = ServerInstance.DefaultEncoding.GetBytes(plaintext);
-            return EncryptBytes(plaintextBytes);
-        }
-
-        /// <summary>
-        /// Decrypts a byte array using AES-CBC with HMAC-SHA256 verification.
-        /// </summary>
-        /// <param name="encryptedData">The encrypted data containing IV, ciphertext, and MAC.</param>
-        /// <returns>The decrypted plaintext string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the key exchange has not been completed.</exception>
-        /// <exception cref="CryptographicException">Thrown if MAC verification fails.</exception>
-        public string Decrypt(byte[] encryptedData)
-        {
-            // Verify state and parameters.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
-            if (encryptedData is null)
-            {
-                throw new ArgumentNullException(nameof(encryptedData));
-            }
-
-            // Decrypt and convert to string.
-            byte[] plaintextBytes = DecryptBytes(encryptedData);
-            return ServerInstance.DefaultEncoding.GetString(plaintextBytes);
-        }
-
-        /// <summary>
-        /// Encrypts raw bytes using AES-CBC with HMAC-SHA256.
-        /// </summary>
-        /// <param name="plaintext">The plaintext bytes to encrypt.</param>
-        /// <returns>A byte array containing the IV, ciphertext, and MAC.</returns>
-        private byte[] EncryptBytes(byte[] plaintext)
-        {
-            // Set up AES encryption.
-            using Aes aes = Aes.Create();
-            aes.Key = _encryptionKey!;
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
-            aes.GenerateIV();
-
-            // Encrypt the plain text.
-            byte[] ciphertext;
-            using (ICryptoTransform encryptor = aes.CreateEncryptor())
-            using (MemoryStream ms = new())
-            {
-                using (CryptoStream cs = new(ms, encryptor, CryptoStreamMode.Write))
-                {
-                    cs.Write(plaintext, 0, plaintext.Length);
-                    cs.FlushFinalBlock();
-                }
-                ciphertext = ms.ToArray();
-            }
-
-            // Compute MAC over IV + cipher text.
-            byte[] iv = aes.IV; byte[] mac;
-            using (HMACSHA256 hmac = new(_macKey!))
-            {
-                byte[] dataToMac = new byte[iv.Length + ciphertext.Length];
-                Buffer.BlockCopy(iv, 0, dataToMac, 0, iv.Length);
-                Buffer.BlockCopy(ciphertext, 0, dataToMac, iv.Length, ciphertext.Length);
-                mac = hmac.ComputeHash(dataToMac);
-            }
-
-            // Combine: IV (16) + ciphertext (variable) + MAC (32).
-            byte[] result = new byte[iv.Length + ciphertext.Length + mac.Length];
-            Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
-            Buffer.BlockCopy(ciphertext, 0, result, iv.Length, ciphertext.Length);
-            Buffer.BlockCopy(mac, 0, result, iv.Length + ciphertext.Length, mac.Length);
-            return result;
-        }
-
-        /// <summary>
-        /// Decrypts raw bytes using AES-CBC with HMAC-SHA256 verification.
-        /// </summary>
-        /// <param name="encryptedData">The encrypted data containing IV, ciphertext, and MAC.</param>
-        /// <returns>The decrypted plaintext bytes.</returns>
-        private byte[] DecryptBytes(byte[] encryptedData)
-        {
-            // Validate input length.
-            if (encryptedData.Length < IvSize + MacSize + 1)
-            {
-                throw new CryptographicException("Encrypted data is too short.");
-            }
-
-            // Extract IV, ciphertext, and MAC.
-            byte[] iv = new byte[IvSize];
-            int ciphertextLength = encryptedData.Length - IvSize - MacSize;
-            byte[] ciphertext = new byte[ciphertextLength];
-            byte[] receivedMac = new byte[MacSize];
-
-            // Copy IV, ciphertext, and MAC from the encrypted data.
-            Buffer.BlockCopy(encryptedData, 0, iv, 0, IvSize);
-            Buffer.BlockCopy(encryptedData, IvSize, ciphertext, 0, ciphertextLength);
-            Buffer.BlockCopy(encryptedData, IvSize + ciphertextLength, receivedMac, 0, MacSize);
-
-            // Verify MAC first (Encrypt-then-MAC)
-            byte[] computedMac;
-            using (HMACSHA256 hmac = new(_macKey!))
-            {
-                byte[] dataToMac = new byte[iv.Length + ciphertext.Length];
-                Buffer.BlockCopy(iv, 0, dataToMac, 0, iv.Length);
-                Buffer.BlockCopy(ciphertext, 0, dataToMac, iv.Length, ciphertext.Length);
-                computedMac = hmac.ComputeHash(dataToMac);
-            }
-
-            // Constant-time comparison.
-            if (!ConstantTimeEquals(receivedMac, computedMac))
-            {
-                throw new CryptographicException("MAC verification failed. Data may have been tampered with.");
-            }
-
-            // Decrypt
-            using Aes aes = Aes.Create();
-            aes.Key = _encryptionKey!;
-            aes.IV = iv;
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
-            using ICryptoTransform decryptor = aes.CreateDecryptor();
-            using MemoryStream ms = new(ciphertext);
-            using CryptoStream cs = new(ms, decryptor, CryptoStreamMode.Read);
-            using MemoryStream output = new();
-            cs.CopyTo(output);
-            return output.ToArray();
-        }
-
-        /// <summary>
-        /// Derives key material from a shared secret using HKDF-like expansion with SHA-256.
-        /// </summary>
-        /// <param name="sharedSecret">The raw shared secret.</param>
-        /// <param name="outputLength">The desired output length in bytes.</param>
-        /// <returns>The derived key material.</returns>
-        private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
-        {
-            // HKDF-Extract: PRK = HMAC-Hash(salt, IKM).
-            byte[] info = ServerInstance.DefaultEncoding.GetBytes("PSADT-Pipe-Encryption-v1"); byte[] prk;
-            using (HMACSHA256 hmac = new(new byte[32])) // salt = zeros
-            {
-                prk = hmac.ComputeHash(sharedSecret);
-            }
-
-            // HKDF-Expand.
-            byte[] output = new byte[outputLength];
-            byte[] t = [];
-            int offset = 0;
-            byte counter = 1;
-            using (HMACSHA256 hmac = new(prk))
-            {
-                while (offset < outputLength)
-                {
-                    // T(i) = HMAC-Hash(PRK, T(i-1) | info | counter)
-                    byte[] input = new byte[t.Length + info.Length + 1];
-                    Buffer.BlockCopy(t, 0, input, 0, t.Length);
-                    Buffer.BlockCopy(info, 0, input, t.Length, info.Length);
-                    input[input.Length - 1] = counter++;
-
-                    t = hmac.ComputeHash(input);
-                    int copyLength = Math.Min(t.Length, outputLength - offset);
-                    Buffer.BlockCopy(t, 0, output, offset, copyLength);
-                    offset += copyLength;
-                }
-            }
-            ZeroMemory(prk);
-            return output;
-        }
-
-
-        /// <summary>
-        /// Performs key exchange as the server (initiator).
-        /// Sends public key first, then receives client's public key, then verifies key agreement.
-        /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> or <paramref name="reader"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        public void PerformServerKeyExchange(BinaryWriter writer, BinaryReader reader)
-        {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (writer is null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-            if (reader is null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            // Server sends public key first
-            byte[] publicKey = GetPublicKey();
-            writer.Write(publicKey.Length);
-            writer.Write(publicKey);
-            writer.Flush();
-
-            // Server receives client's public key
-            int clientKeyLength = reader.ReadInt32();
-            byte[] clientPublicKey = reader.ReadBytes(clientKeyLength);
-
-            // Derive the shared key
-            DeriveSharedKey(clientPublicKey);
-
-            // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsServer(writer, reader);
-        }
-
-        /// <summary>
-        /// Performs key exchange as the client (responder).
-        /// Receives server's public key first, then sends own public key, then verifies key agreement.
-        /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> or <paramref name="reader"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if key verification fails.</exception>
-        public void PerformClientKeyExchange(BinaryWriter writer, BinaryReader reader)
-        {
-            // Verify parameters and state.
-            ThrowIfDisposed();
-            if (writer is null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-            if (reader is null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            // Client receives server's public key first
-            int serverKeyLength = reader.ReadInt32();
-            byte[] serverPublicKey = reader.ReadBytes(serverKeyLength);
-
-            // Client sends its public key
-            byte[] publicKey = GetPublicKey();
-            writer.Write(publicKey.Length);
-            writer.Write(publicKey);
-            writer.Flush();
-
-            // Derive the shared key
-            DeriveSharedKey(serverPublicKey);
-
-            // Verify key agreement with challenge-response
-            VerifyKeyExchangeAsClient(writer, reader);
-        }
-
-        /// <summary>
-        /// Verifies the key exchange as the server by sending a challenge and verifying the client's response.
-        /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        /// <exception cref="CryptographicException">Thrown if the client's response does not match the expected value.</exception>
-        private void VerifyKeyExchangeAsServer(BinaryWriter writer, BinaryReader reader)
-        {
-            // Generate a random challenge
-            byte[] challenge = new byte[32];
-            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(challenge);
-            }
-
-            // Send the challenge (unencrypted - it's random data)
-            writer.Write(challenge.Length);
-            writer.Write(challenge);
-            writer.Flush();
-
-            // Read the encrypted response from the client
-            int responseLength = reader.ReadInt32();
-            byte[] encryptedResponse = reader.ReadBytes(responseLength);
-
-            // Decrypt and verify the response matches the challenge
-            byte[] decryptedResponse = DecryptBytes(encryptedResponse);
-            if (!ConstantTimeEquals(challenge, decryptedResponse))
-            {
-                throw new CryptographicException("Key exchange verification failed: challenge response mismatch.");
-            }
-        }
-
-        /// <summary>
-        /// Verifies the key exchange as the client by receiving a challenge and sending an encrypted response.
-        /// </summary>
-        /// <param name="writer">The binary writer to send data.</param>
-        /// <param name="reader">The binary reader to receive data.</param>
-        private void VerifyKeyExchangeAsClient(BinaryWriter writer, BinaryReader reader)
-        {
-            // Receive the challenge from the server
-            int challengeLength = reader.ReadInt32();
-            byte[] challenge = reader.ReadBytes(challengeLength);
-
-            // Encrypt the challenge and send it back
-            byte[] encryptedResponse = EncryptBytes(challenge);
-            writer.Write(encryptedResponse.Length);
-            writer.Write(encryptedResponse);
-            writer.Flush();
-        }
-
-        /// <summary>
-        /// Writes an encrypted string to the binary writer.
-        /// </summary>
-        /// <param name="writer">The binary writer.</param>
-        /// <param name="plaintext">The plaintext to encrypt and write.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer"/> is null.</exception>
-        public void WriteEncrypted(BinaryWriter writer, string plaintext)
-        {
-            // Verify state and parameters.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
-            if (writer is null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            // Encrypt and write.
-            byte[] encrypted = Encrypt(plaintext);
-            writer.Write(encrypted.Length);
-            writer.Write(encrypted);
-            writer.Flush();
-        }
-
-        /// <summary>
-        /// Reads and decrypts a string from the binary reader.
-        /// </summary>
-        /// <param name="reader">The binary reader.</param>
-        /// <returns>The decrypted plaintext string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader"/> is null.</exception>
-        public string ReadEncrypted(BinaryReader reader)
-        {
-            // Verify state and parameters.
-            ThrowIfDisposed();
-            ThrowIfKeyExchangeNotComplete();
-            if (reader is null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            // Read and decrypt.
-            int length = reader.ReadInt32();
-            byte[] encrypted = reader.ReadBytes(length);
-            return Decrypt(encrypted);
+            SecureZeroMemory(sharedSecret);
         }
 
         /// <summary>
         /// Compares two byte arrays in constant time to prevent timing attacks.
         /// </summary>
-        private static bool ConstantTimeEquals(byte[] a, byte[] b)
+        /// <param name="a">The first byte array.</param>
+        /// <param name="b">The second byte array.</param>
+        /// <returns>True if the arrays are equal; otherwise, false.</returns>
+        protected static bool ConstantTimeEquals(byte[] a, byte[] b)
         {
             if (a.Length != b.Length)
             {
                 return false;
             }
+
             int result = 0;
             for (int i = 0; i < a.Length; i++)
             {
@@ -463,43 +287,96 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Securely zeros a byte array to clear sensitive data.
-        /// </summary>
-        private static void ZeroMemory(byte[] data)
-        {
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = 0;
-            }
-        }
-
-        /// <summary>
         /// Throws an exception if the current instance has been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
-        private void ThrowIfDisposed()
+        protected void ThrowIfDisposed()
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(PipeEncryption));
+                throw new ObjectDisposedException(typeof(TSelf).Name);
             }
         }
 
         /// <summary>
         /// Throws an exception if the key exchange process has not been completed.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if the required encryption or MAC key has not been established. This indicates that the key exchange
+        /// <exception cref="InvalidOperationException">Thrown if the required encryption key has not been established. This indicates that the key exchange
         /// has not been completed and the shared key has not been derived.</exception>
         private void ThrowIfKeyExchangeNotComplete()
         {
-            if (_encryptionKey is null || _macKey is null)
+            if (_encryptionKey is null)
             {
-                throw new InvalidOperationException("Key exchange has not been completed. Call DeriveSharedKey first.");
+                throw new InvalidOperationException("Key exchange has not been completed. Call PerformKeyExchange first.");
             }
         }
 
         /// <summary>
-        /// Releases all resources used by the <see cref="PipeEncryption"/> instance.
+        /// Derives key material from a shared secret using HKDF with SHA-256.
+        /// </summary>
+        /// <param name="sharedSecret">The raw shared secret from ECDH key agreement.</param>
+        /// <param name="outputLength">The desired output length in bytes.</param>
+        /// <returns>The derived key material.</returns>
+        private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
+        {
+            // Use proper HKDF with a context-specific info parameter
+            byte[] info = DefaultEncoding.Value.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
+            byte[] salt = new byte[32]; // Zero salt is acceptable per RFC 5869
+
+            // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
+            byte[] prk;
+            using (HMACSHA256 hmac = new(salt))
+            {
+                prk = hmac.ComputeHash(sharedSecret);
+            }
+
+            // HKDF-Expand
+            byte[] output = new byte[outputLength];
+            byte[] previousBlock = [];
+            int offset = 0;
+            byte counter = 1;
+            try
+            {
+                using HMACSHA256 hmac = new(prk);
+                while (offset < outputLength)
+                {
+                    // T(i) = HMAC-Hash(PRK, T(i-1) | info | counter)
+                    byte[] input = new byte[previousBlock.Length + info.Length + 1];
+                    Buffer.BlockCopy(previousBlock, 0, input, 0, previousBlock.Length);
+                    Buffer.BlockCopy(info, 0, input, previousBlock.Length, info.Length);
+                    input[input.Length - 1] = counter++;
+
+                    previousBlock = hmac.ComputeHash(input);
+                    int copyLength = Math.Min(previousBlock.Length, outputLength - offset);
+                    Buffer.BlockCopy(previousBlock, 0, output, offset, copyLength);
+                    offset += copyLength;
+                }
+            }
+            finally
+            {
+                SecureZeroMemory(prk);
+            }
+            return output;
+        }
+
+        /// <summary>
+        /// Securely zeros a byte array to clear sensitive data from memory.
+        /// </summary>
+        /// <param name="data">The byte array to zero.</param>
+        private static void SecureZeroMemory(byte[] data)
+        {
+            // Use volatile write to prevent compiler optimization from removing the zeroing operation
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = 0;
+            }
+
+            // Memory barrier to ensure the writes are visible
+            System.Threading.Thread.MemoryBarrier();
+        }
+
+        /// <summary>
+        /// Releases all resources used by the <see cref="PipeEncryption{TSelf}"/> instance.
         /// </summary>
         public void Dispose()
         {
@@ -510,16 +387,21 @@ namespace PSADT.ClientServer
             _ecdh.Dispose();
             if (_encryptionKey is not null)
             {
-                ZeroMemory(_encryptionKey);
+                SecureZeroMemory(_encryptionKey);
                 _encryptionKey = null;
-            }
-            if (_macKey is not null)
-            {
-                ZeroMemory(_macKey);
-                _macKey = null;
             }
             _disposed = true;
         }
+
+        /// <summary>
+        /// The AES-256 encryption key used for AES-GCM authenticated encryption.
+        /// </summary>
+        private byte[]? _encryptionKey;
+
+        /// <summary>
+        /// Specifies whether the instance has been disposed.
+        /// </summary>
+        private bool _disposed;
 
         /// <summary>
         /// Provides the Elliptic Curve Diffie-Hellman (ECDH) cryptographic implementation used for key agreement
@@ -530,47 +412,54 @@ namespace PSADT.ClientServer
         /// cref="ECDiffieHellmanCng"/>. The specific implementation may affect
         /// compatibility and available features.</remarks>
 #if NET8_0_OR_GREATER
-        private readonly ECDiffieHellman _ecdh;
+        private readonly ECDiffieHellman _ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
 #else
-        private readonly ECDiffieHellmanCng _ecdh;
+        private readonly ECDiffieHellmanCng _ecdh = new(256)
+        {
+            KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
+            HashAlgorithm = CngAlgorithm.Sha256
+        };
 #endif
 
         /// <summary>
-        /// The AES encryption key used for encrypting pipe communication.
+        /// Specifies the size, in bytes, of the challenge used in mutual authentication.
         /// </summary>
-        private byte[]? _encryptionKey;
+        /// <remarks>
+        /// A 32-byte (256-bit) challenge provides strong protection against brute-force attacks
+        /// and ensures cryptographic uniqueness for each key exchange session.
+        /// </remarks>
+        protected const int ChallengeSize = 32;
 
         /// <summary>
-        /// The MAC key used for HMAC-SHA256 authentication.
+        /// Specifies the size, in bytes, of the AES-256 encryption key.
         /// </summary>
-        private byte[]? _macKey;
-
-        /// <summary>
-        /// Specifies whether the instance has been disposed.
-        /// </summary>
-        private bool _disposed;
-
-        /// <summary>
-        /// Specifies the size, in bytes, of the AES encryption key.
-        /// </summary>
-        /// <remarks>This constant is typically used to indicate a 256-bit key size for AES encryption
-        /// algorithms. Ensure that cryptographic operations using this value are compatible with the expected key
-        /// length.</remarks>
         private const int AesKeySize = 32;
 
         /// <summary>
-        /// Specifies the size, in bytes, of the MAC key.
+        /// Specifies the size, in bytes, of the GCM nonce (also known as IV).
         /// </summary>
-        private const int MacKeySize = 32;
+        /// <remarks>
+        /// The recommended nonce size for AES-GCM is 12 bytes (96 bits). This is the most efficient
+        /// size and provides optimal security characteristics when using a random nonce.
+        /// </remarks>
+        private const int NonceSize = 12;
 
         /// <summary>
-        /// Represents the size, in bytes, of the initialization vector (IV) used for cryptographic operations.
+        /// Specifies the size, in bytes, of the GCM authentication tag.
         /// </summary>
-        private const int IvSize = 16;
+        /// <remarks>
+        /// Using the maximum tag size of 16 bytes (128 bits) provides the highest level of
+        /// authentication security.
+        /// </remarks>
+        private const int TagSize = 16;
 
         /// <summary>
-        /// Specifies the size, in bytes, of the message authentication code (MAC) produced by HMAC-SHA256.
+        /// Maximum allowed message size to prevent denial-of-service attacks via memory exhaustion.
         /// </summary>
-        private const int MacSize = 32;
+        /// <remarks>
+        /// Set to 16 MB which should be more than sufficient for IPC payloads while preventing
+        /// malicious or corrupted length prefixes from causing excessive memory allocation.
+        /// </remarks>
+        private const int MaxMessageSize = 16 * 1024 * 1024;
     }
 }

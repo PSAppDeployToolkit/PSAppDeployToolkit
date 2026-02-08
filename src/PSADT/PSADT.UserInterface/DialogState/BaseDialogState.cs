@@ -5,5 +5,5 @@
     /// </summary>
     /// <remarks>This abstract class serves as a foundation for implementing specific states within the
     /// application. Derived classes should define the behavior and properties specific to each state.</remarks>
-    internal abstract record BaseState;
+    internal abstract record BaseDialogState;
 }

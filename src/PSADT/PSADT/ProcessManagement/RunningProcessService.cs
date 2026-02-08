@@ -87,7 +87,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Raise the event if the list of processes to close has changed.
-                ReadOnlyCollection<string> processDescs = new([.. _processesToClose.Select(runningProcess => runningProcess.Description)]);
+                ReadOnlyCollection<string> processDescs = new([.. _processesToClose.Select(static runningProcess => runningProcess.Description)]);
                 if (!_lastProcessDescriptions.SequenceEqual(processDescs))
                 {
                     _lastProcessDescriptions = processDescs;
@@ -114,7 +114,7 @@ namespace PSADT.ProcessManagement
         {
             // Update the list of running processes.
             _runningProcesses = RunningProcessInfo.Get(_processDefinitions);
-            _processesToClose = new ReadOnlyCollection<ProcessToClose>([.. _runningProcesses.GroupBy(p => p.FileName, StringComparer.OrdinalIgnoreCase).Select(p => new ProcessToClose(p.First()))]);
+            _processesToClose = new ReadOnlyCollection<ProcessToClose>([.. _runningProcesses.GroupBy(static p => p.FileName, StringComparer.OrdinalIgnoreCase).Select(static p => new ProcessToClose(p.First()))]);
         }
 
         /// <summary>

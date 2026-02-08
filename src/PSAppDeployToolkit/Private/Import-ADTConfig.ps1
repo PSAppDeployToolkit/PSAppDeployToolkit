@@ -98,7 +98,7 @@ function Private:Import-ADTConfig
     }
     try
     {
-        $null = [PSADT.UserInterface.Dialogs.DialogStyle]$config.UI.DialogStyle
+        $null = [PSADT.UserInterface.DialogStyle]$config.UI.DialogStyle
     }
     catch
     {

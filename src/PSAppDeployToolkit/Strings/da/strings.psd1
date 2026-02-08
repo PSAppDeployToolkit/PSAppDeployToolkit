@@ -77,7 +77,7 @@
             Repair = 'For at reparationen kan gennemføres, skal du genstarte din computer.'
             Uninstall = 'For at afinstallationen kan gennemføres, skal du genstarte computeren.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Din computer genstartes automatisk, når nedtællingen er slut.'
         MessageTime = 'Gem venligst dit arbejde, og genstart inden for den tildelte tid.'
         TimeRemaining = 'Resterende tid:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Afinstallation af App'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }

@@ -77,7 +77,7 @@
             Repair = 'Aby zakończyć naprawę, należy ponownie uruchomić komputer.'
             Uninstall = 'Aby zakończyć dezinstalację, należy ponownie uruchomić komputer.'
         }
-        CustomMessage = ''
+        CustomMessage = $null
         MessageRestart = 'Państwa komputer zostanie automatycznie uruchomiony ponownie po zakończeniu odliczania.'
         MessageTime = 'Proszę zapisać swoją pracę i ponownie uruchomić komputer w wyznaczonym czasie.'
         TimeRemaining = 'Pozostały czas:'
@@ -154,6 +154,6 @@
                 Uninstall = '{Toolkit\CompanyName} - Dezinstalacja Aplikacji'
             }
         }
-        CustomMessage = ''
+        CustomMessage = $null
     }
 }
