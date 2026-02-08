@@ -54,29 +54,12 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
         /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
-        /// <param name="offset">An optional offset in the byte array to start deserialization from. Default is 0.</param>
         /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
         /// <exception cref="JsonSerializationException">Thrown if deserialization fails or results in a null object.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public static T DeserializeFromBytes<T>(byte[] json, int offset = 0)
+        public static T DeserializeFromBytes<T>(byte[] json)
         {
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
-            }
-            if (json is null || json.Length <= offset)
-            {
-                throw new ArgumentNullException(nameof(json), "Input bytes cannot be null or empty.");
-            }
-            using MemoryStream ms = new(json, offset, json.Length - offset, false);
-            using StreamReader sr = new(ms, DefaultEncoding.Value);
-            using JsonTextReader jtr = new(sr);
-            if (DefaultJsonSerializer.Deserialize<T>(jtr) is not T result)
-            {
-                throw new JsonSerializationException("Deserialization returned a null result.");
-            }
-            return result;
+            return (T)DeserializeFromBytes(json, 0, typeof(T));
         }
 
         /// <summary>
@@ -88,13 +71,8 @@ namespace PSADT.ClientServer
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static string SerializeToString<T>(T obj)
         {
-            if (obj is null || (obj is string str && string.IsNullOrWhiteSpace(str)))
-            {
-                throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
-            }
             return Convert.ToBase64String(SerializeToBytes(obj));
         }
 
@@ -109,14 +87,20 @@ namespace PSADT.ClientServer
         /// <returns>An object of type <typeparamref name="T"/> deserialized from the provided JSON string.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
         /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static T DeserializeFromString<T>(string base64Json)
         {
-            if (string.IsNullOrWhiteSpace(base64Json))
-            {
-                throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
-            }
             return DeserializeFromBytes<T>(Convert.FromBase64String(base64Json));
+        }
+
+        /// <summary>
+        /// Deserializes an object from a byte array using the specified target type.
+        /// </summary>
+        /// <param name="bytes">The byte array containing the serialized data to deserialize. Cannot be null.</param>
+        /// <param name="type">The type of the object to deserialize from the byte array. Cannot be null.</param>
+        /// <returns>An object instance of the specified type reconstructed from the provided byte array.</returns>
+        public static object DeserializeFromBytes(byte[] bytes, Type type)
+        {
+            return DeserializeFromBytes(bytes, 0, type);
         }
 
         /// <summary>
@@ -133,15 +117,47 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static object DeserializeFromString(string base64Json, Type type)
         {
-            if (string.IsNullOrWhiteSpace(base64Json))
+            return DeserializeFromBytes(Convert.FromBase64String(base64Json), 0, type);
+        }
+
+        /// <summary>
+        /// Deserializes the specified UTF-8 encoded byte array to an object of type T.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
+        /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
+        /// <param name="offset">An optional offset in the byte array to start deserialization from. Default is 0.</param>
+        /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
+        /// <exception cref="JsonSerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        internal static T DeserializeFromBytes<T>(byte[] json, int offset = 0)
+        {
+            return (T)DeserializeFromBytes(json, offset, typeof(T));
+        }
+
+        /// <summary>
+        /// Deserializes a JSON value from a byte array into an object of the specified type.
+        /// </summary>
+        /// <remarks>The method uses the default JSON serializer and encoding to interpret the byte array.
+        /// The caller is responsible for casting the returned object to the expected type.</remarks>
+        /// <param name="json">The byte array containing the JSON data to deserialize. Cannot be null or empty.</param>
+        /// <param name="offset">The zero-based index in the array at which to begin reading the JSON data.</param>
+        /// <param name="type">The type of the object to deserialize the JSON data into. Cannot be null.</param>
+        /// <returns>An object representing the deserialized JSON data, cast to the specified type.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than 0.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if json is null or if the length of json is less than or equal to offset.</exception>
+        /// <exception cref="JsonSerializationException">Thrown if deserialization returns a null result.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
+        private static object DeserializeFromBytes(byte[] json, int offset, Type type)
+        {
+            if (offset < 0)
             {
-                throw new ArgumentNullException(nameof(base64Json), "Base64 JSON string cannot be null or empty.");
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
             }
-            if (type is null)
+            if (json is null || json.Length <= offset)
             {
-                throw new ArgumentNullException(nameof(type), "Target type cannot be null.");
+                throw new ArgumentNullException(nameof(json), "Input bytes cannot be null or empty.");
             }
-            using MemoryStream ms = new(Convert.FromBase64String(base64Json), false);
+            using MemoryStream ms = new(json, offset, json.Length - offset, false);
             using StreamReader sr = new(ms, DefaultEncoding.Value);
             using JsonTextReader jtr = new(sr);
             if (DefaultJsonSerializer.Deserialize(jtr, type) is not object result)
