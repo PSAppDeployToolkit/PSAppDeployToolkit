@@ -30,7 +30,7 @@ namespace PSADT.ProcessManagement
         internal void Start()
         {
             // We can't restart the polling task if it's already running.
-            if (_pollingTask is not null)
+            if (IsRunning)
             {
                 throw new InvalidOperationException("The polling task is already running.");
             }
@@ -187,7 +187,7 @@ namespace PSADT.ProcessManagement
             }
             if (disposing)
             {
-                if (_pollingTask is not null)
+                if (IsRunning)
                 {
                     Stop();
                 }
