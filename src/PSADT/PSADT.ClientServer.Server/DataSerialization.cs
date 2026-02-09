@@ -378,7 +378,7 @@ namespace PSADT.ClientServer
                 // DataContractSerializer needs concrete types, not interfaces
                 typeof(ReadOnlyCollection<string>),
                 typeof(ReadOnlyCollection<int>),
-                typeof(ReadOnlyCollection<nint>),
+                typeof(ReadOnlyCollection<long>),
                 typeof(ReadOnlyCollection<Hashtable>),
                 typeof(ReadOnlyCollection<ProcessDefinition>),
             ]

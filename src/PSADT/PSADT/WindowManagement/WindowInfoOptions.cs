@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace PSADT.WindowManagement
@@ -29,7 +30,7 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandleFilter">A list of main window handles for parent processes to include in the filter. Only windows whose parent
         /// process main window handle matches any of these values will be considered. Can be null to disable this
         /// filtering.</param>
-        public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter, IReadOnlyList<nint>? windowHandleFilter, IReadOnlyList<string>? parentProcessFilter, IReadOnlyList<int> parentProcessIdFilter, IReadOnlyList<nint> parentProcessMainWindowHandleFilter)
+        public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter, IReadOnlyList<nint>? windowHandleFilter, IReadOnlyList<string>? parentProcessFilter, IReadOnlyList<int>? parentProcessIdFilter, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
             if (windowTitleFilter?.Count == 0)
@@ -55,10 +56,10 @@ namespace PSADT.WindowManagement
 
             // Assign read-only collections or null based on input.
             WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. windowTitleFilter]) : null;
-            WindowHandleFilter = windowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>([.. windowHandleFilter]) : null;
+            WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new([.. windowHandleFilter.Select(static h => (long)h)]) : null;
             ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. parentProcessFilter]) : null;
             ParentProcessIdFilter = parentProcessIdFilter?.Count > 0 ? new ReadOnlyCollection<int>([.. parentProcessIdFilter]) : null;
-            ParentProcessMainWindowHandleFilter = parentProcessMainWindowHandleFilter?.Count > 0 ? new ReadOnlyCollection<nint>([.. parentProcessMainWindowHandleFilter]) : null;
+            ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
         }
 
         /// <summary>
@@ -72,8 +73,8 @@ namespace PSADT.WindowManagement
         /// </summary>
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
-        [DataMember]
-        public IReadOnlyList<nint>? WindowHandleFilter { get; private set; }
+        [IgnoreDataMember]
+        public IReadOnlyList<nint>? WindowHandleFilter => WindowHandleFilterValues?.Select(static v => (nint)v).ToList().AsReadOnly();
 
         /// <summary>
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
@@ -98,7 +99,19 @@ namespace PSADT.WindowManagement
         /// <remarks>This property provides a read-only list of native window handles (HWND) that are used
         /// to identify or filter parent processes based on their main window. The list may be empty if no filters are
         /// applied.</remarks>
+        [IgnoreDataMember]
+        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter => ParentProcessMainWindowHandleFilterValues?.Select(static v => (nint)v).ToList().AsReadOnly();
+
+        /// <summary>
+        /// Gets the window handle filter values for serialization.
+        /// </summary>
         [DataMember]
-        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter { get; private set; }
+        private readonly ReadOnlyCollection<long>? WindowHandleFilterValues;
+
+        /// <summary>
+        /// Gets the parent process main window handle filter values for serialization.
+        /// </summary>
+        [DataMember]
+        private readonly ReadOnlyCollection<long>? ParentProcessMainWindowHandleFilterValues;
     }
 }
