@@ -143,8 +143,8 @@ namespace PSADT.ClientServer
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset points past the end of the buffer.");
             }
-            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
             bool deserializingException = typeof(Exception).IsAssignableFrom(type);
+            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
             using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
             if (GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result)
             {
