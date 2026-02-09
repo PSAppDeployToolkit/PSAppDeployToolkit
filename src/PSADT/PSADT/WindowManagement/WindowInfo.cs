@@ -1,11 +1,12 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.WindowManagement
 {
     /// <summary>
     /// Represents information about a window in the system.
     /// </summary>
+    [DataContract]
     public sealed record WindowInfo
     {
         /// <summary>
@@ -16,7 +17,6 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcess">The name of the parent process that owns the window.</param>
         /// <param name="parentProcessId">The ID of the parent process.</param>
         /// <param name="parentProcessMainWindowHandle">The handle to the main window of the parent process.</param>
-        [JsonConstructor]
         internal WindowInfo(string windowTitle, IntPtr windowHandle, string parentProcess, int parentProcessId, IntPtr parentProcessMainWindowHandle)
         {
             WindowTitle = !string.IsNullOrWhiteSpace(windowTitle) ? windowTitle : throw new ArgumentNullException("Window title cannot be null or empty.", (Exception?)null);
@@ -29,26 +29,31 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the title of the window.
         /// </summary>
-        public string WindowTitle { get; }
+        [DataMember]
+        public string WindowTitle { get; private set; }
 
         /// <summary>
         /// Gets the handle to the window.
         /// </summary>
-        public IntPtr WindowHandle { get; }
+        [DataMember]
+        public IntPtr WindowHandle { get; private set; }
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
         /// </summary>
-        public string ParentProcess { get; }
+        [DataMember]
+        public string ParentProcess { get; private set; }
 
         /// <summary>
         /// Gets the ID of the parent process.
         /// </summary>
-        public int ParentProcessId { get; }
+        [DataMember]
+        public int ParentProcessId { get; private set; }
 
         /// <summary>
         /// Gets the handle to the main window of the parent process.
         /// </summary>
-        public IntPtr ParentProcessMainWindowHandle { get; }
+        [DataMember]
+        public IntPtr ParentProcessMainWindowHandle { get; private set; }
     }
 }

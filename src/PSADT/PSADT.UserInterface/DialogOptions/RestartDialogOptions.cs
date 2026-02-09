@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using System.Runtime.Serialization;
 using PSAppDeployToolkit.Foundation;
-using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the RestartDialog.
     /// </summary>
+    [DataContract]
     public sealed record RestartDialogOptions : BaseDialogOptions
     {
         /// <summary>
@@ -65,7 +66,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// behavior is used.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
-        [JsonConstructor]
         private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
@@ -77,26 +77,31 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
-        public RestartDialogStrings Strings { get; }
+        [DataMember]
+        public RestartDialogStrings Strings { get; private set; }
 
         /// <summary>
         /// The duration for which the countdown will be displayed.
         /// </summary>
-        public TimeSpan? CountdownDuration { get; }
+        [DataMember]
+        public TimeSpan? CountdownDuration { get; private set; }
 
         /// <summary>
         /// The duration for which the countdown will be displayed without minimizing the dialog.
         /// </summary>
-        public TimeSpan? CountdownNoMinimizeDuration { get; }
+        [DataMember]
+        public TimeSpan? CountdownNoMinimizeDuration { get; private set; }
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
-        public string? CustomMessageText { get; }
+        [DataMember]
+        public string? CustomMessageText { get; private set; }
 
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
+        [DataContract]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
         public sealed record RestartDialogStrings
         {
@@ -131,7 +136,6 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="buttonRestartNow">The label for the "Restart Now" button. Cannot be <see langword="null"/>.</param>
             /// <param name="buttonRestartLater">The label for the "Restart Later" button. Cannot be <see langword="null"/>.</param>
             /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
-            [JsonConstructor]
             private RestartDialogStrings(string title, string message, string messageTime, string messageRestart, string timeRemaining, string buttonRestartNow, string buttonRestartLater)
             {
                 if (string.IsNullOrWhiteSpace(title))
@@ -175,37 +179,44 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it.
             /// </summary>
-            public string Title { get; }
+            [DataMember]
+            public string Title { get; private set; }
 
             /// <summary>
             /// Text displayed when the device requires a restart.
             /// </summary>
-            public string Message { get; }
+            [DataMember]
+            public string Message { get; private set; }
 
             /// <summary>
             /// Text displayed as a prefix to the time remaining, indicating that users should save their work, etc.
             /// </summary>
-            public string MessageTime { get; }
+            [DataMember]
+            public string MessageTime { get; private set; }
 
             /// <summary>
             /// Text displayed when indicating when the device will be restarted.
             /// </summary>
-            public string MessageRestart { get; }
+            [DataMember]
+            public string MessageRestart { get; private set; }
 
             /// <summary>
             /// Text displayed to indicate the amount of time remaining until a restart will occur.
             /// </summary>
-            public string TimeRemaining { get; }
+            [DataMember]
+            public string TimeRemaining { get; private set; }
 
             /// <summary>
             /// Button text for when wanting to restart the device now.
             /// </summary>
-            public string ButtonRestartNow { get; }
+            [DataMember]
+            public string ButtonRestartNow { get; private set; }
 
             /// <summary>
             /// Button text for allowing the user to restart later.
             /// </summary>
-            public string ButtonRestartLater { get; }
+            [DataMember]
+            public string ButtonRestartLater { get; private set; }
         }
     }
 }

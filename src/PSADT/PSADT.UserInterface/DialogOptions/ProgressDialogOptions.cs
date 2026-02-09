@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the ProgressDialog.
     /// </summary>
+    [DataContract]
     public sealed record ProgressDialogOptions : BaseDialogOptions
     {
         /// <summary>
@@ -65,7 +66,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// is used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="progressMessageText"/> or <paramref name="progressDetailMessageText"/> is <see
         /// langword="null"/>.</exception>
-        [JsonConstructor]
         private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             if (string.IsNullOrWhiteSpace(progressMessageText))
@@ -86,21 +86,25 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The message to be displayed in the progress dialog, indicating the current status or action being performed.
         /// </summary>
-        public string ProgressMessageText { get; }
+        [DataMember]
+        public string ProgressMessageText { get; private set; }
 
         /// <summary>
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
-        public string ProgressDetailMessageText { get; }
+        [DataMember]
+        public string ProgressDetailMessageText { get; private set; }
 
         /// <summary>
         /// The percentage value to be displayed on the status bar, if available.
         /// </summary>
-        public double? ProgressPercentage { get; }
+        [DataMember]
+        public double? ProgressPercentage { get; private set; }
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        public DialogMessageAlignment? MessageAlignment { get; }
+        [DataMember]
+        public DialogMessageAlignment? MessageAlignment { get; private set; }
     }
 }

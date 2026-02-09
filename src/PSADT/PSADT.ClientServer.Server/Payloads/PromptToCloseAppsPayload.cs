@@ -1,24 +1,24 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.ClientServer.Payloads
 {
     /// <summary>
     /// Payload for the PromptToCloseApps command.
     /// </summary>
+    [DataContract]
     internal sealed record PromptToCloseAppsPayload : IPayload
     {
         /// <summary>
         /// The timeout duration for the prompt.
         /// </summary>
-        [JsonProperty]
+        [DataMember]
         internal readonly TimeSpan Timeout;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PromptToCloseAppsPayload"/> class.
         /// </summary>
         /// <param name="timeout">The timeout duration for the prompt.</param>
-        [JsonConstructor]
         internal PromptToCloseAppsPayload(TimeSpan timeout)
         {
             Timeout = timeout;

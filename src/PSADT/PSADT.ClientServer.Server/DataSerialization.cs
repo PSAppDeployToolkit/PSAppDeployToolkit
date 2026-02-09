@@ -1,34 +1,34 @@
 ﻿using System;
 using System.IO;
-using PSADT.ClientServer.Converters;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using System.Xml;
+using PSADT.ClientServer.Payloads;
+using PSADT.Foundation;
+using PSADT.ProcessManagement;
+using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
+using PSADT.WindowManagement;
 
 namespace PSADT.ClientServer
 {
     /// <summary>
-    /// Provides utility methods for JSON serialization and deserialization, including Base64 encoding and decoding.
+    /// Provides utility methods for XML serialization and deserialization using DataContractSerializer,
+    /// including Base64 encoding and decoding.
     /// </summary>
-    /// <remarks>The <see cref="DataSerialization"/> class offers methods to serialize objects to JSON
-    /// strings, encode them as Base64, and deserialize Base64-encoded JSON strings back into objects. It also provides
-    /// default settings for JSON serialization using Newtonsoft.Json, which can be used across the application. <para>
-    /// Key features include: <list type="bullet"> <item><description>Serialization of objects to Base64-encoded JSON
-    /// strings.</description></item> <item><description>Deserialization of Base64-encoded JSON strings into objects.
-    /// </description></item> <item><description>Default JSON serializer settings for consistent
-    /// behavior.</description></item> </list> </para> <para>
-    /// This implementation uses <c>TypeNameHandling.None</c> for security, with custom <see cref="JsonConverter"/>
-    /// classes to handle polymorphic deserialization based on discriminator fields (like <c>PipeCommand</c> and
-    /// <c>DialogType</c>). This approach is fully compliant with CA2326 and CA2327 security rules.
-    /// </para></remarks>
+    /// <remarks>The <see cref="DataSerialization"/> class offers methods to serialize objects to XML
+    /// byte arrays and deserialize them back into objects. It uses <see cref="DataContractSerializer"/>
+    /// with known types for secure polymorphic serialization without type name embedding.
+    /// </remarks>
     public static class DataSerialization
     {
         /// <summary>
-        /// Serializes the specified object directly to a UTF-8 encoded byte array.
+        /// Serializes the specified object directly to a byte array.
         /// </summary>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be null.</param>
-        /// <returns>A UTF-8 encoded byte array containing the JSON representation of the object.</returns>
+        /// <returns>A byte array containing the binary XML representation of the object.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="obj"/> is null.</exception>
-        /// <exception cref="JsonSerializationException">Thrown if serialization fails.</exception>
+        /// <exception cref="SerializationException">Thrown if serialization fails.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static byte[] SerializeToBytes<T>(T obj)
         {
@@ -37,59 +37,53 @@ namespace PSADT.ClientServer
                 throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
             using MemoryStream ms = new();
-            using (StreamWriter sw = new(ms, DefaultEncoding.Value))
-            using (JsonTextWriter jtw = new(sw))
+            DataContractSerializer serializer = GetSerializer(obj.GetType());
+            using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(ms))
             {
-                DefaultJsonSerializer.Serialize(jtw, obj);
+                serializer.WriteObject(writer, obj);
             }
             if (ms.ToArray() is not { Length: > 0 } result)
             {
-                throw new JsonSerializationException("Serialization returned an empty result.");
+                throw new SerializationException("Serialization returned an empty result.");
             }
             return result;
         }
 
         /// <summary>
-        /// Deserializes the specified UTF-8 encoded byte array to an object of type T.
+        /// Deserializes the specified byte array to an object of type T.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
-        /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
-        /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
-        /// <exception cref="JsonSerializationException">Thrown if deserialization fails or results in a null object.</exception>
-        public static T DeserializeFromBytes<T>(byte[] json)
+        /// <param name="bytes">A byte array containing the binary XML to deserialize. Cannot be null or empty.</param>
+        /// <returns>An instance of type T deserialized from the specified bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
+        /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        public static T DeserializeFromBytes<T>(byte[] bytes)
         {
-            return (T)DeserializeFromBytes(json, 0, typeof(T));
+            return (T)DeserializeFromBytes(bytes, 0, typeof(T));
         }
 
         /// <summary>
-        /// Serializes the specified object to a JSON string and encodes it as a Base64 string.
+        /// Serializes the specified object to XML and encodes it as a Base64 string.
         /// </summary>
-        /// <remarks>This method uses default JSON serialization settings and encodes the resulting JSON
-        /// string using UTF-8 before converting it to Base64. The caller can decode the Base64 string and parse the
-        /// JSON to reconstruct the original object.</remarks>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be <see langword="null"/>.</param>
-        /// <returns>A Base64-encoded string containing the JSON representation of the specified object.</returns>
+        /// <returns>A Base64-encoded string containing the XML representation of the specified object.</returns>
         public static string SerializeToString<T>(T obj)
         {
             return Convert.ToBase64String(SerializeToBytes(obj));
         }
 
         /// <summary>
-        /// Deserializes a Base64-encoded JSON string into an object of the specified type.
+        /// Deserializes a Base64-encoded XML string into an object of the specified type.
         /// </summary>
-        /// <remarks>This method expects the input string to be a valid Base64-encoded representation of a
-        /// JSON object. Ensure that the input string is properly encoded and matches the expected structure of the
-        /// target type.</remarks>
         /// <typeparam name="T">The type of the object to deserialize.</typeparam>
-        /// <param name="base64Json">The Base64-encoded JSON string to deserialize. Cannot be null or empty.</param>
-        /// <returns>An object of type <typeparamref name="T"/> deserialized from the provided JSON string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
-        /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
-        public static T DeserializeFromString<T>(string base64Json)
+        /// <param name="base64Xml">The Base64-encoded XML string to deserialize. Cannot be null or empty.</param>
+        /// <returns>An object of type <typeparamref name="T"/> deserialized from the provided string.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Xml"/> is null or empty.</exception>
+        /// <exception cref="SerializationException">Thrown if the deserialization process results in a null object.</exception>
+        public static T DeserializeFromString<T>(string base64Xml)
         {
-            return DeserializeFromBytes<T>(Convert.FromBase64String(base64Json));
+            return DeserializeFromBytes<T>(Convert.FromBase64String(base64Xml));
         }
 
         /// <summary>
@@ -104,90 +98,336 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Deserializes a Base64-encoded JSON string into an object.
+        /// Deserializes a Base64-encoded XML string into an object.
         /// </summary>
-        /// <remarks>This method first decodes the Base64 string into its original JSON format and then
-        /// deserializes it using the default JSON serializer settings. Ensure that the input string is a valid
-        /// Base64-encoded representation of JSON data.</remarks>
-        /// <param name="base64Json">The Base64-encoded JSON string to deserialize. This parameter cannot be null or empty.</param>
-        /// <param name="type">The <see cref="Type"/> to deserialize the JSON into. This parameter cannot be null.</param>
-        /// <returns>An object representing the deserialized JSON data.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Json"/> is null or empty.</exception>
-        /// <exception cref="JsonSerializationException">Thrown if the deserialization process results in a null object.</exception>
+        /// <param name="base64Xml">The Base64-encoded XML string to deserialize. This parameter cannot be null or empty.</param>
+        /// <param name="type">The <see cref="Type"/> to deserialize the XML into. This parameter cannot be null.</param>
+        /// <returns>An object representing the deserialized data.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Xml"/> is null or empty.</exception>
+        /// <exception cref="SerializationException">Thrown if the deserialization process results in a null object.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        public static object DeserializeFromString(string base64Json, Type type)
+        public static object DeserializeFromString(string base64Xml, Type type)
         {
-            return DeserializeFromBytes(Convert.FromBase64String(base64Json), 0, type);
+            return DeserializeFromBytes(Convert.FromBase64String(base64Xml), 0, type);
         }
 
         /// <summary>
-        /// Deserializes the specified UTF-8 encoded byte array to an object of type T.
+        /// Deserializes the specified byte array to an object of type T.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
-        /// <param name="json">A UTF-8 encoded byte array containing the JSON to deserialize. Cannot be null or empty.</param>
+        /// <param name="bytes">A byte array containing the binary XML to deserialize. Cannot be null or empty.</param>
         /// <param name="offset">An optional offset in the byte array to start deserialization from. Default is 0.</param>
-        /// <returns>An instance of type T deserialized from the specified JSON bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null or empty.</exception>
-        /// <exception cref="JsonSerializationException">Thrown if deserialization fails or results in a null object.</exception>
-        internal static T DeserializeFromBytes<T>(byte[] json, int offset = 0)
+        /// <returns>An instance of type T deserialized from the specified bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
+        /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        internal static T DeserializeFromBytes<T>(byte[] bytes, int offset = 0)
         {
-            return (T)DeserializeFromBytes(json, offset, typeof(T));
+            return (T)DeserializeFromBytes(bytes, offset, typeof(T));
         }
 
         /// <summary>
-        /// Deserializes a JSON value from a byte array into an object of the specified type.
+        /// Deserializes a value from a byte array into an object of the specified type.
         /// </summary>
-        /// <remarks>The method uses the default JSON serializer and encoding to interpret the byte array.
-        /// The caller is responsible for casting the returned object to the expected type.</remarks>
-        /// <param name="json">The byte array containing the JSON data to deserialize. Cannot be null or empty.</param>
-        /// <param name="offset">The zero-based index in the array at which to begin reading the JSON data.</param>
-        /// <param name="type">The type of the object to deserialize the JSON data into. Cannot be null.</param>
-        /// <returns>An object representing the deserialized JSON data, cast to the specified type.</returns>
+        /// <param name="bytes">The byte array containing the data to deserialize. Cannot be null or empty.</param>
+        /// <param name="offset">The zero-based index in the array at which to begin reading the data.</param>
+        /// <param name="type">The type of the object to deserialize the data into. Cannot be null.</param>
+        /// <returns>An object representing the deserialized data, cast to the specified type.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than 0.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if json is null or if the length of json is less than or equal to offset.</exception>
-        /// <exception cref="JsonSerializationException">Thrown if deserialization returns a null result.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if bytes is null or if the length of bytes is less than or equal to offset.</exception>
+        /// <exception cref="SerializationException">Thrown if deserialization returns a null result.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        private static object DeserializeFromBytes(byte[] json, int offset, Type type)
+        private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
             }
-            if (json is null || json.Length <= offset)
+            if (bytes is null || bytes.Length <= offset)
             {
-                throw new ArgumentNullException(nameof(json), "Input bytes cannot be null or empty.");
+                throw new ArgumentNullException(nameof(bytes), "Input bytes cannot be null or empty.");
             }
-            using MemoryStream ms = new(json, offset, json.Length - offset, false);
-            using StreamReader sr = new(ms, DefaultEncoding.Value);
-            using JsonTextReader jtr = new(sr);
-            if (DefaultJsonSerializer.Deserialize(jtr, type) is not object result)
+            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
+            DataContractSerializer serializer = GetSerializer(type);
+            using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
+            if (serializer.ReadObject(reader) is not object result)
             {
-                throw new JsonSerializationException("Deserialization returned a null result.");
+                throw new SerializationException("Deserialization returned a null result.");
             }
             return result;
         }
 
         /// <summary>
-        /// The cached JsonSerializer instance configured with the default settings.
+        /// Gets or creates a DataContractSerializer for the specified type with all known types.
         /// </summary>
-        private static readonly JsonSerializer DefaultJsonSerializer = JsonSerializer.Create(new()
+        /// <param name="type">The type to create a serializer for.</param>
+        /// <returns>A DataContractSerializer configured with all known types.</returns>
+        private static DataContractSerializer GetSerializer(Type type)
         {
-            TypeNameHandling = TypeNameHandling.None,
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-            MissingMemberHandling = MissingMemberHandling.Error,
-            Formatting = Formatting.None,
-            Converters =
+            return new(type, DataContractSerializerSettings);
+        }
+
+        /// <summary>
+        /// Provides the default settings for the DataContractSerializer used to serialize and deserialize known
+        /// payload, dialog, process, and exception types.
+        /// </summary>
+        /// <remarks>The settings specify a custom data contract resolver for cross-runtime compatibility,
+        /// enable serialization of read-only types, and define a comprehensive list of known types including various
+        /// payloads, dialog options, process information, and exception types. Object reference preservation is
+        /// disabled to optimize serialization for stateless data exchange scenarios.</remarks>
+        private static readonly DataContractSerializerSettings DataContractSerializerSettings = new()
+        {
+            DataContractResolver = new CrossRuntimeDataContractResolver(),
+            PreserveObjectReferences = false,
+            SerializeReadOnlyTypes = true,
+            KnownTypes =
             [
-                new EncodingConverter(),
-                new ExceptionConverter(),
-                new ProcessDefinitionCollectionConverter(),
-                new ProcessLaunchInfoConverter(),
-                new ProcessResultConverter(),
-                new RunAsActiveUserConverter(),
-                new ShowModalDialogPayloadConverter(),
-                new WindowInfoCollectionConverter(),
-            ],
-        });
+                // Exception types - System namespace (core)
+                typeof(Exception),
+                typeof(SystemException),
+                typeof(ApplicationException),
+                typeof(AccessViolationException),
+                typeof(AggregateException),
+                typeof(AppDomainUnloadedException),
+                typeof(ArgumentException),
+                typeof(ArgumentNullException),
+                typeof(ArgumentOutOfRangeException),
+                typeof(ArithmeticException),
+                typeof(ArrayTypeMismatchException),
+                typeof(BadImageFormatException),
+                typeof(CannotUnloadAppDomainException),
+                typeof(ContextMarshalException),
+                typeof(DataMisalignedException),
+                typeof(DivideByZeroException),
+                typeof(DllNotFoundException),
+                typeof(DuplicateWaitObjectException),
+                typeof(EntryPointNotFoundException),
+                typeof(FieldAccessException),
+                typeof(FormatException),
+                typeof(IndexOutOfRangeException),
+                typeof(InsufficientExecutionStackException),
+                typeof(InsufficientMemoryException),
+                typeof(InvalidCastException),
+                typeof(InvalidOperationException),
+                typeof(InvalidProgramException),
+                typeof(InvalidTimeZoneException),
+                typeof(MemberAccessException),
+                typeof(MethodAccessException),
+                typeof(MissingFieldException),
+                typeof(MissingMemberException),
+                typeof(MissingMethodException),
+                typeof(MulticastNotSupportedException),
+                typeof(NotFiniteNumberException),
+                typeof(NotImplementedException),
+                typeof(NotSupportedException),
+                typeof(NullReferenceException),
+                typeof(ObjectDisposedException),
+                typeof(OperationCanceledException),
+                typeof(OutOfMemoryException),
+                typeof(OverflowException),
+                typeof(PlatformNotSupportedException),
+                typeof(RankException),
+                typeof(StackOverflowException),
+                typeof(TimeoutException),
+                typeof(TimeZoneNotFoundException),
+                typeof(TypeAccessException),
+                typeof(TypeInitializationException),
+                typeof(TypeLoadException),
+                typeof(TypeUnloadedException),
+                typeof(UnauthorizedAccessException),
+                typeof(UriFormatException),
+                typeof(System.Collections.Generic.KeyNotFoundException),
+                typeof(System.ComponentModel.InvalidAsynchronousStateException),
+                typeof(System.ComponentModel.InvalidEnumArgumentException),
+                typeof(System.ComponentModel.LicenseException),
+                typeof(System.ComponentModel.WarningException),
+                typeof(System.ComponentModel.Win32Exception),
+                typeof(System.Configuration.ConfigurationException),
+                typeof(System.Data.ConstraintException),
+                typeof(System.Data.DataException),
+                typeof(System.Data.DBConcurrencyException),
+                typeof(System.Data.DeletedRowInaccessibleException),
+                typeof(System.Data.DuplicateNameException),
+                typeof(System.Data.EvaluateException),
+                typeof(System.Data.InRowChangingEventException),
+                typeof(System.Data.InvalidConstraintException),
+                typeof(System.Data.InvalidExpressionException),
+                typeof(System.Data.MissingPrimaryKeyException),
+                typeof(System.Data.NoNullAllowedException),
+                typeof(System.Data.ReadOnlyException),
+                typeof(System.Data.RowNotInTableException),
+                typeof(System.Data.StrongTypingException),
+                typeof(System.Data.SyntaxErrorException),
+                typeof(System.Data.VersionNotFoundException),
+                typeof(System.Data.Common.DbException),
+                typeof(System.Globalization.CultureNotFoundException),
+                typeof(DirectoryNotFoundException),
+                typeof(DriveNotFoundException),
+                typeof(EndOfStreamException),
+                typeof(FileLoadException),
+                typeof(FileNotFoundException),
+                typeof(InternalBufferOverflowException),
+                typeof(InvalidDataException),
+                typeof(IOException),
+                typeof(PathTooLongException),
+                typeof(System.IO.IsolatedStorage.IsolatedStorageException),
+                typeof(System.Net.CookieException),
+                typeof(System.Net.HttpListenerException),
+                typeof(System.Net.ProtocolViolationException),
+                typeof(System.Net.WebException),
+                typeof(System.Net.Mail.SmtpException),
+                typeof(System.Net.Mail.SmtpFailedRecipientException),
+                typeof(System.Net.Mail.SmtpFailedRecipientsException),
+                typeof(System.Net.NetworkInformation.NetworkInformationException),
+                typeof(System.Net.NetworkInformation.PingException),
+                typeof(System.Net.Sockets.SocketException),
+                typeof(System.Net.WebSockets.WebSocketException),
+                typeof(System.Reflection.AmbiguousMatchException),
+                typeof(System.Reflection.CustomAttributeFormatException),
+                typeof(System.Reflection.InvalidFilterCriteriaException),
+                typeof(System.Reflection.ReflectionTypeLoadException),
+                typeof(System.Reflection.TargetException),
+                typeof(System.Reflection.TargetInvocationException),
+                typeof(System.Reflection.TargetParameterCountException),
+                typeof(System.Resources.MissingManifestResourceException),
+                typeof(System.Resources.MissingSatelliteAssemblyException),
+                typeof(System.Runtime.InteropServices.COMException),
+                typeof(System.Runtime.InteropServices.ExternalException),
+                typeof(System.Runtime.InteropServices.InvalidComObjectException),
+                typeof(System.Runtime.InteropServices.InvalidOleVariantTypeException),
+                typeof(System.Runtime.InteropServices.MarshalDirectiveException),
+                typeof(System.Runtime.InteropServices.SafeArrayRankMismatchException),
+                typeof(System.Runtime.InteropServices.SafeArrayTypeMismatchException),
+                typeof(System.Runtime.InteropServices.SEHException),
+                typeof(SerializationException),
+                typeof(InvalidDataContractException),
+                typeof(System.Security.SecurityException),
+                typeof(System.Security.VerificationException),
+                typeof(System.Security.AccessControl.PrivilegeNotHeldException),
+                typeof(System.Security.Authentication.AuthenticationException),
+                typeof(System.Security.Authentication.InvalidCredentialException),
+                typeof(System.Security.Cryptography.CryptographicException),
+                typeof(System.Security.Cryptography.CryptographicUnexpectedOperationException),
+                typeof(System.Security.Policy.PolicyException),
+                typeof(System.Text.DecoderFallbackException),
+                typeof(System.Text.EncoderFallbackException),
+                typeof(System.Text.RegularExpressions.RegexMatchTimeoutException),
+                typeof(System.Threading.AbandonedMutexException),
+                typeof(System.Threading.BarrierPostPhaseException),
+                typeof(System.Threading.LockRecursionException),
+                typeof(System.Threading.SemaphoreFullException),
+                typeof(System.Threading.SynchronizationLockException),
+                typeof(System.Threading.ThreadInterruptedException),
+                typeof(System.Threading.ThreadStateException),
+                typeof(System.Threading.WaitHandleCannotBeOpenedException),
+                typeof(System.Threading.Tasks.TaskCanceledException),
+                typeof(System.Threading.Tasks.TaskSchedulerException),
+                typeof(System.Diagnostics.Tracing.EventSourceException),
+                typeof(System.Runtime.CompilerServices.RuntimeWrappedException),
+                typeof(XmlException),
+                typeof(System.Xml.Schema.XmlSchemaException),
+                typeof(System.Xml.Schema.XmlSchemaInferenceException),
+                typeof(System.Xml.Schema.XmlSchemaValidationException),
+                typeof(System.Xml.XPath.XPathException),
+                typeof(System.Xml.Xsl.XsltCompileException),
+                typeof(System.Xml.Xsl.XsltException),
+
+                // PSADT custom exceptions
+                typeof(ClientException),
+                typeof(ServerException),
+
+                // Payload types
+                typeof(EnvironmentVariablePayload),
+                typeof(GetProcessWindowInfoPayload),
+                typeof(GroupPolicyUpdatePayload),
+                typeof(InitCloseAppsDialogPayload),
+                typeof(LogMessagePayload),
+                typeof(PromptToCloseAppsPayload),
+                typeof(SendKeysPayload),
+                typeof(ShowBalloonTipPayload),
+                typeof(ShowModalDialogPayload),
+                typeof(ShowProgressDialogPayload),
+                typeof(UpdateProgressDialogPayload),
+
+                // Dialog options types
+                typeof(BalloonTipOptions),
+                typeof(CloseAppsDialogOptions),
+                typeof(CloseAppsDialogOptions.CloseAppsDialogStrings),
+                typeof(CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogClassicStrings),
+                typeof(CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogFluentStrings),
+                typeof(CustomDialogOptions),
+                typeof(DialogBoxOptions),
+                typeof(HelpConsoleOptions),
+                typeof(InputDialogOptions),
+                typeof(ProgressDialogOptions),
+                typeof(RestartDialogOptions),
+                typeof(RestartDialogOptions.RestartDialogStrings),
+
+                // Dialog result types
+                typeof(InputDialogResult),
+
+                // Process and window types
+                typeof(ProcessDefinition),
+                typeof(ProcessLaunchInfo),
+                typeof(ProcessResult),
+                typeof(RunAsActiveUser),
+                typeof(WindowInfo),
+                typeof(WindowInfoOptions),
+            ]
+        };
+
+        /// <summary>
+        /// A <see cref="DataContractResolver"/> that handles cross-runtime type resolution between
+        /// .NET Framework (mscorlib) and .NET Core/.NET 5+ (System.Private.CoreLib).
+        /// </summary>
+        /// <remarks>
+        /// This resolver ensures that types serialized on one runtime can be deserialized on another
+        /// by trying multiple assembly names for BCL types. It falls back to .NET's built-in type
+        /// forwarding when available.
+        /// </remarks>
+        private sealed class CrossRuntimeDataContractResolver : DataContractResolver
+        {
+            /// <summary>
+            /// Resolves a type name and namespace to a CLR type during deserialization.
+            /// </summary>
+            /// <param name="typeName">The type name from the serialized data.</param>
+            /// <param name="typeNamespace">The type namespace from the serialized data.</param>
+            /// <param name="declaredType">The declared type being deserialized.</param>
+            /// <param name="knownTypeResolver">The default known type resolver.</param>
+            /// <returns>The resolved <see cref="Type"/>, or null if the type cannot be resolved.</returns>
+            public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
+            {
+                // Try the default resolver first
+                Type? resolved = knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, knownTypeResolver);
+                if (resolved is not null)
+                {
+                    return resolved;
+                }
+
+                // Build the full type name and try common assembly locations
+                string fullName = string.IsNullOrWhiteSpace(typeNamespace) ? typeName : $"{typeNamespace}.{typeName}";
+
+                // Try common BCL assemblies in priority order
+                return Type.GetType($"{fullName}, mscorlib")
+                    ?? Type.GetType($"{fullName}, System.Private.CoreLib")
+                    ?? Type.GetType($"{fullName}, System")
+                    ?? Type.GetType($"{fullName}, System.Runtime")
+                    ?? Type.GetType(fullName);
+            }
+
+            /// <summary>
+            /// Maps a type to a type name and namespace during serialization.
+            /// </summary>
+            /// <param name="type">The type to map.</param>
+            /// <param name="declaredType">The declared type.</param>
+            /// <param name="knownTypeResolver">The default known type resolver.</param>
+            /// <param name="typeName">The output type name.</param>
+            /// <param name="typeNamespace">The output type namespace.</param>
+            /// <returns>true if the type was successfully mapped; otherwise, false.</returns>
+            public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, out XmlDictionaryString? typeNamespace)
+            {
+                // Use the default resolver for serialization
+                return knownTypeResolver.TryResolveType(type, declaredType, knownTypeResolver, out typeName, out typeNamespace);
+            }
+        }
     }
 }

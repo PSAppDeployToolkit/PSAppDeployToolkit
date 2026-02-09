@@ -2,14 +2,23 @@
 using System.Collections;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Serialization;
 using PSADT.Utilities;
-using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
+    [DataContract]
+    [KnownType(typeof(CloseAppsDialogOptions))]
+    [KnownType(typeof(CustomDialogOptions))]
+    [KnownType(typeof(DialogBoxOptions))]
+    [KnownType(typeof(HelpConsoleOptions))]
+    [KnownType(typeof(InputDialogOptions))]
+    [KnownType(typeof(ProgressDialogOptions))]
+    [KnownType(typeof(RestartDialogOptions))]
+    [KnownType(typeof(BalloonTipOptions))]
     public abstract record BaseDialogOptions : IDialogOptions
     {
         /// <summary>
@@ -55,7 +64,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        [JsonConstructor]
         protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
@@ -125,66 +133,79 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        public string AppTitle { get; }
+        [DataMember]
+        public string AppTitle { get; private set; }
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
-        public string Subtitle { get; }
+        [DataMember]
+        public string Subtitle { get; private set; }
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
-        public string AppIconImage { get; }
+        [DataMember]
+        public string AppIconImage { get; private set; }
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
-        public string AppIconDarkImage { get; }
+        [DataMember]
+        public string AppIconDarkImage { get; private set; }
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
-        public string AppBannerImage { get; }
+        [DataMember]
+        public string AppBannerImage { get; private set; }
 
         /// <summary>
         /// Gets the file path or resource identifier for the application's tray icon image.
         /// </summary>
-        public string? AppTaskbarIconImage { get; }
+        [DataMember]
+        public string? AppTaskbarIconImage { get; private set; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        public bool DialogTopMost { get; }
+        [DataMember]
+        public bool DialogTopMost { get; private set; }
 
         /// <summary>
         /// Gets the culture information representing the language associated with this instance.
         /// </summary>
-        public CultureInfo Language { get; }
+        [DataMember]
+        public CultureInfo Language { get; private set; }
 
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        public int? FluentAccentColor { get; }
+        [DataMember]
+        public int? FluentAccentColor { get; private set; }
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
-        public DialogPosition? DialogPosition { get; }
+        [DataMember]
+        public DialogPosition? DialogPosition { get; private set; }
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
-        public bool? DialogAllowMove { get; }
+        [DataMember]
+        public bool? DialogAllowMove { get; private set; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        public TimeSpan? DialogExpiryDuration { get; }
+        [DataMember]
+        public TimeSpan? DialogExpiryDuration { get; private set; }
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
-        public TimeSpan? DialogPersistInterval { get; }
+        [DataMember]
+        public TimeSpan? DialogPersistInterval { get; private set; }
     }
 }

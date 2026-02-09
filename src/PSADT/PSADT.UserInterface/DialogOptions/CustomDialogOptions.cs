@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the CustomDialog.
     /// </summary>
+    [DataContract]
     public record CustomDialogOptions : BaseDialogOptions
     {
         /// <summary>
@@ -71,7 +72,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="icon">The system icon displayed in the dialog. If <see langword="null"/>, no icon is displayed.</param>
         /// <param name="minimizeWindows">Indicates whether all other windows should be minimized when the dialog is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="messageText"/> is <see langword="null"/> or empty.</exception>
-        [JsonConstructor]
         protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             if (string.IsNullOrWhiteSpace(messageText))
@@ -97,36 +97,43 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The custom message to be displayed in the dialog.
         /// </summary>
-        public string MessageText { get; }
+        [DataMember]
+        public string MessageText { get; private set; }
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        public DialogMessageAlignment? MessageAlignment { get; }
+        [DataMember]
+        public DialogMessageAlignment? MessageAlignment { get; private set; }
 
         /// <summary>
         /// The text for the left button in the dialog.
         /// </summary>
-        public string? ButtonLeftText { get; }
+        [DataMember]
+        public string? ButtonLeftText { get; private set; }
 
         /// <summary>
         /// The text for the middle button in the dialog.
         /// </summary>
-        public string? ButtonMiddleText { get; }
+        [DataMember]
+        public string? ButtonMiddleText { get; private set; }
 
         /// <summary>
         /// The text for the right button in the dialog.
         /// </summary>
-        public string? ButtonRightText { get; }
+        [DataMember]
+        public string? ButtonRightText { get; private set; }
 
         /// <summary>
         /// The icon to be displayed in the dialog.
         /// </summary>
-        public DialogSystemIcon? Icon { get; }
+        [DataMember]
+        public DialogSystemIcon? Icon { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether windows should be minimized.
         /// </summary>
-        public bool MinimizeWindows { get; }
+        [DataMember]
+        public bool MinimizeWindows { get; private set; }
     }
 }

@@ -319,7 +319,7 @@ namespace PSADT.ClientServer
         /// information about whether the user chose to close the applications or canceled the operation.</returns>
         public CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
         {
-            return (CloseAppsDialogResult)ShowModalDialog<long>(DialogType.CloseAppsDialog, dialogStyle, options);
+            return ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -375,7 +375,7 @@ namespace PSADT.ClientServer
         /// <returns>A <see cref="DialogBoxResult"/> that represents the result of the user's interaction with the dialog box.</returns>
         public DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
-            return (DialogBoxResult)ShowModalDialog<long>(DialogType.DialogBox, 0, options);
+            return ShowModalDialog<DialogBoxResult>(DialogType.DialogBox, 0, options);
         }
 
         /// <summary>
@@ -530,7 +530,7 @@ namespace PSADT.ClientServer
         /// <returns>An instance of <see cref="QUERY_USER_NOTIFICATION_STATE"/> representing the user's notification state.</returns>
         public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
-            return (QUERY_USER_NOTIFICATION_STATE)Invoke<long>(PipeCommand.GetUserNotificationState);
+            return Invoke<QUERY_USER_NOTIFICATION_STATE>(PipeCommand.GetUserNotificationState);
         }
 
         /// <summary>
@@ -541,7 +541,7 @@ namespace PSADT.ClientServer
         /// <returns>The process ID of the application that owns the foreground window.</returns>
         public uint GetForegroundWindowProcessId()
         {
-            return (uint)Invoke<long>(PipeCommand.GetForegroundWindowProcessId);
+            return Invoke<uint>(PipeCommand.GetForegroundWindowProcessId);
         }
 
         /// <summary>

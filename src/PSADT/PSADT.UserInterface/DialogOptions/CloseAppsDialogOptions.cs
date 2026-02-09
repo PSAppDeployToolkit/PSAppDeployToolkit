@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using System.Runtime.Serialization;
 using PSAppDeployToolkit.Foundation;
-using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the CloseAppsDialog.
     /// </summary>
+    [DataContract]
     public sealed record CloseAppsDialogOptions : BaseDialogOptions
     {
         /// <summary>
@@ -78,7 +79,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
         /// <param name="dialogAllowMinimize">A value indicating whether the dialog can be minimized by the user.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
-        [JsonConstructor]
         private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
@@ -93,60 +93,72 @@ namespace PSADT.UserInterface.DialogOptions
             CustomMessageText = customMessageText;
         }
 
+
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
-        public CloseAppsDialogStrings Strings { get; }
+        [DataMember]
+        public CloseAppsDialogStrings Strings { get; private set; }
 
         /// <summary>
         /// The number of deferrals remaining for the user.
         /// </summary>
-        public uint? DeferralsRemaining { get; }
+        [DataMember]
+        public uint? DeferralsRemaining { get; private set; }
 
         /// <summary>
         /// The deadline for deferrals.
         /// </summary>
-        public DateTime? DeferralDeadline { get; }
+        [DataMember]
+        public DateTime? DeferralDeadline { get; private set; }
 
         /// <summary>
         /// Indicates whether the system allows an unlimited number of deferrals.
         /// </summary>
-        public bool UnlimitedDeferrals { get; }
+        [DataMember]
+        public bool UnlimitedDeferrals { get; private set; }
 
         /// <summary>
         /// Indicates whether the continue button should be implied when all processes have closed.
         /// </summary>
-        public bool ContinueOnProcessClosure { get; }
+        [DataMember]
+        public bool ContinueOnProcessClosure { get; private set; }
 
         /// <summary>
         /// The duration of the countdown before the dialog automatically closes.
         /// </summary>
-        public TimeSpan? CountdownDuration { get; }
+        [DataMember]
+        public TimeSpan? CountdownDuration { get; private set; }
 
         /// <summary>
         /// Specifies whether the countdown is "forced" or not (affects countdown decisions).
         /// </summary>
-        public bool ForcedCountdown { get; }
+        [DataMember]
+        public bool ForcedCountdown { get; private set; }
 
         /// <summary>
         /// Indicates whether the close button should be hidden.
         /// </summary>
-        public bool HideCloseButton { get; }
+        [DataMember]
+        public bool HideCloseButton { get; private set; }
 
         /// <summary>
         /// Indicates whether the dialog allows minimizing.
         /// </summary>
-        public bool DialogAllowMinimize { get; }
+        [DataMember]
+        public bool DialogAllowMinimize { get; private set; }
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
-        public string? CustomMessageText { get; }
+        [DataMember]
+        public string? CustomMessageText { get; private set; }
 
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
+        [DataContract]
         public sealed record CloseAppsDialogStrings
         {
             /// <summary>
@@ -169,7 +181,6 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="fluent">The strings used for the fluent dialog style. Cannot be <see langword="null"/>.</param>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="classic"/> or <paramref name="fluent"/> is <see
             /// langword="null"/>.</exception>
-            [JsonConstructor]
             private CloseAppsDialogStrings(CloseAppsDialogClassicStrings classic, CloseAppsDialogFluentStrings fluent)
             {
                 Classic = classic ?? throw new ArgumentNullException(nameof(classic), "Classic strings cannot be null.");
@@ -179,16 +190,19 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
-            public CloseAppsDialogClassicStrings Classic { get; }
+            [DataMember]
+            public CloseAppsDialogClassicStrings Classic { get; private set; }
 
             /// <summary>
             /// The strings used for the Fluent CloseAppsDialog.
             /// </summary>
-            public CloseAppsDialogFluentStrings Fluent { get; }
+            [DataMember]
+            public CloseAppsDialogFluentStrings Fluent { get; private set; }
 
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
+            [DataContract]
             public sealed record CloseAppsDialogClassicStrings
             {
                 /// <summary>
@@ -232,7 +246,6 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonDefer">The label for the button used to defer the action.</param>
                 /// <param name="buttonContinue">The label for the button used to continue the process.</param>
                 /// <param name="buttonContinueTooltip">The tooltip text for the continue button, providing additional context or instructions.</param>
-                [JsonConstructor]
                 private CloseAppsDialogClassicStrings(string welcomeMessage, string closeAppsMessage, string expiryMessage, string deferralsRemaining, string deferralDeadline, string expiryWarning, string countdownDefer, string countdownClose, string buttonClose, string buttonDefer, string buttonContinue, string buttonContinueTooltip)
                 {
                     if (string.IsNullOrWhiteSpace(welcomeMessage))
@@ -301,67 +314,80 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// Text displayed when only the deferral dialog is to be displayed and there are no applications to close
                 /// </summary>
-                public string WelcomeMessage { get; }
+                [DataMember]
+                public string WelcomeMessage { get; private set; }
 
                 /// <summary>
                 /// Text displayed when prompting to close running programs.
                 /// </summary>
-                public string CloseAppsMessage { get; }
+                [DataMember]
+                public string CloseAppsMessage { get; private set; }
 
                 /// <summary>
                 /// Text displayed when a deferral option is available.
                 /// </summary>
-                public string ExpiryMessage { get; }
+                [DataMember]
+                public string ExpiryMessage { get; private set; }
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
-                public string DeferralsRemaining { get; }
+                [DataMember]
+                public string DeferralsRemaining { get; private set; }
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
-                public string DeferralDeadline { get; }
+                [DataMember]
+                public string DeferralDeadline { get; private set; }
 
                 /// <summary>
                 /// Text displayed after the deferral options.
                 /// </summary>
-                public string ExpiryWarning { get; }
+                [DataMember]
+                public string ExpiryWarning { get; private set; }
 
                 /// <summary>
                 /// The countdown message displayed at the Welcome Screen to indicate when the deployment will continue if no response from user.
                 /// </summary>
-                public string CountdownDefer { get; }
+                [DataMember]
+                public string CountdownDefer { get; private set; }
 
                 /// <summary>
                 /// Text displayed when counting down to automatically closing applications.
                 /// </summary>
-                public string CountdownClose { get; }
+                [DataMember]
+                public string CountdownClose { get; private set; }
 
                 /// <summary>
                 /// Text displayed on the close button when prompting to close running programs.
                 /// </summary>
-                public string ButtonClose { get; }
+                [DataMember]
+                public string ButtonClose { get; private set; }
 
                 /// <summary>
                 /// Text displayed on the defer button when prompting to close running programs
                 /// </summary>
-                public string ButtonDefer { get; }
+                [DataMember]
+                public string ButtonDefer { get; private set; }
 
                 /// <summary>
                 /// Text displayed on the continue button when prompting to close running programs.
                 /// </summary>
-                public string ButtonContinue { get; }
+                [DataMember]
+                public string ButtonContinue { get; private set; }
 
                 /// <summary>
                 /// Tooltip text displayed on the continue button when prompting to close running programs.
                 /// </summary>
-                public string ButtonContinueTooltip { get; }
+                [DataMember]
+                public string ButtonContinueTooltip { get; private set; }
             }
 
             /// <summary>
             /// Strings used for the Fluent CloseAppsDialog.
             /// </summary>
+            [DataContract]
             public sealed record CloseAppsDialogFluentStrings
             {
                 /// <summary>
@@ -386,9 +412,7 @@ namespace PSADT.UserInterface.DialogOptions
                 /// Initializes a new instance of the <see cref="CloseAppsDialogFluentStrings"/> class with the
                 /// specified dialog text and button labels.
                 /// </summary>
-                /// <remarks>This constructor is marked with the <see
-                /// cref="JsonConstructorAttribute"/> to enable deserialization of the object from JSON. It is intended
-                /// for internal use and should not be called directly by external code.</remarks>
+                /// <remarks>This constructor is intended for internal use and should not be called directly by external code.</remarks>
                 /// <param name="dialogMessage">The message displayed in the dialog when processes are detected.</param>
                 /// <param name="dialogMessageNoProcesses">The message displayed in the dialog when no processes are detected.</param>
                 /// <param name="automaticStartCountdown">The text representing the countdown timer for automatic start.</param>
@@ -397,7 +421,6 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonLeftText">The text displayed on the left button when processes are detected.</param>
                 /// <param name="buttonRightText">The text displayed on the right button.</param>
                 /// <param name="buttonLeftTextNoProcesses">The text displayed on the left button when no processes are detected.</param>
-                [JsonConstructor]
                 private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftTextNoProcesses)
                 {
                     if (string.IsNullOrWhiteSpace(dialogMessage))
@@ -446,42 +469,50 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// This is a message to prompt users to save their work.
                 /// </summary>
-                public string DialogMessage { get; }
+                [DataMember]
+                public string DialogMessage { get; private set; }
 
                 /// <summary>
                 /// This is a message to when there are no running processes available.
                 /// </summary>
-                public string DialogMessageNoProcesses { get; }
+                [DataMember]
+                public string DialogMessageNoProcesses { get; private set; }
 
                 /// <summary>
                 /// A string to describe the automatic start countdown.
                 /// </summary>
-                public string AutomaticStartCountdown { get; }
+                [DataMember]
+                public string AutomaticStartCountdown { get; private set; }
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
-                public string DeferralsRemaining { get; }
+                [DataMember]
+                public string DeferralsRemaining { get; private set; }
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
-                public string DeferralDeadline { get; }
+                [DataMember]
+                public string DeferralDeadline { get; private set; }
 
                 /// <summary>
                 /// This is a phrase used to describe the process of deferring a deploymen
                 /// </summary>
-                public string ButtonLeftText { get; }
+                [DataMember]
+                public string ButtonLeftText { get; private set; }
 
                 /// <summary>
                 /// This is a phrase used to describe the process of closing applications and commencing the deployment.
                 /// </summary>
-                public string ButtonRightText { get; }
+                [DataMember]
+                public string ButtonRightText { get; private set; }
 
                 /// <summary>
                 /// This is a phrase used to describe the process of commencing the deployment.
                 /// </summary>
-                public string ButtonLeftTextNoProcesses { get; }
+                [DataMember]
+                public string ButtonLeftTextNoProcesses { get; private set; }
             }
         }
     }

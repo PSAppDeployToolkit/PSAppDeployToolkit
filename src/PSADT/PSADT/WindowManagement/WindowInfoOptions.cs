@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.WindowManagement
 {
@@ -11,6 +11,7 @@ namespace PSADT.WindowManagement
     /// <remarks>This record provides criteria for filtering windows based on their titles, handles, or parent
     /// processes. Any of the filters can be null, indicating that the corresponding criterion should not be
     /// applied.</remarks>
+    [DataContract]
     public sealed record WindowInfoOptions
     {
         /// <summary>
@@ -28,7 +29,6 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandleFilter">A list of main window handles for parent processes to include in the filter. Only windows whose parent
         /// process main window handle matches any of these values will be considered. Can be null to disable this
         /// filtering.</param>
-        [JsonConstructor]
         public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter, IReadOnlyList<nint>? windowHandleFilter, IReadOnlyList<string>? parentProcessFilter, IReadOnlyList<int> parentProcessIdFilter, IReadOnlyList<nint> parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
@@ -64,14 +64,16 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the filter criteria for window titles.
         /// </summary>
-        public IReadOnlyList<string>? WindowTitleFilter { get; }
+        [DataMember]
+        public IReadOnlyList<string>? WindowTitleFilter { get; private set; }
 
         /// <summary>
         /// Represents a filter for window handles used to determine which windows are included in certain operations.
         /// </summary>
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
-        public IReadOnlyList<nint>? WindowHandleFilter { get; }
+        [DataMember]
+        public IReadOnlyList<nint>? WindowHandleFilter { get; private set; }
 
         /// <summary>
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
@@ -79,14 +81,16 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
         /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
-        public IReadOnlyList<string>? ParentProcessFilter { get; }
+        [DataMember]
+        public IReadOnlyList<string>? ParentProcessFilter { get; private set; }
 
         /// <summary>
         /// Gets the list of parent process IDs to use as a filter when selecting processes.
         /// </summary>
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
-        public IReadOnlyList<int>? ParentProcessIdFilter { get; }
+        [DataMember]
+        public IReadOnlyList<int>? ParentProcessIdFilter { get; private set; }
 
         /// <summary>
         /// Gets the collection of main window handles used to filter parent processes.
@@ -94,6 +98,7 @@ namespace PSADT.WindowManagement
         /// <remarks>This property provides a read-only list of native window handles (HWND) that are used
         /// to identify or filter parent processes based on their main window. The list may be empty if no filters are
         /// applied.</remarks>
-        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter { get; }
+        [DataMember]
+        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter { get; private set; }
     }
 }

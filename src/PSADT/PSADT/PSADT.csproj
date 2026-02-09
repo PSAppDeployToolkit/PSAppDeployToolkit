@@ -20,10 +20,6 @@
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <Reference Include="System.DirectoryServices" />

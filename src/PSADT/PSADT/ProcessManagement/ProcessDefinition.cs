@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.ProcessManagement
 {
     /// <summary>
     /// Represents basic information about a process.
     /// </summary>
+    [DataContract]
     public sealed record ProcessDefinition
     {
         /// <summary>
@@ -23,7 +24,6 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="name">The name of the process.</param>
         /// <param name="description">The description of the process.</param>
-        [JsonConstructor]
         public ProcessDefinition(string name, string description) : this(name)
         {
             Description = !string.IsNullOrWhiteSpace(description) ? description : null;
@@ -40,16 +40,19 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
-        public string Name { get; }
+        [DataMember]
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
-        public string? Description { get; }
+        [DataMember]
+        public string? Description { get; private set; }
 
         /// <summary>
         /// Gets the filter script for the process.
         /// </summary>
+        [IgnoreDataMember]
         public Func<RunningProcessInfo, bool>? Filter { get; }
     }
 }

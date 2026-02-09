@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using PSADT.Utilities;
 
 namespace PSADT.ProcessManagement
@@ -8,6 +9,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Represents the result of a process execution, including exit code and standard output/error.
     /// </summary>
+    [DataContract]
     public sealed record ProcessResult
     {
         /// <summary>
@@ -67,36 +69,43 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Represents the process associated with the current operation.
         /// </summary>
+        [IgnoreDataMember]
         public Process? Process { get; }
 
         /// <summary>
         /// Gets the information required to launch a process.
         /// </summary>
+        [IgnoreDataMember]
         public ProcessLaunchInfo? LaunchInfo { get; }
 
         /// <summary>
         /// Gets the command line string associated with the current process.
         /// </summary>
-        public string? CommandLine { get; }
+        [DataMember]
+        public string? CommandLine { get; private set; }
 
         /// <summary>
         /// Gets the exit code of the process, if the process had exited.
         /// </summary>
-        public int ExitCode { get; }
+        [DataMember]
+        public int ExitCode { get; private set; }
 
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public IReadOnlyList<string>? StdOut { get; }
+        [DataMember]
+        public IReadOnlyList<string>? StdOut { get; private set; }
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public IReadOnlyList<string>? StdErr { get; }
+        [DataMember]
+        public IReadOnlyList<string>? StdErr { get; private set; }
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
-        public IReadOnlyList<string>? Interleaved { get; }
+        [DataMember]
+        public IReadOnlyList<string>? Interleaved { get; private set; }
     }
 }

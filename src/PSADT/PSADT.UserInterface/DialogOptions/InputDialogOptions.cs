@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the InputDialog.
     /// </summary>
+    [DataContract]
     public sealed record InputDialogOptions : CustomDialogOptions
     {
         /// <summary>
@@ -74,7 +75,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="initialInputText">The initial text displayed in the input field of the dialog. If <see langword="null"/>, the input field is
         /// empty.</param>
         /// <param name="secureInput">A value indicating whether the input should be masked (for passwords or sensitive data).</param>
-        [JsonConstructor]
         private InputDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, string? initialInputText, bool secureInput) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             InitialInputText = initialInputText;
@@ -84,11 +84,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The initial text to be displayed in the input field.
         /// </summary>
-        public string? InitialInputText { get; }
+        [DataMember]
+        public string? InitialInputText { get; private set; }
 
         /// <summary>
         /// Indicates whether the input should be masked (for passwords or sensitive data).
         /// </summary>
-        public bool SecureInput { get; }
+        [DataMember]
+        public bool SecureInput { get; private set; }
     }
 }

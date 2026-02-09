@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
+    [DataContract]
     public sealed record DialogBoxOptions : IDialogOptions
     {
         /// <summary>
@@ -39,7 +40,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogTopMost">A value indicating whether the dialog box should appear as the topmost window. <see langword="true"/> if the
         /// dialog box is topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
-        [JsonConstructor]
         private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint? dialogExpiryDuration)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
@@ -75,36 +75,43 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        public string AppTitle { get; }
+        [DataMember]
+        public string AppTitle { get; private set; }
 
         /// <summary>
         /// Gets the text of the message.
         /// </summary>
-        public string MessageText { get; }
+        [DataMember]
+        public string MessageText { get; private set; }
 
         /// <summary>
         /// Gets the set of buttons to display in the message box dialog.
         /// </summary>
-        public DialogBoxButtons DialogButtons { get; }
+        [DataMember]
+        public DialogBoxButtons DialogButtons { get; private set; }
 
         /// <summary>
         /// Gets the default button that is selected in the dialog box when it is displayed.
         /// </summary>
-        public DialogBoxDefaultButton DialogDefaultButton { get; }
+        [DataMember]
+        public DialogBoxDefaultButton DialogDefaultButton { get; private set; }
 
         /// <summary>
         /// Gets the icon displayed in the dialog box.
         /// </summary>
-        public DialogBoxIcon? DialogIcon { get; }
+        [DataMember]
+        public DialogBoxIcon? DialogIcon { get; private set; }
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        public bool DialogTopMost { get; }
+        [DataMember]
+        public bool DialogTopMost { get; private set; }
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        public uint DialogExpiryDuration { get; }
+        [DataMember]
+        public uint DialogExpiryDuration { get; private set; }
     }
 }

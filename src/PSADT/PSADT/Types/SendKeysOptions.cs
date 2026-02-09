@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.Types
 {
@@ -9,6 +9,7 @@ namespace PSADT.Types
     /// <remarks>The <see cref="SendKeysOptions"/> class encapsulates the target window handle and the key
     /// sequence to be sent. Use this class to configure and manage the parameters required for sending keys to a
     /// window.</remarks>
+    [DataContract]
     public sealed record SendKeysOptions
     {
         /// <summary>
@@ -20,7 +21,6 @@ namespace PSADT.Types
         /// the desired key sequence.</remarks>
         /// <param name="windowHandle">The handle of the window to which the keys will be sent. This must be a valid window handle.</param>
         /// <param name="keys">The string representing the keys to be sent. Cannot be null or empty.</param>
-        [JsonConstructor]
         public SendKeysOptions(nint windowHandle, string keys)
         {
             WindowHandle = windowHandle;
@@ -30,11 +30,13 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the native handle of the window.
         /// </summary>
-        public nint WindowHandle { get; }
+        [DataMember]
+        public nint WindowHandle { get; private set; }
 
         /// <summary>
         /// Represents the keys associated with the current object.
         /// </summary>
-        public string Keys { get; }
+        [DataMember]
+        public string Keys { get; private set; }
     }
 }

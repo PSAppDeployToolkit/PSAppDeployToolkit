@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using System.Runtime.Serialization;
 
 namespace PSADT.ClientServer.Payloads
 {
     /// <summary>
     /// Represents the payload for a group policy update operation, specifying options for forced reapplication of policy settings.
     /// </summary>
+    [DataContract]
     internal sealed record GroupPolicyUpdatePayload : IPayload
     {
         /// <summary>
         /// Reapplies all policy settings. By default, only policy settings that have changed are applied.
         /// </summary>
-        [JsonProperty]
+        [DataMember]
         internal readonly bool Force;
 
         /// <summary>
@@ -18,7 +19,6 @@ namespace PSADT.ClientServer.Payloads
         /// force options.
         /// </summary>
         /// <param name="force">Reapplies all policy settings. By default, only policy settings that have changed are applied.</param>
-        [JsonConstructor]
         internal GroupPolicyUpdatePayload(bool force)
         {
             Force = force;

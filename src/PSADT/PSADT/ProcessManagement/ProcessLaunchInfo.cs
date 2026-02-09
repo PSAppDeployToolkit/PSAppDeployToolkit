@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using PSADT.FileSystem;
@@ -14,6 +15,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Provides options for launching a managed process.
     /// </summary>
+    [DataContract]
     public sealed record ProcessLaunchInfo
     {
         /// <summary>
@@ -111,7 +113,7 @@ namespace PSADT.ProcessManagement
             }
             if (streamEncoding is not null)
             {
-                StreamEncoding = streamEncoding;
+                StreamEncodingWebName = streamEncoding.WebName;
             }
             if (windowStyle is not null)
             {
@@ -178,128 +180,158 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the file path of the process to launch.
         /// </summary>
-        public string FilePath { get; }
+        [DataMember]
+        public string FilePath { get; private set; }
 
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        public IReadOnlyList<string>? ArgumentList { get; }
+        [DataMember]
+        public IReadOnlyList<string>? ArgumentList { get; private set; }
 
         /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
-        public string? WorkingDirectory { get; }
+        [DataMember]
+        public string? WorkingDirectory { get; private set; }
 
         /// <summary>
         /// Gets the username to use when starting the process.
         /// </summary>
-        public RunAsActiveUser? RunAsActiveUser { get; }
+        [DataMember]
+        public RunAsActiveUser? RunAsActiveUser { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to use the linked admin token to start the process.
         /// </summary>
-        public bool UseLinkedAdminToken { get; }
+        [DataMember]
+        public bool UseLinkedAdminToken { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to use the highest available token to start the process.
         /// </summary>
-        public bool UseHighestAvailableToken { get; }
+        [DataMember]
+        public bool UseHighestAvailableToken { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to inherit the environment variables of the current process.
         /// </summary>
-        public bool InheritEnvironmentVariables { get; }
+        [DataMember]
+        public bool InheritEnvironmentVariables { get; private set; }
 
         /// <summary>
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
-        public bool ExpandEnvironmentVariables { get; }
+        [DataMember]
+        public bool ExpandEnvironmentVariables { get; private set; }
 
         /// <summary>
         /// Indicates whether user termination is denied.
         /// </summary>
-        public bool DenyUserTermination { get; }
+        [DataMember]
+        public bool DenyUserTermination { get; private set; }
 
         /// <summary>
         /// Indicates whether an unelevated token should be used for operations.
         /// </summary>
-        public bool UseUnelevatedToken { get; }
+        [DataMember]
+        public bool UseUnelevatedToken { get; private set; }
 
         /// <summary>
         /// Gets the lines to write to the process's standard input stream.
         /// </summary>
         /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
-        public IReadOnlyList<string>? StandardInput { get; }
+        [DataMember]
+        public IReadOnlyList<string>? StandardInput { get; private set; }
 
         /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
-        public IReadOnlyList<IntPtr>? HandlesToInherit { get; }
+        [IgnoreDataMember]
+        public IReadOnlyList<IntPtr>? HandlesToInherit { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.
         /// </summary>
-        public bool UseShellExecute { get; }
+        [DataMember]
+        public bool UseShellExecute { get; private set; }
 
         /// <summary>
         /// Gets the verb to use when starting the process.
         /// </summary>
-        public string? Verb { get; }
+        [DataMember]
+        public string? Verb { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
-        public bool CreateNoWindow { get; }
+        [DataMember]
+        public bool CreateNoWindow { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the process should wait for child processes to exit before completing.
         /// </summary>
-        public bool WaitForChildProcesses { get; }
+        [DataMember]
+        public bool WaitForChildProcesses { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether any child processes spawned with the parent should terminate when the parent closes.
         /// </summary>
-        public bool KillChildProcessesWithParent { get; }
+        [DataMember]
+        public bool KillChildProcessesWithParent { get; private set; }
 
         /// <summary>
         /// Gets the encoding type to use when parsing stdout/stderr text.
         /// </summary>
-        public Encoding StreamEncoding { get; } = Encoding.Default;
+        [IgnoreDataMember]
+        public Encoding StreamEncoding => Encoding.GetEncoding(StreamEncodingWebName);
 
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public SHOW_WINDOW_CMD? WindowStyle { get; }
+        [DataMember]
+        public SHOW_WINDOW_CMD? WindowStyle { get; private set; }
 
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public System.Diagnostics.ProcessWindowStyle? ProcessWindowStyle { get; }
+        [DataMember]
+        public System.Diagnostics.ProcessWindowStyle? ProcessWindowStyle { get; private set; }
 
         /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
-        public System.Diagnostics.ProcessPriorityClass? PriorityClass { get; }
+        [DataMember]
+        public System.Diagnostics.ProcessPriorityClass? PriorityClass { get; private set; }
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.
         /// </summary>
-        public CancellationToken? CancellationToken { get; }
+        [IgnoreDataMember]
+        public CancellationToken? CancellationToken { get; private set; }
 
         /// <summary>
         /// Gets whether to not end the process upon CancellationToken expiring.
         /// </summary>
-        public bool NoTerminateOnTimeout { get; }
+        [DataMember]
+        public bool NoTerminateOnTimeout { get; private set; }
 
         /// <summary>
         /// Gets the subsystem required to run the image.
         /// </summary>
-        public IMAGE_SUBSYSTEM ImageSubsystem { get; }
+        [DataMember]
+        public IMAGE_SUBSYSTEM ImageSubsystem { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a command-line interface (CLI) application.
         /// </summary>
         public bool IsCliApplication => ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+
+        /// <summary>
+        /// Gets the encoding web name string for serialization.
+        /// </summary>
+        [DataMember]
+        private readonly string StreamEncodingWebName = Encoding.Default.WebName;
     }
 }

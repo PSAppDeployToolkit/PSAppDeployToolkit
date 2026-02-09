@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Security.Principal;
 using PSADT.TerminalServices;
 
@@ -10,6 +11,7 @@ namespace PSADT.Foundation
     /// <remarks>The <see cref="RunAsActiveUser"/> class encapsulates details about a user, including their NT
     /// account, security identifier (SID), username, and domain name. This class is useful for scenarios where
     /// operations need to be performed under the context of a specific user.</remarks>
+    [DataContract]
     public sealed record RunAsActiveUser
     {
         /// <summary>
@@ -22,8 +24,16 @@ namespace PSADT.Foundation
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
-            NTAccount = nTAccount ?? throw new ArgumentNullException(nameof(nTAccount));
-            SID = sID ?? throw new ArgumentNullException(nameof(sID));
+            if (nTAccount?.Value is not string ntAccountValue || string.IsNullOrWhiteSpace(ntAccountValue))
+            {
+                throw new ArgumentNullException(nameof(nTAccount));
+            }
+            if (sID?.Value is not string sidValue || string.IsNullOrWhiteSpace(sidValue))
+            {
+                throw new ArgumentNullException(nameof(sID));
+            }
+            NTAccountValue = ntAccountValue;
+            SIDValue = sidValue;
             SessionId = sessionId;
             IsLocalAdmin = isLocalAdmin;
         }
@@ -47,7 +57,8 @@ namespace PSADT.Foundation
         /// <remarks>This field holds an instance of the <see cref="System.Security.Principal.NTAccount"/>
         /// class, which encapsulates a Windows NT account name. It is used to identify a user or group in a Windows
         /// environment.</remarks>
-        public NTAccount NTAccount { get; }
+        [IgnoreDataMember]
+        public NTAccount NTAccount => new(NTAccountValue);
 
         /// <summary>
         /// Represents the security identifier (SID) associated with the current object.
@@ -55,26 +66,43 @@ namespace PSADT.Foundation
         /// <remarks>A security identifier (SID) is a unique value used to identify a user, group, or
         /// computer account in Windows security. This field is read-only and provides access to the SID associated with
         /// the object, which can be used for security-related operations.</remarks>
-        public SecurityIdentifier SID { get; }
+        [IgnoreDataMember]
+        public SecurityIdentifier SID => new(SIDValue);
 
         /// <summary>
         /// Gets the username associated with the user.
         /// </summary>
-        public string UserName => NTAccount.Value.Contains("\\") ? NTAccount.Value.Substring(NTAccount.Value.IndexOf('\\') + 1) : NTAccount.Value;
+        [IgnoreDataMember]
+        public string UserName => NTAccountValue.Contains("\\") ? NTAccount.Value.Substring(NTAccount.Value.IndexOf('\\') + 1) : NTAccountValue;
 
         /// <summary>
         /// Represents the domain name associated with the current context.
         /// </summary>
-        public string? DomainName => NTAccount.Value.Contains("\\") ? NTAccount.Value.Substring(0, NTAccount.Value.IndexOf('\\')) : null;
+        [IgnoreDataMember]
+        public string? DomainName => NTAccountValue.Contains("\\") ? NTAccount.Value.Substring(0, NTAccount.Value.IndexOf('\\')) : null;
 
         /// <summary>
         /// Represents the session ID of the user.
         /// </summary>
-        public uint SessionId { get; }
+        [DataMember]
+        public uint SessionId { get; private set; }
 
         /// <summary>
         /// Indicates whether the current user has local administrator privileges.
         /// </summary>
-        public bool? IsLocalAdmin { get; }
+        [DataMember]
+        public bool? IsLocalAdmin { get; private set; }
+
+        /// <summary>
+        /// Gets the NT account name string for serialization.
+        /// </summary>
+        [DataMember]
+        private readonly string NTAccountValue;
+
+        /// <summary>
+        /// Gets the SID string for serialization.
+        /// </summary>
+        [DataMember]
+        private readonly string SIDValue;
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Windows.Forms;
 using PSADT.Utilities;
-using Newtonsoft.Json;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -14,6 +14,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// including the tray title, tray icon, balloon tip title, text, and icon. Use the <see
     /// cref="BalloonTipOptions(Hashtable)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
+    [DataContract]
     public sealed record BalloonTipOptions : IDialogOptions
     {
         /// <summary>
@@ -56,7 +57,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="balloonTipTime">The duration, in milliseconds, for which the balloon tip is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if any required parameter is null, empty, or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified tray icon file does not exist.</exception>
-        [JsonConstructor]
         private BalloonTipOptions(string trayTitle, string trayIcon, string balloonTipTitle, string balloonTipText, ToolTipIcon balloonTipIcon, uint balloonTipTime)
         {
             if (string.IsNullOrWhiteSpace(trayTitle))
@@ -98,31 +98,37 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Represents the title displayed on the tray.
         /// </summary>
-        public string TrayTitle { get; }
+        [DataMember]
+        public string TrayTitle { get; private set; }
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
-        public string TrayIcon { get; }
+        [DataMember]
+        public string TrayIcon { get; private set; }
 
         /// <summary>
         /// Gets the title text displayed in the balloon tip of a notification.
         /// </summary>
-        public string BalloonTipTitle { get; }
+        [DataMember]
+        public string BalloonTipTitle { get; private set; }
 
         /// <summary>
         /// Gets the text displayed in the balloon tip of a notification.
         /// </summary>
-        public string BalloonTipText { get; }
+        [DataMember]
+        public string BalloonTipText { get; private set; }
 
         /// <summary>
         /// Gets the icon displayed in the balloon tip associated with the notification.
         /// </summary>
-        public ToolTipIcon BalloonTipIcon { get; }
+        [DataMember]
+        public ToolTipIcon BalloonTipIcon { get; private set; }
 
         /// <summary>
         /// Gets the duration, in milliseconds, that the balloon tip is displayed.
         /// </summary>
-        public uint BalloonTipTime { get; }
+        [DataMember]
+        public uint BalloonTipTime { get; private set; }
     }
 }
