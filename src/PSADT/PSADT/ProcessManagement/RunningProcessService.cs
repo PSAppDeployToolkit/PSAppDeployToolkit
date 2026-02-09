@@ -187,7 +187,11 @@ namespace PSADT.ProcessManagement
             }
             if (disposing)
             {
-                Stop(); _mutex.Dispose();
+                if (_pollingTask is not null)
+                {
+                    Stop();
+                }
+                _mutex.Dispose();
             }
             _disposed = true;
         }
