@@ -719,12 +719,12 @@ namespace PSADT.ClientServer
             }
 
             // Build and send the request: [1-byte command][serialized payload]
+            byte[] payloadBytes = DataSerialization.SerializeToBytes(payload);
+            byte[] request = new byte[payloadBytes.Length + 1];
+            request[0] = (byte)command;
+            payloadBytes.CopyTo(request.AsSpan(1));
             try
             {
-                byte[] payloadBytes = DataSerialization.SerializeToBytes(payload);
-                byte[] request = new byte[payloadBytes.Length + 1];
-                request[0] = (byte)command;
-                payloadBytes.CopyTo(request.AsSpan(1));
                 _ioEncryption.WriteEncrypted(_outputServer, request);
             }
             catch (Exception ex)
