@@ -24,8 +24,6 @@ namespace PSADT.Foundation
         {
             NTAccount = nTAccount ?? throw new ArgumentNullException(nameof(nTAccount));
             SID = sID ?? throw new ArgumentNullException(nameof(sID));
-            string[] accountParts = nTAccount.Value.Split('\\');
-            UserName = accountParts[1]; DomainName = accountParts[0];
             SessionId = sessionId;
             IsLocalAdmin = isLocalAdmin;
         }
@@ -62,12 +60,12 @@ namespace PSADT.Foundation
         /// <summary>
         /// Gets the username associated with the user.
         /// </summary>
-        public string UserName { get; }
+        public string UserName => NTAccount.Value.Contains("\\") ? NTAccount.Value.Substring(NTAccount.Value.IndexOf('\\') + 1) : NTAccount.Value;
 
         /// <summary>
         /// Represents the domain name associated with the current context.
         /// </summary>
-        public string DomainName { get; }
+        public string? DomainName => NTAccount.Value.Contains("\\") ? NTAccount.Value.Substring(0, NTAccount.Value.IndexOf('\\')) : null;
 
         /// <summary>
         /// Represents the session ID of the user.
