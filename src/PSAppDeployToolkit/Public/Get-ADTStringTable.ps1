@@ -69,7 +69,7 @@ function Get-ADTStringTable
     # Return a copied hashtable with variables expanded if a SessionState is provided, otherwise just return a reference to what we've got.
     if ($PSBoundParameters.ContainsKey('SessionState'))
     {
-        $strings = [PSADT.Utilities.SimpleSerializer]::DeserializeFromBytes([PSADT.Utilities.SimpleSerializer]::SerializeToBytes($Script:ADT.Strings), [System.Collections.Hashtable])
+        $strings = [PSADT.ClientServer.DataSerialization]::DeserializeFromBytes([PSADT.ClientServer.DataSerialization]::SerializeToBytes($Script:ADT.Strings), [System.Collections.Hashtable])
         Expand-ADTVariablesInHashtable -Hashtable $strings -SessionState $SessionState
         return $strings
     }
