@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using PSADT.ClientServer.Payloads;
 using PSADT.Foundation;
+using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -39,10 +40,9 @@ namespace PSADT.ClientServer
                 throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
             }
             using MemoryStream ms = new();
-            DataContractSerializer serializer = GetSerializer(obj.GetType());
             using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(ms))
             {
-                serializer.WriteObject(writer, obj);
+                GetSerializer(typeof(T)).WriteObject(writer, obj);
             }
             if (ms.ToArray() is not { Length: > 0 } result)
             {
@@ -140,20 +140,28 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
-            if (offset < 0)
+            if (bytes is null)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
+                throw new ArgumentNullException(nameof(bytes));
             }
-            if (bytes is null || bytes.Length <= offset)
+            if ((uint)offset > (uint)bytes.Length)
             {
-                throw new ArgumentNullException(nameof(bytes), "Input bytes cannot be null or empty.");
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+            if (offset == bytes.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset points past the end of the buffer.");
             }
             using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
-            DataContractSerializer serializer = GetSerializer(type);
+            bool deserializingException = typeof(Exception).IsAssignableFrom(type);
             using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
-            if (serializer.ReadObject(reader, verifyObjectName: false) is not object result)
+            if (GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result)
             {
                 throw new SerializationException("Deserialization returned a null result.");
+            }
+            if (deserializingException && result is not Exception)
+            {
+                throw new SerializationException($"Deserialization expected an Exception type but got {result.GetType().FullName}.");
             }
             return result;
         }
@@ -364,12 +372,15 @@ namespace PSADT.ClientServer
                 typeof(RestartDialogOptions.RestartDialogStrings),
 
                 // Dialog result types
+                typeof(CloseAppsDialogResult),
+                typeof(DialogBoxResult),
                 typeof(InputDialogResult),
 
                 // Process and window types
                 typeof(ProcessDefinition),
                 typeof(ProcessLaunchInfo),
                 typeof(ProcessResult),
+                typeof(QUERY_USER_NOTIFICATION_STATE),
                 typeof(RunAsActiveUser),
                 typeof(WindowInfo),
                 typeof(WindowInfoOptions),
