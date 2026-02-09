@@ -176,7 +176,6 @@ namespace PSADT.ClientServer
         /// disabled to optimize serialization for stateless data exchange scenarios.</remarks>
         private static readonly DataContractSerializerSettings DataContractSerializerSettings = new()
         {
-            DataContractResolver = new CrossRuntimeDataContractResolver(),
             PreserveObjectReferences = false,
             SerializeReadOnlyTypes = true,
             KnownTypes =
@@ -374,60 +373,5 @@ namespace PSADT.ClientServer
                 typeof(WindowInfoOptions),
             ]
         };
-
-        /// <summary>
-        /// A <see cref="DataContractResolver"/> that handles cross-runtime type resolution between
-        /// .NET Framework (mscorlib) and .NET Core/.NET 5+ (System.Private.CoreLib).
-        /// </summary>
-        /// <remarks>
-        /// This resolver ensures that types serialized on one runtime can be deserialized on another
-        /// by trying multiple assembly names for BCL types. It falls back to .NET's built-in type
-        /// forwarding when available.
-        /// </remarks>
-        private sealed class CrossRuntimeDataContractResolver : DataContractResolver
-        {
-            /// <summary>
-            /// Resolves a type name and namespace to a CLR type during deserialization.
-            /// </summary>
-            /// <param name="typeName">The type name from the serialized data.</param>
-            /// <param name="typeNamespace">The type namespace from the serialized data.</param>
-            /// <param name="declaredType">The declared type being deserialized.</param>
-            /// <param name="knownTypeResolver">The default known type resolver.</param>
-            /// <returns>The resolved <see cref="Type"/>, or null if the type cannot be resolved.</returns>
-            public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
-            {
-                // Try the default resolver first
-                Type? resolved = knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, knownTypeResolver);
-                if (resolved is not null)
-                {
-                    return resolved;
-                }
-
-                // Build the full type name and try common assembly locations
-                string fullName = string.IsNullOrWhiteSpace(typeNamespace) ? typeName : $"{typeNamespace}.{typeName}";
-
-                // Try common BCL assemblies in priority order
-                return Type.GetType($"{fullName}, mscorlib")
-                    ?? Type.GetType($"{fullName}, System.Private.CoreLib")
-                    ?? Type.GetType($"{fullName}, System")
-                    ?? Type.GetType($"{fullName}, System.Runtime")
-                    ?? Type.GetType(fullName);
-            }
-
-            /// <summary>
-            /// Maps a type to a type name and namespace during serialization.
-            /// </summary>
-            /// <param name="type">The type to map.</param>
-            /// <param name="declaredType">The declared type.</param>
-            /// <param name="knownTypeResolver">The default known type resolver.</param>
-            /// <param name="typeName">The output type name.</param>
-            /// <param name="typeNamespace">The output type namespace.</param>
-            /// <returns>true if the type was successfully mapped; otherwise, false.</returns>
-            public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, out XmlDictionaryString? typeNamespace)
-            {
-                // Use the default resolver for serialization
-                return knownTypeResolver.TryResolveType(type, declaredType, knownTypeResolver, out typeName, out typeNamespace);
-            }
-        }
     }
 }
