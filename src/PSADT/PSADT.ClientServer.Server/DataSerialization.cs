@@ -131,7 +131,7 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
-            if (bytes is null)
+            if (bytes is null || bytes.Length == 0)
             {
                 throw new ArgumentNullException(nameof(bytes));
             }
