@@ -488,6 +488,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
+        [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
         [System.String[]]$IgnoreExitCodes,
@@ -541,6 +542,12 @@ function Start-ADTProcess
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $canSetExitCode = $true
+
+        # Log the deprecation of -IgnoreExitCodes to the log.
+        if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
+        {
+            Write-ADTLogEntry -Message "The parameter [-IgnoreExitCodes] is obsolete and will be removed in PSAppDeployToolkit 4.3.0. Please use [-SuccessExitCodes]/[-RebootExitCodes] for known exit codes, or [-ErrorAction SilentlyContinue] for ignoring any exit code instead." -Severity 2
+        }
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('SuccessExitCodes'))
