@@ -238,7 +238,7 @@ function Get-ADTApplication
                     # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
                     if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
                     {
-                        $installDate = [PSADT.RegistryManagement.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
+                        $installDate = [PSADT.Utilities.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
                     }
 
                     # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
