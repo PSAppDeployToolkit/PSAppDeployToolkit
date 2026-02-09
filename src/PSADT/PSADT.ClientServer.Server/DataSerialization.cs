@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
@@ -371,6 +373,14 @@ namespace PSADT.ClientServer
                 typeof(RunAsActiveUser),
                 typeof(WindowInfo),
                 typeof(WindowInfoOptions),
+
+                // Generic collection types - required for proper deserialization
+                // DataContractSerializer needs concrete types, not interfaces
+                typeof(ReadOnlyCollection<string>),
+                typeof(ReadOnlyCollection<int>),
+                typeof(ReadOnlyCollection<nint>),
+                typeof(ReadOnlyCollection<Hashtable>),
+                typeof(ReadOnlyCollection<ProcessDefinition>),
             ]
         };
     }
