@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
-using PSADT.ClientServer.Payloads;
-using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
-using PSADT.ProcessManagement;
-using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.DialogResults;
-using PSADT.WindowManagement;
 
 namespace PSADT.ClientServer
 {
@@ -345,53 +336,53 @@ namespace PSADT.ClientServer
                 typeof(ServerException),
 
                 // Payload types
-                typeof(EnvironmentVariablePayload),
-                typeof(GetProcessWindowInfoPayload),
-                typeof(GroupPolicyUpdatePayload),
-                typeof(InitCloseAppsDialogPayload),
-                typeof(LogMessagePayload),
-                typeof(PromptToCloseAppsPayload),
-                typeof(SendKeysPayload),
-                typeof(ShowBalloonTipPayload),
-                typeof(ShowModalDialogPayload),
-                typeof(ShowProgressDialogPayload),
-                typeof(UpdateProgressDialogPayload),
+                typeof(Payloads.EnvironmentVariablePayload),
+                typeof(Payloads.GetProcessWindowInfoPayload),
+                typeof(Payloads.GroupPolicyUpdatePayload),
+                typeof(Payloads.InitCloseAppsDialogPayload),
+                typeof(Payloads.LogMessagePayload),
+                typeof(Payloads.PromptToCloseAppsPayload),
+                typeof(Payloads.SendKeysPayload),
+                typeof(Payloads.ShowBalloonTipPayload),
+                typeof(Payloads.ShowModalDialogPayload),
+                typeof(Payloads.ShowProgressDialogPayload),
+                typeof(Payloads.UpdateProgressDialogPayload),
 
                 // Dialog options types
-                typeof(BalloonTipOptions),
-                typeof(CloseAppsDialogOptions),
-                typeof(CloseAppsDialogOptions.CloseAppsDialogStrings),
-                typeof(CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogClassicStrings),
-                typeof(CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogFluentStrings),
-                typeof(CustomDialogOptions),
-                typeof(DialogBoxOptions),
-                typeof(HelpConsoleOptions),
-                typeof(InputDialogOptions),
-                typeof(ProgressDialogOptions),
-                typeof(RestartDialogOptions),
-                typeof(RestartDialogOptions.RestartDialogStrings),
+                typeof(UserInterface.DialogOptions.BalloonTipOptions),
+                typeof(UserInterface.DialogOptions.CloseAppsDialogOptions),
+                typeof(UserInterface.DialogOptions.CloseAppsDialogOptions.CloseAppsDialogStrings),
+                typeof(UserInterface.DialogOptions.CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogClassicStrings),
+                typeof(UserInterface.DialogOptions.CloseAppsDialogOptions.CloseAppsDialogStrings.CloseAppsDialogFluentStrings),
+                typeof(UserInterface.DialogOptions.CustomDialogOptions),
+                typeof(UserInterface.DialogOptions.DialogBoxOptions),
+                typeof(UserInterface.DialogOptions.HelpConsoleOptions),
+                typeof(UserInterface.DialogOptions.InputDialogOptions),
+                typeof(UserInterface.DialogOptions.ProgressDialogOptions),
+                typeof(UserInterface.DialogOptions.RestartDialogOptions),
+                typeof(UserInterface.DialogOptions.RestartDialogOptions.RestartDialogStrings),
 
                 // Dialog result types
-                typeof(CloseAppsDialogResult),
-                typeof(DialogBoxResult),
-                typeof(InputDialogResult),
+                typeof(UserInterface.DialogResults.CloseAppsDialogResult),
+                typeof(UserInterface.DialogResults.DialogBoxResult),
+                typeof(UserInterface.DialogResults.InputDialogResult),
 
                 // Process and window types
-                typeof(ProcessDefinition),
-                typeof(ProcessLaunchInfo),
-                typeof(ProcessResult),
-                typeof(QUERY_USER_NOTIFICATION_STATE),
-                typeof(RunAsActiveUser),
-                typeof(WindowInfo),
-                typeof(WindowInfoOptions),
+                typeof(ProcessManagement.ProcessDefinition),
+                typeof(ProcessManagement.ProcessLaunchInfo),
+                typeof(ProcessManagement.ProcessResult),
+                typeof(LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE),
+                typeof(Foundation.RunAsActiveUser),
+                typeof(WindowManagement.WindowInfo),
+                typeof(WindowManagement.WindowInfoOptions),
 
                 // Generic collection types - required for proper deserialization
                 // DataContractSerializer needs concrete types, not interfaces
-                typeof(ReadOnlyCollection<string>),
-                typeof(ReadOnlyCollection<int>),
-                typeof(ReadOnlyCollection<long>),
-                typeof(ReadOnlyCollection<Hashtable>),
-                typeof(ReadOnlyCollection<ProcessDefinition>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<string>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<int>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<long>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<System.Collections.Hashtable>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<ProcessManagement.ProcessDefinition>),
             ]
         };
     }
