@@ -122,7 +122,7 @@ namespace PSADT.UserInterface.DialogOptions
             AppIconDarkImage = appIconDarkImage;
             AppBannerImage = appBannerImage;
             DialogTopMost = dialogTopMost;
-            Language = language;
+            LanguageName = language.Name;
             FluentAccentColor = fluentAccentColor;
             DialogPosition = dialogPosition;
             DialogAllowMove = dialogAllowMove;
@@ -175,8 +175,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Gets the culture information representing the language associated with this instance.
         /// </summary>
-        [DataMember]
-        public CultureInfo Language { get; private set; }
+        [IgnoreDataMember]
+        public CultureInfo Language => CultureInfo.GetCultureInfo(LanguageName);
 
         /// <summary>
         /// The accent color for the dialog.
@@ -207,5 +207,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public TimeSpan? DialogPersistInterval { get; private set; }
+
+        /// <summary>
+        /// Gets the culture name string for serialization.
+        /// </summary>
+        [DataMember]
+        private readonly string LanguageName;
     }
 }
