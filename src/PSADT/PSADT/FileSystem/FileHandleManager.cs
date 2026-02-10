@@ -192,7 +192,7 @@ namespace PSADT.FileSystem
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
                 ref readonly OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsReadOnlyStructure<OBJECT_TYPE_INFORMATION>();
-                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString());
+                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString().RemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
             ObjectTypeLookupTable = new(typeTable);
@@ -338,7 +338,7 @@ namespace PSADT.FileSystem
                             ref readonly OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsReadOnlyStructure<OBJECT_NAME_INFORMATION>();
                             try
                             {
-                                objectName = objectBufferData.Name.ToManagedString();
+                                objectName = objectBufferData.Name.ToManagedString().RemoveNull();
                             }
                             catch
                             {

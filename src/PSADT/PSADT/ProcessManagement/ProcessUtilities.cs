@@ -119,7 +119,7 @@ namespace PSADT.ProcessManagement
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
             _ = NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
             ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString();
+            return unicodeString.ToManagedString().RemoveNull();
         }
 
         /// <summary>
@@ -380,7 +380,7 @@ namespace PSADT.ProcessManagement
                 {
                     processIdInfo.ImageName = new() { Length = 0, MaximumLength = checked((ushort)(imageNamePtr.Length * 2)), Buffer = pImageName };
                     _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageName = processIdInfo.ImageName.ToManagedString();
+                    imageName = processIdInfo.ImageName.ToManagedString().RemoveNull();
                 }
             }
 
@@ -455,7 +455,7 @@ namespace PSADT.ProcessManagement
             // Perform the query.
             _ = NtDll.NtQueryInformationProcess(hProcess, processInfoClass, buffer, out _);
             ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString();
+            return unicodeString.ToManagedString().RemoveNull();
         }
     }
 }

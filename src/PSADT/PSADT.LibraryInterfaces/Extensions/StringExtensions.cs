@@ -6,13 +6,24 @@
     internal static class StringExtensions
     {
         /// <summary>
+        /// Removes all null characters from the specified string and trims leading and trailing whitespace.
+        /// </summary>
+        /// <param name="str">The string from which to remove null characters. Can be null or empty.</param>
+        /// <returns>A new string with all null characters removed and whitespace trimmed. Returns an empty string if the input
+        /// is null or consists only of null characters and whitespace.</returns>
+        internal static string RemoveNull(this string str)
+        {
+            return str.Replace("\0", null).Trim();
+        }
+
+        /// <summary>
         /// Trims a string and removes null characters.
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
         internal static string TrimRemoveNull(this string str)
         {
-            return str.Replace("\0", null).Trim();
+            return str.RemoveNull().Trim();
         }
 
         /// <summary>
@@ -22,7 +33,7 @@
         /// <returns>A new string with trailing whitespace removed and all null characters replaced with an empty string.</returns>
         internal static string TrimEndRemoveNull(this string str)
         {
-            return str.Replace("\0", null).TrimEnd();
+            return str.RemoveNull().TrimEnd();
         }
 
         /// <summary>
@@ -33,7 +44,7 @@
         /// string is null or empty, returns the original value.</returns>
         internal static string TrimAndTrimNull(this string str)
         {
-            return str.Trim().TrimEnd('\n').Trim();
+            return str.Trim().TrimEnd('\0').Trim();
         }
     }
 }
