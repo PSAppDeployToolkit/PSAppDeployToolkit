@@ -370,7 +370,7 @@ namespace PSADT.ProcessManagement
 
             // Perform initial query so we can get the required ImageName buffer length.
             _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _, retrievingLength: true);
-            Span<char> imageNamePtr = stackalloc char[((processIdInfo.ImageName.MaximumLength + 2) / 2) + 1]; imageNamePtr.Clear();
+            Span<char> imageNamePtr = stackalloc char[((processIdInfo.ImageName.MaximumLength + 2) / sizeof(char)) + 1]; imageNamePtr.Clear();
 
             // Assign the ImageName buffer and perform the query again.
             string imageName;

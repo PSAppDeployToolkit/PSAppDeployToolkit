@@ -20,7 +20,7 @@ namespace PSADT.LibraryInterfaces.Extensions
         /// <exception cref="InvalidOperationException">Thrown if the UNICODE_STRING does not contain a valid string.</exception>
         internal static string ToManagedString(this UNICODE_STRING unicodeString)
         {
-            string ret = Marshal.PtrToStringUni(unicodeString.Buffer.ToIntPtr(), unicodeString.Length / 2).TrimAndTrimNull();
+            string ret = Marshal.PtrToStringUni(unicodeString.Buffer.ToIntPtr(), unicodeString.Length / sizeof(char)).TrimAndTrimNull();
             return string.IsNullOrWhiteSpace(ret)
                 ? throw new InvalidOperationException("The UNICODE_STRING does not contain a valid string.")
                 : ret;
