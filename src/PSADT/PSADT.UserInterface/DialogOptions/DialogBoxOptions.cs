@@ -58,7 +58,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(dialogDefaultButton), "DialogDefaultButton value is null or invalid.");
             }
-            if (dialogExpiryDuration == null)
+            if (dialogExpiryDuration is null)
             {
                 throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
             }

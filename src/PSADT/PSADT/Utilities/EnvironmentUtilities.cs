@@ -122,7 +122,7 @@ namespace PSADT.Utilities
             }
 
             // Validate all inputs.
-            if (variable == null)
+            if (variable is null)
             {
                 throw new ArgumentNullException(nameof(variable));
             }
@@ -222,7 +222,7 @@ namespace PSADT.Utilities
                             throw new ArgumentException("Environment variable name or value is too long.");
                         }
                         using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("Could not open registry key for user environment variables.");
-                        if (value == null)
+                        if (value is null)
                         {
                             registryKey.DeleteValue(variable, throwOnMissingValue: false);
                         }
