@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.Utilities
+namespace PSADT.LibraryInterfaces.Utilities
 {
     /// <summary>
     /// A class containing utility methods for library operations.
