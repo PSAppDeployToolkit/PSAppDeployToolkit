@@ -75,8 +75,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the information required to launch a process.
         /// </summary>
-        [IgnoreDataMember]
-        public ProcessLaunchInfo? LaunchInfo { get; }
+        [DataMember]
+        public ProcessLaunchInfo? LaunchInfo { get; private set; }
 
         /// <summary>
         /// Gets the command line string associated with the current process.
