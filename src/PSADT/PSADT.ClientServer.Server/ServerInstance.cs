@@ -347,7 +347,7 @@ namespace PSADT.ClientServer
         /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
         public ListSelectionDialogResult ShowListSelectionDialog(DialogStyle dialogStyle, ListSelectionDialogOptions options)
         {
-            return (ListSelectionDialogResult)ShowModalDialog(DialogType.ListSelectionDialog, dialogStyle, options)!;
+            return ShowModalDialog<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
         }
 
         /// <summary>
