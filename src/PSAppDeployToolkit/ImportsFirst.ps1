@@ -106,6 +106,7 @@ try
                 'Microsoft.PowerShell.Commands.Management'
                 'System.ServiceProcess'
                 'System.Windows.Forms'
+                'System.IO.Compression.FileSystem'
             )
         }
 

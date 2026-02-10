@@ -101,6 +101,7 @@
         'Get-ADTMsiTableProperty'
         'Get-ADTObjectProperty'
         'Get-ADTOperatingSystemInfo'
+        'Get-ADTPackageManifest'
         'Get-ADTPEFileArchitecture'
         'Get-ADTPendingReboot'
         'Get-ADTPowerShellProcessPath'

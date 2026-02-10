@@ -12,14 +12,14 @@ namespace PSADT.Utilities
     /// <remarks>All methods in this class use secure XML reader settings to help prevent XML external entity
     /// (XXE) attacks and prohibit DTD processing. The utilities are intended for scenarios where XML input may be
     /// untrusted or where external resource resolution should be disabled.</remarks>
-    internal static class XmlUtilities
+    public static class XmlUtilities
     {
         /// <summary>
         /// Loads an XML document from the specified file path in a safe manner.
         /// </summary>
         /// <param name="path">The file system path to the XML file to load. Cannot be null or empty.</param>
         /// <returns>An XmlDocument representing the contents of the specified file.</returns>
-        internal static XmlDocument SafeLoadFromPath(string path)
+        public static XmlDocument SafeLoadFromPath(string path)
         {
             if (path is null)
             {
@@ -34,11 +34,26 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
+        /// Loads an XML document from the specified stream in a safe manner.
+        /// </summary>
+        /// <param name="stream">The stream containing the XML data to load. Cannot be null.</param>
+        /// <returns>An XmlDocument representing the contents of the stream.</returns>
+        public static XmlDocument SafeLoadFromStream(Stream stream)
+        {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+            using StreamReader reader = new(stream);
+            return SafeLoadCommon(reader);
+        }
+
+        /// <summary>
         /// Parses the specified XML string and returns an XmlDocument instance representing its contents.
         /// </summary>
         /// <param name="input">A string containing the XML data to parse. Cannot be null.</param>
         /// <returns>An XmlDocument representing the parsed XML content.</returns>
-        internal static XmlDocument SafeLoadFromText(string input)
+        public static XmlDocument SafeLoadFromText(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -54,7 +69,7 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="input">A read-only span of characters containing the XML data to parse.</param>
         /// <returns>An XmlDocument representing the parsed XML content.</returns>
-        internal static XmlDocument SafeLoadFromText(ReadOnlySpan<char> input)
+        public static XmlDocument SafeLoadFromText(ReadOnlySpan<char> input)
         {
             return SafeLoadFromText(input.ToString().TrimRemoveNull());
         }
