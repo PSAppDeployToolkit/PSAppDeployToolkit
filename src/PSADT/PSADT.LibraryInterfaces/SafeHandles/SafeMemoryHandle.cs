@@ -58,13 +58,13 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         }
 
         /// <summary>
-        /// Converts the handle to a string using the ANSI character set.
+        /// Converts the handle to a string using the Unicode character set.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        /// <param name="offset">The byte offset from the start of the handle.</param>
+        /// <returns>The string value at the specified offset.</returns>
         internal string ToStringUni(int offset = 0)
         {
-            ConfirmStateValidity(offset); string res = Marshal.PtrToStringUni(handle + offset, Length - offset).TrimAndTrimNull();
+            ConfirmStateValidity(offset); string res = Marshal.PtrToStringUni(handle + offset, (Length - offset) / sizeof(char)).TrimAndTrimNull();
             return string.IsNullOrWhiteSpace(res)
                 ? throw new InvalidOperationException("The memory block does not contain a valid string.")
                 : res;
