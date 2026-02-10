@@ -7,6 +7,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 

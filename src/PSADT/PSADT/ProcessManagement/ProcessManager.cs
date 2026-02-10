@@ -19,6 +19,7 @@ using PSADT.AccountManagement;
 using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;

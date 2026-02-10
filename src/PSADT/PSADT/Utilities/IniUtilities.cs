@@ -5,8 +5,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 
 namespace PSADT.Utilities
 {

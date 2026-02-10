@@ -1,4 +1,4 @@
-﻿namespace PSADT.Extensions
+﻿namespace PSADT.LibraryInterfaces.Extensions
 {
     /// <summary>
     /// Extension methods for string manipulation.
@@ -23,6 +23,17 @@
         internal static string TrimEndRemoveNull(this string str)
         {
             return str.Replace("\0", null).TrimEnd();
+        }
+
+        /// <summary>
+        /// Removes leading and trailing whitespace and any trailing newline characters from the specified string.
+        /// </summary>
+        /// <param name="str">The string to trim. Can be null or empty.</param>
+        /// <returns>A new string with leading and trailing whitespace and any trailing newline characters removed. If the input
+        /// string is null or empty, returns the original value.</returns>
+        internal static string TrimAndTrimNull(this string str)
+        {
+            return str.Trim().TrimEnd('\n').Trim();
         }
     }
 }

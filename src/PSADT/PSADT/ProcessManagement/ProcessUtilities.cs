@@ -119,7 +119,7 @@ namespace PSADT.ProcessManagement
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
             _ = NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
             ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.Buffer.ToString().TrimRemoveNull();
+            return unicodeString.ToManagedString();
         }
 
         /// <summary>
@@ -380,14 +380,8 @@ namespace PSADT.ProcessManagement
                 {
                     processIdInfo.ImageName = new() { Length = 0, MaximumLength = checked((ushort)(imageNamePtr.Length * 2)), Buffer = pImageName };
                     _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageName = new string(pImageName, 0, Math.Min(processIdInfo.ImageName.Length / 2, imageNamePtr.Length)).TrimRemoveNull();
+                    imageName = processIdInfo.ImageName.ToManagedString();
                 }
-            }
-
-            // Throw if the result is empty. This can be the case when the caller is a 32-bit process on a 64-bit system.
-            if (string.IsNullOrWhiteSpace(imageName))
-            {
-                throw new InvalidOperationException($"The image name query for process ID [{processId}] returned a null result.");
             }
 
             // Throw if the value doesn't start with \Device\ (indicating an NT path).
@@ -461,14 +455,7 @@ namespace PSADT.ProcessManagement
             // Perform the query.
             _ = NtDll.NtQueryInformationProcess(hProcess, processInfoClass, buffer, out _);
             ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            string result;
-            unsafe
-            {
-                result = new string(unicodeString.Buffer, 0, Math.Min(unicodeString.Length / 2, unicodeString.MaximumLength / 2)).TrimRemoveNull();
-            }
-            return string.IsNullOrWhiteSpace(result)
-                ? throw new InvalidOperationException($"The NtQueryInformationProcess() call for [{processInfoClass}] returned a null or empty result.")
-                : result;
+            return unicodeString.ToManagedString();
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.AccountManagement;
-using PSADT.Extensions;
+using PSADT.LibraryInterfaces.Extensions;
 
 namespace PSAppDeployToolkit.Logging
 {

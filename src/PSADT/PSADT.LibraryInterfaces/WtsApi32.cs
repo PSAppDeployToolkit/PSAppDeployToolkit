@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using Microsoft.Win32.SafeHandles;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
@@ -90,15 +91,12 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
             BOOL res;
-            unsafe
+            res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
+            if (!res)
             {
-                res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                pBuffer = new(new IntPtr(ppBuffer), (int)bytesReturned, true);
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            pBuffer = new(ppBuffer.ToIntPtr(), (int)bytesReturned, true);
             return res;
         }
 

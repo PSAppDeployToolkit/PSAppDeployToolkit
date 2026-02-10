@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using PSADT.SafeHandles;
@@ -191,7 +192,7 @@ namespace PSADT.FileSystem
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
                 ref readonly OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsReadOnlyStructure<OBJECT_TYPE_INFORMATION>();
-                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
+                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
             ObjectTypeLookupTable = new(typeTable);
@@ -335,7 +336,15 @@ namespace PSADT.FileSystem
                                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
                             }
                             ref readonly OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsReadOnlyStructure<OBJECT_NAME_INFORMATION>();
-                            objectName = objectBufferData.Name.Buffer.ToString()?.TrimRemoveNull();
+                            try
+                            {
+                                objectName = objectBufferData.Name.ToManagedString();
+                            }
+                            catch
+                            {
+                                return;
+                                throw;
+                            }
                         }
                         finally
                         {

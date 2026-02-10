@@ -62,10 +62,12 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        internal string? ToStringUni(int offset = 0)
+        internal string ToStringUni(int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            return Marshal.PtrToStringUni(handle + offset)?.Trim() is string result && !string.IsNullOrWhiteSpace(result) ? result : null;
+            ConfirmStateValidity(offset); string res = Marshal.PtrToStringUni(handle + offset, Length - offset).TrimAndTrimNull();
+            return string.IsNullOrWhiteSpace(res)
+                ? throw new InvalidOperationException("The memory block does not contain a valid string.")
+                : res;
         }
 
         /// <summary>
