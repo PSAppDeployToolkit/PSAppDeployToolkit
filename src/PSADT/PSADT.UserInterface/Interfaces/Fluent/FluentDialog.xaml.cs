@@ -472,7 +472,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="formattingStack">The current formatting context stack.</param>
         private static void AddFormattedText(TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
         {
-            if (string.IsNullOrWhiteSpace(text))
+            // Check for null only, not whitespace - we need to preserve whitespace-only
+            // content (including line breaks) between formatting tags.
+            if (text is null || text.Length == 0)
             {
                 return;
             }
