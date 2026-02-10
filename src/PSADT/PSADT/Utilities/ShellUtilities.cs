@@ -49,7 +49,7 @@ namespace PSADT.Utilities
         internal static void RefreshEnvironmentVariables()
         {
             // Notify all top-level windows that the environment variables have changed.
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, UIntPtr.Zero, IntPtr.Zero);
+            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, default, IntPtr.Zero);
             _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
         }
 

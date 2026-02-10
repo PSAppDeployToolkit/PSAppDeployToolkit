@@ -24,7 +24,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         {
             unsafe
             {
-                void* handle = PInvoke.VirtualAlloc(null, (UIntPtr)length, allocationType, protect);
+                void* handle = PInvoke.VirtualAlloc(null, (nuint)length, allocationType, protect);
                 if (handle is null)
                 {
                     throw new InvalidOperationException("Failed to allocate memory.");
@@ -56,7 +56,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             BOOL res;
             unsafe
             {
-                res = PInvoke.VirtualFree((void*)handle, UIntPtr.Zero, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+                res = PInvoke.VirtualFree((void*)handle, default, VIRTUAL_FREE_TYPE.MEM_RELEASE);
             }
             if (!res)
             {

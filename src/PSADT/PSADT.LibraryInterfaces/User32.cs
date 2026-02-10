@@ -281,7 +281,7 @@ namespace PSADT.LibraryInterfaces
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
-                    return SendNotifyMessage(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr);
+                    return SendNotifyMessage(hWnd, Msg, (nuint)wParamPtr, (IntPtr)lParamPtr);
                 }
             }
         }
@@ -339,7 +339,7 @@ namespace PSADT.LibraryInterfaces
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
-                    return SendMessage(hWnd, Msg, (UIntPtr)wParamPtr, (IntPtr)lParamPtr);
+                    return SendMessage(hWnd, Msg, (nuint)wParamPtr, (IntPtr)lParamPtr);
                 }
             }
         }

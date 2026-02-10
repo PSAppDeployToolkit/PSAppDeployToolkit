@@ -246,7 +246,7 @@ namespace PSADT.FileSystem
                     SafeFileHandle fileProcessHandle;
                     try
                     {
-                        fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
+                        fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)sysHandle.UniqueProcessId);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -393,7 +393,7 @@ namespace PSADT.FileSystem
             using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
             foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {
-                using SafeFileHandle fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
+                using SafeFileHandle fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)handleEntry.UniqueProcessId);
                 using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
                 _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();

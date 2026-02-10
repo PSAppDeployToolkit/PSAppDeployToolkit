@@ -62,7 +62,7 @@ namespace PSADT.ProcessManagement
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
-            SafeFileHandle iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, UIntPtr.Zero, 1);
+            SafeFileHandle iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, default, 1);
             SafeFileHandle job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
             _ = Kernel32.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
             {
@@ -409,7 +409,7 @@ namespace PSADT.ProcessManagement
             {
                 // Set up the cancellation token source and registration if needed.
                 uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
-                using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, UIntPtr.Zero)) : default;
+                using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, default)) : default;
 
                 // Spin until complete or cancelled.
                 bool disposeJob = true; int exitCode = TimeoutExitCode;

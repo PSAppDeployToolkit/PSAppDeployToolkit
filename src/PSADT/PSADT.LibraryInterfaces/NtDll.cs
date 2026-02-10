@@ -320,12 +320,12 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// The owning process's identifier.
         /// </summary>
-        public readonly UIntPtr UniqueProcessId;
+        public readonly nuint UniqueProcessId;
 
         /// <summary>
         /// The handle's numerical identifier.
         /// </summary>
-        public readonly UIntPtr HandleValue;
+        public readonly nuint HandleValue;
 
         /// <summary>
         /// The type of access granted to the handle.
@@ -362,12 +362,12 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// The number of handles in the system.
         /// </summary>
-        internal readonly UIntPtr NumberOfHandles;
+        internal readonly nuint NumberOfHandles;
 
         /// <summary>
         /// Reserved for future use.
         /// </summary>
-        internal readonly UIntPtr Reserved;
+        internal readonly nuint Reserved;
     }
 
     /// <summary>
