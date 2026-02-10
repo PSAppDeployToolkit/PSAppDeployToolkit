@@ -367,7 +367,7 @@ function Start-ADTProcessAsUser
         $null = $PSBoundParameters.Remove('Username')
 
         # Just farm it out to Start-ADTProcess as it can do it all.
-        if (!$PSCmdlet.ShouldProcess("Process [$FilePath] as user [$($runAsActiveUser.NTAccount)]", 'Execute'))
+        if (!$PSCmdlet.ShouldProcess("Process [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]", 'Execute'))
         {
             return
         }
