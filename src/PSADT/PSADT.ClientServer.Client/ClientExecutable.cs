@@ -350,7 +350,8 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.SendKeys:
                                             {
-                                                WriteSuccess(SendKeys(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options));
+                                                SendKeys(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options);
+                                                WriteSuccess(true);
                                                 break;
                                             }
 
@@ -503,7 +504,8 @@ namespace PSADT.ClientServer
                 }
                 else if (arg is "/SendKeys" or "/sk")
                 {
-                    Console.WriteLine(SendKeys(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))));
+                    SendKeys(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
+                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetEnvironmentVariable" or "/gev")
@@ -715,7 +717,7 @@ namespace PSADT.ClientServer
         /// <param name="options">An object that specifies the target window handle and the keys to send. The window must be enabled to
         /// receive input.</param>
         /// <exception cref="ClientException">Thrown if the target window is disabled, such as when a modal dialog is shown.</exception>
-        private static bool SendKeys(SendKeysOptions options)
+        private static void SendKeys(SendKeysOptions options)
         {
             HWND hwnd = (HWND)options.WindowHandle;
             WindowTools.BringWindowToFront(hwnd);
@@ -724,7 +726,6 @@ namespace PSADT.ClientServer
                 throw new ClientException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.", ClientExitCode.SendKeysWindowNotEnabled);
             }
             System.Windows.Forms.SendKeys.SendWait(options.Keys);
-            return true;
         }
 
         /// <summary>
