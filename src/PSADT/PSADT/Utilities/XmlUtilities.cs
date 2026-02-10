@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
-using PSADT.Extensions;
 
 namespace PSADT.Utilities
 {
@@ -46,17 +45,6 @@ namespace PSADT.Utilities
             }
             using StringReader reader = new(input);
             return SafeLoadCommon(reader);
-        }
-
-        /// <summary>
-        /// Parses the specified character span as XML and returns an XmlDocument instance representing the parsed
-        /// content.
-        /// </summary>
-        /// <param name="input">A read-only span of characters containing the XML data to parse.</param>
-        /// <returns>An XmlDocument representing the parsed XML content.</returns>
-        internal static XmlDocument SafeLoadFromText(ReadOnlySpan<char> input)
-        {
-            return SafeLoadFromText(input.ToString().TrimRemoveNull());
         }
 
         /// <summary>

@@ -76,7 +76,7 @@ namespace PSADT.Utilities
             _ = Msi.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength];
             _ = Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
-            return XmlUtilities.SafeLoadFromText(bufSpan);
+            return XmlUtilities.SafeLoadFromText(bufSpan.ToString().TrimRemoveNull());
         }
     }
 }
