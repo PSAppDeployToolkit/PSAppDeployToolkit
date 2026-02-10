@@ -70,7 +70,15 @@ namespace PSADT.TerminalServices
                 {
                     if (typeof(T) == typeof(string))
                     {
-                        return (T)(object)pBuffer.ToStringUni();
+                        try
+                        {
+                            return (T)(object)pBuffer.ToStringUni();
+                        }
+                        catch
+                        {
+                            return default;
+                            throw;
+                        }
                     }
                     else if (typeof(T) == typeof(ushort))
                     {
