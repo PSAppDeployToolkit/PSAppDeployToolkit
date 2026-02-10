@@ -65,7 +65,7 @@ namespace PSADT.ProcessManagement
             bool denyUserTermination = false,
             bool useUnelevatedToken = false,
             IEnumerable<string>? standardInput = null,
-            IEnumerable<IntPtr>? handlesToInherit = null,
+            IEnumerable<nint>? handlesToInherit = null,
             bool useShellExecute = false,
             string? verb = null,
             bool createNoWindow = false,
@@ -105,7 +105,7 @@ namespace PSADT.ProcessManagement
             }
             if (handlesToInherit?.Any() == true)
             {
-                HandlesToInherit = new ReadOnlyCollection<IntPtr>([.. handlesToInherit]);
+                HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit.Select(static h => (long)h)]);
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
@@ -249,7 +249,7 @@ namespace PSADT.ProcessManagement
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
         [IgnoreDataMember]
-        public IReadOnlyList<IntPtr>? HandlesToInherit { get; private set; }
+        public IReadOnlyList<nint>? HandlesToInherit => HandlesToInheritValues?.Select(static h => (nint)h).ToList().AsReadOnly();
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.
@@ -327,6 +327,13 @@ namespace PSADT.ProcessManagement
         /// Gets a value indicating whether the application is a command-line interface (CLI) application.
         /// </summary>
         public bool IsCliApplication => ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+
+        /// <summary>
+        /// Gets an optional collection of handles that the child process should inherit.
+        /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
+        /// </summary>
+        [DataMember]
+        private ReadOnlyCollection<long>? HandlesToInheritValues;
 
         /// <summary>
         /// Gets the encoding web name string for serialization.
