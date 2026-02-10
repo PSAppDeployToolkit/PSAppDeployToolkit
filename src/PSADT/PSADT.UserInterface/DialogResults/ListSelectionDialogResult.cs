@@ -1,11 +1,12 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogResults
 {
     /// <summary>
     /// Represents the result of a list selection dialog.
     /// </summary>
+    [DataContract]
     public sealed record ListSelectionDialogResult
     {
         /// <summary>
@@ -13,29 +14,24 @@ namespace PSADT.UserInterface.DialogResults
         /// </summary>
         /// <param name="result"></param>
         /// <param name="selectedItem"></param>
-        [JsonConstructor]
         internal ListSelectionDialogResult(string result, string selectedItem)
         {
             if (result is null)
             {
                 throw new ArgumentNullException(nameof(result));
             }
-
             if (string.IsNullOrWhiteSpace(result))
             {
                 throw new ArgumentException("Result cannot be empty or whitespace.", nameof(result));
             }
-
             if (selectedItem is null)
             {
                 throw new ArgumentNullException(nameof(selectedItem));
             }
-
             if (string.IsNullOrWhiteSpace(selectedItem))
             {
                 throw new ArgumentException("SelectedItem cannot be empty or whitespace.", nameof(selectedItem));
             }
-
             Result = result;
             SelectedItem = selectedItem;
         }
@@ -43,11 +39,12 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the result of the dialog.
         /// </summary>
-        public string Result { get; }
+        [DataMember]
+        public string Result { get; private set; }
 
         /// <summary>
         /// Gets the item selected by the user from the list.
         /// </summary>
-        public string SelectedItem { get; }
+        [DataMember] public string SelectedItem { get; private set; }
     }
 }

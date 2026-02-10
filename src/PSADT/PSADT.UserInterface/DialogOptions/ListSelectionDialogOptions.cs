@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using PSADT.UserInterface.Dialogs;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the ListSelectionDialog.
     /// </summary>
+    [DataContract]
     public sealed record ListSelectionDialogOptions : CustomDialogOptions
     {
         /// <summary>
@@ -78,7 +78,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="listItems">The list of items to display for user selection. Cannot be <see langword="null"/>.</param>
         /// <param name="initialSelectedItem">The item that should be selected by default. Must exist in <paramref name="listItems"/>.</param>
         /// <param name="strings">The localized strings for the dialog. If <see langword="null"/>, the dialog falls back to XAML defaults.</param>
-        [JsonConstructor]
         private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, string initialSelectedItem, ListSelectionDialogStrings? strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             ListItems = listItems ?? throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
@@ -90,33 +89,33 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The list of items to display for user selection.
         /// </summary>
-        [JsonProperty]
-        public IReadOnlyList<string> ListItems { get; }
+        [DataMember]
+        public IReadOnlyList<string> ListItems { get; private set; }
 
         /// <summary>
         /// The item that should be selected by default.
         /// </summary>
-        [JsonProperty]
-        public string InitialSelectedItem { get; }
+        [DataMember]
+        public string InitialSelectedItem { get; private set; }
 
         /// <summary>
         /// The localized strings for the ListSelectionDialog.
         /// </summary>
-        [JsonProperty]
-        public ListSelectionDialogStrings? Strings { get; }
+        [DataMember]
+        public ListSelectionDialogStrings? Strings { get; private set; }
 
         /// <summary>
         /// Localized strings for the ListSelectionDialog.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
+        [DataContract]
         public sealed record ListSelectionDialogStrings
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class.
             /// </summary>
             /// <param name="strings"></param>
-            internal ListSelectionDialogStrings(Hashtable strings) : this(
-                strings["ListSelectionMessage"] is string listSelectionMessage ? listSelectionMessage : string.Empty)
+            internal ListSelectionDialogStrings(Hashtable strings) : this(strings["ListSelectionMessage"] is string listSelectionMessage ? listSelectionMessage : string.Empty)
             {
             }
 
@@ -124,7 +123,6 @@ namespace PSADT.UserInterface.DialogOptions
             /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class with the specified strings.
             /// </summary>
             /// <param name="listSelectionMessage">The heading text displayed next to the list selection dropdown.</param>
-            [JsonConstructor]
             private ListSelectionDialogStrings(string listSelectionMessage)
             {
                 ListSelectionMessage = listSelectionMessage;
@@ -133,8 +131,8 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// The heading text displayed next to the list selection dropdown.
             /// </summary>
-            [JsonProperty]
-            public string ListSelectionMessage { get; }
+            [DataMember]
+            public string ListSelectionMessage { get; private set; }
         }
     }
 }

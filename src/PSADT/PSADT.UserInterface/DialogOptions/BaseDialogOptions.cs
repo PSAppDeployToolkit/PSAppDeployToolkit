@@ -16,6 +16,7 @@ namespace PSADT.UserInterface.DialogOptions
     [KnownType(typeof(DialogBoxOptions))]
     [KnownType(typeof(HelpConsoleOptions))]
     [KnownType(typeof(InputDialogOptions))]
+    [KnownType(typeof(ListSelectionDialogOptions))]
     [KnownType(typeof(ProgressDialogOptions))]
     [KnownType(typeof(RestartDialogOptions))]
     [KnownType(typeof(BalloonTipOptions))]
