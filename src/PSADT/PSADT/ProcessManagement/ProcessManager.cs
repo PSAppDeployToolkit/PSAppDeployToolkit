@@ -137,7 +137,7 @@ namespace PSADT.ProcessManagement
 
                     // If we're to read the output, we create pipes for stdout and stderr.
                     // Build a list of handles that need to be inherited by the child process.
-                    List<IntPtr> handlesToInherit = launchInfo.HandlesToInherit?.Count > 0
+                    List<nint> handlesToInherit = launchInfo.HandlesToInherit?.Count > 0
                         ? [.. launchInfo.HandlesToInherit]
                         : [];
 
@@ -560,7 +560,7 @@ namespace PSADT.ProcessManagement
             try
             {
                 environmentBlock.DangerousAddRef(ref envBlockAddRef);
-                IntPtr envBlockPtr = environmentBlock.DangerousGetHandle();
+                nint envBlockPtr = environmentBlock.DangerousGetHandle();
                 Dictionary<string, string> envDict = new(StringComparer.OrdinalIgnoreCase);
                 while (true)
                 {
@@ -785,7 +785,7 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, ReadOnlyCollection<IntPtr> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, ReadOnlyCollection<nint> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
@@ -861,7 +861,7 @@ namespace PSADT.ProcessManagement
         /// <param name="forceBreakaway">If true, adds the EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY attribute.</param>
         /// <param name="pinnedHandles">When this method returns, contains the pinned GC handle for the handles array, or null if no handles were specified.</param>
         /// <returns>A tuple containing the STARTUPINFOEXW structure and the SafeProcThreadAttributeListHandle.</returns>
-        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, ReadOnlyCollection<IntPtr> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
+        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, ReadOnlyCollection<nint> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
         {
             // Calculate the number of attributes needed.
             bool hasHandleInheritance = handlesToInherit.Count > 0;
@@ -894,7 +894,7 @@ namespace PSADT.ProcessManagement
                     {
                         // The handle list needs to be passed as a pointer to an array of handles.
                         pinnedHandles.DangerousAddRef(ref pinnedHandlesAddRef);
-                        IntPtr handlesPtr = pinnedHandles.DangerousGetHandle();
+                        nint handlesPtr = pinnedHandles.DangerousGetHandle();
                         int handleListSize = handlesToInherit.Count * IntPtr.Size;
                         unsafe
                         {

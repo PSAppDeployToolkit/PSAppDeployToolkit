@@ -32,7 +32,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
                 throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than zero.");
             }
             nuint lpSize = default; _ = Initialize(default, count, ref lpSize);
-            IntPtr handle = Marshal.AllocHGlobal((int)lpSize);
+            nint handle = Marshal.AllocHGlobal((int)lpSize);
             try
             {
                 _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
@@ -54,7 +54,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="handle">The initial handle to the process thread attribute list.</param>
         /// <param name="ownsHandle">A value indicating whether the handle should be released when the safe handle is disposed. true if the
         /// handle should be released; otherwise, false.</param>
-        private SafeProcThreadAttributeListHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        private SafeProcThreadAttributeListHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
             SetHandle(handle);
         }
@@ -112,7 +112,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

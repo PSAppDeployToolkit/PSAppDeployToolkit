@@ -355,7 +355,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     try
                     {
                         hBitmap.DangerousAddRef(ref hBitmapAddRef);
-                        (bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap.DangerousGetHandle(), IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())).Freeze();
+                        (bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap.DangerousGetHandle(), default, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())).Freeze();
                         _appIconCache.Add(appFilePath, bitmapSource);
                     }
                     finally

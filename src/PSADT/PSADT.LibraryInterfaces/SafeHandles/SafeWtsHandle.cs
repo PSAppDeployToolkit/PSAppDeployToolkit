@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Win32;
+﻿using Windows.Win32;
 
 namespace PSADT.LibraryInterfaces.SafeHandles
 {
@@ -12,7 +11,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// <param name="handle">The native pointer to the WTS-allocated memory to be managed by the handle.</param>
     /// <param name="length">The length, in bytes, of the memory region referenced by the handle.</param>
     /// <param name="ownsHandle">true to indicate that the handle is responsible for releasing the memory; otherwise, false.</param>
-    internal sealed class SafeWtsHandle(IntPtr handle, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsHandle>(handle, length, ownsHandle)
+    internal sealed class SafeWtsHandle(nint handle, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsHandle>(handle, length, ownsHandle)
     {
         /// <summary>
         /// Releases the handle.
@@ -20,7 +19,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

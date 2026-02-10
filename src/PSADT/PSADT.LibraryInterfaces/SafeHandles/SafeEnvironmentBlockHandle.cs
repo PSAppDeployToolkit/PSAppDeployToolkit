@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -21,7 +20,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="handle">The native handle to the environment block to be managed.</param>
         /// <param name="ownsHandle">true to reliably release the handle during the finalization phase; false to prevent the handle from being
         /// released.</param>
-        internal SafeEnvironmentBlockHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        internal SafeEnvironmentBlockHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
             SetHandle(handle);
         }
@@ -32,7 +31,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -14,7 +13,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// with LSA memory management functions.</remarks>
     /// <param name="handle"></param>
     /// <param name="ownsHandle"></param>
-    internal sealed class SafeLsaFreeMemoryHandle(IntPtr handle, bool ownsHandle) : SafeMemoryHandle<SafeLsaFreeMemoryHandle>(handle, 0, ownsHandle)
+    internal sealed class SafeLsaFreeMemoryHandle(nint handle, bool ownsHandle) : SafeMemoryHandle<SafeLsaFreeMemoryHandle>(handle, 0, ownsHandle)
     {
         /// <summary>
         /// Releases the handle.
@@ -22,7 +21,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

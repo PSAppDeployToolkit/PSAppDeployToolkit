@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Win32.Foundation;
+﻿using Windows.Win32.Foundation;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -569,7 +568,7 @@ namespace PSADT.LibraryInterfaces
     /// Represents a type of resource used in Windows applications, such as bitmaps, icons, or menus.
     /// </summary>
     /// <remarks>This struct provides a set of predefined resource types that correspond to standard Windows
-    /// resource types. It includes operators for comparison and conversion to and from <see cref="IntPtr"/>.</remarks>
+    /// resource types. It includes operators for comparison and conversion to and from <see cref="nint"/>.</remarks>
     internal readonly record struct RESOURCE_TYPE
     {
         /// <summary>
@@ -685,15 +684,15 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                Value = (IntPtr)value.Value;
+                Value = (nint)value.Value;
             }
         }
 
         /// <summary>
-        /// Converts a <see cref="RESOURCE_TYPE"/> instance to an <see cref="IntPtr"/>.
+        /// Converts a <see cref="RESOURCE_TYPE"/> instance to an <see cref="nint"/>.
         /// </summary>
         /// <param name="h">The <see cref="RESOURCE_TYPE"/> instance to convert.</param>
-        public static explicit operator IntPtr(RESOURCE_TYPE h)
+        public static explicit operator nint(RESOURCE_TYPE h)
         {
             return h.Value;
         }
@@ -720,14 +719,14 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Determines whether two specified objects, an <see cref="IntPtr"/> and a <see cref="RESOURCE_TYPE"/>, are not
+        /// Determines whether two specified objects, an <see cref="nint"/> and a <see cref="RESOURCE_TYPE"/>, are not
         /// equal.
         /// </summary>
         /// <param name="h1">The first pointer to compare.</param>
         /// <param name="h2">The <see cref="RESOURCE_TYPE"/> object to compare, which contains a handle.</param>
         /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
         /// otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(IntPtr h1, RESOURCE_TYPE h2)
+        public static bool operator !=(nint h1, RESOURCE_TYPE h2)
         {
             return h1 != h2.Value;
         }
@@ -739,7 +738,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h2">The second resource type to compare, which contains a handle.</param>
         /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
         /// <see langword="false"/>.</returns>
-        public static bool operator ==(IntPtr h1, RESOURCE_TYPE h2)
+        public static bool operator ==(nint h1, RESOURCE_TYPE h2)
         {
             return h1 == h2.Value;
         }
@@ -756,7 +755,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (IntPtr)h1.Value != h2.Value;
+                return (nint)h1.Value != h2.Value;
             }
         }
 
@@ -771,7 +770,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (IntPtr)h1.Value == h2.Value;
+                return (nint)h1.Value == h2.Value;
             }
         }
 
@@ -785,7 +784,7 @@ namespace PSADT.LibraryInterfaces
         /// contained in <paramref name="h2"/>; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(uint h1, RESOURCE_TYPE h2)
         {
-            return (IntPtr)h1 != h2;
+            return (nint)h1 != h2;
         }
 
         /// <summary>
@@ -797,7 +796,7 @@ namespace PSADT.LibraryInterfaces
         /// <see langword="false"/>.</returns>
         public static bool operator ==(uint h1, RESOURCE_TYPE h2)
         {
-            return (IntPtr)h1 == h2;
+            return (nint)h1 == h2;
         }
 
         /// <summary>
@@ -806,6 +805,6 @@ namespace PSADT.LibraryInterfaces
         /// <remarks>This field is used to store a pointer to a native resource. It is important to ensure
         /// that the handle is properly managed to prevent resource leaks. Typically, this involves releasing the handle
         /// when it is no longer needed.</remarks>
-        private readonly IntPtr Value;
+        private readonly nint Value;
     }
 }

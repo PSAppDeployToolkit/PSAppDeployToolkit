@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
@@ -31,7 +30,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                lpEnvironment = new((IntPtr)lpEnvironmentPtr, true);
+                lpEnvironment = new((nint)lpEnvironmentPtr, true);
             }
             return res;
         }

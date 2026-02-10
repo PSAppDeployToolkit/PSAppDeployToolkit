@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Win32.Foundation;
+﻿using Windows.Win32.Foundation;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -41,15 +40,15 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                Value = (IntPtr)value.Value;
+                Value = (nint)value.Value;
             }
         }
 
         /// <summary>
-        /// Converts a <see cref="TASKDIALOG_ICON"/> instance to an <see cref="IntPtr"/>.
+        /// Converts a <see cref="TASKDIALOG_ICON"/> instance to an <see cref="nint"/>.
         /// </summary>
         /// <param name="h">The <see cref="TASKDIALOG_ICON"/> instance to convert.</param>
-        public static explicit operator IntPtr(TASKDIALOG_ICON h)
+        public static explicit operator nint(TASKDIALOG_ICON h)
         {
             return h.Value;
         }
@@ -76,14 +75,14 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Determines whether two specified objects, an <see cref="IntPtr"/> and a <see cref="TASKDIALOG_ICON"/>, are not
+        /// Determines whether two specified objects, an <see cref="nint"/> and a <see cref="TASKDIALOG_ICON"/>, are not
         /// equal.
         /// </summary>
         /// <param name="h1">The first pointer to compare.</param>
         /// <param name="h2">The <see cref="TASKDIALOG_ICON"/> object to compare, which contains a handle.</param>
         /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
         /// otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(IntPtr h1, TASKDIALOG_ICON h2)
+        public static bool operator !=(nint h1, TASKDIALOG_ICON h2)
         {
             return h1 != h2.Value;
         }
@@ -95,7 +94,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h2">The second resource type to compare, which contains a handle.</param>
         /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
         /// <see langword="false"/>.</returns>
-        public static bool operator ==(IntPtr h1, TASKDIALOG_ICON h2)
+        public static bool operator ==(nint h1, TASKDIALOG_ICON h2)
         {
             return h1 == h2.Value;
         }
@@ -112,7 +111,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (IntPtr)h1.Value != h2.Value;
+                return (nint)h1.Value != h2.Value;
             }
         }
 
@@ -127,7 +126,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (IntPtr)h1.Value == h2.Value;
+                return (nint)h1.Value == h2.Value;
             }
         }
 
@@ -141,7 +140,7 @@ namespace PSADT.LibraryInterfaces
         /// contained in <paramref name="h2"/>; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(uint h1, TASKDIALOG_ICON h2)
         {
-            return (IntPtr)h1 != h2;
+            return (nint)h1 != h2;
         }
 
         /// <summary>
@@ -153,7 +152,7 @@ namespace PSADT.LibraryInterfaces
         /// <see langword="false"/>.</returns>
         public static bool operator ==(uint h1, TASKDIALOG_ICON h2)
         {
-            return (IntPtr)h1 == h2;
+            return (nint)h1 == h2;
         }
 
         /// <summary>
@@ -162,6 +161,6 @@ namespace PSADT.LibraryInterfaces
         /// <remarks>This field is used to store a pointer to a native resource. It is important to ensure
         /// that the handle is properly managed to prevent resource leaks. Typically, this involves releasing the handle
         /// when it is no longer needed.</remarks>
-        private readonly IntPtr Value;
+        private readonly nint Value;
     }
 }

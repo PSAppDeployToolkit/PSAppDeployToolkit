@@ -1,10 +1,9 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace PSADT.LibraryInterfaces.Extensions
 {
     /// <summary>
-    /// Provides extension methods for working with memory addresses represented by <see cref="IntPtr"/>. These methods
+    /// Provides extension methods for working with memory addresses represented by <see cref="nint"/>. These methods
     /// enable interpreting unmanaged memory as structures of a specified type.
     /// </summary>
     /// <remarks>These extension methods are intended for advanced scenarios involving direct memory
@@ -25,7 +24,7 @@ namespace PSADT.LibraryInterfaces.Extensions
         /// <param name="offset">The byte offset from <paramref name="handle"/> at which the structure of type <typeparamref name="T"/> is
         /// located. The offset must be zero or positive.</param>
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified memory address and offset.</returns>
-        internal static ref readonly T AsReadOnlyStructure<T>(this IntPtr handle, int offset = 0) where T : unmanaged
+        internal static ref readonly T AsReadOnlyStructure<T>(this nint handle, int offset = 0) where T : unmanaged
         {
             unsafe
             {

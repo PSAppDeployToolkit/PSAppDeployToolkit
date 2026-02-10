@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -21,7 +20,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="handle">The native handle to the thread resource to be wrapped by the SafeThreadHandle instance.</param>
         /// <param name="ownsHandle">true to indicate that the SafeThreadHandle instance owns the handle and is responsible for releasing it;
         /// otherwise, false.</param>
-        internal SafeThreadHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        internal SafeThreadHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
             SetHandle(handle);
         }
@@ -32,7 +31,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

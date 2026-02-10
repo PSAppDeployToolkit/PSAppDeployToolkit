@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.LibraryInterfaces.SafeHandles
 {
@@ -20,7 +19,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// the SafeNoReleaseHandle is disposed or finalized. Use this when the handle's lifetime is managed
         /// elsewhere.</remarks>
         /// <param name="handle">The native handle to be encapsulated by the SafeNoReleaseHandle instance.</param>
-        internal SafeNoReleaseHandle(IntPtr handle) : base(false)
+        internal SafeNoReleaseHandle(nint handle) : base(false)
         {
             SetHandle(handle);
         }

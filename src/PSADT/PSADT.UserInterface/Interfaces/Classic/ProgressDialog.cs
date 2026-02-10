@@ -139,7 +139,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             if (e.Button == MouseButtons.Left)
             {
                 _ = User32.ReleaseCapture();
-                _ = User32.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, IntPtr.Zero);
+                _ = User32.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, default);
             }
         }
     }

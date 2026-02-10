@@ -473,7 +473,7 @@ namespace PSADT.FileSystem
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
-                    _ = AuthzInitializeContext(0, token, hAuthzResourceManager, null, default, IntPtr.Zero, out AuthzFreeContextSafeHandle phAuthzClientContext);
+                    _ = AuthzInitializeContext(0, token, hAuthzResourceManager, null, default, default, out AuthzFreeContextSafeHandle phAuthzClientContext);
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.
@@ -516,6 +516,6 @@ namespace PSADT.FileSystem
         /// if not required.</param>
         /// <param name="phAuthzClientContext">When this method returns, contains a handle to the newly created authorization client context.</param>
         /// <returns>A BOOL value that is nonzero if the context was successfully initialized; otherwise, zero.</returns>
-        private delegate BOOL AuthzInitializeContext(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle Handle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext);
+        private delegate BOOL AuthzInitializeContext(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle Handle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext);
     }
 }

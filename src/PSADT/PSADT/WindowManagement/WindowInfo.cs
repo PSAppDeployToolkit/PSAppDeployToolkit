@@ -17,13 +17,13 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcess">The name of the parent process that owns the window.</param>
         /// <param name="parentProcessId">The ID of the parent process.</param>
         /// <param name="parentProcessMainWindowHandle">The handle to the main window of the parent process.</param>
-        internal WindowInfo(string windowTitle, IntPtr windowHandle, string parentProcess, int parentProcessId, IntPtr parentProcessMainWindowHandle)
+        internal WindowInfo(string windowTitle, nint windowHandle, string parentProcess, int parentProcessId, nint parentProcessMainWindowHandle)
         {
             WindowTitle = !string.IsNullOrWhiteSpace(windowTitle) ? windowTitle : throw new ArgumentNullException("Window title cannot be null or empty.", (Exception?)null);
-            WindowHandle = windowHandle != IntPtr.Zero ? windowHandle : throw new ArgumentNullException("Window handle cannot be null.", (Exception?)null);
+            WindowHandle = windowHandle != default ? windowHandle : throw new ArgumentNullException("Window handle cannot be null.", (Exception?)null);
             ParentProcess = !string.IsNullOrWhiteSpace(parentProcess) ? parentProcess : throw new ArgumentNullException("Parent process name cannot be null or empty.", (Exception?)null);
             ParentProcessId = parentProcessId > 0 ? parentProcessId : throw new ArgumentNullException("Parent process ID cannot be null or empty.", (Exception?)null);
-            ParentProcessMainWindowHandle = parentProcessMainWindowHandle != IntPtr.Zero ? parentProcessMainWindowHandle : throw new ArgumentNullException("Parent process main window handle cannot be null.", (Exception?)null);
+            ParentProcessMainWindowHandle = parentProcessMainWindowHandle != default ? parentProcessMainWindowHandle : throw new ArgumentNullException("Parent process main window handle cannot be null.", (Exception?)null);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace PSADT.WindowManagement
         /// Gets the handle to the window.
         /// </summary>
         [DataMember]
-        public IntPtr WindowHandle { get; private set; }
+        public nint WindowHandle { get; private set; }
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
@@ -54,6 +54,6 @@ namespace PSADT.WindowManagement
         /// Gets the handle to the main window of the parent process.
         /// </summary>
         [DataMember]
-        public IntPtr ParentProcessMainWindowHandle { get; private set; }
+        public nint ParentProcessMainWindowHandle { get; private set; }
     }
 }

@@ -148,7 +148,7 @@ namespace PSADT.LibraryInterfaces
         /// access rights for thread creation and must not be null or closed.</param>
         /// <param name="StartRoutine">A SafeVirtualAllocHandle specifying the starting address of the thread routine in the target process. This
         /// handle must not be null, closed, or invalid.</param>
-        /// <param name="Argument">A pointer to a variable to be passed as a parameter to the thread routine, or IntPtr.Zero if no parameter is
+        /// <param name="Argument">A pointer to a variable to be passed as a parameter to the thread routine, or default if no parameter is
         /// required.</param>
         /// <param name="CreateFlags">Flags that control the creation of the thread. This value can be zero or a combination of thread creation
         /// flags as defined by the native API.</param>
@@ -159,7 +159,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An NTSTATUS code indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, the
         /// code specifies the error.</returns>
         /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null or closed, or if StartRoutine is null, closed, or invalid.</exception>
-        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, IntPtr? Argument = null, THREAD_CREATE_FLAGS CreateFlags = 0, uint ZeroBits = 0, uint StackSize = 0, uint MaximumStackSize = 0)
+        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, nint? Argument = null, THREAD_CREATE_FLAGS CreateFlags = 0, uint ZeroBits = 0, uint StackSize = 0, uint MaximumStackSize = 0)
         {
             if (StartRoutine is null || StartRoutine.IsClosed || StartRoutine.IsInvalid)
             {
@@ -170,14 +170,14 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
             [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern NTSTATUS NtCreateThreadEx(out IntPtr ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, IntPtr ObjectAttributes, IntPtr ProcessHandle, IntPtr StartRoutine, IntPtr Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, IntPtr AttributeList);
+            static extern NTSTATUS NtCreateThreadEx(out nint ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, nint ObjectAttributes, nint ProcessHandle, nint StartRoutine, nint Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, nint AttributeList);
             bool StartRoutineAddRef = false;
             bool ProcessHandleAddRef = false;
             try
             {
                 StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                NTSTATUS res = NtCreateThreadEx(out IntPtr hThread, DesiredAccess, IntPtr.Zero, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? IntPtr.Zero, CreateFlags, ZeroBits, StackSize, MaximumStackSize, IntPtr.Zero);
+                NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -216,7 +216,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(ThreadHandle));
             }
             [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern NTSTATUS NtTerminateThread(IntPtr ThreadHandle, NTSTATUS ExitStatus);
+            static extern NTSTATUS NtTerminateThread(nint ThreadHandle, NTSTATUS ExitStatus);
             bool ThreadHandleAddRef = false;
             NTSTATUS res;
             try
@@ -315,7 +315,7 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// The kernel object's address.
         /// </summary>
-        public readonly IntPtr ObjectPtr;
+        public readonly nint ObjectPtr;
 
         /// <summary>
         /// The owning process's identifier.
@@ -515,7 +515,7 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// The number of processes in the system.
         /// </summary>
-        internal IntPtr ProcessId;
+        internal nint ProcessId;
 
         /// <summary>
         /// The number of threads in the system.

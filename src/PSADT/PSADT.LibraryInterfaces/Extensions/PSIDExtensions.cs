@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Principal;
+﻿using System.Security.Principal;
 using Windows.Win32.Security;
 
 namespace PSADT.LibraryInterfaces.Extensions
@@ -19,7 +18,7 @@ namespace PSADT.LibraryInterfaces.Extensions
         /// <returns>A <see cref="SecurityIdentifier"/> representing the specified <see cref="PSID"/>.</returns>
         internal static SecurityIdentifier ToSecurityIdentifier(this PSID pSid)
         {
-            return new((IntPtr)pSid);
+            return new((nint)pSid);
         }
     }
 }

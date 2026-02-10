@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -35,7 +34,7 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <remarks>This method is typically used to obtain the native window handle for interop
         /// scenarios or advanced console manipulation. The returned handle is valid only if the process has an
         /// associated console window.</remarks>
-        /// <returns>An <see cref="IntPtr"/> that represents the handle to the console window. If the process does not have a
+        /// <returns>An <see cref="nint"/> that represents the handle to the console window. If the process does not have a
         /// console window, an exception is thrown.</returns>
         /// <exception cref="Win32Exception">Thrown if the handle to the console window cannot be retrieved.</exception>
         internal static HWND GetConsoleWindow()

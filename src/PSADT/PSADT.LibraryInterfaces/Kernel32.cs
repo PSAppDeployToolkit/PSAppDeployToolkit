@@ -253,7 +253,7 @@ namespace PSADT.LibraryInterfaces
         /// depend on the value of the JobObjectInformationClass parameter.</param>
         /// <param name="cbJobObjectInformationLength">The size, in bytes, of the information buffer pointed to by lpJobObjectInformation.</param>
         /// <returns>true if the information was set successfully; otherwise, false.</returns>
-        private static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
+        private static BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, nint lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             bool hJobAddRef = false;
             BOOL res;
@@ -292,7 +292,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (JOBOBJECT_ASSOCIATE_COMPLETION_PORT* pInfo = &lpJobObjectInformation)
                 {
-                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, (IntPtr)pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, (nint)pInfo, (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
                 }
             }
         }
@@ -312,7 +312,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (JOBOBJECT_EXTENDED_LIMIT_INFORMATION* pInfo = &lpJobObjectInformation)
                 {
-                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, (IntPtr)pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+                    return SetInformationJobObject(hJob, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, (nint)pInfo, (uint)sizeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
                 }
             }
         }
@@ -772,7 +772,7 @@ namespace PSADT.LibraryInterfaces
         /// parameter can be null.</param>
         /// <returns>A <see cref="BOOL"/> indicating whether the operation succeeded.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer was too small and the value was truncated.</exception>
-        internal static BOOL ReadProcessMemory(SafeHandle hProcess, IntPtr lpBaseAddress, Span<byte> lpBuffer, out nuint lpNumberOfBytesRead)
+        internal static BOOL ReadProcessMemory(SafeHandle hProcess, nint lpBaseAddress, Span<byte> lpBuffer, out nuint lpNumberOfBytesRead)
         {
             BOOL res;
             unsafe

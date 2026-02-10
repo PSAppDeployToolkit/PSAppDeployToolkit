@@ -25,7 +25,7 @@ namespace PSADT.Utilities
         internal static void RefreshDesktop()
         {
             // Update desktop icons using SHChangeNotify. This covers the bulk of things.
-            Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, IntPtr.Zero, IntPtr.Zero);
+            Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, default, default);
 
             // Refresh the taskbar. See https://stackoverflow.com/questions/70260518/how-can-i-refresh-the-taskbar-programatically-in-windows-10-and-higher for details.
             _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "TraySettings");
@@ -49,7 +49,7 @@ namespace PSADT.Utilities
         internal static void RefreshEnvironmentVariables()
         {
             // Notify all top-level windows that the environment variables have changed.
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, default, IntPtr.Zero);
+            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE);
             _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
         }
 
@@ -82,7 +82,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
         internal static void MinimizeAllWindows()
         {
-            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
+            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, default);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
         internal static void RestoreAllWindows()
         {
-            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
+            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, default);
         }
 
         /// <summary>

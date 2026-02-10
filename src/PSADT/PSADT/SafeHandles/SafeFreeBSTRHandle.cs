@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.SafeHandles
@@ -30,7 +29,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="handle">The pointer to the BSTR handle to be managed by this instance.</param>
         /// <param name="ownsHandle">A value indicating whether the SafeFreeBSTRHandle instance is responsible for releasing the handle.</param>
-        private SafeFreeBSTRHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        private SafeFreeBSTRHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
             SetHandle(handle);
         }
@@ -41,7 +40,7 @@ namespace PSADT.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

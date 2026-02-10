@@ -529,7 +529,7 @@ namespace PSADT.LibraryInterfaces
                 int lastError = Marshal.GetLastWin32Error(); _ = PInvoke.LocalFree(pAclLocal);
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastError);
             }
-            pAcl = new((IntPtr)pAclLocal, true);
+            pAcl = new((nint)pAclLocal, true);
             return res;
         }
 
@@ -567,7 +567,7 @@ namespace PSADT.LibraryInterfaces
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                     }
-                    NewAcl = new((IntPtr)NewAclLocal, true);
+                    NewAcl = new((nint)NewAclLocal, true);
                 }
                 return res;
             }
@@ -712,11 +712,11 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw new InvalidOperationException("Failed to retrieve security descriptor.");
                 }
-                ppsidOwner = psidOwner != default ? new((IntPtr)psidOwner.Value) : null;
-                ppsidGroup = pSidGroup != default ? new((IntPtr)pSidGroup.Value) : null;
-                ppDacl = pDacl is not null ? new((IntPtr)pDacl, false) : null;
-                ppSacl = pSacl is not null ? new((IntPtr)pSacl, false) : null;
-                ppSecurityDescriptor = new((IntPtr)pSecurityDescriptor, true);
+                ppsidOwner = psidOwner != default ? new((nint)psidOwner.Value) : null;
+                ppsidGroup = pSidGroup != default ? new((nint)pSidGroup.Value) : null;
+                ppDacl = pDacl is not null ? new((nint)pDacl, false) : null;
+                ppSacl = pSacl is not null ? new((nint)pSacl, false) : null;
+                ppSecurityDescriptor = new((nint)pSecurityDescriptor, true);
             }
             return res;
         }
@@ -809,7 +809,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="Args">An optional pointer to additional arguments passed to the progress callback function.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation.  Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation completes successfully.</returns>
-        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress, PROG_INVOKE_SETTING ProgressInvokeSetting, [Optional] IntPtr? Args)
+        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress, PROG_INVOKE_SETTING ProgressInvokeSetting, [Optional] nint? Args)
         {
             bool pOwnerAddRef = false;
             bool pGroupAddRef = false;
@@ -826,7 +826,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        res = PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, Args is not null ? Args.Value.ToPointer() : null);
+                        res = PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, Args is not null ? (void*)Args.Value : null);
                     }
                 }
             }
@@ -909,7 +909,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception">Thrown if the initialization fails due to a Win32 error, or if the resulting authorization context is
         /// invalid.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        internal static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        internal static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             bool UserSidAddRef = false;
             BOOL res;
@@ -959,7 +959,7 @@ namespace PSADT.LibraryInterfaces
         /// langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        internal static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, IntPtr DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        internal static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             BOOL res;
             unsafe
@@ -1097,7 +1097,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
                 }
-                Buffer = new((IntPtr)BufferLocal, true);
+                Buffer = new((nint)BufferLocal, true);
             }
             return res;
         }

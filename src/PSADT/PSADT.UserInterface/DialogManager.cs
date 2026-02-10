@@ -313,7 +313,7 @@ namespace PSADT.UserInterface
         /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, uint Timeout = 0)
         {
-            return InvokeDialogAction(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
+            return InvokeDialogAction(() => User32.MessageBoxTimeout(default, Prompt, Title, Options, 0, Timeout));
         }
 
         /// <summary>

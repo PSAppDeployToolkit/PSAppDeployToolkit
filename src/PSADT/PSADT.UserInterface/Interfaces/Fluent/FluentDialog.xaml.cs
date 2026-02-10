@@ -198,13 +198,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="wParam"></param>
         /// <param name="lParam"></param>
         /// <param name="handled"></param>
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private nint WndProc(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
         {
-            if (msg == (uint)WINDOW_MESSAGE.WM_SYSCOMMAND && (wParam.ToInt32() & 0xFFF0) == (uint)WM_SYSCOMMAND.SC_MOVE && !_dialogAllowMove)
+            if (msg == (uint)WINDOW_MESSAGE.WM_SYSCOMMAND && ((int)wParam & 0xFFF0) == (uint)WM_SYSCOMMAND.SC_MOVE && !_dialogAllowMove)
             {
                 handled = true;
             }
-            return IntPtr.Zero;
+            return default;
         }
 
         /// <summary>

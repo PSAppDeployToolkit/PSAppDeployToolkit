@@ -121,7 +121,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (char* lParamPtr = lParam)
                 {
-                    return EnumWindows(lpEnumFunc, (IntPtr)lParamPtr);
+                    return EnumWindows(lpEnumFunc, (nint)lParamPtr);
                 }
             }
         }
@@ -274,14 +274,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lParam">The message-specific second parameter, passed as a string. Can be null.</param>
         /// <returns>A value of type LRESULT that indicates the result of the message processing. The meaning of the return value
         /// depends on the message sent.</returns>
-        internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
+        internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam = null, string? lParam = null)
         {
             unsafe
             {
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
-                    return SendNotifyMessage(hWnd, Msg, (nuint)wParamPtr, (IntPtr)lParamPtr);
+                    return SendNotifyMessage(hWnd, Msg, (nuint)wParamPtr, (nint)lParamPtr);
                 }
             }
         }
@@ -339,7 +339,7 @@ namespace PSADT.LibraryInterfaces
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
-                    return SendMessage(hWnd, Msg, (nuint)wParamPtr, (IntPtr)lParamPtr);
+                    return SendMessage(hWnd, Msg, (nuint)wParamPtr, (nint)lParamPtr);
                 }
             }
         }
@@ -426,7 +426,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="wLanguageId">The language identifier for the text in the message box. Use 0 for the system default language.</param>
         /// <param name="dwTimeout">The timeout duration after which the message box will automatically close if no user action is taken.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the user's response to the message box.</returns>
-        internal static MESSAGEBOX_RESULT MessageBoxTimeout(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwTimeout)
+        internal static MESSAGEBOX_RESULT MessageBoxTimeout(nint hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwTimeout)
         {
             if (string.IsNullOrWhiteSpace(lpText))
             {
@@ -437,7 +437,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(lpCaption), "Message caption cannot be null or empty.");
             }
             [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
+            static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(nint hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             MESSAGEBOX_RESULT res = MessageBoxTimeoutW(hWnd, lpText, lpCaption, uType, wLanguageId, dwTimeout);
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }

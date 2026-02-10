@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
@@ -19,7 +18,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
     /// <param name="type">The WTS type class that determines the structure of the memory block.</param>
     /// <param name="length">The length, in bytes, of the memory block referenced by the handle.</param>
     /// <param name="ownsHandle">true to indicate that the handle is responsible for releasing the memory block; otherwise, false.</param>
-    internal sealed class SafeWtsExHandle(IntPtr handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsExHandle>(handle, length, ownsHandle)
+    internal sealed class SafeWtsExHandle(nint handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsExHandle>(handle, length, ownsHandle)
     {
         /// <summary>
         /// Releases the handle.
@@ -27,7 +26,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

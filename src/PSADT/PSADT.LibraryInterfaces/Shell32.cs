@@ -130,11 +130,11 @@ namespace PSADT.LibraryInterfaces
         /// handled.</param>
         /// <param name="dwItem1">A pointer to an item or structure relevant to the event, as defined by the event type and flags. The
         /// interpretation depends on the values of wEventId and uFlags. This parameter is optional and may be
-        /// IntPtr.Zero if not required.</param>
+        /// default if not required.</param>
         /// <param name="dwItem2">A pointer to a second item or structure relevant to the event, as defined by the event type and flags. The
         /// interpretation depends on the values of wEventId and uFlags. This parameter is optional and may be
-        /// IntPtr.Zero if not required.</param>
-        internal static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] IntPtr dwItem1, [Optional] IntPtr dwItem2)
+        /// default if not required.</param>
+        internal static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] nint dwItem1, [Optional] nint dwItem2)
         {
             unsafe
             {
@@ -160,12 +160,12 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A handle to the system image list or icon, depending on the flags specified. The handle is valid only while
         /// the image list exists. Returns a non-zero value on success.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the file information could not be retrieved.</exception>
-        internal static IntPtr SHGetFileInfo(string pszPath, out SHFILEINFO psfi, SHGFI_FLAGS uFlags, FileAttributes dwFileAttributes = 0)
+        internal static nint SHGetFileInfo(string pszPath, out SHFILEINFO psfi, SHGFI_FLAGS uFlags, FileAttributes dwFileAttributes = 0)
         {
             [DllImport("shell32.dll", CharSet = CharSet.Auto), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern IntPtr SHGetFileInfoW(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            psfi = new(); IntPtr res = SHGetFileInfoW(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
-            return res == IntPtr.Zero ? throw new InvalidOperationException("Failed to retrieve file information.") : res;
+            static extern nint SHGetFileInfoW(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
+            psfi = new(); nint res = SHGetFileInfoW(pszPath, dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
+            return res == default ? throw new InvalidOperationException("Failed to retrieve file information.") : res;
         }
 
         /// <summary>

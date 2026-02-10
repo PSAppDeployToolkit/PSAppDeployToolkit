@@ -29,7 +29,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
                 {
                     throw new InvalidOperationException("Failed to allocate memory.");
                 }
-                return new((IntPtr)handle, length, true);
+                return new((nint)handle, length, true);
             }
         }
 
@@ -39,7 +39,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="handle"></param>
         /// <param name="length"></param>
         /// <param name="ownsHandle"></param>
-        private SafeVirtualAllocHandle(IntPtr handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
+        private SafeVirtualAllocHandle(nint handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
         {
         }
 
@@ -49,7 +49,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }

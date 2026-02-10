@@ -125,7 +125,7 @@ namespace PSADT.ProcessManagement
 
             // If we got a valid version resource, parse it.
             // Read the version information from the resource.
-            _ = Version32.VerQueryValue(versionResource, @"\", out IntPtr fixedInfoPtr, out _);
+            _ = Version32.VerQueryValue(versionResource, @"\", out nint fixedInfoPtr, out _);
             FixedFileInfo = fixedInfoPtr.AsReadOnlyStructure<VS_FIXEDFILEINFO>();
             FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
             FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
@@ -189,7 +189,7 @@ namespace PSADT.ProcessManagement
         private static byte[] ReadVersionResource(SafeFileHandle processHandle, in MODULEINFO moduleInfo)
         {
             // Read the DOS header to make sure we have a valid PE header.
-            IntPtr baseAddress; unsafe { baseAddress = (IntPtr)moduleInfo.lpBaseOfDll; }
+            nint baseAddress; unsafe { baseAddress = (nint)moduleInfo.lpBaseOfDll; }
             IMAGE_DOS_HEADER dosHeader = ReadProcessMemory<IMAGE_DOS_HEADER>(processHandle, baseAddress);
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
@@ -197,7 +197,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Read the NT headers to check the magic number.
-            IntPtr ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
+            nint ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
             IMAGE_NT_HEADERS64 ntHeaders64 = ReadProcessMemory<IMAGE_NT_HEADERS64>(processHandle, ntHeadersAddress);
             if (ntHeaders64.Signature != PInvoke.IMAGE_NT_SIGNATURE)
             {
@@ -239,17 +239,17 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Navigates the resource directory structure to find the version resource.
         /// </summary>
-        private static byte[] FindVersionResource(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress)
+        private static byte[] FindVersionResource(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress)
         {
             // Read the resource directory
             IMAGE_RESOURCE_DIRECTORY resourceDir = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY>(processHandle, resourceDirectoryAddress);
             int totalEntries = resourceDir.NumberOfNamedEntries + resourceDir.NumberOfIdEntries;
-            IntPtr entriesAddress = unchecked(resourceDirectoryAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
+            nint entriesAddress = unchecked(resourceDirectoryAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
 
             // Look for RT_VERSION resource (type 16) and throw if not found.
             for (int i = 0; i < totalEntries; i++)
             {
-                IntPtr entryAddress = unchecked(entriesAddress + (i * Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()));
+                nint entryAddress = unchecked(entriesAddress + (i * Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()));
                 IMAGE_RESOURCE_DIRECTORY_ENTRY entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, entryAddress);
                 if (entry.Anonymous1.Name == RESOURCE_TYPE.RT_VERSION)
                 {
@@ -262,22 +262,22 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the actual version resource data.
         /// </summary>
-        private static byte[] ReadVersionResourceData(SafeFileHandle processHandle, IntPtr resourceDirectoryAddress, IntPtr baseAddress, uint offsetToData)
+        private static byte[] ReadVersionResourceData(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress, uint offsetToData)
         {
             // Navigate through the directory levels using a do/while loop.
             uint currentOffsetToData = offsetToData;
             IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry;
             do
             {
-                IntPtr currentAddress = unchecked(resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK));
-                IntPtr currentEntryAddress = unchecked(currentAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
+                nint currentAddress = unchecked(resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK));
+                nint currentEntryAddress = unchecked(currentAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
                 currentEntry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, currentEntryAddress);
                 currentOffsetToData = currentEntry.Anonymous2.OffsetToData;
             }
             while ((currentOffsetToData & PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY) != 0);
 
             // At this point, currentEntry points to a data entry, not a directory.
-            IntPtr dataEntryAddress = unchecked(resourceDirectoryAddress + (int)currentEntry.Anonymous2.OffsetToData);
+            nint dataEntryAddress = unchecked(resourceDirectoryAddress + (int)currentEntry.Anonymous2.OffsetToData);
             IMAGE_RESOURCE_DATA_ENTRY dataEntry = ReadProcessMemory<IMAGE_RESOURCE_DATA_ENTRY>(processHandle, dataEntryAddress);
             if (dataEntry.Size > 0)
             {
@@ -285,7 +285,7 @@ namespace PSADT.ProcessManagement
                 _ = Kernel32.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
                 return buffer;
             }
-            throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{dataEntryAddress.ToInt64():X}");
+            throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{(long)dataEntryAddress:X}");
         }
 
         /// <summary>
@@ -295,7 +295,7 @@ namespace PSADT.ProcessManagement
         {
             // Return any translation pairs found in the version resource.
             List<string> translationCombinations = [];
-            _ = Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out IntPtr translationPtr, out uint translationLength);
+            _ = Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out nint translationPtr, out uint translationLength);
             int langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
@@ -343,7 +343,7 @@ namespace PSADT.ProcessManagement
             // Attempt to query the version resource for the specified name.
             try
             {
-                _ = Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out IntPtr lplpBuffer, out _);
+                _ = Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out nint lplpBuffer, out _);
                 string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
                 if (!string.IsNullOrWhiteSpace(result))
                 {
@@ -362,7 +362,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads a structure from process memory using stack-allocated buffer.
         /// </summary>
-        private static T ReadProcessMemory<T>(SafeFileHandle processHandle, IntPtr address) where T : struct
+        private static T ReadProcessMemory<T>(SafeFileHandle processHandle, nint address) where T : struct
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
             _ = Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);

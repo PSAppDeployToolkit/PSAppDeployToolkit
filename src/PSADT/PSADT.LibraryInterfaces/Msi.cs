@@ -69,8 +69,8 @@ namespace PSADT.LibraryInterfaces
             WIN32_ERROR res;
             if (hDatabase is null)
             {
-                using SafeFileHandle nullDatabaseHandle = new(IntPtr.Zero, true);
-                res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullDatabaseHandle, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
+                using SafeFileHandle nullHandle = new(default, true);
+                res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
             }
             else
             {

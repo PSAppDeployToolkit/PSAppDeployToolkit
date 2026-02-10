@@ -24,7 +24,7 @@ namespace PSADT.WindowManagement
                     windows.Add(hWnd);
                 }
                 return true;
-            }, IntPtr.Zero);
+            }, null);
             return windows.AsReadOnly();
         }
 

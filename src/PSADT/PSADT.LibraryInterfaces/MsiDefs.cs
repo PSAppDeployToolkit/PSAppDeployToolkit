@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Win32.Foundation;
+﻿using Windows.Win32.Foundation;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -147,7 +146,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                Value = (IntPtr)value.Value;
+                Value = (nint)value.Value;
             }
         }
 
@@ -158,16 +157,16 @@ namespace PSADT.LibraryInterfaces
         /// instance.</param>
         private MSI_PERSISTENCE_MODE(int value)
         {
-            Value = new(value);
+            Value = value;
         }
 
         /// <summary>
-        /// Defines an explicit conversion from an instance of the MSI_PERSISTENCE_MODE structure to an IntPtr.
+        /// Defines an explicit conversion from an instance of the MSI_PERSISTENCE_MODE structure to an nint.
         /// </summary>
         /// <remarks>Use this operator to obtain the underlying pointer value represented by the
         /// MSI_PERSISTENCE_MODE instance. This conversion is explicit and must be cast by the caller.</remarks>
-        /// <param name="h">The MSI_PERSISTENCE_MODE instance to convert to an IntPtr.</param>
-        public static explicit operator IntPtr(MSI_PERSISTENCE_MODE h)
+        /// <param name="h">The MSI_PERSISTENCE_MODE instance to convert to an nint.</param>
+        public static explicit operator nint(MSI_PERSISTENCE_MODE h)
         {
             return h.Value;
         }
@@ -202,7 +201,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h1">The pointer to compare.</param>
         /// <param name="h2">The persistence mode to compare.</param>
         /// <returns>true if the value of h1 does not equal the value represented by h2; otherwise, false.</returns>
-        public static bool operator !=(IntPtr h1, MSI_PERSISTENCE_MODE h2)
+        public static bool operator !=(nint h1, MSI_PERSISTENCE_MODE h2)
         {
             return h1 != h2.Value;
         }
@@ -213,7 +212,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="h1">The pointer to compare.</param>
         /// <param name="h2">The persistence mode value to compare.</param>
         /// <returns>true if the value of h1 is equal to the value of h2; otherwise, false.</returns>
-        public static bool operator ==(IntPtr h1, MSI_PERSISTENCE_MODE h2)
+        public static bool operator ==(nint h1, MSI_PERSISTENCE_MODE h2)
         {
             return h1 == h2.Value;
         }
@@ -228,7 +227,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (IntPtr)h1.Value != h2.Value;
+                return (nint)h1.Value != h2.Value;
             }
         }
 
@@ -242,7 +241,7 @@ namespace PSADT.LibraryInterfaces
         {
             unsafe
             {
-                return (IntPtr)h1.Value == h2.Value;
+                return (nint)h1.Value == h2.Value;
             }
         }
 
@@ -254,7 +253,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns>true if the values are not equal; otherwise, false.</returns>
         public static bool operator !=(uint h1, MSI_PERSISTENCE_MODE h2)
         {
-            return (IntPtr)h1 != h2;
+            return (nint)h1 != h2;
         }
 
         /// <summary>
@@ -262,19 +261,19 @@ namespace PSADT.LibraryInterfaces
         /// value.
         /// </summary>
         /// <remarks>This operator enables direct comparison between a uint and an MSI_PERSISTENCE_MODE
-        /// value. The comparison is performed by converting the uint to an IntPtr and comparing it to the
+        /// value. The comparison is performed by converting the uint to an nint and comparing it to the
         /// MSI_PERSISTENCE_MODE value.</remarks>
         /// <param name="h1">The unsigned integer value to compare.</param>
         /// <param name="h2">The MSI_PERSISTENCE_MODE value to compare.</param>
         /// <returns>true if the values are equal; otherwise, false.</returns>
         public static bool operator ==(uint h1, MSI_PERSISTENCE_MODE h2)
         {
-            return (IntPtr)h1 == h2;
+            return (nint)h1 == h2;
         }
 
         /// <summary>
         /// Represents the underlying pointer value of the MSI_PERSISTENCE_MODE instance.
         /// </summary>
-        private readonly IntPtr Value;
+        private readonly nint Value;
     }
 }

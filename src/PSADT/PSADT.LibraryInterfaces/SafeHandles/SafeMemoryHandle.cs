@@ -27,7 +27,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle{TSelf}"/> should reliably release the handle during the
         /// finalization phase.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
-        protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(ownsHandle)
+        protected SafeMemoryHandle(nint handle, int length, bool ownsHandle) : base(ownsHandle)
         {
             Length = length >= 0 ? length : throw new ArgumentOutOfRangeException(nameof(length));
             SetHandle(handle);

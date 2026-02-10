@@ -407,7 +407,7 @@ namespace PSADT.FileSystem
         /// <param name="fileHandle">The file handle to query.</param>
         /// <param name="infoBuffer">The buffer to receive the object name.</param>
         /// <param name="infoBufferLength">The length of the info buffer.</param>
-        private static void PatchStartRoutineBuffer(SafeVirtualAllocHandle startRoutineBuffer, IntPtr fileHandle, IntPtr infoBuffer, int infoBufferLength)
+        private static void PatchStartRoutineBuffer(SafeVirtualAllocHandle startRoutineBuffer, nint fileHandle, nint infoBuffer, int infoBufferLength)
         {
             // Patch the handle and buffer pointers into the StartRoutine template.
             Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
@@ -416,8 +416,8 @@ namespace PSADT.FileSystem
                 // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
                 // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
                 // Patch buffer length at offset (mov r9, bufferSize -> 3 bytes opcode + 8 bytes value)
-                _ = startRoutineBuffer.WriteInt64(fileHandle.ToInt64(), NtQueryObjectStartRoutineTemplate.HandleOffset);
-                _ = startRoutineBuffer.WriteInt64(infoBuffer.ToInt64(), NtQueryObjectStartRoutineTemplate.BufferOffset);
+                _ = startRoutineBuffer.WriteInt64(fileHandle, NtQueryObjectStartRoutineTemplate.HandleOffset);
+                _ = startRoutineBuffer.WriteInt64(infoBuffer, NtQueryObjectStartRoutineTemplate.BufferOffset);
                 _ = startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
             }
             else if (processArchitecture == Architecture.X86)
@@ -426,15 +426,15 @@ namespace PSADT.FileSystem
                 // Patch buffer (push buffer)
                 // Patch handle (push handle)
                 _ = startRoutineBuffer.WriteInt32(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
-                _ = startRoutineBuffer.WriteInt32(infoBuffer.ToInt32(), NtQueryObjectStartRoutineTemplate.BufferOffset);
-                _ = startRoutineBuffer.WriteInt32(fileHandle.ToInt32(), NtQueryObjectStartRoutineTemplate.HandleOffset);
+                _ = startRoutineBuffer.WriteInt32((int)infoBuffer, NtQueryObjectStartRoutineTemplate.BufferOffset);
+                _ = startRoutineBuffer.WriteInt32((int)fileHandle, NtQueryObjectStartRoutineTemplate.HandleOffset);
             }
             else if (processArchitecture == Architecture.Arm64)
             {
                 // For ARM64, we need to regenerate the MOVZ/MOVK sequences for each 64-bit value. Each instruction is 4 bytes, patch in place.
                 // Handle is at x0 (instructions 0-3), buffer is at x2 (instructions 8-11), length is at x3 (instructions 12-15).
-                uint[] handleInstrs = [.. NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64())];
-                uint[] bufferInstrs = [.. NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64())];
+                uint[] handleInstrs = [.. NativeUtilities.Load64(0, (ulong)fileHandle)];
+                uint[] bufferInstrs = [.. NativeUtilities.Load64(2, (ulong)infoBuffer)];
                 uint[] lengthInstrs = [.. NativeUtilities.Load64(3, (ulong)infoBufferLength)];
                 for (int j = 0; j < 4; j++)
                 {

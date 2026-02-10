@@ -9,24 +9,24 @@ namespace PSADT.Utilities
     internal static class NumericalUtilities
     {
         /// <summary>
-        /// Attempts to convert the specified string representation of a number to its equivalent <see cref="IntPtr"/>
+        /// Attempts to convert the specified string representation of a number to its equivalent <see cref="nint"/>
         /// value.
         /// </summary>
         /// <remarks>This method supports both decimal and hexadecimal string formats. Hexadecimal values
         /// must be prefixed with "0x". The conversion is performed using the invariant culture. If the parsed value
-        /// exceeds the size of <see cref="IntPtr"/> on the current platform, the method returns false.</remarks>
+        /// exceeds the size of <see cref="nint"/> on the current platform, the method returns false.</remarks>
         /// <param name="s">The string containing the number to convert. The string may be in decimal or hexadecimal format (with a "0x"
         /// prefix for hexadecimal).</param>
-        /// <param name="value">When this method returns, contains the <see cref="IntPtr"/> value equivalent to the number contained in
+        /// <param name="value">When this method returns, contains the <see cref="nint"/> value equivalent to the number contained in
         /// <paramref name="s"/>, if the conversion succeeded, or <see cref="IntPtr.Zero"/> if the conversion failed.
         /// This parameter is passed uninitialized.</param>
         /// <returns>true if <paramref name="s"/> was converted successfully; otherwise, false.</returns>
-        internal static bool TryParseIntPtr(string s, out IntPtr value)
+        internal static bool TryParseIntPtr(string s, out nint value)
         {
             // Return early if the string is bad.
             if (string.IsNullOrWhiteSpace(s))
             {
-                value = IntPtr.Zero;
+                value = default;
                 return false;
             }
 
@@ -41,31 +41,31 @@ namespace PSADT.Utilities
             // Parse into 64-bit, then down-cast safely depending on platform.
             if (!long.TryParse(s, style, CultureInfo.InvariantCulture, out long raw))
             {
-                value = IntPtr.Zero;
+                value = default;
                 return false;
             }
             try
             {
-                value = new(IntPtr.Size == 8 ? raw : checked((int)raw));
+                value = (nint)(IntPtr.Size == 8 ? raw : checked((int)raw));
                 return true;
             }
             catch (OverflowException)
             {
-                value = IntPtr.Zero;
+                value = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Converts the specified string representation of a pointer or handle to its equivalent IntPtr value.
+        /// Converts the specified string representation of a pointer or handle to its equivalent nint value.
         /// </summary>
         /// <param name="s">The string that contains the pointer or handle to convert.</param>
-        /// <returns>An IntPtr value that is equivalent to the pointer or handle specified in s.</returns>
-        /// <exception cref="FormatException">Thrown if s is not in a valid format to represent an IntPtr value.</exception>
-        internal static IntPtr ParseIntPtr(string s)
+        /// <returns>An nint value that is equivalent to the pointer or handle specified in s.</returns>
+        /// <exception cref="FormatException">Thrown if s is not in a valid format to represent an nint value.</exception>
+        internal static nint ParseIntPtr(string s)
         {
-            return !TryParseIntPtr(s, out IntPtr value)
-                ? throw new FormatException($"The string '{s}' is not in a correct format to convert to IntPtr.")
+            return !TryParseIntPtr(s, out nint value)
+                ? throw new FormatException($"The string '{s}' is not in a correct format to convert to nint.")
                 : value;
         }
     }

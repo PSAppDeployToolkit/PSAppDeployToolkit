@@ -46,8 +46,8 @@ namespace PSADT.LibraryInterfaces
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 pProcessInfo = pLevel > 0
-                    ? new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true)
-                    : new((IntPtr)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
+                    ? new((nint)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true)
+                    : new((nint)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
             }
             return res;
         }
@@ -73,7 +73,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                pSessionInfo = new((IntPtr)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
+                pSessionInfo = new((nint)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             }
             return res;
         }
@@ -97,7 +97,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                pBuffer = new(new(ppBuffer), (int)bytesReturned, true);
+                pBuffer = new(new IntPtr(ppBuffer), (int)bytesReturned, true);
             }
             return res;
         }

@@ -19,7 +19,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// </summary>
         /// <param name="handle">The native handle to a GDI object to be wrapped by this instance.</param>
         /// <param name="ownsHandle">true to reliably release the handle during finalization; false to prevent the handle from being released.</param>
-        internal SafeGdiObjectHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
+        internal SafeGdiObjectHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
             SetHandle(handle);
         }
@@ -30,7 +30,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns></returns>
         protected override bool ReleaseHandle()
         {
-            if (handle == default || IntPtr.Zero == handle)
+            if (default == handle)
             {
                 return true;
             }
