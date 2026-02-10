@@ -24,9 +24,9 @@ namespace PSADT.Utilities
         internal static bool TryParseIntPtr(string s, out IntPtr value)
         {
             // Return early if the string is bad.
-            value = IntPtr.Zero;
             if (string.IsNullOrWhiteSpace(s))
             {
+                value = IntPtr.Zero;
                 return false;
             }
 
@@ -41,6 +41,7 @@ namespace PSADT.Utilities
             // Parse into 64-bit, then down-cast safely depending on platform.
             if (!long.TryParse(s, style, CultureInfo.InvariantCulture, out long raw))
             {
+                value = IntPtr.Zero;
                 return false;
             }
             try
@@ -50,6 +51,7 @@ namespace PSADT.Utilities
             }
             catch (OverflowException)
             {
+                value = IntPtr.Zero;
                 return false;
             }
         }
