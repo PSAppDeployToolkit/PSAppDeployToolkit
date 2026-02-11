@@ -62,7 +62,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
             }
-
             AppTitle = appTitle;
             MessageText = messageText;
             DialogButtons = dialogButtons;
