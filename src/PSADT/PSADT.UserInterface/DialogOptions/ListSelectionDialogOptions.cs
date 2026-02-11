@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -38,9 +38,9 @@ namespace PSADT.UserInterface.DialogOptions
             options["ButtonRightText"] as string,
             options["Icon"] as DialogSystemIcon?,
             options["MinimizeWindows"] as bool? ?? false,
-            options["ListItems"] as string[] ?? null!,
-            options["InitialSelectedItem"] as string ?? null!,
-            options["Strings"] as Hashtable is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null)
+            options["ListItems"] as IReadOnlyList<string> ?? null!,
+            options["SelectedIndex"] as int? ?? -1,
+            options["Strings"] as Hashtable is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null!)
         {
         }
 
@@ -76,13 +76,24 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="icon">The system icon displayed in the dialog. If <see langword="null"/>, no icon is displayed.</param>
         /// <param name="minimizeWindows">A value indicating whether all other windows should be minimized when the dialog is displayed.</param>
         /// <param name="listItems">The list of items to display for user selection. Cannot be <see langword="null"/>.</param>
-        /// <param name="initialSelectedItem">The item that should be selected by default. Must exist in <paramref name="listItems"/>.</param>
+        /// <param name="selectedIndex">The index for the default item to be displayed for user selection.</param>
         /// <param name="strings">The localized strings for the dialog. If <see langword="null"/>, the dialog falls back to XAML defaults.</param>
-        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, string initialSelectedItem, ListSelectionDialogStrings? strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
+        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, int selectedIndex, ListSelectionDialogStrings strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
-            ListItems = listItems ?? throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
-            InitialSelectedItem = !string.IsNullOrWhiteSpace(initialSelectedItem) ? initialSelectedItem : throw new ArgumentNullException(nameof(initialSelectedItem), "InitialSelectedItem cannot be null or empty for a ListSelectionDialog.");
-            _ = Enumerable.Contains(ListItems, InitialSelectedItem, StringComparer.CurrentCultureIgnoreCase) ? true : throw new ArgumentException("InitialSelectedItem must exist in ListItems.", nameof(initialSelectedItem));
+            if (!(listItems?.Count > 0))
+            {
+                throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
+            }
+            if (selectedIndex < 0 || selectedIndex >= listItems.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(selectedIndex), "SelectedIndex must be a valid index within ListItems.");
+            }
+            if (strings is null)
+            {
+                throw new ArgumentNullException(nameof(strings), "Strings cannot be null for a ListSelectionDialog.");
+            }
+            ListItems = new ReadOnlyCollection<string>([.. listItems]);
+            SelectedIndex = selectedIndex;
             Strings = strings;
         }
 
@@ -96,13 +107,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// The item that should be selected by default.
         /// </summary>
         [DataMember]
-        public string InitialSelectedItem { get; private set; }
+        public int SelectedIndex { get; private set; }
 
         /// <summary>
         /// The localized strings for the ListSelectionDialog.
         /// </summary>
         [DataMember]
-        public ListSelectionDialogStrings? Strings { get; private set; }
+        public ListSelectionDialogStrings Strings { get; private set; }
 
         /// <summary>
         /// Localized strings for the ListSelectionDialog.
@@ -125,6 +136,10 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="listSelectionMessage">The heading text displayed next to the list selection dropdown.</param>
             private ListSelectionDialogStrings(string listSelectionMessage)
             {
+                if (string.IsNullOrWhiteSpace(listSelectionMessage))
+                {
+                    throw new ArgumentException("ListSelectionMessage cannot be null or whitespace.", nameof(listSelectionMessage));
+                }
                 ListSelectionMessage = listSelectionMessage;
             }
 

@@ -368,6 +368,7 @@ namespace PSADT.ClientServer
                 typeof(UserInterface.DialogResults.CloseAppsDialogResult),
                 typeof(UserInterface.DialogResults.DialogBoxResult),
                 typeof(UserInterface.DialogResults.InputDialogResult),
+                typeof(UserInterface.DialogResults.ListSelectionDialogResult),
 
                 // Process and window types
                 typeof(ProcessManagement.ProcessDefinition),

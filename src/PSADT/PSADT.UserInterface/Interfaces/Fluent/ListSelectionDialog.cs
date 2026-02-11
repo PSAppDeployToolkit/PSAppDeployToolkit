@@ -29,14 +29,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 _ = ListSelectionComboBox.Items.Add(item);
             }
-            ListSelectionComboBox.SelectedItem = options.InitialSelectedItem;
+            ListSelectionComboBox.SelectedIndex = options.SelectedIndex;
             _ = ListSelectionComboBox.Focus();
 
             // Set heading text from localized strings if available.
-            if (options.Strings is not null)
-            {
-                ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
-            }
+            ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
 
         }
 
