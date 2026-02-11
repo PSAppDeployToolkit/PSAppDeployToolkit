@@ -90,7 +90,7 @@ namespace PSADT.UserInterface.DialogOptions
             ForcedCountdown = forcedCountdown;
             HideCloseButton = hideCloseButton;
             DialogAllowMinimize = dialogAllowMinimize;
-            CustomMessageText = customMessageText;
+            CustomMessageText = !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
         }
 
 

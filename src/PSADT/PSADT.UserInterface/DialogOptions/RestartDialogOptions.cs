@@ -71,7 +71,7 @@ namespace PSADT.UserInterface.DialogOptions
             Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
             CountdownDuration = countdownDuration;
             CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
-            CustomMessageText = customMessageText;
+            CustomMessageText = !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
         }
 
         /// <summary>
@@ -166,7 +166,6 @@ namespace PSADT.UserInterface.DialogOptions
                 {
                     throw new ArgumentNullException(nameof(buttonRestartLater), "ButtonRestartLater value is null or invalid.");
                 }
-
                 Title = title;
                 Message = message;
                 MessageTime = messageTime;

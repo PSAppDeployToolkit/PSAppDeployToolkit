@@ -43,7 +43,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(moduleData), "Modules value is null or invalid.");
             }
-
             ExecutionPolicy = executionPolicy;
             ModuleData = moduleData;
         }

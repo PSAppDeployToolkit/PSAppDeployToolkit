@@ -76,7 +76,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(progressDetailMessageText), "ProgressDetailMessageText value is null or invalid.");
             }
-
             ProgressMessageText = progressMessageText;
             ProgressDetailMessageText = progressDetailMessageText;
             ProgressPercentage = progressPercentage;
