@@ -18,29 +18,29 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="options"></param>
         public ListSelectionDialogOptions(Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
-            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
-            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
-            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
-            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
-            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
-            options["Language"] is CultureInfo language ? language : null!,
-            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
-            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
-            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
-            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
-            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
-            options["MessageText"] is string messageText ? messageText : string.Empty,
-            options["MessageAlignment"] is DialogMessageAlignment messageAlignment ? messageAlignment : null,
-            options["ButtonLeftText"] is string buttonLeftText ? buttonLeftText : null,
-            options["ButtonMiddleText"] is string buttonMiddleText ? buttonMiddleText : null,
-            options["ButtonRightText"] is string buttonRightText ? buttonRightText : null,
-            options["Icon"] is DialogSystemIcon icon ? icon : null,
-            options["MinimizeWindows"] is bool minimizeWindows && minimizeWindows,
-            options["ListItems"] is string[] listItems ? (IReadOnlyList<string>)listItems : null!,
-            options["InitialSelectedItem"] is string initialSelectedItem ? initialSelectedItem : null!,
-            options["Strings"] is Hashtable strings && strings.Count > 0 ? new ListSelectionDialogStrings(strings) : null)
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
+            options["Subtitle"] as string ?? null!,
+            options["AppIconImage"] as string ?? null!,
+            options["AppIconDarkImage"] as string ?? null!,
+            options["AppBannerImage"] as string ?? null!,
+            options["AppTaskbarIconImage"] as string,
+            options["DialogTopMost"] as bool? ?? false,
+            options["Language"] as CultureInfo ?? null!,
+            options["FluentAccentColor"] as int?,
+            options["DialogPosition"] as DialogPosition?,
+            options["DialogAllowMove"] as bool?,
+            options["DialogExpiryDuration"] as TimeSpan?,
+            options["DialogPersistInterval"] as TimeSpan?,
+            options["MessageText"] as string ?? null!,
+            options["MessageAlignment"] as DialogMessageAlignment?,
+            options["ButtonLeftText"] as string,
+            options["ButtonMiddleText"] as string,
+            options["ButtonRightText"] as string,
+            options["Icon"] as DialogSystemIcon?,
+            options["MinimizeWindows"] as bool? ?? false,
+            options["ListItems"] as string[] ?? null!,
+            options["InitialSelectedItem"] as string ?? null!,
+            options["Strings"] as Hashtable is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null)
         {
         }
 
@@ -115,7 +115,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class.
             /// </summary>
             /// <param name="strings"></param>
-            internal ListSelectionDialogStrings(Hashtable strings) : this(strings["ListSelectionMessage"] is string listSelectionMessage ? listSelectionMessage : string.Empty)
+            internal ListSelectionDialogStrings(Hashtable strings) : this(strings["ListSelectionMessage"] as string ?? null!)
             {
             }
 

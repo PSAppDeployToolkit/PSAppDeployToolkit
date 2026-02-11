@@ -16,13 +16,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="options"></param>
         public DialogBoxOptions(Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
-            options["MessageText"] is string messageText ? messageText : string.Empty,
-            options["DialogButtons"] is DialogBoxButtons dialogButtons ? dialogButtons : (DialogBoxButtons)uint.MaxValue,
-            options["DialogDefaultButton"] is DialogBoxDefaultButton dialogDefaultButton ? dialogDefaultButton : (DialogBoxDefaultButton)uint.MaxValue,
-            options["DialogIcon"] is DialogBoxIcon dialogIcon ? dialogIcon : null,
-            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
-            options["DialogExpiryDuration"] is uint dialogExpiryDuration ? dialogExpiryDuration : null)
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
+            options["MessageText"] as string ?? null!,
+            options["DialogButtons"] as DialogBoxButtons? ?? (DialogBoxButtons)uint.MaxValue,
+            options["DialogDefaultButton"] as DialogBoxDefaultButton? ?? (DialogBoxDefaultButton)uint.MaxValue,
+            options["DialogIcon"] as DialogBoxIcon?,
+            options["DialogTopMost"] as bool? ?? false,
+            options["DialogExpiryDuration"] as uint? ?? uint.MaxValue)
         {
         }
 
@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogTopMost">A value indicating whether the dialog box should appear as the topmost window. <see langword="true"/> if the
         /// dialog box is topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
-        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint? dialogExpiryDuration)
+        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint dialogExpiryDuration)
         {
             if (string.IsNullOrWhiteSpace(appTitle))
             {
@@ -58,7 +58,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(dialogDefaultButton), "DialogDefaultButton value is null or invalid.");
             }
-            if (dialogExpiryDuration is null)
+            if (dialogExpiryDuration == uint.MaxValue)
             {
                 throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
             }
@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.DialogOptions
             DialogDefaultButton = dialogDefaultButton;
             DialogIcon = dialogIcon;
             DialogTopMost = dialogTopMost;
-            DialogExpiryDuration = dialogExpiryDuration.Value;
+            DialogExpiryDuration = dialogExpiryDuration;
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="options"></param>
         public HelpConsoleOptions(Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["ExecutionPolicy"] is ExecutionPolicy executionPolicy ? executionPolicy : (ExecutionPolicy)(-1),
+            (options ?? throw new ArgumentNullException(nameof(options)))["ExecutionPolicy"] as ExecutionPolicy? ?? (ExecutionPolicy)(-1),
             options["Modules"] is IReadOnlyList<ModuleSpecification> modules ? new ReadOnlyCollection<Hashtable>([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version?.ToString() }, { "Guid", m.Guid } })]) : null!)
         {
         }

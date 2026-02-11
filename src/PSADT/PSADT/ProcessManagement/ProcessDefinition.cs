@@ -33,7 +33,7 @@ namespace PSADT.ProcessManagement
         /// Initializes a new instance of the <see cref="ProcessDefinition"/> struct.
         /// </summary>
         /// <param name="properties">The hashtable with a process's name, and optionally a description.</param>
-        public ProcessDefinition(Hashtable properties) : this((properties ?? throw new ArgumentNullException(nameof(properties)))["Name"] is string name ? name : string.Empty, properties["Description"] is string description ? description : string.Empty)
+        public ProcessDefinition(Hashtable properties) : this((properties ?? throw new ArgumentNullException(nameof(properties)))["Name"] as string ?? string.Empty, properties["Description"] as string ?? string.Empty)
         {
         }
 
