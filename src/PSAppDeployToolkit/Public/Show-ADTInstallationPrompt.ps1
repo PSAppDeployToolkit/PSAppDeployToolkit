@@ -161,6 +161,14 @@ function Show-ADTInstallationPrompt
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogSystemIcon]$Icon,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ListItems,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.Nullable[System.UInt32]]$DefaultIndex = 0,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogPosition]$WindowLocation,
@@ -174,14 +182,6 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
-        [ValidateNotNullOrEmpty()]
-        [System.String[]]$ListItems,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultItem,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
@@ -264,14 +264,14 @@ function Show-ADTInstallationPrompt
         }
 
         # Validate list selection default item.
-        if ($PSCmdlet.ParameterSetName -eq 'ShowListSelectionDialog' -and !($ListItems -contains $DefaultItem))
+        if ($PSCmdlet.ParameterSetName -eq 'ShowListSelectionDialog' -and ($DefaultIndex -ge $ListItems.Count))
         {
             $naerParams = @{
-                Exception = [System.ArgumentException]::new('The default item must exist in the list of items.')
+                Exception = [System.ArgumentOutOfRangeException]::new('The default index is out of range for the provided ListItems array.', $null)
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'DefaultItemNotInListItems'
+                ErrorId = 'DefaultIndexOutOfBoundsError'
                 TargetObject = $PSBoundParameters
-                RecommendedAction = 'Please ensure [-DefaultItem] matches one of the values supplied via [-ListItems] and try again.'
+                RecommendedAction = 'Please ensure [-DefaultIndex] is less than the count of items provided to [-ListItems] and try again.'
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
@@ -373,6 +373,10 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.InitialInputText = $DefaultValue
                 }
+                if ($SecureInput)
+                {
+                    $dialogOptions.Add('SecureInput', !!$SecureInput)
+                }
                 if ($ButtonRightText)
                 {
                     $dialogOptions.Add('ButtonRightText', $ButtonRightText)
@@ -401,14 +405,10 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
-                if ($SecureInput)
-                {
-                    $dialogOptions.Add('SecureInput', !!$SecureInput)
-                }
                 if ($ListItems)
                 {
-                    $dialogOptions.Add('ListItems', [System.String[]]$ListItems)
-                    $dialogOptions.Add('InitialSelectedItem', $DefaultItem)
+                    $dialogOptions.Add('ListItems', $ListItems)
+                    $dialogOptions.Add('SelectedIndex', [System.Int32]$DefaultIndex)
                     $dialogOptions.Add('Strings', $adtStrings.ListSelectionPrompt)
                 }
                 $dialogOptions = if ($RequestInput)

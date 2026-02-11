@@ -29,6 +29,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the item selected by the user from the list.
         /// </summary>
-        [DataMember] public string SelectedItem { get; private set; }
+        [DataMember]
+        public string SelectedItem { get; private set; }
     }
 }
