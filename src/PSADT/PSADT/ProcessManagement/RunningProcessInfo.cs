@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,6 @@ using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Security;
-using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.Threading;
 
@@ -49,7 +47,7 @@ namespace PSADT.ProcessManagement
 
                 // Get the command line for the process. Failing that, just get the image path.
                 string? commandLine;
-                if (process.HasExited)
+                if (ProcessUtilities.HasProcessExited(process))
                 {
                     return [];
                 }
@@ -69,7 +67,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // If we couldn't get the command line or the file path is malformed, try and get the process's image name.
-                if (process.HasExited)
+                if (ProcessUtilities.HasProcessExited(process))
                 {
                     return [];
                 }
@@ -93,7 +91,7 @@ namespace PSADT.ProcessManagement
                 }
                 catch
                 {
-                    if (!process.HasExited)
+                    if (!ProcessUtilities.HasProcessExited(process))
                     {
                         throw;
                     }
@@ -121,17 +119,8 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Skip this process if it's not running anymore.
-                    try
+                    if (ProcessUtilities.HasProcessExited(process))
                     {
-                        if (process.HasExited)
-                        {
-                            continue;
-                        }
-                    }
-                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_ACCESS_DENIED)
-                    {
-                        // If we can't access the process, skip it. We only need to test this
-                        // once here, it shouldn't be an issue for the remainder of the loop.
                         continue;
                     }
 
@@ -139,7 +128,7 @@ namespace PSADT.ProcessManagement
                     string[] argv;
                     try
                     {
-                        if (process.HasExited)
+                        if (ProcessUtilities.HasProcessExited(process))
                         {
                             continue;
                         }
@@ -167,13 +156,13 @@ namespace PSADT.ProcessManagement
                         ? processDefinition.Description!
                         : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription)
                             ? fileInfo.FileDescription
-                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !process.HasExited && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription)
+                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && !string.IsNullOrWhiteSpace(procInfo.FileDescription)
                                 ? procInfo.FileDescription!
                                 : process.ProcessName;
 
                     // Grab the process owner if we can.
                     SecurityIdentifier? sid = null;
-                    if (!process.HasExited)
+                    if (!ProcessUtilities.HasProcessExited(process))
                     {
                         // Users can only get the username for their own processes, whereas admins can get anyone's.
                         try
@@ -193,7 +182,7 @@ namespace PSADT.ProcessManagement
 
                     // Store the process information.
                     RunningProcessInfo runningProcess = new(process, procDescription, argv[0], argv.Skip(1), sid);
-                    if (!process.HasExited && ((processDefinition.Filter is null) || processDefinition.Filter(runningProcess)))
+                    if (!ProcessUtilities.HasProcessExited(process) && ((processDefinition.Filter is null) || processDefinition.Filter(runningProcess)))
                     {
                         runningProcesses.Add(runningProcess);
                     }

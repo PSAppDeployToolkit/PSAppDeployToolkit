@@ -100,6 +100,36 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Determines whether the specified process has exited using minimal privileges.
+        /// </summary>
+        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// and checks the exit code to determine if the process is still running. This is more reliable than
+        /// using <see cref="Process.HasExited"/> which relies on a cached handle that may have been opened
+        /// with broader access rights that could fail on protected processes.</remarks>
+        /// <param name="process">The process to check. Must not be null.</param>
+        /// <returns><see langword="true"/> if the process has exited; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        public static bool HasProcessExited(Process process)
+        {
+            return process is null
+                ? throw new ArgumentNullException(nameof(process), "Process cannot be null.")
+                : HasProcessExited((uint)process.Id);
+        }
+
+        /// <summary>
+        /// Determines whether the process with the specified identifier has exited.
+        /// </summary>
+        /// <remarks>This method checks the exit status of the process identified by the given process ID.
+        /// It is important to ensure that the process ID is valid before calling this method to avoid unexpected
+        /// results.</remarks>
+        /// <param name="processId">The identifier of the process to check. Must be a valid process ID.</param>
+        /// <returns>true if the process has exited; otherwise, false.</returns>
+        public static bool HasProcessExited(int processId)
+        {
+            return HasProcessExited((uint)processId);
+        }
+
+        /// <summary>
         /// Retrieves the full command-line string used to start the specified process.
         /// </summary>
         /// <remarks>This method requires that the caller has sufficient permissions to query information
@@ -182,6 +212,28 @@ namespace PSADT.ProcessManagement
             _ = NtDll.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
             ref readonly PROCESS_BASIC_INFORMATION pbi = ref buffer.AsReadOnlyStructure<PROCESS_BASIC_INFORMATION>();
             return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+        }
+
+        /// <summary>
+        /// Determines whether the process with the specified identifier has exited using minimal privileges.
+        /// </summary>
+        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// and checks the exit code to determine if the process is still running. A process is considered
+        /// to have exited if <c>GetExitCodeProcess</c> returns an exit code other than <c>STILL_ACTIVE</c> (259).</remarks>
+        /// <param name="processId">The unique identifier of the process to check.</param>
+        /// <returns><see langword="true"/> if the process has exited or cannot be opened; otherwise, <see langword="false"/>.</returns>
+        internal static bool HasProcessExited(uint processId)
+        {
+            try
+            {
+                using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+                return Kernel32.GetExitCodeProcess(hProcess, out uint exitCode) && exitCode != NTSTATUS.STILL_ACTIVE;
+            }
+            catch
+            {
+                return true;
+                throw;
+            }
         }
 
         /// <summary>
