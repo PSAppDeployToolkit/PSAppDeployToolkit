@@ -43,7 +43,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the dialog's appearance and behavior. Must not be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, used to determine the outcome when the dialog
         /// is closed.</param>
-        internal ClassicDialog(BaseDialogOptions options, object dialogResult) : base()
+        internal ClassicDialog(BaseDialogOptions options, IDialogResult dialogResult) : base()
         {
             // Initialise the underlying form as set up by the designer.
             InitializeComponent();
@@ -504,7 +504,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1061:Do not hide base class methods", Justification = "The redefinition of this field is by design.")]
         [DefaultValue("Timeout")]
-        public new object DialogResult { get; private protected set; } = "Timeout";
+        public new IDialogResult DialogResult { get; private protected set; }
 
         /// <summary>
         /// Starting point for the dialog.

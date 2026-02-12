@@ -8,7 +8,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the ShowProgressDialog command.
     /// </summary>
     [DataContract]
-    internal sealed record ShowProgressDialogPayload : IPayload
+    internal sealed record ShowProgressDialogPayload : IClientServerPayload
     {
         /// <summary>
         /// The style of the dialog.

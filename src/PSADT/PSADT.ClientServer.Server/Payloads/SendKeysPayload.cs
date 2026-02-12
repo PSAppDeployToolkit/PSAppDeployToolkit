@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the SendKeys command.
     /// </summary>
     [DataContract]
-    internal sealed record SendKeysPayload : IPayload
+    internal sealed record SendKeysPayload : IClientServerPayload
     {
         /// <summary>
         /// The send keys options.

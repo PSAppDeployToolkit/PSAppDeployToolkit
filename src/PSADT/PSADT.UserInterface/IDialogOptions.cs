@@ -1,4 +1,4 @@
-﻿namespace PSADT.UserInterface.DialogOptions
+﻿namespace PSADT.UserInterface
 {
     /// <summary>
     /// Marker interface for dialog options types.

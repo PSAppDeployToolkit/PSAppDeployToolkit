@@ -6,7 +6,7 @@ namespace PSADT.ClientServer.Payloads
     /// Represents the payload for a group policy update operation, specifying options for forced reapplication of policy settings.
     /// </summary>
     [DataContract]
-    internal sealed record GroupPolicyUpdatePayload : IPayload
+    internal sealed record GroupPolicyUpdatePayload : IClientServerPayload
     {
         /// <summary>
         /// Reapplies all policy settings. By default, only policy settings that have changed are applied.

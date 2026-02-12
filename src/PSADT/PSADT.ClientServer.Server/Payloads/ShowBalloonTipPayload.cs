@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the ShowBalloonTip command.
     /// </summary>
     [DataContract]
-    internal sealed record ShowBalloonTipPayload : IPayload
+    internal sealed record ShowBalloonTipPayload : IClientServerPayload
     {
         /// <summary>
         /// The balloon tip options.
