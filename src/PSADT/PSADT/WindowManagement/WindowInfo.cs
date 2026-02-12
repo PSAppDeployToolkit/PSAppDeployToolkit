@@ -29,31 +29,36 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the title of the window.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string WindowTitle { get; private set; }
+        public readonly string WindowTitle;
 
         /// <summary>
         /// Gets the handle to the window.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public nint WindowHandle { get; private set; }
+        public readonly nint WindowHandle;
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string ParentProcess { get; private set; }
+        public readonly string ParentProcess;
 
         /// <summary>
         /// Gets the ID of the parent process.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public int ParentProcessId { get; private set; }
+        public readonly int ParentProcessId;
 
         /// <summary>
         /// Gets the handle to the main window of the parent process.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public nint ParentProcessMainWindowHandle { get; private set; }
+        public readonly nint ParentProcessMainWindowHandle;
     }
 }

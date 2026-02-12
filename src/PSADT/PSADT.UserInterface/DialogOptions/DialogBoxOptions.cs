@@ -74,43 +74,50 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string AppTitle { get; private set; }
+        public readonly string AppTitle;
 
         /// <summary>
         /// Gets the text of the message.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string MessageText { get; private set; }
+        public readonly string MessageText;
 
         /// <summary>
         /// Gets the set of buttons to display in the message box dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DialogBoxButtons DialogButtons { get; private set; }
+        public readonly DialogBoxButtons DialogButtons;
 
         /// <summary>
         /// Gets the default button that is selected in the dialog box when it is displayed.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DialogBoxDefaultButton DialogDefaultButton { get; private set; }
+        public readonly DialogBoxDefaultButton DialogDefaultButton;
 
         /// <summary>
         /// Gets the icon displayed in the dialog box.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DialogBoxIcon? DialogIcon { get; private set; }
+        public readonly DialogBoxIcon? DialogIcon;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool DialogTopMost { get; private set; }
+        public readonly bool DialogTopMost;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public uint DialogExpiryDuration { get; private set; }
+        public readonly uint DialogExpiryDuration;
     }
 }

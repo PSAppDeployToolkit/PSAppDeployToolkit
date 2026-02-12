@@ -38,7 +38,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// the dictionary represents a module, with its value being another dictionary that maps help topic names to
         /// their corresponding descriptions. This structure enables efficient access to context-sensitive help content
         /// for different modules within the application.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap { get; private set; }
+        public readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ModuleHelpMap;
     }
 }

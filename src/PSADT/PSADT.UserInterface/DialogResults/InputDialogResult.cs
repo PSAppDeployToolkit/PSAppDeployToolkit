@@ -27,8 +27,9 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the text entered by the user.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? Text { get; private set; }
+        public readonly string? Text;
 
         /// <summary>
         /// Determines whether the specified object is equal to the current instance.

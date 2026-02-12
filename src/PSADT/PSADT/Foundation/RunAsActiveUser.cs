@@ -84,14 +84,16 @@ namespace PSADT.Foundation
         /// <summary>
         /// Represents the session ID of the user.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public uint SessionId { get; private set; }
+        public readonly uint SessionId;
 
         /// <summary>
         /// Indicates whether the current user has local administrator privileges.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool? IsLocalAdmin { get; private set; }
+        public readonly bool? IsLocalAdmin;
 
         /// <summary>
         /// Gets the NT account name string for serialization.

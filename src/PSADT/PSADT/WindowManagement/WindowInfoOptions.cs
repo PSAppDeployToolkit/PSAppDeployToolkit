@@ -65,8 +65,9 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the filter criteria for window titles.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public IReadOnlyList<string>? WindowTitleFilter { get; private set; }
+        public readonly IReadOnlyList<string>? WindowTitleFilter;
 
         /// <summary>
         /// Represents a filter for window handles used to determine which windows are included in certain operations.
@@ -82,16 +83,18 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the names of parent processes that are used as a filter. If the
         /// array is null or empty, no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public IReadOnlyList<string>? ParentProcessFilter { get; private set; }
+        public readonly IReadOnlyList<string>? ParentProcessFilter;
 
         /// <summary>
         /// Gets the list of parent process IDs to use as a filter when selecting processes.
         /// </summary>
         /// <remarks>If the list is empty, no filtering by parent process ID is applied. This property is
         /// read-only.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public IReadOnlyList<int>? ParentProcessIdFilter { get; private set; }
+        public readonly IReadOnlyList<int>? ParentProcessIdFilter;
 
         /// <summary>
         /// Gets the collection of main window handles used to filter parent processes.

@@ -31,7 +31,8 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets or sets the result value as a string.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string Result { get; private set; }
+        public readonly string Result;
     }
 }
