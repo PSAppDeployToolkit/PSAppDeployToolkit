@@ -30,13 +30,15 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the native handle of the window.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public nint WindowHandle { get; private set; }
+        public readonly nint WindowHandle;
 
         /// <summary>
         /// Represents the keys associated with the current object.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string Keys { get; private set; }
+        public readonly string Keys;
     }
 }

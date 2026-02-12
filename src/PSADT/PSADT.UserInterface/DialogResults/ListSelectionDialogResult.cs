@@ -23,8 +23,9 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the item selected by the user from the list.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string SelectedItem { get; private set; }
+        public readonly string SelectedItem;
 
         /// <summary>
         /// Determines whether the specified object is equal to the current instance.

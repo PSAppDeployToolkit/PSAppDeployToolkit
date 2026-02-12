@@ -97,62 +97,72 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public CloseAppsDialogStrings Strings { get; private set; }
+        public readonly CloseAppsDialogStrings Strings;
 
         /// <summary>
         /// The number of deferrals remaining for the user.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public uint? DeferralsRemaining { get; private set; }
+        public readonly uint? DeferralsRemaining;
 
         /// <summary>
         /// The deadline for deferrals.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DateTime? DeferralDeadline { get; private set; }
+        public readonly DateTime? DeferralDeadline;
 
         /// <summary>
         /// Indicates whether the system allows an unlimited number of deferrals.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool UnlimitedDeferrals { get; private set; }
+        public readonly bool UnlimitedDeferrals;
 
         /// <summary>
         /// Indicates whether the continue button should be implied when all processes have closed.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool ContinueOnProcessClosure { get; private set; }
+        public readonly bool ContinueOnProcessClosure;
 
         /// <summary>
         /// The duration of the countdown before the dialog automatically closes.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public TimeSpan? CountdownDuration { get; private set; }
+        public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
         /// Specifies whether the countdown is "forced" or not (affects countdown decisions).
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool ForcedCountdown { get; private set; }
+        public readonly bool ForcedCountdown;
 
         /// <summary>
         /// Indicates whether the close button should be hidden.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool HideCloseButton { get; private set; }
+        public readonly bool HideCloseButton;
 
         /// <summary>
         /// Indicates whether the dialog allows minimizing.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool DialogAllowMinimize { get; private set; }
+        public readonly bool DialogAllowMinimize;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? CustomMessageText { get; private set; }
+        public readonly string? CustomMessageText;
 
         /// <summary>
         /// The strings used for the CloseAppsDialog.
@@ -190,14 +200,16 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public CloseAppsDialogClassicStrings Classic { get; private set; }
+            public readonly CloseAppsDialogClassicStrings Classic;
 
             /// <summary>
             /// The strings used for the Fluent CloseAppsDialog.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public CloseAppsDialogFluentStrings Fluent { get; private set; }
+            public readonly CloseAppsDialogFluentStrings Fluent;
 
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
@@ -314,74 +326,86 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// Text displayed when only the deferral dialog is to be displayed and there are no applications to close
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string WelcomeMessage { get; private set; }
+                public readonly string WelcomeMessage;
 
                 /// <summary>
                 /// Text displayed when prompting to close running programs.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string CloseAppsMessage { get; private set; }
+                public readonly string CloseAppsMessage;
 
                 /// <summary>
                 /// Text displayed when a deferral option is available.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ExpiryMessage { get; private set; }
+                public readonly string ExpiryMessage;
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string DeferralsRemaining { get; private set; }
+                public readonly string DeferralsRemaining;
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string DeferralDeadline { get; private set; }
+                public readonly string DeferralDeadline;
 
                 /// <summary>
                 /// Text displayed after the deferral options.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ExpiryWarning { get; private set; }
+                public readonly string ExpiryWarning;
 
                 /// <summary>
                 /// The countdown message displayed at the Welcome Screen to indicate when the deployment will continue if no response from user.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string CountdownDefer { get; private set; }
+                public readonly string CountdownDefer;
 
                 /// <summary>
                 /// Text displayed when counting down to automatically closing applications.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string CountdownClose { get; private set; }
+                public readonly string CountdownClose;
 
                 /// <summary>
                 /// Text displayed on the close button when prompting to close running programs.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonClose { get; private set; }
+                public readonly string ButtonClose;
 
                 /// <summary>
                 /// Text displayed on the defer button when prompting to close running programs
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonDefer { get; private set; }
+                public readonly string ButtonDefer;
 
                 /// <summary>
                 /// Text displayed on the continue button when prompting to close running programs.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonContinue { get; private set; }
+                public readonly string ButtonContinue;
 
                 /// <summary>
                 /// Tooltip text displayed on the continue button when prompting to close running programs.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonContinueTooltip { get; private set; }
+                public readonly string ButtonContinueTooltip;
             }
 
             /// <summary>
@@ -469,50 +493,58 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// This is a message to prompt users to save their work.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string DialogMessage { get; private set; }
+                public readonly string DialogMessage;
 
                 /// <summary>
                 /// This is a message to when there are no running processes available.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string DialogMessageNoProcesses { get; private set; }
+                public readonly string DialogMessageNoProcesses;
 
                 /// <summary>
                 /// A string to describe the automatic start countdown.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string AutomaticStartCountdown { get; private set; }
+                public readonly string AutomaticStartCountdown;
 
                 /// <summary>
                 /// Text displayed when there are a specific number of deferrals remaining.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string DeferralsRemaining { get; private set; }
+                public readonly string DeferralsRemaining;
 
                 /// <summary>
                 /// Text displayed when there is a specific deferral deadline.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string DeferralDeadline { get; private set; }
+                public readonly string DeferralDeadline;
 
                 /// <summary>
                 /// This is a phrase used to describe the process of deferring a deploymen
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonLeftText { get; private set; }
+                public readonly string ButtonLeftText;
 
                 /// <summary>
                 /// This is a phrase used to describe the process of closing applications and commencing the deployment.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonRightText { get; private set; }
+                public readonly string ButtonRightText;
 
                 /// <summary>
                 /// This is a phrase used to describe the process of commencing the deployment.
                 /// </summary>
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
                 [DataMember]
-                public string ButtonLeftTextNoProcesses { get; private set; }
+                public readonly string ButtonLeftTextNoProcesses;
             }
         }
     }

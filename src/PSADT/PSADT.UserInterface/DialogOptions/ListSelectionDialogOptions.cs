@@ -100,20 +100,23 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The list of items to display for user selection.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public IReadOnlyList<string> ListItems { get; private set; }
+        public readonly IReadOnlyList<string> ListItems;
 
         /// <summary>
         /// The item that should be selected by default.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public int SelectedIndex { get; private set; }
+        public readonly int SelectedIndex;
 
         /// <summary>
         /// The localized strings for the ListSelectionDialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public ListSelectionDialogStrings Strings { get; private set; }
+        public readonly ListSelectionDialogStrings Strings;
 
         /// <summary>
         /// Localized strings for the ListSelectionDialog.
@@ -146,8 +149,9 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// The heading text displayed next to the list selection dropdown.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string ListSelectionMessage { get; private set; }
+            public readonly string ListSelectionMessage;
         }
     }
 }

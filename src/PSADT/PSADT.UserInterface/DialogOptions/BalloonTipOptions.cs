@@ -98,37 +98,43 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Represents the title displayed on the tray.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string TrayTitle { get; private set; }
+        public readonly string TrayTitle;
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string TrayIcon { get; private set; }
+        public readonly string TrayIcon;
 
         /// <summary>
         /// Gets the title text displayed in the balloon tip of a notification.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string BalloonTipTitle { get; private set; }
+        public readonly string BalloonTipTitle;
 
         /// <summary>
         /// Gets the text displayed in the balloon tip of a notification.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string BalloonTipText { get; private set; }
+        public readonly string BalloonTipText;
 
         /// <summary>
         /// Gets the icon displayed in the balloon tip associated with the notification.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public ToolTipIcon BalloonTipIcon { get; private set; }
+        public readonly ToolTipIcon BalloonTipIcon;
 
         /// <summary>
         /// Gets the duration, in milliseconds, that the balloon tip is displayed.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public uint BalloonTipTime { get; private set; }
+        public readonly uint BalloonTipTime;
     }
 }

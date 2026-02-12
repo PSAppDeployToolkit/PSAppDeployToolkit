@@ -77,26 +77,30 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public RestartDialogStrings Strings { get; private set; }
+        public readonly RestartDialogStrings Strings;
 
         /// <summary>
         /// The duration for which the countdown will be displayed.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public TimeSpan? CountdownDuration { get; private set; }
+        public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
         /// The duration for which the countdown will be displayed without minimizing the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public TimeSpan? CountdownNoMinimizeDuration { get; private set; }
+        public readonly TimeSpan? CountdownNoMinimizeDuration;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? CustomMessageText { get; private set; }
+        public readonly string? CustomMessageText;
 
         /// <summary>
         /// The strings used for the RestartDialog.
@@ -178,44 +182,51 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string Title { get; private set; }
+            public readonly string Title;
 
             /// <summary>
             /// Text displayed when the device requires a restart.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string Message { get; private set; }
+            public readonly string Message;
 
             /// <summary>
             /// Text displayed as a prefix to the time remaining, indicating that users should save their work, etc.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string MessageTime { get; private set; }
+            public readonly string MessageTime;
 
             /// <summary>
             /// Text displayed when indicating when the device will be restarted.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string MessageRestart { get; private set; }
+            public readonly string MessageRestart;
 
             /// <summary>
             /// Text displayed to indicate the amount of time remaining until a restart will occur.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string TimeRemaining { get; private set; }
+            public readonly string TimeRemaining;
 
             /// <summary>
             /// Button text for when wanting to restart the device now.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string ButtonRestartNow { get; private set; }
+            public readonly string ButtonRestartNow;
 
             /// <summary>
             /// Button text for allowing the user to restart later.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
             [DataMember]
-            public string ButtonRestartLater { get; private set; }
+            public readonly string ButtonRestartLater;
         }
     }
 }

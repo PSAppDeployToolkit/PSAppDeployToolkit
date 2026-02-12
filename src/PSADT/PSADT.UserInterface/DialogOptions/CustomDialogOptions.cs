@@ -101,43 +101,50 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The custom message to be displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string MessageText { get; private set; }
+        public readonly string MessageText;
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DialogMessageAlignment? MessageAlignment { get; private set; }
+        public readonly DialogMessageAlignment? MessageAlignment;
 
         /// <summary>
         /// The text for the left button in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? ButtonLeftText { get; private set; }
+        public readonly string? ButtonLeftText;
 
         /// <summary>
         /// The text for the middle button in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? ButtonMiddleText { get; private set; }
+        public readonly string? ButtonMiddleText;
 
         /// <summary>
         /// The text for the right button in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? ButtonRightText { get; private set; }
+        public readonly string? ButtonRightText;
 
         /// <summary>
         /// The icon to be displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DialogSystemIcon? Icon { get; private set; }
+        public readonly DialogSystemIcon? Icon;
 
         /// <summary>
         /// Gets a value indicating whether windows should be minimized.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool MinimizeWindows { get; private set; }
+        public readonly bool MinimizeWindows;
     }
 }

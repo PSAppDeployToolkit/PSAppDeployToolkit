@@ -134,44 +134,51 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string AppTitle { get; private set; }
+        public readonly string AppTitle;
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string Subtitle { get; private set; }
+        public readonly string Subtitle;
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string AppIconImage { get; private set; }
+        public readonly string AppIconImage;
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string AppIconDarkImage { get; private set; }
+        public readonly string AppIconDarkImage;
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string AppBannerImage { get; private set; }
+        public readonly string AppBannerImage;
 
         /// <summary>
         /// Gets the file path or resource identifier for the application's tray icon image.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public string? AppTaskbarIconImage { get; private set; }
+        public readonly string? AppTaskbarIconImage;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool DialogTopMost { get; private set; }
+        public readonly bool DialogTopMost;
 
         /// <summary>
         /// Gets the culture information representing the language associated with this instance.
@@ -182,32 +189,37 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public int? FluentAccentColor { get; private set; }
+        public readonly int? FluentAccentColor;
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public DialogPosition? DialogPosition { get; private set; }
+        public readonly DialogPosition? DialogPosition;
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public bool? DialogAllowMove { get; private set; }
+        public readonly bool? DialogAllowMove;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public TimeSpan? DialogExpiryDuration { get; private set; }
+        public readonly TimeSpan? DialogExpiryDuration;
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public TimeSpan? DialogPersistInterval { get; private set; }
+        public readonly TimeSpan? DialogPersistInterval;
 
         /// <summary>
         /// Gets the culture name string for serialization.
