@@ -5,13 +5,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
-using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.Security;
-using Windows.Win32.Security;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
 {
@@ -164,15 +161,9 @@ namespace PSADT.ProcessManagement
                     SecurityIdentifier? sid = null;
                     if (!ProcessUtilities.HasProcessExited(process))
                     {
-                        // Users can only get the username for their own processes, whereas admins can get anyone's.
                         try
                         {
-                            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-                            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
-                            using (hToken)
-                            {
-                                sid = TokenUtilities.GetTokenSid(hToken);
-                            }
+                            sid = ProcessUtilities.GetProcessSid(process);
                         }
                         catch (Exception ex) when (ex.Message is not null)
                         {
