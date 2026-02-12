@@ -26,7 +26,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class.
         /// </summary>
-        internal ClassicDialog() : this(default!)
+        internal ClassicDialog() : this(null!, null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -35,10 +35,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClassicDialog"/> class with the specified options.
+        /// Initializes a new instance of the ClassicDialog class using the specified dialog options and result object.
         /// </summary>
-        /// <param name="options"></param>
-        internal ClassicDialog(BaseDialogOptions options) : base()
+        /// <remarks>This constructor applies the provided options to set up the dialog's properties,
+        /// including title, icon, timers for expiry and persistence, position, and movement capability. It also
+        /// attaches event handlers for dialog loading and closing.</remarks>
+        /// <param name="options">The options that configure the dialog's appearance and behavior. Must not be null.</param>
+        /// <param name="dialogResult">An object representing the result of the dialog interaction, used to determine the outcome when the dialog
+        /// is closed.</param>
+        internal ClassicDialog(BaseDialogOptions options, object dialogResult) : base()
         {
             // Initialise the underlying form as set up by the designer.
             InitializeComponent();
@@ -82,6 +87,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     dialogAllowMove = options.DialogAllowMove.Value;
                 }
             }
+
+            // Set the dialog result.
+            DialogResult = dialogResult;
         }
 
         /// <summary>

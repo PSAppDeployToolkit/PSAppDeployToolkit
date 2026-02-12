@@ -74,7 +74,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <param name="state">Optional state values for the dialog.</param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, options.CustomMessageText, options.CountdownDuration, null, state.CountdownStopwatch)
+        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout, options.CustomMessageText, options.CountdownDuration, null, state.CountdownStopwatch)
         {
             // Set up the context for data binding
             DataContext = this;
@@ -124,9 +124,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             UpdateRunningProcesses();
             UpdateDeferralValues();
             _logAction = state.LogAction;
-
-            // Set the dialog result to a default value.
-            DialogResult = CloseAppsDialogResult.Timeout;
         }
 
         /// <summary>
@@ -274,10 +271,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.FluentDialog_Loaded(sender, e);
 
             // Initialize the running process service and set up event handlers.
-            if (_runningProcessService is not null)
-            {
-                _runningProcessService.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
-            }
+            _runningProcessService?.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
         }
 
         /// <summary>
@@ -450,10 +444,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             if (disposing)
             {
-                if (_runningProcessService is not null)
-                {
-                    _runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
-                }
+                _runningProcessService?.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
                 AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
             }
             base.Dispose(disposing);

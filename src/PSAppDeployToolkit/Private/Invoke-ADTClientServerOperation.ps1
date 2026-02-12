@@ -353,7 +353,7 @@ function Private:Invoke-ADTClientServerOperation
                     }
                     CustomDialog
                     {
-                        [System.String]
+                        [PSADT.UserInterface.DialogResults.CustomDialogResult]
                         break
                     }
                     DialogBox

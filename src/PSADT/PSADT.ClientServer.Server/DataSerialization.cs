@@ -366,6 +366,8 @@ namespace PSADT.ClientServer
 
                 // Dialog result types
                 typeof(UserInterface.DialogResults.CloseAppsDialogResult),
+                typeof(UserInterface.DialogResults.CustomDialogDerivative),
+                typeof(UserInterface.DialogResults.CustomDialogResult),
                 typeof(UserInterface.DialogResults.DialogBoxResult),
                 typeof(UserInterface.DialogResults.InputDialogResult),
                 typeof(UserInterface.DialogResults.ListSelectionDialogResult),

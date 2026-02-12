@@ -20,7 +20,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="HelpConsole"/> class.
         /// </summary>
-        internal HelpConsole() : this(default!)
+        internal HelpConsole() : this(null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {

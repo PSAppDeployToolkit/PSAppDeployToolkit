@@ -21,7 +21,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class.
         /// </summary>
-        internal CloseAppsDialog() : this(default!, default!)
+        internal CloseAppsDialog() : this(null!, null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -34,7 +34,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="options"></param>
         /// <param name="state"></param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options)
+        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -165,7 +165,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
             }
 
             // Resume the dialog now that we've applied any options.
-            DialogResult = CloseAppsDialogResult.Timeout;
             flowLayoutPanelDialog.ResumeLayout(false);
             flowLayoutPanelDialog.PerformLayout();
             flowLayoutPanelBase.ResumeLayout(false);
@@ -185,10 +184,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             base.Form_Load(sender, e);
 
             // Initialize the running process service and set up event handlers.
-            if (runningProcessService is not null)
-            {
-                runningProcessService.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
-            }
+            runningProcessService?.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
 
             // Start the counterdown timer if we have one.
             if (countdownTimer is not null)
@@ -221,10 +217,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             countdownTimer = null;
 
             // Unhook the event handlers.
-            if (runningProcessService is not null)
-            {
-                runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
-            }
+            runningProcessService?.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
 
             // Call through to the base method to ensure it's processed also.
             base.Form_FormClosing(sender, e);

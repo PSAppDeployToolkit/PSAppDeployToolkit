@@ -24,5 +24,26 @@ namespace PSADT.Utilities
             byte[] randomBytes = new byte[16]; rng.GetBytes(randomBytes);
             return new Guid(randomBytes);
         }
+
+        /// <summary>
+        /// Generates a hash code from multiple parameters using a standard combining algorithm.
+        /// </summary>
+        /// <remarks>This method provides a consistent way to combine multiple values into a single hash code,
+        /// useful for implementing <see cref="object.GetHashCode"/> in types with multiple properties.
+        /// Null values contribute zero to the hash.</remarks>
+        /// <param name="parameters">The values to combine into a hash code.</param>
+        /// <returns>A combined hash code derived from all provided parameters.</returns>
+        internal static int GenerateHashCode(params object?[] parameters)
+        {
+            int hash = 17;
+            unchecked
+            {
+                foreach (object? param in parameters)
+                {
+                    hash = (hash * 31) + (param?.GetHashCode() ?? 0);
+                }
+            }
+            return hash;
+        }
     }
 }

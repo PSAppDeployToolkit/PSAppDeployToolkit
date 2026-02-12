@@ -35,6 +35,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Set heading text from localized strings if available.
             ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
 
+            // Set the dialog result to a default value.
+            DialogResult = new ListSelectionDialogResult("Timeout", "\0");
         }
 
         /// <summary>

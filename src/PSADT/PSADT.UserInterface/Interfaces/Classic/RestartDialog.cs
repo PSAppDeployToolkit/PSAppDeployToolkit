@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialog"/> class.
         /// </summary>
-        internal RestartDialog() : this(default!)
+        internal RestartDialog() : this(null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -27,7 +27,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Initializes a new instance of the <see cref="RestartDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        internal RestartDialog(RestartDialogOptions options) : base(options)
+        internal RestartDialog(RestartDialogOptions options) : base(options, "Timeout")
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
