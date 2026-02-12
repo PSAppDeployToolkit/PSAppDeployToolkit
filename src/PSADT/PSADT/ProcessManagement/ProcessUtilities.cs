@@ -34,8 +34,12 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
         public static Process GetParentProcess(Process process)
         {
-            // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
-            return process is null ? throw new ArgumentNullException(nameof(process), "Process cannot be null.") : GetParentProcess(process.SafeHandle);
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
+            }
+            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
+            return GetParentProcess(hProcess);
         }
 
         /// <summary>

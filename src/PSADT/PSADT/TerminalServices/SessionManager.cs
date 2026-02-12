@@ -20,6 +20,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.RemoteDesktop;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.TerminalServices
 {
@@ -229,9 +230,9 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        using (explorerProcess) using (SafeProcessHandle explorerProcessSafeHandle = explorerProcess.SafeHandle)
+                        using (explorerProcess) using (SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)explorerProcess.Id))
                         {
-                            _ = AdvApi32.OpenProcessToken(explorerProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
+                            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
                             using (hProcessToken)
                             {
                                 return TokenUtilities.GetTokenSid(hProcessToken);
