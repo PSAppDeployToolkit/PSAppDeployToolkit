@@ -7,12 +7,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <summary>
     /// Abortable classic dialog form.
     /// </summary>
-    internal partial class ListSelectionDialog : ClassicDialog, IModalDialog
+    internal partial class ListSelectionDialog : CustomDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ListSelectionDialog"/> class.
         /// </summary>
-        internal ListSelectionDialog() : this(default!)
+        internal ListSelectionDialog() : this(null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -24,7 +24,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Initializes a new instance of the <see cref="ListSelectionDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options)
+        internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {

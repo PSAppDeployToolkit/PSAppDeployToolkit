@@ -103,13 +103,13 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        internal static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        internal static CustomDialogResult ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
             if (options.MinimizeWindows)
             {
                 ShellUtilities.MinimizeAllWindows();
             }
-            string res = ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+            CustomDialogResult res = ShowModalDialog<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
                 ShellUtilities.RestoreAllWindows();

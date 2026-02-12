@@ -9,6 +9,8 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for the CustomDialog.
     /// </summary>
     [DataContract]
+    [KnownType(typeof(InputDialogOptions))]
+    [KnownType(typeof(ListSelectionDialogOptions))]
     public record CustomDialogOptions : BaseDialogOptions
     {
         /// <summary>

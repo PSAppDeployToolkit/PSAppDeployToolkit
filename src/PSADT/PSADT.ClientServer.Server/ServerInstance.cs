@@ -331,9 +331,9 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and input settings.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        public string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        public CustomDialogResult ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
-            return ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+            return ShowModalDialog<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
         }
 
         /// <summary>

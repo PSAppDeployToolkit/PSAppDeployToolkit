@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 
 namespace PSADT.UserInterface.Interfaces.Classic
 {
@@ -13,7 +14,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialog"/> class.
         /// </summary>
-        internal CustomDialog() : this(default!)
+        internal CustomDialog() : this(null!, null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -22,10 +23,25 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomDialog"/> class with the specified options.
+        /// Initializes a new instance of the CustomDialog class using the specified options and sets the default dialog
+        /// result to indicate a timeout.
         /// </summary>
-        /// <param name="options"></param>
-        internal CustomDialog(CustomDialogOptions options) : base(options)
+        /// <remarks>This constructor sets the dialog's initial result to "Timeout". Use this overload
+        /// when you want to create a dialog with default timeout behavior.</remarks>
+        /// <param name="options">The options that configure the behavior and appearance of the dialog. Cannot be null.</param>
+        internal CustomDialog(CustomDialogOptions options) : this(options, new CustomDialogResult("Timeout"))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the CustomDialog class using the specified dialog options and result object.
+        /// </summary>
+        /// <remarks>This constructor applies the provided options to customize the dialog's controls,
+        /// such as button visibility, message alignment, and icon display. Ensure that the options parameter is
+        /// properly configured before passing it to this constructor.</remarks>
+        /// <param name="options">The options that configure the appearance and behavior of the dialog. Cannot be null.</param>
+        /// <param name="dialogResult">An object representing the result of the dialog interaction, indicating the user's choice or action.</param>
+        protected CustomDialog(CustomDialogOptions options, object dialogResult) : base(options, dialogResult)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -111,7 +127,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = buttonLeft.Text;
+            DialogResult = new CustomDialogResult(buttonLeft.Text);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -123,7 +139,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = buttonMiddle.Text;
+            DialogResult = new CustomDialogResult(buttonMiddle.Text);
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -135,7 +151,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = buttonRight.Text;
+            DialogResult = new CustomDialogResult(buttonRight.Text);
             base.ButtonRight_Click(sender, e);
         }
     }

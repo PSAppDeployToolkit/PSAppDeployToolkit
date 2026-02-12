@@ -19,7 +19,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Instantiates a new ProgressDialog dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal ProgressDialog(ProgressDialogOptions options) : base(options)
+        internal ProgressDialog(ProgressDialogOptions options) : base(options, "Timeout")
         {
             UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage);
             SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
