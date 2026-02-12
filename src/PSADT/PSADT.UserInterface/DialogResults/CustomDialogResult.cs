@@ -73,7 +73,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <remarks>This property is read-only and is set internally by the class. It reflects the
         /// outcome of the most recent operation performed by the dialog.</remarks>
         [DataMember]
-        private string Result { get; set; }
+        private readonly string Result;
 
         /// <summary>
         /// Converts a CustomDialogResult instance to its string representation.
