@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.DialogResults
     [KnownType(typeof(CustomDialogDerivative))]
     [KnownType(typeof(InputDialogResult))]
     [KnownType(typeof(ListSelectionDialogResult))]
-    public class CustomDialogResult
+    public class CustomDialogResult : IDialogResult
     {
         /// <summary>
         /// Initializes a new instance of the CustomDialogResult class with the specified result string.

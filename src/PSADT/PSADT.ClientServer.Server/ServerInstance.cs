@@ -711,14 +711,14 @@ namespace PSADT.ClientServer
         /// The response format uses a single byte discriminator:
         /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or 
         /// <see cref="ResponseMarker.Error"/> (followed by serialized exception).</remarks>
-        /// <typeparam name="TPayload">The payload type, which must implement <see cref="IPayload"/>.</typeparam>
+        /// <typeparam name="TPayload">The payload type, which must implement <see cref="IClientServerPayload"/>.</typeparam>
         /// <typeparam name="TResult">The expected return type from the client.</typeparam>
         /// <param name="command">The command to execute.</param>
         /// <param name="payload">The payload data for the command.</param>
         /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
         /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
-        private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IPayload
+        private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IClientServerPayload
         {
             // Don't invoke anything if the object is disposed.
             if (_disposed)

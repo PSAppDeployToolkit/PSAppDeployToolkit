@@ -8,7 +8,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the InitCloseAppsDialog command.
     /// </summary>
     [DataContract]
-    internal sealed record InitCloseAppsDialogPayload : IPayload
+    internal sealed record InitCloseAppsDialogPayload : IClientServerPayload
     {
         /// <summary>
         /// The collection of process definitions to monitor, or null if no processes need to be monitored.

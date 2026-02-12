@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// properly configured before passing it to this constructor.</remarks>
         /// <param name="options">The options that configure the appearance and behavior of the dialog. Cannot be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, indicating the user's choice or action.</param>
-        protected CustomDialog(CustomDialogOptions options, object dialogResult) : base(options, dialogResult)
+        protected CustomDialog(CustomDialogOptions options, CustomDialogResult dialogResult) : base(options, dialogResult)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.

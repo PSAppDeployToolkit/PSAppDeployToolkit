@@ -15,6 +15,6 @@
         /// <summary>
         /// Gets the result of the operation.
         /// </summary>
-        object DialogResult { get; }
+        IDialogResult DialogResult { get; }
     }
 }

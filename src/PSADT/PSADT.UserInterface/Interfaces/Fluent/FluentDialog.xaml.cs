@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// dialog.</param>
         /// <param name="countdownStopwatch">An optional Stopwatch instance used to track the countdown duration. If not provided, a new Stopwatch is
         /// created.</param>
-        private protected FluentDialog(BaseDialogOptions options, object dialogResult, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
+        private protected FluentDialog(BaseDialogOptions options, IDialogResult dialogResult, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
             // Initialize the window
             InitializeComponent();
@@ -944,25 +944,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// The result of the dialog interaction.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1061:Do not hide base class methods", Justification = "The redefinition of this field is by design.")]
-        public new virtual object DialogResult
-        {
-            get => _dialogResult;
-            private protected set
-            {
-                _dialogResult = value;
-                OnPropertyChanged();
-            }
-        }
+        public new virtual IDialogResult DialogResult { get; private protected set { field = value; OnPropertyChanged(); } }
 
         /// <summary>
         /// An optional custom message to display.
         /// </summary>
         protected readonly string? _customMessageText;
-
-        /// <summary>
-        /// The cancellation token source for the dialog.
-        /// </summary>
-        private object _dialogResult = "Timeout";
 
         /// <summary>
         /// Whether this window has been disposed.

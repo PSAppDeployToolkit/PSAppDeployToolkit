@@ -28,7 +28,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Initializes a new instance of the <see cref="ProgressDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        internal ProgressDialog(ProgressDialogOptions options) : base(options, "Timeout")
+        internal ProgressDialog(ProgressDialogOptions options) : base(options, null!)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.

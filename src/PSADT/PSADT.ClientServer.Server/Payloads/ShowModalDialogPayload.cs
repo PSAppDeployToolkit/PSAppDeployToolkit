@@ -15,7 +15,7 @@ namespace PSADT.ClientServer.Payloads
     [KnownType(typeof(InputDialogOptions))]
     [KnownType(typeof(ProgressDialogOptions))]
     [KnownType(typeof(RestartDialogOptions))]
-    internal sealed record ShowModalDialogPayload : IPayload
+    internal sealed record ShowModalDialogPayload : IClientServerPayload
     {
         /// <summary>
         /// The type of dialog to display.

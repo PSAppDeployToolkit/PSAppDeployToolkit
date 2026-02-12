@@ -25,7 +25,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <param name="dialogResult">An object to store the dialog result in.</param>
-        protected CustomDialog(CustomDialogOptions options, object dialogResult) : base(options, dialogResult)
+        protected CustomDialog(CustomDialogOptions options, CustomDialogResult dialogResult) : base(options, dialogResult)
         {
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, options.MessageText);

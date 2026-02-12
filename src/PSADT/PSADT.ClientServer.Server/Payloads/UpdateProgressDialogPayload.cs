@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the UpdateProgressDialog command.
     /// </summary>
     [DataContract]
-    internal sealed record UpdateProgressDialogPayload : IPayload
+    internal sealed record UpdateProgressDialogPayload : IClientServerPayload
     {
         /// <summary>
         /// The main progress message.
