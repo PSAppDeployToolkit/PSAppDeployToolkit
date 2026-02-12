@@ -903,11 +903,11 @@ function Show-ADTInstallationWelcome
                 return $runningApps
             }
 
-            # Filter the running apps list based on the process's username.
+            # Filter the running apps list based on the process's SID.
             return $runningApps | & {
                 process
                 {
-                    if ($_.Username -eq $runAsActiveUser.NTAccount)
+                    if ($_.SID -eq $runAsActiveUser.SID)
                     {
                         return $_
                     }
