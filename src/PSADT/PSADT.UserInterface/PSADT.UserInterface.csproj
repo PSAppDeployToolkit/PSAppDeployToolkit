@@ -55,14 +55,9 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Management.Automation">
-      <HintPath>$(SystemRoot)\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.18362.0'">
-    <PackageReference Include="System.Management.Automation" Version="7.6.0-preview.5" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.2" />
   </ItemGroup>
 </Project>
