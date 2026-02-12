@@ -455,9 +455,9 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>>()
+        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>()
         {
-            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>()
+            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>()
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
@@ -466,7 +466,7 @@ namespace PSADT.UserInterface
                 { DialogType.ProgressDialog, static (options, state) => new Interfaces.Classic.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, static (options, state) => new Interfaces.Classic.RestartDialog((RestartDialogOptions)options) },
             })},
-            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IDialogBase>>()
+            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>()
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },

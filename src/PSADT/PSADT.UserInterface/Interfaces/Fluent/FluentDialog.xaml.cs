@@ -31,7 +31,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    internal abstract partial class FluentDialog : Window, IDialogBase, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : Window, IBaseDialog, INotifyPropertyChanged
     {
         /// <summary>
         /// Static constructor to set up the theme and resources for the dialog.
