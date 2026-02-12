@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 
@@ -156,10 +158,12 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID associated with the specified process.</returns>
         public static string GetApplicationUserModelId(Process process)
         {
-            // We don't own the process, so don't dispose of its SafeHande as .NET caches it...
-            return process is null
-                ? throw new ArgumentNullException(nameof(process), "Process cannot be null.")
-                : GetApplicationUserModelId(process.SafeHandle);
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
+            }
+            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
+            return GetApplicationUserModelId(hProcess);
         }
 
         /// <summary>
