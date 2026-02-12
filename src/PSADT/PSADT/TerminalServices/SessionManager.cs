@@ -18,9 +18,7 @@ using PSADT.Security;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.Security;
 using Windows.Win32.System.RemoteDesktop;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.TerminalServices
 {
@@ -230,18 +228,13 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        using (explorerProcess) using (SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)explorerProcess.Id))
+                        using (explorerProcess)
                         {
-                            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
-                            using (hProcessToken)
-                            {
-                                return TokenUtilities.GetTokenSid(hProcessToken);
-                            }
+                            return ProcessUtilities.GetProcessSid(explorerProcess);
                         }
                     }
                     catch
                     {
-                        // It's possible the process may be inaccessible if Explorer is elevated by EPM but the caller is not.
                         continue;
                         throw;
                     }

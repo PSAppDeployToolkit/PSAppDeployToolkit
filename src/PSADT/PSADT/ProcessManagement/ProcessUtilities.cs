@@ -5,15 +5,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
+using PSADT.Security;
 using Windows.Wdk.System.Threading;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
 
@@ -130,6 +133,35 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves the security identifier (SID) of the user associated with the specified process.
+        /// </summary>
+        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// and queries the process token to retrieve the user SID. This is more reliable than using
+        /// <see cref="Process.SafeHandle"/> which may have been opened with broader access rights that
+        /// could fail on protected processes.</remarks>
+        /// <param name="process">The process for which to retrieve the SID. Must not be null.</param>
+        /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        public static SecurityIdentifier GetProcessSid(Process process)
+        {
+            return process is null
+                ? throw new ArgumentNullException(nameof(process), "Process cannot be null.")
+                : GetProcessSid((uint)process.Id);
+        }
+
+        /// <summary>
+        /// Retrieves the security identifier (SID) of the user associated with the specified process.
+        /// </summary>
+        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// and queries the process token to retrieve the user SID.</remarks>
+        /// <param name="processId">The identifier of the process for which to retrieve the SID. Must be a valid process ID.</param>
+        /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>
+        public static SecurityIdentifier GetProcessSid(int processId)
+        {
+            return GetProcessSid((uint)processId);
+        }
+
+        /// <summary>
         /// Retrieves the full command-line string used to start the specified process.
         /// </summary>
         /// <remarks>This method requires that the caller has sufficient permissions to query information
@@ -233,6 +265,23 @@ namespace PSADT.ProcessManagement
             {
                 return true;
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the security identifier (SID) of the user associated with the specified process.
+        /// </summary>
+        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
+        /// and queries the process token with <c>TOKEN_QUERY</c> to retrieve the user SID.</remarks>
+        /// <param name="processId">The unique identifier of the process for which to retrieve the SID.</param>
+        /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>
+        internal static SecurityIdentifier GetProcessSid(uint processId)
+        {
+            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
+            using (hToken)
+            {
+                return TokenUtilities.GetTokenSid(hToken);
             }
         }
 
