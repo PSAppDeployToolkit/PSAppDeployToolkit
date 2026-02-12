@@ -19,7 +19,7 @@ function Initialize-ADTModuleBuild
         $currentUser.Dispose()
         $currentUser = $null
     }
-    Write-Host -Object "$($Script:ModuleConstants.ModuleName) Module Build System $($MyInvocation.MyCommand.Module.Version). $($MyInvocation.MyCommand.Module.Copyright)"
+    Write-Host -Object "$($Script:ModuleConstants.ModuleName) Module Build System $($MyInvocation.MyCommand.Module.Version). $($MyInvocation.MyCommand.Module.Copyright.Replace("©", "(C)"))"
     Write-Host -Object "Written by: $($MyInvocation.MyCommand.Module.Author -replace '\.+$')."
     Write-Host -Object "Running as: $userName on $([System.Environment]::MachineName)$(if ($domain) {".$($domain)"})."
     Write-Host -Object "Running on: PowerShell $($Host.Version)."
