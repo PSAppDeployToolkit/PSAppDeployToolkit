@@ -381,13 +381,23 @@ namespace PSADT.ClientServer
                 typeof(WindowManagement.WindowInfo),
                 typeof(WindowManagement.WindowInfoOptions),
 
-                // Generic collection types - required for proper deserialization
-                // DataContractSerializer needs concrete types, not interfaces
+                // Used within the following classes:
+                // * ProcessManagement.ProcessLaunchInfo
+                // * ProcessManagement.ProcessResult
+                // * WindowManagement.WindowInfoOptions
+                // * UserInterface.DialogOptions.ListSelectionDialogOptions
                 typeof(System.Collections.ObjectModel.ReadOnlyCollection<string>),
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<int>),
+
+                // Used within WindowManagement.WindowInfoOptions class.
                 typeof(System.Collections.ObjectModel.ReadOnlyCollection<long>),
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<System.Collections.Hashtable>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<int>),
+
+                // Used within Payloads.InitCloseAppsDialogPayload class.
                 typeof(System.Collections.ObjectModel.ReadOnlyCollection<ProcessManagement.ProcessDefinition>),
+
+                // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
+                typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyDictionary<string, string>>),
+                typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>),
             ]
         };
     }

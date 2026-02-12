@@ -46,21 +46,37 @@ function Show-ADTHelpConsole
         [Microsoft.Win32.Registry]::SetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell', 'DisablePromptToUpdateHelp', 1, [Microsoft.Win32.RegistryValueKind]::DWord)
     }
 
-    # Set up all the options needed for the HelpConsole dialog.
-    [PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$options = @{
-        ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy](Get-ExecutionPolicy)
-        Modules = [Microsoft.PowerShell.Commands.ModuleSpecification[]]$(Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
+    # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
+    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser -AllowSystemFallback) -DialogType HelpConsole -DialogStyle Classic -NoWait -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{
+            ModuleHelpMap = Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
+                begin
+                {
+                    # Open dictionary to collect all sub-dictionaries.
+                    $modules = [System.Collections.Generic.Dictionary[System.String, System.Collections.Generic.IReadOnlyDictionary[System.String, System.String]]]::new()
+                }
                 process
                 {
-                    return @{
-                        ModuleName = $_.Path.Replace('.psm1', '.psd1')
-                        ModuleVersion = $_.Version
-                        Guid = $_.Guid
+                    # Skip any module that has no exported commands.
+                    if (!$_.ExportedCommands.Count)
+                    {
+                        return
                     }
-                }
-            })
-    }
 
-    # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
-    $null = Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser -AllowSystemFallback) -DialogType HelpConsole -DialogStyle Classic -Options $options -NoWait
+                    # Open dictionary collect all command help.
+                    $help = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
+                    foreach ($exportedCommand in $_.ExportedCommands.Keys)
+                    {
+                        $help.Add($exportedCommand, [System.String]::Join("`n", ((Get-Help -Name $exportedCommand -Full | Out-String -Width ([System.Int32]::MaxValue) -Stream) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', $null) + "`n")
+                    }
+
+                    # Add the dictionary of commands and their help to the collector.
+                    $modules.Add($_.Name, [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$help)
+                }
+                end
+                {
+                    # Return our collection as a read-only dictionary to the caller.
+                    return [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Collections.Generic.IReadOnlyDictionary[System.String, System.String]]]$modules
+                }
+            }
+        })
 }
