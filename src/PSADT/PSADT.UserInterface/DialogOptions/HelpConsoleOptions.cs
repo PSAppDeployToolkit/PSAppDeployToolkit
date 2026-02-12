@@ -67,6 +67,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <remarks>This collection is read-only and contains elements of type <see cref="Hashtable"/>.</remarks>
         [DataMember]
-        private ReadOnlyCollection<Hashtable> ModuleData { get; set; }
+        private readonly ReadOnlyCollection<Hashtable> ModuleData;
     }
 }
