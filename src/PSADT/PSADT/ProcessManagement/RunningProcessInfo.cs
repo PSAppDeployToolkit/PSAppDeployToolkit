@@ -13,6 +13,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.Security;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
 {
@@ -171,27 +172,27 @@ namespace PSADT.ProcessManagement
                                 : process.ProcessName;
 
                     // Grab the process owner if we can.
-                    NTAccount? username = null;
+                    SecurityIdentifier? sid = null;
                     if (!process.HasExited)
                     {
                         // Users can only get the username for their own processes, whereas admins can get anyone's.
                         try
                         {
-                            // We're caching the process, so don't dispose of its SafeHande as .NET caches it also...
-                            _ = AdvApi32.OpenProcessToken(process.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
+                            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
+                            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
                             using (hToken)
                             {
-                                username = TokenUtilities.GetTokenSid(hToken).Translate(typeof(NTAccount)) as NTAccount;
+                                sid = TokenUtilities.GetTokenSid(hToken);
                             }
                         }
                         catch (Exception ex) when (ex.Message is not null)
                         {
-                            username = null;
+                            sid = null;
                         }
                     }
 
                     // Store the process information.
-                    RunningProcessInfo runningProcess = new(process, procDescription, argv[0], argv.Skip(1), username);
+                    RunningProcessInfo runningProcess = new(process, procDescription, argv[0], argv.Skip(1), sid);
                     if (!process.HasExited && ((processDefinition.Filter is null) || processDefinition.Filter(runningProcess)))
                     {
                         runningProcesses.Add(runningProcess);
@@ -211,17 +212,17 @@ namespace PSADT.ProcessManagement
         /// <param name="description">A descriptive string for the process. Cannot be null or empty.</param>
         /// <param name="fileName">The file name of the executable associated with the process. Cannot be null or empty.</param>
         /// <param name="argumentList">A collection of arguments passed to the process. Any null or whitespace-only arguments are ignored.</param>
-        /// <param name="username">The user account under which the process is running, or null if not specified.</param>
+        /// <param name="sid">The security identifier (SID) associated with the user account, or null if not specified.</param>
         /// <exception cref="ArgumentNullException">Thrown if process is null, or if description or fileName is null or empty.</exception>
-        private RunningProcessInfo(Process process, string description, string fileName, IEnumerable<string> argumentList, NTAccount? username)
+        private RunningProcessInfo(Process process, string description, string fileName, IEnumerable<string> argumentList, SecurityIdentifier? sid)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
             Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
             FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
-            if (username is not null)
+            if (sid is not null)
             {
-                Username = username;
+                SID = sid;
             }
         }
 
@@ -246,11 +247,10 @@ namespace PSADT.ProcessManagement
         public IReadOnlyList<string> ArgumentList { get; }
 
         /// <summary>
-        /// Represents the username associated with a Windows NT account.
+        /// Gets the security identifier (SID) associated with the object.
         /// </summary>
-        /// <remarks>The <see cref="NTAccount"/> class provides a way to work with Windows NT account
-        /// names, including translating them to and from security identifiers (SIDs). This field is
-        /// read-only.</remarks>
-        public NTAccount? Username { get; }
+        /// <remarks>The SID uniquely identifies a security principal, such as a user or group, for
+        /// security-related operations. This property returns null if no SID is associated with the object.</remarks>
+        public SecurityIdentifier? SID { get; }
     }
 }
