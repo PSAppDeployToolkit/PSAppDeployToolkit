@@ -2,7 +2,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -41,7 +40,8 @@ namespace PSADT.DeviceManagement
                 // Activate the session manager for the capture device and enumerate through each session.
                 try
                 {
-                    microphoneDevice.Activate(CLSCTX.CLSCTX_INPROC_SERVER, null, out IAudioSessionManager2 sessionManager);
+                    Media_Audio_IMMDevice_Extensions.Activate(microphoneDevice, typeof(IAudioSessionManager2).GUID, CLSCTX.CLSCTX_INPROC_SERVER, null, out object sessionManagerObj);
+                    IAudioSessionManager2 sessionManager = (IAudioSessionManager2)sessionManagerObj;
                     try
                     {
                         IAudioSessionEnumerator sessionEnumerator = sessionManager.GetSessionEnumerator();
