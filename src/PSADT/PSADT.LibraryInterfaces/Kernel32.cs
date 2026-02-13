@@ -11,6 +11,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.Power;
@@ -965,6 +966,49 @@ namespace PSADT.LibraryInterfaces
             lpdwSize = (uint)lpExeName.Length;
             BOOL res = PInvoke.QueryFullProcessImageName(hProcess, dwFlags, lpExeName, ref lpdwSize);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
+        /// Formats a message string based on a specified message identifier and language, using the provided formatting
+        /// options and arguments.
+        /// </summary>
+        /// <remarks>This method is a managed wrapper for the Windows FormatMessage function. It is
+        /// typically used to retrieve system error messages or custom messages defined in a resource module. The caller
+        /// is responsible for providing a sufficiently sized buffer to receive the formatted message.</remarks>
+        /// <param name="dwFlags">A set of formatting options that control the behavior of the message formatting. These options determine the
+        /// source of the message definition and how the output is processed.</param>
+        /// <param name="lpSource">An optional handle to a module that contains the message resource definition. If null, the system message
+        /// table resource is used.</param>
+        /// <param name="dwMessageId">The identifier for the message to be formatted. This value specifies which message definition to use.</param>
+        /// <param name="lpBuffer">A span of characters that receives the formatted message string. The buffer must be large enough to hold the
+        /// resulting message.</param>
+        /// <param name="dwLanguageId">The language identifier that specifies the language of the message. This determines which localized message
+        /// is retrieved.</param>
+        /// <param name="Arguments">A pointer to an array of arguments to be inserted into the message. Can be null if the message does not
+        /// require arguments.</param>
+        /// <returns>The number of characters stored in the output buffer, excluding the terminating null character.</returns>
+        /// <exception cref="Win32Exception">Thrown if the message formatting operation fails.</exception>
+        internal static uint FormatMessage(FORMAT_MESSAGE_OPTIONS dwFlags, [Optional] FreeLibrarySafeHandle? lpSource, uint dwMessageId, Span<char> lpBuffer, uint dwLanguageId = 0, in nint Arguments = default)
+        {
+            uint res;
+            unsafe
+            {
+                bool lpSourceAddRef = false;
+                try
+                {
+                    lpSource?.DangerousAddRef(ref lpSourceAddRef);
+                    res = PInvoke.FormatMessage(dwFlags, lpSource is not null ? (void*)lpSource.DangerousGetHandle() : null, dwMessageId, dwLanguageId, lpBuffer, (uint)lpBuffer.Length, (sbyte*)Arguments);
+
+                }
+                finally
+                {
+                    if (lpSourceAddRef)
+                    {
+                        lpSource!.DangerousRelease();
+                    }
+                }
+            }
+            return res == 0 ? throw new Win32Exception() : res;
         }
     }
 }

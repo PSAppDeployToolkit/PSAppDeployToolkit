@@ -28,6 +28,7 @@ DwmGetColorizationColor
 EnableMenuItem
 EnumProcessModules
 EnumWindows
+FACILITY_CODE
 FindFirstFileEx
 FindNextFile
 FindWindow
@@ -44,6 +45,7 @@ GetFileAttributes
 GetFileType
 GetForegroundWindow
 GetLastInputInfo
+GetModuleHandle
 GetModuleInformation
 GetNamedSecurityInfo
 GetPrivateProfileSection
@@ -52,6 +54,7 @@ GetPrivateProfileString
 GetProcAddress
 GetProcessId
 GetProcessImageFileName
+FormatMessage
 GetProductInfo
 GetQueuedCompletionStatus
 GetShellWindow
