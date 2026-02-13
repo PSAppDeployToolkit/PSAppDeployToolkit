@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public CustomDialogOptions(Hashtable options) : this(
+        public CustomDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,

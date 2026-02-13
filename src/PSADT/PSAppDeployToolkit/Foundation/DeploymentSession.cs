@@ -56,9 +56,9 @@ namespace PSAppDeployToolkit.Foundation
                 // Establish initial variable values.
                 PSObject adtData = ModuleDatabase.Get();
                 IReadOnlyDictionary<string, object> adtEnv = ModuleDatabase.GetEnvironment();
-                Hashtable adtConfig = ModuleDatabase.GetConfig();
-                Hashtable configUI = (Hashtable)adtConfig["UI"]!;
-                Hashtable configToolkit = (Hashtable)adtConfig["Toolkit"]!;
+                IDictionary adtConfig = ModuleDatabase.GetConfig();
+                IDictionary configUI = (IDictionary)adtConfig["UI"]!;
+                IDictionary configToolkit = (IDictionary)adtConfig["Toolkit"]!;
                 bool forceProcessDetection = false;
                 bool writtenDivider = false;
 

@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// </summary>
     /// <remarks>This type encapsulates the required properties for configuring a balloon tip notification,
     /// including the tray title, tray icon, balloon tip title, text, and icon. Use the <see
-    /// cref="BalloonTipOptions(Hashtable)"/> constructor to initialize an instance with validated configuration
+    /// cref="BalloonTipOptions(IDictionary)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
     [DataContract]
     public sealed record BalloonTipOptions : IDialogOptions
@@ -23,7 +23,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <remarks>This constructor validates the provided <paramref name="options"/> to ensure all
         /// required keys are present and contain valid values. If validation succeeds, the corresponding properties are
         /// initialized.</remarks>
-        /// <param name="options">A <see cref="Hashtable"/> containing configuration values for the balloon tip. The following keys are
+        /// <param name="options">A <see cref="IDictionary"/> containing configuration values for the balloon tip. The following keys are
         /// required: <list type="bullet"> <item> <term>TrayTitle</term> <description>A non-empty <see cref="string"/>
         /// representing the title displayed in the system tray.</description> </item> <item> <term>TrayIcon</term>
         /// <description>A non-empty <see cref="string"/> representing the file path to the tray icon image. The file
@@ -34,7 +34,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// cref="ToolTipIcon"/> value representing the icon displayed in the balloon tip.</description> </item> </list></param>
         /// <exception cref="ArgumentNullException">Thrown if any required key in <paramref name="options"/> is missing, null, or contains an invalid value.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the file specified by the <c>TrayIcon</c> key does not exist.</exception>
-        public BalloonTipOptions(Hashtable options) : this(
+        public BalloonTipOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["TrayTitle"] as string ?? null!,
             options["TrayIcon"] as string ?? null!,
             options["BalloonTipTitle"] as string ?? null!,
@@ -47,7 +47,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Primary constructor that validates and initializes all properties.
         /// </summary>
-        /// <remarks>This constructor contains all validation logic and is used by both the Hashtable
+        /// <remarks>This constructor contains all validation logic and is used by both the IDictionary
         /// constructor and JSON deserialization.</remarks>
         /// <param name="trayTitle">The title of the system tray application.</param>
         /// <param name="trayIcon">The path to the system tray icon.</param>

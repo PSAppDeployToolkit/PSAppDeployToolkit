@@ -78,9 +78,9 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        public static Hashtable GetConfig()
+        public static IDictionary GetConfig()
         {
-            return (Hashtable?)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
+            return (IDictionary?)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
@@ -89,9 +89,9 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        public static Hashtable GetStrings()
+        public static IDictionary GetStrings()
         {
-            return (Hashtable?)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
+            return (IDictionary?)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>

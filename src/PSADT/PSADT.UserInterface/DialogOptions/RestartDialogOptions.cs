@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="deploymentType"></param>
         /// <param name="options"></param>
-        public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : this(
+        public RestartDialogOptions(DeploymentType deploymentType, IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,
@@ -31,7 +31,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["DialogAllowMove"] as bool?,
             options["DialogExpiryDuration"] as TimeSpan?,
             options["DialogPersistInterval"] as TimeSpan?,
-            options["Strings"] as Hashtable is { Count: > 0 } strings ? new RestartDialogStrings(strings, deploymentType) : null!,
+            options["Strings"] as IDictionary is { Count: > 0 } strings ? new RestartDialogStrings(strings, deploymentType) : null!,
             options["CountdownDuration"] as TimeSpan?,
             options["CountdownNoMinimizeDuration"] as TimeSpan?,
             options["CustomMessageText"] as string)
@@ -115,9 +115,9 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings"></param>
             /// <param name="deploymentType"></param>
             /// <exception cref="ArgumentNullException"></exception>
-            internal RestartDialogStrings(Hashtable strings, DeploymentType deploymentType) : this(
+            internal RestartDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
                 strings["Title"] as string ?? null!,
-                ((Hashtable?)strings["Message"])?[deploymentType.ToString()] as string ?? null!,
+                ((IDictionary?)strings["Message"])?[deploymentType.ToString()] as string ?? null!,
                 strings["MessageTime"] as string ?? null!,
                 strings["MessageRestart"] as string ?? null!,
                 strings["TimeRemaining"] as string ?? null!,

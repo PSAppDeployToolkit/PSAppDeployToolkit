@@ -16,7 +16,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        public HelpConsoleOptions(Hashtable options) : this((options ?? throw new ArgumentNullException(nameof(options)))["ModuleHelpMap"] as IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ?? null!)
+        public HelpConsoleOptions(IDictionary options) : this((options ?? throw new ArgumentNullException(nameof(options)))["ModuleHelpMap"] as IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ?? null!)
         {
         }
 
