@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="value">The numeric value to be associated with this instance.</param>
         /// <param name="name">The name to be associated with this instance for string comparisons. Automatically captured from the caller member name.</param>
         /// <returns>A new <see cref="CloseAppsDialogResult"/> instance.</returns>
-        private static CloseAppsDialogResult Create(uint value, [CallerMemberName] string name = "")
+        private static CloseAppsDialogResult Create(uint value, [CallerMemberName] string name = null!)
         {
             return new(name, value);
         }
