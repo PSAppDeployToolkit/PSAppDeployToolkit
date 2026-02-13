@@ -1449,7 +1449,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         private void CreateDeferHistoryPath()
         {
-            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
+            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, null, null, true);
         }
 
         /// <summary>
