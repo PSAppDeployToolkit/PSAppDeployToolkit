@@ -27,7 +27,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        internal BaseDialogOptions(Hashtable options) : this(
+        internal BaseDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,

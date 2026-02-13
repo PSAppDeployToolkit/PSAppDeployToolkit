@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="deploymentType"></param>
         /// <param name="options"></param>
-        public CloseAppsDialogOptions(DeploymentType deploymentType, Hashtable options) : this(
+        public CloseAppsDialogOptions(DeploymentType deploymentType, IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,
@@ -31,7 +31,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["DialogAllowMove"] as bool?,
             options["DialogExpiryDuration"] as TimeSpan?,
             options["DialogPersistInterval"] as TimeSpan?,
-            options["Strings"] as Hashtable is { Count: > 0 } strings ? new CloseAppsDialogStrings(strings, deploymentType) : null!,
+            options["Strings"] as IDictionary is { Count: > 0 } strings ? new CloseAppsDialogStrings(strings, deploymentType) : null!,
             options["DeferralsRemaining"] as uint?,
             options["DeferralDeadline"] as DateTime?,
             options["UnlimitedDeferrals"] as bool? ?? false,
@@ -177,9 +177,9 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings"></param>
             /// <param name="deploymentType"></param>
             /// <exception cref="ArgumentNullException"></exception>
-            internal CloseAppsDialogStrings(Hashtable strings, DeploymentType deploymentType) : this(
-                strings["Classic"] is Hashtable classicStrings ? new CloseAppsDialogClassicStrings(classicStrings, deploymentType) : null!,
-                strings["Fluent"] is Hashtable fluentStrings ? new CloseAppsDialogFluentStrings(fluentStrings, deploymentType) : null!)
+            internal CloseAppsDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
+                strings["Classic"] is IDictionary classicStrings ? new CloseAppsDialogClassicStrings(classicStrings, deploymentType) : null!,
+                strings["Fluent"] is IDictionary fluentStrings ? new CloseAppsDialogFluentStrings(fluentStrings, deploymentType) : null!)
             {
             }
 
@@ -223,15 +223,15 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="strings"></param>
                 /// <param name="deploymentType"></param>
                 /// <exception cref="ArgumentNullException"></exception>
-                internal CloseAppsDialogClassicStrings(Hashtable strings, DeploymentType deploymentType) : this(
-                    ((Hashtable?)strings["WelcomeMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    ((Hashtable?)strings["CloseAppsMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    ((Hashtable?)strings["ExpiryMessage"])?[deploymentType.ToString()] as string ?? null!,
+                internal CloseAppsDialogClassicStrings(IDictionary strings, DeploymentType deploymentType) : this(
+                    ((IDictionary?)strings["WelcomeMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    ((IDictionary?)strings["CloseAppsMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    ((IDictionary?)strings["ExpiryMessage"])?[deploymentType.ToString()] as string ?? null!,
                     strings["DeferralsRemaining"] as string ?? null!,
                     strings["DeferralDeadline"] as string ?? null!,
                     strings["ExpiryWarning"] as string ?? null!,
-                    ((Hashtable?)strings["CountdownDefer"])?[deploymentType.ToString()] as string ?? null!,
-                    ((Hashtable?)strings["CountdownClose"])?[deploymentType.ToString()] as string ?? null!,
+                    ((IDictionary?)strings["CountdownDefer"])?[deploymentType.ToString()] as string ?? null!,
+                    ((IDictionary?)strings["CountdownClose"])?[deploymentType.ToString()] as string ?? null!,
                     strings["ButtonClose"] as string ?? null!,
                     strings["ButtonDefer"] as string ?? null!,
                     strings["ButtonContinue"] as string ?? null!,
@@ -420,15 +420,15 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="strings"></param>
                 /// <param name="deploymentType"></param>
                 /// <exception cref="ArgumentNullException"></exception>
-                internal CloseAppsDialogFluentStrings(Hashtable strings, DeploymentType deploymentType) : this(
-                    ((Hashtable?)strings["DialogMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    ((Hashtable?)strings["DialogMessageNoProcesses"])?[deploymentType.ToString()] as string ?? null!,
+                internal CloseAppsDialogFluentStrings(IDictionary strings, DeploymentType deploymentType) : this(
+                    ((IDictionary?)strings["DialogMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    ((IDictionary?)strings["DialogMessageNoProcesses"])?[deploymentType.ToString()] as string ?? null!,
                     strings["AutomaticStartCountdown"] as string ?? null!,
                     strings["DeferralsRemaining"] as string ?? null!,
                     strings["DeferralDeadline"] as string ?? null!,
-                    ((Hashtable?)strings["ButtonLeftText"])?[deploymentType.ToString()] as string ?? null!,
+                    ((IDictionary?)strings["ButtonLeftText"])?[deploymentType.ToString()] as string ?? null!,
                     strings["ButtonRightText"] as string ?? null!,
-                    ((Hashtable?)strings["ButtonLeftNoProcessesText"])?[deploymentType.ToString()] as string ?? null!)
+                    ((IDictionary?)strings["ButtonLeftNoProcessesText"])?[deploymentType.ToString()] as string ?? null!)
                 {
                 }
 

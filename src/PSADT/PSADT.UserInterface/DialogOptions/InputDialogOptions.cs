@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="InputDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public InputDialogOptions(Hashtable options) : this(
+        public InputDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,

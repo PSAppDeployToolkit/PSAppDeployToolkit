@@ -127,7 +127,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Language", CultureInfo.CurrentCulture },
                 { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
             };
-            ProgressDialogOptions progressDialogOptions = new(new()
+            ProgressDialogOptions progressDialogOptions = new(new Hashtable()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
@@ -144,7 +144,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "Language", CultureInfo.CurrentCulture },
                 { "AdditionalOption", true }
             });
-            CustomDialogOptions customDialogOptions = new(new()
+            CustomDialogOptions customDialogOptions = new(new Hashtable()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00B7C3) }, // Accent Color: Cyan #00B7C3
@@ -166,7 +166,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
 
-            ListSelectionDialogOptions listSelectionDialogOptions = new(new()
+            ListSelectionDialogOptions listSelectionDialogOptions = new(new Hashtable()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00D326) }, // Accent Color: Blue #00D326
@@ -189,7 +189,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
 
-            InputDialogOptions inputDialogOptions = new(new()
+            InputDialogOptions inputDialogOptions = new(new Hashtable()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE81123) }, // Accent Color: Red #E81123

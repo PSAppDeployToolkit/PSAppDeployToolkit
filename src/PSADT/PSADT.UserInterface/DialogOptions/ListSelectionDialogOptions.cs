@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="ListSelectionDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public ListSelectionDialogOptions(Hashtable options) : this(
+        public ListSelectionDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,
@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["MinimizeWindows"] as bool? ?? false,
             options["ListItems"] as IReadOnlyList<string> ?? null!,
             options["SelectedIndex"] as int? ?? -1,
-            options["Strings"] as Hashtable is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null!)
+            options["Strings"] as IDictionary is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null!)
         {
         }
 
@@ -129,7 +129,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class.
             /// </summary>
             /// <param name="strings"></param>
-            internal ListSelectionDialogStrings(Hashtable strings) : this(strings["ListSelectionMessage"] as string ?? null!)
+            internal ListSelectionDialogStrings(IDictionary strings) : this(strings["ListSelectionMessage"] as string ?? null!)
             {
             }
 

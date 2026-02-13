@@ -44,7 +44,7 @@ namespace PSAppDeployToolkit.Logging
 
             // Perform early return checks before wasting time.
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
-            Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
+            IDictionary? configToolkit = ModuleDatabase.IsInitialized() ? (IDictionary)ModuleDatabase.GetConfig()["Toolkit"]! : null;
             if (debugMessage && configToolkit?["LogDebugMessage"] is not true)
             {
                 return new ReadOnlyCollection<LogEntry>([]);
