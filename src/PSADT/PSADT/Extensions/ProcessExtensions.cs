@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using PSADT.ProcessManagement;
 
@@ -30,9 +29,10 @@ namespace PSADT.Extensions
                     return process.MainModule.FileName;
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch
             {
                 return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
+                throw;
             }
             return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
         }

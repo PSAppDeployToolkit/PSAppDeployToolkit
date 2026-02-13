@@ -188,9 +188,10 @@ namespace PSADT.Invoke
                 _ = Kernel32.GetConsoleWindow(); _ = Console.ReadKey();
                 _ = Kernel32.FreeConsole();
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch
             {
                 return;
+                throw;
             }
         }
 
