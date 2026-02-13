@@ -27,6 +27,16 @@ namespace PSADT.LibraryInterfaces.Utilities
         }
 
         /// <summary>
+        /// Converts an NTSTATUS value to an HRESULT. Equivalent to the HRESULT_FROM_NT macro.
+        /// </summary>
+        /// <param name="ntStatus">The NTSTATUS value to convert.</param>
+        /// <returns>The corresponding HRESULT value.</returns>
+        internal static HRESULT HRESULT_FROM_NT(NTSTATUS ntStatus)
+        {
+            return new HRESULT(unchecked((int)(unchecked((uint)ntStatus.Value) | (uint)FACILITY_CODE.FACILITY_NT_BIT)));
+        }
+
+        /// <summary>
         /// Converts a Win32 error code to its corresponding HRESULT value.
         /// </summary>
         /// <remarks>Use this method to translate Win32 error codes into HRESULT values for
