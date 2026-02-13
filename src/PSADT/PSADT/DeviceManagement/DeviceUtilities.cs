@@ -32,9 +32,10 @@ namespace PSADT.DeviceManagement
                 {
                     deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out microphoneDevice);
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch
                 {
                     return false;
+                    throw;
                 }
 
                 // Activate the session manager for the capture device and enumerate through each session.
