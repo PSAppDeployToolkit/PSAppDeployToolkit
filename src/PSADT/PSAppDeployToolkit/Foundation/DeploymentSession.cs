@@ -31,8 +31,6 @@ namespace PSAppDeployToolkit.Foundation
     /// <summary>
     /// Represents a deployment session.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0052:Remove unread private members", Justification = "These private members are read by reflection, which we really need to drop.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "These private members are written to by reflection, which we really need to drop.")]
     public class DeploymentSession
     {
         #region Constructors.
@@ -52,8 +50,8 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Establish start date/time first so we can accurately mark the start of execution.
-                _currentDate = CurrentDateTime.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
-                _currentTime = CurrentDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+                CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
+                CurrentTime = CurrentDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
                 // Establish initial variable values.
                 PSObject adtData = ModuleDatabase.Get();
@@ -61,9 +59,8 @@ namespace PSAppDeployToolkit.Foundation
                 Hashtable adtConfig = ModuleDatabase.GetConfig();
                 Hashtable configUI = (Hashtable)adtConfig["UI"]!;
                 Hashtable configToolkit = (Hashtable)adtConfig["Toolkit"]!;
-                SessionState moduleSessionState = ModuleDatabase.GetSessionState();
-                bool writtenDivider = false; _ = _installPhase;
                 bool forceProcessDetection = false;
+                bool writtenDivider = false;
 
                 // Pre-cache reused environment variables.
                 string appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
@@ -95,11 +92,11 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (parameters.TryGetValue("DeploymentType", out paramValue) && (paramValue is not null))
                     {
-                        _deploymentType = (DeploymentType)paramValue;
+                        DeploymentType = (DeploymentType)paramValue;
                     }
                     if (parameters.TryGetValue("DeployMode", out paramValue) && (paramValue is not null))
                     {
-                        _deployMode = (DeployMode)paramValue;
+                        DeployMode = (DeployMode)paramValue;
                     }
                     if (parameters.TryGetValue("SuppressRebootPassThru", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -115,39 +112,39 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (parameters.TryGetValue("AppVendor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appVendor = (string)paramValue;
+                        AppVendor = (string)paramValue;
                     }
                     if (parameters.TryGetValue("AppName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appName = (string)paramValue;
+                        AppName = (string)paramValue;
                     }
                     if (parameters.TryGetValue("AppVersion", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appVersion = (string)paramValue;
+                        AppVersion = (string)paramValue;
                     }
                     if (parameters.TryGetValue("AppArch", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appArch = (string)paramValue;
+                        AppArch = (string)paramValue;
                     }
                     if (parameters.TryGetValue("AppLang", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appLang = (string)paramValue;
+                        AppLang = (string)paramValue;
                     }
                     if (parameters.TryGetValue("AppRevision", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appRevision = (string)paramValue;
+                        AppRevision = (string)paramValue;
                     }
                     if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (paramValue is not null))
                     {
-                        _appScriptVersion = (Version)paramValue;
+                        AppScriptVersion = (Version)paramValue;
                     }
                     if (parameters.TryGetValue("AppScriptDate", out paramValue) && (paramValue is not null))
                     {
-                        _appScriptDate = (DateTime)paramValue;
+                        AppScriptDate = (DateTime)paramValue;
                     }
                     if (parameters.TryGetValue("AppScriptAuthor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _appScriptAuthor = (string)paramValue;
+                        AppScriptAuthor = (string)paramValue;
                     }
                     if (parameters.TryGetValue("RequireAdmin", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -155,59 +152,59 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _installName = (string)paramValue;
+                        InstallName = (string)paramValue;
                     }
                     if (parameters.TryGetValue("InstallTitle", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _installTitle = (string)paramValue;
+                        InstallTitle = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _deployAppScriptFriendlyName = (string)paramValue;
+                        DeployAppScriptFriendlyName = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue) && (paramValue is not null))
                     {
-                        _deployAppScriptVersion = (Version)paramValue;
+                        DeployAppScriptVersion = (Version)paramValue;
                     }
                     if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (paramValue is not null))
                     {
-                        _deployAppScriptParameters = new((Dictionary<string, object>)paramValue);
+                        DeployAppScriptParameters = new ReadOnlyDictionary<string, object>((Dictionary<string, object>)paramValue);
                     }
                     if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appSuccessExitCodes = new([.. (int[])paramValue]);
+                        AppSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
                     if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appRebootExitCodes = new([.. (int[])paramValue]);
+                        AppRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
                     if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
                     {
-                        _appProcessesToClose = new([.. (ProcessDefinition[])paramValue]);
+                        AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>((ProcessDefinition[])paramValue);
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
-                        _scriptDirectory = new([.. (string[])paramValue]);
+                        ScriptDirectory = new ReadOnlyCollection<string>((string[])paramValue);
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _dirFiles = (string)paramValue;
+                        DirFiles = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DirSupportFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _dirSupportFiles = (string)paramValue;
+                        DirSupportFiles = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DefaultMsiFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _defaultMsiFile = (string)paramValue;
+                        DefaultMsiFile = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DefaultMstFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _defaultMstFile = (string)paramValue;
+                        DefaultMstFile = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
                     {
-                        _defaultMspFiles = new([.. (string[])paramValue]);
+                        DefaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
                     }
                     if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -235,7 +232,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        _logName = (string)paramValue;
+                        LogName = (string)paramValue;
                     }
                     if (parameters.TryGetValue("NoProcessDetection", out paramValue))
                     {
@@ -249,7 +246,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
                     }
                 }
-                if (compatibilityMode.HasValue && compatibilityMode.Value)
+                if (compatibilityMode == true)
                 {
                     if (SessionState is null)
                     {
@@ -257,23 +254,23 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     Settings |= DeploymentSettings.CompatibilityMode;
                 }
-                if (noExitOnClose.HasValue && noExitOnClose.Value)
+                if (noExitOnClose == true)
                 {
                     Settings |= DeploymentSettings.NoExitOnClose;
                 }
 
                 // Establish script directories.
-                if (_scriptDirectory.Count > 0)
+                if (ScriptDirectory.Count > 0)
                 {
-                    foreach (string directory in _scriptDirectory)
+                    foreach (string directory in ScriptDirectory)
                     {
-                        if (string.IsNullOrWhiteSpace(_dirFiles) && Directory.Exists(Path.Combine(directory, "Files")))
+                        if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(directory, "Files")))
                         {
-                            _dirFiles = Path.Combine(directory, "Files");
+                            DirFiles = Path.Combine(directory, "Files");
                         }
-                        if (string.IsNullOrWhiteSpace(_dirSupportFiles) && Directory.Exists(Path.Combine(directory, "SupportFiles")))
+                        if (string.IsNullOrWhiteSpace(DirSupportFiles) && Directory.Exists(Path.Combine(directory, "SupportFiles")))
                         {
-                            _dirSupportFiles = Path.Combine(directory, "SupportFiles");
+                            DirSupportFiles = Path.Combine(directory, "SupportFiles");
                         }
                     }
                 }
@@ -284,28 +281,28 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection))
+                if (string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
-                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
+                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
                         WriteInitialDivider(ref writtenDivider);
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
-                        string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
+                        string mountPath = Path.Combine(DirFiles, Path.GetRandomFileName());
                         _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
-                        AddMountedWimFile(new(wimFile)); _dirFiles = mountPath;
+                        AddMountedWimFile(new(wimFile)); DirFiles = mountPath;
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
                         string[] usedLetters = [.. DriveInfo.GetDrives().Select(static d => d.Name)];
                         if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
                         {
-                            availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
-                            _ = Kernel32.DefineDosDevice(0, availLetter, _dirFiles);
-                            _dirFiles = DirFilesSubstDrive = availLetter;
+                            availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
+                            _ = Kernel32.DefineDosDevice(0, availLetter, DirFiles);
+                            DirFiles = DirFilesSubstDrive = availLetter;
                         }
-                        WriteLogEntry($"Using [{_dirFiles}] as the base DirFiles directory.");
+                        WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
                     }
                 }
 
@@ -315,73 +312,73 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || Settings.HasFlag(DeploymentSettings.ForceMsiDetection))
+                if (string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceMsiDetection))
                 {
                     // Find the first MSI file in the Files folder and use that as our install.
-                    if (string.IsNullOrWhiteSpace(_defaultMsiFile))
+                    if (string.IsNullOrWhiteSpace(DefaultMsiFile))
                     {
                         // Only proceed if the Files directory is set.
-                        if (!string.IsNullOrWhiteSpace(_dirFiles))
+                        if (!string.IsNullOrWhiteSpace(DirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            string[] msiFiles = [.. Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
+                            string[] msiFiles = [.. Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
                             string formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
                             if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
-                                _defaultMsiFile = new FileInfo(msiFile).FullName;
+                                DefaultMsiFile = new FileInfo(msiFile).FullName;
                             }
                             else if (msiFiles.Length > 0)
                             {
-                                _defaultMsiFile = new FileInfo(msiFiles[0]).FullName;
+                                DefaultMsiFile = new FileInfo(msiFiles[0]).FullName;
                             }
                         }
                     }
-                    else if (!Path.IsPathRooted(_defaultMsiFile) && !string.IsNullOrWhiteSpace(_dirFiles))
+                    else if (!Path.IsPathRooted(DefaultMsiFile) && !string.IsNullOrWhiteSpace(DirFiles))
                     {
-                        _defaultMsiFile = Path.Combine(_dirFiles, _defaultMsiFile);
+                        DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
                     }
 
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
-                    if (!string.IsNullOrWhiteSpace(_defaultMsiFile))
+                    if (!string.IsNullOrWhiteSpace(DefaultMsiFile))
                     {
                         WriteInitialDivider(ref writtenDivider);
-                        WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
+                        WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
 
                         // Discover if there is a zero-config MST file.
-                        if (string.IsNullOrWhiteSpace(_defaultMstFile))
+                        if (string.IsNullOrWhiteSpace(DefaultMstFile))
                         {
-                            string mstFile = Path.ChangeExtension(_defaultMsiFile, "mst");
+                            string mstFile = Path.ChangeExtension(DefaultMsiFile, "mst");
                             if (File.Exists(mstFile))
                             {
-                                _defaultMstFile = mstFile;
+                                DefaultMstFile = mstFile;
                             }
                         }
-                        else if (!Path.IsPathRooted(_defaultMstFile) && !string.IsNullOrWhiteSpace(_dirFiles))
+                        else if (!Path.IsPathRooted(DefaultMstFile) && !string.IsNullOrWhiteSpace(DirFiles))
                         {
-                            _defaultMstFile = Path.Combine(_dirFiles, _defaultMstFile);
+                            DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
                         }
-                        if (!string.IsNullOrWhiteSpace(_defaultMstFile))
+                        if (!string.IsNullOrWhiteSpace(DefaultMstFile))
                         {
-                            WriteLogEntry($"Discovered Zero-Config MST installation file [{_defaultMstFile}].");
+                            WriteLogEntry($"Discovered Zero-Config MST installation file [{DefaultMstFile}].");
                         }
 
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-                        if (_defaultMspFiles.Count == 0)
+                        if (DefaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(_dirFiles))
+                            if (!string.IsNullOrWhiteSpace(DirFiles))
                             {
-                                _defaultMspFiles = new([.. Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))]);
+                                DefaultMspFiles = new ReadOnlyCollection<string>([.. Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))]);
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && _defaultMspFiles.Any(static f => !Path.IsPathRooted(f)))
+                        else if (!string.IsNullOrWhiteSpace(DirFiles) && DefaultMspFiles.Any(static f => !Path.IsPathRooted(f)))
                         {
-                            _defaultMspFiles = new([.. _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f)]);
+                            DefaultMspFiles = new ReadOnlyCollection<string>([.. DefaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(DirFiles!, f) : f)]);
                         }
-                        if (_defaultMspFiles.Count > 0)
+                        if (DefaultMspFiles.Count > 0)
                         {
-                            WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", _defaultMspFiles)}].");
+                            WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", DefaultMspFiles)}].");
                         }
 
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
@@ -390,24 +387,24 @@ namespace PSAppDeployToolkit.Foundation
                             ProcessDefinition[]? msiExecList = ((ReadOnlyDictionary<string, object>?)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if (![System.String]::IsNullOrWhiteSpace($args[1])) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File -TablePropertyValueColumnNum 3"), DefaultMsiFile!, DefaultMstFile!).FirstOrDefault()?.BaseObject)?.Values.Where(static p => ((string)p).EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(((string)p).Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last()))).ToArray();
                             if (msiExecList?.Length > 0)
                             {
-                                _appProcessesToClose = new([.. _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
+                                AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
                                 WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                             }
                         }
 
                         // Update our app variables with new values.
                         ReadOnlyDictionary<string, object> msiProps = (ReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
-                        if (string.IsNullOrWhiteSpace(_appVendor))
+                        if (string.IsNullOrWhiteSpace(AppVendor))
                         {
-                            _appVendor = (string)msiProps["Manufacturer"];
+                            AppVendor = (string)msiProps["Manufacturer"];
                         }
-                        if (string.IsNullOrWhiteSpace(_appName))
+                        if (string.IsNullOrWhiteSpace(AppName))
                         {
-                            _appName = (string)msiProps["ProductName"];
+                            AppName = (string)msiProps["ProductName"];
                         }
-                        if (string.IsNullOrWhiteSpace(_appVersion))
+                        if (string.IsNullOrWhiteSpace(AppVersion))
                         {
-                            _appVersion = (string)msiProps["ProductVersion"];
+                            AppVersion = (string)msiProps["ProductVersion"];
                         }
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
                         WriteLogEntry($"App Name [{(string)msiProps["ProductName"]}].");
@@ -422,30 +419,30 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Set up sample variables if Dot Sourcing the script, app details have not been specified.
-                if (string.IsNullOrWhiteSpace(_appName))
+                if (string.IsNullOrWhiteSpace(AppName))
                 {
-                    _appName = appDeployToolkitName;
+                    AppName = appDeployToolkitName;
 
-                    if (!string.IsNullOrWhiteSpace(_appVendor))
+                    if (!string.IsNullOrWhiteSpace(AppVendor))
                     {
-                        _appVendor = null;
+                        AppVendor = null;
                     }
-                    if (string.IsNullOrWhiteSpace(_appVersion))
+                    if (string.IsNullOrWhiteSpace(AppVersion))
                     {
-                        _appVersion = appDeployMainScriptVersion;
+                        AppVersion = appDeployMainScriptVersion;
                     }
-                    if (string.IsNullOrWhiteSpace(_appLang))
+                    if (string.IsNullOrWhiteSpace(AppLang))
                     {
-                        _appLang = currentLanguage;
+                        AppLang = currentLanguage;
                     }
-                    if (string.IsNullOrWhiteSpace(_appRevision))
+                    if (string.IsNullOrWhiteSpace(AppRevision))
                     {
-                        _appRevision = "01";
+                        AppRevision = "01";
                     }
                 }
 
                 // If we're left with a blank AppName, throw a terminating error.
-                if (string.IsNullOrWhiteSpace(_appName))
+                if (string.IsNullOrWhiteSpace(AppName))
                 {
                     throw new ArgumentException("The application name was not specified.");
                 }
@@ -456,23 +453,23 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Build the Installation Title.
-                if (string.IsNullOrWhiteSpace(_installTitle))
+                if (string.IsNullOrWhiteSpace(InstallTitle))
                 {
-                    _installTitle = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{_appVendor} " : null)}{_appName} {_appVersion}".Trim();
+                    InstallTitle = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor} " : null)}{AppName} {AppVersion}".Trim();
                 }
-                _installTitle = Regex.Replace(_installTitle, @"\s{2,}", string.Empty);
+                InstallTitle = Regex.Replace(InstallTitle, @"\s{2,}", string.Empty);
 
                 // Build the Installation Name.
-                if (string.IsNullOrWhiteSpace(_installName))
+                if (string.IsNullOrWhiteSpace(InstallName))
                 {
-                    _installName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{_appVendor}_" : null)}{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
+                    InstallName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor}_" : null)}{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
                 }
                 Regex invalidChars = (Regex)adtEnv["invalidFileNameCharsRegExPattern"]!;
-                _installName = invalidChars.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
+                InstallName = invalidChars.Replace(Regex.Replace(InstallName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
-                RegKeyDeferHistory = $@"{RegKeyDeferBase}\{_installName}";
+                RegKeyDeferHistory = $@"{RegKeyDeferBase}\{InstallName}";
 
 
                 #endregion
@@ -483,26 +480,26 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    string logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
+                    string logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{InstallName}_{DeploymentType}");
                     if (Directory.Exists(logTempFolder))
                     {
                         Directory.Delete(logTempFolder, true);
                     }
-                    _logPath = Directory.CreateDirectory(logTempFolder).FullName;
+                    LogPath = Directory.CreateDirectory(logTempFolder).FullName;
                 }
                 else
                 {
-                    _logPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
+                    LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
                 }
 
                 // Append subfolder path if configured to do so.
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
-                    _logPath = Directory.CreateDirectory(Path.Combine(_logPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", null))).FullName;
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null))).FullName;
 
                     // Check how many hierarchy levels to keep based on configuration.
-                    DirectoryInfo[] hierarchyDirectories = [.. new DirectoryInfo(_logPath).Parent!.GetDirectories().Where(d => !d.FullName.Equals(_logPath, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
+                    DirectoryInfo[] hierarchyDirectories = [.. new DirectoryInfo(LogPath).Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
                     int logMaxHierarchy = (int)configToolkit["LogMaxHierarchy"]!;
                     int hierarchyDirectoriesCount = hierarchyDirectories.Length;
                     if (hierarchyDirectoriesCount > logMaxHierarchy)
@@ -515,14 +512,14 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
-                    _logPath = Directory.CreateDirectory(Path.Combine(_logPath, _installName)).FullName;
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, InstallName)).FullName;
                 }
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{_installName}_{{0}}_{_deploymentType}{(!isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log", string.Empty);
-                _logName = !string.IsNullOrWhiteSpace(_logName) ? invalidChars.Replace(_logName, string.Empty) : NewLogFileName(appDeployToolkitName);
-                string logFile = Path.Combine(_logPath, _logName);
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{{0}}_{DeploymentType}{(!isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log", string.Empty);
+                LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName);
+                string logFile = Path.Combine(LogPath, LogName);
                 FileInfo logFileInfo = new(logFile);
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
@@ -533,11 +530,11 @@ namespace PSAppDeployToolkit.Foundation
                     try
                     {
                         // Get new log file path.
-                        string logFileNameOnly = Path.GetFileNameWithoutExtension(_logName);
-                        string logFileExtension = Path.GetExtension(_logName);
+                        string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
+                        string logFileExtension = Path.GetExtension(LogName);
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
-                        string archiveLogFilePath = Path.Combine(_logPath, archiveLogFileName);
+                        string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
                         int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
@@ -556,7 +553,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Get all log files sorted by last write time.
-                        FileInfo[] logFiles = [.. new DirectoryInfo(_logPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
+                        FileInfo[] logFiles = [.. new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                         int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.
@@ -577,7 +574,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using StreamWriter logFileWriter = new(Path.Combine(_logPath, _logName), true, LogUtilities.LogEncoding);
+                    using StreamWriter logFileWriter = new(Path.Combine(LogPath, LogName), true, LogUtilities.LogEncoding);
                     foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
                     {
                         logFileWriter.WriteLine(line);
@@ -586,7 +583,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Open log file with commencement message.
                 WriteInitialDivider(ref writtenDivider);
-                WriteLogEntry($"[{_installName}] {CultureInfo.InvariantCulture.TextInfo.ToLower(_deploymentType.ToString())} started.");
+                WriteLogEntry($"[{InstallName}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())} started.");
 
 
                 #endregion
@@ -594,27 +591,27 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Announce provided deployment script info.
-                if (_appScriptVersion is not null)
+                if (AppScriptVersion is not null)
                 {
-                    WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
+                    WriteLogEntry($"[{InstallName}] script version is [{AppScriptVersion}].");
                 }
-                if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && appScriptDate != "2000-12-31")
+                if ((AppScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && appScriptDate != "2000-12-31")
                 {
-                    WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
+                    WriteLogEntry($"[{InstallName}] script date is [{appScriptDate}].");
                 }
-                if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && _appScriptAuthor != "<author name>")
+                if (!string.IsNullOrWhiteSpace(AppScriptAuthor) && AppScriptAuthor != "<author name>")
                 {
-                    WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
+                    WriteLogEntry($"[{InstallName}] script author is [{AppScriptAuthor}].");
                 }
-                if (!string.IsNullOrWhiteSpace(_deployAppScriptFriendlyName))
+                if (!string.IsNullOrWhiteSpace(DeployAppScriptFriendlyName))
                 {
-                    if (_deployAppScriptVersion is not null)
+                    if (DeployAppScriptVersion is not null)
                     {
-                        WriteLogEntry($"[{_deployAppScriptFriendlyName}] script version is [{_deployAppScriptVersion}].");
+                        WriteLogEntry($"[{DeployAppScriptFriendlyName}] script version is [{DeployAppScriptVersion}].");
                     }
-                    if (_deployAppScriptParameters?.Count > 0)
+                    if (DeployAppScriptParameters?.Count > 0)
                     {
-                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(_deployAppScriptParameters).Replace("''", "'")}].");
+                        WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(DeployAppScriptParameters).Replace("''", "'")}].");
                     }
                 }
                 PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
@@ -764,15 +761,15 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     if (deployModeChanged)
                     {
-                        WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{_deployMode}]");
+                        WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{DeployMode}]");
                     }
-                    if (_deployMode != DeployMode.Auto)
+                    if (DeployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"Detected OOBE in progress but deployment mode was explicitly set to [{_deployMode}].");
+                        WriteLogEntry($"Detected OOBE in progress but deployment mode was explicitly set to [{DeployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                     {
-                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
                         deployModeChanged = true;
                     }
                     else
@@ -788,22 +785,22 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
                         {
-                            PSObject? fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                            PSObject? fsRegData = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                             if (fsRegData is not null)
                             {
                                 if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
                                 {
                                     if (deployModeChanged)
                                     {
-                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{DeployMode}]");
                                     }
-                                    else if (_deployMode != DeployMode.Auto)
+                                    else if (DeployMode != DeployMode.Auto)
                                     {
-                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{_deployMode}].");
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{DeployMode}].");
                                     }
                                     else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                                     {
-                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
                                         deployModeChanged = true;
                                     }
                                     else
@@ -841,11 +838,11 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     if (deployModeChanged)
                     {
-                        WriteLogEntry($"Session 0 detected but deployment has already been changed to [{_deployMode}]");
+                        WriteLogEntry($"Session 0 detected but deployment has already been changed to [{DeployMode}]");
                     }
-                    else if (_deployMode != DeployMode.Auto)
+                    else if (DeployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"Session 0 detected but deployment mode was explicitly set to [{_deployMode}].");
+                        WriteLogEntry($"Session 0 detected but deployment mode was explicitly set to [{DeployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
@@ -855,7 +852,7 @@ namespace PSAppDeployToolkit.Foundation
                             // If there's no users logged on but we're interactive anyway, don't change the DeployMode.
                             if (!IsProcessUserInteractive)
                             {
-                                WriteLogEntry($"Session 0 detected, no users logged on and process not running in user interactive mode; deployment mode set to [{_deployMode = DeployMode.Silent}].");
+                                WriteLogEntry($"Session 0 detected, no users logged on and process not running in user interactive mode; deployment mode set to [{DeployMode = DeployMode.Silent}].");
                                 deployModeChanged = true;
                             }
                             else
@@ -879,27 +876,27 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Evaluate processes to close if they're specified.
-                if (_appProcessesToClose.Count > 0 || forceProcessDetection)
+                if (AppProcessesToClose.Count > 0 || forceProcessDetection)
                 {
                     if (deployModeChanged)
                     {
-                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
+                        WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{DeployMode}]");
                     }
-                    else if (_deployMode != DeployMode.Auto)
+                    else if (DeployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was explicitly set to [{_deployMode}].");
+                        WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was explicitly set to [{DeployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
-                        if (RunningProcessInfo.Get(_appProcessesToClose) is var runningProcesses && (runningProcesses.Count == 0))
+                        if (RunningProcessInfo.Get(AppProcessesToClose) is var runningProcesses && (runningProcesses.Count == 0))
                         {
                             if (!forceProcessDetection)
                             {
-                                WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                                WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
                             }
                             else
                             {
-                                WriteLogEntry($"No processes were specified as requiring closure and -NoProcessDetection was explicitly set to false, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                                WriteLogEntry($"No processes were specified as requiring closure and -NoProcessDetection was explicitly set to false, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
                             }
                             deployModeChanged = true;
                         }
@@ -910,22 +907,22 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     else
                     {
-                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
+                        WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
                     }
                 }
-                else if (_deployAppScriptVersion is null || _deployAppScriptVersion >= new Version(4, 2, 0))
+                else if (DeployAppScriptVersion is null || DeployAppScriptVersion >= new Version(4, 2, 0))
                 {
                     if (deployModeChanged)
                     {
-                        WriteLogEntry($"No processes were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
+                        WriteLogEntry($"No processes were specified as requiring closure but deployment has already been changed to [{DeployMode}]");
                     }
-                    if (_deployMode != DeployMode.Auto)
+                    if (DeployMode != DeployMode.Auto)
                     {
-                        WriteLogEntry($"No processes were specified as requiring closure but deployment mode was explicitly set to [{_deployMode}].");
+                        WriteLogEntry($"No processes were specified as requiring closure but deployment mode was explicitly set to [{DeployMode}].");
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
-                        WriteLogEntry($"No processes were specified as requiring closure, changing deployment mode to [{_deployMode = DeployMode.Silent}].");
+                        WriteLogEntry($"No processes were specified as requiring closure, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
                         deployModeChanged = true;
                     }
                     else
@@ -939,25 +936,25 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // If we're still in Auto mode, then set the deployment mode to Interactive.
-                if (_deployMode == DeployMode.Auto)
+                if (DeployMode == DeployMode.Auto)
                 {
-                    _deployMode = DeployMode.Interactive;
+                    DeployMode = DeployMode.Interactive;
                 }
 
                 // Set Deploy Mode switches.
-                WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
-                if (_deployMode == DeployMode.Silent)
+                WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
+                if (DeployMode == DeployMode.Silent)
                 {
                     Settings |= DeploymentSettings.NonInteractive;
                     Settings |= DeploymentSettings.Silent;
                 }
-                else if (_deployMode == DeployMode.NonInteractive)
+                else if (DeployMode == DeployMode.NonInteractive)
                 {
                     Settings |= DeploymentSettings.NonInteractive;
                 }
 
                 // Check deployment type (install/uninstall).
-                WriteLogEntry($"Deployment type is [{_deploymentType}].");
+                WriteLogEntry($"Deployment type is [{DeploymentType}].");
 
 
                 #endregion
@@ -965,7 +962,7 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Check if the caller explicitly wants interactivity but we can't do it.
-                if (_deployMode != DeployMode.Silent && RunAsActiveUser is null && !IsProcessUserInteractive)
+                if (DeployMode != DeployMode.Silent && RunAsActiveUser is null && !IsProcessUserInteractive)
                 {
                     throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
@@ -990,15 +987,15 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-                if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))
+                if (Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null)
                 {
                     foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
-                        SessionState!.PSVariable.Set(new(property.Name, property.GetValue(this)));
+                        SessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
                     }
                     foreach (FieldInfo field in typeof(DeploymentSession).GetFields())
                     {
-                        SessionState!.PSVariable.Set(new(field.Name, field.GetValue(this)));
+                        SessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
                     }
                 }
 
@@ -1489,42 +1486,52 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the value of a property.
+        /// Gets the value of a flag-based boolean property from the Settings bitfield.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
+        /// <param name="flag">The DeploymentSettings flag to check.</param>
+        /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
+        /// <returns>True if the flag is set; otherwise, false.</returns>
+        private bool GetFlagValue(DeploymentSettings flag, [CallerMemberName] string propertyName = null!)
         {
-            return !Settings.HasFlag(DeploymentSettings.CompatibilityMode)
-                ? (T)(Enum.TryParse(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!)
-                : (T)SessionState!.PSVariable.GetValue(propertyName);
+            return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null
+                ? (bool)SessionState.PSVariable.GetValue(propertyName)
+                : Settings.HasFlag(flag);
         }
 
         /// <summary>
-        /// Sets the value of a property.
+        /// Gets the value of a property using the compiler-generated backing field.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="propertyName"></param>
-        private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
+        /// <typeparam name="T">The type of the property value.</typeparam>
+        /// <param name="backingField">Read-only reference to the backing field.</param>
+        /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
+        /// <returns>The property value from either the backing field or PowerShell session state.</returns>
+        private T GetPropertyValue<T>(ref readonly T backingField, [CallerMemberName] string propertyName = null!)
         {
-            if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))
+            return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null
+                ? (T)SessionState.PSVariable.GetValue(propertyName)
+                : backingField;
+        }
+
+        /// <summary>
+        /// Sets the value of a mutable property using the compiler-generated backing field.
+        /// </summary>
+        /// <typeparam name="T">The type of the property value.</typeparam>
+        /// <param name="backingField">Reference to the mutable backing field.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
+        private void SetPropertyValue<T>(ref T backingField, T value, [CallerMemberName] string propertyName = null!)
+        {
+            if (Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null)
             {
-                SessionState!.PSVariable.Set(new(propertyName, value));
+                SessionState.PSVariable.Set(new(propertyName, value));
             }
-            BackingFields[propertyName!].SetValue(this, value);
+            backingField = value;
         }
 
 
         #endregion
         #region Internal variables.
 
-
-        /// <summary>
-        /// Read-only list of all backing fields in the DeploymentSession class.
-        /// </summary>
-        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new(typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpperInvariant(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.
@@ -1613,69 +1620,33 @@ namespace PSAppDeployToolkit.Foundation
 
 
         #endregion
-        #region Private backing fields.
-
-
-        private readonly DeploymentType _deploymentType = DeploymentType.Install;
-        private readonly DeployMode _deployMode = DeployMode.Auto;
-        private readonly string? _appVendor;
-        private readonly string? _appName;
-        private readonly string? _appVersion;
-        private readonly string? _appArch;
-        private readonly string? _appLang;
-        private readonly string? _appRevision;
-        private readonly ReadOnlyCollection<int> _appSuccessExitCodes = new([0]);
-        private readonly ReadOnlyCollection<int> _appRebootExitCodes = new([1641, 3010]);
-        private readonly ReadOnlyCollection<ProcessDefinition> _appProcessesToClose = new([]);
-        private readonly Version? _appScriptVersion;
-        private readonly DateTime? _appScriptDate;
-        private readonly string? _appScriptAuthor;
-        private readonly string _installName;
-        private readonly string _installTitle;
-        private readonly string? _deployAppScriptFriendlyName;
-        private readonly Version? _deployAppScriptVersion;
-        private readonly ReadOnlyDictionary<string, object>? _deployAppScriptParameters;
-        private readonly string _currentDate;
-        private readonly string _currentTime;
-        private readonly ReadOnlyCollection<string> _scriptDirectory = new([]);
-        private readonly string? _defaultMsiFile;
-        private readonly string? _defaultMstFile;
-        private readonly ReadOnlyCollection<string> _defaultMspFiles = new([]);
-        private readonly string _logPath;
-        private readonly string _logName;
-        private string _installPhase = "Initialization";
-        private string? _dirFiles;
-        private string? _dirSupportFiles;
-
-
-        #endregion
         #region Frontend parameters.
 
 
         /// <summary>
         /// Gets the deployment session's deployment type.
         /// </summary>
-        public DeploymentType DeploymentType => GetPropertyValue<DeploymentType>();
+        public DeploymentType DeploymentType { get => GetPropertyValue(in field); init; } = DeploymentType.Install;
 
         /// <summary>
         /// Gets the deployment session's deployment mode.
         /// </summary>
-        public DeployMode DeployMode => GetPropertyValue<DeployMode>();
+        public DeployMode DeployMode { get => GetPropertyValue(in field); init; } = DeployMode.Auto;
 
         /// <summary>
         /// Gets whether this deployment session is allowed to exit with a reboot exit code.
         /// </summary>
-        public bool SuppressRebootPassThru => GetPropertyValue<bool>();
+        public bool SuppressRebootPassThru => GetFlagValue(DeploymentSettings.SuppressRebootPassThru);
 
         /// <summary>
         /// Gets whether this deployment session should enable terminal services install mode.
         /// </summary>
-        public bool TerminalServerMode => GetPropertyValue<bool>();
+        public bool TerminalServerMode => GetFlagValue(DeploymentSettings.TerminalServerMode);
 
         /// <summary>
         /// Gets whether this deployment session should disable logging for the operation.
         /// </summary>
-        public bool DisableLogging => GetPropertyValue<bool>();
+        public bool DisableLogging => GetFlagValue(DeploymentSettings.DisableLogging);
 
 
         #endregion
@@ -1685,96 +1656,92 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's application vendor.
         /// </summary>
-        public string? AppVendor => GetPropertyValue<string?>();
+        public string? AppVendor { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application name.
         /// </summary>
-        public string? AppName => GetPropertyValue<string?>();
+        public string? AppName { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application version.
         /// </summary>
-        public string? AppVersion => GetPropertyValue<string?>();
+        public string? AppVersion { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application architecture.
         /// </summary>
-        public string? AppArch => GetPropertyValue<string?>();
+        public string? AppArch { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application language.
         /// </summary>
-        public string? AppLang => GetPropertyValue<string?>();
+        public string? AppLang { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application package revision.
         /// </summary>
-        public string? AppRevision => GetPropertyValue<string?>();
+        public string? AppRevision { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
-        public IReadOnlyList<int> AppSuccessExitCodes => GetPropertyValue<IReadOnlyList<int>>();
+        public IReadOnlyList<int> AppSuccessExitCodes { get => GetPropertyValue(in field); init; } = new ReadOnlyCollection<int>([0]);
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
-        public IReadOnlyList<int> AppRebootExitCodes => GetPropertyValue<IReadOnlyList<int>>();
+        public IReadOnlyList<int> AppRebootExitCodes { get => GetPropertyValue(in field); init; } = new ReadOnlyCollection<int>([1641, 3010]);
 
         /// <summary>
         /// Gets the list of application processes that should be closed.
         /// </summary>
-        public IReadOnlyList<ProcessDefinition> AppProcessesToClose => GetPropertyValue<IReadOnlyList<ProcessDefinition>>();
+        public IReadOnlyList<ProcessDefinition> AppProcessesToClose { get => GetPropertyValue(in field); init; } = new ReadOnlyCollection<ProcessDefinition>([]);
 
         /// <summary>
         /// Gets the deployment session's application package version.
         /// </summary>
-        public Version? AppScriptVersion => GetPropertyValue<Version?>();
+        public Version? AppScriptVersion { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application package date.
         /// </summary>
-        public DateTime? AppScriptDate => GetPropertyValue<DateTime?>();
+        public DateTime? AppScriptDate { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's application package author.
         /// </summary>
-        public string? AppScriptAuthor => GetPropertyValue<string?>();
+        public string? AppScriptAuthor { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets an override to the deployment session's installation name.
         /// </summary>
-        public string InstallName => GetPropertyValue<string>();
+        public string InstallName { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets an override to the deployment session's installation title.
         /// </summary>
-        public string InstallTitle => GetPropertyValue<string>();
+        public string InstallTitle { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's frontend script name.
         /// </summary>
-        public string? DeployAppScriptFriendlyName => GetPropertyValue<string?>();
+        public string? DeployAppScriptFriendlyName { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's frontend script version.
         /// </summary>
-        public Version? DeployAppScriptVersion => GetPropertyValue<Version?>();
+        public Version? DeployAppScriptVersion { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters => GetPropertyValue<IReadOnlyDictionary<string, object>?>();
+        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets/sets the deployment session's installation phase.
         /// </summary>
-        public string InstallPhase
-        {
-            get => GetPropertyValue<string>();
-            set => SetPropertyValue(value);
-        }
+        public string InstallPhase { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); } = "Initialization";
 
 
         #endregion
@@ -1789,12 +1756,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's starting date as a string.
         /// </summary>
-        public string CurrentDate => GetPropertyValue<string>();
+        public string CurrentDate { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's starting time as a string.
         /// </summary>
-        public string CurrentTime => GetPropertyValue<string>();
+        public string CurrentTime { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
@@ -1804,60 +1771,52 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public IReadOnlyList<string> ScriptDirectory => GetPropertyValue<IReadOnlyList<string>>();
+        public IReadOnlyList<string> ScriptDirectory { get => GetPropertyValue(in field); init; } = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
-        public string? DirFiles
-        {
-            get => GetPropertyValue<string?>();
-            set => SetPropertyValue(value);
-        }
+        public string? DirFiles { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); }
 
         /// <summary>
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
-        public string? DirSupportFiles
-        {
-            get => GetPropertyValue<string?>();
-            set => SetPropertyValue(value);
-        }
+        public string? DirSupportFiles { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
         /// </summary>
-        public string? DefaultMsiFile => GetPropertyValue<string?>();
+        public string? DefaultMsiFile { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MST file path.
         /// </summary>
-        public string? DefaultMstFile => GetPropertyValue<string?>();
+        public string? DefaultMstFile { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public IReadOnlyList<string> DefaultMspFiles => GetPropertyValue<IReadOnlyList<string>>();
+        public IReadOnlyList<string> DefaultMspFiles { get => GetPropertyValue(in field); init; } = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
         /// </summary>
-        public bool UseDefaultMsi => GetPropertyValue<bool>();
+        public bool UseDefaultMsi => GetFlagValue(DeploymentSettings.UseDefaultMsi);
 
         /// <summary>
         /// Gets the deployment session's log path.
         /// </summary>
-        public string LogPath => GetPropertyValue<string>();
+        public string LogPath { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets the deployment session's log filename.
         /// </summary>
-        public string LogName => GetPropertyValue<string>();
+        public string LogName { get => GetPropertyValue(in field); init; }
 
         /// <summary>
         /// Gets a value indicating whether administrative privileges are required.
         /// </summary>
-        public bool RequireAdmin => GetPropertyValue<bool>();
+        public bool RequireAdmin => GetFlagValue(DeploymentSettings.RequireAdmin);
 
         /// <summary>
         /// Gets the caller's SessionState from value that was supplied during object instantiation.
