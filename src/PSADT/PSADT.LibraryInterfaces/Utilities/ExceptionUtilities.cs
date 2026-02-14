@@ -139,7 +139,7 @@ namespace PSADT.LibraryInterfaces.Utilities
         /// <returns>A string containing the error message associated with the specified Windows error code.</returns>
         internal static string GetMessageForWin32Error(WIN32_ERROR win32Error)
         {
-            string message = new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.') + '.';
+            string message = $"{new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.')}. (Exception from WIN32_ERROR: 0x{unchecked((int)win32Error):X8} ({win32Error}))";
             PInvoke.SetLastError(win32Error); return message;
         }
 
