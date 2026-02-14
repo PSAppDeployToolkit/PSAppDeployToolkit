@@ -26,7 +26,7 @@ namespace PSADT.LibraryInterfaces.Exceptions
         internal NtStatusException(NTSTATUS ntStatus, string? message = null) : base(message ?? GetMessageForNtStatus(ntStatus))
         {
             HResult = ExceptionUtilities.HRESULT_FROM_NT(ntStatus).Value;
-            NtStatusValue = ntStatus.Value;
+            NtStatus = ntStatus.Value;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace PSADT.LibraryInterfaces.Exceptions
 #endif
         protected NtStatusException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-            NtStatusValue = info.GetInt32(nameof(NtStatusValue));
+            NtStatus = info.GetInt32(nameof(NtStatus));
         }
 
         /// <summary>
@@ -53,18 +53,13 @@ namespace PSADT.LibraryInterfaces.Exceptions
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue(nameof(NtStatusValue), NtStatusValue);
+            info.AddValue(nameof(NtStatus), NtStatus);
         }
 
         /// <summary>
         /// Gets the NTSTATUS value as a CsWin32 NTSTATUS struct.
         /// </summary>
-        internal NTSTATUS NtStatus => new(NtStatusValue);
-
-        /// <summary>
-        /// Gets the NTSTATUS code associated with this exception.
-        /// </summary>
-        private readonly int NtStatusValue;
+        public int NtStatus { get; }
 
         /// <summary>
         /// Gets the error message for the specified NTSTATUS code using FormatMessage with ntdll.dll.
