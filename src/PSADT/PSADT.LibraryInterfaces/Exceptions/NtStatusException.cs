@@ -82,7 +82,7 @@ namespace PSADT.LibraryInterfaces.Exceptions
                 if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
                 {
                     // Use the Win32Exception message only if it's valid.
-                    if ((new Win32Exception(unchecked((int)win32Error)).Message.Trim().TrimEnd('.') + '.') is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
+                    if (ExceptionUtilities.GetMessageForWin32Error(win32Error) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
                     {
                         return message;
                     }
