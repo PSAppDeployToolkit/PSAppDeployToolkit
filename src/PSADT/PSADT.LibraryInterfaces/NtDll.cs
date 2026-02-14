@@ -49,7 +49,7 @@ namespace PSADT.LibraryInterfaces
                 }
             }
             return res != NTSTATUS.STATUS_SUCCESS
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                ? throw ExceptionUtilities.GetException(res)
                 : res;
         }
 
@@ -88,7 +88,7 @@ namespace PSADT.LibraryInterfaces
                 }
             }
             return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length))
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                ? throw ExceptionUtilities.GetException(res)
                 : res;
         }
 
@@ -129,7 +129,7 @@ namespace PSADT.LibraryInterfaces
                 }
             }
             return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length))
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                ? throw ExceptionUtilities.GetException(res)
                 : res;
         }
 
@@ -180,7 +180,7 @@ namespace PSADT.LibraryInterfaces
                 NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                    throw ExceptionUtilities.GetException(res);
                 }
                 ThreadHandle = new(hThread, true);
                 return res;
@@ -232,7 +232,7 @@ namespace PSADT.LibraryInterfaces
                 }
             }
             return res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                ? throw ExceptionUtilities.GetException(res)
                 : res;
         }
 
@@ -281,7 +281,7 @@ namespace PSADT.LibraryInterfaces
                 }
             }
             return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0)
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res))
+                ? throw ExceptionUtilities.GetException(res)
                 : res;
         }
 

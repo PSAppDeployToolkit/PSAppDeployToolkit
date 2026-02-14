@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -32,7 +32,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             }
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
-                throw new Win32Exception((int)PInvoke.LsaNtStatusToWinError(res));
+                throw ExceptionUtilities.GetException(res);
             }
             handle = default;
             return true;

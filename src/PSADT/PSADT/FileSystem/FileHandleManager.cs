@@ -333,7 +333,7 @@ namespace PSADT.FileSystem
                             }
                             if (res != NTSTATUS.STATUS_SUCCESS)
                             {
-                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                                throw ExceptionUtilities.GetException(res);
                             }
                             ref readonly OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsReadOnlyStructure<OBJECT_NAME_INFORMATION>();
                             try
