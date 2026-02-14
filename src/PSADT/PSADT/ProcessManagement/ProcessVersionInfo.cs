@@ -251,7 +251,7 @@ namespace PSADT.ProcessManagement
             {
                 nint entryAddress = unchecked(entriesAddress + (i * Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()));
                 IMAGE_RESOURCE_DIRECTORY_ENTRY entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, entryAddress);
-                if (entry.Anonymous1.Name == RESOURCE_TYPE.RT_VERSION)
+                if (entry.Anonymous1.Name == (nint)RESOURCE_TYPE.RT_VERSION)
                 {
                     return ReadVersionResourceData(processHandle, resourceDirectoryAddress, baseAddress, entry.Anonymous2.OffsetToData);
                 }

@@ -567,9 +567,9 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Represents a type of resource used in Windows applications, such as bitmaps, icons, or menus.
     /// </summary>
-    /// <remarks>This struct provides a set of predefined resource types that correspond to standard Windows
-    /// resource types. It includes operators for comparison and conversion to and from <see cref="nint"/>.</remarks>
-    internal readonly record struct RESOURCE_TYPE
+    /// <remarks>This class provides a set of predefined resource types that correspond to standard Windows
+    /// resource types.</remarks>
+    internal sealed class RESOURCE_TYPE : TypedConstant<RESOURCE_TYPE>
     {
         /// <summary>
         /// Accelerator table.
@@ -680,131 +680,9 @@ namespace PSADT.LibraryInterfaces
         /// Initializes a new instance of the <see cref="RESOURCE_TYPE"/> class with the specified handle.
         /// </summary>
         /// <param name="value">The handle to be associated with this instance.</param>
-        private RESOURCE_TYPE(PCWSTR value)
+        /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
+        private RESOURCE_TYPE(PCWSTR value, [System.Runtime.CompilerServices.CallerMemberName] string name = null!) : base(value, name)
         {
-            unsafe
-            {
-                Value = (nint)value.Value;
-            }
         }
-
-        /// <summary>
-        /// Converts a <see cref="RESOURCE_TYPE"/> instance to an <see cref="nint"/>.
-        /// </summary>
-        /// <param name="h">The <see cref="RESOURCE_TYPE"/> instance to convert.</param>
-        public static explicit operator nint(RESOURCE_TYPE h)
-        {
-            return h.Value;
-        }
-
-        /// <summary>
-        /// Converts a <see cref="RESOURCE_TYPE"/> instance to an <see cref="PCWSTR"/>.
-        /// </summary>
-        /// <param name="h">The <see cref="RESOURCE_TYPE"/> instance to convert.</param>
-        public static explicit operator PCWSTR(RESOURCE_TYPE h)
-        {
-            unsafe
-            {
-                return (PCWSTR)(void*)h.Value;
-            }
-        }
-
-        /// <summary>
-        /// Converts a <see cref="RESOURCE_TYPE"/> instance to an <see cref="uint"/>.
-        /// </summary>
-        /// <param name="h">The <see cref="RESOURCE_TYPE"/> instance to convert.</param>
-        public static explicit operator uint(RESOURCE_TYPE h)
-        {
-            return (uint)h.Value;
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects, an <see cref="nint"/> and a <see cref="RESOURCE_TYPE"/>, are not
-        /// equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The <see cref="RESOURCE_TYPE"/> object to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
-        /// otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(nint h1, RESOURCE_TYPE h2)
-        {
-            return h1 != h2.Value;
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects are equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The second resource type to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
-        /// <see langword="false"/>.</returns>
-        public static bool operator ==(nint h1, RESOURCE_TYPE h2)
-        {
-            return h1 == h2.Value;
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects, an <see cref="PCWSTR"/> and a <see cref="RESOURCE_TYPE"/>, are not
-        /// equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The <see cref="RESOURCE_TYPE"/> object to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
-        /// otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(PCWSTR h1, RESOURCE_TYPE h2)
-        {
-            unsafe
-            {
-                return (nint)h1.Value != h2.Value;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects are equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The second resource type to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
-        /// <see langword="false"/>.</returns>
-        public static bool operator ==(PCWSTR h1, RESOURCE_TYPE h2)
-        {
-            unsafe
-            {
-                return (nint)h1.Value == h2.Value;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects, a <see cref="uint"/> and a <see cref="RESOURCE_TYPE"/>, are not
-        /// equal.
-        /// </summary>
-        /// <param name="h1">The first operand, a 32-bit unsigned integer representing a resource handle.</param>
-        /// <param name="h2">The second operand, a <see cref="RESOURCE_TYPE"/> object containing a resource handle.</param>
-        /// <returns><see langword="true"/> if the handle represented by <paramref name="h1"/> is not equal to the handle
-        /// contained in <paramref name="h2"/>; otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(uint h1, RESOURCE_TYPE h2)
-        {
-            return (nint)h1 != h2;
-        }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="uint"/> and <see cref="RESOURCE_TYPE"/> are equal.
-        /// </summary>
-        /// <param name="h1">The unsigned integer handle to compare.</param>
-        /// <param name="h2">The <see cref="RESOURCE_TYPE"/> instance to compare.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
-        /// <see langword="false"/>.</returns>
-        public static bool operator ==(uint h1, RESOURCE_TYPE h2)
-        {
-            return (nint)h1 == h2;
-        }
-
-        /// <summary>
-        /// Represents a handle to a system resource.
-        /// </summary>
-        /// <remarks>This field is used to store a pointer to a native resource. It is important to ensure
-        /// that the handle is properly managed to prevent resource leaks. Typically, this involves releasing the handle
-        /// when it is no longer needed.</remarks>
-        private readonly nint Value;
     }
 }
