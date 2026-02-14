@@ -84,7 +84,7 @@ namespace PSADT.WindowManagement
             try
             {
                 _ = User32.BringWindowToTop(hWnd);
-                _ = User32.SetForegroundWindow(hWnd, false);
+                _ = User32.SetForegroundWindow(hWnd, true);
                 _ = User32.SetActiveWindow(hWnd);
                 _ = User32.SetFocus(hWnd);
             }

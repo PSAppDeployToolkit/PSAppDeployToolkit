@@ -640,7 +640,7 @@ namespace PSADT.LibraryInterfaces
         internal static SafeProcessHandle GetCurrentProcess()
         {
             HANDLE res = PInvoke.GetCurrentProcess();
-            return res != (nint)(-1) ? throw new InvalidOperationException("Failed to retrieve handle for current process.") : new(res, true);
+            return res != (nint)(-1) ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : new(res, true);
         }
 
         /// <summary>
@@ -798,7 +798,7 @@ namespace PSADT.LibraryInterfaces
             uint res = PInvoke.VerLanguageName(wLang, szLang);
             if (res == 0)
             {
-                throw new InvalidOperationException("Failed to retrieve language name.");
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve language name.");
             }
             if (res > szLang.Length)
             {
@@ -882,7 +882,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetProductInfo(uint dwOSMajorVersion, uint dwOSMinorVersion, uint dwSpMajorVersion, uint dwSpMinorVersion, out OS_PRODUCT_TYPE pdwReturnedProductType)
         {
             BOOL res = PInvoke.GetProductInfo(dwOSMajorVersion, dwOSMinorVersion, dwSpMajorVersion, dwSpMinorVersion, out pdwReturnedProductType);
-            return !res ? throw new InvalidOperationException("Failed to get product info.") : res;
+            return !res ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to get product info.") : res;
         }
 
         /// <summary>
@@ -1008,7 +1008,7 @@ namespace PSADT.LibraryInterfaces
                     }
                 }
             }
-            return res == 0 ? throw new Win32Exception() : res;
+            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
     }
 }

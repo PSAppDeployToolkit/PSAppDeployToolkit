@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -70,7 +71,7 @@ namespace PSADT.LibraryInterfaces
                     res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out void* lplpBufferLocal, out puLen);
                     if (!res)
                     {
-                        throw new InvalidOperationException($"Failed to query [{lpSubBlock}] version value.");
+                        throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, $"Failed to query [{lpSubBlock}] version value.");
                     }
                     lplpBuffer = (nint)lplpBufferLocal;
                 }

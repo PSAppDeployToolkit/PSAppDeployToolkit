@@ -78,11 +78,12 @@ namespace PSADT.LibraryInterfaces.Utilities
         /// <remarks>The exception message is formatted to ensure it ends with a single period, providing
         /// consistent error messages.</remarks>
         /// <param name="win32Error">The Win32 error code that identifies the error condition.</param>
+        /// <param name="message">An optional custom message to include in the exception. If not provided, a default message based on the Win32 error code is used.</param>
         /// <returns>An instance of the <see cref="Exception"/> class that describes the specified Win32 error.</returns>
-        internal static Exception GetException(WIN32_ERROR win32Error)
+        internal static Exception GetException(WIN32_ERROR win32Error, string? message = null)
         {
             // Create the exception given Win32 error code. Trim the trailing period from the message and add it back to ensure consistent formatting.
-            Win32Exception win32Exception = new(unchecked((int)win32Error), GetMessageForWin32Error(win32Error));
+            Win32Exception win32Exception = new(unchecked((int)win32Error), !string.IsNullOrWhiteSpace(message) ? message : GetMessageForWin32Error(win32Error));
 
             // Try for an ManagedException > Win32Exception based on the WIN32_ERROR code, falling back as appripriate.
             if (GetException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException)
