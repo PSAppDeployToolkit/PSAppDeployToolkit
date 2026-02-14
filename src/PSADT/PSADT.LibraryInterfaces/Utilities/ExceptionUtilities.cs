@@ -46,7 +46,7 @@ namespace PSADT.LibraryInterfaces.Utilities
         internal static Exception GetException(WIN32_ERROR win32Error)
         {
             // Create the exception given Win32 error code. Trim the trailing period from the message and add it back to ensure consistent formatting.
-            Win32Exception win32Exception = new(unchecked((int)win32Error), new Win32Exception((int)win32Error).Message.TrimEnd('.') + '.');
+            Win32Exception win32Exception = new(unchecked((int)win32Error), GetMessageForWin32Error(win32Error));
 
             // Try for an ManagedException > Win32Exception based on the WIN32_ERROR code, falling back as appripriate.
             if (GetException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException)
@@ -78,10 +78,8 @@ namespace PSADT.LibraryInterfaces.Utilities
             // Try for an ManagedException > Win32Exception > NtStatusException based on the NTSTATUS code, falling back as appripriate.
             if (WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
             {
-                // Trim the trailing period from the message and add it back to ensure consistent formatting. It's
-                // crucial we call SetLastError() after as the first Win32Exception call can clobber the last error.
-                string message = new Win32Exception((int)win32Error).Message.TrimEnd('.') + '.'; PInvoke.SetLastError(win32Error);
-                Win32Exception win32Exception = new(message, ntStatusException);
+                // Build out the Win32Exception, then see if there's a managed exception for it, otherwise return the Win32Exception.
+                Win32Exception win32Exception = new(GetMessageForWin32Error(win32Error), ntStatusException);
                 return GetException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException ? hrException : win32Exception;
             }
             else if (GetException(HRESULT_FROM_NT(ntStatus), ntStatusException) is Exception hrException)
@@ -130,6 +128,19 @@ namespace PSADT.LibraryInterfaces.Utilities
         internal static HRESULT HRESULT_FROM_WIN32(WIN32_ERROR win32Error)
         {
             return PInvoke.HRESULT_FROM_WIN32(win32Error);
+        }
+
+        /// <summary>
+        /// Retrieves the error message associated with a specified Windows error code.
+        /// </summary>
+        /// <remarks>This method uses the Win32Exception class to obtain the error message, ensuring that
+        /// it is properly formatted by trimming any trailing periods.</remarks>
+        /// <param name="win32Error">The Windows error code for which to retrieve the corresponding error message.</param>
+        /// <returns>A string containing the error message associated with the specified Windows error code.</returns>
+        internal static string GetMessageForWin32Error(WIN32_ERROR win32Error)
+        {
+            string message = new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.') + '.';
+            PInvoke.SetLastError(win32Error); return message;
         }
 
         /// <summary>
