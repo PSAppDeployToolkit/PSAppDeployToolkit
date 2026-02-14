@@ -78,5 +78,18 @@ namespace PSADT.Utilities
             _ = Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
             return XmlUtilities.SafeLoadFromText(bufSpan.ToString().TrimRemoveNull());
         }
+
+        /// <summary>
+        /// Retrieves the installation state of a product identified by its unique product code.
+        /// </summary>
+        /// <remarks>This method calls the Windows Installer to determine the installation state. Ensure
+        /// that the provided product code is a valid GUID; otherwise, the returned state may not accurately reflect the
+        /// product's status.</remarks>
+        /// <param name="productCode">The unique identifier (GUID) of the product whose installation state is to be queried.</param>
+        /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
+        public static INSTALLSTATE QueryProductState(Guid productCode)
+        {
+            return (INSTALLSTATE)Msi.MsiQueryProductState(productCode);
+        }
     }
 }

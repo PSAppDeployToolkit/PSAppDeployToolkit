@@ -164,5 +164,18 @@ namespace PSADT.LibraryInterfaces
             pcchXMLData = pcchXMLDataLocal;
             return res;
         }
+
+        /// <summary>
+        /// Queries the installation state of a product identified by its GUID.
+        /// </summary>
+        /// <remarks>This method uses the Windows Installer API to determine the installation status of
+        /// the product. Ensure that the provided GUID corresponds to a valid product code in the standard GUID
+        /// format.</remarks>
+        /// <param name="szProduct">The GUID that uniquely identifies the product to query.</param>
+        /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
+        internal static Windows.Win32.System.ApplicationInstallationAndServicing.INSTALLSTATE MsiQueryProductState(Guid szProduct)
+        {
+            return PInvoke.MsiQueryProductState(szProduct.ToString("B"));
+        }
     }
 }
