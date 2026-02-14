@@ -480,11 +480,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="InvalidOperationException">Thrown if the method fails to retrieve the last input information.</exception>
         internal static BOOL GetLastInputInfo(out LASTINPUTINFO plii)
         {
-            plii = new LASTINPUTINFO
-            {
-                cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>()
-            };
-            BOOL res = PInvoke.GetLastInputInfo(ref plii);
+            plii = new() { cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>() }; BOOL res = PInvoke.GetLastInputInfo(ref plii);
             return !res ? throw new InvalidOperationException("Failed to retrieve the last input info.") : res;
         }
 
