@@ -512,7 +512,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, InstallName)).FullName;
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, $"{InstallName}_{DeploymentType}")).FullName;
                 }
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
