@@ -17,8 +17,8 @@ CreateEnvironmentBlock
 CreateFile
 CreateIoCompletionPort
 CreateJobObject
-CreateProcessAsUser
 CreateProcess
+CreateProcessAsUser
 CreateProcessWithToken
 DefineDosDevice
 DestroyEnvironmentBlock
@@ -32,6 +32,7 @@ FACILITY_CODE
 FindFirstFileEx
 FindNextFile
 FindWindow
+FormatMessage
 GENERIC_MAPPING
 GetApplicationUserModelId
 GetCurrentProcess
@@ -54,7 +55,6 @@ GetPrivateProfileString
 GetProcAddress
 GetProcessId
 GetProcessImageFileName
-FormatMessage
 GetProductInfo
 GetQueuedCompletionStatus
 GetShellWindow
