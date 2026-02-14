@@ -134,7 +134,7 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetPrivateProfileString(string lpAppName, string? lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
             uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName);
-            if (res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
+            if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
                 throw ExceptionUtilities.GetException(lastWin32Error);
             }
@@ -930,8 +930,8 @@ namespace PSADT.LibraryInterfaces
         internal static FILE_TYPE GetFileType(SafeHandle hFile)
         {
             FILE_TYPE res = PInvoke.GetFileType(hFile);
-            return res == FILE_TYPE.FILE_TYPE_UNKNOWN && Marshal.GetLastWin32Error() is int lastWin32Error && lastWin32Error != 0
-                ? throw ExceptionUtilities.GetException((WIN32_ERROR)lastWin32Error)
+            return res == FILE_TYPE.FILE_TYPE_UNKNOWN && ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
+                ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
 

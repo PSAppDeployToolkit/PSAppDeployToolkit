@@ -14,12 +14,26 @@ namespace PSADT.LibraryInterfaces.Utilities
     internal static class ExceptionUtilities
     {
         /// <summary>
+        /// Retrieves the last Win32 error code that occurred in the calling thread.
+        /// </summary>
+        /// <remarks>This method is typically used after a Win32 API call fails to obtain the specific
+        /// error code that indicates the reason for the failure. It is important to call this method immediately after
+        /// the failure, as subsequent API calls may overwrite the error code.</remarks>
+        /// <returns>A <see cref="WIN32_ERROR"/> representing the last Win32 error code, which can be used to diagnose the cause
+        /// of a failure in Win32 API calls.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is our only permitted use case, to wrap the call.")]
+        internal static WIN32_ERROR GetLastWin32Error()
+        {
+            return unchecked((WIN32_ERROR)Marshal.GetLastWin32Error());
+        }
+
+        /// <summary>
         /// Gets the exception for the last Win32 error.
         /// </summary>
         /// <returns></returns>
         internal static Exception GetExceptionForLastWin32Error()
         {
-            return GetException(unchecked((WIN32_ERROR)Marshal.GetLastWin32Error()));
+            return GetException(GetLastWin32Error());
         }
 
         /// <summary>
