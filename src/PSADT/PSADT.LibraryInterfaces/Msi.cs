@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.LibraryInterfaces.Utilities;
+using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
@@ -38,11 +38,7 @@ namespace PSADT.LibraryInterfaces
                 MSIHANDLE phDatabaseLocal = default;
                 fixed (char* pszDatabasePath = szDatabasePath)
                 {
-                    res = (WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, (PCWSTR)szPersist, &phDatabaseLocal);
-                }
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetException(res);
+                    res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, (PCWSTR)szPersist, &phDatabaseLocal)).ThrowOnFailure();
                 }
                 phDatabase = new MsiCloseHandleSafeHandle(phDatabaseLocal, true);
             }
@@ -70,15 +66,11 @@ namespace PSADT.LibraryInterfaces
             if (hDatabase is null)
             {
                 using SafeFileHandle nullHandle = new(default, true);
-                res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
+                res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
             else
             {
-                res = (WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal);
-            }
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
-            {
-                throw ExceptionUtilities.GetException(res);
+                res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
             phSummaryInfo = new MsiCloseHandleSafeHandle(phSummaryInfoLocal, true);
             return res;
@@ -98,7 +90,7 @@ namespace PSADT.LibraryInterfaces
         /// WIN32_ERROR.SUCCESS if the operation succeeds; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle? hDatabase, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
-            return MsiGetSummaryInformation(hDatabase, null, uiUpdateCount, out phSummaryInfo);
+            return MsiGetSummaryInformation(hDatabase, null, uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
         }
 
         /// <summary>
@@ -113,7 +105,7 @@ namespace PSADT.LibraryInterfaces
         /// information was retrieved successfully; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR MsiGetSummaryInformation(string? szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
-            return MsiGetSummaryInformation(null, szDatabasePath, uiUpdateCount, out phSummaryInfo);
+            return MsiGetSummaryInformation(null, szDatabasePath, uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
         }
 
         /// <summary>
@@ -138,11 +130,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR MsiSummaryInfoGetProperty(SafeHandle hSummaryInfo, MSI_PROPERTY_ID uiProperty, out VARENUM puiDataType, out int piValue, out System.Runtime.InteropServices.ComTypes.FILETIME pftValue, Span<char> szValueBuf, out uint pcchValueBuf)
         {
             uint pcchValueBufLocal = (uint)szValueBuf.Length;
-            WIN32_ERROR res = (WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBufLocal);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
-            {
-                throw ExceptionUtilities.GetException(res);
-            }
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBufLocal)).ThrowOnFailure();
             if (szValueBuf.IsEmpty)
             {
                 pcchValueBufLocal++;
@@ -168,11 +156,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
         {
             uint pcchXMLDataLocal = (uint)szXMLData.Length;
-            WIN32_ERROR res = (WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
-            {
-                throw ExceptionUtilities.GetException(res);
-            }
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal)).ThrowOnFailure();
             if (szXMLData.IsEmpty)
             {
                 pcchXMLDataLocal++;

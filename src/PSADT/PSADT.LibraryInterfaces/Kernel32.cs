@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
@@ -756,8 +757,7 @@ namespace PSADT.LibraryInterfaces
         /// cref="WIN32_ERROR.NO_ERROR"/> if successful.</returns>
         internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, ref uint applicationUserModelIdLength, Span<char> applicationUserModelId)
         {
-            WIN32_ERROR res = PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
+            return PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId).ThrowOnFailure();
         }
 
         /// <summary>
