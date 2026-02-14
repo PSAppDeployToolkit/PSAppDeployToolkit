@@ -345,41 +345,11 @@ function Start-ADTProcessAsUser
 
     process
     {
-        # Convert the Username field into a RunAsActiveUser object as required by the subsystem.
-        $gacsuParams = @{}; if ($PSBoundParameters.ContainsKey('Username'))
+        # Update the parameters. This will return false if it failed and -ContinueWhenNoUserLoggedOn is passed.
+        if (!(Update-ADTProcessAsUserBoundParameters -Cmdlet $PSCmdlet))
         {
-            $gacsuParams.Add('Username', $Username)
-            $gacsuParams.Add('AllowAnyValidSession', $true)
+            return
         }
-        if (!($PSBoundParameters.RunAsActiveUser = Get-ADTClientServerUser @gacsuParams))
-        {
-            if (!$ContinueWhenNoUserLoggedOn)
-            {
-                try
-                {
-                    $naerParams = @{
-                        Exception = [System.ArgumentNullException]::new("Could not find a valid logged on user session$(if ($PSBoundParameters.ContainsKey('Username')) { " for [$Username]" }).", $null)
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                        ErrorId = 'NoActiveUserError'
-                        TargetObject = $Username
-                        RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
-                    }
-                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                }
-                catch
-                {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-                    return
-                }
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Could not find a valid logged on user session and [-ContinueWhenNoUserLoggedOn] specified, returning early." -Severity Warning
-                return
-            }
-        }
-        $null = $PSBoundParameters.Remove('ContinueWhenNoUserLoggedOn')
-        $null = $PSBoundParameters.Remove('Username')
 
         # Just farm it out to Start-ADTProcess as it can do it all.
         if (!$PSCmdlet.ShouldProcess("Process [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]", 'Execute'))
