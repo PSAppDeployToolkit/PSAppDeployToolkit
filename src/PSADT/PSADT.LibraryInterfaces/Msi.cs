@@ -38,7 +38,7 @@ namespace PSADT.LibraryInterfaces
                 MSIHANDLE phDatabaseLocal = default;
                 fixed (char* pszDatabasePath = szDatabasePath)
                 {
-                    res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, (PCWSTR)szPersist, &phDatabaseLocal)).ThrowOnFailure();
+                    res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
                 phDatabase = new MsiCloseHandleSafeHandle(phDatabaseLocal, true);
             }

@@ -30,7 +30,7 @@ namespace PSADT.LibraryInterfaces
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
                 {
-                    _ = PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, (PCWSTR)pszIcon, &pnButtonLocal).ThrowOnFailure();
+                    _ = PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal).ThrowOnFailure();
                 }
             }
             return (MESSAGEBOX_RESULT)pnButtonLocal;

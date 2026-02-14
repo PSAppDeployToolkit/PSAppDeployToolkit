@@ -5,8 +5,8 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Specifies predefined icons that can be used in task dialog configurations.
     /// </summary>
-    /// <remarks>The <see cref="TASKDIALOG_ICON"/> structure provides constants for commonly used system icons in task dialogs, such as error, information, warning, and shield icons. These icons are typically used to visually convey the purpose or severity of a message displayed in a task dialog.</remarks>
-    internal readonly record struct TASKDIALOG_ICON
+    /// <remarks>The <see cref="TASKDIALOG_ICON"/> class provides constants for commonly used system icons in task dialogs, such as error, information, warning, and shield icons. These icons are typically used to visually convey the purpose or severity of a message displayed in a task dialog.</remarks>
+    internal sealed class TASKDIALOG_ICON : TypedConstant<TASKDIALOG_ICON>
     {
         /// <summary>
         /// Represents the error icon used in task dialog configurations.
@@ -36,131 +36,9 @@ namespace PSADT.LibraryInterfaces
         /// Initializes a new instance of the <see cref="TASKDIALOG_ICON"/> class with the specified handle.
         /// </summary>
         /// <param name="value">The handle to be associated with this instance.</param>
-        private TASKDIALOG_ICON(PCWSTR value)
+        /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
+        private TASKDIALOG_ICON(PCWSTR value, [System.Runtime.CompilerServices.CallerMemberName] string name = null!) : base(value, name)
         {
-            unsafe
-            {
-                Value = (nint)value.Value;
-            }
         }
-
-        /// <summary>
-        /// Converts a <see cref="TASKDIALOG_ICON"/> instance to an <see cref="nint"/>.
-        /// </summary>
-        /// <param name="h">The <see cref="TASKDIALOG_ICON"/> instance to convert.</param>
-        public static explicit operator nint(TASKDIALOG_ICON h)
-        {
-            return h.Value;
-        }
-
-        /// <summary>
-        /// Converts a <see cref="TASKDIALOG_ICON"/> instance to an <see cref="PCWSTR"/>.
-        /// </summary>
-        /// <param name="h">The <see cref="TASKDIALOG_ICON"/> instance to convert.</param>
-        public static explicit operator PCWSTR(TASKDIALOG_ICON h)
-        {
-            unsafe
-            {
-                return (PCWSTR)(void*)h.Value;
-            }
-        }
-
-        /// <summary>
-        /// Converts a <see cref="TASKDIALOG_ICON"/> instance to an <see cref="uint"/>.
-        /// </summary>
-        /// <param name="h">The <see cref="TASKDIALOG_ICON"/> instance to convert.</param>
-        public static explicit operator uint(TASKDIALOG_ICON h)
-        {
-            return (uint)h.Value;
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects, an <see cref="nint"/> and a <see cref="TASKDIALOG_ICON"/>, are not
-        /// equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The <see cref="TASKDIALOG_ICON"/> object to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
-        /// otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(nint h1, TASKDIALOG_ICON h2)
-        {
-            return h1 != h2.Value;
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects are equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The second resource type to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
-        /// <see langword="false"/>.</returns>
-        public static bool operator ==(nint h1, TASKDIALOG_ICON h2)
-        {
-            return h1 == h2.Value;
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects, an <see cref="PCWSTR"/> and a <see cref="TASKDIALOG_ICON"/>, are not
-        /// equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The <see cref="TASKDIALOG_ICON"/> object to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is not equal to <paramref name="h1"/>;
-        /// otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(PCWSTR h1, TASKDIALOG_ICON h2)
-        {
-            unsafe
-            {
-                return (nint)h1.Value != h2.Value;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects are equal.
-        /// </summary>
-        /// <param name="h1">The first pointer to compare.</param>
-        /// <param name="h2">The second resource type to compare, which contains a handle.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
-        /// <see langword="false"/>.</returns>
-        public static bool operator ==(PCWSTR h1, TASKDIALOG_ICON h2)
-        {
-            unsafe
-            {
-                return (nint)h1.Value == h2.Value;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether two specified objects, a <see cref="uint"/> and a <see cref="TASKDIALOG_ICON"/>, are not
-        /// equal.
-        /// </summary>
-        /// <param name="h1">The first operand, a 32-bit unsigned integer representing a resource handle.</param>
-        /// <param name="h2">The second operand, a <see cref="TASKDIALOG_ICON"/> object containing a resource handle.</param>
-        /// <returns><see langword="true"/> if the handle represented by <paramref name="h1"/> is not equal to the handle
-        /// contained in <paramref name="h2"/>; otherwise, <see langword="false"/>.</returns>
-        public static bool operator !=(uint h1, TASKDIALOG_ICON h2)
-        {
-            return (nint)h1 != h2;
-        }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="uint"/> and <see cref="TASKDIALOG_ICON"/> are equal.
-        /// </summary>
-        /// <param name="h1">The unsigned integer handle to compare.</param>
-        /// <param name="h2">The <see cref="TASKDIALOG_ICON"/> instance to compare.</param>
-        /// <returns><see langword="true"/> if the handle of <paramref name="h2"/> is equal to <paramref name="h1"/>; otherwise,
-        /// <see langword="false"/>.</returns>
-        public static bool operator ==(uint h1, TASKDIALOG_ICON h2)
-        {
-            return (nint)h1 == h2;
-        }
-
-        /// <summary>
-        /// Represents a handle to a system resource.
-        /// </summary>
-        /// <remarks>This field is used to store a pointer to a native resource. It is important to ensure
-        /// that the handle is properly managed to prevent resource leaks. Typically, this involves releasing the handle
-        /// when it is no longer needed.</remarks>
-        private readonly nint Value;
     }
 }
