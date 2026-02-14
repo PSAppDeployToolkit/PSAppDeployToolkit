@@ -1544,5 +1544,142 @@ namespace PSADT.Tests.ProcessManagement
             // Assert - The path portion should be quoted, not the entire argument
             Assert.Equal("-sfx_o\"C:\\Program Files\\My App\\\\\"", result);
         }
+
+        /// <summary>
+        /// Tests InstallShield-style /v"..." arguments where the quoted portion contains MSI properties.
+        /// Issue 1: Simple properties without embedded flags.
+        /// </summary>
+        [Theory]
+        [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"" })]
+        [InlineData("/s /v\"ALLUSERS=1\"",
+                   new[] { "/s", "/v\"ALLUSERS=1\"" })]
+        [InlineData("/v\"PROPERTY=VALUE ANOTHER=DATA\"",
+                   new[] { "/v\"PROPERTY=VALUE ANOTHER=DATA\"" })]
+        [InlineData("-v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"",
+                   new[] { "-v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"" })]
+        public void CommandLineToArgumentList_InstallShieldSimpleProperties_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests InstallShield-style /v"..." arguments where the quoted portion contains msiexec switches.
+        /// Issue 2: Properties with embedded msiexec flags like /qb.
+        /// </summary>
+        [Theory]
+        [InlineData("/s /v\"ALLUSERS=1 /qb\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 /qb\"" })]
+        [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qb\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qb\"" })]
+        [InlineData("/s /v\"/qn ALLUSERS=1\"",
+                   new[] { "/s", "/v\"/qn ALLUSERS=1\"" })]
+        [InlineData("/v\"PROPERTY=VALUE /quiet /norestart\"",
+                   new[] { "/v\"PROPERTY=VALUE /quiet /norestart\"" })]
+        public void CommandLineToArgumentList_InstallShieldWithMsiExecFlags_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests InstallShield-style /v"..." arguments with nested quotes for paths.
+        /// Issue 3: Properties with embedded quoted paths like /log "C:\path\file.log".
+        /// </summary>
+        [Theory]
+        [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"\"C:\\Windows\\Logs\\logfile.log\"\"\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"\"C:\\Windows\\Logs\\logfile.log\"\"\"" })]
+        [InlineData("/s /v\"ALLUSERS=1 /log \"\"C:\\Logs\\install.log\"\"\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 /log \"\"C:\\Logs\\install.log\"\"\"" })]
+        public void CommandLineToArgumentList_InstallShieldWithNestedQuotedPaths_EscapedQuotes_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests InstallShield-style /v"..." arguments with nested quotes using space-before-quote pattern.
+        /// This pattern: /v"PROP=1 /log "C:\path"" where there's a space before the inner quote.
+        /// </summary>
+        [Theory]
+        [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"C:\\Windows\\Logs\\logfile.log\"\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"C:\\Windows\\Logs\\logfile.log\"\"" })]
+        [InlineData("/s /v\"ALLUSERS=1 /log \"C:\\Logs\\install.log\"\"",
+                   new[] { "/s", "/v\"ALLUSERS=1 /log \"C:\\Logs\\install.log\"\"" })]
+        public void CommandLineToArgumentList_InstallShieldWithNestedQuotedPaths_SpacePattern_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests round-trip parsing for InstallShield-style arguments.
+        /// </summary>
+        [Theory]
+        [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"")]
+        [InlineData("/s /v\"ALLUSERS=1 /qb\"")]
+        [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"C:\\Windows\\Logs\\logfile.log\"\"")]
+        public void InstallShieldArguments_RoundTrip_PreservesFormat(string originalCommandLine)
+        {
+            // Act - Parse to arguments
+            IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(originalCommandLine);
+
+            // Act - Convert back to command line
+            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
+
+            // Act - Parse again
+            IReadOnlyList<string> reparsed = CommandLineUtilities.CommandLineToArgumentList(recreated);
+
+            // Assert - Should round-trip correctly
+            Assert.Equal(parsed, reparsed);
+        }
+
+        /// <summary>
+        /// Tests real-world InstallShield command lines.
+        /// </summary>
+        [Theory]
+        [InlineData("setup.exe /s /v\"ALLUSERS=1 INSTALLDIR=C:\\Program Files\\MyApp /qn\"",
+                   new[] { "setup.exe", "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\Program Files\\MyApp /qn\"" })]
+        [InlineData("C:\\Temp\\Setup\\setup.exe /s /v\"/qn REBOOT=ReallySuppress\"",
+                   new[] { "C:\\Temp\\Setup\\setup.exe", "/s", "/v\"/qn REBOOT=ReallySuppress\"" })]
+        [InlineData("setup.exe /s /f1\"C:\\setup.iss\" /f2\"C:\\setup.log\" /v\"ALLUSERS=1\"",
+                   new[] { "setup.exe", "/s", "/f1\"C:\\setup.iss\"", "/f2\"C:\\setup.log\"", "/v\"ALLUSERS=1\"" })]
+        public void CommandLineToArgumentList_RealWorldInstallShieldScenarios_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that regular arguments are not incorrectly matched as InstallShield patterns.
+        /// </summary>
+        [Theory]
+        [InlineData("/flag \"value with spaces\"", new[] { "/flag", "value with spaces" })]
+        [InlineData("-option \"argument\"", new[] { "-option", "argument" })]
+        [InlineData("/s /silent", new[] { "/s", "/silent" })]
+        public void CommandLineToArgumentList_RegularFlagsNotMatchedAsInstallShield_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
+        {
+            // Act
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
     }
 }
