@@ -1068,7 +1068,7 @@ namespace PSADT.LibraryInterfaces
         {
             NTSTATUS res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle);
             return res != NTSTATUS.STATUS_SUCCESS
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res))
+                ? throw ExceptionUtilities.GetException(res)
                 : res;
         }
 
@@ -1095,7 +1095,7 @@ namespace PSADT.LibraryInterfaces
                 res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out void* BufferLocal);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.LsaNtStatusToWinError(res));
+                    throw ExceptionUtilities.GetException(res);
                 }
                 Buffer = new((nint)BufferLocal, true);
             }

@@ -145,7 +145,6 @@ LookupPrivilegeName
 LookupPrivilegeValue
 LOWORD
 LsaFreeMemory
-LsaNtStatusToWinError
 LsaOpenPolicy
 LsaQueryInformationPolicy
 MESSAGEBOX_RESULT
