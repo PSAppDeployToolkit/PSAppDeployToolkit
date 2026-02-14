@@ -76,29 +76,13 @@ namespace PSADT.ProcessManagement
 
             // Construct and return the command line string.
             StringBuilder sb = new();
-            if (!strict)
+            foreach (string arg in argv)
             {
-                foreach (string arg in argv)
+                if (string.IsNullOrWhiteSpace(arg))
                 {
-                    if (string.IsNullOrWhiteSpace(arg))
-                    {
-                        throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
-                    }
-                    _ = sb.Append(EscapeArgumentCompatible(arg));
-                    _ = sb.Append(' ');
+                    throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
                 }
-            }
-            else
-            {
-                foreach (string arg in argv)
-                {
-                    if (string.IsNullOrWhiteSpace(arg))
-                    {
-                        throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
-                    }
-                    _ = sb.Append(EscapeArgumentStrict(arg));
-                    _ = sb.Append(' ');
-                }
+                _ = sb.Append(strict ? EscapeArgumentStrict(arg) : EscapeArgumentCompatible(arg)).Append(' ');
             }
             return sb.ToString().TrimRemoveNull();
         }
@@ -151,7 +135,7 @@ namespace PSADT.ProcessManagement
                 {
                     arguments.Add(ParseFlagWithQuotedString(commandLine, ref position));
                 }
-                else if (IsAtStartOfUnquotedPath(commandLine, position))
+                else if (FileSystemUtilities.IsValidFilePath(commandLine, position))
                 {
                     arguments.Add(ParseUnquotedPath(commandLine, ref position));
                 }
@@ -352,49 +336,24 @@ namespace PSADT.ProcessManagement
                     // Parse unquoted value - might be a path with spaces.
                     // Preserve the original format without adding quotes, as some tools (e.g., NSIS's /D= parameter)
                     // require unquoted paths even when they contain spaces.
-                    string value = ConvertPosixPathToWindows(ParseUnquotedValueForKeyValue(commandLine, ref position));
-                    _ = result.Append(value);
+                    string value;
+                    if (FileSystemUtilities.IsValidFilePath(commandLine, position))
+                    {
+                        value = ParseUnquotedPath(commandLine, ref position);
+                    }
+                    else
+                    {
+                        StringBuilder valueBuilder = new();
+                        while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
+                        {
+                            _ = valueBuilder.Append(commandLine[position++]);
+                        }
+                        value = valueBuilder.ToString();
+                    }
+                    _ = result.Append(ConvertPosixPathToWindows(value));
                 }
             }
             return result.ToString();
-        }
-
-        /// <summary>
-        /// Parses the value part of a key=value argument, handling paths with spaces.
-        /// </summary>
-        /// <param name="commandLine">The command line span.</param>
-        /// <param name="position">The current position (updated as parsing progresses).</param>
-        /// <returns>The parsed value.</returns>
-        private static string ParseUnquotedValueForKeyValue(ReadOnlySpan<char> commandLine, ref int position)
-        {
-            // Check if the value looks like a path.
-            if (!IsAtStartOfUnquotedPath(commandLine, position))
-            {
-                // Parse as a regular value (stops at whitespace).
-                StringBuilder value = new();
-                while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
-                {
-                    _ = value.Append(commandLine[position]);
-                    position++;
-                }
-                return value.ToString();
-            }
-            else
-            {
-                // Parse as a path that might have spaces.
-                return ParseUnquotedPath(commandLine, ref position);
-            }
-        }
-
-        /// <summary>
-        /// Determines if the current position is at the start of an unquoted file path.
-        /// </summary>
-        /// <param name="commandLine">The command line span.</param>
-        /// <param name="position">The current position.</param>
-        /// <returns>True if at the start of a unquoted DOS drive path, UNC path, or POSIX path.</returns>
-        private static bool IsAtStartOfUnquotedPath(ReadOnlySpan<char> commandLine, int position)
-        {
-            return FileSystemUtilities.IsValidFilePath(commandLine, position);
         }
 
         /// <summary>
@@ -583,43 +542,26 @@ namespace PSADT.ProcessManagement
         /// <returns>True if this looks like the start of a new argument.</returns>
         private static bool IsStartOfNewArgument(ReadOnlySpan<char> commandLine, int position)
         {
-            // There's no new arguments if we're at the end of the command line.
             if (position >= commandLine.Length)
             {
                 return false;
             }
 
-            // Check for common argument patterns.
+            // Check for common argument start patterns: flags, quotes, GUIDs.
             char ch = commandLine[position];
-            if (ch is '/' or '-')
-            {
-                return true;
-            }
-
-            // Check for quoted arguments.
-            if (ch == '"')
-            {
-                return true;
-            }
-
-            // Check for GUID-like patterns (often used as arguments in installers).
-            if (ch == '{')
+            if (ch is '/' or '-' or '"' or '{')
             {
                 return true;
             }
 
             // Check for key=value patterns.
-            int equalPos = position;
-            while (equalPos < commandLine.Length && !IsWhitespace(commandLine[equalPos]))
+            for (int i = position; i < commandLine.Length && !IsWhitespace(commandLine[i]); i++)
             {
-                if (commandLine[equalPos] == '=')
+                if (commandLine[i] == '=')
                 {
                     return true;
                 }
-                equalPos++;
             }
-
-            // If none of the above patterns match, it might be a continuation of the path.
             return false;
         }
 
@@ -630,26 +572,7 @@ namespace PSADT.ProcessManagement
         /// <returns>True if it looks like an argument.</returns>
         private static bool IsArgumentLike(string part)
         {
-            // Empty strings aren't argument-like.
-            if (string.IsNullOrWhiteSpace(part))
-            {
-                return false;
-            }
-
-            // Check for flag patterns.
-            if (part.StartsWith("/") || part.StartsWith("-"))
-            {
-                return true;
-            }
-
-            // Check for key=value patterns.
-            if (part.Contains("="))
-            {
-                return true;
-            }
-
-            // Check for GUID patterns.
-            return part.StartsWith("{") && part.EndsWith("}");
+            return !string.IsNullOrWhiteSpace(part) && part[0] is char first && (first is '/' or '-' || part.Contains("=") || (first == '{' && part.EndsWith("}")));
         }
 
         /// <summary>
