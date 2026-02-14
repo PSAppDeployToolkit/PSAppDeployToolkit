@@ -49,8 +49,7 @@ namespace PSADT.LibraryInterfaces
         /// opened successfully; otherwise, an error code is returned.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            WIN32_ERROR res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
+            return PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult).ThrowOnFailure();
         }
 
         /// <summary>
@@ -70,7 +69,7 @@ namespace PSADT.LibraryInterfaces
         /// code.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            return RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
+            return RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult).ThrowOnFailure();
         }
 
         /// <summary>
@@ -99,8 +98,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, out uint lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
         {
             lpcchClass = (uint)lpClass.Length;
-            WIN32_ERROR res = PInvoke.RegQueryInfoKey(hKey, lpClass, ref lpcchClass, out lpcSubKeys, out lpcbMaxSubKeyLen, out lpcbMaxClassLen, out lpcValues, out lpcbMaxValueNameLen, out lpcbMaxValueLen, out lpcbSecurityDescriptor, out lpftLastWriteTime);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
+            return PInvoke.RegQueryInfoKey(hKey, lpClass, ref lpcchClass, out lpcSubKeys, out lpcbMaxSubKeyLen, out lpcbMaxClassLen, out lpcValues, out lpcbMaxValueNameLen, out lpcbMaxValueLen, out lpcbSecurityDescriptor, out lpftLastWriteTime).ThrowOnFailure();
         }
 
         /// <summary>
@@ -497,7 +495,7 @@ namespace PSADT.LibraryInterfaces
         {
             BOOL res = PInvoke.QueryServiceStatusEx(hService, InfoLevel, lpBuffer, out pcbBytesNeeded);
             return !res && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0)
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error()
+                ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
 
@@ -562,11 +560,7 @@ namespace PSADT.LibraryInterfaces
                     ACL* NewAclLocal = null;
                     fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
                     {
-                        res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal);
-                    }
-                    if (res != WIN32_ERROR.ERROR_SUCCESS)
-                    {
-                        throw ExceptionUtilities.GetException(res);
+                        res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal).ThrowOnFailure();
                     }
                     NewAcl = new((nint)NewAclLocal, true);
                 }
@@ -593,7 +587,7 @@ namespace PSADT.LibraryInterfaces
         /// created successfully; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl)
         {
-            return SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
+            return SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl).ThrowOnFailure();
         }
 
         /// <summary>
@@ -631,7 +625,6 @@ namespace PSADT.LibraryInterfaces
             bool psidGroupAddRef = false;
             bool pDaclAddRef = false;
             bool pSaclAddRef = false;
-            WIN32_ERROR res;
             try
             {
                 handle.DangerousAddRef(ref handleAddRef);
@@ -641,7 +634,7 @@ namespace PSADT.LibraryInterfaces
                 pSacl?.DangerousAddRef(ref pSaclAddRef);
                 unsafe
                 {
-                    res = PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                    return PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new PSID(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new PSID(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null).ThrowOnFailure();
                 }
             }
             finally
@@ -667,7 +660,6 @@ namespace PSADT.LibraryInterfaces
                     handle.DangerousRelease();
                 }
             }
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -703,11 +695,7 @@ namespace PSADT.LibraryInterfaces
                 PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSecurityDescriptor = default;
                 fixed (char* pObjectNameLocal = pObjectName)
                 {
-                    res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor);
-                }
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetException(res);
+                    res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor).ThrowOnFailure();
                 }
                 if (pSecurityDescriptor == default)
                 {
@@ -751,7 +739,6 @@ namespace PSADT.LibraryInterfaces
             bool psidGroupAddRef = false;
             bool pDaclAddRef = false;
             bool pSaclAddRef = false;
-            WIN32_ERROR res;
             try
             {
                 psidOwner?.DangerousAddRef(ref psidOwnerAddRef);
@@ -762,7 +749,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        res = PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner is not null ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, psidGroup is not null ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null);
+                        return PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner is not null ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, psidGroup is not null ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null).ThrowOnFailure();
                     }
                 }
             }
@@ -785,7 +772,6 @@ namespace PSADT.LibraryInterfaces
                     psidOwner?.DangerousRelease();
                 }
             }
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -816,7 +802,6 @@ namespace PSADT.LibraryInterfaces
             bool pGroupAddRef = false;
             bool pDaclAddRef = false;
             bool pSaclAddRef = false;
-            WIN32_ERROR res;
             try
             {
                 pOwner?.DangerousAddRef(ref pOwnerAddRef);
@@ -827,7 +812,7 @@ namespace PSADT.LibraryInterfaces
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        res = PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, Args is not null ? (void*)Args.Value : null);
+                        return PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, Args is not null ? (void*)Args.Value : null).ThrowOnFailure();
                     }
                 }
             }
@@ -850,7 +835,6 @@ namespace PSADT.LibraryInterfaces
                     pOwner?.DangerousRelease();
                 }
             }
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -1043,8 +1027,7 @@ namespace PSADT.LibraryInterfaces
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         internal static WIN32_ERROR RegRenameKey(SafeHandle hKey, string? lpSubKeyName, string lpNewKeyName)
         {
-            WIN32_ERROR res = PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
+            return PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName).ThrowOnFailure();
         }
 
         /// <summary>
