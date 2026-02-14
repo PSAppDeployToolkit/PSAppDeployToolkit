@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Wdk.Foundation;
@@ -40,17 +41,13 @@ namespace PSADT.LibraryInterfaces
         internal static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
             lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
-            NTSTATUS res;
             unsafe
             {
                 fixed (OSVERSIONINFOEXW* lpVersionInformationLocal = &lpVersionInformation)
                 {
-                    res = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)lpVersionInformationLocal);
+                    return Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)lpVersionInformationLocal).ThrowOnFailure();
                 }
             }
-            return res != NTSTATUS.STATUS_SUCCESS
-                ? throw ExceptionUtilities.GetException(res)
-                : res;
         }
 
         /// <summary>
@@ -177,11 +174,7 @@ namespace PSADT.LibraryInterfaces
             {
                 StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default);
-                if (res != NTSTATUS.STATUS_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetException(res);
-                }
+                NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default).ThrowOnFailure();
                 ThreadHandle = new(hThread, true);
                 return res;
             }

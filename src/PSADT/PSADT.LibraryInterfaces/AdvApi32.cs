@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using PSADT.LibraryInterfaces.Extensions;
 using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
@@ -1066,10 +1067,7 @@ namespace PSADT.LibraryInterfaces
         /// from the returned <see cref="NTSTATUS"/> value.</exception>
         internal static NTSTATUS LsaOpenPolicy(LSA_UNICODE_STRING? SystemName, in LSA_OBJECT_ATTRIBUTES ObjectAttributes, LSA_POLICY_ACCESS DesiredAccess, out LsaCloseSafeHandle PolicyHandle)
         {
-            NTSTATUS res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle);
-            return res != NTSTATUS.STATUS_SUCCESS
-                ? throw ExceptionUtilities.GetException(res)
-                : res;
+            return PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle).ThrowOnFailure();
         }
 
         /// <summary>
@@ -1092,11 +1090,7 @@ namespace PSADT.LibraryInterfaces
             NTSTATUS res;
             unsafe
             {
-                res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out void* BufferLocal);
-                if (res != NTSTATUS.STATUS_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetException(res);
-                }
+                res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out void* BufferLocal).ThrowOnFailure();
                 Buffer = new((nint)BufferLocal, true);
             }
             return res;
