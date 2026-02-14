@@ -85,7 +85,7 @@ namespace PSADT.LibraryInterfaces
         {
             int res = PInvoke.LoadString(hInstance, uID, lpBuffer, lpBuffer.Length);
             return res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
 
@@ -139,7 +139,7 @@ namespace PSADT.LibraryInterfaces
         {
             PInvoke.SetLastError(0); int res = PInvoke.GetWindowTextLength(hWnd);
             return res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
 
@@ -316,7 +316,7 @@ namespace PSADT.LibraryInterfaces
         {
             PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
             return (WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
 

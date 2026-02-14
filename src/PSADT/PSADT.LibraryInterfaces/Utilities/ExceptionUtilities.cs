@@ -16,11 +16,10 @@ namespace PSADT.LibraryInterfaces.Utilities
         /// <summary>
         /// Gets the exception for the last Win32 error.
         /// </summary>
-        /// <param name="lastWin32Error"></param>
         /// <returns></returns>
-        internal static Exception GetExceptionForLastWin32Error(WIN32_ERROR? lastWin32Error = null)
+        internal static Exception GetExceptionForLastWin32Error()
         {
-            return GetException(lastWin32Error ?? unchecked((WIN32_ERROR)Marshal.GetLastWin32Error()));
+            return GetException(unchecked((WIN32_ERROR)Marshal.GetLastWin32Error()));
         }
 
         /// <summary>

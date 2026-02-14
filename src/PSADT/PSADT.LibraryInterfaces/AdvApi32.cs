@@ -50,7 +50,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
             WIN32_ERROR res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace PSADT.LibraryInterfaces
         {
             lpcchClass = (uint)lpClass.Length;
             WIN32_ERROR res = PInvoke.RegQueryInfoKey(hKey, lpClass, ref lpcchClass, out lpcSubKeys, out lpcbMaxSubKeyLen, out lpcbMaxClassLen, out lpcValues, out lpcbMaxValueNameLen, out lpcbMaxValueLen, out lpcbSecurityDescriptor, out lpftLastWriteTime);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -528,7 +528,7 @@ namespace PSADT.LibraryInterfaces
             if (!res)
             {
                 int lastError = Marshal.GetLastWin32Error(); _ = PInvoke.LocalFree(pAclLocal);
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastError);
+                throw ExceptionUtilities.GetException((WIN32_ERROR)lastError);
             }
             pAcl = new((nint)pAclLocal, true);
             return res;
@@ -566,7 +566,7 @@ namespace PSADT.LibraryInterfaces
                     }
                     if (res != WIN32_ERROR.ERROR_SUCCESS)
                     {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                        throw ExceptionUtilities.GetException(res);
                     }
                     NewAcl = new((nint)NewAclLocal, true);
                 }
@@ -667,7 +667,7 @@ namespace PSADT.LibraryInterfaces
                     handle.DangerousRelease();
                 }
             }
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -707,7 +707,7 @@ namespace PSADT.LibraryInterfaces
                 }
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                    throw ExceptionUtilities.GetException(res);
                 }
                 if (pSecurityDescriptor == default)
                 {
@@ -785,7 +785,7 @@ namespace PSADT.LibraryInterfaces
                     psidOwner?.DangerousRelease();
                 }
             }
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -850,7 +850,7 @@ namespace PSADT.LibraryInterfaces
                     pOwner?.DangerousRelease();
                 }
             }
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -1044,7 +1044,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR RegRenameKey(SafeHandle hKey, string? lpSubKeyName, string lpNewKeyName)
         {
             WIN32_ERROR res = PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>

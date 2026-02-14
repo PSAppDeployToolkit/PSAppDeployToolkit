@@ -42,7 +42,7 @@ namespace PSADT.LibraryInterfaces
                 }
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                    throw ExceptionUtilities.GetException(res);
                 }
                 phDatabase = new MsiCloseHandleSafeHandle(phDatabaseLocal, true);
             }
@@ -78,7 +78,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                throw ExceptionUtilities.GetException(res);
             }
             phSummaryInfo = new MsiCloseHandleSafeHandle(phSummaryInfoLocal, true);
             return res;
@@ -141,7 +141,7 @@ namespace PSADT.LibraryInterfaces
             WIN32_ERROR res = (WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBufLocal);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                throw ExceptionUtilities.GetException(res);
             }
             if (szValueBuf.IsEmpty)
             {
@@ -171,7 +171,7 @@ namespace PSADT.LibraryInterfaces
             WIN32_ERROR res = (WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
+                throw ExceptionUtilities.GetException(res);
             }
             if (szXMLData.IsEmpty)
             {
