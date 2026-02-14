@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces.Exceptions;
@@ -11,8 +12,43 @@ namespace PSADT.LibraryInterfaces.Utilities
     /// <summary>
     /// Provides error handling for Win32 errors.
     /// </summary>
-    internal static class ExceptionUtilities
+    public static class ExceptionUtilities
     {
+        /// <summary>
+        /// Removes redundant inner exception stack trace marker lines from an exception
+        /// string where the preceding line is not a stack trace entry.
+        /// </summary>
+        /// <param name="exceptionText">The exception string to clean up.</param>
+        /// <returns>The cleaned exception string with redundant markers removed.</returns>
+        public static string CollapseInnerExceptionTraceMarkers(string exceptionText)
+        {
+            // Internal worker method to determine if a line is an inner exception marker line.
+            static bool IsInnerExceptionMarker(string line)
+            {
+                ReadOnlySpan<char> trimmed = line.AsSpan().Trim();
+                return trimmed.Length > 6
+                    && trimmed.StartsWith("---".AsSpan(), StringComparison.Ordinal)
+                    && trimmed.EndsWith("---".AsSpan(), StringComparison.Ordinal)
+                    && !trimmed.StartsWith("--- >".AsSpan(), StringComparison.Ordinal);
+            }
+
+            // Remove all invalid inner exception marker lines from the exception text and return the result.
+            if (string.IsNullOrWhiteSpace(exceptionText))
+            {
+                throw new ArgumentNullException(nameof(exceptionText));
+            }
+            string[] lines = exceptionText.Split(["\r\n", "\n"], StringSplitOptions.None);
+            List<string> result = new(lines.Length);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[result.Count - 1].TrimStart().StartsWith("at ", StringComparison.Ordinal)))
+                {
+                    result.Add(lines[i]);
+                }
+            }
+            return string.Join(Environment.NewLine, result);
+        }
+
         /// <summary>
         /// Retrieves the last Win32 error code that occurred in the calling thread.
         /// </summary>

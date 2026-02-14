@@ -167,6 +167,10 @@ function Resolve-ADTErrorRecord
                 {
                     $logErrorProperties.Add($propName, [System.String]::Join("`n", [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines([System.String[]]($errorObject.$propName | Out-String -Width ([System.Int16]::MaxValue) -Stream))))
                 }
+                elseif ($propName -eq 'Exception')
+                {
+                    $logErrorProperties.Add($propName, [PSADT.LibraryInterfaces.Utilities.ExceptionUtilities]::CollapseInnerExceptionTraceMarkers($errorObject.$propName).Trim())
+                }
                 else
                 {
                     $logErrorProperties.Add($propName, ($errorObject.$propName).ToString().Trim())
