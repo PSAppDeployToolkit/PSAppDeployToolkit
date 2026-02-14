@@ -10,7 +10,6 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
-using Windows.Win32.System.Memory;
 using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
@@ -500,36 +499,26 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Initializes a new Access Control List (ACL) with the specified length and revision.
+        /// Initializes an Access Control List (ACL) in the provided buffer.
         /// </summary>
-        /// <remarks>This method allocates memory for the ACL and initializes it with the specified length
-        /// and revision. The caller is responsible for ensuring that the ACL length is sufficient for its intended use.
-        /// The returned <see cref="LocalFreeSafeHandle"/> must be disposed to release the allocated memory.</remarks>
-        /// <param name="pAcl">When this method returns, contains a <see cref="LocalFreeSafeHandle"/> representing the initialized ACL.
-        /// This parameter is passed uninitialized.</param>
-        /// <param name="nAclLength">The length, in bytes, of the ACL to be initialized. Must be large enough to contain the ACL header and any
-        /// Access Control Entries (ACEs) that will be added.</param>
+        /// <remarks>The caller is responsible for providing a buffer of sufficient size for the ACL header
+        /// and any Access Control Entries (ACEs) that will be added. The buffer can be stack-allocated via
+        /// <c>stackalloc</c> or a pinned <c>byte[]</c> array.</remarks>
+        /// <param name="pAcl">A span of bytes representing the buffer to initialize as an ACL. The buffer must be
+        /// large enough to contain the ACL header and any ACEs that will be added.</param>
         /// <param name="dwAclRevision">The revision level of the ACL. Use a value from the <see cref="ACE_REVISION"/> enumeration.</param>
         /// <returns><see langword="true"/> if the ACL was successfully initialized; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL InitializeAcl(out LocalFreeSafeHandle pAcl, uint nAclLength, ACE_REVISION dwAclRevision)
+        internal static BOOL InitializeAcl(Span<byte> pAcl, ACE_REVISION dwAclRevision)
         {
-            HLOCAL pAclLocal = PInvoke.LocalAlloc(LOCAL_ALLOC_FLAGS.LPTR, nAclLength);
-            if (pAclLocal.IsNull)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
             BOOL res;
             unsafe
             {
-                res = PInvoke.InitializeAcl((ACL*)pAclLocal, nAclLength, dwAclRevision);
+                fixed (byte* pAclPtr = pAcl)
+                {
+                    res = PInvoke.InitializeAcl((ACL*)pAclPtr, (uint)pAcl.Length, dwAclRevision);
+                }
             }
-            if (!res)
-            {
-                WIN32_ERROR lastError = ExceptionUtilities.GetLastWin32Error(); _ = PInvoke.LocalFree(pAclLocal);
-                throw ExceptionUtilities.GetException(lastError);
-            }
-            pAcl = new((nint)pAclLocal, true);
-            return res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -770,6 +759,32 @@ namespace PSADT.LibraryInterfaces
                 if (psidOwnerAddRef)
                 {
                     psidOwner?.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the security information of a specified object using stack-allocated or array-backed ACL buffers.
+        /// </summary>
+        /// <remarks>This overload allows passing stack-allocated or array-backed ACL buffers directly.
+        /// The method handles pinning internally. Pass an empty span to leave the corresponding ACL unchanged.</remarks>
+        /// <param name="pObjectName">The name of the object whose security information is being set.</param>
+        /// <param name="ObjectType">The type of the object, such as a file, directory, or registry key.</param>
+        /// <param name="SecurityInfo">A combination of flags that specify the components of the security descriptor to set.</param>
+        /// <param name="psidOwner">An optional pointer to the owner SID. Pass <see langword="default"/> to leave unchanged.</param>
+        /// <param name="psidGroup">An optional pointer to the group SID. Pass <see langword="default"/> to leave unchanged.</param>
+        /// <param name="pDacl">A span representing the DACL buffer. Pass an empty span to leave unchanged.</param>
+        /// <param name="pSacl">A span representing the SACL buffer. Pass an empty span to leave unchanged.</param>
+        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation.</returns>
+        internal static WIN32_ERROR SetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, PSID psidOwner, PSID psidGroup, Span<byte> pDacl, Span<byte> pSacl)
+        {
+            unsafe
+            {
+                fixed (char* pObjectNameLocal = pObjectName)
+                fixed (byte* pDaclPtr = pDacl)
+                fixed (byte* pSaclPtr = pSacl)
+                {
+                    return PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner, psidGroup, (ACL*)pDaclPtr, (ACL*)pSaclPtr).ThrowOnFailure();
                 }
             }
         }
