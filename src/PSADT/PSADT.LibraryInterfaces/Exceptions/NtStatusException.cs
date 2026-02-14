@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -73,7 +74,7 @@ namespace PSADT.LibraryInterfaces.Exceptions
             Span<char> buffer = new char[short.MaxValue];
             try
             {
-                return buffer.Slice(0, (int)Kernel32.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)).Trim().TrimEnd('.').ToString() + '.';
+                return Regex.Replace(buffer.Slice(0, (int)Kernel32.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)).ToString(), @"\{.+\}", string.Empty).Trim().TrimEnd('.') + '.';
             }
             catch (Win32Exception)
             {
