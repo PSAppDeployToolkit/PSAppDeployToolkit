@@ -68,7 +68,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND GetForegroundWindow()
         {
             HWND res = PInvoke.GetForegroundWindow();
-            return res == HWND.Null ? throw new InvalidOperationException("Failed to get the foreground window.") : res;
+            return res == HWND.Null ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace PSADT.LibraryInterfaces
         internal static DestroyMenuSafeHandle GetSystemMenu(HWND hWnd, BOOL bRevert)
         {
             DestroyMenuSafeHandle res = PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert);
-            return res.IsInvalid ? throw new InvalidOperationException("Failed to retrieve the menu handle.") : res;
+            return res.IsInvalid ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
         }
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace PSADT.LibraryInterfaces
         internal static HMONITOR MonitorFromPoint(Point pt, MONITOR_FROM_FLAGS dwFlags)
         {
             HMONITOR monitor = PInvoke.MonitorFromPoint(pt, dwFlags);
-            return monitor.IsNull ? throw new InvalidOperationException("Failed to retrieve monitor from point.") : monitor;
+            return monitor.IsNull ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : monitor;
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(hwnd), "Window handle cannot be null.");
             }
             uint res = PInvoke.GetDpiForWindow(hwnd);
-            return res == 0 ? throw new InvalidOperationException("Failed to get DPI scale for window handle.") : res;
+            return res == 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to get DPI scale for window handle.") : res;
         }
 
         /// <summary>
@@ -446,13 +446,13 @@ namespace PSADT.LibraryInterfaces
         /// Sets the specified window as the foreground window.
         /// </summary>
         /// <param name="hWnd">A handle to the window to be set as the foreground window.</param>
-        /// <param name="throwOnError">If <see langword="true"/>, an exception is thrown if the operation fails; otherwise, the method returns <see langword="false"/> on failure.</param>
+        /// <param name="noThrowOnFailure">If set to <see langword="true"/>, the method will not throw an exception on failure.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the operation fails to set the specified window as the foreground window.</exception>
-        internal static BOOL SetForegroundWindow(HWND hWnd, bool throwOnError = true)
+        internal static BOOL SetForegroundWindow(HWND hWnd, bool noThrowOnFailure = false)
         {
             BOOL res = PInvoke.SetForegroundWindow(hWnd);
-            return !res && throwOnError ? throw new InvalidOperationException($"Failed to set the window as foreground.") : res;
+            return !res && !noThrowOnFailure ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to set the window as foreground.") : res;
         }
 
         /// <summary>
@@ -463,7 +463,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND GetShellWindow()
         {
             HWND res = PInvoke.GetShellWindow();
-            return res.IsNull ? throw new InvalidOperationException("Failed to retrieve the shell window handle.") : res;
+            return res.IsNull ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
         }
 
         /// <summary>
@@ -481,7 +481,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL GetLastInputInfo(out LASTINPUTINFO plii)
         {
             plii = new() { cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>() }; BOOL res = PInvoke.GetLastInputInfo(ref plii);
-            return !res ? throw new InvalidOperationException("Failed to retrieve the last input info.") : res;
+            return !res ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve the last input info.") : res;
         }
 
         /// <summary>

@@ -688,7 +688,7 @@ namespace PSADT.LibraryInterfaces
                 }
                 if (pSecurityDescriptor == default)
                 {
-                    throw new InvalidOperationException("Failed to retrieve security descriptor.");
+                    throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
                 }
                 ppsidOwner = psidOwner != default ? new((nint)psidOwner.Value) : null;
                 ppsidGroup = pSidGroup != default ? new((nint)pSidGroup.Value) : null;
@@ -880,7 +880,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (phAuthzResourceManager.IsInvalid)
             {
-                throw new InvalidOperationException("Failed to initialize Authz Resource Manager.");
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
             }
             return res;
         }
@@ -934,7 +934,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (phAuthzClientContext.IsInvalid)
             {
-                throw new InvalidOperationException("Failed to initialize Authz Client Context from SID.");
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
             }
             return res;
         }
@@ -972,7 +972,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (phAuthzClientContext.IsInvalid)
             {
-                throw new InvalidOperationException("Failed to initialize Authz Client Context from Token.");
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
             }
             return res;
         }
@@ -1027,7 +1027,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (phAccessCheckResults.IsInvalid)
             {
-                throw new InvalidOperationException("Failed to perform Authz Access Check.");
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
             }
             return res;
         }
