@@ -4,9 +4,10 @@
 #
 #-----------------------------------------------------------------------------
 
-function Update-ADTProcessAsUserBoundParameters
+function Private:Update-ADTProcessAsUserBoundParameters
 {
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true)]
