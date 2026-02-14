@@ -318,7 +318,7 @@ namespace PSADT.Invoke
             }
 
             // Return the full arguments we give to PowerShell.exe (Note that we use -Command resolve issues with WDAC and Constrained Language Mode).
-            return $"{pwshDefaultArgs} -Command try {{ & '{adtFrontendPath}'{(cliArguments.Count > 0 ? $" {string.Join(" ", cliArguments)}" : null)} }} catch {{ throw }}; exit $Global:LASTEXITCODE";
+            return $"{pwshDefaultArgs} -Command \"try {{ & '{adtFrontendPath}'{(cliArguments.Count > 0 ? $" {string.Join(" ", cliArguments)}" : null)} }} catch {{ throw }}; exit $Global:LASTEXITCODE\"";
         }
 
         /// <summary>
