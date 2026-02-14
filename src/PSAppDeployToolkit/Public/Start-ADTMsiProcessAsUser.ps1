@@ -340,7 +340,7 @@ function Start-ADTMsiProcessAsUser
         $null = $PSBoundParameters.Remove('Username')
 
         # Just farm it out to Start-ADTMsiProcess as it can do it all.
-        if (!$PSCmdlet.ShouldProcess($(if ($FilePath) { "MSI/MSP [$FilePath] as user [$($runAsActiveUser.NTAccount)]" } elseif ($ProductCode) { "MSI ProductCode [$ProductCode] as user [$($runAsActiveUser.NTAccount)]" } else { "MSI as user [$($runAsActiveUser.NTAccount)]" }), $Action))
+        if (!$PSCmdlet.ShouldProcess($(if ($FilePath) { "MSI/MSP [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]" } elseif ($ProductCode) { "MSI ProductCode [$ProductCode] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]" } else { "MSI as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]" }), $Action))
         {
             return
         }
