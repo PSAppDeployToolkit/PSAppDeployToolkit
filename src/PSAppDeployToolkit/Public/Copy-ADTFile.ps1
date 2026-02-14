@@ -135,7 +135,7 @@ function Copy-ADTFile
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Announce deprecation of Robocopy file copy mode.
-            Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.2.0. Please use the [Native] file copy mode and instead." -Severity 2
+            Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use the [Native] file copy mode and instead." -Severity 2
 
             # Check if Robocopy is on the system.
             if (Test-Path -LiteralPath "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
