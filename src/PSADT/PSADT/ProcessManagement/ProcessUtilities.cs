@@ -251,7 +251,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
         /// and checks the exit code to determine if the process is still running. A process is considered
-        /// to have exited if <c>GetExitCodeProcess</c> returns an exit code other than <c>STILL_ACTIVE</c> (259).</remarks>
+        /// to have exited if <c>GetExitCodeProcess</c> returns an exit code other than <c>STATUS_PENDING</c> (259).</remarks>
         /// <param name="processId">The unique identifier of the process to check.</param>
         /// <returns><see langword="true"/> if the process has exited or cannot be opened; otherwise, <see langword="false"/>.</returns>
         internal static bool HasProcessExited(uint processId)
@@ -259,7 +259,7 @@ namespace PSADT.ProcessManagement
             try
             {
                 using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
-                return Kernel32.GetExitCodeProcess(hProcess, out uint exitCode) && exitCode != NTSTATUS.STILL_ACTIVE;
+                return Kernel32.GetExitCodeProcess(hProcess, out uint exitCode) && exitCode != NTSTATUS.STATUS_PENDING;
             }
             catch
             {

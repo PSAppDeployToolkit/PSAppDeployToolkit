@@ -603,7 +603,7 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Retrieves the termination status of the specified thread.
         /// </summary>
-        /// <remarks>If the thread has not terminated, the exit code returned is STILL_ACTIVE. This method
+        /// <remarks>If the thread has not terminated, the exit code returned is STATUS_PENDING. This method
         /// throws an exception if the underlying system call fails.</remarks>
         /// <param name="hThread">A handle to the thread whose exit code is to be retrieved. The handle must have the THREAD_QUERY_INFORMATION
         /// or THREAD_QUERY_LIMITED_INFORMATION access right.</param>
