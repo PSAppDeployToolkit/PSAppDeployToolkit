@@ -63,7 +63,7 @@ namespace PSADT.LibraryInterfaces.Utilities
             NtStatusException ntStatusException = new(ntStatus);
 
             // Try for an ManagedException > Win32Exception > NtStatusException based on the NTSTATUS code, falling back as appripriate.
-            if ((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(ntStatus) is WIN32_ERROR win32Error and not WIN32_ERROR.ERROR_MR_MID_NOT_FOUND)
+            if (WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
             {
                 // Trim the trailing period from the message and add it back to ensure consistent formatting. It's
                 // crucial we call SetLastError() after as the first Win32Exception call can clobber the last error.
@@ -81,6 +81,20 @@ namespace PSADT.LibraryInterfaces.Utilities
                 // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.
                 return ntStatusException;
             }
+        }
+
+        /// <summary>
+        /// Converts an NTSTATUS code to the corresponding Windows error code, if available.
+        /// </summary>
+        /// <remarks>If the NTSTATUS code cannot be mapped to a Windows error code, the method returns
+        /// null instead of WIN32_ERROR.ERROR_MR_MID_NOT_FOUND.</remarks>
+        /// <param name="ntStatus">The NTSTATUS code to convert to a Windows error code.</param>
+        /// <returns>A WIN32_ERROR value that corresponds to the specified NTSTATUS code, or null if the NTSTATUS code does not
+        /// map to a known Windows error code.</returns>
+        internal static WIN32_ERROR? WIN32_FROM_NT(NTSTATUS ntStatus)
+        {
+            WIN32_ERROR win32Error = (WIN32_ERROR)PInvoke.RtlNtStatusToDosError(ntStatus);
+            return win32Error != WIN32_ERROR.ERROR_MR_MID_NOT_FOUND ? win32Error : null;
         }
 
         /// <summary>

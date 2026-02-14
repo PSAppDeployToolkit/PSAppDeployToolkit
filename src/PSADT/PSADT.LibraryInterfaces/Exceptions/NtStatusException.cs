@@ -79,7 +79,7 @@ namespace PSADT.LibraryInterfaces.Exceptions
             catch (Win32Exception)
             {
                 // That failed... Try to base the error on a Win32Exception message if possible (i.e. not ERROR_MR_MID_NOT_FOUND).
-                if ((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(ntStatus) is WIN32_ERROR win32Error and not WIN32_ERROR.ERROR_MR_MID_NOT_FOUND)
+                if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
                 {
                     // Use the Win32Exception message only if it's valid.
                     if ((new Win32Exception(unchecked((int)win32Error)).Message.Trim().TrimEnd('.') + '.') is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
