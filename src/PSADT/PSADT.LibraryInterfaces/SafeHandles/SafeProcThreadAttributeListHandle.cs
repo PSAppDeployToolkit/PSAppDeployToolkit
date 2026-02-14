@@ -72,7 +72,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         {
             BOOL res = PInvoke.InitializeProcThreadAttributeList(lpAttributeList, dwAttributeCount, ref lpSize);
             return !res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default)
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error)
+                ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
 

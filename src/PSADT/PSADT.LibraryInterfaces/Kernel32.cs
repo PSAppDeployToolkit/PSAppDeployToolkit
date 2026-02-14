@@ -94,7 +94,7 @@ namespace PSADT.LibraryInterfaces
         {
             uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName);
             return res == lpReturnedString.Length - 2
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                 : res;
         }
 
@@ -114,7 +114,7 @@ namespace PSADT.LibraryInterfaces
         {
             uint res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName);
             return res == lpReturnedString.Length - 2
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                 : res;
         }
 
@@ -136,11 +136,11 @@ namespace PSADT.LibraryInterfaces
             uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName);
             if (res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
+                throw ExceptionUtilities.GetException(lastWin32Error);
             }
             else if (res == lpReturnedString.Length - 1 || res == lpReturnedString.Length - 2)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
@@ -688,7 +688,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
@@ -757,7 +757,7 @@ namespace PSADT.LibraryInterfaces
         internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, ref uint applicationUserModelIdLength, Span<char> applicationUserModelId)
         {
             WIN32_ERROR res = PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId);
-            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetExceptionForLastWin32Error(res) : res;
+            return res != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -802,7 +802,7 @@ namespace PSADT.LibraryInterfaces
             }
             if (res > szLang.Length)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
             }
             return res;
         }
@@ -931,7 +931,7 @@ namespace PSADT.LibraryInterfaces
         {
             FILE_TYPE res = PInvoke.GetFileType(hFile);
             return res == FILE_TYPE.FILE_TYPE_UNKNOWN && Marshal.GetLastWin32Error() is int lastWin32Error && lastWin32Error != 0
-                ? throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)lastWin32Error)
+                ? throw ExceptionUtilities.GetException((WIN32_ERROR)lastWin32Error)
                 : res;
         }
 
