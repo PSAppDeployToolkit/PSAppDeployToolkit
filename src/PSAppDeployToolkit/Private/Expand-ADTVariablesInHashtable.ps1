@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Import-ADTConfig
+# MARK: Expand-ADTVariablesInHashtable
 #
 #-----------------------------------------------------------------------------
 
-function Expand-ADTVariablesInHashtable
+function Private:Expand-ADTVariablesInHashtable
 {
     [CmdletBinding()]
     param
