@@ -9,7 +9,7 @@
     <AssemblyDescription>This assembly provides Win32 library access to all areas of PSAppDeployToolkit.</AssemblyDescription>
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <NoWarn>SYSLIB1054</NoWarn>
+    <NoWarn>SYSLIB1045;SYSLIB1054</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
