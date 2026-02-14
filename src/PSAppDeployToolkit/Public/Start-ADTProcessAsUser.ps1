@@ -98,6 +98,9 @@ function Start-ADTProcessAsUser
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
+    .PARAMETER ContinueWhenNoUserLoggedOn
+        When specified, if no user is logged on, the condition is logged and the function returns without throwing an exception.
+
     .PARAMETER NoWait
         Immediately continue after executing the process.
 
@@ -322,6 +325,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ContinueWhenNoUserLoggedOn,
+
         # Wait Option: NoWait (only in sets where wait is "NoWait")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
@@ -347,23 +353,32 @@ function Start-ADTProcessAsUser
         }
         if (!($PSBoundParameters.RunAsActiveUser = Get-ADTClientServerUser @gacsuParams))
         {
-            try
+            if (!$ContinueWhenNoUserLoggedOn)
             {
-                $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new("Could not find a valid logged on user session$(if ($PSBoundParameters.ContainsKey('Username')) { " for [$Username]" }).", $null)
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                    ErrorId = 'NoActiveUserError'
-                    TargetObject = $Username
-                    RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
+                try
+                {
+                    $naerParams = @{
+                        Exception = [System.ArgumentNullException]::new("Could not find a valid logged on user session$(if ($PSBoundParameters.ContainsKey('Username')) { " for [$Username]" }).", $null)
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = 'NoActiveUserError'
+                        TargetObject = $Username
+                        RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
+                    }
+                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                 }
-                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                    return
+                }
             }
-            catch
+            else
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Write-ADTLogEntry -Message "Could not find a valid logged on user session and [-ContinueWhenNoUserLoggedOn] specified, returning early." -Severity Warning
                 return
             }
         }
+        $null = $PSBoundParameters.Remove('ContinueWhenNoUserLoggedOn')
         $null = $PSBoundParameters.Remove('Username')
 
         # Just farm it out to Start-ADTProcess as it can do it all.
