@@ -496,7 +496,7 @@ namespace PSADT.LibraryInterfaces
         internal static BOOL QueryServiceStatusEx(SafeHandle hService, SC_STATUS_TYPE InfoLevel, Span<byte> lpBuffer, out uint pcbBytesNeeded)
         {
             BOOL res = PInvoke.QueryServiceStatusEx(hService, InfoLevel, lpBuffer, out pcbBytesNeeded);
-            return !res && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0)
+            return !res && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0)
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error()
                 : res;
         }
@@ -527,8 +527,8 @@ namespace PSADT.LibraryInterfaces
             }
             if (!res)
             {
-                int lastError = Marshal.GetLastWin32Error(); _ = PInvoke.LocalFree(pAclLocal);
-                throw ExceptionUtilities.GetException((WIN32_ERROR)lastError);
+                WIN32_ERROR lastError = ExceptionUtilities.GetLastWin32Error(); _ = PInvoke.LocalFree(pAclLocal);
+                throw ExceptionUtilities.GetException(lastError);
             }
             pAcl = new((nint)pAclLocal, true);
             return res;
