@@ -149,14 +149,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Set the expiry timer if specified.
             if (options.DialogExpiryDuration > TimeSpan.Zero)
             {
-                _expiryTimer = new DispatcherTimer { Interval = options.DialogExpiryDuration.Value };
+                _expiryTimer = new() { Interval = options.DialogExpiryDuration.Value };
                 _expiryTimer.Tick += (sender, e) => CloseDialog();
             }
 
             // PersistPrompt timer code.
             if (options.DialogPersistInterval > TimeSpan.Zero)
             {
-                _persistTimer = new DispatcherTimer { Interval = options.DialogPersistInterval.Value };
+                _persistTimer = new() { Interval = options.DialogPersistInterval.Value };
                 _persistTimer.Tick += PersistTimer_Tick;
             }
 
@@ -854,7 +854,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 for (int i = 0; i < visibleButtons.Count; i++)
                 {
                     // Set margin based on position
-                    ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
+                    ActionButtons.ColumnDefinitions.Add(new() { Width = new(1, GridUnitType.Star) });
                     Grid.SetColumn(visibleButtons[i], i);
                     Button button = (Button)visibleButtons[i];
                     button.Margin = i == 0 ? new(0, 0, 4, 0) : i == visibleButtons.Count - 1 ? new(4, 0, 0, 0) : new(4, 0, 4, 0);
@@ -863,8 +863,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             else
             {
                 // Add two columns - one for the button (50% width) and one empty (50% width)
-                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
-                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new(1, GridUnitType.Star) });
+                ActionButtons.ColumnDefinitions.Add(new() { Width = new(1, GridUnitType.Star) });
+                ActionButtons.ColumnDefinitions.Add(new() { Width = new(1, GridUnitType.Star) });
 
                 // Place the single button in the second column
                 Grid.SetColumn(visibleButtons[0], 1);
@@ -1104,7 +1104,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             public FormattingContext Clone()
             {
-                return new FormattingContext
+                return new()
                 {
                     IsAccent = IsAccent,
                     IsBold = IsBold,
