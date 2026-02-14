@@ -1,6 +1,5 @@
-﻿using PSADT.LibraryInterfaces.Utilities;
+﻿using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 
 namespace PSADT.LibraryInterfaces.SafeHandles
 {
@@ -25,14 +24,9 @@ namespace PSADT.LibraryInterfaces.SafeHandles
             {
                 return true;
             }
-            NTSTATUS res;
             unsafe
             {
-                res = PInvoke.LsaFreeMemory((void*)handle);
-            }
-            if (res != NTSTATUS.STATUS_SUCCESS)
-            {
-                throw ExceptionUtilities.GetException(res);
+                _ = PInvoke.LsaFreeMemory((void*)handle).ThrowOnFailure();
             }
             handle = default;
             return true;
