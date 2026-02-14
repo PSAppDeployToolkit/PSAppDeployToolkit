@@ -55,8 +55,8 @@ function Show-ADTInstallationPrompt
     .PARAMETER ListItems
         An array of strings to display as a dropdown list for user selection. When specified, a ListSelectionDialog is shown with a ComboBox containing these items. The selected item is included in the returned ListSelectionDialogResult object.
 
-    .PARAMETER DefaultItem
-        The default selected item for the dropdown list. This value must exist in ListItems.
+    .PARAMETER DefaultIndex
+        The default selected item index for the dropdown list. This value must be equal or greater than zero, and less than the count of ListItems.
 
     .PARAMETER NoExitOnTimeout
         Specifies whether to not exit the script if the UI times out.
@@ -107,7 +107,7 @@ function Show-ADTInstallationPrompt
         Show-ADTInstallationPrompt -RequestInput -DefaultValue 'XXXX' -Message 'Please type in your favourite beer.' -ButtonRightText 'Submit'
 
     .EXAMPLE
-        $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -DefaultItem 'Default' -ButtonRightText 'OK'
+        $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -DefaultIndex 0 -ButtonRightText 'OK'
         Write-ADTLogEntry "User selected: $($result.SelectedItem)"
 
     .NOTES
