@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -71,10 +74,11 @@ namespace PSADT.LibraryInterfaces.Exceptions
         {
             // Use FormatMessage with ntdll.dll to get the error message for the NTSTATUS code. This will provide the most accurate and descriptive message for the error code.
             // https://learn.microsoft.com/en-us/windows-hardware/drivers/install/devprop-type-ntstatus#retrieving-the-descriptive-text-for-a-ntstatus-error-code-value
+            string messageSuffix = $"(Exception from NTSTATUS: 0x{ntStatus.Value:X8}{(NtStatusValueNameMap.TryGetValue(ntStatus, out string? ntStatusName) ? $" ({ntStatusName})" : null)})";
             Span<char> buffer = new char[short.MaxValue];
             try
             {
-                return Regex.Replace(buffer.Slice(0, (int)Kernel32.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)).ToString(), @"\{.+\}", string.Empty).Trim().TrimEnd('.') + '.';
+                return $"{Regex.Replace(buffer.Slice(0, (int)Kernel32.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)).ToString(), @"\{.+\}", string.Empty).Trim().TrimEnd('.')}. {messageSuffix}";
             }
             catch (Win32Exception)
             {
@@ -82,14 +86,14 @@ namespace PSADT.LibraryInterfaces.Exceptions
                 if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
                 {
                     // Use the Win32Exception message only if it's valid.
-                    if (ExceptionUtilities.GetMessageForWin32Error(win32Error) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
+                    if (ExceptionUtilities.GetMessageForWin32Error(win32Error, true) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
                     {
-                        return message;
+                        return $"{message} {messageSuffix}";
                     }
                 }
 
                 // Fallback message if any of the above fails.
-                return $"The requested operation failed with NTSTATUS error [0x{ntStatus.Value:X8}].";
+                return $"The requested operation failed. {messageSuffix}";
             }
         }
 
@@ -97,6 +101,14 @@ namespace PSADT.LibraryInterfaces.Exceptions
         /// Cached handle to ntdll.dll for FormatMessage calls.
         /// </summary>
         private static readonly FreeLibrarySafeHandle NtDllHandle = Kernel32.LoadLibraryEx("ntdll.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32);
+
+        /// <summary>
+        /// Provides a read-only mapping of NTSTATUS enumeration values to their corresponding field names.
+        /// </summary>
+        /// <remarks>This dictionary is initialized using reflection to retrieve all public static fields
+        /// of the NTSTATUS enumeration, allowing for efficient lookup of the string representation of NTSTATUS values.
+        /// This can be useful for debugging, logging, or displaying human-readable status codes.</remarks>
+        private static readonly ReadOnlyDictionary<NTSTATUS, string> NtStatusValueNameMap = new(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)field.GetValue(null)!).ToDictionary(static g => g.Key, static g => g.First().Name));
 
         /// <summary>
         /// Defines the options for formatting messages retrieved from the system or a specified module.

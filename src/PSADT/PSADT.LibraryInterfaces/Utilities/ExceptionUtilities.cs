@@ -136,10 +136,11 @@ namespace PSADT.LibraryInterfaces.Utilities
         /// <remarks>This method uses the Win32Exception class to obtain the error message, ensuring that
         /// it is properly formatted by trimming any trailing periods.</remarks>
         /// <param name="win32Error">The Windows error code for which to retrieve the corresponding error message.</param>
+        /// <param name="disableSuffix">Indicates whether to omit the suffix in the error message.</param>
         /// <returns>A string containing the error message associated with the specified Windows error code.</returns>
-        internal static string GetMessageForWin32Error(WIN32_ERROR win32Error)
+        internal static string GetMessageForWin32Error(WIN32_ERROR win32Error, bool disableSuffix = false)
         {
-            string message = $"{new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.')}. (Exception from WIN32_ERROR: 0x{unchecked((int)win32Error):X8} ({win32Error}))";
+            string message = $"{new Win32Exception(unchecked((int)win32Error)).Message.TrimEnd('.')}.{(!disableSuffix ? $" {$"(Exception from WIN32_ERROR: 0x{unchecked((int)win32Error):X8} ({win32Error}))"}" : null)}";
             PInvoke.SetLastError(win32Error); return message;
         }
 
