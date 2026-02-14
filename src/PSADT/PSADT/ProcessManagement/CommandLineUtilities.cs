@@ -136,8 +136,8 @@ namespace PSADT.ProcessManagement
             while (position < commandLine.Length)
             {
                 // Check for key=value patterns first - these should be parsed with special handling.
-                // Following that, check for flag+quoted-value patterns (InstallShield /v"..." style),
-                // then flag+quoted-path patterns, then unquoted paths, otherwise just parse the argument.
+                // Following that, check for flag+quoted patterns (InstallShield /v"..." and 7-Zip -sfx_o"..." style),
+                // then unquoted paths, otherwise just parse the argument.
                 SkipWhitespace(commandLine, ref position);
                 if (position >= commandLine.Length)
                 {
@@ -147,13 +147,9 @@ namespace PSADT.ProcessManagement
                 {
                     arguments.Add(ParseKeyValueArgument(commandLine, ref position));
                 }
-                else if (IsFlagWithQuotedValue(commandLine, position))
+                else if (IsFlagWithQuotedString(commandLine, position))
                 {
-                    arguments.Add(ParseFlagWithQuotedValue(commandLine, ref position));
-                }
-                else if (IsFlagWithQuotedPath(commandLine, position))
-                {
-                    arguments.Add(ParseFlagWithQuotedPath(commandLine, ref position));
+                    arguments.Add(ParseFlagWithQuotedString(commandLine, ref position));
                 }
                 else if (IsAtStartOfUnquotedPath(commandLine, position))
                 {
@@ -168,264 +164,75 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Determines if the current position starts an InstallShield-style flag with a quoted value pattern (e.g., /v"ALLUSERS=1").
-        /// This pattern is commonly used by InstallShield setup.exe to pass arguments to embedded MSI files.
+        /// Determines if the current position starts a flag immediately followed by a quoted string pattern.
+        /// This handles InstallShield-style patterns like /v"ALLUSERS=1" and 7-Zip patterns like -sfx_o"C:\Path".
         /// </summary>
         /// <param name="commandLine">The command line span.</param>
         /// <param name="position">The current position.</param>
-        /// <returns>True if this looks like a flag with a quoted value (InstallShield style).</returns>
-        private static bool IsFlagWithQuotedValue(ReadOnlySpan<char> commandLine, int position)
+        /// <returns>True if this looks like a flag with an immediately following quoted string.</returns>
+        private static bool IsFlagWithQuotedString(ReadOnlySpan<char> commandLine, int position)
         {
             // Must start with - or /
-            if (position >= commandLine.Length || (commandLine[position] != '-' && commandLine[position] != '/'))
+            if (position >= commandLine.Length || commandLine[position] is not ('-' or '/'))
             {
                 return false;
             }
 
-            // Look for the pattern: flag characters followed by a quote
+            // Look for the pattern: flag characters followed immediately by a quote
             int i = position + 1;
 
             // Skip flag name characters (letters, digits, underscores, hyphens)
-            while (i < commandLine.Length && (char.IsLetterOrDigit(commandLine[i]) || commandLine[i] == '_' || commandLine[i] == '-'))
+            while (i < commandLine.Length && (char.IsLetterOrDigit(commandLine[i]) || commandLine[i] is '_' or '-'))
             {
                 i++;
             }
 
-            // Must have at least one flag character and be followed by a quote
-            if (i <= position + 1 || i >= commandLine.Length || commandLine[i] != '"')
-            {
-                return false;
-            }
-
-            // Check if after the quote we have content that looks like MSI properties or arguments.
-            // This includes patterns like ALLUSERS=1, /qb, -silent, etc.
-            // We exclude pure path patterns (drive letters and UNC paths) as those are handled by IsFlagWithQuotedPath.
-            int afterQuote = i + 1;
-            if (afterQuote >= commandLine.Length)
-            {
-                return false;
-            }
-
-            // If it looks like a path, let IsFlagWithQuotedPath handle it
-            if (afterQuote + 1 < commandLine.Length && char.IsLetter(commandLine[afterQuote]) && commandLine[afterQuote + 1] == ':')
-            {
-                return false;
-            }
-            if (afterQuote + 1 < commandLine.Length && commandLine[afterQuote] == '\\' && commandLine[afterQuote + 1] == '\\')
-            {
-                return false;
-            }
-
-            // This is a flag with a quoted value that isn't a path
-            return true;
+            // Must have at least one flag character and be followed immediately by a quote
+            return i > position + 1 && i < commandLine.Length && commandLine[i] == '"';
         }
 
         /// <summary>
-        /// Parses an InstallShield-style flag with a quoted value pattern, preserving the quotes.
-        /// This handles patterns like /v"ALLUSERS=1 INSTALLDIR=C:\ZEDPRO" where the entire quoted portion
-        /// should be treated as a single value, even if it contains spaces or what looks like other arguments.
+        /// Parses a flag with an immediately following quoted string, preserving the quotes.
+        /// Handles nested quotes for patterns like /v"PROP=1 /log "C:\path"" where there's a quoted path inside.
         /// </summary>
         /// <param name="commandLine">The command line span.</param>
         /// <param name="position">The current position (updated as parsing progresses).</param>
         /// <returns>The parsed argument with quotes preserved.</returns>
-        private static string ParseFlagWithQuotedValue(ReadOnlySpan<char> commandLine, ref int position)
+        private static string ParseFlagWithQuotedString(ReadOnlySpan<char> commandLine, ref int position)
         {
-            // Parse the flag prefix (- or / followed by flag name)
             StringBuilder result = new();
+
+            // Parse the flag prefix up to the opening quote
             while (position < commandLine.Length && commandLine[position] != '"')
             {
-                _ = result.Append(commandLine[position]);
-                position++;
+                _ = result.Append(commandLine[position++]);
             }
 
-            // Append the opening quote
-            if (position < commandLine.Length && commandLine[position] == '"')
-            {
-                _ = result.Append(commandLine[position]);
-                position++;
-            }
-
-            // Track quote nesting depth for nested quotes within the value.
-            // InstallShield allows nested quotes like: /v"PROP=1 /log "C:\path\file.log""
-            int quoteDepth = 1;
-
-            while (position < commandLine.Length && quoteDepth > 0)
-            {
-                char c = commandLine[position];
-                if (c == '"')
-                {
-                    // Check for escaped quote ("")
-                    if (position + 1 < commandLine.Length && commandLine[position + 1] == '"')
-                    {
-                        // Escaped quote - append and continue
-                        _ = result.Append('"');
-                        _ = result.Append('"');
-                        position += 2;
-                        continue;
-                    }
-
-                    // Check if this is a nested quote (opening a quoted path within the value)
-                    // or the closing quote of the main argument.
-                    // Look ahead to determine if this starts a nested quoted string.
-                    if (quoteDepth == 1 && IsNestedQuotedString(commandLine, position))
-                    {
-                        // Opening nested quote - track it
-                        quoteDepth++;
-                        _ = result.Append(c);
-                        position++;
-                    }
-                    else
-                    {
-                        // Closing quote for current level
-                        quoteDepth--;
-                        _ = result.Append(c);
-                        position++;
-                    }
-                }
-                else if (c == '\\')
-                {
-                    // Handle backslash sequences
-                    int backslashStart = position;
-                    while (position < commandLine.Length && commandLine[position] == '\\')
-                    {
-                        position++;
-                    }
-                    int backslashCount = position - backslashStart;
-
-                    // Backslashes are preserved as-is
-                    _ = result.Append('\\', backslashCount);
-                }
-                else
-                {
-                    _ = result.Append(c);
-                    position++;
-                }
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Determines if the current quote position starts a nested quoted string (like a path within MSI arguments).
-        /// Used to detect patterns like: /v"PROP=1 /log "C:\path\file.log""
-        /// </summary>
-        /// <param name="commandLine">The command line span.</param>
-        /// <param name="quotePosition">The position of the quote to check.</param>
-        /// <returns>True if this appears to be the start of a nested quoted string.</returns>
-        private static bool IsNestedQuotedString(ReadOnlySpan<char> commandLine, int quotePosition)
-        {
-            // Look at what precedes the quote - if it's whitespace followed by non-whitespace,
-            // this is likely starting a new nested quoted value
-            if (quotePosition <= 0)
-            {
-                return false;
-            }
-
-            // Check if preceded by whitespace (common pattern: space before quoted path)
-            int beforeQuote = quotePosition - 1;
-            return IsWhitespace(commandLine[beforeQuote]);
-        }
-
-        /// <summary>
-        /// Determines if the current position starts a flag with a quoted path pattern (e.g., -sfx_o"C:\Path").
-        /// </summary>
-        /// <param name="commandLine">The command line span.</param>
-        /// <param name="position">The current position.</param>
-        /// <returns>True if this looks like a flag with a quoted path.</returns>
-        private static bool IsFlagWithQuotedPath(ReadOnlySpan<char> commandLine, int position)
-        {
-            // Must start with - or /
-            if (position >= commandLine.Length || (commandLine[position] != '-' && commandLine[position] != '/'))
-            {
-                return false;
-            }
-
-            // Look for the pattern: flag characters followed by a quote, then a path
-            int i = position + 1;
-
-            // Skip flag name characters (letters, digits, underscores, hyphens)
-            while (i < commandLine.Length && (char.IsLetterOrDigit(commandLine[i]) || commandLine[i] == '_' || commandLine[i] == '-'))
-            {
-                i++;
-            }
-
-            // Must have at least one flag character and be followed by a quote
-            if (i <= position + 1 || i >= commandLine.Length || commandLine[i] != '"')
-            {
-                return false;
-            }
-
-            // Check if after the quote we have a path (drive letter or UNC)
-            int afterQuote = i + 1;
-            if (afterQuote >= commandLine.Length)
-            {
-                return false;
-            }
-
-            // Check for drive letter pattern (X:)
-            if (afterQuote + 1 < commandLine.Length && char.IsLetter(commandLine[afterQuote]) && commandLine[afterQuote + 1] == ':')
-            {
-                return true;
-            }
-
-            // Check for UNC path (\\)
-            return afterQuote + 1 < commandLine.Length && commandLine[afterQuote] == '\\' && commandLine[afterQuote + 1] == '\\';
-        }
-
-        /// <summary>
-        /// Parses a flag with a quoted path pattern, preserving the quotes (e.g., -sfx_o"C:\Path" remains as-is).
-        /// </summary>
-        /// <param name="commandLine">The command line span.</param>
-        /// <param name="position">The current position (updated as parsing progresses).</param>
-        /// <returns>The parsed argument with quotes preserved.</returns>
-        private static string ParseFlagWithQuotedPath(ReadOnlySpan<char> commandLine, ref int position)
-        {
-            // Parse the flag prefix (- or / followed by flag name)
-            StringBuilder result = new();
-            while (position < commandLine.Length && commandLine[position] != '"')
-            {
-                _ = result.Append(commandLine[position]);
-                position++;
-            }
-
-            // Append the opening quote
-            if (position < commandLine.Length && commandLine[position] == '"')
-            {
-                _ = result.Append(commandLine[position]);
-                position++;
-            }
-
-            // Parse until we find the closing quote or end of argument
+            // Parse the quoted portion with nested quote support
+            int quoteDepth = 0;
             while (position < commandLine.Length)
             {
                 char c = commandLine[position];
                 if (c == '"')
                 {
-                    // Check for escaped quote ("")
+                    // Handle escaped quotes ("")
                     if (position + 1 < commandLine.Length && commandLine[position + 1] == '"')
                     {
-                        _ = result.Append('"');
+                        _ = result.Append('"').Append('"');
                         position += 2;
                         continue;
                     }
 
-                    // Closing quote - append it and finish
+                    // Determine if opening or closing quote
+                    bool isNested = quoteDepth > 0 && position > 0 && IsWhitespace(commandLine[position - 1]);
                     _ = result.Append(c);
                     position++;
-                    break;
-                }
-                else if (c == '\\')
-                {
-                    // Handle backslash sequences
-                    int backslashStart = position;
-                    while (position < commandLine.Length && commandLine[position] == '\\')
-                    {
-                        position++;
-                    }
-                    int backslashCount = position - backslashStart;
+                    quoteDepth += isNested ? 1 : (quoteDepth == 0 ? 1 : -1);
 
-                    // Backslashes are preserved as-is regardless of what follows
-                    _ = result.Append('\\', backslashCount);
+                    if (quoteDepth == 0)
+                    {
+                        break;
+                    }
                 }
                 else
                 {
@@ -483,7 +290,6 @@ namespace PSADT.ProcessManagement
                     return false;
                 }
             }
-
             return foundKey;
         }
 
