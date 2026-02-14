@@ -160,6 +160,7 @@ MsiExtractPatchXMLData
 MsiGetLastErrorRecord
 MsiGetSummaryInformation
 MsiOpenDatabase
+MsiQueryProductState
 MsiSummaryInfoGetProperty
 NtQueryInformationProcess
 NtQueryObject
