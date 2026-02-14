@@ -359,11 +359,8 @@ namespace PSADT.FileSystem
             OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
 
             // Create an empty ACL for the purpose of enabling inheritance, then set it on the path.
-            _ = AdvApi32.InitializeAcl(out LocalFreeSafeHandle pEmptyAcl, (uint)Marshal.SizeOf<ACL>(), ACE_REVISION.ACL_REVISION);
-            using (pEmptyAcl)
-            {
-                _ = AdvApi32.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, null, null, pEmptyAcl, null);
-            }
+            Span<byte> pEmptyAcl = stackalloc byte[Marshal.SizeOf<ACL>()]; _ = AdvApi32.InitializeAcl(pEmptyAcl, ACE_REVISION.ACL_REVISION);
+            _ = AdvApi32.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, default, default, pEmptyAcl, default);
 
             // Retrieve the set security descriptor for the path and reapply it to all child objects. This is the same as the
             // "Replace all child object permission entries with inheritable permission entries from this object" checkbox.
