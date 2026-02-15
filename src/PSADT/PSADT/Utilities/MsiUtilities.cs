@@ -25,9 +25,7 @@ namespace PSADT.Utilities
         public static string? GetMessageFromMsiExitCode(uint msiExitCode)
         {
             using FreeLibrarySafeHandle hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
-            Span<char> bufspan = stackalloc char[4096];
-            int len = User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
-            string msiMsgString = bufspan.Slice(0, len + 1).ToString().TrimRemoveNull();
+            _ = User32.LoadString(hMsiMsgDll, msiExitCode, out string? msiMsgString);
             return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
         }
 

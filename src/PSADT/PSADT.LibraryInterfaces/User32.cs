@@ -72,21 +72,57 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Loads a string resource identified by the specified resource identifier into the provided character buffer.
+        /// Loads a string resource from the specified module instance using the provided resource identifier.
         /// </summary>
-        /// <param name="hInstance">A handle to the module containing the string resource to be loaded. This handle must be valid and refer to a
-        /// loaded module.</param>
-        /// <param name="uID">The identifier of the string resource to be loaded.</param>
-        /// <param name="lpBuffer">A span of characters that receives the loaded string. The buffer must be large enough to hold the string,
-        /// including the terminating null character.</param>
-        /// <returns>The number of characters copied into the buffer, not including the terminating null character. Returns 0 if
-        /// the string resource is not found.</returns>
-        internal static int LoadString(SafeHandle hInstance, uint uID, Span<char> lpBuffer)
+        /// <remarks>If the function fails and a Windows error code is set, an exception is thrown to
+        /// indicate the specific error. The caller must ensure that the provided module handle remains valid for the
+        /// duration of the call.</remarks>
+        /// <param name="hInstance">A handle to the module that contains the string resource. This handle must be valid and is typically
+        /// obtained from a previous call to a function such as LoadLibrary.</param>
+        /// <param name="uID">The identifier of the string resource to load. This value must correspond to a valid string resource in the
+        /// specified module.</param>
+        /// <param name="lpBuffer">When this method returns, contains a pointer to the buffer that receives the string resource. The caller is
+        /// responsible for managing the memory of this buffer.</param>
+        /// <returns>The length of the loaded string, in characters. Returns zero if the function fails; in that case, an
+        /// exception is thrown if a Windows error code is set.</returns>
+        internal static int LoadString(SafeHandle hInstance, uint uID, out nint lpBuffer)
         {
-            int res = PInvoke.LoadString(hInstance, uID, lpBuffer, lpBuffer.Length);
+            [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "LoadStringW", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern int LoadString(HINSTANCE hInstance, uint uID, out nint lpBuffer, int cchBufferMax);
+            bool hInstanceAddRef = false;
+            int res;
+            try
+            {
+                hInstance.DangerousAddRef(ref hInstanceAddRef);
+                res = LoadString((HINSTANCE)hInstance.DangerousGetHandle(), uID, out lpBuffer, 0);
+            }
+            finally
+            {
+                if (hInstanceAddRef)
+                {
+                    hInstance.DangerousRelease();
+                }
+            }
             return res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
+        }
+
+        /// <summary>
+        /// Loads a string resource from the specified module instance using the given resource identifier.
+        /// </summary>
+        /// <remarks>This method retrieves a string resource from a native module and converts it to a
+        /// managed string. Ensure that the resource identifier is valid and that the module handle is properly
+        /// initialized before calling this method.</remarks>
+        /// <param name="hInstance">A handle to the module instance that contains the string resource to be loaded.</param>
+        /// <param name="uID">The identifier of the string resource to load.</param>
+        /// <param name="lpBuffer">When this method returns, contains the loaded string if successful; otherwise, null.</param>
+        /// <returns>The number of characters copied to the buffer, or zero if the string resource could not be loaded.</returns>
+        internal static int LoadString(SafeHandle hInstance, uint uID, out string? lpBuffer)
+        {
+            int res = LoadString(hInstance, uID, out nint lpBufferPtr);
+            lpBuffer = res > 0 ? Marshal.PtrToStringUni(lpBufferPtr, res) : null;
+            return res;
         }
 
         /// <summary>

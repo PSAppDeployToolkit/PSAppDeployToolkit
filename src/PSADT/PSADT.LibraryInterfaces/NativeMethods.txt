@@ -138,7 +138,6 @@ JOBOBJECT_BASIC_LIMIT_INFORMATION
 JOBOBJECT_EXTENDED_LIMIT_INFORMATION
 LoadLibrary
 LoadLibraryEx
-LoadString
 LocalFree
 LookupPrivilegeName
 LookupPrivilegeValue
