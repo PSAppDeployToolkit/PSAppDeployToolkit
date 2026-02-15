@@ -283,7 +283,7 @@ namespace PSADT.Invoke
             }
 
             // Determine the path to the script to invoke.
-            string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
+            string adtFrontendPath = Path.Combine(currentPath, $"{typeof(Program).Assembly.GetName().Name}.ps1");
             int fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
@@ -335,11 +335,6 @@ namespace PSADT.Invoke
         /// The current path of the executing assembly.
         /// </summary>
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-
-        /// <summary>
-        /// The name of the executing assembly.
-        /// </summary>
-        private static readonly string assemblyName = Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location);
 
         /// <summary>
         /// The default arguments to pass to PowerShell.
