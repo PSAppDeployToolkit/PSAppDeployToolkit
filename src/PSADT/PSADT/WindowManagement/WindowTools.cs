@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -43,8 +42,7 @@ namespace PSADT.WindowManagement
             if (textLength > 0)
             {
                 Span<char> buffer = stackalloc char[textLength + 1];
-                int len = User32.GetWindowText(hWnd, buffer);
-                string text = buffer.Slice(0, len).ToString().TrimRemoveNull();
+                string text = buffer.Slice(0, User32.GetWindowText(hWnd, buffer)).Trim().ToString();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return text;
