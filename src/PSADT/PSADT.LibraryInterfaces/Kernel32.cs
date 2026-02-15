@@ -60,8 +60,8 @@ namespace PSADT.LibraryInterfaces
         /// no longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
         {
-            FreeLibrarySafeHandle? res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
-            return res is null || res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            FreeLibrarySafeHandle res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -579,8 +579,8 @@ namespace PSADT.LibraryInterfaces
         /// releasing the handle when it is no longer needed.</returns>
         internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
         {
-            SafeFileHandle? res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
-            return res is null || res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            SafeFileHandle res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -626,8 +626,8 @@ namespace PSADT.LibraryInterfaces
         /// longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
         {
-            FreeLibrarySafeHandle? res = PInvoke.LoadLibrary(lpLibFileName);
-            return res is null || res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            FreeLibrarySafeHandle res = PInvoke.LoadLibrary(lpLibFileName);
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
