@@ -88,7 +88,7 @@ namespace PSADT.LibraryInterfaces
         /// with the appropriate method when no longer needed.</param>
         /// <returns>A value of the WIN32_ERROR enumeration that indicates the result of the operation. Returns
         /// WIN32_ERROR.SUCCESS if the operation succeeds; otherwise, returns an error code.</returns>
-        internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle? hDatabase, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
+        internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle hDatabase, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
             return MsiGetSummaryInformation(hDatabase, null, uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
         }
@@ -103,7 +103,7 @@ namespace PSADT.LibraryInterfaces
         /// uninitialized.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.SUCCESS if the summary
         /// information was retrieved successfully; otherwise, returns an error code.</returns>
-        internal static WIN32_ERROR MsiGetSummaryInformation(string? szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
+        internal static WIN32_ERROR MsiGetSummaryInformation(string szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
             return MsiGetSummaryInformation(null, szDatabasePath, uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
         }
