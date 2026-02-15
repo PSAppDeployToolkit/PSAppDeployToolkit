@@ -43,7 +43,7 @@ namespace PSADT.Utilities
         public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
         {
             // Open the patch file as a database.
-            _ = Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
+            _ = Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY + MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
             using (hDatabase)
             {
                 // Get the summary information from the database.
