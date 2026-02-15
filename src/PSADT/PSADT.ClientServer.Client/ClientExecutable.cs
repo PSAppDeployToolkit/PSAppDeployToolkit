@@ -1047,7 +1047,7 @@ namespace PSADT.ClientServer
         {
             if (ProcessUtilities.GetParentProcess().ProcessName.Equals(Path.GetFileNameWithoutExtension(typeof(ClientExecutable).Assembly.Location) + ".Launcher", StringComparison.OrdinalIgnoreCase))
             {
-                Environment.FailFast($"{message.TrimEnd('.')}.\nException Info: {exception}", exception);
+                Environment.FailFast($"{message.TrimEnd('.')}.{Environment.NewLine}Exception Info: {exception}", exception);
             }
             try
             {
@@ -1055,7 +1055,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                Environment.FailFast($"An unexpected exception occurred while serializing main exception [{ex}].\nException Info: {exception}", exception);
+                Environment.FailFast($"An unexpected exception occurred while serializing main exception [{ex}].{Environment.NewLine}Exception Info: {exception}", exception);
             }
             return (int?)exitCode ?? exception.HResult;
         }

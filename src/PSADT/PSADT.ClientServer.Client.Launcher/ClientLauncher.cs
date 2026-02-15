@@ -27,12 +27,12 @@ namespace PSADT.ClientServer
             }
             catch (Win32Exception ex)
             {
-                Environment.FailFast($"An unexpected Win32 error occurred with code [{ex.NativeErrorCode}].\nException Info: {ex}", ex);
+                Environment.FailFast($"An unexpected Win32 error occurred with code [{ex.NativeErrorCode}].{Environment.NewLine}Exception Info: {ex}", ex);
                 return ex.NativeErrorCode;
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                Environment.FailFast($"An unexpected exception occurred with HRESULT [{ex.HResult}].\nException Info: {ex}", ex);
+                Environment.FailFast($"An unexpected exception occurred with HRESULT [{ex.HResult}].{Environment.NewLine}Exception Info: {ex}", ex);
                 return ex.HResult;
             }
         }

@@ -376,7 +376,7 @@ namespace PSADT.ProcessManagement
         public override string ToString()
         {
             StringBuilder stringBuilder = new(128);
-            string value = "\r\n";
+            string value = Environment.NewLine;
             _ = stringBuilder.Append("File:             ");
             _ = stringBuilder.Append(FileName);
             _ = stringBuilder.Append(value);
