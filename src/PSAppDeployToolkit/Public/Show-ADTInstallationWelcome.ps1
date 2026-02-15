@@ -1254,6 +1254,12 @@ function Show-ADTInstallationWelcome
                                 Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
                             }
 
+                            # Return the dialog result if we have it (non-silent) and the caller has asked for it.
+                            if ($PassThru)
+                            {
+                                return $promptResult
+                            }
+
                             # If there's an active session, update deferral values and close it out.
                             if ($adtSession)
                             {
@@ -1272,6 +1278,12 @@ function Show-ADTInstallationWelcome
                             if ($MinimizeWindows)
                             {
                                 Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
+                            }
+
+                            # Return the dialog result if we have it (non-silent) and the caller has asked for it.
+                            if ($PassThru)
+                            {
+                                return $promptResult
                             }
 
                             # If there's an active session, update deferral values and close it out.
