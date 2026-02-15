@@ -47,7 +47,7 @@ namespace PSADT.Utilities
             using (hDatabase)
             {
                 // Get the summary information from the database.
-                _ = Msi.MsiGetSummaryInformation(szDatabasePath, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
+                _ = Msi.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
                 using (hSummaryInfo)
                 {
                     // Determine the size of the buffer we need.
