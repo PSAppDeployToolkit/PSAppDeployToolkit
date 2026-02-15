@@ -131,7 +131,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     }
                     if (options.DeferralDeadline is not null)
                     {
-                        labelDeferDeadline.Text = StripFormattingTags($"{labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern, CultureInfo.CurrentCulture) + options.DeferralDeadline.Value.ToString("zzz", CultureInfo.CurrentCulture)}".Trim());
+                        labelDeferDeadline.Text = StripFormattingTags($"{labelDeferDeadline.Text}{Environment.NewLine}{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern, CultureInfo.CurrentCulture) + options.DeferralDeadline.Value.ToString("zzz", CultureInfo.CurrentCulture)}".Trim());
                         if (options.DeferralDeadline <= DateTime.Now)
                         {
                             buttonDefer.Enabled = false;
