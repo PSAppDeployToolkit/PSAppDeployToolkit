@@ -73,13 +73,13 @@ namespace PSADT.Foundation
         /// Gets the username associated with the user.
         /// </summary>
         [IgnoreDataMember]
-        public string UserName => NTAccountValue.Contains("\\") ? NTAccount.Value.Substring(NTAccount.Value.IndexOf('\\') + 1) : NTAccountValue;
+        public string UserName => NTAccount.Value.IndexOf('\\') is int divider && divider != -1 ? NTAccount.Value.Substring(divider + 1) : NTAccountValue;
 
         /// <summary>
         /// Represents the domain name associated with the current context.
         /// </summary>
         [IgnoreDataMember]
-        public string? DomainName => NTAccountValue.Contains("\\") ? NTAccount.Value.Substring(0, NTAccount.Value.IndexOf('\\')) : null;
+        public string? DomainName => NTAccount.Value.IndexOf('\\') is int divider && divider != -1 ? NTAccount.Value.Substring(0, divider) : null;
 
         /// <summary>
         /// Represents the session ID of the user.
