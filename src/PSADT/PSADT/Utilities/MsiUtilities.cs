@@ -89,5 +89,96 @@ namespace PSADT.Utilities
         {
             return (INSTALLSTATE)Msi.MsiQueryProductState(productCode);
         }
+
+        /// <summary>
+        /// Converts a packed 32-character string representation of a GUID, as used by Windows Installer (MSI), into a
+        /// Guid object.
+        /// </summary>
+        /// <remarks>This method is intended for use with GUIDs stored in the packed format commonly found
+        /// in MSI databases. The input string must be exactly 32 characters in length and formatted according to MSI
+        /// conventions.</remarks>
+        /// <param name="packed32">The packed 32-character string representing a GUID in MSI format. Cannot be null.</param>
+        /// <returns>A Guid object that corresponds to the specified packed MSI GUID string.</returns>
+        public static Guid DecompressPackedGuid(string packed32)
+        {
+            return DecompressPackedGuid(packed32.AsSpan());
+        }
+
+        /// <summary>
+        /// Converts a 32-character hexadecimal string representation of a GUID in MSI packed format to a Guid
+        /// structure.
+        /// </summary>
+        /// <remarks>The input string must be in the MSI packed GUID format, where the first 8 characters
+        /// represent the most significant bits in reversed nibble order, the next 4 characters represent the next 16
+        /// bits in reversed nibble order, the following 4 characters represent the next 16 bits in reversed nibble
+        /// order, and the final 16 characters represent the remaining 8 bytes with each byte's nibbles swapped. This
+        /// format is commonly used in Windows Installer databases.</remarks>
+        /// <param name="packed32">A read-only span of 32 characters containing the packed hexadecimal representation of a GUID. Each character
+        /// must be a valid hexadecimal digit (0-9, A-F, a-f).</param>
+        /// <returns>A Guid structure that represents the GUID decoded from the specified packed hexadecimal string.</returns>
+        /// <exception cref="ArgumentException">Thrown if packed32 does not contain exactly 32 characters or contains non-hexadecimal characters.</exception>
+        internal static Guid DecompressPackedGuid(ReadOnlySpan<char> packed32)
+        {
+            // Validate provided input.
+            if (packed32.Length != 32)
+            {
+                throw new ArgumentException("Expected 32 hex characters.", nameof(packed32));
+            }
+            for (int idx = 0; idx < 32; idx++)
+            {
+                if (packed32[idx] is not ((>= '0' and <= '9') or (>= 'A' and <= 'F') or (>= 'a' and <= 'f')))
+                {
+                    throw new ArgumentException("Input contained non-hex characters.", nameof(packed32));
+                }
+            }
+
+            // Internal helper methods extract characters and reverse ordering.
+            static int HexNibble(char c)
+            {
+                return c is >= '0' and <= '9' ? c - '0' : c is >= 'A' and <= 'F' ? c - 'A' + 10 : c - 'a' + 10;
+            }
+            static int ReadInt32FromReversedChars(ReadOnlySpan<char> s8)
+            {
+                // Build from reversed char order, 1 nibble at a time.
+                uint v = 0; for (int i = 0; i < 8; i++)
+                {
+                    v = (v << 4) | (uint)HexNibble(s8[7 - i]);
+                }
+                return unchecked((int)v);
+            }
+            static short ReadInt16FromReversedChars(ReadOnlySpan<char> s4)
+            {
+                // Build from reversed char order, 1 nibble at a time.
+                uint v = 0; for (int i = 0; i < 4; i++)
+                {
+                    v = (v << 4) | (uint)HexNibble(s4[3 - i]);
+                }
+                return unchecked((short)v);
+            }
+            static byte ReadByteFromSwappedPair(ReadOnlySpan<char> s32, int p)
+            {
+                // Packed tail swaps each 2-char pair: "AB" -> "BA".
+                // So at position p, byte is hex of chars [p+1][p].
+                return (byte)((HexNibble(s32[p + 1]) << 4) | HexNibble(s32[p]));
+            }
+
+            // Packed form needs:
+            // - first 8 chars reversed (by nibble) -> Data1 (uint)
+            // - next 4 reversed -> Data2 (ushort)
+            // - next 4 reversed -> Data3 (ushort)
+            // - last 16: swap each byte pair -> Data4[8]
+            return new(
+                ReadInt32FromReversedChars(packed32.Slice(0, 8)),
+                ReadInt16FromReversedChars(packed32.Slice(8, 4)),
+                ReadInt16FromReversedChars(packed32.Slice(12, 4)),
+                ReadByteFromSwappedPair(packed32, 16),
+                ReadByteFromSwappedPair(packed32, 18),
+                ReadByteFromSwappedPair(packed32, 20),
+                ReadByteFromSwappedPair(packed32, 22),
+                ReadByteFromSwappedPair(packed32, 24),
+                ReadByteFromSwappedPair(packed32, 26),
+                ReadByteFromSwappedPair(packed32, 28),
+                ReadByteFromSwappedPair(packed32, 30));
+        }
     }
 }
