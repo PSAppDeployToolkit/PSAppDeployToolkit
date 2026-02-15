@@ -67,7 +67,7 @@ namespace PSADT.Utilities
             }
 
             OrderedDictionary dictionary = [];
-            foreach (string entry in buffer.Slice(0, (int)res).ToString().Split('\0'))
+            foreach (string entry in buffer.Slice(0, (int)res).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
             {
                 if (string.IsNullOrWhiteSpace(entry))
                 {
@@ -102,8 +102,7 @@ namespace PSADT.Utilities
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536];
-            uint res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-            return new([.. buffer.Slice(0, (int)res).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(name => !string.IsNullOrWhiteSpace(name))]);
+            return new(buffer.Slice(0, (int)Kernel32.GetPrivateProfileSectionNames(buffer, filepath)).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries));
         }
 
         /// <summary>

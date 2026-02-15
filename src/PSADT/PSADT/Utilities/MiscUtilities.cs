@@ -37,7 +37,7 @@ namespace PSADT.Utilities
         public static string TrimLeadingTrailingLines(string value)
         {
             return value is not null
-                ? string.Join("\n", TrimLeadingTrailingLines(value.Split('\n')))
+                ? string.Join(Environment.NewLine, TrimLeadingTrailingLines(value.Split(["\r\n", "\n"], StringSplitOptions.None)))
                 : throw new ArgumentNullException(nameof(value));
         }
 

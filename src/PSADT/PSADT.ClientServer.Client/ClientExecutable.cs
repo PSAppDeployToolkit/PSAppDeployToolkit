@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -48,14 +49,14 @@ namespace PSADT.ClientServer
                 // Determine the mode of operation based on the provided arguments.
                 if (!(argv?.Length > 0))
                 {
-                    FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(typeof(ClientExecutable).Assembly.Location);
-                    Version helpVersion = new(fileInfo.ProductVersion!.Split('+')[0]);
-                    string helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
+                    Assembly assembly = typeof(ClientExecutable).Assembly;
+                    string productVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+                    string helpTitle = $"{assembly.GetCustomAttribute<AssemblyTitleAttribute>()!.Title} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
                         "",
-                        fileInfo.LegalCopyright,
+                        assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
                         "",
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                         "",
