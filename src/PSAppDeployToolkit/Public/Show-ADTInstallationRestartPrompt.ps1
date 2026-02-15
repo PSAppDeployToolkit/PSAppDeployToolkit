@@ -116,7 +116,7 @@ function Show-ADTInstallationRestartPrompt
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession
 
         # Initialise the string table.
         $sessionState = if ($adtSession)
