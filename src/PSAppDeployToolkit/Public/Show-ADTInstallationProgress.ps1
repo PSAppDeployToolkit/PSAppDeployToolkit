@@ -112,7 +112,7 @@ function Show-ADTInstallationProgress
     dynamicparam
     {
         # Initialize the module first if needed.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.

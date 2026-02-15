@@ -199,7 +199,7 @@ function Show-ADTInstallationPrompt
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.

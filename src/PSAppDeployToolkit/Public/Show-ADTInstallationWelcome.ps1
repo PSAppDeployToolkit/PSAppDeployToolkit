@@ -738,7 +738,7 @@ function Show-ADTInstallationWelcome
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         $adtConfig = Get-ADTConfig
 
         # Initialise the string table.
