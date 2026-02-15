@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
 
@@ -50,11 +49,11 @@ namespace PSADT.Utilities
                 {
                     // Determine the size of the buffer we need.
                     _ = Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
-                    Span<char> bufSpan = stackalloc char[(int)requiredSize];
+                    Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
 
                     // Grab the supported product codes and return them to the caller.
                     _ = Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
-                    return new ReadOnlyCollection<Guid>([.. bufSpan.ToString().TrimRemoveNull().Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g))]);
+                    return new ReadOnlyCollection<Guid>([.. bufSpan.Slice(0, (int)requiredSize).ToString().Split(';').Select(static g => new Guid(g))]);
                 }
             }
         }
@@ -72,9 +71,9 @@ namespace PSADT.Utilities
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
             _ = Msi.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
-            Span<char> bufSpan = stackalloc char[(int)requiredLength];
+            Span<char> bufSpan = stackalloc char[(int)requiredLength + 1];
             _ = Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
-            return XmlUtilities.SafeLoadFromText(bufSpan.ToString().TrimRemoveNull());
+            return XmlUtilities.SafeLoadFromText(bufSpan.Slice(0, (int)requiredLength).ToString());
         }
 
         /// <summary>

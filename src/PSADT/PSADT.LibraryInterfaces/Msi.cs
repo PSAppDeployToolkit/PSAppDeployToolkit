@@ -131,10 +131,6 @@ namespace PSADT.LibraryInterfaces
         {
             uint pcchValueBufLocal = (uint)szValueBuf.Length;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBufLocal)).ThrowOnFailure();
-            if (szValueBuf.IsEmpty)
-            {
-                pcchValueBufLocal++;
-            }
             puiDataType = (VARENUM)puiDataTypeLocal;
             pcchValueBuf = pcchValueBufLocal;
             return res;
@@ -157,10 +153,6 @@ namespace PSADT.LibraryInterfaces
         {
             uint pcchXMLDataLocal = (uint)szXMLData.Length;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal)).ThrowOnFailure();
-            if (szXMLData.IsEmpty)
-            {
-                pcchXMLDataLocal++;
-            }
             pcchXMLData = pcchXMLDataLocal;
             return res;
         }
