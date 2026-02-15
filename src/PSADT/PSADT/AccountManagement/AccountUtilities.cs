@@ -137,7 +137,9 @@ namespace PSADT.AccountManagement
             }
 
             // Recursively check the members of the well-known group SID for the target SID.
-            HashSet<string> visited = []; using DirectoryEntry groupEntry = new($"WinNT://./{GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group");
+            string groupName = GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).Value;
+            string adsiPath = $"WinNT://./{groupName.Substring(groupName.IndexOf('\\') + 1)},group";
+            HashSet<string> visited = []; using DirectoryEntry groupEntry = new(adsiPath);
             return CheckMemberRecursive(groupEntry, targetSid, visited);
         }
 

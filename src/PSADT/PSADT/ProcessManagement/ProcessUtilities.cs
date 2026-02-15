@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -513,7 +512,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidOperationException">Thrown if the NT device name derived from the specified path does not exist in the lookup table.</exception>
         internal static string TranslateNtPathToWin32Path(string ntPath, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            string ntDeviceName = $@"\{string.Join(@"\", ntPath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+            string ntDeviceName = $@"\{string.Join(@"\", ntPath.Split(['\\'], 2, StringSplitOptions.RemoveEmptyEntries))}";
             return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
                 ? throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from NT path [{ntPath}].")
                 : ntPath.Replace(ntDeviceName, driveLetter);

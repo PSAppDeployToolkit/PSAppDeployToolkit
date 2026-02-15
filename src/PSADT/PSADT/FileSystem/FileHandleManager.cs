@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -367,7 +366,7 @@ namespace PSADT.FileSystem
                     }
 
                     // Add the handle information to the list if it matches the specified directory path.
-                    string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                    string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], 2, StringSplitOptions.RemoveEmptyEntries))}";
                     if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                     {
                         openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
