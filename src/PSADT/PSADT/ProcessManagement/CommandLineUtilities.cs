@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using PSADT.FileSystem;
-using PSADT.LibraryInterfaces.Extensions;
 
 namespace PSADT.ProcessManagement
 {
@@ -49,9 +48,9 @@ namespace PSADT.ProcessManagement
             }
             if (strict)
             {
-                return CommandLineToArgumentListStrict(commandLine.TrimRemoveNull().AsSpan());
+                return CommandLineToArgumentListStrict(commandLine.AsSpan());
             }
-            return CommandLineToArgumentListEnhanced(commandLine.TrimRemoveNull().AsSpan());
+            return CommandLineToArgumentListEnhanced(commandLine.AsSpan());
         }
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace PSADT.ProcessManagement
                 }
                 _ = sb.Append(strict ? EscapeArgumentStrict(arg) : EscapeArgumentCompatible(arg)).Append(' ');
             }
-            return sb.ToString().TrimRemoveNull();
+            sb.Length--; return sb.ToString();
         }
 
         /// <summary>

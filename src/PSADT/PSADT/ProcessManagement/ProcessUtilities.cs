@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
@@ -184,7 +183,7 @@ namespace PSADT.ProcessManagement
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
             _ = NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
             ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString().RemoveNull();
+            return unicodeString.ToManagedString();
         }
 
         /// <summary>
@@ -390,7 +389,7 @@ namespace PSADT.ProcessManagement
         {
             Span<char> buffer = stackalloc char[1024];
             _ = Kernel32.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
-            string result = buffer.Slice(0, (int)requiredLength).ToString().TrimRemoveNull();
+            string result = buffer.Slice(0, (int)requiredLength).ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidOperationException("The QueryFullProcessImageName() call returned a null or empty result.")
                 : result;
@@ -411,8 +410,7 @@ namespace PSADT.ProcessManagement
         internal static string GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             Span<char> buffer = stackalloc char[1024];
-            uint requiredLength = PsApi.GetProcessImageFileName(hProcess, buffer);
-            string result = buffer.Slice(0, (int)requiredLength).ToString().TrimRemoveNull();
+            string result = buffer.Slice(0, (int)PsApi.GetProcessImageFileName(hProcess, buffer)).ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidOperationException("The GetProcessImageFileName() call returned a null or empty result.")
                 : TranslateNtPathToWin32Path(result, ntPathLookupTable);
@@ -484,7 +482,7 @@ namespace PSADT.ProcessManagement
                 {
                     processIdInfo.ImageName = new() { Length = 0, MaximumLength = checked((ushort)(imageNamePtr.Length * 2)), Buffer = pImageName };
                     _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                    imageName = processIdInfo.ImageName.ToManagedString().RemoveNull();
+                    imageName = processIdInfo.ImageName.ToManagedString();
                 }
             }
 
@@ -559,7 +557,7 @@ namespace PSADT.ProcessManagement
             // Perform the query.
             _ = NtDll.NtQueryInformationProcess(hProcess, processInfoClass, buffer, out _);
             ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString().RemoveNull();
+            return unicodeString.ToManagedString();
         }
     }
 }

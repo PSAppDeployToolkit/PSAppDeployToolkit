@@ -64,10 +64,8 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <returns>The string value at the specified offset.</returns>
         internal string ToStringUni(int offset = 0)
         {
-            ConfirmStateValidity(offset); string res = Marshal.PtrToStringUni(handle + offset, (Length - offset) / sizeof(char)).TrimAndTrimNull();
-            return string.IsNullOrWhiteSpace(res)
-                ? throw new InvalidOperationException("The memory block does not contain a valid string.")
-                : res;
+            ConfirmStateValidity(offset);
+            return (handle + offset).ToManagedString((Length - offset) / sizeof(char));
         }
 
         /// <summary>
@@ -231,8 +229,7 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
-            ConfirmStateValidity(offset);
-            int length = (Length - offset) / Marshal.SizeOf<T>();
+            ConfirmStateValidity(offset); int length = (Length - offset) / Marshal.SizeOf<T>();
             if (length < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");

@@ -322,8 +322,7 @@ namespace PSADT.ProcessManagement
         private static string? GetFileVersionLanguage(string codepage)
         {
             Span<char> szLang = stackalloc char[1024];
-            uint len = Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang);
-            string result = szLang.Slice(0, (int)len).ToString().TrimRemoveNull();
+            string result = szLang.Slice(0, (int)Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang)).ToString();
             return !string.IsNullOrWhiteSpace(result) ? result : null;
         }
 
@@ -343,12 +342,15 @@ namespace PSADT.ProcessManagement
             // Attempt to query the version resource for the specified name.
             try
             {
-                _ = Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out nint lplpBuffer, out _);
-                string? result = Marshal.PtrToStringUni(lplpBuffer)?.TrimRemoveNull();
-                if (!string.IsNullOrWhiteSpace(result))
+                _ = Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out nint lplpBuffer, out uint puLen);
+                if (puLen > 1 && lplpBuffer != IntPtr.Zero)
                 {
-                    success = true;
-                    return result;
+                    string result = Marshal.PtrToStringUni(lplpBuffer, (int)(puLen - 1));
+                    if (!string.IsNullOrWhiteSpace(result))
+                    {
+                        success = true;
+                        return result;
+                    }
                 }
             }
             catch

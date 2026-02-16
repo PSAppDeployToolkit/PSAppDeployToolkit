@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
@@ -100,13 +99,13 @@ namespace PSADT.TerminalServices
 
             // Get extended information about the session, bombing out if we have no username (not a proper session).
             WTSINFOEX_LEVEL1_W sessionInfo = GetValue<WTSINFOEXW>(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx).Data.WTSInfoExLevel1;
-            if (sessionInfo.UserName.ToString().TrimRemoveNull() is not string userName || string.IsNullOrWhiteSpace(userName))
+            if (sessionInfo.UserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
             {
                 return null;
             }
 
             // Declare initial variables for data we need to get from a structured object.
-            string domainName = sessionInfo.DomainName.ToString().TrimRemoveNull();
+            string domainName = sessionInfo.DomainName.ToString();
             NTAccount ntAccount = new(domainName, userName);
             SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
             bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
@@ -115,7 +114,7 @@ namespace PSADT.TerminalServices
             bool isValidUserSession = isActiveUserSession || sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
             TimeSpan? idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
-            string? pWinStationName = session.pWinStationName.ToString()?.TrimRemoveNull();
+            string? pWinStationName = session.pWinStationName.ToString();
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
 
             // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.

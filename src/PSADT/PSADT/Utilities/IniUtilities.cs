@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
 
 namespace PSADT.Utilities
 {
@@ -25,8 +24,7 @@ namespace PSADT.Utilities
         public static string GetSectionKeyValue(string filepath, string section, string key)
         {
             Span<char> buffer = stackalloc char[4096];
-            uint res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
-            return buffer.Slice(0, (int)res).ToString().TrimRemoveNull();
+            return buffer.Slice(0, (int)Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath)).ToString();
         }
 
         /// <summary>

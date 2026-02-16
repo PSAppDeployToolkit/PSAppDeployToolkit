@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using PSADT.LibraryInterfaces.Extensions;
 
 namespace PSADT.Utilities
 {
@@ -24,7 +23,7 @@ namespace PSADT.Utilities
         public static IReadOnlyList<string> TrimLeadingTrailingLines(IEnumerable<string> value)
         {
             return value is not null
-                ? new ReadOnlyCollection<string>([.. value.Select(static s => s.TrimEndRemoveNull()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()])
+                ? new ReadOnlyCollection<string>([.. value.Select(static s => s.TrimEnd()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()])
                 : throw new ArgumentNullException("The input collection cannot be null.", (Exception?)null);
         }
 

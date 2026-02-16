@@ -750,13 +750,13 @@ namespace PSADT.LibraryInterfaces
         /// the operation is unsuccessful.</remarks>
         /// <param name="hProcess">A handle to the process for which the AUMID is being retrieved. This handle must have the necessary access
         /// rights.</param>
-        /// <param name="applicationUserModelIdLength">On input, specifies the size of the <paramref name="applicationUserModelId"/> buffer. On output, receives
-        /// the length of the AUMID, including the null terminator.</param>
+        /// <param name="applicationUserModelIdLength">On output, receives the length of the AUMID, including the null terminator.</param>
         /// <param name="applicationUserModelId">A buffer that receives the AUMID as a null-terminated string.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> code indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.NO_ERROR"/> if successful.</returns>
-        internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, ref uint applicationUserModelIdLength, Span<char> applicationUserModelId)
+        internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, out uint applicationUserModelIdLength, Span<char> applicationUserModelId)
         {
+            applicationUserModelIdLength = (uint)applicationUserModelId.Length;
             return PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId).ThrowOnFailure();
         }
 

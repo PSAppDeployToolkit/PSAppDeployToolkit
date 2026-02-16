@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32.Security;

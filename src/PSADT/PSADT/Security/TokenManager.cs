@@ -5,7 +5,6 @@ using System.Security.AccessControl;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
 using Windows.Win32.Foundation;
@@ -36,7 +35,7 @@ namespace PSADT.Security
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 _ = AdvApi32.LookupPrivilegeName(null, attr.Luid, buffer, out uint retLength);
-                string privilegeName = buffer.Slice(0, (int)retLength).ToString().TrimRemoveNull();
+                string privilegeName = buffer.Slice(0, (int)retLength).ToString();
                 return !Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege)
                     ? throw new ArgumentException($"Unknown privilege: {privilegeName}")
                     : privilege;
