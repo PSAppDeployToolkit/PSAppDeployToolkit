@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -146,9 +145,9 @@ namespace PSADT.Utilities
             {
                 throw new InvalidOperationException("Process handle is invalid.");
             }
-            Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH]; uint length = (uint)appUserModelId.Length;
-            _ = Kernel32.GetApplicationUserModelId(hProcess, ref length, appUserModelId);
-            return appUserModelId.Slice(0, (int)length).ToString().TrimRemoveNull();
+            Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH];
+            _ = Kernel32.GetApplicationUserModelId(hProcess, out uint length, appUserModelId);
+            return appUserModelId.Slice(0, (int)length - 1).ToString();
         }
 
         /// <summary>

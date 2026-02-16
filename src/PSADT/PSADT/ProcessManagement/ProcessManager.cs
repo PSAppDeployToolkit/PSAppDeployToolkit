@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
@@ -222,7 +221,7 @@ namespace PSADT.ProcessManagement
                     // Start tracking the process and allow it to resume execution.
                     process = GetProcessFromId((processId = pi.dwProcessId).Value);
                     using SafeThreadHandle hThread = new(pi.hThread, true);
-                    commandLine = commandSpan.ToString().TrimRemoveNull();
+                    commandLine = commandSpan.TrimEndNullAndTrim().ToString();
                     hProcess = new(pi.hProcess, true);
                     if (assignProcessToJob)
                     {
@@ -262,7 +261,7 @@ namespace PSADT.ProcessManagement
             {
                 // Build the command line for the process.
                 OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out string? arguments, out string? workingDirectory, out Span<char> commandSpan);
-                commandLine = commandSpan.ToString().TrimRemoveNull();
+                commandLine = commandSpan.TrimEndNullAndTrim().ToString();
                 process = new()
                 {
                     StartInfo = new()
@@ -502,7 +501,7 @@ namespace PSADT.ProcessManagement
         {
             using (pipeStream) using (StreamReader streamReader = new(pipeStream, encoding))
             {
-                while (streamReader.ReadLine()?.TrimEndRemoveNull() is string line)
+                while (streamReader.ReadLine()?.TrimEnd() is string line)
                 {
                     interleaved.Enqueue(line);
                     output.Add(line);

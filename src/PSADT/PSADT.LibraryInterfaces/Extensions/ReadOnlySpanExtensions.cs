@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PSADT.Extensions
+namespace PSADT.LibraryInterfaces.Extensions
 {
     /// <summary>
     /// Provides extension methods for working with read-only spans of bytes.
@@ -22,6 +22,20 @@ namespace PSADT.Extensions
         internal static ref readonly T AsReadOnlyStructure<T>(this ReadOnlySpan<byte> span) where T : unmanaged
         {
             return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span));
+        }
+
+        /// <summary>
+        /// Trims leading and trailing white-space characters from the specified span and removes any trailing null
+        /// characters.
+        /// </summary>
+        /// <remarks>Use this method to sanitize input spans before further processing, ensuring that
+        /// extraneous white-space or null characters do not affect subsequent operations.</remarks>
+        /// <param name="span">The span of characters to trim. May contain leading or trailing white-space and null characters.</param>
+        /// <returns>A read-only span of characters with all leading and trailing white-space removed and any trailing null
+        /// characters eliminated.</returns>
+        internal static ReadOnlySpan<char> TrimEndNullAndTrim(this ReadOnlySpan<char> span)
+        {
+            return span.Trim().TrimEnd('\0').TrimEnd();
         }
     }
 }
