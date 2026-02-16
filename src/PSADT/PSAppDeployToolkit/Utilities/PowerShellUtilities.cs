@@ -97,7 +97,7 @@ namespace PSAppDeployToolkit.Utilities
                     }
                     else if (entry.Value is IEnumerable enumerable)
                     {
-                        val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'" : string.Join(",", enumerable);
+                        val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(static s => Regex.Replace(s, @"(?<!')'(?!')", "''")))}'" : string.Join(",", enumerable);
                     }
                     else if (entry.Value is not SwitchParameter)
                     {

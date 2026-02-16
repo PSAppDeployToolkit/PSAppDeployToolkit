@@ -642,7 +642,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     using MemoryStream memoryStream = new(iconBytes);
                     if (iconBytes.Length >= 4 && iconBytes[0] == 0x00 && iconBytes[1] == 0x00 && iconBytes[2] == 0x01 && iconBytes[3] == 0x00)
                     {
-                        BitmapFrame iconFrame = new IconBitmapDecoder(memoryStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
+                        BitmapFrame iconFrame = new IconBitmapDecoder(memoryStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
                         if (iconFrame.CanFreeze)
                         {
                             iconFrame.Freeze();
@@ -670,7 +670,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     // If we have an icon, get the highest resolution frame.
                     if (Path.GetExtension(dialogIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
                     {
-                        BitmapFrame iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
+                        BitmapFrame iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
                         if (iconFrame.CanFreeze)
                         {
                             iconFrame.Freeze();
