@@ -326,7 +326,7 @@ function Get-ADTApplication
         {
             return $installedApplication
         }
-        Write-ADTLogEntry -Message 'Found no application based on the supplied FilterScript.'
+        Write-ADTLogEntry -Message 'Found no application based on the supplied input.'
     }
 
     end

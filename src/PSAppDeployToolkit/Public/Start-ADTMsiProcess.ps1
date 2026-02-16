@@ -511,11 +511,62 @@ function Start-ADTMsiProcess
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
                 $msiInstalled = if ($msiProductCode -and !$SkipMSIAlreadyInstalledCheck)
                 {
-                    if (!$InstalledApplication -and ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes))
+                    # If we've already got an InstalledApplication object, then we're done.
+                    if (!$InstalledApplication)
                     {
-                        $InstalledApplication = $installedApps
+                        Write-ADTLogEntry -Message "Determining whether the MSI is already installed on this system."
+                        if ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes -InformationAction SilentlyContinue)
+                        {
+                            # We found the app normally. Make sure we've only got one (having more should be an impossibility).
+                            if (($installedApps | Measure-Object).Count -gt 1)
+                            {
+                                $naerParams = @{
+                                    Exception = [System.IO.FileNotFoundException]::new("More than one InstalledApplication object was found for product code [$msiProductCode].")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                    ErrorId = 'MultipleInstalledAppsFound'
+                                    TargetObject = $installedApps
+                                    RecommendedAction = "Please report this error to the PSAppDeployToolkit for further review."
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+                            Write-ADTLogEntry -Message "Found an installed instance of the product via [Get-ADTApplication -ProductCode]."
+                            !!($InstalledApplication = $installedApps)
+                        }
+                        elseif ($msiProductCode.Length -eq 1 -and ($msiProductState = [PSADT.Utilities.MsiUtilities]::QueryProductState($msiProductCode[0])).Equals([PSADT.LibraryInterfaces.INSTALLSTATE]::INSTALLSTATE_DEFAULT))
+                        {
+                            # We have an installed MSI that seemingly has no ARP entry. See if we've got any info in the registry for it for logging purposes, then report we found it.
+                            if (!$msiPropertyTable -and ($regPropertyTable = Get-ADTRegistryKey -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Installer\Products\$([PSADT.Utilities.MsiUtilities]::CompressGuid($msiProductCode[0]))"))
+                            {
+                                $msiPropertyTable = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+                                $msiPropertyTable.Add('ProductVersion', [PSADT.Utilities.MsiUtilities]::QueryProductState($regPropertyTable.Version))
+                                $msiPropertyTable.Add('ProductName', $regPropertyTable.ProductName)
+                                [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$msiPropertyTable = $msiPropertyTable
+                            }
+                            Write-ADTLogEntry -Message "Found an installed instance of the product via [MsiQueryProductState()]."
+                            $msiProductState.Equals([PSADT.LibraryInterfaces.INSTALLSTATE]::INSTALLSTATE_DEFAULT)
+                        }
+                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -InformationAction SilentlyContinue))
+                        {
+                            # We found the app normally. Make sure we've only got one (having more should be an impossibility).
+                            if (($installedApps | Measure-Object).Count -gt 1)
+                            {
+                                $naerParams = @{
+                                    Exception = [System.IO.FileNotFoundException]::new("More than one InstalledApplication object was found for MSI application [$($msiPropertyTable.ProductName)] with version [$($msiPropertyTable.ProductVersion)].")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                    ErrorId = 'MultipleInstalledAppsFound'
+                                    TargetObject = $installedApps
+                                    RecommendedAction = "Please report this error to the PSAppDeployToolkit for further review."
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+                            Write-ADTLogEntry -Message "Found an installed instance of the product via [Get-ADTApplication -FilterScript]."
+                            !!($InstalledApplication = $installedApps)
+                        }
+                        elseif ($Action -eq 'Install')
+                        {
+                            Write-ADTLogEntry -Message "The MSI is not installed on this system, continuing action [$Action]..."
+                        }
                     }
-                    !!$InstalledApplication
                 }
                 else
                 {
@@ -525,12 +576,12 @@ function Start-ADTMsiProcess
                 # Return early if we're installing an installed product, or anything else for a non-installed product.
                 if ($msiInstalled -and ($Action -eq 'Install'))
                 {
-                    Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
+                    Write-ADTLogEntry -Message "The MSI is already installed on this system, skipping action [$Action]..."
                     return $(if ($PassThru) { [PSADT.ProcessManagement.ProcessResult]::new(1638) })
                 }
                 elseif (!$msiInstalled -and ($Action -ne 'Install'))
                 {
-                    Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."
+                    Write-ADTLogEntry -Message "The MSI is not installed on this system., sipping action [$Action]..."
                     return $(if ($PassThru) { [PSADT.ProcessManagement.ProcessResult]::new(1605) })
                 }
 
