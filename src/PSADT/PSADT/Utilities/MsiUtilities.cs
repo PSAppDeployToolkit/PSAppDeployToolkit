@@ -90,6 +90,21 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
+        /// Converts a 32-bit integer representing an MSI version into a corresponding <see cref="Version"/> object.
+        /// </summary>
+        /// <remarks>This method is useful for interpreting version information stored in the DWORD format
+        /// commonly used by Windows Installer (MSI) packages. The resulting <see cref="Version"/> object can be used
+        /// for version comparisons and display within .NET applications.</remarks>
+        /// <param name="v">A 32-bit integer in which the major version is stored in the highest byte, the minor version in the next
+        /// highest byte, and the build number in the lowest two bytes, as used by Windows Installer (MSI) versioning.</param>
+        /// <returns>A <see cref="Version"/> object containing the major, minor, and build numbers extracted from the specified
+        /// MSI version integer.</returns>
+        public static Version ParseVersionDWord(int v)
+        {
+            return new((v >> 24) & 0xFF, (v >> 16) & 0xFF, v & 0xFFFF);
+        }
+
+        /// <summary>
         /// Converts a packed 32-character string representation of a GUID, as used by Windows Installer (MSI), into a
         /// Guid object.
         /// </summary>
