@@ -34,30 +34,6 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         }
 
         /// <summary>
-        /// Reallocates the memory block to the specified size.
-        /// </summary>
-        /// <param name="length"></param>
-        /// <exception cref="OutOfMemoryException"></exception>
-        internal virtual void ReAlloc(int length)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="structure"></param>
-        /// <param name="fDeleteOld"></param>
-        /// <param name="offset"></param>
-        internal TSelf FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
-        {
-            ConfirmStateValidity(offset);
-            Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
-            return (TSelf)this;
-        }
-
-        /// <summary>
         /// Converts the handle to a string using the Unicode character set.
         /// </summary>
         /// <param name="offset">The byte offset from the start of the handle.</param>
@@ -256,6 +232,12 @@ namespace PSADT.LibraryInterfaces.SafeHandles
         }
 
         /// <summary>
+        /// Releases the handle and frees the allocated memory.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract override bool ReleaseHandle();
+
+        /// <summary>
         /// Validates that the current object is in a usable state and that the specified offset is within the valid
         /// range.
         /// </summary>
@@ -273,12 +255,6 @@ namespace PSADT.LibraryInterfaces.SafeHandles
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
             }
         }
-
-        /// <summary>
-        /// Releases the handle and frees the allocated memory.
-        /// </summary>
-        /// <returns></returns>
-        protected abstract override bool ReleaseHandle();
 
         /// <summary>
         /// Gets the size of the allocated memory block.
