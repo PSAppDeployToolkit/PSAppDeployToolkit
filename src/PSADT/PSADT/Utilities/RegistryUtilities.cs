@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.Registry;
 
@@ -23,7 +22,7 @@ namespace PSADT.Utilities
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(fullKeyPath);
             _ = AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
-            return lastWriteTime.ToDateTime();
+            return DateTime.FromFileTime((long)(lastWriteTime.dwHighDateTime << 32) | (lastWriteTime.dwLowDateTime & 0xFFFFFFFFL));
         }
 
         /// <summary>
