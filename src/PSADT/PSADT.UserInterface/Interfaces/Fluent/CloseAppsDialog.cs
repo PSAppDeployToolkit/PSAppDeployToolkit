@@ -206,7 +206,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="e"></param>
         private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {
-            Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(p => new AppToClose(p))));
+            Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(static p => new AppToClose(p))));
         }
 
         /// <summary>

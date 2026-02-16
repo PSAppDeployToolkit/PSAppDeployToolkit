@@ -33,7 +33,7 @@ namespace PSADT.UserInterface.TestHarness
             }
 
             // Read out the hashtable
-            Hashtable stringTable = (Hashtable)stringsAst.Find(x => x is HashtableAst, false).SafeGetValue();
+            Hashtable stringTable = (Hashtable)stringsAst.Find(static x => x is HashtableAst, false).SafeGetValue();
 
             // Set up parameters for testing
             string appTitle = "Adobe Creative Suite 2.1.45 EN";
