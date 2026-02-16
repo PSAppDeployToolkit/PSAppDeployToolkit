@@ -105,6 +105,35 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
+        /// Converts a GUID to its compressed hexadecimal string representation in MSI packed form.
+        /// </summary>
+        /// <remarks>The compressed format arranges each byte of the GUID with the low nibble first,
+        /// followed by the high nibble, as required by MSI packed form. This method is useful for scenarios where GUIDs
+        /// must be represented in a compact, MSI-compatible string format.</remarks>
+        /// <param name="unpacked">The GUID to be converted to a compressed hexadecimal string.</param>
+        /// <returns>A string containing the compressed hexadecimal format of the provided GUID.</returns>
+        public static string CompressGuid(Guid unpacked)
+        {
+            // Internal helper method to convert nibble to char.
+            static char ToHexUpper(int nibble)
+            {
+                return (char)(nibble < 10 ? ('0' + nibble) : ('A' + (nibble - 10)));
+            }
+
+            // Create a 1-element span over the Guid, then view it as bytes (no allocations).
+            byte[] bytes = unpacked.ToByteArray(); int o = 0;
+            Span<char> destination = stackalloc char[32];
+            for (int i = 0; i < 16; i++)
+            {
+                // MSI packed form wants low nibble first, then high nibble.
+                byte b = bytes[i];
+                destination[o++] = ToHexUpper(b & 0x0F);
+                destination[o++] = ToHexUpper(b >> 4);
+            }
+            return destination.ToString();
+        }
+
+        /// <summary>
         /// Converts a packed 32-character string representation of a GUID, as used by Windows Installer (MSI), into a
         /// Guid object.
         /// </summary>
