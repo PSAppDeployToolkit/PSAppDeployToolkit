@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -929,11 +930,8 @@ namespace PSADT.ProcessManagement
                     // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
                     // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
                     PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                    unsafe
-                    {
-                        EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
-                        _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&extendedFlag, 1)));
-                    }
+                    Span<byte> lpValue = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(lpValue, (int)EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY);
+                    _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, lpValue);
                 }
 
                 // Create the STARTUPINFOEXW structure.
