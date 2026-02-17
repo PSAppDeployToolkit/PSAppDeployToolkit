@@ -387,7 +387,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidOperationException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
         internal static string QueryFullProcessImageName(SafeHandle hProcess)
         {
-            Span<char> buffer = stackalloc char[1024];
+            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             _ = Kernel32.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
             string result = buffer.Slice(0, (int)requiredLength).ToString();
             return string.IsNullOrWhiteSpace(result)
@@ -409,7 +409,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidOperationException">Thrown if the underlying system call does not return a valid image file name.</exception>
         internal static string GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            Span<char> buffer = stackalloc char[1024];
+            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             string result = buffer.Slice(0, (int)PsApi.GetProcessImageFileName(hProcess, buffer)).ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidOperationException("The GetProcessImageFileName() call returned a null or empty result.")

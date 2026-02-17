@@ -51,7 +51,7 @@ namespace PSADT.Security
             uint privilegeCount = tokenPrivileges.PrivilegeCount;
             int bufferOffset = sizeof(uint);
             int increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
-            Span<char> charSpan = stackalloc char[1024];
+            Span<char> charSpan = stackalloc char[1024]; charSpan.Clear();
             List<SE_PRIVILEGE> privileges = [];
             if (attributes is not null)
             {

@@ -23,7 +23,7 @@ namespace PSADT.Utilities
         /// <returns></returns>
         public static string GetSectionKeyValue(string filepath, string section, string key)
         {
-            Span<char> buffer = stackalloc char[4096];
+            Span<char> buffer = stackalloc char[4096]; buffer.Clear();
             return buffer.Slice(0, (int)Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath)).ToString();
         }
 

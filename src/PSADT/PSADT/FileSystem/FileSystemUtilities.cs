@@ -393,7 +393,7 @@ namespace PSADT.FileSystem
         internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
         {
             Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
-            Span<char> targetPath = stackalloc char[1024];
+            Span<char> targetPath = stackalloc char[1024]; targetPath.Clear();
             foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
             {
                 try
