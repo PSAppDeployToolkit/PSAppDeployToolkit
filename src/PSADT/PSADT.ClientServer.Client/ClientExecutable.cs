@@ -49,14 +49,13 @@ namespace PSADT.ClientServer
                 // Determine the mode of operation based on the provided arguments.
                 if (!(argv?.Length > 0))
                 {
-                    Assembly assembly = typeof(ClientExecutable).Assembly;
-                    string productVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-                    string helpTitle = $"{assembly.GetCustomAttribute<AssemblyTitleAttribute>()!.Title} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
+                    string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()!.Title} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
                         "",
-                        assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
+                        AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
                         "",
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                         "",
@@ -1045,7 +1044,7 @@ namespace PSADT.ClientServer
         /// returns the HResult of the exception.</returns>
         private static int InvokeMainErrorHandler(Exception exception, string message, ClientExitCode? exitCode = null)
         {
-            if (ProcessUtilities.GetParentProcess().ProcessName.Equals(typeof(ClientExecutable).Assembly.GetName().Name + ".Launcher", StringComparison.OrdinalIgnoreCase))
+            if (ProcessUtilities.GetParentProcess().ProcessName.Equals(AssemblyInfo.GetName().Name + ".Launcher", StringComparison.OrdinalIgnoreCase))
             {
                 Environment.FailFast($"{message.TrimEnd('.')}.{Environment.NewLine}Exception Info: {exception}", exception);
             }
@@ -1059,5 +1058,12 @@ namespace PSADT.ClientServer
             }
             return (int?)exitCode ?? exception.HResult;
         }
+
+        /// <summary>
+        /// Holds a reference to the assembly that contains the ClientExecutable type.
+        /// </summary>
+        /// <remarks>This field can be used to access metadata about the current executable's assembly,
+        /// such as its version, name, or custom attributes.</remarks>
+        private static readonly Assembly AssemblyInfo = typeof(ClientExecutable).Assembly;
     }
 }
