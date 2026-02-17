@@ -67,7 +67,12 @@ function Invoke-ADTDotNetCompilation
                             foreach ($outputFile in $buildItem.OutputFile)
                             {
                                 # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
-                                $lastCommitDate = & $git -C $Script:ModuleConstants.Paths.Repository log -1 --format="%ci" -- $outputFile
+                                if (!($lastCommitDate = & $git -C $Script:ModuleConstants.Paths.Repository log -1 --format="%ci" -- $outputFile))
+                                {
+                                    Write-ADTBuildLogEntry -Message "Files have been created in [$sourcePath] since the last commit date, debug build required."
+                                    $buildConfigs.Add('Debug')
+                                    break
+                                }
                                 $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
                                 $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
