@@ -94,6 +94,16 @@ namespace PSADT.FileSystem
         /// <exception cref="DirectoryNotFoundException">Thrown if the directory specified by <paramref name="rootPath"/> does not exist.</exception>
         public static long GetLogicalSizeBytes(string rootPath)
         {
+            // Internal helper method to trim trailing slashes off paths.
+            static string TrimTrailingSeparators(string path)
+            {
+                while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
+                {
+                    path = path.Substring(0, path.Length - 1);
+                }
+                return path;
+            }
+
             // Validate the specified input.
             if (string.IsNullOrWhiteSpace(rootPath))
             {
@@ -465,25 +475,6 @@ namespace PSADT.FileSystem
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Removes trailing directory separator characters ('\' or '/') from the specified path string, except for root
-        /// paths.
-        /// </summary>
-        /// <remarks>This method preserves root directory paths and only removes trailing separators when
-        /// the path length exceeds three characters. The input string is not validated for null; callers should ensure
-        /// a valid path is provided.</remarks>
-        /// <param name="path">The path string to trim. Must not be null.</param>
-        /// <returns>A string representing the path with trailing directory separators removed. If the path is a root (e.g.,
-        /// 'C:\\'), it is not trimmed.</returns>
-        private static string TrimTrailingSeparators(string path)
-        {
-            while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
-            {
-                path = path.Substring(0, path.Length - 1);
-            }
-            return path;
         }
 
         /// <summary>
