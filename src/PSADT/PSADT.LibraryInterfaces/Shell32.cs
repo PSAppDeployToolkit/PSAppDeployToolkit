@@ -99,7 +99,8 @@ namespace PSADT.LibraryInterfaces
         /// value indicates an error.</returns>
         internal static HRESULT SetCurrentProcessExplicitAppUserModelID(string AppID)
         {
-            return PInvoke.SetCurrentProcessExplicitAppUserModelID(AppID).ThrowOnFailure();
+            HRESULT res = PInvoke.SetCurrentProcessExplicitAppUserModelID(AppID);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -114,7 +115,8 @@ namespace PSADT.LibraryInterfaces
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE pquns)
         {
-            return PInvoke.SHQueryUserNotificationState(out pquns).ThrowOnFailure();
+            HRESULT res = PInvoke.SHQueryUserNotificationState(out pquns);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -185,7 +187,8 @@ namespace PSADT.LibraryInterfaces
             [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
             psii = new() { cbSize = (uint)Marshal.SizeOf<SHSTOCKICONINFO>() };
-            return SHGetStockIconInfo(siid, uFlags, ref psii).ThrowOnFailure();
+            HRESULT res = SHGetStockIconInfo(siid, uFlags, ref psii);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -201,7 +204,11 @@ namespace PSADT.LibraryInterfaces
         internal static HRESULT SHGetImageList(SHIL_SIZE iImageList, out IImageList ppvObj)
         {
             Guid riid = typeof(IImageList).GUID;
-            HRESULT res = PInvoke.SHGetImageList((int)iImageList, in riid, out object ppvObjLocal).ThrowOnFailure();
+            HRESULT res = PInvoke.SHGetImageList((int)iImageList, in riid, out object ppvObjLocal);
+            if (res != HRESULT.S_OK)
+            {
+                throw ExceptionUtilities.GetException(res);
+            }
             ppvObj = (IImageList)ppvObjLocal;
             return res;
         }

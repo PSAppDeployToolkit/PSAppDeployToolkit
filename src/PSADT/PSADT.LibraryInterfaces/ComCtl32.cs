@@ -1,4 +1,5 @@
-﻿using Windows.Win32;
+﻿using PSADT.LibraryInterfaces.Utilities;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -26,14 +27,15 @@ namespace PSADT.LibraryInterfaces
         internal static MESSAGEBOX_RESULT TaskDialog(HWND hwndOwner, HINSTANCE hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
         {
             int pnButtonLocal = 0;
+            HRESULT res;
             unsafe
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
                 {
-                    _ = PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal).ThrowOnFailure();
+                    res = PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
                 }
             }
-            return (MESSAGEBOX_RESULT)pnButtonLocal;
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : (MESSAGEBOX_RESULT)pnButtonLocal;
         }
     }
 }

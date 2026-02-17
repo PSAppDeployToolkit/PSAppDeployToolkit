@@ -1,4 +1,5 @@
 ﻿using System;
+using PSADT.LibraryInterfaces.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -28,7 +29,8 @@ namespace PSADT.LibraryInterfaces
         /// verification succeeded.</returns>
         internal static unsafe HRESULT WinVerifyTrust(HWND hwnd, ref Guid pgActionID, void* pWVTData)
         {
-            return ((HRESULT)PInvoke.WinVerifyTrust(hwnd, ref pgActionID, pWVTData)).ThrowOnFailure();
+            HRESULT res = (HRESULT)PInvoke.WinVerifyTrust(hwnd, ref pgActionID, pWVTData);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
     }
 }

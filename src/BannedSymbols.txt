@@ -1,2 +1,3 @@
 ﻿M:System.String.IsNullOrEmpty(System.String);Use string.IsNullOrWhiteSpace() instead.
 M:System.Runtime.InteropServices.Marshal.GetLastWin32Error();Use ExceptionUtilities.GetLastWin32Error() instead.
+M:Windows.Win32.Foundation.HRESULT.ThrowOnFailure(System.IntPtr);Use ExceptionUtilities.GetException() instead.

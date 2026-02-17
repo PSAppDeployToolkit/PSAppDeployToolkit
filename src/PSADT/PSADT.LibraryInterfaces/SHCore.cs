@@ -1,4 +1,5 @@
-﻿using Windows.Win32;
+﻿using PSADT.LibraryInterfaces.Utilities;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
@@ -21,7 +22,8 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="HRESULT"/> indicating the success or failure of the operation. A successful result indicates that the DPI values were retrieved successfully.</returns>
         internal static HRESULT GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
         {
-            return PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY).ThrowOnFailure();
+            HRESULT res = PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -34,7 +36,8 @@ namespace PSADT.LibraryInterfaces
         /// <returns>A <see cref="HRESULT"/> indicating the success or failure of the operation. A successful result indicates that the DPI values were retrieved successfully.</returns>
         internal static HRESULT GetDpiForDefaultMonitor(MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
         {
-            return GetDpiForMonitor(User32.MonitorFromPoint(new(0, 0), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY), dpiType, out dpiX, out dpiY).ThrowOnFailure();
+            HRESULT res = GetDpiForMonitor(User32.MonitorFromPoint(new(0, 0), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY), dpiType, out dpiX, out dpiY);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
     }
 }

@@ -86,7 +86,7 @@ namespace PSADT.LibraryInterfaces.Utilities
             Win32Exception win32Exception = new(unchecked((int)win32Error), !string.IsNullOrWhiteSpace(message) ? message : GetMessageForWin32Error(win32Error));
 
             // Try for an ManagedException > Win32Exception based on the WIN32_ERROR code, falling back as appripriate.
-            if (GetException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException)
+            if (TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException)
             {
                 // There was a managed exception for the HRESULT corresponding to the WIN32_ERROR code, return that instead of the Win32Exception.
                 return hrException;
@@ -117,9 +117,9 @@ namespace PSADT.LibraryInterfaces.Utilities
             {
                 // Build out the Win32Exception, then see if there's a managed exception for it, otherwise return the Win32Exception.
                 Win32Exception win32Exception = new(GetMessageForWin32Error(win32Error), ntStatusException);
-                return GetException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException ? hrException : win32Exception;
+                return TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException ? hrException : win32Exception;
             }
-            else if (GetException(HRESULT_FROM_NT(ntStatus), ntStatusException) is Exception hrException)
+            else if (TryGetManagedException(HRESULT_FROM_NT(ntStatus), ntStatusException) is Exception hrException)
             {
                 // There was no suitable Win32Exception, however there was a managed exception for the HRESULT corresponding to the NTSTATUS code.
                 return hrException;
@@ -129,6 +129,29 @@ namespace PSADT.LibraryInterfaces.Utilities
                 // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.
                 return ntStatusException;
             }
+        }
+
+        /// <summary>
+        /// Retrieves an exception that corresponds to the specified HRESULT error code.
+        /// </summary>
+        /// <remarks>If the HRESULT value indicates a Win32 error, the corresponding Win32 exception is
+        /// returned. Otherwise, the method returns the exception associated with the HRESULT value using standard
+        /// marshaling.</remarks>
+        /// <param name="hResult">The HRESULT value that represents the error condition. Must be a negative value to indicate an error.</param>
+        /// <returns>An Exception instance that represents the error condition described by the provided HRESULT value.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if hResult is non-negative, indicating that no error has occurred.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Converting to a conditional expression here makes for worse code.")]
+        internal static Exception GetException(HRESULT hResult)
+        {
+            if (hResult >= 0)
+            {
+                throw new InvalidOperationException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].");
+            }
+            if (HRESULT_FACILITY(hResult) == FACILITY_CODE.FACILITY_WIN32)
+            {
+                return GetException((WIN32_ERROR)HRESULT_CODE(hResult));
+            }
+            return Marshal.GetExceptionForHR(hResult)!;
         }
 
         /// <summary>
@@ -168,6 +191,30 @@ namespace PSADT.LibraryInterfaces.Utilities
         }
 
         /// <summary>
+        /// Extracts the facility code from the specified HRESULT value.
+        /// </summary>
+        /// <remarks>This method shifts the HRESULT value to the right by 16 bits and masks it to obtain
+        /// the facility code. It is useful for determining the source of an error represented by the HRESULT.</remarks>
+        /// <param name="hResult">The HRESULT value from which to extract the facility code. This value must be a valid HRESULT.</param>
+        /// <returns>The facility code extracted from the HRESULT value, represented as a FACILITY_CODE.</returns>
+        internal static FACILITY_CODE HRESULT_FACILITY(HRESULT hResult)
+        {
+            return (FACILITY_CODE)(((uint)hResult >> 16) & 0x1FFFu);
+        }
+
+        /// <summary>
+        /// Extracts the code portion from the specified HRESULT value.
+        /// </summary>
+        /// <remarks>This method is typically used to isolate the error or status code from an HRESULT
+        /// value, which is commonly used in error handling scenarios.</remarks>
+        /// <param name="hResult">The HRESULT value from which to extract the code.</param>
+        /// <returns>A 32-bit unsigned integer representing the code portion of the HRESULT.</returns>
+        internal static uint HRESULT_CODE(HRESULT hResult)
+        {
+            return unchecked((uint)hResult & 0xFFFFu);
+        }
+
+        /// <summary>
         /// Retrieves the error message associated with a specified Windows error code.
         /// </summary>
         /// <remarks>This method uses the Win32Exception class to obtain the error message, ensuring that
@@ -193,7 +240,7 @@ namespace PSADT.LibraryInterfaces.Utilities
         /// exception.</param>
         /// <returns>An exception instance that represents the specified HRESULT value, or null if no suitable exception can be
         /// created.</returns>
-        private static Exception? GetException(HRESULT hResult, Exception innerException)
+        private static Exception? TryGetManagedException(HRESULT hResult, Exception innerException)
         {
             // Return early if there's no suitable exception to get for the HRESULT value.
             if (Marshal.GetExceptionForHR(hResult) is not Exception hrException || hrException is COMException)
