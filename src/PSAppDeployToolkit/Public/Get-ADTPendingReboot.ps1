@@ -74,7 +74,6 @@ function Get-ADTPendingReboot
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
-        $PendingFileRenameOperations = [System.Collections.Generic.List[System.String]]::new()
         $HostName = [System.Net.Dns]::GetHostName()
     }
 
@@ -95,7 +94,7 @@ function Get-ADTPendingReboot
                 $IsAppVRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
 
                 # Get the value of PendingFileRenameOperations.
-                $IsFileRenameRebootPending = !!([String[]]$PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations -ErrorAction Ignore)
+                $IsFileRenameRebootPending = !!([System.String[]]$PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations -ErrorAction Ignore)
 
                 # Determine SCCM 2012 Client reboot pending status.
                 $IsSCCMClientRebootPending = if ((Get-CimInstance -Namespace root -ClassName __NAMESPACE -Verbose:$false).Name.Contains('ccm'))
