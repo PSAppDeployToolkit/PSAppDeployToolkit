@@ -446,6 +446,44 @@
                         />
                 </ikw:SimpleStackPanel>
 
+                <!-- List Selection Panel - Default to Collapsed -->
+                <ikw:SimpleStackPanel
+                    x:Name="ListSelectionStackPanel"
+                    Orientation="Vertical"
+                    >
+                    <Separator Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}" />
+
+                    <DockPanel
+                        x:Name="ListSelectionDockPanel"
+                        Margin="16"
+                        >
+
+                        <ui:FontIcon
+                            DockPanel.Dock="Left"
+                            FontSize="18"
+                            Glyph="&#xE8FD;"
+                            />
+
+                        <TextBlock
+                            x:Name="ListSelectionHeadingTextBlock"
+                            DockPanel.Dock="Left"
+                            Margin="16,0,16,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Text="Select an item:"
+                            TextWrapping="WrapWithOverflow"
+                            />
+
+                        <ComboBox
+                            x:Name="ListSelectionComboBox"
+                            Width="248"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="List Selection ComboBox"
+                            />
+                    </DockPanel>
+                </ikw:SimpleStackPanel>
+
                 <Separator
                     x:Name="CountdownDeferPanelSeparator"
                     Background="{DynamicResource {x:Static ui:ThemeKeys.SurfaceStrokeColorFlyoutBrushKey}}"

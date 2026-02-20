@@ -103,13 +103,35 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        internal static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        internal static CustomDialogResult ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
             if (options.MinimizeWindows)
             {
                 ShellUtilities.MinimizeAllWindows();
             }
-            string res = ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+            CustomDialogResult res = ShowModalDialog<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.RestoreAllWindows();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Displays a list selection dialog with the specified style and options, and returns the result.
+        /// </summary>
+        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.ListSelectionDialog"/>. The dialog's
+        /// behavior and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref name="options"/>.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options to configure the dialog, such as title, message, buttons, and list items.</param>
+        /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
+        internal static ListSelectionDialogResult ShowListSelectionDialog(DialogStyle dialogStyle, ListSelectionDialogOptions options)
+        {
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.MinimizeAllWindows();
+            }
+            ListSelectionDialogResult res = ShowModalDialog<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
                 ShellUtilities.RestoreAllWindows();
@@ -300,7 +322,7 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button clicked by the user.</returns>
         internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
         {
-            return (DialogBoxResult)ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : 0), Timeout);
+            return DialogBoxResult.FromMessageBoxResult(ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : 0), Timeout));
         }
 
         /// <summary>
@@ -440,6 +462,7 @@ namespace PSADT.UserInterface
                 { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, static (options, state) => new Interfaces.Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, static (options, state) => new Interfaces.Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
                 { DialogType.ProgressDialog, static (options, state) => new Interfaces.Classic.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, static (options, state) => new Interfaces.Classic.RestartDialog((RestartDialogOptions)options) },
             })},
@@ -448,6 +471,7 @@ namespace PSADT.UserInterface
                 { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, static (options, state) => new Interfaces.Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, static (options, state) => new Interfaces.Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
                 { DialogType.ProgressDialog, static (options, state) => new Interfaces.Fluent.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, static (options, state) => new Interfaces.Fluent.RestartDialog((RestartDialogOptions)options) },
             })},

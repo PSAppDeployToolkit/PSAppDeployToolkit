@@ -323,17 +323,31 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Displays a custom dialog with the specified style and options, and returns the user's input as a string.
+        /// Displays a custom dialog with the specified style and options, and returns the result as a string.
         /// </summary>
-        /// <remarks>Use this method to display a modal input dialog to the user. The dialog's behavior
+        /// <remarks>Use this method to display a modal custom dialog to the user. The dialog's behavior
         /// and appearance are determined by the provided <paramref name="dialogStyle"/> and <paramref
         /// name="options"/>.</remarks>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and input settings.</param>
-        /// <returns>The user's input as a string, or <see langword="null"/> if the dialog is canceled.</returns>
-        public string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
+        public CustomDialogResult ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
-            return ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+            return ShowModalDialog<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
+        }
+
+        /// <summary>
+        /// Displays a list selection dialog to the user and returns the result of the interaction.
+        /// </summary>
+        /// <remarks>Use this method to present a modal list selection dialog to the user. The dialog's behavior
+        /// and appearance can be customized using the <paramref name="dialogStyle"/> and <paramref name="options"/>
+        /// parameters.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options to configure the list selection dialog, such as the message, buttons, and list items.</param>
+        /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
+        public ListSelectionDialogResult ShowListSelectionDialog(DialogStyle dialogStyle, ListSelectionDialogOptions options)
+        {
+            return ShowModalDialog<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
         }
 
         /// <summary>
@@ -697,14 +711,14 @@ namespace PSADT.ClientServer
         /// The response format uses a single byte discriminator:
         /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or 
         /// <see cref="ResponseMarker.Error"/> (followed by serialized exception).</remarks>
-        /// <typeparam name="TPayload">The payload type, which must implement <see cref="IPayload"/>.</typeparam>
+        /// <typeparam name="TPayload">The payload type, which must implement <see cref="IClientServerPayload"/>.</typeparam>
         /// <typeparam name="TResult">The expected return type from the client.</typeparam>
         /// <param name="command">The command to execute.</param>
         /// <param name="payload">The payload data for the command.</param>
         /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
         /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
-        private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IPayload
+        private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IClientServerPayload
         {
             // Don't invoke anything if the object is disposed.
             if (_disposed)

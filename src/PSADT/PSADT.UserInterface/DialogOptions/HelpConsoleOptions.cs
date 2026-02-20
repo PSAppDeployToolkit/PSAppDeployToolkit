@@ -21,7 +21,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="options"></param>
         public HelpConsoleOptions(Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["ExecutionPolicy"] is ExecutionPolicy executionPolicy ? executionPolicy : (ExecutionPolicy)(-1),
+            (options ?? throw new ArgumentNullException(nameof(options)))["ExecutionPolicy"] as ExecutionPolicy? ?? (ExecutionPolicy)(-1),
             options["Modules"] is IReadOnlyList<ModuleSpecification> modules ? new ReadOnlyCollection<Hashtable>([.. modules.Select(static m => new Hashtable { { "ModuleName", m.Name }, { "ModuleVersion", m.Version?.ToString() }, { "Guid", m.Guid } })]) : null!)
         {
         }
@@ -43,7 +43,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(moduleData), "Modules value is null or invalid.");
             }
-
             ExecutionPolicy = executionPolicy;
             ModuleData = moduleData;
         }
@@ -68,6 +67,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <remarks>This collection is read-only and contains elements of type <see cref="Hashtable"/>.</remarks>
         [DataMember]
-        private ReadOnlyCollection<Hashtable> ModuleData { get; set; }
+        private readonly ReadOnlyCollection<Hashtable> ModuleData;
     }
 }

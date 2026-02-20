@@ -8,7 +8,7 @@ namespace PSADT.ClientServer.Payloads
     /// Represents a log message sent from the client to the server.
     /// </summary>
     [DataContract]
-    internal sealed record LogMessagePayload : IPayload
+    internal sealed record LogMessagePayload : IClientServerPayload
     {
         /// <summary>
         /// The log message text.

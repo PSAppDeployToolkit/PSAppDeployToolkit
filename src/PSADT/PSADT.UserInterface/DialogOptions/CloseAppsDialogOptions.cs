@@ -18,29 +18,29 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="deploymentType"></param>
         /// <param name="options"></param>
         public CloseAppsDialogOptions(DeploymentType deploymentType, Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
-            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
-            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
-            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
-            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
-            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
-            options["Language"] is CultureInfo language ? language : null!,
-            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
-            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
-            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
-            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
-            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
-            options["Strings"] is Hashtable strings && strings.Count > 0 ? new CloseAppsDialogStrings(strings, deploymentType) : null!,
-            options["DeferralsRemaining"] is uint deferralsRemaining ? deferralsRemaining : null,
-            options["DeferralDeadline"] is DateTime deferralDeadline ? deferralDeadline : null,
-            options["UnlimitedDeferrals"] is bool unlimitedDeferrals && unlimitedDeferrals,
-            options["ContinueOnProcessClosure"] is bool continueOnProcessClosure && continueOnProcessClosure,
-            options["CountdownDuration"] is TimeSpan countdownDuration ? countdownDuration : null,
-            options["ForcedCountdown"] is bool forcedCountdown && forcedCountdown,
-            options["HideCloseButton"] is bool hideCloseButton && hideCloseButton,
-            options["DialogAllowMinimize"] is bool dialogAllowMinimize && dialogAllowMinimize,
-            options["CustomMessageText"] is string customMessageText && !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null)
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
+            options["Subtitle"] as string ?? null!,
+            options["AppIconImage"] as string ?? null!,
+            options["AppIconDarkImage"] as string ?? null!,
+            options["AppBannerImage"] as string ?? null!,
+            options["AppTaskbarIconImage"] as string,
+            options["DialogTopMost"] as bool? ?? false,
+            options["Language"] as CultureInfo ?? null!,
+            options["FluentAccentColor"] as int?,
+            options["DialogPosition"] as DialogPosition?,
+            options["DialogAllowMove"] as bool?,
+            options["DialogExpiryDuration"] as TimeSpan?,
+            options["DialogPersistInterval"] as TimeSpan?,
+            options["Strings"] as Hashtable is { Count: > 0 } strings ? new CloseAppsDialogStrings(strings, deploymentType) : null!,
+            options["DeferralsRemaining"] as uint?,
+            options["DeferralDeadline"] as DateTime?,
+            options["UnlimitedDeferrals"] as bool? ?? false,
+            options["ContinueOnProcessClosure"] as bool? ?? false,
+            options["CountdownDuration"] as TimeSpan?,
+            options["ForcedCountdown"] as bool? ?? false,
+            options["HideCloseButton"] as bool? ?? false,
+            options["DialogAllowMinimize"] as bool? ?? false,
+            options["CustomMessageText"] as string is { Length: > 0 } customMessageText ? customMessageText : null)
         {
         }
 
@@ -90,7 +90,7 @@ namespace PSADT.UserInterface.DialogOptions
             ForcedCountdown = forcedCountdown;
             HideCloseButton = hideCloseButton;
             DialogAllowMinimize = dialogAllowMinimize;
-            CustomMessageText = customMessageText;
+            CustomMessageText = !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
         }
 
 
@@ -212,18 +212,18 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="deploymentType"></param>
                 /// <exception cref="ArgumentNullException"></exception>
                 internal CloseAppsDialogClassicStrings(Hashtable strings, DeploymentType deploymentType) : this(
-                    strings["WelcomeMessage"] is Hashtable welcomeMessageTable && welcomeMessageTable[deploymentType.ToString()] is string welcomeMessage ? welcomeMessage : string.Empty,
-                    strings["CloseAppsMessage"] is Hashtable closeAppsMessageTable && closeAppsMessageTable[deploymentType.ToString()] is string closeAppsMessage ? closeAppsMessage : string.Empty,
-                    strings["ExpiryMessage"] is Hashtable expiryMessageTable && expiryMessageTable[deploymentType.ToString()] is string expiryMessage ? expiryMessage : string.Empty,
-                    strings["DeferralsRemaining"] is string deferralsRemaining ? deferralsRemaining : string.Empty,
-                    strings["DeferralDeadline"] is string deferralDeadline ? deferralDeadline : string.Empty,
-                    strings["ExpiryWarning"] is string expiryWarning ? expiryWarning : string.Empty,
-                    strings["CountdownDefer"] is Hashtable countdownDeferTable && countdownDeferTable[deploymentType.ToString()] is string countdownDefer ? countdownDefer : string.Empty,
-                    strings["CountdownClose"] is Hashtable countdownCloseTable && countdownCloseTable[deploymentType.ToString()] is string countdownClose ? countdownClose : string.Empty,
-                    strings["ButtonClose"] is string buttonClose ? buttonClose : string.Empty,
-                    strings["ButtonDefer"] is string buttonDefer ? buttonDefer : string.Empty,
-                    strings["ButtonContinue"] is string buttonContinue ? buttonContinue : string.Empty,
-                    strings["ButtonContinueTooltip"] is string buttonContinueTooltip ? buttonContinueTooltip : string.Empty)
+                    ((Hashtable?)strings["WelcomeMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    ((Hashtable?)strings["CloseAppsMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    ((Hashtable?)strings["ExpiryMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    strings["DeferralsRemaining"] as string ?? null!,
+                    strings["DeferralDeadline"] as string ?? null!,
+                    strings["ExpiryWarning"] as string ?? null!,
+                    ((Hashtable?)strings["CountdownDefer"])?[deploymentType.ToString()] as string ?? null!,
+                    ((Hashtable?)strings["CountdownClose"])?[deploymentType.ToString()] as string ?? null!,
+                    strings["ButtonClose"] as string ?? null!,
+                    strings["ButtonDefer"] as string ?? null!,
+                    strings["ButtonContinue"] as string ?? null!,
+                    strings["ButtonContinueTooltip"] as string ?? null!)
                 {
                 }
 
@@ -397,14 +397,14 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="deploymentType"></param>
                 /// <exception cref="ArgumentNullException"></exception>
                 internal CloseAppsDialogFluentStrings(Hashtable strings, DeploymentType deploymentType) : this(
-                    strings["DialogMessage"] is Hashtable dialogMessageTable && dialogMessageTable[deploymentType.ToString()] is string dialogMessage ? dialogMessage : string.Empty,
-                    strings["DialogMessageNoProcesses"] is Hashtable dialogMessageNoProcessesTable && dialogMessageNoProcessesTable[deploymentType.ToString()] is string dialogMessageNoProcesses ? dialogMessageNoProcesses : string.Empty,
-                    strings["AutomaticStartCountdown"] is string automaticStartCountdown ? automaticStartCountdown : string.Empty,
-                    strings["DeferralsRemaining"] is string deferralsRemaining ? deferralsRemaining : string.Empty,
-                    strings["DeferralDeadline"] is string deferralDeadline ? deferralDeadline : string.Empty,
-                    strings["ButtonLeftText"] is Hashtable buttonLeftTextTable && buttonLeftTextTable[deploymentType.ToString()] is string buttonLeftText ? buttonLeftText : string.Empty,
-                    strings["ButtonRightText"] is string buttonRightText ? buttonRightText : string.Empty,
-                    strings["ButtonLeftNoProcessesText"] is Hashtable buttonLeftNoProcessesTextTable && buttonLeftNoProcessesTextTable[deploymentType.ToString()] is string buttonLeftNoProcessesText ? buttonLeftNoProcessesText : string.Empty)
+                    ((Hashtable?)strings["DialogMessage"])?[deploymentType.ToString()] as string ?? null!,
+                    ((Hashtable?)strings["DialogMessageNoProcesses"])?[deploymentType.ToString()] as string ?? null!,
+                    strings["AutomaticStartCountdown"] as string ?? null!,
+                    strings["DeferralsRemaining"] as string ?? null!,
+                    strings["DeferralDeadline"] as string ?? null!,
+                    ((Hashtable?)strings["ButtonLeftText"])?[deploymentType.ToString()] as string ?? null!,
+                    strings["ButtonRightText"] as string ?? null!,
+                    ((Hashtable?)strings["ButtonLeftNoProcessesText"])?[deploymentType.ToString()] as string ?? null!)
                 {
                 }
 

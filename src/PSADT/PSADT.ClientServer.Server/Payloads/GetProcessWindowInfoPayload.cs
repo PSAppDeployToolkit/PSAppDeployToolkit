@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the GetProcessWindowInfo command.
     /// </summary>
     [DataContract]
-    internal sealed record GetProcessWindowInfoPayload : IPayload
+    internal sealed record GetProcessWindowInfoPayload : IClientServerPayload
     {
         /// <summary>
         /// The window info options.

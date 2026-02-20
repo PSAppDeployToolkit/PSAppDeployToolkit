@@ -7,12 +7,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <summary>
     /// Abortable classic dialog form.
     /// </summary>
-    internal partial class InputDialog : ClassicDialog, IModalDialog
+    internal partial class InputDialog : CustomDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InputDialog"/> class.
         /// </summary>
-        internal InputDialog() : this(default!)
+        internal InputDialog() : this(null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -24,7 +24,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Initializes a new instance of the <see cref="InputDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        internal InputDialog(InputDialogOptions options) : base(options)
+        internal InputDialog(InputDialogOptions options) : base(options, null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {

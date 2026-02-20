@@ -35,12 +35,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if any required key in <paramref name="options"/> is missing, null, or contains an invalid value.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the file specified by the <c>TrayIcon</c> key does not exist.</exception>
         public BalloonTipOptions(Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["TrayTitle"] is string trayTitle ? trayTitle : string.Empty,
-            options["TrayIcon"] is string trayIcon ? trayIcon : string.Empty,
-            options["BalloonTipTitle"] is string balloonTipTitle ? balloonTipTitle : string.Empty,
-            options["BalloonTipText"] is string balloonTipText ? balloonTipText : string.Empty,
-            options["BalloonTipIcon"] is ToolTipIcon balloonTipIcon ? balloonTipIcon : (ToolTipIcon)(-1),
-            options["BalloonTipTime"] is uint balloonTipTime ? balloonTipTime : uint.MaxValue)
+            (options ?? throw new ArgumentNullException(nameof(options)))["TrayTitle"] as string ?? null!,
+            options["TrayIcon"] as string ?? null!,
+            options["BalloonTipTitle"] as string ?? null!,
+            options["BalloonTipText"] as string ?? null!,
+            options["BalloonTipIcon"] as ToolTipIcon? ?? (ToolTipIcon)(-1),
+            options["BalloonTipTime"] as uint? ?? uint.MaxValue)
         {
         }
 

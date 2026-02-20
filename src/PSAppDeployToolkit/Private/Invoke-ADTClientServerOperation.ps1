@@ -351,6 +351,11 @@ function Private:Invoke-ADTClientServerOperation
                         [PSADT.UserInterface.DialogResults.CloseAppsDialogResult]
                         break
                     }
+                    CustomDialog
+                    {
+                        [PSADT.UserInterface.DialogResults.CustomDialogResult]
+                        break
+                    }
                     DialogBox
                     {
                         [PSADT.UserInterface.DialogResults.DialogBoxResult]
@@ -366,9 +371,9 @@ function Private:Invoke-ADTClientServerOperation
                         [PSADT.UserInterface.DialogResults.InputDialogResult]
                         break
                     }
-                    CustomDialog
+                    ListSelectionDialog
                     {
-                        [System.String]
+                        [PSADT.UserInterface.DialogResults.ListSelectionDialogResult]
                         break
                     }
                     RestartDialog

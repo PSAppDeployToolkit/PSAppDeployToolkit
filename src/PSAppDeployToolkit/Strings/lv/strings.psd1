@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Izvēlieties vienumu:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Notiek instalēšana. Lūdzu, uzgaidiet…'

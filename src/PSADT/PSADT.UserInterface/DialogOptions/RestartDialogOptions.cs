@@ -18,23 +18,23 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="deploymentType"></param>
         /// <param name="options"></param>
         public RestartDialogOptions(DeploymentType deploymentType, Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
-            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
-            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
-            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
-            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
-            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
-            options["Language"] is CultureInfo language ? language : null!,
-            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
-            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
-            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
-            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
-            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
-            options["Strings"] is Hashtable strings && strings.Count > 0 ? new RestartDialogStrings(strings, deploymentType) : null!,
-            options["CountdownDuration"] is TimeSpan countdownDuration ? countdownDuration : null,
-            options["CountdownNoMinimizeDuration"] is TimeSpan countdownNoMinimizeDuration ? countdownNoMinimizeDuration : null,
-            options["CustomMessageText"] is string customMessageText ? customMessageText : null)
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
+            options["Subtitle"] as string ?? null!,
+            options["AppIconImage"] as string ?? null!,
+            options["AppIconDarkImage"] as string ?? null!,
+            options["AppBannerImage"] as string ?? null!,
+            options["AppTaskbarIconImage"] as string,
+            options["DialogTopMost"] as bool? ?? false,
+            options["Language"] as CultureInfo ?? null!,
+            options["FluentAccentColor"] as int?,
+            options["DialogPosition"] as DialogPosition?,
+            options["DialogAllowMove"] as bool?,
+            options["DialogExpiryDuration"] as TimeSpan?,
+            options["DialogPersistInterval"] as TimeSpan?,
+            options["Strings"] as Hashtable is { Count: > 0 } strings ? new RestartDialogStrings(strings, deploymentType) : null!,
+            options["CountdownDuration"] as TimeSpan?,
+            options["CountdownNoMinimizeDuration"] as TimeSpan?,
+            options["CustomMessageText"] as string)
         {
         }
 
@@ -71,7 +71,7 @@ namespace PSADT.UserInterface.DialogOptions
             Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
             CountdownDuration = countdownDuration;
             CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
-            CustomMessageText = customMessageText;
+            CustomMessageText = !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
         }
 
         /// <summary>
@@ -112,13 +112,13 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="deploymentType"></param>
             /// <exception cref="ArgumentNullException"></exception>
             internal RestartDialogStrings(Hashtable strings, DeploymentType deploymentType) : this(
-                strings["Title"] is string title ? title : string.Empty,
-                strings["Message"] is Hashtable messageTable && messageTable[deploymentType.ToString()] is string message ? message : string.Empty,
-                strings["MessageTime"] is string messageTime ? messageTime : string.Empty,
-                strings["MessageRestart"] is string messageRestart ? messageRestart : string.Empty,
-                strings["TimeRemaining"] is string timeRemaining ? timeRemaining : string.Empty,
-                strings["ButtonRestartNow"] is string buttonRestartNow ? buttonRestartNow : string.Empty,
-                strings["ButtonRestartLater"] is string buttonRestartLater ? buttonRestartLater : string.Empty)
+                strings["Title"] as string ?? null!,
+                ((Hashtable?)strings["Message"])?[deploymentType.ToString()] as string ?? null!,
+                strings["MessageTime"] as string ?? null!,
+                strings["MessageRestart"] as string ?? null!,
+                strings["TimeRemaining"] as string ?? null!,
+                strings["ButtonRestartNow"] as string ?? null!,
+                strings["ButtonRestartLater"] as string ?? null!)
             {
             }
 
@@ -166,7 +166,6 @@ namespace PSADT.UserInterface.DialogOptions
                 {
                     throw new ArgumentNullException(nameof(buttonRestartLater), "ButtonRestartLater value is null or invalid.");
                 }
-
                 Title = title;
                 Message = message;
                 MessageTime = messageTime;

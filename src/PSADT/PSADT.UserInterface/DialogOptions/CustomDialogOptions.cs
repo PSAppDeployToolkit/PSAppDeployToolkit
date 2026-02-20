@@ -9,6 +9,8 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for the CustomDialog.
     /// </summary>
     [DataContract]
+    [KnownType(typeof(InputDialogOptions))]
+    [KnownType(typeof(ListSelectionDialogOptions))]
     public record CustomDialogOptions : BaseDialogOptions
     {
         /// <summary>
@@ -16,26 +18,26 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         /// <param name="options"></param>
         public CustomDialogOptions(Hashtable options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] is string appTitle ? appTitle : string.Empty,
-            options["Subtitle"] is string subtitle ? subtitle : string.Empty,
-            options["AppIconImage"] is string appIconImage ? appIconImage : string.Empty,
-            options["AppIconDarkImage"] is string appIconDarkImage ? appIconDarkImage : string.Empty,
-            options["AppBannerImage"] is string appBannerImage ? appBannerImage : string.Empty,
-            options["AppTaskbarIconImage"] is string appTaskbarIconImage ? appTaskbarIconImage : null,
-            options["DialogTopMost"] is bool dialogTopMost && dialogTopMost,
-            options["Language"] is CultureInfo language ? language : null!,
-            options["FluentAccentColor"] is int fluentAccentColor ? fluentAccentColor : null,
-            options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : null,
-            options["DialogAllowMove"] is bool dialogAllowMove ? dialogAllowMove : null,
-            options["DialogExpiryDuration"] is TimeSpan dialogExpiryDuration ? dialogExpiryDuration : null,
-            options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null,
-            options["MessageText"] is string messageText ? messageText : string.Empty,
-            options["MessageAlignment"] is DialogMessageAlignment messageAlignment ? messageAlignment : null,
-            options["ButtonLeftText"] is string buttonLeftText ? buttonLeftText : null,
-            options["ButtonMiddleText"] is string buttonMiddleText ? buttonMiddleText : null,
-            options["ButtonRightText"] is string buttonRightText ? buttonRightText : null,
-            options["Icon"] is DialogSystemIcon icon ? icon : null,
-            options["MinimizeWindows"] is bool minimizeWindows && minimizeWindows)
+            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
+            options["Subtitle"] as string ?? null!,
+            options["AppIconImage"] as string ?? null!,
+            options["AppIconDarkImage"] as string ?? null!,
+            options["AppBannerImage"] as string ?? null!,
+            options["AppTaskbarIconImage"] as string,
+            options["DialogTopMost"] as bool? ?? false,
+            options["Language"] as CultureInfo ?? null!,
+            options["FluentAccentColor"] as int?,
+            options["DialogPosition"] as DialogPosition?,
+            options["DialogAllowMove"] as bool?,
+            options["DialogExpiryDuration"] as TimeSpan?,
+            options["DialogPersistInterval"] as TimeSpan?,
+            options["MessageText"] as string ?? null!,
+            options["MessageAlignment"] as DialogMessageAlignment?,
+            options["ButtonLeftText"] as string,
+            options["ButtonMiddleText"] as string,
+            options["ButtonRightText"] as string,
+            options["Icon"] as DialogSystemIcon?,
+            options["MinimizeWindows"] as bool? ?? false)
         {
         }
 
@@ -74,6 +76,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="messageText"/> is <see langword="null"/> or empty.</exception>
         protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
+            // MessageText is required and cannot be null or whitespace.
             if (string.IsNullOrWhiteSpace(messageText))
             {
                 throw new ArgumentNullException(nameof(messageText), "MessageText value is null or invalid.");
@@ -85,11 +88,12 @@ namespace PSADT.UserInterface.DialogOptions
                 throw new ArgumentException("At least one button must be defined.");
             }
 
+            // Assign remaining properties.
             MessageText = messageText;
             MessageAlignment = messageAlignment;
-            ButtonLeftText = buttonLeftText;
-            ButtonMiddleText = buttonMiddleText;
-            ButtonRightText = buttonRightText;
+            ButtonLeftText = !string.IsNullOrWhiteSpace(buttonLeftText) ? buttonLeftText : null;
+            ButtonMiddleText = !string.IsNullOrWhiteSpace(buttonMiddleText) ? buttonMiddleText : null;
+            ButtonRightText = !string.IsNullOrWhiteSpace(buttonRightText) ? buttonRightText : null;
             Icon = icon;
             MinimizeWindows = minimizeWindows;
         }

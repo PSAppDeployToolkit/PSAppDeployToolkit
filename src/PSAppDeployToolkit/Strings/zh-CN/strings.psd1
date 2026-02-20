@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - 应用程序卸载'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = '选择一个项目:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = '正在安装。请稍候……'

@@ -52,6 +52,9 @@
             Uninstall = '{Toolkit\CompanyName} - Деинсталляция приложений'
         }
     }
+    ListSelectionPrompt = @{
+        ListSelectionMessage = 'Выберите элемент:'
+    }
     ProgressPrompt = @{
         Message = @{
             Install = 'Идет установка. Пожалуйста, подождите…'

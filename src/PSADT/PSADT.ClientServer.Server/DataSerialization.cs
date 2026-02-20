@@ -358,14 +358,19 @@ namespace PSADT.ClientServer
                 typeof(UserInterface.DialogOptions.DialogBoxOptions),
                 typeof(UserInterface.DialogOptions.HelpConsoleOptions),
                 typeof(UserInterface.DialogOptions.InputDialogOptions),
+                typeof(UserInterface.DialogOptions.ListSelectionDialogOptions),
+                typeof(UserInterface.DialogOptions.ListSelectionDialogOptions.ListSelectionDialogStrings),
                 typeof(UserInterface.DialogOptions.ProgressDialogOptions),
                 typeof(UserInterface.DialogOptions.RestartDialogOptions),
                 typeof(UserInterface.DialogOptions.RestartDialogOptions.RestartDialogStrings),
 
                 // Dialog result types
                 typeof(UserInterface.DialogResults.CloseAppsDialogResult),
+                typeof(UserInterface.DialogResults.CustomDialogDerivative),
+                typeof(UserInterface.DialogResults.CustomDialogResult),
                 typeof(UserInterface.DialogResults.DialogBoxResult),
                 typeof(UserInterface.DialogResults.InputDialogResult),
+                typeof(UserInterface.DialogResults.ListSelectionDialogResult),
 
                 // Process and window types
                 typeof(ProcessManagement.ProcessDefinition),

@@ -52,6 +52,12 @@ function Show-ADTInstallationPrompt
     .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
 
+    .PARAMETER ListItems
+        An array of strings to display as a dropdown list for user selection. When specified, a ListSelectionDialog is shown with a ComboBox containing these items. The selected item is included in the returned ListSelectionDialogResult object.
+
+    .PARAMETER DefaultIndex
+        The default selected item index for the dropdown list. This value must be equal or greater than zero, and less than the count of ListItems.
+
     .PARAMETER NoExitOnTimeout
         Specifies whether to not exit the script if the UI times out.
 
@@ -99,6 +105,10 @@ function Show-ADTInstallationPrompt
 
     .EXAMPLE
         Show-ADTInstallationPrompt -RequestInput -DefaultValue 'XXXX' -Message 'Please type in your favourite beer.' -ButtonRightText 'Submit'
+
+    .EXAMPLE
+        $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -DefaultIndex 0 -ButtonRightText 'OK'
+        Write-ADTLogEntry "User selected: $($result.SelectedItem)"
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -151,11 +161,20 @@ function Show-ADTInstallationPrompt
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogSystemIcon]$Icon,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ListItems,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.Nullable[System.UInt32]]$DefaultIndex = 0,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowCustomDialog')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShowListSelectionDialog')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
@@ -240,6 +259,19 @@ function Show-ADTInstallationPrompt
                 ErrorId = 'SecureInputWithoutActiveSession'
                 TargetObject = $PSBoundParameters
                 RecommendedAction = "Please ensure there is an active deployment session and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
+        # Validate list selection default item.
+        if ($PSCmdlet.ParameterSetName -eq 'ShowListSelectionDialog' -and ($DefaultIndex -ge $ListItems.Count))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentOutOfRangeException]::new('The default index is out of range for the provided ListItems array.', $null)
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'DefaultIndexOutOfBoundsError'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = 'Please ensure [-DefaultIndex] is less than the count of items provided to [-ListItems] and try again.'
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
@@ -341,6 +373,10 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.InitialInputText = $DefaultValue
                 }
+                if ($SecureInput)
+                {
+                    $dialogOptions.Add('SecureInput', !!$SecureInput)
+                }
                 if ($ButtonRightText)
                 {
                     $dialogOptions.Add('ButtonRightText', $ButtonRightText)
@@ -369,13 +405,19 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
-                if ($SecureInput)
+                if ($ListItems)
                 {
-                    $dialogOptions.Add('SecureInput', !!$SecureInput)
+                    $dialogOptions.Add('ListItems', $ListItems)
+                    $dialogOptions.Add('SelectedIndex', [System.Int32]$DefaultIndex)
+                    $dialogOptions.Add('Strings', $adtStrings.ListSelectionPrompt)
                 }
                 $dialogOptions = if ($RequestInput)
                 {
                     [PSADT.UserInterface.DialogOptions.InputDialogOptions]$dialogOptions
+                }
+                elseif ($ListItems)
+                {
+                    [PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]$dialogOptions
                 }
                 else
                 {

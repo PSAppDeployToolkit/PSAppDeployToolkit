@@ -43,14 +43,25 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Initializes a new instance of FluentDialog
+        /// Initializes a new instance of the FluentDialog class with the specified dialog options, result, and optional
+        /// settings for custom messaging and countdown behavior.
         /// </summary>
-        /// <param name="options">Mandatory options needed to construct the window.</param>
-        /// <param name="customMessageText"></param>
-        /// <param name="countdownDuration"></param>
-        /// <param name="countdownWarningDuration"></param>
-        /// <param name="countdownStopwatch"></param>
-        private protected FluentDialog(BaseDialogOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
+        /// <remarks>This constructor is intended for use by derived dialog classes to provide flexible
+        /// configuration of dialog appearance and behavior. Most dialog features are initialized to be hidden by
+        /// default; derived classes should enable the features they require. The countdown timer and custom message are
+        /// only shown if their respective parameters are provided.</remarks>
+        /// <param name="options">The options that configure the dialog's appearance, language, accent color, positioning, accessibility, and
+        /// icon settings.</param>
+        /// <param name="dialogResult">The result value to be returned when the dialog is closed, typically indicating the user's selection or
+        /// action.</param>
+        /// <param name="customMessageText">An optional custom message to display in the dialog. May include hyperlinks and is shown if provided.</param>
+        /// <param name="countdownDuration">An optional duration for a countdown timer. If specified, the dialog will display a countdown and may close
+        /// automatically when the timer expires.</param>
+        /// <param name="countdownWarningDuration">An optional duration for a warning before the countdown expires, indicating the impending closure of the
+        /// dialog.</param>
+        /// <param name="countdownStopwatch">An optional Stopwatch instance used to track the countdown duration. If not provided, a new Stopwatch is
+        /// created.</param>
+        private protected FluentDialog(BaseDialogOptions options, IDialogResult dialogResult, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
             // Initialize the window
             InitializeComponent();
@@ -111,6 +122,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed;
+            ListSelectionStackPanel.Visibility = Visibility.Collapsed;
             CountdownDeferPanelSeparator.Visibility = Visibility.Collapsed;
             DeferRemainingStackPanel.Visibility = Visibility.Collapsed;
             DeferDeadlineStackPanel.Visibility = Visibility.Collapsed;
@@ -160,6 +172,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
             SizeChanged += FluentDialog_SizeChanged;
             Loaded += FluentDialog_Loaded;
+
+            // Set the initial dialog result to the provided value, which may be updated by button clicks or timers.
+            DialogResult = dialogResult;
         }
 
         /// <summary>
@@ -929,25 +944,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// The result of the dialog interaction.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1061:Do not hide base class methods", Justification = "The redefinition of this field is by design.")]
-        public new virtual object DialogResult
-        {
-            get => _dialogResult;
-            private protected set
-            {
-                _dialogResult = value;
-                OnPropertyChanged();
-            }
-        }
+        public new virtual IDialogResult DialogResult { get; private protected set { field = value; OnPropertyChanged(); } }
 
         /// <summary>
         /// An optional custom message to display.
         /// </summary>
         protected readonly string? _customMessageText;
-
-        /// <summary>
-        /// The cancellation token source for the dialog.
-        /// </summary>
-        private object _dialogResult = "Timeout";
 
         /// <summary>
         /// Whether this window has been disposed.
