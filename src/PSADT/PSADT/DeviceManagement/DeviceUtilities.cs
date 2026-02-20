@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
 using PSADT.LibraryInterfaces.Extensions;
+using PSADT.LibraryInterfaces.SafeHandles;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -107,67 +108,6 @@ namespace PSADT.DeviceManagement
         }
 
         /// <summary>
-        /// Retrieves the chassis type of the system based on SMBIOS Type 3 data.
-        /// </summary>
-        /// <remarks>This method parses the system firmware table to extract the chassis type information
-        /// as defined by the SMBIOS specification. The chassis type is represented as an enumeration of <see
-        /// cref="SystemChassisType"/> values. <para> If the chassis type cannot be determined or is outside the valid
-        /// range specified by the SMBIOS, the method returns <see cref="SystemChassisType.Other"/> or <see
-        /// cref="SystemChassisType.Unknown"/>. </para></remarks>
-        /// <returns>A <see cref="SystemChassisType"/> value representing the chassis type of the system. Returns <see
-        /// cref="SystemChassisType.Unknown"/> if the chassis type information is unavailable.</returns>
-        internal static SystemChassisType GetSystemChassisType()
-        {
-            // Set up required constants for SMBIOS Type 3 parsing.
-            const byte SMBIOSTypeChassisInformation = 3;
-            const byte ChassisTypeOffset = 5;
-
-            // Allocate buffer for the SMBIOS data and retrieve it.
-            Span<byte> buffer = stackalloc byte[(int)Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, null)];
-            _ = Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, buffer);
-
-            // Parse the SMBIOS data to find Type 3, skipping the header.
-            int offset = 0; offset += 8;
-            while (offset < buffer.Length)
-            {
-                // Check if we've reached the end of usable data
-                if (offset + 4 >= buffer.Length)
-                {
-                    break;
-                }
-
-                // If we found the chassis information structure
-                if (buffer[offset] == SMBIOSTypeChassisInformation)
-                {
-                    // Make sure we have enough data to read the chassis type.
-                    if (offset + ChassisTypeOffset < buffer.Length)
-                    {
-                        // The chassis type is at offset 5 within the Type 3 structure.
-                        // Extract the lower 7 bits as per spec (bit 7 is reserved).
-                        byte chassisType = buffer[offset + ChassisTypeOffset] &= 0x7F;
-                        return chassisType is >= 1 and <= 32 ? (SystemChassisType)chassisType : SystemChassisType.Other;
-                    }
-                    break;
-                }
-
-                // Move to the next structure. First, skip the formatted part.
-                offset += buffer[offset + 1];
-
-                // Then skip the unformatted part (string fields). This ends with a double null terminator.
-                while (offset < buffer.Length - 1 && !(buffer[offset] == 0 && buffer[offset + 1] == 0))
-                {
-                    offset++;
-                }
-
-                // Skip the double null terminator.
-                offset += 2;
-            }
-
-            // No chassis information found.
-            return SystemChassisType.Unknown;
-        }
-
-        /// <summary>
         /// Retrieves the system uptime.
         /// </summary>
         /// <remarks>The system uptime is calculated based on the number of milliseconds elapsed since the
@@ -186,6 +126,30 @@ namespace PSADT.DeviceManagement
         public static DateTime GetSystemBootTime()
         {
             return DateTime.Now - GetSystemUptime();
+        }
+
+        /// <summary>
+        /// Retrieves the current domain join status and associated domain or workgroup name of the local computer.
+        /// </summary>
+        /// <returns>A <see cref="DomainStatus"/> object containing the join status and the name of the domain or workgroup the
+        /// computer is joined to.</returns>
+        public static DomainStatus GetDomainStatus()
+        {
+            _ = NetApi32.NetGetJoinInformation(out SafeNetApiBufferFreeHandle? nameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS bufferType);
+            using (nameBuffer)
+            {
+                return new((NETSETUP_JOIN_STATUS)bufferType, nameBuffer.ToStringUni());
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the total amount of physical memory installed on the system, in bytes.
+        /// </summary>
+        /// <returns>The total physical memory, in bytes, available on the system.</returns>
+        public static ulong GetTotalSystemMemory()
+        {
+            _ = Kernel32.GlobalMemoryStatusEx(out MEMORYSTATUSEX lpBuffer);
+            return lpBuffer.ullTotalPhys;
         }
     }
 }

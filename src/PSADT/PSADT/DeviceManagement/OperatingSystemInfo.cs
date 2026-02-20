@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
@@ -42,53 +40,36 @@ namespace PSADT.DeviceManagement
                 return true;
             }
 
+            // Get OS version information.
             _ = NtDll.RtlGetVersion(out OSVERSIONINFOEXW osVersion);
             SUITE_MASK suiteMask = (SUITE_MASK)osVersion.wSuiteMask;
             PRODUCT_TYPE productType = (PRODUCT_TYPE)osVersion.wProductType;
-            string? editionId = null;
-            string? productName = null;
-            int ubr = 0;
 
-            ulong windowsOS = (((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16); WindowsOS operatingSystem = WindowsOS.Unknown;
-            if (Enum.IsDefined(typeof(WindowsOS), windowsOS))
-            {
-                operatingSystem = (WindowsOS)windowsOS;
-            }
-
+            // Read additional OS information from the registry.
+            string? editionId = null; string? productName = null; int ubr = 0;
             using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion")!)
             {
                 if (key.GetValue("UBR") is int ubrValue)
                 {
                     ubr = ubrValue;
                 }
-                if (key.GetValue("ReleaseId") is string relId && !string.IsNullOrWhiteSpace(relId))
-                {
-                    ReleaseId = relId;
-                }
-                if (key.GetValue("DisplayVersion") is string relIdVer && !string.IsNullOrWhiteSpace(relIdVer))
-                {
-                    ReleaseIdName = relIdVer;
-                }
-                if (key.GetValue("EditionID") is string editionIdValue && !string.IsNullOrWhiteSpace(editionIdValue))
-                {
-                    editionId = editionIdValue;
-                }
-                if (key.GetValue("ProductName") is string productNameValue && !string.IsNullOrWhiteSpace(productNameValue))
-                {
-                    productName = productNameValue;
-                }
+                DisplayVersion = (string?)key.GetValue("DisplayVersion");
+                productName = $"Microsoft {(string)key.GetValue("ProductName")!}";
+                editionId = (string?)key.GetValue("EditionID");
             }
 
+            // Build out the properties for this instance.
             _ = Kernel32.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
-            Name = string.Format(CultureInfo.InvariantCulture, ((DescriptionAttribute[])typeof(WindowsOS).GetField(operatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description, editionId);
+            Name = productType == PRODUCT_TYPE.VER_NT_WORKSTATION && productName.Contains("10") && osVersion.dwBuildNumber >= 22000 ? productName.Replace("10", "11") : productName;
             Version = new((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
             Architecture = RuntimeInformation.OSArchitecture;
+            ProductType = productType;
             Is64BitOperatingSystem = Environment.Is64BitOperatingSystem;
             IsTerminalServer = ((suiteMask & SUITE_MASK.VER_SUITE_TERMINAL) == SUITE_MASK.VER_SUITE_TERMINAL) && !((suiteMask & SUITE_MASK.VER_SUITE_SINGLEUSERTS) == SUITE_MASK.VER_SUITE_SINGLEUSERTS);
             IsWorkstationEnterpriseMultiSessionOS = IsOperatingSystemEnterpriseMultiSessionOS(edition, editionId, productName);
             IsWorkstation = productType == PRODUCT_TYPE.VER_NT_WORKSTATION;
-            IsServer = !IsWorkstation;
+            IsServer = productType == PRODUCT_TYPE.VER_NT_SERVER;
             IsDomainController = productType == PRODUCT_TYPE.VER_NT_DOMAIN_CONTROLLER;
         }
 
@@ -108,19 +89,19 @@ namespace PSADT.DeviceManagement
         public Version Version { get; }
 
         /// <summary>
-        /// Release Id of the operating system.
+        /// Represents the display-friendly version string for the associated object.
         /// </summary>
-        public string? ReleaseId { get; }
-
-        /// <summary>
-        /// Release Id name of the operating system.
-        /// </summary>
-        public string? ReleaseIdName { get; }
+        public string? DisplayVersion { get; }
 
         /// <summary>
         /// Architecture of the operating system.
         /// </summary>
         public Architecture Architecture { get; }
+
+        /// <summary>
+        /// Gets the type of product represented by this instance.
+        /// </summary>
+        public PRODUCT_TYPE ProductType { get; }
 
         /// <summary>
         /// Whether the operating system is 64-bit.

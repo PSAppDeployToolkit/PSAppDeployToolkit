@@ -63,6 +63,7 @@ GetTokenInformation
 GetWindowText
 GetWindowTextLength
 GetWindowThreadProcessId
+GlobalMemoryStatusEx
 HIWORD
 HKEY_CLASSES_ROOT
 HKEY_CURRENT_CONFIG
@@ -159,6 +160,10 @@ MsiGetLastErrorRecord
 MsiGetSummaryInformation
 MsiOpenDatabase
 MsiSummaryInfoGetProperty
+NERR_Success
+NetApiBufferFree
+NetGetJoinInformation
+NETSETUP_JOIN_STATUS
 NtQueryInformationProcess
 NtQueryObject
 NtQuerySystemInformation
