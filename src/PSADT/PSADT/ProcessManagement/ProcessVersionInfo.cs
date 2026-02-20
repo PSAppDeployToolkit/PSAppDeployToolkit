@@ -190,40 +190,54 @@ namespace PSADT.ProcessManagement
         {
             // Read the DOS header to make sure we have a valid PE header.
             nint baseAddress; unsafe { baseAddress = (nint)moduleInfo.lpBaseOfDll; }
-            IMAGE_DOS_HEADER dosHeader = ReadProcessMemory<IMAGE_DOS_HEADER>(processHandle, baseAddress);
+            Span<byte> dosHeaderBuf = stackalloc byte[Marshal.SizeOf<IMAGE_DOS_HEADER>()];
+            _ = Kernel32.ReadProcessMemory(processHandle, baseAddress, dosHeaderBuf, out _);
+            ref readonly IMAGE_DOS_HEADER dosHeader = ref dosHeaderBuf.AsReadOnlyStructure<IMAGE_DOS_HEADER>();
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
                 throw new InvalidOperationException("The specified process does not have a valid PE header.");
             }
 
-            // Read the NT headers to check the magic number.
+            // Read the signature to confirm we've got a valid NT image.
             nint ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
-            IMAGE_NT_HEADERS64 ntHeaders64 = ReadProcessMemory<IMAGE_NT_HEADERS64>(processHandle, ntHeadersAddress);
-            if (ntHeaders64.Signature != PInvoke.IMAGE_NT_SIGNATURE)
+            Span<byte> peSignatureBuf = stackalloc byte[Marshal.SizeOf<uint>()];
+            _ = Kernel32.ReadProcessMemory(processHandle, ntHeadersAddress, peSignatureBuf, out _);
+            ref readonly uint peSignature = ref peSignatureBuf.AsReadOnlyStructure<uint>();
+            if (peSignature != PInvoke.IMAGE_NT_SIGNATURE)
             {
                 throw new InvalidOperationException("The specified process does not have a valid NT header signature.");
             }
 
+            // Read the magic from the IMAGE_OPTIONAL_HEADER to know if it's 32/64-bit.
+            nint ntOptionalHeadersAddress = unchecked(ntHeadersAddress + Marshal.SizeOf<uint>() + Marshal.SizeOf<IMAGE_FILE_HEADER>());
+            Span<byte> magicBuf = stackalloc byte[sizeof(ushort)]; _ = Kernel32.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, magicBuf, out _);
+            ref readonly IMAGE_OPTIONAL_HEADER_MAGIC magic = ref magicBuf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER_MAGIC>();
+
             // Determine the resource directory RVA and size based on the optional header magic number.
             uint resourceRva, resourceSize;
-            if (ntHeaders64.OptionalHeader.Magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC) // PE32
+            if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC) // PE32
             {
-                IMAGE_NT_HEADERS32 ntHeaders32 = ReadProcessMemory<IMAGE_NT_HEADERS32>(processHandle, ntHeadersAddress);
-                if (ntHeaders32.OptionalHeader.NumberOfRvaAndSizes <= 2)
+                Span<byte> optionalHeader32Buf = stackalloc byte[Marshal.SizeOf<IMAGE_OPTIONAL_HEADER32>()];
+                _ = Kernel32.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader32Buf, out _);
+                ref readonly IMAGE_OPTIONAL_HEADER32 optionalHeader32 = ref optionalHeader32Buf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER32>();
+                if (optionalHeader32.NumberOfRvaAndSizes <= 2)
                 {
                     throw new InvalidOperationException("The specified process does not have enough data directories to contain a resource directory.");
                 }
-                resourceRva = ntHeaders32.OptionalHeader.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
-                resourceSize = ntHeaders32.OptionalHeader.DataDirectory._2.Size;
+                resourceRva = optionalHeader32.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
+                resourceSize = optionalHeader32.DataDirectory._2.Size;
             }
-            else if (ntHeaders64.OptionalHeader.Magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC) // PE32+
+            else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC) // PE32+
             {
-                if (ntHeaders64.OptionalHeader.NumberOfRvaAndSizes <= 2)
+                Span<byte> optionalHeader64Buf = stackalloc byte[Marshal.SizeOf<IMAGE_OPTIONAL_HEADER64>()];
+                _ = Kernel32.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader64Buf, out _);
+                ref readonly IMAGE_OPTIONAL_HEADER64 optionalHeader64 = ref optionalHeader64Buf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER64>();
+                if (optionalHeader64.NumberOfRvaAndSizes <= 2)
                 {
                     throw new InvalidOperationException("The specified process does not have enough data directories to contain a resource directory.");
                 }
-                resourceRva = ntHeaders64.OptionalHeader.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
-                resourceSize = ntHeaders64.OptionalHeader.DataDirectory._2.Size;
+                resourceRva = optionalHeader64.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
+                resourceSize = optionalHeader64.DataDirectory._2.Size;
             }
             else
             {
@@ -242,16 +256,20 @@ namespace PSADT.ProcessManagement
         private static byte[] FindVersionResource(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress)
         {
             // Read the resource directory
-            IMAGE_RESOURCE_DIRECTORY resourceDir = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY>(processHandle, resourceDirectoryAddress);
+            Span<byte> resourceDirBuf = stackalloc byte[Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>()];
+            _ = Kernel32.ReadProcessMemory(processHandle, resourceDirectoryAddress, resourceDirBuf, out _);
+            ref readonly IMAGE_RESOURCE_DIRECTORY resourceDir = ref resourceDirBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY>();
             int totalEntries = resourceDir.NumberOfNamedEntries + resourceDir.NumberOfIdEntries;
             nint entriesAddress = unchecked(resourceDirectoryAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
 
             // Look for RT_VERSION resource (type 16) and throw if not found.
+            Span<byte> entryBuf = stackalloc byte[Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()];
             for (int i = 0; i < totalEntries; i++)
             {
                 nint entryAddress = unchecked(entriesAddress + (i * Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()));
-                IMAGE_RESOURCE_DIRECTORY_ENTRY entry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, entryAddress);
-                if (entry.Anonymous1.Name == (nint)RESOURCE_TYPE.RT_VERSION)
+                _ = Kernel32.ReadProcessMemory(processHandle, entryAddress, entryBuf, out _);
+                ref readonly IMAGE_RESOURCE_DIRECTORY_ENTRY entry = ref entryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY_ENTRY>();
+                if (entry.Anonymous1.Id == (uint)RESOURCE_TYPE.RT_VERSION)
                 {
                     return ReadVersionResourceData(processHandle, resourceDirectoryAddress, baseAddress, entry.Anonymous2.OffsetToData);
                 }
@@ -265,20 +283,23 @@ namespace PSADT.ProcessManagement
         private static byte[] ReadVersionResourceData(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress, uint offsetToData)
         {
             // Navigate through the directory levels using a do/while loop.
+            Span<byte> currentEntryBuf = stackalloc byte[Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()];
             uint currentOffsetToData = offsetToData;
-            IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry;
             do
             {
                 nint currentAddress = unchecked(resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK));
                 nint currentEntryAddress = unchecked(currentAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
-                currentEntry = ReadProcessMemory<IMAGE_RESOURCE_DIRECTORY_ENTRY>(processHandle, currentEntryAddress);
+                _ = Kernel32.ReadProcessMemory(processHandle, currentEntryAddress, currentEntryBuf, out _);
+                ref readonly IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry = ref currentEntryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY_ENTRY>();
                 currentOffsetToData = currentEntry.Anonymous2.OffsetToData;
             }
             while ((currentOffsetToData & PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY) != 0);
 
             // At this point, currentEntry points to a data entry, not a directory.
-            nint dataEntryAddress = unchecked(resourceDirectoryAddress + (int)currentEntry.Anonymous2.OffsetToData);
-            IMAGE_RESOURCE_DATA_ENTRY dataEntry = ReadProcessMemory<IMAGE_RESOURCE_DATA_ENTRY>(processHandle, dataEntryAddress);
+            nint dataEntryAddress = unchecked(resourceDirectoryAddress + (int)currentOffsetToData);
+            Span<byte> dataEntryBuf = stackalloc byte[Marshal.SizeOf<IMAGE_RESOURCE_DATA_ENTRY>()];
+            _ = Kernel32.ReadProcessMemory(processHandle, dataEntryAddress, dataEntryBuf, out _);
+            ref readonly IMAGE_RESOURCE_DATA_ENTRY dataEntry = ref dataEntryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DATA_ENTRY>();
             if (dataEntry.Size > 0)
             {
                 byte[] buffer = new byte[(int)dataEntry.Size];
@@ -359,16 +380,6 @@ namespace PSADT.ProcessManagement
                 throw;
             }
             return null;
-        }
-
-        /// <summary>
-        /// Reads a structure from process memory using stack-allocated buffer.
-        /// </summary>
-        private static T ReadProcessMemory<T>(SafeFileHandle processHandle, nint address) where T : struct
-        {
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<T>()];
-            _ = Kernel32.ReadProcessMemory(processHandle, address, buffer, out _);
-            return MemoryMarshal.Read<T>(buffer);
         }
 
         /// <summary>
