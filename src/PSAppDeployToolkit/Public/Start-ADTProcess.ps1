@@ -698,7 +698,7 @@ function Start-ADTProcess
                     if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
                         $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
+                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.", $FilePath)
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             ErrorId = 'FilePathNotFound'
                             TargetObject = $FilePath

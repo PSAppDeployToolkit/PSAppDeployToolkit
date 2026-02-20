@@ -95,15 +95,15 @@ namespace PSADT.UserInterface.DialogOptions
             // Test that the specified image paths are valid.
             if (!(MiscUtilities.GetBase64StringBytes(appIconImage)?.Length > 0) && !File.Exists(appIconImage))
             {
-                throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
+                throw new FileNotFoundException($"The specified AppIconImage [{appIconImage}] cannot be found", appIconImage);
             }
             if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
             {
-                throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
+                throw new FileNotFoundException($"The specified AppIconDarkImage [{appIconDarkImage}] cannot be found", appIconDarkImage);
             }
             if (!(MiscUtilities.GetBase64StringBytes(appBannerImage)?.Length > 0) && !File.Exists(appBannerImage))
             {
-                throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
+                throw new FileNotFoundException($"The specified AppBannerImage [{appBannerImage}] cannot be found", appBannerImage);
             }
 
             // AppTaskbarIconImage is optional, so only validate it if it has a value.
@@ -111,7 +111,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 if (!(MiscUtilities.GetBase64StringBytes(appTaskbarIconImage!)?.Length > 0) && !File.Exists(appTaskbarIconImage))
                 {
-                    throw new FileNotFoundException("The specified AppTaskbarIconImage cannot be found", appTaskbarIconImage);
+                    throw new FileNotFoundException($"The specified AppTaskbarIconImage [{appTaskbarIconImage}] cannot be found", appTaskbarIconImage);
                 }
                 AppTaskbarIconImage = appTaskbarIconImage;
             }

@@ -26,7 +26,7 @@ namespace PSADT.Utilities
             }
             if (!File.Exists(path))
             {
-                throw new FileNotFoundException($"Cannot find path '{path}' because it does not exist.");
+                throw new FileNotFoundException($"The specified file does not exist: {path}", path);
             }
             using StreamReader reader = new(path);
             return SafeLoadCommon(reader);

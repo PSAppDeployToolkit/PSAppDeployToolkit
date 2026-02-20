@@ -217,7 +217,7 @@ namespace PSADT.FileSystem
             // Validate that the path exists.
             if (!path.Exists)
             {
-                throw new FileNotFoundException($"The specified path does not exist: {path}");
+                throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
             }
 
             // Set up the required flags for CreateFile, then see if we can open the file.
@@ -436,7 +436,7 @@ namespace PSADT.FileSystem
             }
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException("The specified file does not exist.", filePath);
+                throw new FileNotFoundException($"The specified file does not exist: {filePath}", filePath);
             }
 
             // Load up everything we need for WinVerifyTrust. The CsWin32 projects this
@@ -501,11 +501,11 @@ namespace PSADT.FileSystem
             {
                 if (path is DirectoryInfo)
                 {
-                    throw new DirectoryNotFoundException($"The specified directory does not exist: {path}");
+                    throw new DirectoryNotFoundException($"The specified directory does not exist: {path.FullName}");
                 }
                 else
                 {
-                    throw new FileNotFoundException($"The specified file does not exist: {path}");
+                    throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
                 }
             }
 

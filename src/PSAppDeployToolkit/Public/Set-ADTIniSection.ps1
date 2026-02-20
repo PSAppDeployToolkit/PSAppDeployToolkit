@@ -119,7 +119,7 @@ function Set-ADTIniSection
                     if (!$Force)
                     {
                         $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
+                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.", $FilePath)
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             ErrorId = 'FilePathNotFound'
                             TargetObject = $FilePath

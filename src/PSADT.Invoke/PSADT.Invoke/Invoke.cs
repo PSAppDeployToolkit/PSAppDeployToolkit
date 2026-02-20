@@ -314,7 +314,7 @@ namespace PSADT.Invoke
             // Verify if the App Deploy script file exists.
             if (!File.Exists(adtFrontendPath))
             {
-                throw new FileNotFoundException($"Unable to find the deployment script file at [{adtFrontendPath}].");
+                throw new FileNotFoundException($"Unable to find the deployment script file at [{adtFrontendPath}].", adtFrontendPath);
             }
 
             // Return the full arguments we give to PowerShell.exe (Note that we use -Command resolve issues with WDAC and Constrained Language Mode).

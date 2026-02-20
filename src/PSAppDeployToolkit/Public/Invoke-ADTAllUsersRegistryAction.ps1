@@ -143,7 +143,7 @@ function Invoke-ADTAllUsersRegistryAction
                             if (!(Test-Path -LiteralPath $regHive.Path -PathType Leaf))
                             {
                                 $naerParams = @{
-                                    Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...")
+                                    Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...", $regHive.Path)
                                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                                     ErrorId = "$([System.IO.Path]::GetFileNameWithoutExtension($regHive.Path).ToUpperInvariant())RegistryHiveFileNotFound"
                                     TargetObject = $regHive.Path

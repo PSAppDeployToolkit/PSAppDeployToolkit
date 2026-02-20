@@ -427,7 +427,7 @@ function Start-ADTMsiProcess
                         else
                         {
                             $naerParams = @{
-                                Exception = [System.IO.FileNotFoundException]::new("Failed to find the file [$FilePath].")
+                                Exception = [System.IO.FileNotFoundException]::new("Failed to find the file [$FilePath].", $FilePath)
                                 Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                                 ErrorId = 'FilePathNotFound'
                                 TargetObject = $FilePath
@@ -521,7 +521,7 @@ function Start-ADTMsiProcess
                             if (($installedApps | Measure-Object).Count -gt 1)
                             {
                                 $naerParams = @{
-                                    Exception = [System.IO.FileNotFoundException]::new("More than one InstalledApplication object was found for product code [$msiProductCode].")
+                                    Exception = [System.InvalidOperationException]::new("More than one InstalledApplication object was found for product code [$msiProductCode].")
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                     ErrorId = 'MultipleInstalledAppsFound'
                                     TargetObject = $installedApps
@@ -551,7 +551,7 @@ function Start-ADTMsiProcess
                             if (($installedApps | Measure-Object).Count -gt 1)
                             {
                                 $naerParams = @{
-                                    Exception = [System.IO.FileNotFoundException]::new("More than one InstalledApplication object was found for MSI application [$($msiPropertyTable.ProductName)] with version [$($msiPropertyTable.ProductVersion)].")
+                                    Exception = [System.InvalidOperationException]::new("More than one InstalledApplication object was found for MSI application [$($msiPropertyTable.ProductName)] with version [$($msiPropertyTable.ProductVersion)].")
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                     ErrorId = 'MultipleInstalledAppsFound'
                                     TargetObject = $installedApps

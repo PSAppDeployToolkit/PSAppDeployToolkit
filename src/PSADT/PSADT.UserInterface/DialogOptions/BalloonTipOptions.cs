@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
             if (!(MiscUtilities.GetBase64StringBytes(trayIcon)?.Length > 0) && !File.Exists(trayIcon))
             {
-                throw new FileNotFoundException("The specified AppIconImage cannot be found", trayIcon);
+                throw new FileNotFoundException($"The specified AppIconImage [{trayIcon}] cannot be found", trayIcon);
             }
             if (string.IsNullOrWhiteSpace(balloonTipTitle))
             {
