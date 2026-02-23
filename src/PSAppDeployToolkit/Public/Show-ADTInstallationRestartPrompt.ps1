@@ -84,18 +84,60 @@ function Show-ADTInstallationRestartPrompt
         [System.Management.Automation.SwitchParameter]$NoCountdown,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CountdownSeconds -ProvidedValue $_ -ExceptionMessage 'The specified CountdownSeconds interval was null.'))
+                }
+                if ($_ -eq 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CountdownSeconds -ProvidedValue $_ -ExceptionMessage 'The specified CountdownSeconds interval must be greater than zero.'))
+                }
+                if ($_ -gt 86400)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CountdownSeconds -ProvidedValue $_ -ExceptionMessage 'The specified CountdownSeconds interval cannot exceed 86,400 seconds.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$CountdownSeconds = 60,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CountdownNoHideSeconds -ProvidedValue $_ -ExceptionMessage 'The specified CountdownNoHideSeconds interval was null.'))
+                }
+                if ($_ -eq 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CountdownNoHideSeconds -ProvidedValue $_ -ExceptionMessage 'The specified CountdownNoHideSeconds interval must be greater than zero.'))
+                }
+                if ($_ -gt 86400)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CountdownNoHideSeconds -ProvidedValue $_ -ExceptionMessage 'The specified CountdownNoHideSeconds interval cannot exceed 86,400 seconds.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$CountdownNoHideSeconds = 30,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [System.Management.Automation.SwitchParameter]$SilentRestart,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SilentCountdownSeconds -ProvidedValue $_ -ExceptionMessage 'The specified SilentCountdownSeconds interval was null.'))
+                }
+                if ($_ -eq 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SilentCountdownSeconds -ProvidedValue $_ -ExceptionMessage 'The specified SilentCountdownSeconds interval must be greater than zero.'))
+                }
+                if ($_ -gt 86400)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SilentCountdownSeconds -ProvidedValue $_ -ExceptionMessage 'The specified SilentCountdownSeconds interval cannot exceed 86,400 seconds.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$SilentCountdownSeconds = 5,
 
         [Parameter(Mandatory = $false)]
