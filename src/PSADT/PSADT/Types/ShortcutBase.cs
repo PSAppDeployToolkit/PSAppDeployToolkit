@@ -14,7 +14,7 @@ namespace PSADT.Types
         /// <param name="targetPath">The target path of the shortcut.</param>
         /// <param name="iconIndex">The index of the icon used for the shortcut.</param>
         /// <param name="iconLocation">The location of the icon used for the shortcut.</param>
-        protected ShortcutBase(string path, string targetPath, string? iconLocation, string? iconIndex)
+        private protected ShortcutBase(string path, string targetPath, string? iconLocation, string? iconIndex)
         {
             if (string.IsNullOrWhiteSpace(path))
             {

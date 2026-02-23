@@ -115,7 +115,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <remarks>The method sets the <see cref="PictureBox.Image"/> property to the banner image specified in <paramref name="options"/>. It also adjusts the size of the <see cref="PictureBox"/> to maintain the aspect ratio of the image, with a fixed width of 450 pixels.</remarks>
         /// <param name="pictureBox">The <see cref="PictureBox"/> to configure. Cannot be <see langword="null"/>.</param>
         /// <param name="options">The options containing the banner image to display. Cannot be <see langword="null"/>.</param>
-        protected void SetPictureBox(PictureBox pictureBox, BaseDialogOptions options)
+        private protected void SetPictureBox(PictureBox pictureBox, BaseDialogOptions options)
         {
             double dpiScale = User32.GetDpiForWindow((HWND)Handle) / 96.0;
             pictureBox.Image = GetBanner(options.AppBannerImage);
@@ -127,7 +127,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="ts"></param>
         /// <returns></returns>
-        protected static string FormatTime(TimeSpan ts)
+        private protected static string FormatTime(TimeSpan ts)
         {
             return $"{(ts.Days * 24) + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
         }
@@ -137,7 +137,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonLeft_Click(object sender, EventArgs e)
+        private protected virtual void ButtonLeft_Click(object sender, EventArgs e)
         {
             CloseDialog();
         }
@@ -147,7 +147,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
+        private protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
         {
             CloseDialog();
         }
@@ -157,7 +157,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonRight_Click(object sender, EventArgs e)
+        private protected virtual void ButtonRight_Click(object sender, EventArgs e)
         {
             CloseDialog();
         }
@@ -167,7 +167,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void Form_Load(object? sender, EventArgs e)
+        private protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Adjust the menu depending on our config options.
             using (DestroyMenuSafeHandle menuHandle = User32.GetSystemMenu((HWND)Handle, false))
@@ -245,7 +245,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        private protected virtual void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
             if (!CanClose())
@@ -278,7 +278,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Tests whether this form is allowed to close down.
         /// </summary>
         /// <returns></returns>
-        protected bool CanClose()
+        private protected bool CanClose()
         {
             return canClose;
         }
@@ -287,7 +287,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Restores the window to its normal state and repositions it to its starting location.
         /// </summary>
         /// <remarks>This method resets the window's state to <see cref="FormWindowState.Normal"/>, moves it to the predefined starting location, and brings it to the front of the z-order.</remarks>
-        protected void RestoreWindow()
+        private protected void RestoreWindow()
         {
             // Reset the window and restore its location.
             WindowState = FormWindowState.Normal;
@@ -299,7 +299,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Resets the persist timer to its initial state.
         /// </summary>
         /// <remarks>This method stops the current persist timer, if it is running, and restarts it. It ensures that the timer is reset and begins counting from its initial duration.</remarks>
-        protected void ResetPersistTimer()
+        private protected void ResetPersistTimer()
         {
             // Reset the persist timer to its initial state.
             if (persistTimer is not null)
@@ -319,7 +319,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// by repeatedly processing the text until all tags are removed.</remarks>
         /// <param name="text">The input string containing formatting tags to be stripped.</param>
         /// <returns>A string with all recognized formatting tags replaced by their plain text equivalents.</returns>
-        protected static string StripFormattingTags(string text)
+        private protected static string StripFormattingTags(string text)
         {
             foreach (Match match in DialogManager.TextFormattingRegex.Matches(text))
             {

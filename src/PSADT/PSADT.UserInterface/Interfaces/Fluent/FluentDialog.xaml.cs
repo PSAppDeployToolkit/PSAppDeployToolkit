@@ -200,7 +200,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Raises the PropertyChanged event for the specified property.
         /// </summary>
         /// <param name="propertyName"></param>
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        private protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new(propertyName));
         }
@@ -227,7 +227,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected virtual void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
@@ -237,7 +237,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonMiddle_Click(object sender, RoutedEventArgs e)
+        private protected virtual void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
@@ -247,7 +247,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected virtual void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
@@ -278,7 +278,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        private protected virtual void FluentDialog_Loaded(object sender, RoutedEventArgs e)
         {
             // Force software rendering.
             ((HwndSource)PresentationSource.FromVisual(this)).CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
@@ -373,7 +373,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="textBlock"></param>
         /// <param name="message"></param>
-        protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
+        private protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
         {
             // Don't waste time on an empty string.
             textBlock.Inlines.Clear();
@@ -560,7 +560,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Sets the button to be styled with an accent color.
         /// </summary>
         /// <param name="button"></param>
-        protected static void SetAccentButton(Button button)
+        private protected static void SetAccentButton(Button button)
         {
             button.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
         }
@@ -569,7 +569,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Sets the button to be the form cancel button.
         /// </summary>
         /// <param name="button"></param>
-        protected static void SetCancelButton(Button button)
+        private protected static void SetCancelButton(Button button)
         {
             button.IsCancel = true;
         }
@@ -578,7 +578,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Sets the button to be the form default button.
         /// </summary>
         /// <param name="button"></param>
-        protected static void SetDefaultButton(Button button)
+        private protected static void SetDefaultButton(Button button)
         {
             button.IsDefault = true;
         }
@@ -588,7 +588,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="button"></param>
         /// <param name="text"></param>
-        protected static void SetButtonContentWithAccelerator(Button button, string text)
+        private protected static void SetButtonContentWithAccelerator(Button button, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -605,7 +605,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Updates the Grid RowDefinition based on the current content.
         /// </summary>
-        protected void UpdateRowDefinition()
+        private protected void UpdateRowDefinition()
         {
             CenterPanelRow.Height = new(1, GridUnitType.Auto);
         }
@@ -801,7 +801,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Restores the window to its normal state and repositions it to its original location.
         /// </summary>
-        protected void RestoreWindow()
+        private protected void RestoreWindow()
         {
             // Reset the window and restore its location.
             WindowState = WindowState.Normal;
@@ -813,7 +813,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Sets the minimize button availability based on specific conditions.
         /// </summary>
         /// <param name="availability">The desired button availability state.</param>
-        protected void SetMinimizeButtonAvailability(TitleBarButtonAvailability availability)
+        private protected void SetMinimizeButtonAvailability(TitleBarButtonAvailability availability)
         {
             TitleBar.SetMinimizeButtonAvailability(this, availability);
         }
@@ -935,7 +935,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Callback executed by the countdown timer every second. Decrements remaining time, updates display, and handles auto-action on timeout.
         /// </summary>
         /// <param name="state">Timer state object (not used).</param>
-        protected virtual void CountdownTimer_Tick(object? state)
+        private protected virtual void CountdownTimer_Tick(object? state)
         {
             Dispatcher.Invoke(UpdateCountdownDisplay);
         }
@@ -949,12 +949,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// An optional custom message to display.
         /// </summary>
-        protected readonly string? _customMessageText;
+        private protected readonly string? _customMessageText;
 
         /// <summary>
         /// Whether this window has been disposed.
         /// </summary>
-        protected bool Disposed { get; private set; }
+        private protected bool Disposed { get; private set; }
 
         /// <summary>
         /// Whether this window is able to be closed.
@@ -979,22 +979,22 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// An optional countdown to zero to commence a preferred action.
         /// </summary>
-        protected readonly TimeSpan? _countdownDuration;
+        private protected readonly TimeSpan? _countdownDuration;
 
         /// <summary>
         /// An optional countdown to zero for when the dialog can be no longer minimized.
         /// </summary>
-        protected readonly TimeSpan? _countdownWarningDuration;
+        private protected readonly TimeSpan? _countdownWarningDuration;
 
         /// <summary>
         /// The end date/time for the countdown duration, as determined during form load.
         /// </summary>
-        protected readonly Stopwatch _countdownStopwatch;
+        private protected readonly Stopwatch _countdownStopwatch;
 
         /// <summary>
         /// Represents the remaining time in a countdown.
         /// </summary>
-        protected TimeSpan _countdownRemainingTime;
+        private protected TimeSpan _countdownRemainingTime;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
@@ -1059,7 +1059,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Dispose managed and unmanaged resources
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
+        private protected virtual void Dispose(bool disposing)
         {
             if (Disposed)
             {

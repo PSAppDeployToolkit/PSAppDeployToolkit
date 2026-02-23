@@ -53,7 +53,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
             DeviceUtilities.RestartComputer();
@@ -65,7 +65,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
@@ -74,7 +74,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Handles the countdown timer tick event.
         /// </summary>
         /// <param name="state"></param>
-        protected override void CountdownTimer_Tick(object? state)
+        private protected override void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
             base.CountdownTimer_Tick(state);

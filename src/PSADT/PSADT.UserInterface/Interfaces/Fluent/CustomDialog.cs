@@ -25,7 +25,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <param name="dialogResult">An object to store the dialog result in.</param>
-        protected CustomDialog(CustomDialogOptions options, CustomDialogResult dialogResult) : base(options, dialogResult)
+        private protected CustomDialog(CustomDialogOptions options, CustomDialogResult dialogResult) : base(options, dialogResult)
         {
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, options.MessageText);
@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals("Timeout"))
@@ -72,7 +72,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals("Timeout"))
@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals("Timeout"))

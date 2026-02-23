@@ -265,7 +265,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        private protected override void FluentDialog_Loaded(object sender, RoutedEventArgs e)
         {
             // Call the base method to ensure proper loading.
             base.FluentDialog_Loaded(sender, e);
@@ -279,7 +279,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = AutomationProperties.GetName(ButtonLeft) == _buttonLeftText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
@@ -291,7 +291,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = CloseAppsDialogResult.Defer;
@@ -302,7 +302,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Handles the click event of the close button.
         /// </summary>
         /// <param name="state"></param>
-        protected override void CountdownTimer_Tick(object? state)
+        private protected override void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
             base.CountdownTimer_Tick(state);
@@ -436,7 +436,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Dispose managed and unmanaged resources
         /// </summary>
-        protected override void Dispose(bool disposing)
+        private protected override void Dispose(bool disposing)
         {
             if (Disposed)
             {

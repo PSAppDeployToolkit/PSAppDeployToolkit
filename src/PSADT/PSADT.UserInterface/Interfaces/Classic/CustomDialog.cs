@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// properly configured before passing it to this constructor.</remarks>
         /// <param name="options">The options that configure the appearance and behavior of the dialog. Cannot be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, indicating the user's choice or action.</param>
-        protected CustomDialog(CustomDialogOptions options, CustomDialogResult dialogResult) : base(options, dialogResult)
+        private protected CustomDialog(CustomDialogOptions options, CustomDialogResult dialogResult) : base(options, dialogResult)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -124,7 +124,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonLeft_Click(object sender, EventArgs e)
+        private protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new CustomDialogResult(buttonLeft.Text);
@@ -136,7 +136,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonMiddle_Click(object sender, EventArgs e)
+        private protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new CustomDialogResult(buttonMiddle.Text);
@@ -148,7 +148,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonRight_Click(object sender, EventArgs e)
+        private protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new CustomDialogResult(buttonRight.Text);

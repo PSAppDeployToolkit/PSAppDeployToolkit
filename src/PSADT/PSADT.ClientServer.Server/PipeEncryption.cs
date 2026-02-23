@@ -82,7 +82,7 @@ namespace PSADT.ClientServer
         /// <returns>The data read from the stream.</returns>
         /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
         /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
-        protected static byte[] ReadLengthPrefixedBytes(Stream stream)
+        private protected static byte[] ReadLengthPrefixedBytes(Stream stream)
         {
             // Read the 4-byte length prefix
             byte[] lengthBytes = new byte[4]; int bytesRead = 0;
@@ -127,7 +127,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="stream">The output stream.</param>
         /// <param name="data">The data to write.</param>
-        protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
+        private protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
         {
             byte[] lengthBytes = BitConverter.GetBytes(data.Length);
             stream.Write(lengthBytes, 0, 4);
@@ -141,7 +141,7 @@ namespace PSADT.ClientServer
         /// <param name="plaintext">The plaintext bytes to encrypt.</param>
         /// <returns>A byte array containing the nonce, ciphertext, and authentication tag.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plaintext"/> is null.</exception>
-        protected byte[] Encrypt(byte[] plaintext)
+        private protected byte[] Encrypt(byte[] plaintext)
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
@@ -182,7 +182,7 @@ namespace PSADT.ClientServer
         /// <returns>The decrypted plaintext bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
         /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
-        protected byte[] Decrypt(byte[] encryptedData)
+        private protected byte[] Decrypt(byte[] encryptedData)
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
@@ -219,7 +219,7 @@ namespace PSADT.ClientServer
         /// Gets the local public key for transmission to the remote party.
         /// </summary>
         /// <returns>A byte array containing the exported public key.</returns>
-        protected byte[] GetPublicKey()
+        private protected byte[] GetPublicKey()
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
@@ -235,7 +235,7 @@ namespace PSADT.ClientServer
         /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
-        protected void DeriveSharedKey(byte[] remotePublicKey)
+        private protected void DeriveSharedKey(byte[] remotePublicKey)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
@@ -271,7 +271,7 @@ namespace PSADT.ClientServer
         /// <param name="a">The first byte array.</param>
         /// <param name="b">The second byte array.</param>
         /// <returns>True if the arrays are equal; otherwise, false.</returns>
-        protected static bool ConstantTimeEquals(byte[] a, byte[] b)
+        private protected static bool ConstantTimeEquals(byte[] a, byte[] b)
         {
             if (a.Length != b.Length)
             {
@@ -290,7 +290,7 @@ namespace PSADT.ClientServer
         /// Throws an exception if the current instance has been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
-        protected void ThrowIfDisposed()
+        private protected void ThrowIfDisposed()
         {
             if (_disposed)
             {
@@ -428,7 +428,7 @@ namespace PSADT.ClientServer
         /// A 32-byte (256-bit) challenge provides strong protection against brute-force attacks
         /// and ensures cryptographic uniqueness for each key exchange session.
         /// </remarks>
-        protected const int ChallengeSize = 32;
+        private protected const int ChallengeSize = 32;
 
         /// <summary>
         /// Specifies the size, in bytes, of the AES-256 encryption key.

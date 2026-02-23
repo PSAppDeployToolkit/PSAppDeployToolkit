@@ -92,7 +92,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void Form_Load(object? sender, EventArgs e)
+        private protected override void Form_Load(object? sender, EventArgs e)
         {
             // Perform the base event.
             base.Form_Load(sender, e);
@@ -116,7 +116,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        private protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
             if (!CanClose())
@@ -138,7 +138,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonLeft_Click(object sender, EventArgs e)
+        private protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Restart the computer immediately.
             DeviceUtilities.RestartComputer();
@@ -150,7 +150,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void ButtonRight_Click(object sender, EventArgs e)
+        private protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Minimise the window and restart the persistence timer.
             // Note that we deliberately do not call the base handler!
