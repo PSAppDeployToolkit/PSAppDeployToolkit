@@ -75,7 +75,17 @@ function Show-ADTBalloonTip
         [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BalloonTipTime -ProvidedValue $_ -ExceptionMessage 'The specified BalloonTipTime interval was null.'))
+                }
+                if ($_ -le 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BalloonTipTime -ProvidedValue $_ -ExceptionMessage 'The specified BalloonTipTime interval must be greater than zero.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$BalloonTipTime = 10000,
 
         [Parameter(Mandatory = $false)]

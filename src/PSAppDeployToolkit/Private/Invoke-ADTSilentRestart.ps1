@@ -10,7 +10,17 @@ function Private:Invoke-ADTSilentRestart
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Delay -ProvidedValue $_ -ExceptionMessage 'The specified Delay interval was null.'))
+                }
+                if ($_ -le 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Delay -ProvidedValue $_ -ExceptionMessage 'The specified Delay interval must be greater than zero.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$Delay
     )
 

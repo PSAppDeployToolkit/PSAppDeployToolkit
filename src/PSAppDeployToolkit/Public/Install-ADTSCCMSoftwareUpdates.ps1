@@ -64,8 +64,18 @@ function Install-ADTSCCMSoftwareUpdates
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.Int32]]$SoftwareUpdatesScanWaitInSeconds = 180,
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SoftwareUpdatesScanWaitInSeconds -ProvidedValue $_ -ExceptionMessage 'The specified SoftwareUpdatesScanWaitInSeconds interval was null.'))
+                }
+                if ($_ -le 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SoftwareUpdatesScanWaitInSeconds -ProvidedValue $_ -ExceptionMessage 'The specified SoftwareUpdatesScanWaitInSeconds interval must be greater than zero.'))
+                }
+                return !!$_
+            })]
+        [System.Nullable[System.UInt32]]$SoftwareUpdatesScanWaitInSeconds = 180,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
