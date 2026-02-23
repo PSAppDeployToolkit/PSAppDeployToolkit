@@ -81,8 +81,36 @@ function Private:Import-ADTConfig
         }
     }
 
-    # Import the config from disk.
+    # Internal filter to verify signedness of integer values.
+    filter Confirm-ADTConfigIntegersGreaterThanZero
+    {
+        # Go recursive if we've received a hashtable, otherwise just update the values.
+        foreach ($section in $($_.GetEnumerator()))
+        {
+            # Re-process if this is a hashtable.
+            if ($section.Value -is [System.Collections.Hashtable])
+            {
+                $section.Value | & $MyInvocation.MyCommand; continue
+            }
+
+            # Confirm the value signedness.
+            if (($section.Value -is [System.Int32]) -and !('DefaultExitCode', 'DeferExitCode', 'FluentAccentColor').Contains($section.Key) -and ($section.Value -le 0))
+            {
+                $naerParams = @{
+                    Exception = [System.ArgumentOutOfRangeException]::new("The value for [$($section.Key)] must be greater than zero.", $null)
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                    ErrorId = 'ConfigIntLessThanOrEqualToZero'
+                    TargetObject = $_.($section.Key)
+                    RecommendedAction = "Review your configuration and try again."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+        }
+    }
+
+    # Import the config from disk and verify all integers are valid.
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
+    $config | Confirm-ADTConfigIntegersGreaterThanZero
 
     # Confirm the specified dialog type is valid.
     if (($config.UI.DialogStyle -ne 'Classic') -and (Test-ADTNonNativeCaller))
