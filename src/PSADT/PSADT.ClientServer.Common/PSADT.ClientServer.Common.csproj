@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
   </ItemGroup>
 </Project>

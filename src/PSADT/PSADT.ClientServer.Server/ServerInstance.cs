@@ -82,7 +82,7 @@ namespace PSADT.ClientServer
                 string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
                 string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
                 _clientProcess = ProcessManager.LaunchAsync(new(
-                    _assemblyLocation,
+                    EnvironmentInfo.ClientServerClientPath,
                     ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
                     Environment.SystemDirectory,
                     RunAsActiveUser,
@@ -966,14 +966,5 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used internally to track the disposal state of the object. It should
         /// not be accessed directly outside of the class.</remarks>
         private bool _disposed;
-
-        /// <summary>
-        /// Represents the file path of the assembly named "PSADT.ClientServer.Client.exe" currently loaded in the
-        /// application domain.
-        /// </summary>
-        /// <remarks>This field retrieves the location of the first loaded assembly in the current
-        /// application domain whose file name ends with "PSADT.ClientServer.Client.exe". It is intended for internal use
-        /// only.</remarks>
-        private static readonly string _assemblyLocation = typeof(ServerInstance).Assembly.Location.Replace("Server.dll", "Client.exe");
     }
 }

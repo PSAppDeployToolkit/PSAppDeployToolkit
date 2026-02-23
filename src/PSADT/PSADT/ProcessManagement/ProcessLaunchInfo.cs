@@ -164,6 +164,12 @@ namespace PSADT.ProcessManagement
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
+
+            // Confirm we're not using incompatible options.
+            if (UseShellExecute && RunAsActiveUser is not null)
+            {
+                throw new InvalidOperationException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+            }
         }
 
         /// <summary>

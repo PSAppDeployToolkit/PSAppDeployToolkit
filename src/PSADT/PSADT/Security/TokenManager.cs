@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
@@ -96,7 +97,7 @@ namespace PSADT.Security
                                         try
                                         {
                                             using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
-                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(typeof(TokenManager).Assembly.Location.Replace(".dll", ".ClientServer.Client.exe"));
+                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(EnvironmentInfo.ClientServerClientPath);
                                             using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {runAsActiveUser.SessionId} -UseLinkedAdminToken {useLinkedAdminToken} -UseHighestAvailableToken {useHighestAvailableToken}");
                                             bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                             try
@@ -268,7 +269,13 @@ namespace PSADT.Security
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle)
         {
-            _ = AdvApi32.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            _ = AdvApi32.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
+            {
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                Span<byte> tokenInformation = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(tokenInformation, 1);
+                _ = AdvApi32.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
+            }
             return hPrimaryToken;
         }
 

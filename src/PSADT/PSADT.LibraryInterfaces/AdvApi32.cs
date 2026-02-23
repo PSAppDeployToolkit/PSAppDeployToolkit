@@ -191,6 +191,22 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Sets information for the specified access token using the provided information class and data.
+        /// </summary>
+        /// <remarks>If the operation fails, an exception is thrown based on the last Win32 error. Ensure
+        /// that the token handle is valid and has the required access rights before calling this method.</remarks>
+        /// <param name="TokenHandle">A handle to the access token to modify. The handle must have the TOKEN_SET_INFORMATION access right.</param>
+        /// <param name="TokenInformationClass">The type of information to set for the token. Specify a value from the TOKEN_INFORMATION_CLASS enumeration.</param>
+        /// <param name="TokenInformation">A read-only span of bytes containing the information to set. The structure and content depend on the
+        /// specified TokenInformationClass.</param>
+        /// <returns>A value indicating whether the operation succeeded. If the operation fails, an exception is thrown.</returns>
+        internal static BOOL SetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, ReadOnlySpan<byte> TokenInformation)
+        {
+            BOOL res = PInvoke.SetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
         /// Adjusts the privileges of the specified access token.
         /// </summary>
         /// <remarks>This method wraps the native AdjustTokenPrivileges API and throws an exception if the

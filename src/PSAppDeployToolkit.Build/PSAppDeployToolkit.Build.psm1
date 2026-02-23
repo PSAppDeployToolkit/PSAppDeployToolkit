@@ -78,6 +78,7 @@ try
                             ))
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Launcher.exe'),
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Compatible.exe'),
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe'),
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Server.dll'),
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.dll'),

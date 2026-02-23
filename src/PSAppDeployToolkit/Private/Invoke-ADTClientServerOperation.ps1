@@ -330,7 +330,7 @@ function Private:Invoke-ADTClientServerOperation
         }
         finally
         {
-            if (($result -is [PSADT.ProcessManagement.ProcessResult]) -and $result.LaunchInfo.FilePath.EndsWith('\PSADT.ClientServer.Client.exe'))
+            if (($result -is [PSADT.ProcessManagement.ProcessResult]) -and ($result.LaunchInfo.FilePath -eq [PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath))
             {
                 Close-ADTClientServerProcess
             }
@@ -523,7 +523,7 @@ function Private:Invoke-ADTClientServerOperation
                     SID = $User.SID
                 }
                 Remove-ADTRegistryKey @arkParams
-                $sapResult = Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.Launcher.exe" -NoWait;
+                $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientLauncherPath) -NoWait;
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -551,7 +551,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -IgnoreExitCodes *
+                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -IgnoreExitCodes *
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]

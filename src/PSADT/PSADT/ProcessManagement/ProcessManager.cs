@@ -84,8 +84,7 @@ namespace PSADT.ProcessManagement
 
             // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-            bool cliApp = launchInfo.IsCliApplication || (!launchInfo.IsCliApplication && (launchInfo.CreateNoWindow || !launchInfo.UseShellExecute));
-            if ((cliApp && launchInfo.CreateNoWindow) || (!launchInfo.UseShellExecute) || (launchInfo.RunAsActiveUser is not null))
+            if (launchInfo.RunAsActiveUser is not null || launchInfo.CreateNoWindow || !launchInfo.UseShellExecute)
             {
                 AnonymousPipeServerStream? hStdOutRead = null;
                 AnonymousPipeServerStream? hStdErrRead = null;
@@ -118,7 +117,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // We must create a console window for console apps when the window is shown.
-                    if (cliApp)
+                    if (launchInfo.IsCliApplication)
                     {
                         if (launchInfo.CreateNoWindow)
                         {

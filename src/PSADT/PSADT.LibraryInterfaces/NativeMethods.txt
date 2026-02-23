@@ -284,6 +284,7 @@ RT_VERSION
 RT_VXD
 RtlGetVersion
 RtlNtStatusToDosError
+S_OK
 SC_CLOSE
 SC_CONTEXTHELP
 SC_DEFAULT
@@ -353,6 +354,7 @@ SetInformationJobObject
 SetLastError
 SetNamedSecurityInfo
 SetSecurityInfo
+SetTokenInformation
 SHChangeNotify
 SHGetImageList
 SHGFI_FLAGS
@@ -2072,6 +2074,9 @@ VirtualFree
 VS_FIXEDFILEINFO
 WaitForSingleObject
 Windows.Win32.UI.Controls.IImageList
+WINTRUST_ACTION_GENERIC_VERIFY_V2
+WINTRUST_DATA
+WinVerifyTrust
 WM_ACTIVATE
 WM_ACTIVATEAPP
 WM_APP
