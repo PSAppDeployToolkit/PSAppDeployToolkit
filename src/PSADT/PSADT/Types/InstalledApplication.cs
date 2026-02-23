@@ -150,7 +150,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the uninstall arguments used to remove the application as a list.
         /// </summary>
-        public IReadOnlyList<string>? UninstallStringArgumentList { get; }
+        public IReadOnlyList<string> UninstallStringArgumentList { get; } = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
@@ -165,7 +165,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the quiet uninstall arguments used to remove the application as a list.
         /// </summary>
-        public IReadOnlyList<string>? QuietUninstallStringArgumentList { get; }
+        public IReadOnlyList<string> QuietUninstallStringArgumentList { get; } = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets the source from which the application was installed.

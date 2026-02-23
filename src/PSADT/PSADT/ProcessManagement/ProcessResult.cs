@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using PSADT.Utilities;
@@ -98,20 +99,20 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string>? StdOut;
+        public readonly IReadOnlyList<string> StdOut = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string>? StdErr;
+        public readonly IReadOnlyList<string> StdErr = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string>? Interleaved;
+        public readonly IReadOnlyList<string> Interleaved = new ReadOnlyCollection<string>([]);
     }
 }

@@ -146,7 +146,7 @@ namespace PSADT.ProcessManagement
 
                     // If we're to read the output, we create pipes for stdout and stderr.
                     // Build a list of handles that need to be inherited by the child process.
-                    List<nint> handlesToInherit = launchInfo.HandlesToInherit?.Count > 0
+                    List<nint> handlesToInherit = launchInfo.HandlesToInherit.Count > 0
                         ? [.. launchInfo.HandlesToInherit]
                         : [];
 
@@ -166,7 +166,7 @@ namespace PSADT.ProcessManagement
                         handlesToInherit.Add(startupInfo.hStdError);
 
                         // Create stdin pipe if we have input data to write.
-                        if (launchInfo.StandardInput?.Count > 0)
+                        if (launchInfo.StandardInput.Count > 0)
                         {
                             hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
                             hStdInRead = hStdInWrite.ClientSafePipeHandle;
@@ -206,7 +206,7 @@ namespace PSADT.ProcessManagement
                         // We're running elevated but have been asked to de-elevate.
                         using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
                         OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                        _ = CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, new(launchInfo.HandlesToInherit?.Count > 0 ? handlesToInherit : []), creationFlags, null, workingDirectory, startupInfo, out pi);
+                        _ = CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, handlesToInherit, creationFlags, null, workingDirectory, startupInfo, out pi);
                     }
                     else
                     {
@@ -239,7 +239,7 @@ namespace PSADT.ProcessManagement
                     _ = NativeMethods.ResumeThread(hThread);
 
                     // Start the stdin write task after the process has been resumed.
-                    if (hStdInWrite is not null && launchInfo.StandardInput?.Count > 0)
+                    if (hStdInWrite is not null && launchInfo.StandardInput.Count > 0)
                     {
                         hStdInTask = Task.Run(() => WritePipe(hStdInWrite, launchInfo.StandardInput, launchInfo.StreamEncoding));
                     }
@@ -657,7 +657,7 @@ namespace PSADT.ProcessManagement
         {
             if (environmentDictionary is not null)
             {
-                string[]? argv = launchInfo.ArgumentList?.Count > 0 ? [.. launchInfo.ArgumentList] : [];
+                string[] argv = launchInfo.ArgumentList.Count > 0 ? [.. launchInfo.ArgumentList] : [];
                 for (int i = 0; i < argv.Length; i++)
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
@@ -669,7 +669,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 filePath = launchInfo.FilePath;
-                arguments = launchInfo.ArgumentList is not null ? launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null : null;
+                arguments = launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null;
                 workingDirectory = launchInfo.WorkingDirectory;
             }
             commandSpan = $"\"{filePath}\"{(!string.IsNullOrWhiteSpace(arguments) ? $" {arguments}" : null)}\0".ToCharArray();
@@ -799,7 +799,7 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, ReadOnlyCollection<nint> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, IReadOnlyList<nint> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
@@ -875,7 +875,7 @@ namespace PSADT.ProcessManagement
         /// <param name="forceBreakaway">If true, adds the EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY attribute.</param>
         /// <param name="pinnedHandles">When this method returns, contains the pinned GC handle for the handles array, or null if no handles were specified.</param>
         /// <returns>A tuple containing the STARTUPINFOEXW structure and the SafeProcThreadAttributeListHandle.</returns>
-        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, ReadOnlyCollection<nint> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
+        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, IReadOnlyList<nint> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
         {
             // Calculate the number of attributes needed.
             bool hasHandleInheritance = handlesToInherit.Count > 0;

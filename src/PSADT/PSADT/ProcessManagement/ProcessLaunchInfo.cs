@@ -195,7 +195,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string>? ArgumentList;
+        public readonly IReadOnlyList<string> ArgumentList = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets the working directory of the process.
@@ -259,14 +259,14 @@ namespace PSADT.ProcessManagement
         /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string>? StandardInput;
+        public readonly IReadOnlyList<string> StandardInput = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
         [IgnoreDataMember]
-        public IReadOnlyList<nint>? HandlesToInherit => HandlesToInheritValues?.Select(static h => (nint)h).ToList().AsReadOnly();
+        public IReadOnlyList<nint> HandlesToInherit => HandlesToInheritValues?.Select(static h => (nint)h).ToList().AsReadOnly() ?? new ReadOnlyCollection<nint>([]);
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.
