@@ -117,9 +117,10 @@ jobs:
         # Clone the destination repo.
         $dstBnch = 'main'
         $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
-        $dstPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        $dstPath = "$dstBase\versioned_docs\version-4.0.x\reference\functions"
         Write-Host -Object "Cloning destination repository, please wait..."
-        git clone -b $dstBnch $dstRepo $dstPath
+        git clone -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
         {
           throw "The cloning of the destination repository failed."
@@ -127,8 +128,8 @@ jobs:
 
         # Update the docs from the source repo to the destination.
         Write-Host -Object "Updating the markdown files in destination repository."
-        Remove-Item -Path "$dstPath\docs\reference\functions\*" -Force -Confirm:$false
-        Get-ChildItem -Path "$srcPath\docs\*" -File | Copy-Item -Destination "$dstPath\docs\reference\functions"
+        Remove-Item -Path "$dstPath\*" -Force -Confirm:$false
+        Get-ChildItem -Path "$srcPath\docs\*" -File | Copy-Item -Destination $dstPath
 
         # Change into the repository's directory.
         Push-Location -LiteralPath $dstPath
