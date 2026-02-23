@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="dialogResult">The CustomDialogResult instance to convert to a string.</param>
         public static implicit operator string(CustomDialogResult dialogResult)
         {
-            static void AssertNotNull(object value, string message)
+            static void AssertNotNull(CustomDialogResult value, string message)
             {
                 if (value == null)
                 {
