@@ -324,8 +324,9 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
-    $variables.Add('runasUserProfile', $(if ($variables.RunAsActiveUser) { [Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$($variables.RunAsActiveUser.SID)", 'ProfileImagePath', $null) }))
-    $variables.Add('userProfileName', $(if ($variables.runasUserProfile) { $variables.runasUserProfile.Split('\')[-1] }))
+    $variables.Add('defaultUserProfile', [Microsoft.Win32.Registry]::GetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList', 'Default', $null))
+    $variables.Add('runAsUserProfile', $(if ($variables.RunAsActiveUser) { [Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$($variables.RunAsActiveUser.SID)", 'ProfileImagePath', $null) }))
+    $variables.Add('userProfileName', $(if ($variables.runAsUserProfile) { $variables.runAsUserProfile.Split('\')[-1] }))
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]][System.IO.Path]::GetInvalidFileNameChars())
