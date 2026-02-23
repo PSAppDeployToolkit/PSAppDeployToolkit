@@ -114,9 +114,17 @@ function Show-ADTDialogBox
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.UInt32], $(
+                'Timeout', [System.Nullable[System.UInt32]], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long (in seconds) to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
+                            if ($null -eq $_)
+                            {
+                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be null.'))
+                            }
+                            if ($_ -le 0)
+                            {
+                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be less than or equal to 0.'))
+                            }
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {
                                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the config.psd1 file.'))
