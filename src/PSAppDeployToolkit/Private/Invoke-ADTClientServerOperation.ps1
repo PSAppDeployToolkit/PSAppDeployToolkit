@@ -217,7 +217,7 @@ function Private:Invoke-ADTClientServerOperation
                     $naerParams = @{
                         Exception = if ($result.StdErr.Count)
                         {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr[0], [System.Exception]))
+                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($result.StdErr[0], [System.Exception]))
                         }
                         else
                         {
