@@ -59,6 +59,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.18362.0'">
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.3" />
   </ItemGroup>
 </Project>
