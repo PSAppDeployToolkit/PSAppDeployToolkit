@@ -161,6 +161,8 @@ function Private:New-ADTEnvironmentTable
         }
         $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))
         $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetFolderPath('CommonProgramFilesX86'))
+        $variables.Add('envSystemProfile', [System.IO.Path]::Combine($variables.envSysNativeDirectory, 'Config', 'systemprofile'))
+        $variables.Add('envSystemProfileX86', [System.IO.Path]::Combine($variables.envSYSWOW64Directory, 'Config', 'systemprofile'))
     }
     else
     {
@@ -170,6 +172,8 @@ function Private:New-ADTEnvironmentTable
         $variables.Add('envCommonProgramFilesX86', $null)
         $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
         $variables.Add('envSYSWOW64Directory', $null)
+        $variables.Add('envSystemProfile', [System.IO.Path]::Combine($variables.envSysNativeDirectory, 'Config', 'systemprofile'))
+        $variables.Add('envSystemProfileX86', $null)
     }
 
     ## Variables: Operating System
