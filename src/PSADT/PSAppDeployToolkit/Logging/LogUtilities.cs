@@ -122,11 +122,10 @@ namespace PSAppDeployToolkit.Logging
             // Write out all messages to host if configured/permitted to do so.
             if (hostLogStreamType != HostLogStreamType.None)
             {
-                IEnumerable<string> conOutput = logEntries.Select(static e => e.LegacyLogLine);
-                ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
+                    ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
                     bool colouredOutput = severity != LogSeverity.Info;
                     if (colouredOutput)
                     {
@@ -135,14 +134,14 @@ namespace PSAppDeployToolkit.Logging
                     }
                     if (severity == LogSeverity.Error)
                     {
-                        foreach (string line in conOutput)
+                        foreach (string line in logEntries.Select(static e => e.LegacyLogLine))
                         {
                             Console.Error.WriteLine(line);
                         }
                     }
                     else
                     {
-                        foreach (string line in conOutput)
+                        foreach (string line in logEntries.Select(static e => e.LegacyLogLine))
                         {
                             Console.WriteLine(line);
                         }
@@ -155,12 +154,12 @@ namespace PSAppDeployToolkit.Logging
                 else if (hostLogStreamType != HostLogStreamType.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    _ = ModuleDatabase.InvokeScript(WriteHostDelegate, conOutput, sevCols);
+                    _ = ModuleDatabase.InvokeScript(WriteHostDelegate, logEntries.Select(static e => e.LegacyLogLine), LogSeverityColors[(int)severity]);
                 }
                 else
                 {
                     // Write the host output to PowerShell's VerboseStream.
-                    _ = ModuleDatabase.InvokeScript(WriteVerboseDelegate, conOutput);
+                    _ = ModuleDatabase.InvokeScript(WriteVerboseDelegate, logEntries.Select(static e => e.Message));
                 }
             }
             return logEntries;
