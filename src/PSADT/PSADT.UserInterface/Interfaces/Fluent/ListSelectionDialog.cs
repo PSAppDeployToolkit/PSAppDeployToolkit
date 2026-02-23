@@ -29,7 +29,24 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 _ = ListSelectionComboBox.Items.Add(item);
             }
-            ListSelectionComboBox.SelectedIndex = options.SelectedIndex;
+
+            // Disable all buttons until an item is selected.
+            if (!options.SelectedIndex.HasValue)
+            {
+                ListSelectionComboBox.SelectionChanged += (sender, e) =>
+                {
+                    ButtonLeft.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
+                    ButtonMiddle.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
+                    ButtonRight.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
+                };
+                ButtonLeft.IsEnabled = false;
+                ButtonMiddle.IsEnabled = false;
+                ButtonRight.IsEnabled = false;
+            }
+            else
+            {
+                ListSelectionComboBox.SelectedIndex = options.SelectedIndex.Value;
+            }
             _ = ListSelectionComboBox.Focus();
 
             // Set heading text from localized strings if available.
