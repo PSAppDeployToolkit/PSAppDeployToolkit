@@ -376,7 +376,7 @@ namespace PSADT.ClientServer
                 typeof(ProcessManagement.ProcessDefinition),
                 typeof(ProcessManagement.ProcessLaunchInfo),
                 typeof(ProcessManagement.ProcessResult),
-                typeof(LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE),
+                typeof(Interop.QUERY_USER_NOTIFICATION_STATE),
                 typeof(Foundation.RunAsActiveUser),
                 typeof(WindowManagement.WindowInfo),
                 typeof(WindowManagement.WindowInfoOptions),

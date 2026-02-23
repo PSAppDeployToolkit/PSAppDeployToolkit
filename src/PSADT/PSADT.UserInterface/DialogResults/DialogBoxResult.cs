@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.DialogResults

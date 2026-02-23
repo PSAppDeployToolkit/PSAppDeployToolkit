@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -95,7 +95,7 @@ namespace PSADT.DeviceManagement
         /// <returns></returns>
         public static bool IsOOBEComplete()
         {
-            _ = Kernel32.OOBEComplete(out BOOL isOobeComplete);
+            _ = NativeMethods.OOBEComplete(out BOOL isOobeComplete);
             return isOobeComplete;
         }
 
@@ -124,8 +124,8 @@ namespace PSADT.DeviceManagement
             const byte ChassisTypeOffset = 5;
 
             // Allocate buffer for the SMBIOS data and retrieve it.
-            Span<byte> buffer = stackalloc byte[(int)Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, null)];
-            _ = Kernel32.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, buffer);
+            Span<byte> buffer = stackalloc byte[(int)NativeMethods.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, null)];
+            _ = NativeMethods.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, buffer);
 
             // Parse the SMBIOS data to find Type 3, skipping the header.
             int offset = 0; offset += 8;

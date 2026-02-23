@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using PSADT.ClientServer;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
@@ -117,7 +117,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options containing the banner image to display. Cannot be <see langword="null"/>.</param>
         private protected void SetPictureBox(PictureBox pictureBox, BaseDialogOptions options)
         {
-            double dpiScale = User32.GetDpiForWindow((HWND)Handle) / 96.0;
+            double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
             pictureBox.Image = GetBanner(options.AppBannerImage);
             pictureBox.Size = new((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * (pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
         }
@@ -170,12 +170,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Adjust the menu depending on our config options.
-            using (DestroyMenuSafeHandle menuHandle = User32.GetSystemMenu((HWND)Handle, false))
+            using (DestroyMenuSafeHandle menuHandle = NativeMethods.GetSystemMenu((HWND)Handle, false))
             {
                 // Disable the close button on the form. Failing that, disable the ControlBox.
                 try
                 {
-                    _ = User32.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
+                    _ = NativeMethods.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -185,7 +185,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // Disable the move command on the system menu if we can't move the dialog.
                 if (!dialogAllowMove)
                 {
-                    _ = User32.RemoveMenu(menuHandle, WM_SYSCOMMAND.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
+                    _ = NativeMethods.RemoveMenu(menuHandle, WM_SYSCOMMAND.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
                 }
             }
 

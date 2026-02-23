@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.ClientServer;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -279,7 +279,7 @@ namespace PSADT.UserInterface
         internal static void ShowBalloonTip(BalloonTipOptions options)
         {
             // Set the AUMID for this process so the Windows 10 toast has the correct title.
-            _ = Shell32.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
+            _ = NativeMethods.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
 
             // Correct the registry data for the AUMID. This can reference stale info from a previous run.
             string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.TrayTitle}";
@@ -335,7 +335,7 @@ namespace PSADT.UserInterface
         /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, uint Timeout = 0)
         {
-            return InvokeDialogAction(() => User32.MessageBoxTimeout(default, Prompt, Title, Options, 0, Timeout));
+            return InvokeDialogAction(() => NativeMethods.MessageBoxTimeout(default, Prompt, Title, Options, 0, Timeout));
         }
 
         /// <summary>
@@ -351,7 +351,7 @@ namespace PSADT.UserInterface
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
-            return InvokeDialogAction(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
+            return InvokeDialogAction(() => NativeMethods.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
         }
 
         /// <summary>

@@ -169,7 +169,7 @@ function Resolve-ADTErrorRecord
                 }
                 elseif ($propName -eq 'Exception')
                 {
-                    $logErrorProperties.Add($propName, [PSADT.LibraryInterfaces.Utilities.ExceptionUtilities]::CollapseInnerExceptionTraceMarkers($errorObject.$propName).Trim())
+                    $logErrorProperties.Add($propName, [PSADT.Interop.Utilities.ExceptionUtilities]::CollapseInnerExceptionTraceMarkers($errorObject.$propName).Trim())
                 }
                 else
                 {

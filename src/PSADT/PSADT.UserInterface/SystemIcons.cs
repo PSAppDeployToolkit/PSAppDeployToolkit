@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.UI.Controls;
@@ -37,15 +37,15 @@ namespace PSADT.UserInterface
             ]);
 
             // Get the DPI for the current system.
-            _ = SHCore.GetDpiForDefaultMonitor(MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
+            _ = NativeMethods.GetDpiForDefaultMonitor(MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
             int x = (int)(48.0 * (dpiX / 96.0)); int y = (int)(48.0 * (dpiY / 96.0));
 
             // Internal worker method to retrieve a stock icon as a Bitmap.
             static Bitmap GetSystemStockIconAsBitmap(SHSTOCKICONID siid, SHIL_SIZE iImageList)
             {
                 // Get a handle to specified stock icon.
-                _ = Shell32.SHGetImageList(iImageList, out IImageList imageList);
-                _ = Shell32.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out Shell32.SHSTOCKICONINFO shii);
+                _ = NativeMethods.SHGetImageList(iImageList, out IImageList imageList);
+                _ = NativeMethods.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out SHSTOCKICONINFO shii);
                 imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out DestroyIconSafeHandle iconHandle);
                 using (iconHandle)
                 {

@@ -12,7 +12,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.ClientServer.Payloads;
 using PSADT.DeviceManagement;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.Types;
@@ -723,7 +723,7 @@ namespace PSADT.ClientServer
         {
             HWND hwnd = (HWND)options.WindowHandle;
             WindowTools.BringWindowToFront(hwnd);
-            if (!User32.IsWindowEnabled(hwnd))
+            if (!NativeMethods.IsWindowEnabled(hwnd))
             {
                 throw new ClientException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.", ClientExitCode.SendKeysWindowNotEnabled);
             }
@@ -786,7 +786,7 @@ namespace PSADT.ClientServer
             pipe.Connect();
 
             // Get the user's token from the WTS subsystem.
-            _ = WtsApi32.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
+            _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
             SafeFileHandle hPrimaryToken;
             using (hUserToken)
             {
@@ -813,11 +813,11 @@ namespace PSADT.ClientServer
 
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
-            using (SafeFileHandle hSourceProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
-            using (SafeProcessHandle hCurrentProcess = Kernel32.GetCurrentProcess())
+            using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
+            using (SafeProcessHandle hCurrentProcess = NativeMethods.GetCurrentProcess())
             using (hPrimaryToken)
             {
-                _ = Kernel32.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                _ = NativeMethods.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
             }
 
             // Write the duplicated token to the pipe.

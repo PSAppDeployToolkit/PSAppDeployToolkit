@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using PSADT.FileSystem;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 
 namespace PSADT.ProcessManagement
 {

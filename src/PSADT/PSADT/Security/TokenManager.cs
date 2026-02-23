@@ -7,8 +7,8 @@ using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
@@ -202,7 +202,7 @@ namespace PSADT.Security
             {
                 // When we're local system, we can just get the primary token for the user.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = WtsApi32.WTSQueryUserToken(runAsActiveUser.SessionId, out SafeFileHandle hUserToken);
+                _ = NativeMethods.WTSQueryUserToken(runAsActiveUser.SessionId, out SafeFileHandle hUserToken);
                 using (hUserToken)
                 {
                     if (useLinkedAdminToken || useHighestAvailableToken)
@@ -243,8 +243,8 @@ namespace PSADT.Security
             {
                 throw new InvalidOperationException("The current process is already running with an unelevated token.");
             }
-            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId());
-            _ = AdvApi32.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId());
+            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
             using (hProcessToken)
             {
                 if (TokenUtilities.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
@@ -269,12 +269,12 @@ namespace PSADT.Security
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle)
         {
-            _ = AdvApi32.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
             if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
                 Span<byte> tokenInformation = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(tokenInformation, 1);
-                _ = AdvApi32.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
+                _ = NativeMethods.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
             }
             return hPrimaryToken;
         }
@@ -291,7 +291,7 @@ namespace PSADT.Security
         internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_LINKED_TOKEN>()];
-            _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
             ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
             return new(tokenLinkedToken.LinkedToken, true);
         }

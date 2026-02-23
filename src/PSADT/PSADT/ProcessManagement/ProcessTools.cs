@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Win32.SafeHandles;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 
@@ -25,10 +25,10 @@ namespace PSADT.ProcessManagement
         /// <returns>true if the process token grants the specified access rights; otherwise, false.</returns>
         internal static bool TestProcessAccessRights(SafeProcessHandle token, PROCESS_ACCESS_RIGHTS accessRights)
         {
-            using SafeProcessHandle cProcessSafeHandle = Kernel32.GetCurrentProcess();
+            using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
             try
             {
-                BOOL res = Kernel32.DuplicateHandle(cProcessSafeHandle, token, cProcessSafeHandle, out SafeFileHandle newHandle, accessRights, false, 0);
+                BOOL res = NativeMethods.DuplicateHandle(cProcessSafeHandle, token, cProcessSafeHandle, out SafeFileHandle newHandle, accessRights, false, 0);
                 using (newHandle)
                 {
                     return res;

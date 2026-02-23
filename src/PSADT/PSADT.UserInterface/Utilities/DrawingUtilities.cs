@@ -3,7 +3,7 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32;
 using Windows.Win32.UI.Shell;
 
@@ -109,7 +109,7 @@ namespace PSADT.UserInterface.Utilities
             }
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
-            _ = Shell32.SHGetFileInfo(path, out Shell32.SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
+            _ = NativeMethods.SHGetFileInfo(path, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
             using DestroyIconSafeHandle hIcon = new(psfi.hIcon, true);
             bool hIconAddRef = false;
             try

@@ -406,7 +406,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             GetUserNotificationState
             {
-                [PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]
+                [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]
                 break
             }
             GetForegroundWindowProcessId

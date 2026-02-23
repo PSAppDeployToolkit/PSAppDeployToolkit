@@ -18,9 +18,9 @@ using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
-using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
+using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.Utilities;
@@ -63,9 +63,9 @@ namespace PSADT.ProcessManagement
             // Set up the job object and I/O completion port for the process.
             // No using statements here, they're disposed of in the final task.
             bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
-            SafeFileHandle iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, default, 1);
-            SafeFileHandle job = Kernel32.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
-            _ = Kernel32.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+            SafeFileHandle iocp = NativeMethods.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, default, 1);
+            SafeFileHandle job = NativeMethods.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
+            _ = NativeMethods.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
             {
                 CompletionPort = (HANDLE)iocp.DangerousGetHandle(),
                 CompletionKey = null,
@@ -74,7 +74,7 @@ namespace PSADT.ProcessManagement
             // Set up the required job limit if child processes must be killed with the parent.
             if (launchInfo.KillChildProcessesWithParent)
             {
-                _ = Kernel32.SetInformationJobObject(job, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+                _ = NativeMethods.SetInformationJobObject(job, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
                 {
                     BasicLimitInformation = new()
                     {
@@ -177,7 +177,7 @@ namespace PSADT.ProcessManagement
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                         using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser, launchInfo.UseLinkedAdminToken, launchInfo.UseHighestAvailableToken);
-                        _ = UserEnv.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                        _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                         using (lpEnvironment)
                         {
                             unsafe
@@ -209,12 +209,12 @@ namespace PSADT.ProcessManagement
                             using (hAttributeList)
                             using (pinnedHandles)
                             {
-                                _ = Kernel32.CreateProcess(filePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, workingDirectory, startupInfoEx, out pi);
+                                _ = NativeMethods.CreateProcess(filePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, workingDirectory, startupInfoEx, out pi);
                             }
                         }
                         else
                         {
-                            _ = Kernel32.CreateProcess(filePath, ref commandSpan, null, null, false, creationFlags, null, workingDirectory, startupInfo, out pi);
+                            _ = NativeMethods.CreateProcess(filePath, ref commandSpan, null, null, false, creationFlags, null, workingDirectory, startupInfo, out pi);
                         }
                     }
 
@@ -225,9 +225,9 @@ namespace PSADT.ProcessManagement
                     hProcess = new(pi.hProcess, true);
                     if (assignProcessToJob)
                     {
-                        _ = Kernel32.AssignProcessToJobObject(job, hProcess);
+                        _ = NativeMethods.AssignProcessToJobObject(job, hProcess);
                     }
-                    _ = Kernel32.ResumeThread(hThread);
+                    _ = NativeMethods.ResumeThread(hThread);
 
                     // Start the stdin write task after the process has been resumed.
                     if (hStdInWrite is not null && launchInfo.StandardInput?.Count > 0)
@@ -304,7 +304,7 @@ namespace PSADT.ProcessManagement
                 {
                     if (assignProcessToJob)
                     {
-                        _ = Kernel32.AssignProcessToJobObject(job, hProcess);
+                        _ = NativeMethods.AssignProcessToJobObject(job, hProcess);
                     }
                     if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
@@ -379,18 +379,18 @@ namespace PSADT.ProcessManagement
                     };
 
                     // Apply the ACL and potentially change the owner of the client process. DENY ACEs are processed before GRANT ACEs by Windows.
-                    _ = AdvApi32.SetEntriesInAcl([denyAce, grantAce], out LocalFreeSafeHandle pAcl);
+                    _ = NativeMethods.SetEntriesInAcl([denyAce, grantAce], out LocalFreeSafeHandle pAcl);
                     using (pAcl)
                     {
                         if (changeOwner)
                         {
                             byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
                             using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid);
-                            _ = AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
+                            _ = NativeMethods.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
                         }
                         else
                         {
-                            _ = AdvApi32.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, null, null, pAcl, null);
+                            _ = NativeMethods.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, null, null, pAcl, null);
                         }
                     }
                 }
@@ -409,7 +409,7 @@ namespace PSADT.ProcessManagement
             {
                 // Set up the cancellation token source and registration if needed.
                 uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
-                using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => Kernel32.PostQueuedCompletionStatus(iocp, timeoutExitCode, default)) : default;
+                using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => NativeMethods.PostQueuedCompletionStatus(iocp, timeoutExitCode, default)) : default;
 
                 // Spin until complete or cancelled.
                 bool disposeJob = true; int exitCode = TimeoutExitCode;
@@ -419,7 +419,7 @@ namespace PSADT.ProcessManagement
                     {
                         while (true)
                         {
-                            _ = Kernel32.GetQueuedCompletionStatus(iocp, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
+                            _ = NativeMethods.GetQueuedCompletionStatus(iocp, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
                             if (lpCompletionCode == timeoutExitCode)
                             {
                                 if (launchInfo.NoTerminateOnTimeout)
@@ -434,12 +434,12 @@ namespace PSADT.ProcessManagement
                                     exitCode = TimeoutExitCode;
                                     break;
                                 }
-                                _ = Kernel32.TerminateJobObject(job, timeoutExitCode);
+                                _ = NativeMethods.TerminateJobObject(job, timeoutExitCode);
                             }
                             else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                             {
                                 await Task.WhenAll(hStdOutTask, hStdErrTask, hStdInTask).ConfigureAwait(false);
-                                _ = Kernel32.GetExitCodeProcess(hProcess, out uint lpExitCode);
+                                _ = NativeMethods.GetExitCodeProcess(hProcess, out uint lpExitCode);
                                 exitCode = unchecked((int)lpExitCode);
                                 break;
                             }
@@ -740,9 +740,9 @@ namespace PSADT.ProcessManagement
             }
 
             // Test whether the process is part of an existing job object.
-            using (SafeProcessHandle cProcessSafeHandle = Kernel32.GetCurrentProcess())
+            using (SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess())
             {
-                _ = Kernel32.IsProcessInJob(cProcessSafeHandle, null, out BOOL inJob);
+                _ = NativeMethods.IsProcessInJob(cProcessSafeHandle, null, out BOOL inJob);
                 if (!inJob)
                 {
                     return CreateProcessUsingTokenStatus.OK;
@@ -751,7 +751,7 @@ namespace PSADT.ProcessManagement
 
             // Since we're part of a job object, we need to check if the job has the JOB_OBJECT_LIMIT_BREAKAWAY_OK flag set.
             Span<byte> lpJobObjectInformation = stackalloc byte[Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
-            _ = Kernel32.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
+            _ = NativeMethods.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
             ref readonly JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref lpJobObjectInformation.AsReadOnlyStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
             JOB_OBJECT_LIMIT jobObjectLimitFlags = jobObjectInfo.BasicLimitInformation.LimitFlags;
             if (!(jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
@@ -805,7 +805,7 @@ namespace PSADT.ProcessManagement
                     using (hAttributeList)
                     using (pinnedHandles)
                     {
-                        return AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
+                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
                     }
                 }
                 else if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK)
@@ -817,7 +817,7 @@ namespace PSADT.ProcessManagement
                     {
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                     }
-                    return AdvApi32.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                 }
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
             }
@@ -834,7 +834,7 @@ namespace PSADT.ProcessManagement
                     creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                 }
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
-                return AdvApi32.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
             }
 
             // Neither CreateProcessAsUser() nor CreateProcessWithToken() can be used.

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
 
@@ -23,8 +23,8 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
         public static string? GetMessageFromMsiExitCode(uint msiExitCode)
         {
-            using FreeLibrarySafeHandle hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
-            _ = User32.LoadString(hMsiMsgDll, msiExitCode, out string? msiMsgString);
+            using FreeLibrarySafeHandle hMsiMsgDll = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
+            _ = NativeMethods.LoadString(hMsiMsgDll, msiExitCode, out string? msiMsgString);
             return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
         }
 
@@ -40,19 +40,19 @@ namespace PSADT.Utilities
         public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
         {
             // Open the patch file as a database.
-            _ = Msi.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY + MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
+            _ = NativeMethods.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY + MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
             using (hDatabase)
             {
                 // Get the summary information from the database.
-                _ = Msi.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
+                _ = NativeMethods.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
                 using (hSummaryInfo)
                 {
                     // Determine the size of the buffer we need.
-                    _ = Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
+                    _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
                     Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
 
                     // Grab the supported product codes and return them to the caller.
-                    _ = Msi.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
+                    _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
                     return new ReadOnlyCollection<Guid>([.. bufSpan.Slice(0, (int)requiredSize).ToString().Split(';').Select(static g => new Guid(g))]);
                 }
             }
@@ -70,9 +70,9 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
-            _ = Msi.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
+            _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength + 1];
-            _ = Msi.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
+            _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
             return XmlUtilities.SafeLoadFromText(bufSpan.Slice(0, (int)requiredLength).ToString());
         }
 
@@ -86,7 +86,7 @@ namespace PSADT.Utilities
         /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
         public static INSTALLSTATE QueryProductState(Guid productCode)
         {
-            return (INSTALLSTATE)Msi.MsiQueryProductState(productCode);
+            return (INSTALLSTATE)NativeMethods.MsiQueryProductState(productCode);
         }
 
         /// <summary>

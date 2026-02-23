@@ -532,7 +532,7 @@ function Start-ADTMsiProcess
                             Write-ADTLogEntry -Message "Found an installed instance of the product via [Get-ADTApplication -ProductCode]."
                             !!($InstalledApplication = $installedApps)
                         }
-                        elseif ($msiProductCode.Length -eq 1 -and ($msiProductState = [PSADT.Utilities.MsiUtilities]::QueryProductState($msiProductCode[0])).Equals([PSADT.LibraryInterfaces.INSTALLSTATE]::INSTALLSTATE_DEFAULT))
+                        elseif ($msiProductCode.Length -eq 1 -and ($msiProductState = [PSADT.Utilities.MsiUtilities]::QueryProductState($msiProductCode[0])).Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT))
                         {
                             # We have an installed MSI that seemingly has no ARP entry. See if we've got any info in the registry for it for logging purposes, then report we found it.
                             if (!$msiPropertyTable -and ($regPropertyTable = Get-ADTRegistryKey -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Installer\Products\$([PSADT.Utilities.MsiUtilities]::CompressGuid($msiProductCode[0]))"))
@@ -543,7 +543,7 @@ function Start-ADTMsiProcess
                                 [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$msiPropertyTable = $msiPropertyTable
                             }
                             Write-ADTLogEntry -Message "Found an installed instance of the product via [MsiQueryProductState()]."
-                            $msiProductState.Equals([PSADT.LibraryInterfaces.INSTALLSTATE]::INSTALLSTATE_DEFAULT)
+                            $msiProductState.Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT)
                         }
                         elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -InformationAction SilentlyContinue))
                         {

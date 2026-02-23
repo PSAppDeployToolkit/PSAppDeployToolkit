@@ -1,4 +1,4 @@
-﻿using PSADT.LibraryInterfaces;
+﻿using PSADT.Interop;
 
 namespace PSADT.TerminalServices
 {
@@ -20,7 +20,7 @@ namespace PSADT.TerminalServices
         /// <returns>true if the session is in application install mode; otherwise, false.</returns>
         public static bool InAppInstallMode()
         {
-            return Kernel32.TermsrvAppInstallMode();
+            return NativeMethods.TermsrvAppInstallMode();
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.Types;
 using PSADT.UserInterface;

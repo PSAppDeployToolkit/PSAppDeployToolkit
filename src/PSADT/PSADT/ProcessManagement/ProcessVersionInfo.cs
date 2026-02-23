@@ -9,8 +9,8 @@ using System.Text;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.FileSystem;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using PSADT.Security;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -109,7 +109,7 @@ namespace PSADT.ProcessManagement
 
             // Get the main module base address and read the version resource from memory.
             FileName = !string.IsNullOrWhiteSpace(filePath) ? filePath! : process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable()); ReadOnlySpan<byte> versionResource;
-            using (SafeFileHandle processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
+            using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
             {
                 try
                 {
@@ -125,7 +125,7 @@ namespace PSADT.ProcessManagement
 
             // If we got a valid version resource, parse it.
             // Read the version information from the resource.
-            _ = Version32.VerQueryValue(versionResource, @"\", out nint fixedInfoPtr, out _);
+            _ = NativeMethods.VerQueryValue(versionResource, @"\", out nint fixedInfoPtr, out _);
             FixedFileInfo = fixedInfoPtr.AsReadOnlyStructure<VS_FIXEDFILEINFO>();
             FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
             FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
@@ -176,10 +176,10 @@ namespace PSADT.ProcessManagement
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
-            _ = PsApi.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
-            _ = PsApi.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
+            _ = NativeMethods.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
+            _ = NativeMethods.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
             ref readonly HMODULE hModule = ref moduleBuffer.AsReadOnlyStructure<HMODULE>();
-            _ = PsApi.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
+            _ = NativeMethods.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
             return moduleInfo;
         }
 
@@ -191,7 +191,7 @@ namespace PSADT.ProcessManagement
             // Read the DOS header to make sure we have a valid PE header.
             nint baseAddress; unsafe { baseAddress = (nint)moduleInfo.lpBaseOfDll; }
             Span<byte> dosHeaderBuf = stackalloc byte[Marshal.SizeOf<IMAGE_DOS_HEADER>()];
-            _ = Kernel32.ReadProcessMemory(processHandle, baseAddress, dosHeaderBuf, out _);
+            _ = NativeMethods.ReadProcessMemory(processHandle, baseAddress, dosHeaderBuf, out _);
             ref readonly IMAGE_DOS_HEADER dosHeader = ref dosHeaderBuf.AsReadOnlyStructure<IMAGE_DOS_HEADER>();
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
@@ -201,7 +201,7 @@ namespace PSADT.ProcessManagement
             // Read the signature to confirm we've got a valid NT image.
             nint ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
             Span<byte> peSignatureBuf = stackalloc byte[Marshal.SizeOf<uint>()];
-            _ = Kernel32.ReadProcessMemory(processHandle, ntHeadersAddress, peSignatureBuf, out _);
+            _ = NativeMethods.ReadProcessMemory(processHandle, ntHeadersAddress, peSignatureBuf, out _);
             ref readonly uint peSignature = ref peSignatureBuf.AsReadOnlyStructure<uint>();
             if (peSignature != PInvoke.IMAGE_NT_SIGNATURE)
             {
@@ -210,7 +210,7 @@ namespace PSADT.ProcessManagement
 
             // Read the magic from the IMAGE_OPTIONAL_HEADER to know if it's 32/64-bit.
             nint ntOptionalHeadersAddress = unchecked(ntHeadersAddress + Marshal.SizeOf<uint>() + Marshal.SizeOf<IMAGE_FILE_HEADER>());
-            Span<byte> magicBuf = stackalloc byte[sizeof(ushort)]; _ = Kernel32.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, magicBuf, out _);
+            Span<byte> magicBuf = stackalloc byte[sizeof(ushort)]; _ = NativeMethods.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, magicBuf, out _);
             ref readonly IMAGE_OPTIONAL_HEADER_MAGIC magic = ref magicBuf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER_MAGIC>();
 
             // Determine the resource directory RVA and size based on the optional header magic number.
@@ -218,7 +218,7 @@ namespace PSADT.ProcessManagement
             if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC) // PE32
             {
                 Span<byte> optionalHeader32Buf = stackalloc byte[Marshal.SizeOf<IMAGE_OPTIONAL_HEADER32>()];
-                _ = Kernel32.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader32Buf, out _);
+                _ = NativeMethods.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader32Buf, out _);
                 ref readonly IMAGE_OPTIONAL_HEADER32 optionalHeader32 = ref optionalHeader32Buf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER32>();
                 if (optionalHeader32.NumberOfRvaAndSizes <= 2)
                 {
@@ -230,7 +230,7 @@ namespace PSADT.ProcessManagement
             else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC) // PE32+
             {
                 Span<byte> optionalHeader64Buf = stackalloc byte[Marshal.SizeOf<IMAGE_OPTIONAL_HEADER64>()];
-                _ = Kernel32.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader64Buf, out _);
+                _ = NativeMethods.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader64Buf, out _);
                 ref readonly IMAGE_OPTIONAL_HEADER64 optionalHeader64 = ref optionalHeader64Buf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER64>();
                 if (optionalHeader64.NumberOfRvaAndSizes <= 2)
                 {
@@ -257,7 +257,7 @@ namespace PSADT.ProcessManagement
         {
             // Read the resource directory
             Span<byte> resourceDirBuf = stackalloc byte[Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>()];
-            _ = Kernel32.ReadProcessMemory(processHandle, resourceDirectoryAddress, resourceDirBuf, out _);
+            _ = NativeMethods.ReadProcessMemory(processHandle, resourceDirectoryAddress, resourceDirBuf, out _);
             ref readonly IMAGE_RESOURCE_DIRECTORY resourceDir = ref resourceDirBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY>();
             int totalEntries = resourceDir.NumberOfNamedEntries + resourceDir.NumberOfIdEntries;
             nint entriesAddress = unchecked(resourceDirectoryAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
@@ -267,7 +267,7 @@ namespace PSADT.ProcessManagement
             for (int i = 0; i < totalEntries; i++)
             {
                 nint entryAddress = unchecked(entriesAddress + (i * Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>()));
-                _ = Kernel32.ReadProcessMemory(processHandle, entryAddress, entryBuf, out _);
+                _ = NativeMethods.ReadProcessMemory(processHandle, entryAddress, entryBuf, out _);
                 ref readonly IMAGE_RESOURCE_DIRECTORY_ENTRY entry = ref entryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY_ENTRY>();
                 if (entry.Anonymous1.Id == (uint)RESOURCE_TYPE.RT_VERSION)
                 {
@@ -289,7 +289,7 @@ namespace PSADT.ProcessManagement
             {
                 nint currentAddress = unchecked(resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK));
                 nint currentEntryAddress = unchecked(currentAddress + Marshal.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
-                _ = Kernel32.ReadProcessMemory(processHandle, currentEntryAddress, currentEntryBuf, out _);
+                _ = NativeMethods.ReadProcessMemory(processHandle, currentEntryAddress, currentEntryBuf, out _);
                 ref readonly IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry = ref currentEntryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY_ENTRY>();
                 currentOffsetToData = currentEntry.Anonymous2.OffsetToData;
             }
@@ -298,12 +298,12 @@ namespace PSADT.ProcessManagement
             // At this point, currentEntry points to a data entry, not a directory.
             nint dataEntryAddress = unchecked(resourceDirectoryAddress + (int)currentOffsetToData);
             Span<byte> dataEntryBuf = stackalloc byte[Marshal.SizeOf<IMAGE_RESOURCE_DATA_ENTRY>()];
-            _ = Kernel32.ReadProcessMemory(processHandle, dataEntryAddress, dataEntryBuf, out _);
+            _ = NativeMethods.ReadProcessMemory(processHandle, dataEntryAddress, dataEntryBuf, out _);
             ref readonly IMAGE_RESOURCE_DATA_ENTRY dataEntry = ref dataEntryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DATA_ENTRY>();
             if (dataEntry.Size > 0)
             {
                 byte[] buffer = new byte[(int)dataEntry.Size];
-                _ = Kernel32.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
+                _ = NativeMethods.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
                 return buffer;
             }
             throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{(long)dataEntryAddress:X}");
@@ -316,11 +316,11 @@ namespace PSADT.ProcessManagement
         {
             // Return any translation pairs found in the version resource.
             List<string> translationCombinations = [];
-            _ = Version32.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out nint translationPtr, out uint translationLength);
-            int langAndCodepageSize = Marshal.SizeOf<Version32.LANGANDCODEPAGE>();
+            _ = NativeMethods.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out nint translationPtr, out uint translationLength);
+            int langAndCodepageSize = Marshal.SizeOf<LANGANDCODEPAGE>();
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
-                ref readonly Version32.LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsReadOnlyStructure<Version32.LANGANDCODEPAGE>();
+                ref readonly LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsReadOnlyStructure<LANGANDCODEPAGE>();
                 translationCombinations.Add(langAndCodePage.ToTranslationTableString());
             }
 
@@ -343,7 +343,7 @@ namespace PSADT.ProcessManagement
         private static string? GetFileVersionLanguage(string codepage)
         {
             Span<char> szLang = stackalloc char[1024]; szLang.Clear();
-            string result = szLang.Slice(0, (int)Kernel32.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang)).ToString();
+            string result = szLang.Slice(0, (int)NativeMethods.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang)).ToString();
             return !string.IsNullOrWhiteSpace(result) ? result : null;
         }
 
@@ -363,7 +363,7 @@ namespace PSADT.ProcessManagement
             // Attempt to query the version resource for the specified name.
             try
             {
-                _ = Version32.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out nint lplpBuffer, out uint puLen);
+                _ = NativeMethods.VerQueryValue(versionResource, string.Format(CultureInfo.InvariantCulture, @"\StringFileInfo\{0}\{1}", codepage, name), out nint lplpBuffer, out uint puLen);
                 if (puLen > 1 && lplpBuffer != IntPtr.Zero)
                 {
                     string result = Marshal.PtrToStringUni(lplpBuffer, (int)(puLen - 1));

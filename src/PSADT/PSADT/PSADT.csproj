@@ -34,6 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSADT.LibraryInterfaces\PSADT.LibraryInterfaces.csproj" />
+    <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 
 namespace PSADT.Utilities
 {
@@ -24,7 +24,7 @@ namespace PSADT.Utilities
         public static string GetSectionKeyValue(string filepath, string section, string key)
         {
             Span<char> buffer = stackalloc char[4096]; buffer.Clear();
-            return buffer.Slice(0, (int)Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath)).ToString();
+            return buffer.Slice(0, (int)NativeMethods.GetPrivateProfileString(section, key, null, buffer, filepath)).ToString();
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace PSADT.Utilities
         /// <param name="filepath"></param>
         public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
         {
-            _ = Kernel32.WritePrivateProfileString(section, key, value, filepath);
+            _ = NativeMethods.WritePrivateProfileString(section, key, value, filepath);
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace PSADT.Utilities
             uint res;
             try
             {
-                res = Kernel32.GetPrivateProfileSection(section, buffer, filepath);
+                res = NativeMethods.GetPrivateProfileSection(section, buffer, filepath);
             }
             catch (Exception ex)
             {
@@ -100,7 +100,7 @@ namespace PSADT.Utilities
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536];
-            return new(buffer.Slice(0, (int)Kernel32.GetPrivateProfileSectionNames(buffer, filepath)).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries));
+            return new(buffer.Slice(0, (int)NativeMethods.GetPrivateProfileSectionNames(buffer, filepath)).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries));
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace PSADT.Utilities
         {
             if (content is null)
             {
-                _ = Kernel32.WritePrivateProfileSection(section, null, filepath);
+                _ = NativeMethods.WritePrivateProfileSection(section, null, filepath);
                 return;
             }
 
@@ -148,7 +148,7 @@ namespace PSADT.Utilities
                 _ = entries.Append('\0');
             }
             _ = entries.Append('\0');
-            _ = Kernel32.WritePrivateProfileSection(section, entries.ToString(), filepath);
+            _ = NativeMethods.WritePrivateProfileSection(section, entries.ToString(), filepath);
         }
     }
 }

@@ -363,7 +363,7 @@ function Uninstall-ADTApplication
                     }
                     try
                     {
-                        Start-ADTProcess @sapParams -CreateNoWindow:(![PSADT.FileSystem.ExecutableInfo]::Get($sapParams.FilePath).Subsystem.Equals([PSADT.LibraryInterfaces.IMAGE_SUBSYSTEM]::IMAGE_SUBSYSTEM_WINDOWS_GUI)) -ErrorAction $OriginalErrorAction
+                        Start-ADTProcess @sapParams -CreateNoWindow:(![PSADT.FileSystem.ExecutableInfo]::Get($sapParams.FilePath).Subsystem.Equals([PSADT.Interop.IMAGE_SUBSYSTEM]::IMAGE_SUBSYSTEM_WINDOWS_GUI)) -ErrorAction $OriginalErrorAction
                     }
                     catch
                     {

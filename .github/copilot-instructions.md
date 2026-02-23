@@ -61,7 +61,7 @@ Invoke-ScriptAnalyzer -Path ./src/PSAppDeployToolkit -Recurse -Settings ./.vscod
 │   │   └── lib/                       # Compiled C# assemblies (output target)
 │   ├── PSADT/                         # C# solution directory (open this in Visual Studio)
 │   │   ├── PSADT/                     # Core utilities library
-│   │   ├── PSADT.LibraryInterfaces/   # Win32 P/Invoke declarations
+│   │   ├── PSADT.Interop/             # Win32 P/Invoke declarations
 │   │   ├── PSADT.UserInterface/       # WPF Fluent & WinForms Classic dialogs
 │   │   ├── PSADT.ClientServer.Server/ # IPC server for SYSTEM-to-user communication
 │   │   ├── PSADT.ClientServer.Client/ # Client executable for user-context UI
@@ -82,7 +82,7 @@ All C# projects multi-target **.NET Framework 4.7.2** (Windows PowerShell 5.1) a
 
 | Project | Type | Purpose |
 |---------|------|---------|
-| **PSADT.LibraryInterfaces** | Library | Win32 P/Invoke declarations, safe handles, native method wrappers. Uses Microsoft.Windows.CsWin32 source generator. |
+| **PSADT.Interop** | Library | Win32 P/Invoke declarations, safe handles, native method wrappers. Uses Microsoft.Windows.CsWin32 source generator. |
 | **PSADT** | Library | Core utilities: process management, file system, security tokens, terminal services, registry, window management, etc. |
 | **PSAppDeployToolkit** | Library | PowerShell-specific: deployment sessions, logging utilities, module database. References System.Management.Automation. |
 | **PSADT.UserInterface** | Library | Dialog management with both WPF Fluent (modern) and WinForms Classic styles. Uses iNKORE.UI.WPF.Modern for Fluent UI. |
@@ -93,7 +93,7 @@ All C# projects multi-target **.NET Framework 4.7.2** (Windows PowerShell 5.1) a
 
 ### Project Dependencies (bottom-up)
 ```
-PSADT.LibraryInterfaces (P/Invoke layer)
+PSADT.Interop (P/Invoke layer)
         ↓
       PSADT (Core utilities)
         ↓

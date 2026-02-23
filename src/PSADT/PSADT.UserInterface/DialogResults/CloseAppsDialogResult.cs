@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 
 namespace PSADT.UserInterface.DialogResults
 {

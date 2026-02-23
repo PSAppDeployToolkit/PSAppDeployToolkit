@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
-using PSADT.LibraryInterfaces.SafeHandles;
-using PSADT.LibraryInterfaces.Utilities;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
+using PSADT.Interop.SafeHandles;
+using PSADT.Interop.Utilities;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
@@ -37,17 +37,17 @@ namespace PSADT.FileSystem
             static int GetObjectTypesBufferSize(int queryBufferSize)
             {
                 Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
-                _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
+                _ = NativeMethods.NtQueryObject(null, Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
                 return (int)requiredLength;
             }
 
             // Build the StartRoutine template once during static initialization.
-            using (FreeLibrarySafeHandle hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
-            using (FreeLibrarySafeHandle hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
+            using (FreeLibrarySafeHandle hKernel32Ptr = NativeMethods.LoadLibrary("kernel32.dll"))
+            using (FreeLibrarySafeHandle hNtdllPtr = NativeMethods.LoadLibrary("ntdll.dll"))
             {
                 // Build the start routine stub to call NtQueryObject and exit the thread once done.
-                FARPROC ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
-                FARPROC exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+                FARPROC ntQueryObject = NativeMethods.GetProcAddress(hNtdllPtr, "NtQueryObject");
+                FARPROC exitThread = NativeMethods.GetProcAddress(hKernel32Ptr, "ExitThread");
                 int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
                 Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
                 if (processArchitecture == Architecture.X64)
@@ -58,7 +58,7 @@ namespace PSADT.FileSystem
 
                     // mov rdx, infoClass (ObjectNameInformation = 1)
                     startRoutine.Add(0x48); startRoutine.Add(0xBA);
-                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+                    startRoutine.AddRange(BitConverter.GetBytes((ulong)(uint)Interop.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
                     // mov r8, buffer (placeholder)
                     startRoutine.Add(0x49); startRoutine.Add(0xB8);
@@ -109,7 +109,7 @@ namespace PSADT.FileSystem
 
                     // push infoClass (ObjectNameInformation = 1)
                     startRoutine.Add(0x68);
-                    startRoutine.AddRange(BitConverter.GetBytes((int)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+                    startRoutine.AddRange(BitConverter.GetBytes((int)Interop.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
                     // push handle (placeholder)
                     startRoutine.Add(0x68);
@@ -140,7 +140,7 @@ namespace PSADT.FileSystem
                     handleOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(0, 0)); // placeholder
 
                     // x1 = infoClass (ObjectNameInformation = 1)
-                    code.AddRange(NativeUtilities.Load64(1, (ulong)LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
+                    code.AddRange(NativeUtilities.Load64(1, (ulong)Interop.OBJECT_INFORMATION_CLASS.ObjectNameInformation));
 
                     // x2 = buffer (placeholder - 4 instructions)
                     bufferOffset = code.Count * 4; code.AddRange(NativeUtilities.Load64(2, 0)); // placeholder
@@ -177,10 +177,10 @@ namespace PSADT.FileSystem
             }
 
             // Allocate an appropriately sized buffer and query the system for object types information.
-            int objectTypesSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
-            int objectTypeSize = NtDll.ObjectInfoClassSizes[LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
+            int objectTypesSize = NativeMethods.ObjectInfoClassSizes[Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
+            int objectTypeSize = NativeMethods.ObjectInfoClassSizes[Interop.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
             Span<byte> typesBufferPtr = stackalloc byte[GetObjectTypesBufferSize(objectTypesSize)];
-            _ = NtDll.NtQueryObject(null, LibraryInterfaces.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
+            _ = NativeMethods.NtQueryObject(null, Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
 
             // Read the number of types from the buffer and store the built-out dictionary.
             ref readonly OBJECT_TYPES_INFORMATION typesInfo = ref typesBufferPtr.AsReadOnlyStructure<OBJECT_TYPES_INFORMATION>();
@@ -207,7 +207,7 @@ namespace PSADT.FileSystem
             static int GetExtendedHandleBufferSize(int queryBufferSize)
             {
                 Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
-                _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
+                _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
                 return (int)requiredLength;
             }
 
@@ -216,7 +216,7 @@ namespace PSADT.FileSystem
             int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
             int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
             byte[] handleBuffer = new byte[GetExtendedHandleBufferSize(handleInfoExSize + handleEntryExSize) * 5 / 4];
-            _ = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBuffer, out _);
+            _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBuffer, out _);
 
             // Use thread-local storage for both the object buffer and the reusable StartRoutine buffer.
             using ThreadLocal<(SafePinnedGCHandle ObjectBuffer, SafeVirtualAllocHandle StartRoutineBuffer)> threadBuffers = new
@@ -230,7 +230,7 @@ namespace PSADT.FileSystem
             {
                 ref readonly SYSTEM_HANDLE_INFORMATION_EX handleInfo = ref handleBuffer.AsSpan().AsReadOnlyStructure<SYSTEM_HANDLE_INFORMATION_EX>();
                 ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.MakeNtPathLookupTable();
-                using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
+                using SafeProcessHandle currentProcessHandle = NativeMethods.GetCurrentProcess();
                 ConcurrentBag<FileHandleInfo> openHandles = [];
                 _ = Parallel.For(0, (int)handleInfo.NumberOfHandles, i =>
                 {
@@ -245,7 +245,7 @@ namespace PSADT.FileSystem
                     SafeFileHandle fileProcessHandle;
                     try
                     {
-                        fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)sysHandle.UniqueProcessId);
+                        fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)sysHandle.UniqueProcessId);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -270,7 +270,7 @@ namespace PSADT.FileSystem
                         // Duplicate the handle into our process.
                         try
                         {
-                            _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                            _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
                         }
                         catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_NOT_SUPPORTED) or ((int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                         {
@@ -291,7 +291,7 @@ namespace PSADT.FileSystem
                     // If the duplicated handle isn't a disk handle, skip to the next iteration.
                     try
                     {
-                        if (Kernel32.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
+                        if (NativeMethods.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
                         {
                             return;
                         }
@@ -312,16 +312,16 @@ namespace PSADT.FileSystem
                             // Start the thread to retrieve the object name and wait for the outcome.
                             fileDupHandle.DangerousAddRef(ref fileDupHandleAddRef); objectBuffer.DangerousAddRef(ref objectBufferAddRef);
                             PatchStartRoutineBuffer(startRoutineBuffer, fileDupHandle.DangerousGetHandle(), objectBuffer.DangerousGetHandle(), objectBuffer.Length);
-                            _ = NtDll.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
+                            _ = NativeMethods.NtCreateThreadEx(out SafeThreadHandle hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, currentProcessHandle, startRoutineBuffer);
                             NTSTATUS res;
                             using (hThread)
                             {
                                 // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung); otherwise just get the exit code.
-                                if (Kernel32.WaitForSingleObject(hThread, 500) != WAIT_EVENT.WAIT_OBJECT_0)
+                                if (NativeMethods.WaitForSingleObject(hThread, 500) != WAIT_EVENT.WAIT_OBJECT_0)
                                 {
-                                    _ = NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                                    _ = NativeMethods.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                                 }
-                                _ = Kernel32.GetExitCodeThread(hThread, out uint exitCode); res = unchecked((NTSTATUS)exitCode);
+                                _ = NativeMethods.GetExitCodeThread(hThread, out uint exitCode); res = unchecked((NTSTATUS)exitCode);
                             }
 
                             // Handle the result of the NtQueryObject call; returning early on certain expected failure codes.
@@ -397,12 +397,12 @@ namespace PSADT.FileSystem
             }
 
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
-            using SafeProcessHandle currentProcessHandle = Kernel32.GetCurrentProcess();
+            using SafeProcessHandle currentProcessHandle = NativeMethods.GetCurrentProcess();
             foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {
-                using SafeFileHandle fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)handleEntry.UniqueProcessId);
+                using SafeFileHandle fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)handleEntry.UniqueProcessId);
                 using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
-                _ = Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
             }
         }

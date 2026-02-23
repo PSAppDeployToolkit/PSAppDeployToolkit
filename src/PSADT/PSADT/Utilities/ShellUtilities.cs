@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -26,10 +26,10 @@ namespace PSADT.Utilities
         internal static void RefreshDesktop()
         {
             // Update desktop icons using SHChangeNotify. This covers the bulk of things.
-            Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, default, default);
+            NativeMethods.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, default, default);
 
             // Refresh the taskbar. See https://stackoverflow.com/questions/70260518/how-can-i-refresh-the-taskbar-programatically-in-windows-10-and-higher for details.
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "TraySettings");
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "TraySettings");
 
             // Terminate the StartMenuExperienceHost to refresh the start menu. Windows restarts this process instantly.
             foreach (RunningProcessInfo runningProcessInfo in RunningProcessInfo.Get(new ProcessDefinition("StartMenuExperienceHost")))
@@ -50,8 +50,8 @@ namespace PSADT.Utilities
         internal static void RefreshEnvironmentVariables()
         {
             // Notify all top-level windows that the environment variables have changed.
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE);
-            _ = User32.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE);
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
         }
 
         /// <summary>
@@ -71,10 +71,10 @@ namespace PSADT.Utilities
         /// Gets the user notification state.
         /// </summary>
         /// <returns>The user notification state.</returns>
-        internal static LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
+        internal static Interop.QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
-            _ = Shell32.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
-            return (LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE)state;
+            _ = NativeMethods.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
+            return (Interop.QUERY_USER_NOTIFICATION_STATE)state;
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
         internal static void MinimizeAllWindows()
         {
-            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL, default);
+            _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL, default);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace PSADT.Utilities
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
         internal static void RestoreAllWindows()
         {
-            _ = User32.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, User32.MIN_ALL_UNDO, default);
+            _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL_UNDO, default);
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace PSADT.Utilities
         /// <returns>The process ID of the Windows Explorer shell process as an unsigned integer.</returns>
         internal static uint GetExplorerProcessId()
         {
-            _ = User32.GetWindowThreadProcessId(User32.GetShellWindow(), out uint pid);
+            _ = NativeMethods.GetWindowThreadProcessId(NativeMethods.GetShellWindow(), out uint pid);
             return pid;
         }
 
@@ -117,7 +117,7 @@ namespace PSADT.Utilities
         /// <returns>The process ID of the application owning the foreground window. Returns 0 if no foreground window is found.</returns>
         internal static uint GetForegroundWindowProcessId()
         {
-            _ = User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out uint pid);
+            _ = NativeMethods.GetWindowThreadProcessId(NativeMethods.GetForegroundWindow(), out uint pid);
             return pid;
         }
 
@@ -146,7 +146,7 @@ namespace PSADT.Utilities
                 throw new InvalidOperationException("Process handle is invalid.");
             }
             Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH];
-            _ = Kernel32.GetApplicationUserModelId(hProcess, out uint length, appUserModelId);
+            _ = NativeMethods.GetApplicationUserModelId(hProcess, out uint length, appUserModelId);
             return appUserModelId.Slice(0, (int)length - 1).ToString();
         }
 
@@ -161,7 +161,7 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(process), "Process cannot be null.");
             }
-            using SafeFileHandle hProcess = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             return GetApplicationUserModelId(hProcess);
         }
 
@@ -187,7 +187,7 @@ namespace PSADT.Utilities
         internal static TimeSpan GetLastInputTime()
         {
             // Get the last input information using User32 API.
-            _ = User32.GetLastInputInfo(out LASTINPUTINFO lastInputInfo);
+            _ = NativeMethods.GetLastInputInfo(out LASTINPUTINFO lastInputInfo);
             ulong now64 = PInvoke.GetTickCount64();
             ulong last32 = lastInputInfo.dwTime;
 
@@ -210,7 +210,7 @@ namespace PSADT.Utilities
         /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
         private static HWND GetTrayWindowHandle()
         {
-            return User32.FindWindow("Shell_TrayWnd", null);
+            return NativeMethods.FindWindow("Shell_TrayWnd", null);
         }
     }
 }

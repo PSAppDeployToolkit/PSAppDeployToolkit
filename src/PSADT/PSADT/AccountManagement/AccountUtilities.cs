@@ -7,9 +7,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
-using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
+using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using Windows.Win32;
@@ -37,13 +37,13 @@ namespace PSADT.AccountManagement
             }
 
             // Build out process/session id information.
-            _ = Kernel32.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
+            _ = NativeMethods.ProcessIdToSessionId(CallerProcessId = PInvoke.GetCurrentProcessId(), out CallerSessionId);
 
             // Retrieve the local account domain SID.
-            _ = AdvApi32.LsaOpenPolicy(null, new() { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out LsaCloseSafeHandle hPolicy);
+            _ = NativeMethods.LsaOpenPolicy(null, new() { Length = (uint)Marshal.SizeOf<LSA_OBJECT_ATTRIBUTES>() }, LSA_POLICY_ACCESS.POLICY_VIEW_LOCAL_INFORMATION, out LsaCloseSafeHandle hPolicy);
             using (hPolicy)
             {
-                _ = AdvApi32.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out SafeLsaFreeMemoryHandle buf);
+                _ = NativeMethods.LsaQueryInformationPolicy(hPolicy, POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, out SafeLsaFreeMemoryHandle buf);
                 using (buf)
                 {
                     ref readonly POLICY_ACCOUNT_DOMAIN_INFO policyAccountDomainInfo = ref buf.AsReadOnlyStructure<POLICY_ACCOUNT_DOMAIN_INFO>();

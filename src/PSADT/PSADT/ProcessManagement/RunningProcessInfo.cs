@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Principal;
 using PSADT.Extensions;
 using PSADT.FileSystem;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.Security;
 
 namespace PSADT.ProcessManagement

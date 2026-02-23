@@ -19,7 +19,7 @@ using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
 using PSAppDeployToolkit.Logging;
@@ -299,7 +299,7 @@ namespace PSAppDeployToolkit.Foundation
                         if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
-                            _ = Kernel32.DefineDosDevice(0, availLetter, DirFiles);
+                            _ = NativeMethods.DefineDosDevice(0, availLetter, DirFiles);
                             DirFiles = DirFilesSubstDrive = availLetter;
                         }
                         WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
@@ -1466,7 +1466,7 @@ namespace PSAppDeployToolkit.Foundation
                 return;
             }
             WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-            _ = Kernel32.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
+            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
         }
 
         /// <summary>

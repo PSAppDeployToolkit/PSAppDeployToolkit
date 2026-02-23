@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using Windows.Win32.Foundation;
 
@@ -138,8 +138,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
         {
             if (e.Button == MouseButtons.Left)
             {
-                _ = User32.ReleaseCapture();
-                _ = User32.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, default);
+                _ = NativeMethods.ReleaseCapture();
+                _ = NativeMethods.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, default);
             }
         }
     }

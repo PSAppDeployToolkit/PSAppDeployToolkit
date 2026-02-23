@@ -1,5 +1,5 @@
 ﻿using System;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32.System.Power;
 
 namespace PSADT.DeviceManagement
@@ -127,12 +127,12 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Updates the current system power status by retrieving information about the system's power state.
         /// </summary>
-        /// <remarks>This method uses the <see cref="Kernel32.GetSystemPowerStatus"/> function to update
+        /// <remarks>This method uses the <see cref="NativeMethods.GetSystemPowerStatus"/> function to update
         /// the power status. The retrieved information includes details such as battery charge level, AC power status,
         /// and battery life.</remarks>
         private static void UpdateSystemPowerStatus()
         {
-            _ = Kernel32.GetSystemPowerStatus(out systemPowerStatus);
+            _ = NativeMethods.GetSystemPowerStatus(out systemPowerStatus);
         }
 
         /// <summary>

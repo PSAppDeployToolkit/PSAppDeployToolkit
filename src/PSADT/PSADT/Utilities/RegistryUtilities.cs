@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32.System.Registry;
 
 namespace PSADT.Utilities
@@ -21,7 +21,7 @@ namespace PSADT.Utilities
         public static DateTime GetRegistryKeyLastWriteTime(string fullKeyPath)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(fullKeyPath);
-            _ = AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
+            _ = NativeMethods.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
             return DateTime.FromFileTime((long)(lastWriteTime.dwHighDateTime << 32) | (lastWriteTime.dwLowDateTime & 0xFFFFFFFFL));
         }
 
@@ -37,7 +37,7 @@ namespace PSADT.Utilities
         public static void RenameRegistryKey(string keyPath, string? subKeyName, string newKeyName)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(keyPath, REG_SAM_FLAGS.KEY_READ | REG_SAM_FLAGS.KEY_WRITE);
-            _ = AdvApi32.RegRenameKey(hKey, subKeyName, newKeyName);
+            _ = NativeMethods.RegRenameKey(hKey, subKeyName, newKeyName);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace PSADT.Utilities
 
             // Open the registry key and return it to the caller.
             using SafeRegistryHandle hKeyRoot = GetRegistryHiveHandle(hiveName);
-            _ = AdvApi32.RegOpenKeyEx(hKeyRoot, subKeyPath, openFlags, out SafeRegistryHandle hKey);
+            _ = NativeMethods.RegOpenKeyEx(hKeyRoot, subKeyPath, openFlags, out SafeRegistryHandle hKey);
             return hKey;
         }
 

@@ -91,12 +91,12 @@ function Test-ADTPowerPoint
                 # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.
                 switch (Get-ADTUserNotificationState)
                 {
-                    ([PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]::QUNS_PRESENTATION_MODE)
+                    ([PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_PRESENTATION_MODE)
                     {
                         Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
                         return ($presenting = $true)
                     }
-                    ([PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]::QUNS_BUSY)
+                    ([PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_BUSY)
                     {
                         if ($PowerPointProcessIDs -contains (Get-ADTForegroundWindowProcessId))
                         {

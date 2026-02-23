@@ -102,7 +102,7 @@ function Invoke-ADTRegSvr32
             try
             {
                 # Determine the bitness of the DLL file.
-                if ((($DLLFileBitness = Get-ADTPEFileArchitecture -FilePath $FilePath) -ne [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_AMD64) -and ($DLLFileBitness -ne [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386))
+                if ((($DLLFileBitness = Get-ADTPEFileArchitecture -FilePath $FilePath) -ne [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_AMD64) -and ($DLLFileBitness -ne [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386))
                 {
                     $naerParams = @{
                         Exception = [System.PlatformNotSupportedException]::new("File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be $($Action.ToLowerInvariant() + 'ed').")
@@ -117,7 +117,7 @@ function Invoke-ADTRegSvr32
                 # Get the correct path to regsrv32.exe for the system and DLL file.
                 $RegSvr32Path = if ([System.Environment]::Is64BitOperatingSystem)
                 {
-                    if ($DLLFileBitness -eq [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_AMD64)
+                    if ($DLLFileBitness -eq [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_AMD64)
                     {
                         if ([System.Environment]::Is64BitProcess)
                         {
@@ -128,12 +128,12 @@ function Invoke-ADTRegSvr32
                             "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))\sysnative\regsvr32.exe"
                         }
                     }
-                    elseif ($DLLFileBitness -eq [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386)
+                    elseif ($DLLFileBitness -eq [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386)
                     {
                         "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SystemX86))\regsvr32.exe"
                     }
                 }
-                elseif ($DLLFileBitness -eq [PSADT.LibraryInterfaces.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386)
+                elseif ($DLLFileBitness -eq [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386)
                 {
                     "$([System.Environment]::SystemDirectory)\regsvr32.exe"
                 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using PSADT.LibraryInterfaces.Extensions;
+using PSADT.Interop.Extensions;
 using Windows.Win32;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.SystemInformation;
@@ -80,8 +80,8 @@ namespace PSADT.FileSystem
         private ExecutableInfo(string filePath, IMAGE_FILE_MACHINE machine, IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
         {
             FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
-            Machine = (LibraryInterfaces.IMAGE_FILE_MACHINE)machine;
-            Subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)subsystem;
+            Machine = (Interop.IMAGE_FILE_MACHINE)machine;
+            Subsystem = (Interop.IMAGE_SUBSYSTEM)subsystem;
             IsDotNetExecutable = isDotNetExecutable;
             EntryPoint = entryPoint;
             ImageBase = imageBase;
@@ -95,12 +95,12 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The machine type of the executable.
         /// </summary>
-        public LibraryInterfaces.IMAGE_FILE_MACHINE Machine { get; }
+        public Interop.IMAGE_FILE_MACHINE Machine { get; }
 
         /// <summary>
         /// The subsystem of the executable.
         /// </summary>
-        public LibraryInterfaces.IMAGE_SUBSYSTEM Subsystem { get; }
+        public Interop.IMAGE_SUBSYSTEM Subsystem { get; }
 
         /// <summary>
         /// Whether the file is a .NET executable.

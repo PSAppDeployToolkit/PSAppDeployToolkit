@@ -11,7 +11,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;

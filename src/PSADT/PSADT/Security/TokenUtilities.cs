@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using Windows.Win32.Security;
 
 namespace PSADT.Security
@@ -53,7 +53,7 @@ namespace PSADT.Security
         internal static bool IsTokenElevated(SafeHandle tokenHandle)
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_ELEVATION>()];
-            _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
             ref readonly TOKEN_ELEVATION tokenElevation = ref buffer.AsReadOnlyStructure<TOKEN_ELEVATION>();
             return tokenElevation.TokenIsElevated != 0;
         }
@@ -70,11 +70,11 @@ namespace PSADT.Security
         internal static SecurityIdentifier GetTokenSid(SafeHandle tokenHandle)
         {
             // Get the required buffer size and allocate it.
-            _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, null, out uint returnLength);
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, null, out uint returnLength);
             Span<byte> buffer = stackalloc byte[(int)returnLength];
 
             // Now grab the token's SID as requested.
-            _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, buffer, out _);
             ref readonly TOKEN_USER tokenUser = ref buffer.AsReadOnlyStructure<TOKEN_USER>();
             return tokenUser.User.Sid.ToSecurityIdentifier();
         }
@@ -90,7 +90,7 @@ namespace PSADT.Security
         internal static uint GetTokenSessionId(SafeHandle tokenHandle)
         {
             Span<byte> buffer = stackalloc byte[sizeof(uint)];
-            _ = AdvApi32.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenSessionId, buffer, out _);
             return MemoryMarshal.Read<uint>(buffer);
         }
     }

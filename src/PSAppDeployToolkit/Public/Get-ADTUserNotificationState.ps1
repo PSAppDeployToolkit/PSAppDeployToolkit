@@ -19,7 +19,7 @@ function Get-ADTUserNotificationState
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE
+        PSADT.Interop.QUERY_USER_NOTIFICATION_STATE
 
         Returns the user's QUERY_USER_NOTIFICATION_STATE value as an enum.
 
@@ -41,7 +41,7 @@ function Get-ADTUserNotificationState
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE])]
+    [OutputType([PSADT.Interop.QUERY_USER_NOTIFICATION_STATE])]
     param
     (
     )
@@ -66,7 +66,7 @@ function Get-ADTUserNotificationState
             try
             {
                 Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = Invoke-ADTClientServerOperation -GetUserNotificationState -User $runAsActiveUser))]."
-                return [PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]$UserNotificationState
+                return [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]$UserNotificationState
             }
             catch
             {

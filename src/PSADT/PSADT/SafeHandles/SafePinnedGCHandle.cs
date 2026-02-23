@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.Interop.SafeHandles;
 
 namespace PSADT.SafeHandles
 {

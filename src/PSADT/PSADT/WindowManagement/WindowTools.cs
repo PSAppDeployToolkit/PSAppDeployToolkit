@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -16,7 +16,7 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<HWND> EnumWindows()
         {
             List<HWND> windows = [];
-            _ = User32.EnumWindows((hWnd, lParam) =>
+            _ = NativeMethods.EnumWindows((hWnd, lParam) =>
             {
                 if (hWnd != HWND.Null)
                 {
@@ -38,11 +38,11 @@ namespace PSADT.WindowManagement
             {
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
-            int textLength = User32.GetWindowTextLength(hWnd);
+            int textLength = NativeMethods.GetWindowTextLength(hWnd);
             if (textLength > 0)
             {
                 Span<char> buffer = stackalloc char[textLength + 1];
-                string text = buffer.Slice(0, User32.GetWindowText(hWnd, buffer)).Trim().ToString();
+                string text = buffer.Slice(0, NativeMethods.GetWindowText(hWnd, buffer)).Trim().ToString();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return text;
@@ -77,18 +77,18 @@ namespace PSADT.WindowManagement
 
             // Bring the window to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
-            uint windowThreadId = User32.GetWindowThreadProcessId(hWnd, out _);
-            _ = User32.AttachThreadInput(currentThreadId, windowThreadId, true);
+            uint windowThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out _);
+            _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, true);
             try
             {
-                _ = User32.BringWindowToTop(hWnd);
-                _ = User32.SetForegroundWindow(hWnd, true);
-                _ = User32.SetActiveWindow(hWnd);
-                _ = User32.SetFocus(hWnd);
+                _ = NativeMethods.BringWindowToTop(hWnd);
+                _ = NativeMethods.SetForegroundWindow(hWnd, true);
+                _ = NativeMethods.SetActiveWindow(hWnd);
+                _ = NativeMethods.SetFocus(hWnd);
             }
             finally
             {
-                _ = User32.AttachThreadInput(currentThreadId, windowThreadId, false);
+                _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, false);
             }
         }
 
@@ -103,7 +103,7 @@ namespace PSADT.WindowManagement
             {
                 throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
             }
-            _ = User32.GetWindowThreadProcessId(hWnd, out uint processId);
+            _ = NativeMethods.GetWindowThreadProcessId(hWnd, out uint processId);
             return processId;
         }
     }

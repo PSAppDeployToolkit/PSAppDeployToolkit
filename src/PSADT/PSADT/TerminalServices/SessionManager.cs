@@ -9,9 +9,9 @@ using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Foundation;
-using PSADT.LibraryInterfaces;
-using PSADT.LibraryInterfaces.Extensions;
-using PSADT.LibraryInterfaces.SafeHandles;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
+using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.Utilities;
@@ -33,7 +33,7 @@ namespace PSADT.TerminalServices
         /// <exception cref="Win32Exception"></exception>
         public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
-            _ = WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out SafeWtsHandle pSessionInfo);
+            _ = NativeMethods.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out SafeWtsHandle pSessionInfo);
             using (pSessionInfo)
             {
                 int objLength = Marshal.SizeOf<WTS_SESSION_INFOW>();
@@ -63,7 +63,7 @@ namespace PSADT.TerminalServices
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
             static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
-                _ = WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);
+                _ = NativeMethods.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);
                 using (pBuffer)
                 {
                     if (typeof(T) == typeof(string))
@@ -158,7 +158,7 @@ namespace PSADT.TerminalServices
                 domainName,
                 session.SessionId,
                 pWinStationName,
-                (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)sessionInfo.SessionState,
+                (Interop.WTS_CONNECTSTATE_CLASS)sessionInfo.SessionState,
                 isCurrentSession,
                 isConsoleSession,
                 isActiveUserSession,
@@ -193,7 +193,7 @@ namespace PSADT.TerminalServices
             if (AccountUtilities.CallerIsLocalSystem)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken);
+                _ = NativeMethods.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken);
                 using (hUserToken)
                 {
                     return TokenUtilities.GetTokenSid(hUserToken);
@@ -203,7 +203,7 @@ namespace PSADT.TerminalServices
             // If we're an admin, we can get the SID from a process running in the session.
             if (AccountUtilities.CallerIsAdmin)
             {
-                _ = WtsApi32.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out SafeWtsExHandle pProcessInfo);
+                _ = NativeMethods.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out SafeWtsExHandle pProcessInfo);
                 using (pProcessInfo)
                 {
                     ReadOnlySpan<byte> pProcessInfoSpan = pProcessInfo.AsReadOnlySpan<byte>();
@@ -261,7 +261,7 @@ namespace PSADT.TerminalServices
             if (AccountUtilities.CallerIsLocalSystem)
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = WtsApi32.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken); using (hUserToken)
+                _ = NativeMethods.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken); using (hUserToken)
                 using (SafeFileHandle hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
                 {
                     return TokenUtilities.IsTokenAdministrative(hPrimaryToken);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using PSADT.LibraryInterfaces;
+using PSADT.Interop;
 
 namespace PSADT.FileSystem
 {
