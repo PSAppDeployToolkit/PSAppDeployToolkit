@@ -110,7 +110,7 @@ jobs:
         overwrite: true
 
     - name: Generate docs and update website
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/4.1.x'
+      if: github.ref == 'refs/heads/main'
       shell: powershell
       env:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}

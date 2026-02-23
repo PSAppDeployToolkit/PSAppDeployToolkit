@@ -14,7 +14,7 @@ function Publish-ADTDocusaurusExport
         Write-ADTBuildLogEntry -Message "Cloning destination repository, this may take a while."
         $dstBnch = 'main'; $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
         $dstBase = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
-        $dstPath = ("$dstBase\docs\reference\functions", "$dstBase\versioned_docs\version-4.0.0\reference\functions")[$env:GITHUB_REF_NAME -match '4\.0\.x']
+        $dstPath = "$dstBase\docs\reference\functions"
         $null = git clone -q -b $dstBnch $dstRepo $dstBase
         if ($Global:LASTEXITCODE)
         {
