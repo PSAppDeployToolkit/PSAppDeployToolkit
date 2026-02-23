@@ -30,7 +30,7 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandleFilter">A list of main window handles for parent processes to include in the filter. Only windows whose parent
         /// process main window handle matches any of these values will be considered. Can be null to disable this
         /// filtering.</param>
-        public WindowInfoOptions(IReadOnlyList<string>? windowTitleFilter, IReadOnlyList<nint>? windowHandleFilter, IReadOnlyList<string>? parentProcessFilter, IReadOnlyList<int>? parentProcessIdFilter, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter)
+        public WindowInfoOptions(ReadOnlyCollection<string>? windowTitleFilter, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<int>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
             if (windowTitleFilter?.Count == 0)
@@ -55,10 +55,10 @@ namespace PSADT.WindowManagement
             }
 
             // Assign read-only collections or null based on input.
-            WindowTitleFilter = windowTitleFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. windowTitleFilter]) : null;
+            WindowTitleFilter = windowTitleFilter;
             WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new([.. windowHandleFilter.Select(static h => (long)h)]) : null;
-            ParentProcessFilter = parentProcessFilter?.Count > 0 ? new ReadOnlyCollection<string>([.. parentProcessFilter]) : null;
-            ParentProcessIdFilter = parentProcessIdFilter?.Count > 0 ? new ReadOnlyCollection<int>([.. parentProcessIdFilter]) : null;
+            ParentProcessFilter = parentProcessFilter;
+            ParentProcessIdFilter = parentProcessIdFilter;
             ParentProcessMainWindowHandleFilterValues = parentProcessMainWindowHandleFilter?.Count > 0 ? new([.. parentProcessMainWindowHandleFilter.Select(static h => (long)h)]) : null;
         }
 
