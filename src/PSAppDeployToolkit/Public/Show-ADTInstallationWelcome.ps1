@@ -261,7 +261,21 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a close processes countdown if the user has no available deferrals.', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified CloseProcessesCountdown interval was null.'))
+                }
+                if ($_ -eq 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified CloseProcessesCountdown interval must be greater than zero.'))
+                }
+                if ($_ -gt 86400)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified CloseProcessesCountdown interval cannot exceed 86,400 seconds.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$CloseProcessesCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
@@ -270,7 +284,21 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCloseProcessesCountdown interval was null.'))
+                }
+                if ($_ -eq 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCloseProcessesCountdown interval must be greater than zero.'))
+                }
+                if ($_ -gt 86400)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCloseProcessesCountdown interval cannot exceed 86,400 seconds.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$ForceCloseProcessesCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with deferral allowed, and with a continue countdown irrespective of deferrals.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
@@ -279,7 +307,21 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a continue/defer countdown depending on whether processes to close are open or not.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCountdown interval was null.'))
+                }
+                if ($_ -eq 0)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCountdown interval must be greater than zero.'))
+                }
+                if ($_ -gt 86400)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCountdown interval cannot exceed 86,400 seconds.'))
+                }
+                return !!$_
+            })]
         [System.Nullable[System.UInt32]]$ForceCountdown,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with deferral allowed.', HelpMessage = 'Specify the number of times the deferral is allowed.')]
