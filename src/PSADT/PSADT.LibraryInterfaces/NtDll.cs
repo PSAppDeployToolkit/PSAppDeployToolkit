@@ -474,7 +474,7 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// The object type's pool type.
         /// </summary>
-        internal readonly uint PoolType;
+        internal readonly POOL_TYPE PoolType;
 
         /// <summary>
         /// The default paged pool charge for the object type.
