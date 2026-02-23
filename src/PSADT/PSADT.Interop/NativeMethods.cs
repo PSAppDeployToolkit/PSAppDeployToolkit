@@ -1358,12 +1358,17 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Wrapper around CreateJobObject to manage error handling.
+        /// Creates a new Windows job object that can be used to manage and control a group of processes as a single
+        /// unit.
         /// </summary>
-        /// <param name="lpJobAttributes"></param>
-        /// <param name="lpName"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>The caller must have appropriate permissions to create job objects. If the job object
+        /// cannot be created due to a system error, an exception is thrown containing the relevant error
+        /// information.</remarks>
+        /// <param name="lpJobAttributes">An optional SECURITY_ATTRIBUTES structure that specifies the security descriptor for the job object and
+        /// determines whether child processes can inherit the returned handle. Specify null to use default security
+        /// settings.</param>
+        /// <param name="lpName">An optional name for the job object. Specify null to create an unnamed job object.</param>
+        /// <returns>A SafeFileHandle representing the newly created job object. If the creation fails, an exception is thrown.</returns>
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
             SafeFileHandle res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
@@ -3273,13 +3278,19 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Creates an environment block for a user.
+        /// Creates a new environment block for the specified user token, allowing environment variables to be inherited
+        /// by child processes.
         /// </summary>
-        /// <param name="lpEnvironment"></param>
-        /// <param name="hToken"></param>
-        /// <param name="bInherit"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>Throws an exception if the environment block cannot be created. The exception
+        /// provides details based on the last Win32 error code.</remarks>
+        /// <param name="lpEnvironment">When this method returns, contains a handle to the newly created environment block. The caller is
+        /// responsible for releasing this handle when it is no longer needed.</param>
+        /// <param name="hToken">A handle to the access token for the user whose environment block is to be created. The token must have
+        /// appropriate permissions.</param>
+        /// <param name="bInherit">A value that specifies whether the environment block should be inheritable by child processes. Specify <see
+        /// langword="true"/> to allow inheritance; otherwise, <see langword="false"/>.</param>
+        /// <returns>Returns <see langword="true"/> if the environment block is successfully created; otherwise, <see
+        /// langword="false"/>.</returns>
         internal static BOOL CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, SafeFileHandle hToken, BOOL bInherit)
         {
             BOOL res;
@@ -3412,14 +3423,21 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Wrapper around WTSQuerySessionInformation to manage error handling.
+        /// Retrieves information about a specified session on a Remote Desktop Services server.
         /// </summary>
-        /// <param name="hServer"></param>
-        /// <param name="SessionId"></param>
-        /// <param name="WTSInfoClass"></param>
-        /// <param name="pBuffer"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>If the operation fails, an exception is thrown containing the relevant Win32 error
+        /// information. The format and content of the returned buffer depend on the value of the WTSInfoClass
+        /// parameter.</remarks>
+        /// <param name="hServer">A handle to the server from which to retrieve session information. This handle must be obtained by calling
+        /// the WTSOpenServer function.</param>
+        /// <param name="SessionId">The identifier of the session for which information is being requested. This value is typically obtained
+        /// from a previous call to WTSEnumerateSessions.</param>
+        /// <param name="WTSInfoClass">A value that specifies the type of session information to retrieve. The value must be a member of the
+        /// WTS_INFO_CLASS enumeration.</param>
+        /// <param name="pBuffer">When this method returns, contains a SafeWtsHandle that encapsulates a buffer with the requested session
+        /// information. The caller is responsible for disposing of this handle when it is no longer needed.</param>
+        /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the information
+        /// was retrieved successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
             BOOL res;

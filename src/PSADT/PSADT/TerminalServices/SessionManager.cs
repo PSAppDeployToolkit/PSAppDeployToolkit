@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -27,10 +26,13 @@ namespace PSADT.TerminalServices
     public static class SessionManager
     {
         /// <summary>
-        /// Gets session info from all valid WTS sessions.
+        /// Retrieves a read-only collection containing information about all active sessions on the current server.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
+        /// <remarks>This method enumerates all sessions available on the current server and returns their
+        /// associated information. The returned collection is immutable and reflects the state of sessions at the time
+        /// of the call. Subsequent changes to session state are not reflected in the returned list.</remarks>
+        /// <returns>A read-only list of <see cref="SessionInfo"/> objects, each representing the details of an active session.
+        /// The list is empty if no active sessions are found.</returns>
         public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
             _ = NativeMethods.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out SafeWtsHandle pSessionInfo);
@@ -53,10 +55,18 @@ namespace PSADT.TerminalServices
         }
 
         /// <summary>
-        /// Gets session info for any provided valid session Id.
+        /// Retrieves detailed information about a specified terminal services session, including user account, session
+        /// state, and client connection details.
         /// </summary>
-        /// <param name="session"></param>
-        /// <returns></returns>
+        /// <remarks>This method is intended for internal use to facilitate the retrieval of session
+        /// information. It handles various session states and may involve additional checks for user privileges. The
+        /// returned SessionInfo object includes information such as whether the session is active, if the user is a
+        /// local administrator, and the session's idle time. Some details may not be available for all session types or
+        /// under certain privilege levels.</remarks>
+        /// <param name="session">A structure containing information about the session for which to retrieve detailed session data.</param>
+        /// <returns>A SessionInfo object containing user account details, session state, client information, and other relevant
+        /// session attributes, or null if the session does not have a valid username.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the requested type for session information is not supported.</exception>
         private static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
             // Internal helper for retrieving session information values.

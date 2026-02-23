@@ -84,10 +84,12 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Converts an image file to an icon, automatically resizing to the maximum icon size if greater than 128px.
+        /// Converts a bitmap image from the specified file path to an icon.
         /// </summary>
-        /// <param name="imagePath"></param>
-        /// <returns></returns>
+        /// <remarks>The method loads the image from the specified file path and converts it to an icon.
+        /// Ensure that the file exists and is a valid image format supported by the Image class.</remarks>
+        /// <param name="imagePath">The path to the image file to convert. This parameter cannot be null or empty.</param>
+        /// <returns>An Icon object that represents the converted bitmap image.</returns>
         internal static Icon ConvertBitmapToIcon(string imagePath)
         {
             using Bitmap img = (Bitmap)Image.FromFile(imagePath);
@@ -95,11 +97,15 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Get the icon from a given executable path.
+        /// Extracts the icon associated with the specified executable file.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <remarks>This method uses the SHGetFileInfo function to retrieve the icon associated with the
+        /// executable file. Ensure that the specified path points to a valid .exe file to avoid exceptions.</remarks>
+        /// <param name="path">The full path to the executable (.exe) file from which to extract the icon. The path must refer to a valid
+        /// file with a .exe extension.</param>
+        /// <returns>An Icon object representing the icon extracted from the specified executable file. Returns null if the icon
+        /// cannot be extracted.</returns>
+        /// <exception cref="ArgumentException">Thrown if the provided path does not have a .exe extension.</exception>
         internal static Icon ExtractIconFromExecutable(string path)
         {
             // Check if the process is null or if the main module's file name is not a string.
@@ -128,11 +134,14 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Get the bitmap from a given executable path.
+        /// Extracts a bitmap image from the icon contained within the specified executable file.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <remarks>This method assumes that the specified executable contains an icon resource. If the
+        /// file does not exist, is not a valid executable, or does not contain an icon, the method may return
+        /// null.</remarks>
+        /// <param name="path">The path to the executable file from which to extract the bitmap. This parameter cannot be null or empty.</param>
+        /// <returns>A Bitmap object representing the icon extracted from the executable. Returns null if the extraction fails or
+        /// if the executable does not contain an icon.</returns>
         internal static Bitmap ExtractBitmapFromExecutable(string path)
         {
             // Convert the icon to a bitmap and return it.

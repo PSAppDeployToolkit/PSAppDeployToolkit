@@ -59,9 +59,12 @@ namespace PSADT.UserInterface.DialogResults
         }
 
         /// <summary>
-        /// Provides the hash code for the current result value, which is derived from the Result property.
+        /// Returns a hash code for the current instance that is based on the value of the Result property.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This override ensures that the hash code is consistent with the value of the Result
+        /// property. Objects that are considered equal should return the same hash code to maintain correct behavior in
+        /// hash-based collections.</remarks>
+        /// <returns>An integer hash code representing the current instance.</returns>
         public override int GetHashCode()
         {
             return Result.GetHashCode();

@@ -197,10 +197,16 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Retrieves a list of open handles, optionally filtered by path.
+        /// Retrieves a collection of open file handles on the system, optionally filtered by a specified directory
+        /// path.
         /// </summary>
-        /// <param name="directoryPath"></param>
-        /// <returns></returns>
+        /// <remarks>This method queries the system for extended handle information and may require
+        /// elevated permissions to access certain handles. It is designed to efficiently gather information about file
+        /// handles, potentially using parallel processing to improve performance.</remarks>
+        /// <param name="directoryPath">The optional path of the directory to filter the open file handles. If null, all open file handles are
+        /// returned.</param>
+        /// <returns>A read-only list of FileHandleInfo objects representing the open file handles that match the specified
+        /// directory path.</returns>
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Internal helper to get the required buffer size for extended handle information.
@@ -384,9 +390,14 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Closes the specified handles.
+        /// Closes the specified process handles by duplicating them and then closing the duplicates.
         /// </summary>
-        /// <param name="handleEntries"></param>
+        /// <remarks>This method ensures that all specified handles are properly closed, preventing
+        /// resource leaks. It operates by duplicating each handle and closing the duplicate, which safely releases the
+        /// original handle.</remarks>
+        /// <param name="handleEntries">An array of SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX structures representing the handles to be closed. Each entry
+        /// must be valid and correspond to an open handle.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleEntries"/> is null.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No idea, but the compiler just doesn't understand that this is OK.")]
         public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {

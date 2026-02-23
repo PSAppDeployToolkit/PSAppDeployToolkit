@@ -49,10 +49,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Handles the click event of the left button.
+        /// Handles the event when the left button is clicked, initiating an immediate system restart.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method overrides the base implementation to provide custom behavior for the left
+        /// button click event. Calling this method will immediately restart the computer, which may interrupt any
+        /// unsaved work.</remarks>
+        /// <param name="sender">The source of the event, typically the control that raised the event.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
@@ -61,19 +64,26 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Handles the click event of the right button.
+        /// Handles the right button click event by minimizing the window.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Overrides the default right button behavior to minimize the window instead of
+        /// performing any other action.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
         /// <summary>
-        /// Handles the countdown timer tick event.
+        /// Handles the timer tick event for the countdown, performing actions when the countdown expires or when a
+        /// warning threshold is reached.
         /// </summary>
-        /// <param name="state"></param>
+        /// <remarks>If the countdown duration has elapsed, the computer is restarted. When the remaining
+        /// time is less than or equal to the warning duration, the minimize button is disabled and the window is
+        /// restored to alert the user. This method overrides the base timer tick behavior to provide custom countdown
+        /// handling.</remarks>
+        /// <param name="state">An optional state object that can be used to pass additional information to the timer event handler.</param>
         private protected override void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.

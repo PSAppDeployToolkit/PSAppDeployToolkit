@@ -13,11 +13,13 @@ namespace PSADT.Utilities
     public static class RegistryUtilities
     {
         /// <summary>
-        /// Returns a given registry key path's LastWriteTime as a DateTime object.
+        /// Retrieves the last write time of the specified registry key.
         /// </summary>
-        /// <param name="fullKeyPath"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <remarks>This method opens the registry key specified by the fullKeyPath and queries its last
+        /// write time. Ensure that the provided key path is valid and accessible.</remarks>
+        /// <param name="fullKeyPath">The full path of the registry key whose last write time is to be retrieved. This parameter cannot be null or
+        /// empty.</param>
+        /// <returns>A DateTime representing the last write time of the specified registry key.</returns>
         public static DateTime GetRegistryKeyLastWriteTime(string fullKeyPath)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(fullKeyPath);

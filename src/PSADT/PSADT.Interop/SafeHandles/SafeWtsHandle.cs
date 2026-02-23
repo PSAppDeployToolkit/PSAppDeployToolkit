@@ -14,9 +14,11 @@ namespace PSADT.Interop.SafeHandles
     internal sealed class SafeWtsHandle(nint handle, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsHandle>(handle, length, ownsHandle)
     {
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle to the unmanaged WTS memory resource.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method overrides the base implementation to ensure that the associated unmanaged
+        /// memory is properly freed. If the handle is already set to its default value, no action is taken.</remarks>
+        /// <returns>Always returns <see langword="true"/>, indicating that the handle has been released.</returns>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

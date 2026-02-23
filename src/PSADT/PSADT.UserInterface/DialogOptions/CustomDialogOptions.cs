@@ -14,9 +14,15 @@ namespace PSADT.UserInterface.DialogOptions
     public record CustomDialogOptions : BaseDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
+        /// Initializes a new instance of the CustomDialogOptions class using the specified configuration options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>If a required key is missing from the options dictionary, a default value is used for
+        /// that option. Ensure that the dictionary contains valid entries for all necessary configuration keys to
+        /// achieve the desired dialog behavior.</remarks>
+        /// <param name="options">A dictionary containing key-value pairs that define the dialog's configuration, such as titles, images,
+        /// language, button text, and behavior settings. Keys must match the expected option names; values should be of
+        /// the appropriate type for each option.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public CustomDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,

@@ -10,12 +10,15 @@ namespace PSADT.FileSystem
     public sealed record FileHandleInfo
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileHandleInfo"/> class with the specified handle information and file path.
+        /// Initializes a new instance of the FileHandleInfo class using the specified handle information and file
+        /// paths.
         /// </summary>
-        /// <param name="handleInfo"></param>
-        /// <param name="filePath"></param>
-        /// <param name="ntPath"></param>
-        /// <param name="handleType"></param>
+        /// <param name="handleInfo">The handle information associated with the file, represented as a SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
+        /// structure.</param>
+        /// <param name="filePath">The full path to the file. This value cannot be null or empty.</param>
+        /// <param name="ntPath">The NT path of the file. This value cannot be null or empty.</param>
+        /// <param name="handleType">The type of the handle. This value cannot be null or empty.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the filePath, ntPath, or handleType parameter is null or empty.</exception>
         internal FileHandleInfo(in SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
         {
             ProcessName = Process.GetProcessById((int)handleInfo.UniqueProcessId).ProcessName;

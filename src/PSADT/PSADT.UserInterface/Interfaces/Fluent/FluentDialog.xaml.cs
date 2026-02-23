@@ -197,22 +197,33 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Raises the PropertyChanged event for the specified property.
+        /// Raises the PropertyChanged event to notify listeners that a property value has changed.
         /// </summary>
-        /// <param name="propertyName"></param>
+        /// <remarks>Call this method within a property setter to inform data binding clients or other
+        /// subscribers that the property's value has changed. This method is essential for implementing the
+        /// INotifyPropertyChanged interface in data-binding scenarios.</remarks>
+        /// <param name="propertyName">The name of the property that changed. If not specified, the name of the calling member is used.</param>
         private protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new(propertyName));
         }
 
         /// <summary>
-        /// Prevent window movement by handling WM_SYSCOMMAND
+        /// Processes Windows messages for the associated window and allows for custom handling of specific messages.
         /// </summary>
-        /// <param name="hwnd"></param>
-        /// <param name="msg"></param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
-        /// <param name="handled"></param>
+        /// <remarks>Override this method to implement custom message handling logic for the window. If
+        /// <paramref name="handled"/> is set to <see langword="true"/>, the message will not be passed to the default
+        /// window procedure.</remarks>
+        /// <param name="hwnd">The handle to the window that received the message.</param>
+        /// <param name="msg">The message identifier that specifies the type of message being sent.</param>
+        /// <param name="wParam">Additional message-specific information. The meaning depends on the value of the <paramref name="msg"/>
+        /// parameter.</param>
+        /// <param name="lParam">Additional message-specific information. The meaning depends on the value of the <paramref name="msg"/>
+        /// parameter.</param>
+        /// <param name="handled">When set to <see langword="true"/>, indicates that the message has been handled and should not be processed
+        /// further.</param>
+        /// <returns>A value that indicates the result of the message processing. Typically, this is a default value indicating
+        /// no specific result.</returns>
         private nint WndProc(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
         {
             if (msg == (uint)WINDOW_MESSAGE.WM_SYSCOMMAND && ((int)wParam & 0xFFF0) == (uint)WM_SYSCOMMAND.SC_MOVE && !_dialogAllowMove)
@@ -223,48 +234,63 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Handles the click event of the left button.
+        /// Handles the click event for the left button and closes the dialog.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Override this method to customize the behavior when the left button is clicked. This
+        /// method is commonly used in dialog interfaces to respond to user actions.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private protected virtual void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
 
         /// <summary>
-        /// Handles the click event of the middle button.
+        /// Handles the click event for the middle button and closes the dialog.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Override this method in a derived class to implement custom behavior when the middle
+        /// button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private protected virtual void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
 
         /// <summary>
-        /// Handles the click event of the right button.
+        /// Handles the Click event for the right button of the dialog, typically closing the dialog or performing a
+        /// related action.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Override this method in a derived class to implement custom behavior when the right
+        /// button is clicked.</remarks>
+        /// <param name="sender">The source of the event, usually the right button that was clicked.</param>
+        /// <param name="e">The event data associated with the button click.</param>
         private protected virtual void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
 
         /// <summary>
-        /// Prevents the user from closing the app via the taskbar
+        /// Invoked when the window is about to close, allowing the close operation to be canceled based on the current
+        /// state.
         /// </summary>
-        /// <param name="e"></param>
+        /// <remarks>Override this method to implement custom logic that determines whether the window can
+        /// be closed. If the window cannot be closed, set <see cref="CancelEventArgs.Cancel"/> to <see
+        /// langword="true"/> to cancel the operation.</remarks>
+        /// <param name="e">A <see cref="CancelEventArgs"/> that contains the event data for the closing event. Set <see
+        /// cref="CancelEventArgs.Cancel"/> to <see langword="true"/> to prevent the window from closing.</param>
         protected override void OnClosing(CancelEventArgs e)
         {
             e.Cancel = !_canClose;
         }
 
         /// <summary>
-        /// Clean up resources when the window is closed
+        /// Handles the event that occurs when the window is closed, ensuring that resources are released and timers are
+        /// stopped.
         /// </summary>
-        /// <param name="e"></param>
+        /// <remarks>This method overrides the base implementation to perform additional cleanup, such as
+        /// stopping active timers and disposing of resources, when the window is closed.</remarks>
+        /// <param name="e">An object that contains the event data associated with the window closing event.</param>
         protected override void OnClosed(EventArgs e)
         {
             _persistTimer?.Stop();
@@ -274,10 +300,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Handles the loaded event of the window.
+        /// Handles the Loaded event for the dialog, performing initialization and layout updates required for correct
+        /// display and interaction.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method ensures the dialog uses software rendering, updates its layout and button
+        /// arrangement, initializes any countdown display, and positions the window appropriately. It also starts any
+        /// configured timers and signals operation success for client-server scenarios. Override this method to
+        /// customize dialog initialization behavior when the dialog is loaded.</remarks>
+        /// <param name="sender">The source of the event, typically the dialog instance that is being loaded.</param>
+        /// <param name="e">A RoutedEventArgs object that contains the event data.</param>
         private protected virtual void FluentDialog_Loaded(object sender, RoutedEventArgs e)
         {
             // Force software rendering.
@@ -309,10 +340,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Handles the size changed event of the window.
+        /// Handles the SizeChanged event for the FluentDialog window, repositioning the window as needed and ensuring
+        /// window movement is restricted appropriately.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method repositions the window without animations and sets up a window procedure
+        /// hook to prevent the window from being moved by the user if the hook has not already been
+        /// established.</remarks>
+        /// <param name="sender">The source of the event, typically the FluentDialog instance whose size has changed.</param>
+        /// <param name="e">An object that contains the event data, including information about the new size of the window.</param>
         private void FluentDialog_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Only reposition window - no animations
@@ -346,20 +381,25 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Handles the timer tick event for persisting the dialog.
+        /// Handles the timer tick event to restore the application window state.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method is intended to be used as an event handler for a timer's Tick event,
+        /// ensuring the application window is restored at regular intervals.</remarks>
+        /// <param name="sender">The source of the event, typically the timer that triggered the event.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private void PersistTimer_Tick(object? sender, EventArgs e)
         {
             RestoreWindow();
         }
 
         /// <summary>
-        /// Handles the request navigate event of the hyperlink.
+        /// Handles a navigation request from a hyperlink by opening the specified URI in the default web browser.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method uses the system's default handler to open the URI, ensuring the link is
+        /// launched in the user's preferred web browser. The event is marked as handled to prevent further processing
+        /// by other handlers.</remarks>
+        /// <param name="sender">The source of the event, typically the hyperlink that was clicked.</param>
+        /// <param name="e">The event data containing information about the navigation request, including the target URI.</param>
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             // Use ShellExecute to open the URL in the default browser/handler
@@ -368,11 +408,16 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Formats the message text with enhanced markdown support including hyperlinks, bold, italic, and accent colored.
-        /// Supports nested and combined formatting: [url], [accent], [bold], [italic] tags that can be combined for cumulative effects.
+        /// Applies hyperlink and text formatting to the specified message and updates the provided TextBlock with the
+        /// formatted content.
         /// </summary>
-        /// <param name="textBlock"></param>
-        /// <param name="message"></param>
+        /// <remarks>This method processes the message for formatting tags and applies the corresponding
+        /// styles, including hyperlinks, to the TextBlock. Nested and combined formatting tags are supported. The
+        /// method does not perform any action if the message is null or whitespace.</remarks>
+        /// <param name="textBlock">The TextBlock control to which the formatted message will be applied. This control is cleared before new
+        /// content is added.</param>
+        /// <param name="message">The message string containing text and formatting tags to be processed. If the message is null or consists
+        /// only of whitespace, no formatting is applied.</param>
         private protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
         {
             // Don't waste time on an empty string.
@@ -557,37 +602,45 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Sets the button to be styled with an accent color.
+        /// Applies the accent style defined by the current theme to the specified button.
         /// </summary>
-        /// <param name="button"></param>
+        /// <remarks>This method sets a resource reference on the button's style property, enabling the
+        /// button to automatically reflect changes in the theme's accent styling.</remarks>
+        /// <param name="button">The button to which the accent style will be applied. This parameter must not be null.</param>
         private protected static void SetAccentButton(Button button)
         {
             button.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
         }
 
         /// <summary>
-        /// Sets the button to be the form cancel button.
+        /// Sets the specified button as the cancel button for the current dialog. The cancel button is activated when
+        /// the user presses the Escape key.
         /// </summary>
-        /// <param name="button"></param>
+        /// <param name="button">The button to designate as the cancel button. This button will be triggered when the Escape key is pressed.</param>
         private protected static void SetCancelButton(Button button)
         {
             button.IsCancel = true;
         }
 
         /// <summary>
-        /// Sets the button to be the form default button.
+        /// Sets the specified button as the default button for the user interface, enabling it to be activated when the
+        /// user presses the Enter key.
         /// </summary>
-        /// <param name="button"></param>
+        /// <param name="button">The button to designate as the default. Cannot be null.</param>
         private protected static void SetDefaultButton(Button button)
         {
             button.IsDefault = true;
         }
 
         /// <summary>
-        /// Sets the button content with an accelerator key (underscore) for accessibility.
+        /// Sets the content of the specified button to display the provided text, interpreting underscores as
+        /// accelerator keys.
         /// </summary>
-        /// <param name="button"></param>
-        /// <param name="text"></param>
+        /// <remarks>This method uses an AccessText control to enable support for keyboard accelerators,
+        /// allowing users to activate the button using keyboard shortcuts defined by underscores in the text.</remarks>
+        /// <param name="button">The button whose content is to be set. Cannot be null.</param>
+        /// <param name="text">The text to display on the button. Underscores in the text are interpreted as accelerator keys. If null or
+        /// consists only of white space, the button's content is not changed.</param>
         private protected static void SetButtonContentWithAccelerator(Button button, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -1056,9 +1109,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Dispose managed and unmanaged resources
+        /// Releases the resources used by the dialog and optionally disposes of managed resources.
         /// </summary>
-        /// <param name="disposing"></param>
+        /// <remarks>This method is part of the standard dispose pattern. When disposing is true, event
+        /// handlers are detached and timers are stopped to prevent memory leaks. Call this method when the dialog is no
+        /// longer needed to ensure that all resources are properly released.</remarks>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         private protected virtual void Dispose(bool disposing)
         {
             if (Disposed)

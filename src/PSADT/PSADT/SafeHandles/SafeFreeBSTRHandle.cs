@@ -35,9 +35,12 @@ namespace PSADT.SafeHandles
         }
 
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle to the BSTR string and frees any associated unmanaged resources.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method is called by the runtime to release the BSTR handle when it is no longer
+        /// needed. If the handle is already set to its default value, no action is taken. This ensures proper cleanup
+        /// of unmanaged memory and helps prevent memory leaks.</remarks>
+        /// <returns>true if the handle was released successfully; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

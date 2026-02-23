@@ -11,10 +11,15 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record DialogBoxOptions : IDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DialogBoxOptions"/> class with the specified options.
-        /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
+        /// Initializes a new instance of the DialogBoxOptions class using the specified configuration options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>If a required key is missing from the options dictionary, a default value is used for
+        /// that setting. The expected keys are "AppTitle", "MessageText", "DialogButtons", "DialogDefaultButton",
+        /// "DialogIcon", "DialogTopMost", and "DialogExpiryDuration". Ensure that the values associated with each key
+        /// are of the appropriate type.</remarks>
+        /// <param name="options">A dictionary containing key-value pairs that specify dialog box settings, such as the application title,
+        /// message text, button configuration, default button, icon, topmost behavior, and expiry duration.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public DialogBoxOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["MessageText"] as string ?? null!,

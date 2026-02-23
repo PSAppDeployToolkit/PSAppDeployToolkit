@@ -26,9 +26,12 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle associated with the current instance, ensuring proper cleanup of unmanaged resources.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>If the handle is already set to its default value, this method returns true without
+        /// performing any action. If the handle is not valid, an exception is thrown to indicate the failure of the
+        /// operation.</remarks>
+        /// <returns>true if the handle was successfully released or was already set to its default value; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

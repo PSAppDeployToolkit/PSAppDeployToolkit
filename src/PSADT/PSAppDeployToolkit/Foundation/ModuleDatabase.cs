@@ -12,10 +12,12 @@ namespace PSAppDeployToolkit.Foundation
     public static class ModuleDatabase
     {
         /// <summary>
-        /// Initialises the internal database with the database from PSAppDeployToolkit.psm1.
+        /// Initializes the internal database with the specified PowerShell object. This method must be called from
+        /// within the PSAppDeployToolkit module context.
         /// </summary>
-        /// <param name="database"></param>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <param name="database">The PowerShell object representing the database to initialize. This parameter cannot be null.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="database"/> parameter is null.</exception>
         public static void Init(PSObject database)
         {
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
@@ -41,10 +43,12 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the internal database.
+        /// Retrieves the current PSObject instance representing the state of the database.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>Callers should ensure that the database is properly initialized before invoking this
+        /// method to avoid exceptions.</remarks>
+        /// <returns>A PSObject that encapsulates the current state or configuration of the database.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the database has not been initialized.</exception>
         internal static PSObject Get()
         {
             return _database ?? throw new InvalidOperationException(pwshErrorMessage);
@@ -62,10 +66,14 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the environment table from the internal database.
+        /// Retrieves the environment properties stored in the database.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>Ensure that the database is properly initialized before calling this method. The
+        /// returned dictionary provides a read-only view of the environment settings as stored in the
+        /// database.</remarks>
+        /// <returns>An <see cref="IReadOnlyDictionary{TKey, TValue}"/> containing the environment properties, where each key is
+        /// a property name and each value is the corresponding property value.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the environment properties cannot be retrieved because the database is not initialized.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static IReadOnlyDictionary<string, object> GetEnvironment()
         {
@@ -73,10 +81,12 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the config table from the internal database.
+        /// Retrieves the configuration settings from the database as a dictionary.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>This method accesses the 'Config' property of the database object. Ensure that the
+        /// database is properly initialized before calling this method.</remarks>
+        /// <returns>An IDictionary containing the configuration settings. Returns null if the configuration is not available.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the configuration cannot be retrieved due to an initialization error.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static IDictionary GetConfig()
         {
@@ -84,10 +94,14 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the active string table from the internal database.
+        /// Retrieves a dictionary containing string values from the database properties.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>This method accesses the 'Strings' property of the database, which must be properly
+        /// initialized before calling this method. Ensure that the database connection is established to avoid
+        /// exceptions.</remarks>
+        /// <returns>An IDictionary containing the string values. Returns null if the database is not initialized or the property
+        /// is not found.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the database is not initialized or the property 'Strings' is not available.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static IDictionary GetStrings()
         {
@@ -107,10 +121,15 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the active deployment session from the internal database.
+        /// Retrieves the most recent deployment session from the database of active sessions.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>Callers should ensure that the deployment session database is properly initialized
+        /// and contains at least one session before calling this method. This method is intended for scenarios where
+        /// session management is handled externally and a valid session is guaranteed to exist.</remarks>
+        /// <returns>The last active deployment session. This represents the most recently opened session in the current database
+        /// context.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if no deployment session is available. This typically indicates that the session has not been
+        /// initialized; ensure that [Open-ADTSession] is called before invoking this method.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
         public static DeploymentSession GetDeploymentSession()
         {
@@ -122,19 +141,22 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the module's internal SessionState from the database.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <returns>The current session state.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the session state is not available.</exception>
         internal static SessionState GetSessionState()
         {
             return (SessionState?)_database?.Properties["SessionState"].Value ?? throw new InvalidOperationException(pwshErrorMessage);
         }
 
         /// <summary>
-        /// Utility method to invoke a scriptblock using the module's internal SessionState.
+        /// Invokes the specified script block with the provided arguments in the current session state.
         /// </summary>
-        /// <param name="scriptBlock"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
+        /// <remarks>This method executes the script block in the context of the current session state,
+        /// allowing access to session variables and commands.</remarks>
+        /// <param name="scriptBlock">The script block to execute. This parameter must not be null.</param>
+        /// <param name="args">An array of arguments to pass to the script block. This parameter can be null or empty if no arguments are
+        /// required.</param>
+        /// <returns>A read-only collection of PSObject instances that represent the results of the script execution.</returns>
         internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
         {
             SessionState sessionState = GetSessionState(); return new(sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args));

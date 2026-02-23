@@ -12,10 +12,14 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record HelpConsoleOptions : IDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HelpConsoleOptions"/> class with the specified options.
-        /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
+        /// Initializes a new instance of the HelpConsoleOptions class using the specified options dictionary.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>The constructor extracts the 'ModuleHelpMap' entry from the provided options
+        /// dictionary. This entry is expected to contain help information for modules, which is used to configure the
+        /// help console.</remarks>
+        /// <param name="options">A dictionary containing configuration options for the help console. Must not be null and must include a key
+        /// named 'ModuleHelpMap' that maps to a read-only dictionary of module help information.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options parameter is null.</exception>
         public HelpConsoleOptions(IDictionary options) : this((options ?? throw new ArgumentNullException(nameof(options)))["ModuleHelpMap"] as IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ?? null!)
         {
         }

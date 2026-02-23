@@ -11,10 +11,12 @@ namespace PSADT.UserInterface.DialogResults
     public sealed class InputDialogResult : CustomDialogDerivative
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InputDialogResult"/> class.
+        /// Initializes a new instance of the InputDialogResult class with the specified result and optional text.
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="text"></param>
+        /// <param name="result">The result of the input dialog. Cannot be null or empty.</param>
+        /// <param name="text">An optional string containing additional text associated with the result. If provided, it must not be empty
+        /// or consist only of whitespace.</param>
+        /// <exception cref="ArgumentException">Thrown if the text parameter is provided and is empty or consists only of whitespace.</exception>
         internal InputDialogResult(string result, string? text = null) : base(result)
         {
             if (text is not null && string.IsNullOrWhiteSpace(text))

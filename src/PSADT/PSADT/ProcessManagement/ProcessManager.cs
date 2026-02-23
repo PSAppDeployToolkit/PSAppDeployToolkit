@@ -39,11 +39,20 @@ namespace PSADT.ProcessManagement
     public static class ProcessManager
     {
         /// <summary>
-        /// Launches a process with the specified start info and waits for it to complete.
+        /// Launches a new process asynchronously using the specified launch configuration and returns a handle for
+        /// process management and monitoring.
         /// </summary>
-        /// <param name="launchInfo"></param>
-        /// <returns></returns>
-        /// <exception cref="TaskCanceledException"></exception>
+        /// <remarks>This method supports advanced process launching scenarios, such as running as a
+        /// different user, redirecting standard input/output streams, setting process priority, and managing child
+        /// processes. It also allows for process cancellation and custom access control. The returned ProcessHandle
+        /// enables monitoring process completion and retrieving output streams asynchronously.</remarks>
+        /// <param name="launchInfo">An object that specifies the parameters for launching the process, including command line arguments, window
+        /// style, user context, input/output redirection, process priority, and other process control options. Cannot
+        /// be null.</param>
+        /// <returns>A ProcessHandle object that provides access to the launched process and its associated asynchronous task, or
+        /// null if the process could not be started.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="launchInfo"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the process fails to start.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The setup is too complex for the compiler to understand.")]
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
@@ -491,12 +500,17 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Reads from a pipe until the pipe is closed.
+        /// Reads lines from the specified anonymous pipe server stream and adds each line to the provided output list
+        /// and interleaved queue.
         /// </summary>
-        /// <param name="pipeStream"></param>
-        /// <param name="output"></param>
-        /// <param name="interleaved"></param>
-        /// <param name="encoding"></param>
+        /// <remarks>This method reads until the end of the stream is reached. The pipe stream is disposed
+        /// when reading is complete. Ensure that the provided stream and collections are valid and accessible before
+        /// calling this method.</remarks>
+        /// <param name="pipeStream">The anonymous pipe server stream from which lines are read. The stream must be open and readable.</param>
+        /// <param name="output">The list that receives each line read from the pipe stream, in the order they are read.</param>
+        /// <param name="interleaved">A thread-safe queue that stores each line read from the pipe stream, allowing concurrent access to the
+        /// lines.</param>
+        /// <param name="encoding">The character encoding used to interpret the bytes from the pipe stream as text.</param>
         private static void ReadPipe(AnonymousPipeServerStream pipeStream, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
         {
             using (pipeStream) using (StreamReader streamReader = new(pipeStream, encoding))

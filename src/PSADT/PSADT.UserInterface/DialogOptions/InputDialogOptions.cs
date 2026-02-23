@@ -12,9 +12,15 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record InputDialogOptions : CustomDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InputDialogOptions"/> class.
+        /// Initializes a new instance of the InputDialogOptions class using the specified configuration options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>If a required key is missing from the options dictionary, the corresponding property
+        /// will be set to its default value. Ensure that the dictionary contains valid entries for all necessary
+        /// configuration keys to achieve the desired dialog behavior.</remarks>
+        /// <param name="options">A dictionary containing key-value pairs that define the configuration settings for the input dialog.
+        /// Expected keys include application title, subtitle, icon images, dialog properties, message settings, and
+        /// button text. Each key should correspond to the appropriate value type required by the dialog.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options parameter is null.</exception>
         public InputDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,

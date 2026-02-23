@@ -30,10 +30,17 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class with the specified options.
+        /// Initializes a new instance of the CloseAppsDialog class using the specified dialog options and state
+        /// information.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="state"></param>
+        /// <remarks>This constructor sets up the dialog's user interface elements and behavior based on
+        /// the provided options and state. It applies user-defined settings, manages the visibility and enabled state
+        /// of controls, and configures process and deferral displays according to the current application
+        /// context.</remarks>
+        /// <param name="options">The options that configure the dialog's appearance and behavior, including messages, button visibility,
+        /// countdown settings, and deferral options. Cannot be null.</param>
+        /// <param name="state">The current state of the dialog, including the running process service and any logging actions to be used
+        /// during the dialog's operation.</param>
         internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout)
         {
             // Initialise the form and reset the control order.
@@ -174,10 +181,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's load event.
+        /// Handles the form's load event to perform initialization tasks and set up event handlers required for the
+        /// form's operation.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method ensures that base class initialization is performed, subscribes to
+        /// process change notifications, and starts the countdown timer if it is available and not already running. It
+        /// is intended to be called automatically when the form is loaded.</remarks>
+        /// <param name="sender">The source of the event, typically the form or control that triggered the load event.</param>
+        /// <param name="e">An EventArgs instance containing the event data associated with the load event.</param>
         private protected override void Form_Load(object? sender, EventArgs e)
         {
             // Perform the base event.
@@ -198,10 +209,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's closing event.
+        /// Handles the form's closing event, allowing for cancellation of the close operation and performing necessary
+        /// cleanup before the form is closed.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method checks whether the form can be closed and performs cleanup tasks such as
+        /// disposing of resources and detaching event handlers before invoking the base implementation. If the form
+        /// cannot be closed, the closing event is canceled.</remarks>
+        /// <param name="sender">The source of the event, typically the form that is being closed.</param>
+        /// <param name="e">A FormClosingEventArgs that contains the event data, including the ability to cancel the closing operation.</param>
         private protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
@@ -224,10 +239,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the left button (Close Processes).
+        /// Handles the click event for the left button, closing the dialog and indicating that the application should
+        /// be closed.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Sets the dialog result to indicate that the application should close before invoking
+        /// the base implementation.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             DialogResult = CloseAppsDialogResult.Close;
@@ -235,10 +253,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the middle button (Defer).
+        /// Handles the click event for the middle button and sets the dialog result to indicate that the action should
+        /// be deferred.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method sets the dialog result to <see cref="CloseAppsDialogResult.Defer"/>
+        /// before invoking the base implementation. Use this to defer the current dialog action when the middle button
+        /// is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             DialogResult = CloseAppsDialogResult.Defer;
@@ -246,10 +268,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the right button (Continue).
+        /// Handles the event when the right button is clicked, indicating that the user wishes to continue with the
+        /// operation.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Sets the dialog result to indicate continuation before invoking the base
+        /// implementation of the click event.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">An EventArgs object that contains the event data.</param>
         private protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             DialogResult = CloseAppsDialogResult.Continue;
@@ -257,9 +282,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Ticker for the countdown timer.
+        /// Handles the timer tick event for the countdown, updating the countdown display and performing the
+        /// appropriate action when the countdown reaches zero.
         /// </summary>
-        /// <param name="state"></param>
+        /// <remarks>This method ensures that the countdown label is updated on the UI thread and triggers
+        /// the correct action based on the countdown's completion and dialog state. It is intended for use with a timer
+        /// that periodically updates the countdown in a user interface.</remarks>
+        /// <param name="state">An optional state object associated with the timer event. This parameter is not used by the method.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void CountdownTimer_Tick(object? state)
         {
@@ -294,10 +323,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the event when the list of processes to close changes.
+        /// Handles the event that occurs when the list of processes to be closed changes, updating the user interface
+        /// to reflect the current state of running processes that require user action.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method updates UI elements to display the current processes that must be closed
+        /// by the user. If there are processes to close, it lists them and enables the relevant controls. If no
+        /// processes remain, it updates the UI to indicate that no action is required and may automatically continue if
+        /// configured.</remarks>
+        /// <param name="sender">The source of the event, typically the service instance that monitors running processes.</param>
+        /// <param name="e">An object containing event data, including the updated list of processes that need to be closed.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {

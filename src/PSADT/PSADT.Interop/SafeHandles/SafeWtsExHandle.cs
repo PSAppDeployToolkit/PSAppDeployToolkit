@@ -21,9 +21,12 @@ namespace PSADT.Interop.SafeHandles
     internal sealed class SafeWtsExHandle(nint handle, WTS_TYPE_CLASS type, int length, bool ownsHandle) : SafeMemoryHandle<SafeWtsExHandle>(handle, length, ownsHandle)
     {
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle and frees all associated resources.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>If the handle is already null, this method returns <see langword="true"/> without
+        /// performing any action. If the release operation fails, an exception is thrown to indicate the
+        /// error.</remarks>
+        /// <returns>true if the handle was successfully released or was already null; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

@@ -25,9 +25,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClassicDialog"/> class with the specified options.
+        /// Initializes a new instance of the HelpConsole class using the specified options for configuring help content
+        /// display.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>If the options parameter is provided, the ComboBox is populated with available
+        /// modules, and event handlers are set up to update the list of help topics and their content based on user
+        /// selection. The initial selected index of the ComboBox is set to the first item if available.</remarks>
+        /// <param name="options">The options used to configure the HelpConsole, including a mapping of modules to their help content. This
+        /// parameter cannot be null.</param>
         internal HelpConsole(HelpConsoleOptions options) : base()
         {
             // Initialise the underlying form as set up by the designer.

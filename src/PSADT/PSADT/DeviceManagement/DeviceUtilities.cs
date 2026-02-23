@@ -90,9 +90,11 @@ namespace PSADT.DeviceManagement
         }
 
         /// <summary>
-        /// Tests whether the current device has completed its Out-of-Box Experience (OOBE).
+        /// Determines whether the system's Out-Of-Box Experience (OOBE) has been completed.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method queries the underlying operating system to check the OOBE status. Ensure
+        /// that the system is in a valid state before invoking this method.</remarks>
+        /// <returns>Returns <see langword="true"/> if the OOBE process is complete; otherwise, <see langword="false"/>.</returns>
         public static bool IsOOBEComplete()
         {
             _ = NativeMethods.OOBEComplete(out BOOL isOobeComplete);

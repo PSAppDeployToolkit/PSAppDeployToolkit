@@ -14,9 +14,16 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record ListSelectionDialogOptions : CustomDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListSelectionDialogOptions"/> class.
+        /// Initializes a new instance of the ListSelectionDialogOptions class using the specified configuration
+        /// options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>The options dictionary must not be null and should contain keys corresponding to the
+        /// dialog's configurable properties. If a key is missing, a default value may be applied for that option. Refer
+        /// to the documentation for the expected keys and value types.</remarks>
+        /// <param name="options">A dictionary containing key-value pairs that define the dialog's configuration, such as application title,
+        /// subtitle, images, dialog behavior, and other settings. Keys should match the expected option names; missing
+        /// keys may result in default values being used.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public ListSelectionDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
@@ -126,9 +133,13 @@ namespace PSADT.UserInterface.DialogOptions
         public sealed record ListSelectionDialogStrings
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="ListSelectionDialogStrings"/> class.
+            /// Initializes a new instance of the ListSelectionDialogStrings class using the specified collection of
+            /// string resources.
             /// </summary>
-            /// <param name="strings"></param>
+            /// <remarks>If the 'ListSelectionMessage' key is not present in the dictionary, the
+            /// message will be set to null.</remarks>
+            /// <param name="strings">An IDictionary containing string resources. The entry with the key 'ListSelectionMessage' is used to
+            /// provide the message for the dialog.</param>
             internal ListSelectionDialogStrings(IDictionary strings) : this(strings["ListSelectionMessage"] as string ?? null!)
             {
             }

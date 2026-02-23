@@ -11,10 +11,16 @@ namespace PSADT.UserInterface.Utilities
     public sealed class ResettableObservableCollection<T> : ObservableCollection<T>
     {
         /// <summary>
-        /// Resets the underlying ObservableCollection with the provided items.
+        /// Replaces the contents of the collection with the specified items, optionally forcing a reset even if both
+        /// the source and current collection are empty.
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="force"></param>
+        /// <remarks>If force is false and both the incoming items and the current collection are empty,
+        /// the method returns without making any changes. Notifications are suppressed during the reset process to
+        /// prevent unnecessary updates.</remarks>
+        /// <param name="items">The collection of items to set as the new contents of the collection. If empty, the collection will be
+        /// cleared.</param>
+        /// <param name="force">true to force the reset operation even if both the incoming items and the current collection are empty;
+        /// otherwise, false.</param>
         internal void ResetItems(IEnumerable<T> items, bool force = false)
         {
             T[] incoming = [.. items];
@@ -33,9 +39,13 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Override for base event to only fire when we're not suppressing the change.
+        /// Raises the collection changed event to notify subscribers of changes to the collection, unless notifications
+        /// are currently suppressed.
         /// </summary>
-        /// <param name="e"></param>
+        /// <remarks>Overrides the base implementation to provide custom notification behavior. If
+        /// notifications are suppressed, the event is not raised and subscribers are not notified of the
+        /// change.</remarks>
+        /// <param name="e">The event data that describes the change to the collection.</param>
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (!_suppressNotification)

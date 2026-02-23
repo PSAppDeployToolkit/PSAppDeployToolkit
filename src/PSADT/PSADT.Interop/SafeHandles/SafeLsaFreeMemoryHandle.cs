@@ -4,20 +4,24 @@ using Windows.Win32;
 namespace PSADT.Interop.SafeHandles
 {
     /// <summary>
-    /// Represents a safe handle for memory allocated by the Local Security Authority (LSA) that requires deallocation
-    /// using the <see cref="PInvoke.LsaFreeMemory"/> function.
+    /// Represents a safe handle for memory allocated by the Local Security Authority (LSA) that ensures the memory is
+    /// properly released when no longer needed.
     /// </summary>
-    /// <remarks>This class ensures that memory allocated by the LSA is properly released when the handle is
-    /// disposed or finalized. It is a specialized implementation of <see cref="SafeMemoryHandle{TSelf}"/> designed to work
-    /// with LSA memory management functions.</remarks>
-    /// <param name="handle"></param>
-    /// <param name="ownsHandle"></param>
+    /// <remarks>Use this class to safely encapsulate memory allocated by LSA functions, ensuring that
+    /// resources are released reliably and preventing memory leaks. This handle should be used in conjunction with APIs
+    /// that allocate memory through the LSA and require explicit deallocation.</remarks>
+    /// <param name="handle">The handle to the memory allocated by the LSA. This value identifies the memory block to be managed and
+    /// released.</param>
+    /// <param name="ownsHandle">true to indicate that this instance is responsible for releasing the handle; otherwise, false.</param>
     internal sealed class SafeLsaFreeMemoryHandle(nint handle, bool ownsHandle) : SafeMemoryHandle<SafeLsaFreeMemoryHandle>(handle, 0, ownsHandle)
     {
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle associated with unmanaged LSA memory resources.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method is called by the runtime to free the unmanaged memory allocated by LSA
+        /// functions. If the handle is already set to its default value, no action is taken. This override ensures that
+        /// memory is properly released to prevent resource leaks.</remarks>
+        /// <returns>Always returns <see langword="true"/> to indicate that the handle has been released.</returns>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

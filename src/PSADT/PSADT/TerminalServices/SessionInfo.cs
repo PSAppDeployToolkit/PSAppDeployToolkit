@@ -11,30 +11,34 @@ namespace PSADT.TerminalServices
     public sealed record SessionInfo
     {
         /// <summary>
-        /// Default constructor.
+        /// Initializes a new instance of the SessionInfo class with details about a user session, including user
+        /// identity, session state, client information, and administrative status.
         /// </summary>
-        /// <param name="ntAccount"></param>
-        /// <param name="sid"></param>
-        /// <param name="userName"></param>
-        /// <param name="domainName"></param>
-        /// <param name="sessionId"></param>
-        /// <param name="sessionName"></param>
-        /// <param name="connectState"></param>
-        /// <param name="isCurrentSession"></param>
-        /// <param name="isConsoleSession"></param>
-        /// <param name="isActiveUserSession"></param>
-        /// <param name="isValidUserSession"></param>
-        /// <param name="isUserSession"></param>
-        /// <param name="isRdpSession"></param>
-        /// <param name="isLocalAdmin"></param>
-        /// <param name="isLocalAdminException"></param>
-        /// <param name="logonTime"></param>
-        /// <param name="idleTime"></param>
-        /// <param name="disconnectTime"></param>
-        /// <param name="clientName"></param>
-        /// <param name="clientProtocolType"></param>
-        /// <param name="clientDirectory"></param>
-        /// <param name="clientBuildNumber"></param>
+        /// <param name="ntAccount">The NTAccount representing the user associated with the session. Cannot be null.</param>
+        /// <param name="sid">The SecurityIdentifier (SID) for the user associated with the session. Cannot be null.</param>
+        /// <param name="userName">The user name for the session. Cannot be null or empty.</param>
+        /// <param name="domainName">The domain name for the user. Cannot be null or empty.</param>
+        /// <param name="sessionId">The unique identifier for the session. Must be greater than zero.</param>
+        /// <param name="sessionName">The name of the session, or null if not specified.</param>
+        /// <param name="connectState">The current connection state of the session, as defined by the WTS_CONNECTSTATE_CLASS enumeration.</param>
+        /// <param name="isCurrentSession">true if this session is the current session; otherwise, false.</param>
+        /// <param name="isConsoleSession">true if this session is the console session; otherwise, false.</param>
+        /// <param name="isActiveUserSession">true if this session is an active user session; otherwise, false.</param>
+        /// <param name="isValidUserSession">true if this session is considered a valid user session; otherwise, false.</param>
+        /// <param name="isUserSession">true if this session is a user session; otherwise, false.</param>
+        /// <param name="isRdpSession">true if this session is a Remote Desktop Protocol (RDP) session; otherwise, false.</param>
+        /// <param name="isLocalAdmin">true if the user is a local administrator; otherwise, false. Can be null if the status is unknown.</param>
+        /// <param name="isLocalAdminException">The exception encountered when determining local administrator status, or null if no exception occurred.</param>
+        /// <param name="logonTime">The date and time when the user logged on to the session.</param>
+        /// <param name="idleTime">The duration for which the session has been idle, or null if not available.</param>
+        /// <param name="disconnectTime">The date and time when the session was disconnected, or null if the session is currently connected.</param>
+        /// <param name="clientName">The name of the client computer associated with the session, or null if not available.</param>
+        /// <param name="clientProtocolType">The protocol type used by the client to connect to the session, as defined by the WTS_PROTOCOL_TYPE
+        /// enumeration.</param>
+        /// <param name="clientDirectory">The directory path of the client, or null if not available.</param>
+        /// <param name="clientBuildNumber">The build number of the client, or null if not available.</param>
+        /// <exception cref="ArgumentNullException">Thrown if ntAccount, sid, userName, or domainName is null, or if userName or domainName is empty.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if sessionId is less than or equal to zero.</exception>
         internal SessionInfo(
             NTAccount ntAccount,
             SecurityIdentifier sid,

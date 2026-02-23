@@ -120,10 +120,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the left button.
+        /// Handles the Click event for the left button in the custom dialog, setting the dialog result and initiating
+        /// dialog closure.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method sets the dialog result to a value based on the left button's text before
+        /// invoking the base implementation to close the dialog. Override this method to customize the behavior when
+        /// the left button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the left button that was clicked.</param>
+        /// <param name="e">An EventArgs object that contains the event data.</param>
         private protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
@@ -132,10 +136,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the middle button.
+        /// Handles the click event for the middle button, setting the dialog result based on the button's text and
+        /// invoking the base implementation to process the dialog closure.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method assigns a custom dialog result derived from the middle button's text
+        /// before delegating to the base class handler. Override this method to customize the behavior when the middle
+        /// button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the middle button that was clicked.</param>
+        /// <param name="e">An object that contains the event data associated with the click event.</param>
         private protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
@@ -144,10 +152,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the right button.
+        /// Handles the click event for the right button, setting the dialog result and invoking the base class method
+        /// to manage window closure.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method sets the dialog result to a custom value based on the button's text
+        /// before calling the base class implementation to ensure proper handling of the dialog's closure.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.

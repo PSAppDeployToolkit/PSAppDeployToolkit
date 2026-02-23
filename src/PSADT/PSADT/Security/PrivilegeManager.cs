@@ -94,42 +94,54 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Determines whether a privilege is enabled in the specified token.
+        /// Determines whether the specified access token includes the given privilege.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="privilege"></param>
-        /// <returns></returns>
+        /// <remarks>Use this method to verify that an access token possesses a particular privilege
+        /// before performing operations that require it.</remarks>
+        /// <param name="token">A safe handle to the access token to evaluate. The token must be valid and opened with appropriate access
+        /// rights.</param>
+        /// <param name="privilege">The privilege to check for in the access token. This should be a valid value of the SE_PRIVILEGE
+        /// enumeration.</param>
+        /// <returns>true if the access token contains the specified privilege; otherwise, false.</returns>
         private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             return GetPrivileges(token).Contains(privilege);
         }
 
         /// <summary>
-        /// Determines whether a privilege is enabled in the current process token.
+        /// Determines whether the current caller possesses the specified privilege.
         /// </summary>
-        /// <param name="privilege"></param>
-        /// <returns></returns>
+        /// <remarks>Use this method to verify that the executing account has a particular privilege
+        /// before performing operations that require elevated permissions.</remarks>
+        /// <param name="privilege">The privilege to check for in the current caller's set of privileges.</param>
+        /// <returns>true if the current caller has the specified privilege; otherwise, false.</returns>
         internal static bool HasPrivilege(SE_PRIVILEGE privilege)
         {
             return AccountUtilities.CallerPrivileges.Contains(privilege);
         }
 
         /// <summary>
-        /// Determines whether a privilege is enabled in the specified token.
+        /// Determines whether the specified privilege is enabled for the given access token.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="privilege"></param>
-        /// <returns></returns>
+        /// <remarks>This method examines the privileges associated with the provided access token and
+        /// checks if the specified privilege is currently enabled. Use this method to verify privilege status before
+        /// performing operations that require specific privileges.</remarks>
+        /// <param name="token">A safe handle to the access token to check. The token must be valid and opened with appropriate access
+        /// rights.</param>
+        /// <param name="privilege">The privilege to check for its enabled status within the specified access token.</param>
+        /// <returns>true if the specified privilege is enabled for the access token; otherwise, false.</returns>
         private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             return GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
         }
 
         /// <summary>
-        /// Determines whether a privilege is enabled in the current process token.
+        /// Determines whether the specified privilege is enabled for the current process.
         /// </summary>
-        /// <param name="privilege"></param>
-        /// <returns></returns>
+        /// <remarks>This method requires the calling process to have the necessary permissions to query
+        /// the process token. It uses the current process's token to check the privilege status.</remarks>
+        /// <param name="privilege">The privilege to check for its enabled status in the current process.</param>
+        /// <returns>true if the specified privilege is enabled; otherwise, false.</returns>
         internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
             using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
@@ -141,10 +153,16 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Enables a privilege in the specified token.
+        /// Enables the specified privilege for the provided access token, allowing the associated process to perform
+        /// actions that require that privilege.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="privilege"></param>
+        /// <remarks>Enabling a privilege may be necessary for operations that require elevated
+        /// permissions, such as modifying system settings or accessing protected resources. This method does not add
+        /// privileges to the token; it only enables privileges that are already present.</remarks>
+        /// <param name="token">A handle to the access token for which the privilege will be enabled. The token must have the specified
+        /// privilege available.</param>
+        /// <param name="privilege">The privilege to enable, specified as a value of the SE_PRIVILEGE enumeration.</param>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the specified privilege is not available in the provided access token.</exception>
         private static void EnablePrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             if (!HasPrivilege(token, privilege))
@@ -165,9 +183,12 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Enables a privilege in the current process token.
+        /// Enables the specified system privilege for the current process.
         /// </summary>
-        /// <param name="privilege"></param>
+        /// <remarks>This method requires the calling process to have permission to adjust its own
+        /// privileges. Enabling certain privileges may be necessary to perform operations that require elevated rights,
+        /// such as accessing system resources or modifying security settings.</remarks>
+        /// <param name="privilege">The privilege to enable, specified as a value of the SE_PRIVILEGE enumeration.</param>
         internal static void EnablePrivilege(SE_PRIVILEGE privilege)
         {
             using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
@@ -179,9 +200,13 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Ensures that a security token is enabled.
+        /// Enables the specified privilege for the current process if it is not already enabled.
         /// </summary>
-        /// <param name="privilege"></param>
+        /// <remarks>This method checks whether the given privilege is enabled for the current process and
+        /// enables it if it is not. The caller must have appropriate access rights to adjust process privileges. This
+        /// operation may require administrative permissions depending on the privilege being enabled.</remarks>
+        /// <param name="privilege">The privilege to enable for the current process. This value specifies which system privilege should be
+        /// checked and enabled if necessary.</param>
         internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
             using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();

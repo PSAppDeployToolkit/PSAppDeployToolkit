@@ -123,50 +123,63 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Format the time span to a string.
+        /// Formats a specified time interval as a string in hours, minutes, and seconds.
         /// </summary>
-        /// <param name="ts"></param>
-        /// <returns></returns>
+        /// <remarks>The formatted string includes the total number of hours, which may exceed 24 if the
+        /// time interval spans multiple days. Minutes and seconds are always displayed as two digits.</remarks>
+        /// <param name="ts">The time interval to format.</param>
+        /// <returns>A string representation of the total hours, minutes, and seconds in the format "HH:MM:SS".</returns>
         private protected static string FormatTime(TimeSpan ts)
         {
             return $"{(ts.Days * 24) + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
         }
 
         /// <summary>
-        /// Handles the click event of the left button.
+        /// Handles the click event for the left button and closes the dialog.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Override this method in a derived class to implement custom behavior when the left
+        /// button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the left button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected virtual void ButtonLeft_Click(object sender, EventArgs e)
         {
             CloseDialog();
         }
 
         /// <summary>
-        /// Handles the click event of the middle button.
+        /// Handles the click event for the middle button and closes the dialog.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Override this method in a derived class to implement custom behavior when the middle
+        /// button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
         {
             CloseDialog();
         }
 
         /// <summary>
-        /// Handles the click event of the right button.
+        /// Handles the click event for the right button and closes the dialog.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>Override this method in a derived class to provide custom behavior when the right
+        /// button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected virtual void ButtonRight_Click(object sender, EventArgs e)
         {
             CloseDialog();
         }
 
         /// <summary>
-        /// Handles the form's load event.
+        /// Handles the form's load event to initialize settings, configure the system menu, subscribe to system events,
+        /// and start relevant timers.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method disables or adjusts certain system menu items based on configuration,
+        /// subscribes to display and user preference change events, sets the initial position of the form, and starts
+        /// timers related to form persistence and expiry. It also signals operation success for client-server
+        /// scenarios.</remarks>
+        /// <param name="sender">The source of the event, typically the form being loaded.</param>
+        /// <param name="e">An EventArgs instance containing the event data.</param>
         private protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Adjust the menu depending on our config options.
@@ -241,10 +254,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's closing event.
+        /// Handles the form's closing event, allowing for cleanup operations and the option to cancel the closing
+        /// process.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method unsubscribes from system events and disposes of timers before the form is
+        /// closed. If the form cannot be closed, the closing operation can be canceled by setting <paramref
+        /// name="e"/>.Cancel to <see langword="true"/>.</remarks>
+        /// <param name="sender">The source of the event, typically the form that is being closed.</param>
+        /// <param name="e">A FormClosingEventArgs that contains data related to the closing event, including the ability to cancel the
+        /// operation.</param>
         private protected virtual void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
@@ -275,9 +293,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Tests whether this form is allowed to close down.
+        /// Determines whether the current instance can be closed.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>true if the instance can be closed; otherwise, false.</returns>
         private protected bool CanClose()
         {
             return canClose;
@@ -439,18 +457,23 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Handles the timer tick event for persisting the dialog.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs object that contains the event data.</param>
         private void PersistTimer_Tick(object? sender, EventArgs e)
         {
             RestoreWindow();
         }
 
         /// <summary>
-        /// Get the icon for the dialog.
+        /// Retrieves an icon from the specified file path, using a cached version if available.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <remarks>If the specified path does not refer to an icon file, the image is converted to icon
+        /// format before being returned. Subsequent calls with the same path will return the cached icon instance. This
+        /// method is intended for internal use within the assembly.</remarks>
+        /// <param name="path">The file path to the icon image. This can be a path to a standard image file or a base64-encoded image
+        /// string. The path must not be null or empty.</param>
+        /// <returns>An <see cref="Icon"/> object representing the icon at the specified path. Returns a cached icon if it has
+        /// been previously loaded.</returns>
         internal static Icon GetIcon(string path)
         {
             // Use a cached icon if available, otherwise load and cache it before returning it.
@@ -474,10 +497,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Get the banner image for the dialog.
+        /// Retrieves a bitmap image from the specified file path, using a cached version if available.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <remarks>If the image is not already cached, it is loaded from the file system or decoded from
+        /// a base64 string and then cached for future requests. This method improves performance by avoiding repeated
+        /// disk or decoding operations for the same image.</remarks>
+        /// <param name="path">The file path of the image to retrieve. This can be a path to a standard image file or a base64-encoded
+        /// image string.</param>
+        /// <returns>A Bitmap object representing the image at the specified path.</returns>
         internal static Bitmap GetBanner(string path)
         {
             // Use a cached image if available, otherwise load and cache it before returning it.

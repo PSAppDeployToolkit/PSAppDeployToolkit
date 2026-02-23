@@ -61,10 +61,14 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Reads a byte from the memory block at the specified offset.
+        /// Reads a 64-bit signed integer from the memory location represented by the handle, starting at the specified
+        /// byte offset.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        /// <remarks>The handle must be valid and initialized before calling this method. Reading from an
+        /// invalid or uninitialized handle may result in an exception or undefined behavior.</remarks>
+        /// <param name="offset">The zero-based byte offset, in bytes, from the start of the memory location at which to begin reading. Must
+        /// be non-negative.</param>
+        /// <returns>The 64-bit signed integer value read from the specified memory location.</returns>
         internal long ReadInt64(int offset = 0)
         {
             ConfirmStateValidity(offset);
@@ -72,10 +76,14 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Reads a byte from the memory block at the specified offset.
+        /// Reads a 32-bit signed integer from the memory location represented by the handle, starting at the specified
+        /// byte offset.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        /// <remarks>The handle must be in a valid state before calling this method. An exception may be
+        /// thrown if the handle is not properly initialized or if the offset is out of range.</remarks>
+        /// <param name="offset">The zero-based byte offset, in bytes, from the start of the memory location at which to begin reading. Must
+        /// be non-negative.</param>
+        /// <returns>The 32-bit signed integer value read from the specified memory location.</returns>
         internal int ReadInt32(int offset = 0)
         {
             ConfirmStateValidity(offset);
@@ -83,10 +91,13 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Reads a byte from the memory block at the specified offset.
+        /// Reads a 16-bit signed integer from the memory region at the specified byte offset.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        /// <remarks>The memory region must be in a valid state for reading. An exception may be thrown if
+        /// the offset is out of bounds or if the handle is invalid.</remarks>
+        /// <param name="offset">The zero-based byte offset from the start of the memory region at which to read the 16-bit integer. Must be
+        /// non-negative.</param>
+        /// <returns>The 16-bit signed integer value read from the specified offset.</returns>
         internal short ReadInt16(int offset = 0)
         {
             ConfirmStateValidity(offset);
@@ -94,10 +105,13 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Reads a byte from the memory block at the specified offset.
+        /// Reads a byte value from the memory location at the specified offset within the handle.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        /// <remarks>The memory handle must be in a valid state before calling this method. An exception
+        /// may be thrown if the handle is not properly initialized or if the offset is out of range.</remarks>
+        /// <param name="offset">The zero-based byte offset from the start of the memory handle at which to read. Must be greater than or
+        /// equal to zero.</param>
+        /// <returns>The byte value read from the specified offset in the memory handle.</returns>
         internal byte ReadByte(int offset = 0)
         {
             ConfirmStateValidity(offset);
@@ -165,12 +179,14 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Writes the provided data to the allocated memory.
+        /// Writes the specified byte array to the allocated memory starting at the given index.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="startIndex"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="data">The byte array containing the data to write. This array must not be null or empty.</param>
+        /// <param name="startIndex">The zero-based index in the byte array at which to begin writing data. The default value is 0.</param>
+        /// <returns>The current instance of the class, enabling method chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="data"/> parameter is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="data"/> parameter is empty, or if the combined length of <paramref
+        /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
             ConfirmStateValidity(startIndex);
@@ -232,9 +248,12 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Releases the handle and frees the allocated memory.
+        /// Releases the handle associated with the resource, ensuring that unmanaged resources are properly freed.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method must be implemented by derived classes to specify the logic for releasing
+        /// the handle. It is called when the handle is no longer needed, and proper implementation is essential to
+        /// prevent resource leaks.</remarks>
+        /// <returns>true if the handle is released successfully; otherwise, false.</returns>
         protected abstract override bool ReleaseHandle();
 
         /// <summary>

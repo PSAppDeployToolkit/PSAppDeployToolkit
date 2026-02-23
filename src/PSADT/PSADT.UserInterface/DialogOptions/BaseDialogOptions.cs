@@ -23,10 +23,14 @@ namespace PSADT.UserInterface.DialogOptions
     public abstract record BaseDialogOptions : IDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseDialogOptions"/> class with the specified options.
-        /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
+        /// Initializes a new instance of the BaseDialogOptions class using the specified configuration options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>If a required key is missing from the options dictionary, a default value is used for
+        /// that setting. Ensure that the dictionary contains valid entries for all necessary dialog options to achieve
+        /// the desired configuration.</remarks>
+        /// <param name="options">A dictionary containing key-value pairs that define dialog configuration settings, such as application
+        /// title, subtitle, icon images, language, and display options. Keys must match the expected option names.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         internal BaseDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,

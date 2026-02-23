@@ -25,9 +25,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProgressDialog"/> class with the specified options.
+        /// Initializes a new instance of the ProgressDialog class using the specified options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>This constructor applies the provided options to set up the dialog's controls,
+        /// including the progress message, detail message, and progress percentage. The layout is configured to ensure
+        /// proper display based on the options supplied.</remarks>
+        /// <param name="options">The options that configure the appearance and behavior of the progress dialog. Cannot be null.</param>
         internal ProgressDialog(ProgressDialogOptions options) : base(options, null!)
         {
             // Initialise the form and reset the control order.
@@ -58,12 +61,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Updates the progress dialog with the specified messages and percentage complete.
+        /// Updates the progress display with the specified message, detail, percentage, and alignment options.
         /// </summary>
-        /// <param name="progressMessage"></param>
-        /// <param name="progressMessageDetail"></param>
-        /// <param name="progressPercentage"></param>
-        /// <param name="messageAlignment"></param>
+        /// <remarks>This method is thread-safe and can be called from any thread. Only the provided
+        /// arguments are updated; omitted arguments leave the corresponding display elements unchanged.</remarks>
+        /// <param name="progressMessage">The main progress message to display. If null, no message is shown.</param>
+        /// <param name="progressMessageDetail">Additional detail to display beneath the main progress message. If null, no additional detail is shown.</param>
+        /// <param name="progressPercentage">The percentage of progress completed, as a value between 0 and 100. If null, the progress percentage is not
+        /// updated.</param>
+        /// <param name="messageAlignment">Specifies the alignment of the progress message. If null, the default alignment is used.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
@@ -71,12 +77,16 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Updates the progress dialog with the specified messages and percentage complete.
+        /// Updates the progress dialog with the specified message, detail, progress percentage, and message alignment.
         /// </summary>
-        /// <param name="progressMessage"></param>
-        /// <param name="progressMessageDetail"></param>
-        /// <param name="progressPercentage"></param>
-        /// <param name="messageAlignment"></param>
+        /// <remarks>This method updates the user interface elements of the progress dialog. Only non-null
+        /// and non-empty values are applied, allowing selective updates to the displayed information.</remarks>
+        /// <param name="progressMessage">The main progress message to display. If null or empty, the existing message is not updated.</param>
+        /// <param name="progressMessageDetail">The detailed progress message to display below the main message. If null or empty, the existing detail
+        /// message is not updated.</param>
+        /// <param name="progressPercentage">The percentage of progress completed, as a value between 0 and 100. If null, the progress bar displays in
+        /// marquee style to indicate indeterminate progress.</param>
+        /// <param name="messageAlignment">The alignment of the progress messages. If null or invalid, the messages are center-aligned by default.</param>
         private void UpdateProgressImpl(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             // Update the progress message.
@@ -116,9 +126,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Enables the drag move functionality for the form and its child controls.
+        /// Enables drag-and-drop movement for the specified control and all of its child controls by attaching mouse
+        /// event handlers.
         /// </summary>
-        /// <param name="parent"></param>
+        /// <remarks>This method recursively attaches the mouse down event handler to all child controls,
+        /// allowing for a consistent drag-and-drop experience across the control hierarchy.</remarks>
+        /// <param name="parent">The parent control to which drag movement functionality will be applied. This control and all of its child
+        /// controls will respond to mouse down events.</param>
         private void EnableDragMove(Control parent)
         {
             // Attach to this control, then recurse into its children.
@@ -130,10 +144,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the mouse down event for the form and allows it to be moved.
+        /// Handles the MouseDown event for a control to initiate a window drag operation when the left mouse button is
+        /// pressed.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method enables dragging of the window by simulating a non-client area mouse down
+        /// event when the left mouse button is pressed on the control. This is commonly used to allow custom window
+        /// chrome or controls to act as draggable areas.</remarks>
+        /// <param name="sender">The source of the event, typically the control that received the mouse down action.</param>
+        /// <param name="e">A MouseEventArgs object that contains the event data, including information about which mouse button was
+        /// pressed.</param>
         private void AnyControl_MouseDown(object? sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)

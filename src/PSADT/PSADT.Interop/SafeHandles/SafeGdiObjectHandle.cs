@@ -25,9 +25,12 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle to the GDI object, ensuring that the associated unmanaged resources are properly freed.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>If the handle is already set to the default value, this method returns true without
+        /// attempting to delete the handle.</remarks>
+        /// <returns>true if the handle was successfully released or was already set to the default value; otherwise, false.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the deletion of the GDI object handle fails.</exception>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

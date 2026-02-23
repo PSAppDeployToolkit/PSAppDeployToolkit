@@ -13,10 +13,17 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record RestartDialogOptions : BaseDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class.
+        /// Initializes a new instance of the RestartDialogOptions class using the specified deployment type and a
+        /// dictionary of configuration options.
         /// </summary>
-        /// <param name="deploymentType"></param>
-        /// <param name="options"></param>
+        /// <remarks>The options dictionary must contain the required keys for proper dialog
+        /// configuration. Missing or incorrectly typed values may result in runtime exceptions. Ensure that all
+        /// necessary options, such as 'AppTitle', 'Subtitle', and other dialog settings, are provided and of the
+        /// expected type.</remarks>
+        /// <param name="deploymentType">The deployment type that determines the context in which the restart dialog is presented.</param>
+        /// <param name="options">A dictionary containing configuration options for the dialog, such as titles, images, language, and behavior
+        /// settings. Must not be null.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public RestartDialogOptions(DeploymentType deploymentType, IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
@@ -110,11 +117,15 @@ namespace PSADT.UserInterface.DialogOptions
         public sealed record RestartDialogStrings
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="RestartDialogStrings"/> class with the specified strings.
+            /// Initializes a new instance of the RestartDialogStrings class using the specified string resources and
+            /// deployment type.
             /// </summary>
-            /// <param name="strings"></param>
-            /// <param name="deploymentType"></param>
-            /// <exception cref="ArgumentNullException"></exception>
+            /// <remarks>This constructor selects the appropriate localized message for the dialog
+            /// based on the provided deployment type. All required string resources must be present in the dictionary
+            /// to ensure correct dialog display.</remarks>
+            /// <param name="strings">An IDictionary containing the string resources required for the restart dialog, such as titles,
+            /// messages, and button labels. Keys must match the expected resource names.</param>
+            /// <param name="deploymentType">The deployment type that determines which localized message string to use in the dialog.</param>
             internal RestartDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
                 strings["Title"] as string ?? null!,
                 ((IDictionary?)strings["Message"])?[deploymentType.ToString()] as string ?? null!,

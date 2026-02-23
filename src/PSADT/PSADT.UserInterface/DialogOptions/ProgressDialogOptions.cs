@@ -12,9 +12,14 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record ProgressDialogOptions : BaseDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
+        /// Initializes a new instance of the ProgressDialogOptions class using the specified configuration options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>If a required key is missing from the options dictionary, the corresponding property
+        /// is set to its default value. Ensure that the dictionary contains valid entries for all necessary
+        /// configuration keys to achieve the desired dialog behavior.</remarks>
+        /// <param name="options">A dictionary containing key-value pairs that define the configuration for the progress dialog, such as
+        /// application title, subtitle, icon images, dialog properties, and progress message details.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public ProgressDialogOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,

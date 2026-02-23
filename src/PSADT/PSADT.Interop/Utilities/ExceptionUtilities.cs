@@ -64,9 +64,12 @@ namespace PSADT.Interop.Utilities
         }
 
         /// <summary>
-        /// Gets the exception for the last Win32 error.
+        /// Creates an exception that corresponds to the most recent Win32 error code.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method is typically used in interop scenarios to translate the result of a
+        /// failed Win32 API call into a .NET exception. It retrieves the last error code using the Win32 GetLastError
+        /// function and generates an appropriate exception for error handling.</remarks>
+        /// <returns>An exception that represents the error associated with the last Win32 error code.</returns>
         internal static Exception GetExceptionForLastWin32Error()
         {
             return GetException(GetLastWin32Error());

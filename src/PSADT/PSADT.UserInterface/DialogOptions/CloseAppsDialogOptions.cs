@@ -13,10 +13,16 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record CloseAppsDialogOptions : BaseDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.
+        /// Initializes a new instance of the CloseAppsDialogOptions class using the specified deployment type and
+        /// configuration options.
         /// </summary>
-        /// <param name="deploymentType"></param>
-        /// <param name="options"></param>
+        /// <remarks>The options dictionary must include specific keys to fully configure the dialog. If
+        /// certain keys are missing, default values will be used for those settings. Ensure that all required options
+        /// are provided to achieve the desired dialog configuration.</remarks>
+        /// <param name="deploymentType">The type of deployment for the application, which determines the dialog's behavior and appearance.</param>
+        /// <param name="options">A dictionary containing configuration options for the dialog, such as titles, images, localization settings,
+        /// and behavioral flags. Must not be null.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the options dictionary is null.</exception>
         public CloseAppsDialogOptions(DeploymentType deploymentType, IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
@@ -172,11 +178,13 @@ namespace PSADT.UserInterface.DialogOptions
         public sealed record CloseAppsDialogStrings
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class.
+            /// Initializes a new instance of the CloseAppsDialogStrings class using localized string resources for
+            /// different deployment types.
             /// </summary>
-            /// <param name="strings"></param>
-            /// <param name="deploymentType"></param>
-            /// <exception cref="ArgumentNullException"></exception>
+            /// <remarks>If the dictionary does not contain entries for the 'Classic' or 'Fluent'
+            /// deployment types, the corresponding string resources will not be initialized.</remarks>
+            /// <param name="strings">An IDictionary containing localized string resources for the dialog, organized by deployment type.</param>
+            /// <param name="deploymentType">The deployment type that determines which set of localized strings to use.</param>
             internal CloseAppsDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
                 strings["Classic"] is IDictionary classicStrings ? new CloseAppsDialogClassicStrings(classicStrings, deploymentType) : null!,
                 strings["Fluent"] is IDictionary fluentStrings ? new CloseAppsDialogFluentStrings(fluentStrings, deploymentType) : null!)
@@ -218,11 +226,16 @@ namespace PSADT.UserInterface.DialogOptions
             public sealed record CloseAppsDialogClassicStrings
             {
                 /// <summary>
-                /// Initializes a new instance of the <see cref="CloseAppsDialogClassicStrings"/> class.
+                /// Initializes a new instance of the CloseAppsDialogClassicStrings class using localized string values
+                /// based on the specified deployment type.
                 /// </summary>
-                /// <param name="strings"></param>
-                /// <param name="deploymentType"></param>
-                /// <exception cref="ArgumentNullException"></exception>
+                /// <remarks>This constructor retrieves localized strings for dialog messages and
+                /// button labels according to the provided deployment type. If a required string is not found for the
+                /// specified deployment type, a default value is used. All required keys must be present in the
+                /// dictionary to ensure correct dialog behavior.</remarks>
+                /// <param name="strings">An IDictionary containing localized string values for various dialog messages and button labels. The
+                /// dictionary must include entries for each required message key.</param>
+                /// <param name="deploymentType">The deployment type that determines which localized string values are selected from the dictionary.</param>
                 internal CloseAppsDialogClassicStrings(IDictionary strings, DeploymentType deploymentType) : this(
                     ((IDictionary?)strings["WelcomeMessage"])?[deploymentType.ToString()] as string ?? null!,
                     ((IDictionary?)strings["CloseAppsMessage"])?[deploymentType.ToString()] as string ?? null!,
@@ -415,11 +428,17 @@ namespace PSADT.UserInterface.DialogOptions
             public sealed record CloseAppsDialogFluentStrings
             {
                 /// <summary>
-                /// Initializes a new instance of the <see cref="CloseAppsDialogFluentStrings"/> class.
+                /// Initializes a new instance of the CloseAppsDialogFluentStrings class with localized string values
+                /// based on the provided dictionary and deployment type.
                 /// </summary>
-                /// <param name="strings"></param>
-                /// <param name="deploymentType"></param>
-                /// <exception cref="ArgumentNullException"></exception>
+                /// <remarks>This constructor retrieves localized strings for dialog messages and
+                /// button texts based on the specified deployment type. It is important to ensure that the provided
+                /// dictionary contains the necessary keys for the expected deployment type to avoid null reference
+                /// exceptions.</remarks>
+                /// <param name="strings">An IDictionary containing localized string values used for dialog messages and button texts, indexed
+                /// by keys relevant to the dialog's context.</param>
+                /// <param name="deploymentType">The DeploymentType that specifies the context for which the dialog messages are localized,
+                /// influencing the selection of strings from the provided dictionary.</param>
                 internal CloseAppsDialogFluentStrings(IDictionary strings, DeploymentType deploymentType) : this(
                     ((IDictionary?)strings["DialogMessage"])?[deploymentType.ToString()] as string ?? null!,
                     ((IDictionary?)strings["DialogMessageNoProcesses"])?[deploymentType.ToString()] as string ?? null!,

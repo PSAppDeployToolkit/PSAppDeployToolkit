@@ -589,26 +589,22 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Displays a modal dialog based on the specified arguments and returns the serialized result.
+        /// Displays a modal dialog of the specified type and style, using the provided arguments to configure its
+        /// behavior.
         /// </summary>
-        /// <remarks>This method validates the provided arguments, determines the appropriate dialog type
-        /// and style, and displays the dialog using the specified options. The result of the dialog is serialized and
-        /// returned to the caller for further processing.</remarks>
-        /// <param name="arguments">A read-only dictionary containing the parameters required to configure and display the dialog. The
-        /// following keys are expected: <list type="bullet"> <item> <description><c>DialogType</c>: Specifies the type
-        /// of dialog to display. Must be a valid <see cref="DialogType"/> value.</description> </item> <item>
-        /// <description><c>DialogStyle</c>: Specifies the style of the dialog. Must be a valid <see
-        /// cref="DialogStyle"/> value.</description> </item> <item> <description><c>DialogOptions</c>: A
-        /// JSON-serialized string containing the options specific to the dialog type.</description> </item> </list></param>
-        /// <param name="closeAppsDialogState">An optional <see cref="BaseDialogState"/> object representing the state of a Close Apps dialog, if applicable.</param>
-        /// <param name="argv">An optional array of command-line arguments, used for special handling in BlockExecution scenarios.</param>
-        /// <returns>A JSON-serialized string representing the result of the dialog. The format and content of the result depend
-        /// on the dialog type.</returns>
-        /// <exception cref="ClientException">Thrown if any of the following conditions occur: <list type="bullet"> <item><description>The
-        /// <c>DialogType</c> key is missing, empty, or invalid.</description></item> <item><description>The
-        /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
-        /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
-        /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
+        /// <remarks>The dialog type and style must be specified in the arguments. If the dialog is
+        /// configured to block execution and is running as the SYSTEM account, the method may launch a process and exit
+        /// with its exit code. The returned string can be deserialized to obtain the dialog result.</remarks>
+        /// <param name="arguments">A read-only dictionary containing the arguments required to configure the dialog. Must include valid values
+        /// for 'DialogType' and 'DialogStyle'.</param>
+        /// <param name="closeAppsDialogState">An optional state object that can influence the dialog's behavior when handling application closure
+        /// scenarios.</param>
+        /// <param name="argv">An optional array of command-line arguments used to determine the executable to launch if the dialog is
+        /// configured for execution blocking.</param>
+        /// <returns>A serialized string representing the result of the modal dialog, such as the selected button text or other
+        /// relevant outcome information.</returns>
+        /// <exception cref="ClientException">Thrown if a required argument is missing or invalid, such as when 'DialogType' or 'DialogStyle' is not
+        /// specified or is invalid, or if the dialog type is not supported.</exception>
         private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.

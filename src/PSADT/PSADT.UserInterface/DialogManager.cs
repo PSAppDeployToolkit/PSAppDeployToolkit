@@ -249,14 +249,18 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Shows a modal dialog of the specified type with the provided options.
+        /// Displays a modal dialog of the specified type and style, and returns the result of the dialog interaction.
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="dialogType"></param>
-        /// <param name="dialogStyle"></param>
-        /// <param name="options"></param>
-        /// <param name="state"></param>
-        /// <returns></returns>
+        /// <typeparam name="TResult">The type of the result returned by the modal dialog.</typeparam>
+        /// <param name="dialogType">Specifies the type of dialog to display. Determines the content and behavior of the modal dialog.</param>
+        /// <param name="dialogStyle">Specifies the visual style to apply to the dialog, affecting its appearance and layout.</param>
+        /// <param name="options">An object containing options that configure the dialog's behavior and appearance, such as title and
+        /// available buttons. Cannot be null.</param>
+        /// <param name="state">An optional object that holds state information for the dialog. This parameter must be provided when
+        /// displaying a dialog of type 'CloseAppsDialog'.</param>
+        /// <returns>The result of the dialog interaction, cast to the specified type parameter.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="state"/> is null and <paramref name="dialogType"/> is <see
+        /// cref="DialogType.CloseAppsDialog"/>.</exception>
         private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
         {
             return InvokeDialogAction(() =>

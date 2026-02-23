@@ -18,22 +18,14 @@ namespace PSADT.UserInterface.DialogOptions
     public sealed record BalloonTipOptions : IDialogOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BalloonTipOptions"/> class using the specified options.
+        /// Initializes a new instance of the BalloonTipOptions class using the specified configuration options.
         /// </summary>
-        /// <remarks>This constructor validates the provided <paramref name="options"/> to ensure all
-        /// required keys are present and contain valid values. If validation succeeds, the corresponding properties are
-        /// initialized.</remarks>
-        /// <param name="options">A <see cref="IDictionary"/> containing configuration values for the balloon tip. The following keys are
-        /// required: <list type="bullet"> <item> <term>TrayTitle</term> <description>A non-empty <see cref="string"/>
-        /// representing the title displayed in the system tray.</description> </item> <item> <term>TrayIcon</term>
-        /// <description>A non-empty <see cref="string"/> representing the file path to the tray icon image. The file
-        /// must exist.</description> </item> <item> <term>BalloonTipTitle</term> <description>A non-empty <see
-        /// cref="string"/> representing the title of the balloon tip.</description> </item> <item>
-        /// <term>BalloonTipText</term> <description>A non-empty <see cref="string"/> representing the text content of
-        /// the balloon tip.</description> </item> <item> <term>BalloonTipIcon</term> <description>A <see
-        /// cref="ToolTipIcon"/> value representing the icon displayed in the balloon tip.</description> </item> </list></param>
-        /// <exception cref="ArgumentNullException">Thrown if any required key in <paramref name="options"/> is missing, null, or contains an invalid value.</exception>
-        /// <exception cref="FileNotFoundException">Thrown if the file specified by the <c>TrayIcon</c> key does not exist.</exception>
+        /// <remarks>Values are retrieved from the provided options dictionary. If a key is missing, a
+        /// default value is used: 'BalloonTipIcon' defaults to an invalid value, and 'BalloonTipTime' defaults to the
+        /// maximum value for an unsigned integer.</remarks>
+        /// <param name="options">An IDictionary containing configuration values for the balloon tip. Expected keys include 'TrayTitle',
+        /// 'TrayIcon', 'BalloonTipTitle', 'BalloonTipText', 'BalloonTipIcon', and 'BalloonTipTime'.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the options parameter is null.</exception>
         public BalloonTipOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["TrayTitle"] as string ?? null!,
             options["TrayIcon"] as string ?? null!,

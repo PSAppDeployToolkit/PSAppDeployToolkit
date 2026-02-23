@@ -24,9 +24,11 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Starts the polling task to check for running processes.
+        /// Starts monitoring running processes by initiating the polling task.
         /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>This method creates a new polling task and renews the cancellation token. Ensure that
+        /// the polling task is not already active before calling this method to avoid an exception.</remarks>
+        /// <exception cref="InvalidOperationException">Thrown if the polling task is already running.</exception>
         internal void Start()
         {
             // We can't restart the polling task if it's already running.
@@ -40,9 +42,13 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Stops the polling task and waits for it to complete.
+        /// Stops the polling operation and releases associated resources.
         /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <remarks>Call this method to cancel the ongoing polling operation and clean up resources when
+        /// polling is no longer required. Failing to stop the polling task may result in resource leaks. This method is
+        /// not thread-safe and should not be called concurrently with other operations that start or stop
+        /// polling.</remarks>
+        /// <exception cref="InvalidOperationException">Thrown if the polling task is not currently running.</exception>
         internal void Stop()
         {
             // We can't stop the polling task if it's not running.
@@ -63,9 +69,13 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Returns a list of running processes that match the specified definitions.
+        /// Continuously polls the system for running processes at regular intervals and raises an event when the list
+        /// of processes to close changes.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method executes asynchronously and can be canceled using the associated
+        /// cancellation token. It updates the cached list of running processes and notifies subscribers if the set of
+        /// processes to close has changed. Polling continues until cancellation is requested.</remarks>
+        /// <returns>A task that represents the asynchronous polling operation.</returns>
         private async Task PollRunningProcesses()
         {
             CancellationToken token = _cancellationTokenSource!.Token;
@@ -176,9 +186,13 @@ namespace PSADT.ProcessManagement
         internal bool IsRunning => _pollingTask is not null;
 
         /// <summary>
-        /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
+        /// Releases the resources used by the object, optionally stopping any running processes and disposing managed
+        /// resources.
         /// </summary>
-        /// <param name="disposing"></param>
+        /// <remarks>This method implements the standard dispose pattern. When disposing is set to true,
+        /// managed resources are released in addition to unmanaged resources. This method can be called multiple times
+        /// without throwing an exception.</remarks>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
             if (_disposed)

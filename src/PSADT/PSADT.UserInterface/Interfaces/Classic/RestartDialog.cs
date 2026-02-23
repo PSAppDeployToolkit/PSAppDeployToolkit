@@ -24,9 +24,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RestartDialog"/> class with the specified options.
+        /// Initializes a new instance of the RestartDialog class using the specified dialog options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>This constructor applies the provided options to set up the dialog's user interface,
+        /// such as setting the title, custom messages, and initializing the countdown timer if specified. If certain
+        /// options are not provided, the corresponding UI elements are removed from the dialog. This allows for
+        /// flexible customization of the dialog's content and behavior based on the supplied options.</remarks>
+        /// <param name="options">The options that configure the dialog's appearance and behavior, including title, custom messages, and
+        /// countdown settings. Cannot be null.</param>
         internal RestartDialog(RestartDialogOptions options) : base(options, null!)
         {
             // Initialise the form and reset the control order.
@@ -88,10 +93,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's load event.
+        /// Handles the form's load event and initializes the countdown timer if available.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method overrides the base form load event to provide additional logic for
+        /// managing a countdown timer. If a countdown timer is present and not already running, it is started when the
+        /// form loads.</remarks>
+        /// <param name="sender">The source of the event, typically the form instance.</param>
+        /// <param name="e">An object that contains the event data.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the countdown timer fails to start.</exception>
         private protected override void Form_Load(object? sender, EventArgs e)
         {
             // Perform the base event.
@@ -112,10 +121,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's closing event.
+        /// Handles the form's closing event, allowing for cleanup operations and the option to cancel the closing
+        /// process based on application logic.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>If the form cannot be closed, the closing event is canceled. Performs necessary
+        /// resource cleanup before delegating to the base implementation.</remarks>
+        /// <param name="sender">The source of the event, typically the form instance that is being closed.</param>
+        /// <param name="e">A FormClosingEventArgs that contains the event data, including the ability to cancel the closing operation.</param>
         private protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
@@ -134,10 +146,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the left button (Restart Now).
+        /// Handles the event when the left button is clicked, initiating an immediate system restart.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This method overrides the base implementation to perform a system restart before
+        /// invoking the base handler. Use with caution, as it will immediately restart the computer without further
+        /// confirmation.</remarks>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Restart the computer immediately.
@@ -146,10 +161,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the click event of the right button (Minimise).
+        /// Handles the right button click event by minimizing the window and restarting the persistence timer.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <remarks>This override does not call the base implementation, ensuring that only the custom
+        /// minimize and timer reset logic is executed when the right button is clicked.</remarks>
+        /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
+        /// <param name="e">An object that contains the event data.</param>
         private protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Minimise the window and restart the persistence timer.
@@ -159,9 +176,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Ticker for the countdown timer.
+        /// Handles the timer tick event for the countdown, updating the countdown display and managing related UI state
+        /// based on the remaining time.
         /// </summary>
-        /// <param name="state"></param>
+        /// <remarks>If the countdown reaches zero, the method triggers the restart action. When the
+        /// remaining time is less than or equal to the minimize duration, it disables the minimize button and restores
+        /// the window to ensure user attention.</remarks>
+        /// <param name="state">An optional state object associated with the timer event. This parameter is not used.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void CountdownTimer_Tick(object? state)
         {

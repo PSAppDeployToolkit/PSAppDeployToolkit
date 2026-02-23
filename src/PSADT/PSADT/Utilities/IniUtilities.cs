@@ -15,12 +15,16 @@ namespace PSADT.Utilities
     public static class IniUtilities
     {
         /// <summary>
-        /// Gets the value of a key in a section of an INI file.
+        /// Retrieves the value associated with the specified key from a given section in an INI configuration file.
         /// </summary>
-        /// <param name="section"></param>
-        /// <param name="key"></param>
-        /// <param name="filepath"></param>
-        /// <returns></returns>
+        /// <remarks>This method uses the Windows API function GetPrivateProfileString to read values from
+        /// INI files. Ensure that the specified file exists and is accessible. The method does not throw an exception
+        /// if the key or section is not found; instead, it returns an empty string.</remarks>
+        /// <param name="filepath">The path to the INI configuration file to read from. Must be a valid file path.</param>
+        /// <param name="section">The name of the section within the INI file that contains the key. Cannot be null or empty.</param>
+        /// <param name="key">The name of the key whose value is to be retrieved. Cannot be null or empty.</param>
+        /// <returns>A string containing the value associated with the specified key in the specified section. Returns an empty
+        /// string if the key does not exist.</returns>
         public static string GetSectionKeyValue(string filepath, string section, string key)
         {
             Span<char> buffer = stackalloc char[4096]; buffer.Clear();
@@ -28,12 +32,16 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Sets the value of a key in a section of an INI file.
+        /// Writes a key-value pair to a specified section in an INI file at the given file path.
         /// </summary>
-        /// <param name="section"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="filepath"></param>
+        /// <remarks>This method uses the Windows API to update INI files. Ensure that the application has
+        /// the necessary permissions to modify the file. Deleting a section or key is performed by passing null for the
+        /// corresponding parameter.</remarks>
+        /// <param name="filepath">The path to the INI file to be modified. The file must exist and be writable.</param>
+        /// <param name="section">The name of the section within the INI file where the key-value pair will be written. If the section does
+        /// not exist, it will be created.</param>
+        /// <param name="key">The name of the key to write within the specified section. If null, the entire section is deleted.</param>
+        /// <param name="value">The value to assign to the specified key. If null, the key is removed from the section.</param>
         public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
         {
             _ = NativeMethods.WritePrivateProfileString(section, key, value, filepath);

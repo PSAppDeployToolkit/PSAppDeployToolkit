@@ -15,10 +15,16 @@ namespace PSADT.FileSystem
     public sealed record ExecutableInfo
     {
         /// <summary>
-        /// Parses the specified PE file and returns information about it.
+        /// Retrieves information about a Portable Executable (PE) file at the specified path, including its
+        /// architecture, subsystem, entry point, and image base.
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
+        /// <remarks>This method supports both 32-bit and 64-bit PE files. It validates the file structure
+        /// before extracting information. Use this method to inspect executables for compatibility or metadata
+        /// purposes.</remarks>
+        /// <param name="filePath">The path to the executable file to analyze. This parameter must not be null or empty.</param>
+        /// <returns>An ExecutableInfo instance containing details about the executable, such as machine type, subsystem,
+        /// presence of a CLR header, entry point address, and image base.</returns>
+        /// <exception cref="InvalidDataException">Thrown if the specified file does not have a valid PE header, PE signature, or optional header magic number.</exception>
         public static ExecutableInfo Get(string filePath)
         {
             // Internal helper methods to read structures and check for CLR header.
@@ -69,14 +75,18 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Creates a new instance of the ExecutableInfo class.
+        /// Initializes a new instance of the ExecutableInfo class with the specified executable file path, machine
+        /// type, subsystem, .NET status, entry point address, and image base address.
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="isDotNetExecutable"></param>
-        /// <param name="machine"></param>
-        /// <param name="subsystem"></param>
-        /// <param name="entryPoint"></param>
-        /// <param name="imageBase"></param>
+        /// <remarks>This constructor validates the file path before creating an instance. Use this
+        /// constructor to create an ExecutableInfo object with all required metadata for the executable file.</remarks>
+        /// <param name="filePath">The path to the executable file. This parameter cannot be null or empty.</param>
+        /// <param name="machine">The machine type of the executable, specified as a value from the IMAGE_FILE_MACHINE enumeration.</param>
+        /// <param name="subsystem">The subsystem type of the executable, specified as a value from the IMAGE_SUBSYSTEM enumeration.</param>
+        /// <param name="isDotNetExecutable">true if the executable is a .NET assembly; otherwise, false.</param>
+        /// <param name="entryPoint">The address of the entry point of the executable.</param>
+        /// <param name="imageBase">The base address of the image in memory.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the filePath parameter is null or empty.</exception>
         private ExecutableInfo(string filePath, IMAGE_FILE_MACHINE machine, IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
         {
             FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);

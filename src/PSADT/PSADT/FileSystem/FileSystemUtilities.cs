@@ -201,11 +201,18 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Tests whether the specified file can be accessed with the desired access rights.
+        /// Determines whether the current process has the specified access rights to a given file.
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="desiredAccess"></param>
-        /// <returns></returns>
+        /// <remarks>This method attempts to open the specified file with the requested access rights
+        /// using the Windows API. It does not modify the file or its permissions. The result indicates whether the
+        /// current process can access the file as requested.</remarks>
+        /// <param name="path">A <see cref="FileInfo"/> object representing the file to test. This parameter cannot be null and must refer
+        /// to an existing file.</param>
+        /// <param name="desiredAccess">The access rights to test for the file. Defaults to <see cref="FileSystemRights.ReadAndExecute"/> if not
+        /// specified.</param>
+        /// <returns>true if the specified access rights are granted for the file; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> is null.</exception>
+        /// <exception cref="FileNotFoundException">Thrown if the file specified by <paramref name="path"/> does not exist.</exception>
         public static bool TestFileAccess(FileInfo path, FileSystemRights desiredAccess = FileSystemRights.ReadAndExecute)
         {
             // Validate the input path.
@@ -387,9 +394,12 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Returns a lookup table for NT paths to drive letters.
+        /// Creates a read-only dictionary that maps NT device paths to their corresponding drive letters.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method queries the system for logical drives and their corresponding NT device
+        /// paths. It handles exceptions that may occur during the query process, ensuring that only valid paths are
+        /// included in the returned dictionary.</remarks>
+        /// <returns>A read-only dictionary where each key is an NT device path and each value is the associated drive letter.</returns>
         internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
         {
             Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };

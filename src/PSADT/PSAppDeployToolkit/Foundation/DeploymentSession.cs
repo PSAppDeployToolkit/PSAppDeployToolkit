@@ -1197,9 +1197,10 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the log buffer as a read-only list.
+        /// Gets a read-only collection of the current log entries in the log buffer.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A read-only list of <see cref="LogEntry"/> objects representing the current log entries. The list is empty
+        /// if no log entries are present.</returns>
         public IReadOnlyList<LogEntry> GetLogBuffer()
         {
             return LogBuffer.AsReadOnly();
@@ -1424,10 +1425,13 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Gets the host log stream mode based on the configuration and parameters.
+        /// Determines the type of log stream to use based on the specified host logging settings.
         /// </summary>
-        /// <param name="writeHost"></param>
-        /// <returns></returns>
+        /// <remarks>If <paramref name="writeHost"/> is false, the method returns HostLogStreamType.None.
+        /// If host logging is enabled, the method returns HostLogStreamType.Console when standard streams are used;
+        /// otherwise, it returns HostLogStreamType.Host.</remarks>
+        /// <param name="writeHost">true to enable writing logs to the host; false to disable host logging; or null to use the default behavior.</param>
+        /// <returns>A value of type HostLogStreamType that indicates the log stream type to use: Console, Host, or None.</returns>
         private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
             return writeHost != false && LogWriteToHost

@@ -8,10 +8,13 @@ namespace PSADT.Interop.Utilities
     internal static class LibraryUtilities
     {
         /// <summary>
-        /// Aligns the given value up to the nearest multiple of the system's pointer size.
+        /// Aligns the specified integer value to the next highest multiple of the platform's pointer size.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <remarks>Use this method to ensure that memory sizes or offsets are properly aligned for
+        /// native interop or performance-sensitive operations.</remarks>
+        /// <param name="value">The integer value to align. Must be non-negative.</param>
+        /// <returns>The smallest integer greater than or equal to <paramref name="value"/> that is a multiple of <see
+        /// cref="IntPtr.Size"/>.</returns>
         internal static int AlignUp(int value)
         {
             return (value + IntPtr.Size - 1) & ~(IntPtr.Size - 1);

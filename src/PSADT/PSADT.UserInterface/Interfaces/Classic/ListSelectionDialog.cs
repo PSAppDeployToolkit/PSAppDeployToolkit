@@ -21,9 +21,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListSelectionDialog"/> class with the specified options.
+        /// Initializes a new instance of the ListSelectionDialog class using the specified options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <remarks>This constructor enforces licensing requirements and sets up the dialog components.
+        /// It is intended for internal use.</remarks>
+        /// <param name="options">The options that configure the behavior and appearance of the dialog.</param>
+        /// <exception cref="NotImplementedException">Thrown if the dialog is instantiated in runtime license mode, as ListSelectionDialog is only implemented for
+        /// the Fluent dialog type.</exception>
         internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, null!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)

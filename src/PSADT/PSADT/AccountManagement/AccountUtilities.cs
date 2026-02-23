@@ -93,11 +93,14 @@ namespace PSADT.AccountManagement
         }
 
         /// <summary>
-        /// Tests whether a given SID is a member of a given well known group.
+        /// Determines whether the specified security identifier (SID) is a member of a well-known group, including
+        /// nested group memberships.
         /// </summary>
-        /// <param name="targetSid"></param>
-        /// <param name="wellKnownGroupSid"></param>
-        /// <returns></returns>
+        /// <remarks>This method performs a recursive search to account for nested group memberships. It
+        /// tracks visited groups to prevent infinite loops caused by circular group references.</remarks>
+        /// <param name="targetSid">The security identifier to check for membership in the well-known group.</param>
+        /// <param name="wellKnownGroupSid">A value that identifies the well-known group to check against.</param>
+        /// <returns>true if the specified SID is a member of the well-known group; otherwise, false.</returns>
         internal static bool IsSidMemberOfWellKnownGroup(SecurityIdentifier targetSid, WellKnownSidType wellKnownGroupSid)
         {
             // Internal method to recursively check group membership.
@@ -146,13 +149,11 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Determines whether the current process is elevated.
         /// </summary>
-        /// <returns></returns>
         public static readonly bool CallerIsAdmin;
 
         /// <summary>
         /// Returns the current user's username.
         /// </summary>
-        /// <returns></returns>
         public static readonly NTAccount CallerUsername;
 
         /// <summary>

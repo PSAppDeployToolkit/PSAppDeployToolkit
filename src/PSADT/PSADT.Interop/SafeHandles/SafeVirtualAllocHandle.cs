@@ -12,14 +12,17 @@ namespace PSADT.Interop.SafeHandles
     internal sealed class SafeVirtualAllocHandle : SafeMemoryHandle<SafeVirtualAllocHandle>
     {
         /// <summary>
-        /// Allocates a block of memory of the specified size and returns a <see cref="SafeVirtualAllocHandle"/> that wraps the allocated memory.
-        /// This is fully implemented here as static virtual members don't come until C# 11 (.NET 7).
+        /// Allocates a block of virtual memory of the specified size, allocation type, and protection flags.
         /// </summary>
-        /// <param name="length"></param>
-        /// <param name="allocationType"></param>
-        /// <param name="protect"></param>
-        /// <returns></returns>
-        /// <exception cref="OutOfMemoryException"></exception>
+        /// <remarks>This method is intended for internal use. Improper use may result in memory leaks or
+        /// access violations. The caller must ensure that the allocated memory is released appropriately.</remarks>
+        /// <param name="length">The size, in bytes, of the memory block to allocate. Must be a positive integer.</param>
+        /// <param name="allocationType">The type of memory allocation to perform. Determines how the memory is reserved or committed.</param>
+        /// <param name="protect">The memory protection to apply to the allocated region. Specifies the allowed access rights for the memory
+        /// block.</param>
+        /// <returns>A SafeVirtualAllocHandle that represents the allocated memory block. The caller is responsible for releasing
+        /// the handle when it is no longer needed.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the memory allocation fails.</exception>
         internal static SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
         {
             unsafe
@@ -34,19 +37,27 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SafeVirtualAllocHandle"/> class with the specified handle and size.
+        /// Initializes a new instance of the SafeVirtualAllocHandle class with the specified memory handle, length, and
+        /// ownership flag.
         /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="length"></param>
-        /// <param name="ownsHandle"></param>
+        /// <remarks>This constructor is intended for internal use only and should not be called directly
+        /// from user code.</remarks>
+        /// <param name="handle">A handle to the memory block that the SafeVirtualAllocHandle instance will manage.</param>
+        /// <param name="length">The size, in bytes, of the memory block associated with the handle.</param>
+        /// <param name="ownsHandle">true to indicate that the SafeVirtualAllocHandle instance is responsible for releasing the handle;
+        /// otherwise, false.</param>
         private SafeVirtualAllocHandle(nint handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
         {
         }
 
         /// <summary>
-        /// Releases the handle.
+        /// Releases the handle associated with the allocated virtual memory resource.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>This method is typically called during resource cleanup to free unmanaged memory. If
+        /// the handle is already set to its default value, no action is taken and the method returns true. If the
+        /// release operation fails, an exception is thrown to indicate the error.</remarks>
+        /// <returns>true if the handle was successfully released or was already set to its default value; otherwise, an
+        /// exception is thrown.</returns>
         protected override bool ReleaseHandle()
         {
             if (default == handle)

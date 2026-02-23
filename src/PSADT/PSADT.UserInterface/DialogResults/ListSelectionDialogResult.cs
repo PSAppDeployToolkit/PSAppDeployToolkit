@@ -11,10 +11,12 @@ namespace PSADT.UserInterface.DialogResults
     public sealed class ListSelectionDialogResult : CustomDialogDerivative
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ListSelectionDialogResult"/> class.
+        /// Initializes a new instance of the ListSelectionDialogResult class with the specified result and selected
+        /// item.
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="selectedItem"></param>
+        /// <param name="result">The result of the dialog operation, indicating the outcome of the user's selection.</param>
+        /// <param name="selectedItem">The item that was selected by the user. This parameter cannot be null or empty.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the selectedItem parameter is null or an empty string.</exception>
         internal ListSelectionDialogResult(string result, string selectedItem) : base(result)
         {
             SelectedItem = !string.IsNullOrWhiteSpace(selectedItem) ? selectedItem : throw new ArgumentNullException("SelectedItem cannot be null or empty.", (Exception?)null);
