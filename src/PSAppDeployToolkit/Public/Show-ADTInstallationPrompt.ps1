@@ -165,9 +165,9 @@ function Show-ADTInstallationPrompt
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ListItems,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShowListSelectionDialog')]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[System.UInt32]]$DefaultIndex = 0,
+        [System.Nullable[System.UInt32]]$DefaultIndex,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -408,8 +408,11 @@ function Show-ADTInstallationPrompt
                 if ($ListItems)
                 {
                     $dialogOptions.Add('ListItems', $ListItems)
-                    $dialogOptions.Add('SelectedIndex', [System.Int32]$DefaultIndex)
                     $dialogOptions.Add('Strings', $adtStrings.ListSelectionPrompt)
+                    if ($DefaultIndex -ge 0)
+                    {
+                        $dialogOptions.Add('SelectedIndex', [System.Int32]$DefaultIndex)
+                    }
                 }
                 $dialogOptions = if ($RequestInput)
                 {

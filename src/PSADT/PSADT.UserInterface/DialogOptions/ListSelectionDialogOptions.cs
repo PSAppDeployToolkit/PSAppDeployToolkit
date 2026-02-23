@@ -39,7 +39,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["Icon"] as DialogSystemIcon?,
             options["MinimizeWindows"] as bool? ?? false,
             options["ListItems"] as IReadOnlyList<string> ?? null!,
-            options["SelectedIndex"] as int? ?? -1,
+            options["SelectedIndex"] as int?,
             options["Strings"] as Hashtable is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null!)
         {
         }
@@ -78,13 +78,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="listItems">The list of items to display for user selection. Cannot be <see langword="null"/>.</param>
         /// <param name="selectedIndex">The index for the default item to be displayed for user selection.</param>
         /// <param name="strings">The localized strings for the dialog. If <see langword="null"/>, the dialog falls back to XAML defaults.</param>
-        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, int selectedIndex, ListSelectionDialogStrings strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
+        private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, int? selectedIndex, ListSelectionDialogStrings strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
             if (!(listItems?.Count > 0))
             {
                 throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
             }
-            if (selectedIndex < 0 || selectedIndex >= listItems.Count)
+            if (selectedIndex.HasValue && (selectedIndex.Value < 0 || selectedIndex.Value >= listItems.Count))
             {
                 throw new ArgumentOutOfRangeException(nameof(selectedIndex), "SelectedIndex must be a valid index within ListItems.");
             }
@@ -107,7 +107,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// The item that should be selected by default.
         /// </summary>
         [DataMember]
-        public int SelectedIndex { get; private set; }
+        public int? SelectedIndex { get; private set; }
 
         /// <summary>
         /// The localized strings for the ListSelectionDialog.
