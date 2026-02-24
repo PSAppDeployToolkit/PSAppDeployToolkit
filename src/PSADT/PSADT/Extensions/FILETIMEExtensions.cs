@@ -31,7 +31,7 @@ namespace PSADT.Extensions
         /// cref="FILETIME"/>.</returns>
         internal static DateTime ToDateTime(this FILETIME filetime)
         {
-            return DateTime.FromFileTime((long)(filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
+            return DateTime.FromFileTime(((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
         }
     }
 }
