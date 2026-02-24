@@ -1182,10 +1182,10 @@ namespace PSADT.Interop
         /// <param name="lpLibFileName">The name or path of the module to load. This can be a library file name or a full path. Cannot be null or
         /// empty.</param>
         /// <param name="dwFlags">A combination of flags that control how the module is loaded. These flags determine aspects such as search
-        /// path behavior and dependency resolution.</param>
+        /// path behavior and dependency resolution. The default is LOAD_LIBRARY_SEARCH_SYSTEM32, which restricts the search to the system directory.</param>
         /// <returns>A safe handle representing the loaded module. The caller is responsible for releasing the handle when it is
         /// no longer needed.</returns>
-        internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
+        internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags = LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32)
         {
             FreeLibrarySafeHandle res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
