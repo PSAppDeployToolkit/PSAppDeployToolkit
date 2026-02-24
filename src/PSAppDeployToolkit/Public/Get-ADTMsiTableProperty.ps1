@@ -72,7 +72,7 @@ function Get-ADTMsiTableProperty
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
     [OutputType([System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]])]
-    [OutputType([PSADT.Types.MsiSummaryInfo])]
+    [OutputType([PSADT.WindowsInstaller.MsiSummaryInfo])]
     param
     (
         [Parameter(Mandatory = $true)]
