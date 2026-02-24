@@ -200,7 +200,7 @@ function Get-ADTMsiTableProperty
 
                 # Open the requested table view from the database.
                 $TableProperties = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
-                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
+                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM ``$($Table.Replace("'", "''").Replace('`', '``'))``")
                 $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
 
                 # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.

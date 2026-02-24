@@ -82,8 +82,9 @@ function Set-ADTMsiProperty
         {
             try
             {
-                # Open the requested table view from the database.
-                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+                # Open the requested table view from the database, ensuring that we escape single quotes for MSI SQL queries.
+                $escapedPropertyName = $PropertyName.Replace("'", "''"); $escapedPropertyValue = $PropertyValue.Replace("'", "''")
+                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$escapedPropertyName'")
                 $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
 
                 # Retrieve the requested property from the requested table and close off the view.
@@ -96,12 +97,12 @@ function Set-ADTMsiProperty
                 $View = if ($Record)
                 {
                     # If the property already exists, then create the view for updating the property.
-                    Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+                    Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$escapedPropertyValue' WHERE Property='$escapedPropertyName'")
                 }
                 else
                 {
                     # If property does not exist, then create view for inserting the property.
-                    Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+                    Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$escapedPropertyName','$escapedPropertyValue')")
                 }
                 $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
             }
