@@ -143,14 +143,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
                 { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage) },
             });
-            ThemeManager.AddActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
+            ThemeManager.AddActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
             SetDialogIcon();
 
             // Set the expiry timer if specified.
             if (options.DialogExpiryDuration > TimeSpan.Zero)
             {
                 _expiryTimer = new() { Interval = options.DialogExpiryDuration.Value };
-                _expiryTimer.Tick += (sender, e) => CloseDialog();
+                _expiryTimer.Tick += ExpiryTimer_Tick;
             }
 
             // PersistPrompt timer code.
@@ -378,6 +378,28 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 PositionWindow();
             }
+        }
+
+        /// <summary>
+        /// Handles the timer tick event to restore the application window state.
+        /// </summary>
+        /// <remarks>This method is intended to be used as an event handler for a timer's Tick event,
+        /// ensuring the application window is restored at regular intervals.</remarks>
+        /// <param name="sender">The source of the event, typically the timer that triggered the event.</param>
+        /// <param name="e">An object that contains the event data.</param>
+        private void ExpiryTimer_Tick(object? sender, EventArgs e)
+        {
+            CloseDialog();
+        }
+
+        /// <summary>
+        /// Handles the event that occurs when the application theme changes, updating the dialog icon accordingly.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data associated with the theme change.</param>
+        private void ThemeManager_ActualThemeChanged(object sender, RoutedEventArgs e)
+        {
+            SetDialogIcon();
         }
 
         /// <summary>
@@ -1131,7 +1153,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 // Remove timer event handlers if they exist.
                 if (_expiryTimer is not null)
                 {
-                    _expiryTimer.Tick -= (sender, e) => CloseDialog();
+                    _expiryTimer.Tick -= ExpiryTimer_Tick;
                     _expiryTimer.Stop();
                 }
                 if (_persistTimer is not null)
@@ -1141,7 +1163,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 }
 
                 // Clean up resources.
-                ThemeManager.RemoveActualThemeChangedHandler(this, (_, _) => SetDialogIcon());
+                ThemeManager.RemoveActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
                 _hwndSource?.RemoveHook(WndProc);
                 _hwndSource?.Dispose();
                 _countdownTimer?.Dispose();
