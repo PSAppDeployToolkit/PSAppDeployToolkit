@@ -747,11 +747,11 @@ namespace PSAppDeployToolkit.Foundation
                 // Check if script is running from a SCCM Task Sequence.
                 if ((bool)adtEnv["RunningTaskSequence"]!)
                 {
-                    WriteLogEntry("Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.");
+                    WriteLogEntry("Detected that the deployment script is running within a ConfigMgr task sequence.");
                 }
-                else
+                else if ((bool)adtEnv["RunningDeployrTaskSequence"]!)
                 {
-                    WriteLogEntry("Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.");
+                    WriteLogEntry("Detected that the deployment script is running within a DeployR task sequence.");
                 }
 
 

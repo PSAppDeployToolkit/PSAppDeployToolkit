@@ -78,6 +78,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Running in SCCM Task Sequence.
     $variables.Add('RunningTaskSequence', !![System.Type]::GetTypeFromProgID('Microsoft.SMS.TSEnvironment'))
+    $variables.Add('RunningDeployrTaskSequence', ![System.String]::IsNullOrWhiteSpace([PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('DEPLOYR_PROCESS')))
 
     ## Variables: Domain Membership
     $w32cs = Get-CimInstance -ClassName Win32_ComputerSystem -Verbose:$false
