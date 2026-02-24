@@ -389,7 +389,9 @@ namespace PSADT.ClientServer
                 typeof(System.Collections.ObjectModel.ReadOnlyCollection<string>),
 
                 // Used within WindowManagement.WindowInfoOptions class.
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<ulong>),
                 typeof(System.Collections.ObjectModel.ReadOnlyCollection<long>),
+                typeof(System.Collections.ObjectModel.ReadOnlyCollection<uint>),
                 typeof(System.Collections.ObjectModel.ReadOnlyCollection<int>),
 
                 // Used within Payloads.InitCloseAppsDialogPayload class.
