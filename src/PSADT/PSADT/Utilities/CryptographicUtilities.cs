@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace PSADT.Utilities
@@ -33,7 +34,7 @@ namespace PSADT.Utilities
         /// Null values contribute zero to the hash.</remarks>
         /// <param name="parameters">The values to combine into a hash code.</param>
         /// <returns>A combined hash code derived from all provided parameters.</returns>
-        internal static int GenerateHashCode(params object?[] parameters)
+        internal static int GenerateHashCode(params IReadOnlyList<object?> parameters)
         {
             int hash = 17;
             unchecked
