@@ -3478,6 +3478,25 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Applies a Windows Installer transform to the specified database using the provided transform file and error
+        /// condition flags.
+        /// </summary>
+        /// <remarks>This method throws an exception if the operation fails, allowing callers to handle
+        /// errors using standard exception handling mechanisms.</remarks>
+        /// <param name="hDatabase">A handle to the database to which the transform will be applied. This handle must be valid and open for
+        /// modification.</param>
+        /// <param name="szTransformFile">The path to the transform file that contains the changes to be applied to the database. This value cannot be
+        /// null or empty.</param>
+        /// <param name="iErrorConditions">A combination of MSITRANSFORM_ERROR flags that specify which error conditions should be considered when
+        /// applying the transform. The default is MSITRANSFORM_ERROR_NONE.</param>
+        /// <returns>A WIN32_ERROR code that indicates the result of the operation. A value of ERROR_SUCCESS indicates success;
+        /// otherwise, the error code represents the failure reason.</returns>
+        internal static WIN32_ERROR MsiDatabaseApplyTransform(SafeHandle hDatabase, string szTransformFile, MSITRANSFORM_ERROR iErrorConditions = MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiDatabaseApplyTransform(hDatabase, szTransformFile, iErrorConditions)).ThrowOnFailure();
+        }
+
+        /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
         internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()

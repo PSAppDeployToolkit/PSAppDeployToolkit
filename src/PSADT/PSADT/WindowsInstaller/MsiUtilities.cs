@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Xml;
+using PSADT.Extensions;
 using PSADT.Interop;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
+using Windows.Win32.System.Variant;
 
-namespace PSADT.Utilities
+namespace PSADT.WindowsInstaller
 {
     /// <summary>
     /// Public P/Invokes from the msi.dll library.
@@ -39,23 +44,11 @@ namespace PSADT.Utilities
         /// product codes are found.</returns>
         public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
         {
-            // Open the patch file as a database.
-            _ = NativeMethods.MsiOpenDatabase(szDatabasePath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY + MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE, out MsiCloseHandleSafeHandle hDatabase);
-            using (hDatabase)
-            {
-                // Get the summary information from the database.
-                _ = NativeMethods.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
-                using (hSummaryInfo)
-                {
-                    // Determine the size of the buffer we need.
-                    _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, null, out uint requiredSize);
-                    Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
-
-                    // Grab the supported product codes and return them to the caller.
-                    _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE, out _, out _, out _, bufSpan, out _);
-                    return new ReadOnlyCollection<Guid>([.. bufSpan.Slice(0, (int)requiredSize).ToString().Split(';').Select(static g => new Guid(g))]);
-                }
-            }
+            // Get the summary information from the patch database, then determine the size of the buffer we need.
+            using MsiCloseHandleSafeHandle hSummaryInfo = GetSummaryInformation(szDatabasePath);
+            return GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE) is not string template || string.IsNullOrWhiteSpace(template)
+                ? throw new InvalidOperationException("The patch database did not contain a valid PID_TEMPLATE property with supported product codes.")
+                : (IReadOnlyList<Guid>)new ReadOnlyCollection<Guid>([.. template.Split(';').Select(static g => new Guid(g))]);
         }
 
         /// <summary>
@@ -222,6 +215,121 @@ namespace PSADT.Utilities
                 ReadByteFromSwappedPair(packed32, 26),
                 ReadByteFromSwappedPair(packed32, 28),
                 ReadByteFromSwappedPair(packed32, 30));
+        }
+
+        /// <summary>
+        /// Opens a Windows Installer database from the specified file path, optionally applying transformation files.
+        /// </summary>
+        /// <remarks>If the specified database is a patch file, transformations cannot be applied. Ensure
+        /// that the database path is valid and accessible.</remarks>
+        /// <param name="szDatabasePath">The path to the database file to be opened. This must be a valid file path to an MSI or MSP file.</param>
+        /// <param name="szTransformFiles">An optional collection of transformation file paths to apply to the database. Transforms cannot be applied
+        /// to patch files.</param>
+        /// <returns>A handle to the opened database. This handle must be disposed of when no longer needed.</returns>
+        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, ReadOnlyCollection<string>? szTransformFiles = null)
+        {
+            // Open the msi/msp as a database.
+            bool isPatchFile = Path.GetExtension(szDatabasePath).Equals(".msp", StringComparison.OrdinalIgnoreCase);
+            MSI_PERSISTENCE_MODE szPersist = MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY;
+            if (isPatchFile)
+            {
+                szPersist += MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE;
+            }
+            _ = NativeMethods.MsiOpenDatabase(szDatabasePath, szPersist, out MsiCloseHandleSafeHandle hDatabase);
+            try
+            {
+                // Apply any transformations to the database.
+                if (szTransformFiles is not null)
+                {
+                    if (isPatchFile)
+                    {
+                        throw new InvalidOperationException("Cannot apply transforms to patch files.");
+                    }
+                    foreach (string szTransformFile in szTransformFiles)
+                    {
+                        _ = NativeMethods.MsiDatabaseApplyTransform(hDatabase, szTransformFile);
+                    }
+                }
+                return hDatabase;
+            }
+            catch
+            {
+                hDatabase.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the summary information stream from a Windows Installer database file.
+        /// </summary>
+        /// <remarks>This method opens the specified database and applies any provided transforms before
+        /// retrieving the summary information using the Windows Installer API. Ensure that the database file exists and
+        /// is accessible. The returned handle must be closed to release unmanaged resources.</remarks>
+        /// <param name="szDatabasePath">The full path to the Windows Installer database file from which to retrieve summary information. This
+        /// parameter cannot be null or empty.</param>
+        /// <param name="szTransformFiles">An optional read-only collection of transform file paths to apply to the database before retrieving summary
+        /// information. If null, no transforms are applied.</param>
+        /// <returns>A safe handle to the summary information stream of the specified database. The caller is responsible for
+        /// disposing of the handle when it is no longer needed.</returns>
+        internal static MsiCloseHandleSafeHandle GetSummaryInformation(string szDatabasePath, ReadOnlyCollection<string>? szTransformFiles = null)
+        {
+            using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
+            _ = NativeMethods.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
+            return hSummaryInfo;
+        }
+
+        /// <summary>
+        /// Retrieves the string value of a specified property from the summary information handle.
+        /// </summary>
+        /// <remarks>The caller is responsible for ensuring that the summary information handle is
+        /// properly closed after use to avoid resource leaks.</remarks>
+        /// <param name="hSummaryInfo">A handle to the summary information from which the property value is retrieved. The handle must be valid and
+        /// open.</param>
+        /// <param name="propertyId">The identifier of the summary property to retrieve. This should correspond to a string property in the
+        /// summary information.</param>
+        /// <returns>A string containing the value of the specified summary property. Returns an empty string if the property is
+        /// not set.</returns>
+        internal static string? GetSummaryInfoStringProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
+        {
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, null, out uint requiredSize);
+            if (requiredSize == 0)
+            {
+                return null;
+            }
+            Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
+            ReadOnlySpan<char> resultSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            return !resultSpan.IsEmpty ? resultSpan.ToString() : null;
+        }
+
+        /// <summary>
+        /// Retrieves the value of an integer property from the summary information of a Windows Installer package.
+        /// </summary>
+        /// <remarks>This method returns a value only if the specified property is stored as a 16-bit or
+        /// 32-bit integer. If the property is of a different type, the method returns null.</remarks>
+        /// <param name="hSummaryInfo">A handle to the summary information structure obtained from a Windows Installer package. This handle must be
+        /// valid and open for reading.</param>
+        /// <param name="propertyId">The identifier of the summary property to retrieve, specified as an MSI_PROPERTY_ID enumeration value.</param>
+        /// <returns>An integer value representing the property if it is of type VT_I2 or VT_I4; otherwise, null.</returns>
+        internal static int? GetSummaryInfoIntProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
+        {
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out VARENUM puiDataType, out int piValue, out _, null, out _);
+            return puiDataType is VARENUM.VT_I2 or VARENUM.VT_I4 ? piValue : null;
+        }
+
+        /// <summary>
+        /// Retrieves the date property value from the summary information of a specified Windows Installer (MSI)
+        /// handle.
+        /// </summary>
+        /// <remarks>If the property value is not set, the method returns null. This method is intended
+        /// for use with MSI summary information properties that store date and time values.</remarks>
+        /// <param name="hSummaryInfo">The handle to the summary information structure from which to retrieve the date property.</param>
+        /// <param name="propertyId">The identifier of the summary property to retrieve, specified as an MSI_PROPERTY_ID value.</param>
+        /// <returns>A nullable DateTime representing the value of the requested date property if it is set; otherwise, null.</returns>
+        internal static DateTime? GetSummaryInfoDateProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
+        {
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out FILETIME pftValue, null, out _);
+            return !pftValue.IsZero() ? pftValue.ToDateTime() : null;
         }
     }
 }
