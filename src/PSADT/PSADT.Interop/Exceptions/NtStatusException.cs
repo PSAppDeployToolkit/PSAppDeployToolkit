@@ -18,8 +18,8 @@ namespace PSADT.Interop.Exceptions
     /// <summary>
     /// The exception that is thrown for NTSTATUS error codes returned from Windows NT native API calls.
     /// </summary>
-    [Serializable]
     [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "NTSTATUS value is required for this exception type")]
+    [Serializable]
     internal class NtStatusException : ExternalException
     {
         /// <summary>
