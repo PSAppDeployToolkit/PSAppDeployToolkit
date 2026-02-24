@@ -91,6 +91,6 @@
         /// <summary>
         /// The property ID for "Security".
         /// </summary>
-        PID_SECURITY = Windows.Win32.PInvoke.PID_SECURITY,
+        PID_SECURITY = 19,  // Windows.Win32.PInvoke.PID_SECURITY,
     }
 }
