@@ -769,7 +769,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                     {
-                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
+                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{DeployMode = DeployMode.NonInteractive}].");
                         deployModeChanged = true;
                     }
                     else
@@ -800,7 +800,7 @@ namespace PSAppDeployToolkit.Foundation
                                     }
                                     else if (!Settings.HasFlag(DeploymentSettings.NoOobeDetection))
                                     {
-                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
+                                        WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{DeployMode = DeployMode.NonInteractive}].");
                                         deployModeChanged = true;
                                     }
                                     else
