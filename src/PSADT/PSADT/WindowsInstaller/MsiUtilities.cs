@@ -23,14 +23,23 @@ namespace PSADT.WindowsInstaller
         /// <summary>
         /// Retrieves the message string associated with an MSI exit code from the msimsg.dll resource.
         /// </summary>
-        /// <param name="msiExitCode">The MSI exit code.</param>
+        /// <param name="exitCode">The MSI exit code.</param>
         /// <returns>The message string associated with the given MSI exit code.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
-        public static string? GetMessageFromMsiExitCode(uint msiExitCode)
+        public static string? GetMessageFromMsiExitCode(uint exitCode)
         {
-            using FreeLibrarySafeHandle hMsiMsgDll = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
-            _ = NativeMethods.LoadString(hMsiMsgDll, msiExitCode, out string? msiMsgString);
-            return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
+            using FreeLibrarySafeHandle hInstance = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
+            string? lpBuffer;
+            try
+            {
+                _ = NativeMethods.LoadString(hInstance, exitCode, out lpBuffer);
+            }
+            catch
+            {
+                return null;
+                throw;
+            }
+            return !string.IsNullOrWhiteSpace(lpBuffer) ? Regex.Replace(lpBuffer, @"\s{2,}", " ") : null;
         }
 
         /// <summary>
