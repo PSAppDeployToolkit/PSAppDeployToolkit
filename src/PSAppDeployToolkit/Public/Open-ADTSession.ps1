@@ -121,6 +121,9 @@ function Open-ADTSession
     .PARAMETER NoProcessDetection
         When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no processes to close in the specified AppProcessesToClose list.
 
+    .PARAMETER ExitWithMsiCodes
+        When specified, the session will always exit with 0 upon success and 3010 upon reboot required so Intune/ConfigMgr requires no specific adjustment.
+
     .PARAMETER AllowWowProcess
         When specified, allows the session to initialize within a Windows on Windows (WOW) process, such as a 32-bit PowerShell instance on a 64-bit operating system.
 
@@ -329,6 +332,9 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoProcessDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExitWithMsiCodes,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowWowProcess,

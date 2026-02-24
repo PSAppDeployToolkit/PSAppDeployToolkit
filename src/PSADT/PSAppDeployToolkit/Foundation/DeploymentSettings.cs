@@ -24,6 +24,7 @@ namespace PSAppDeployToolkit.Foundation
         NoSessionDetection = 1 << 13,
         NoOobeDetection = 1 << 14,
         NoProcessDetection = 1 << 15,
-        AllowWowProcess = 1 << 16,
+        ExitWithMsiCodes = 1 << 16,
+        AllowWowProcess = 1 << 17,
     }
 }

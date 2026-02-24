@@ -226,6 +226,10 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         Settings |= DeploymentSettings.NoOobeDetection;
                     }
+                    if (parameters.TryGetValue("ExitWithMsiCodes", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.ExitWithMsiCodes;
+                    }
                     if (parameters.TryGetValue("AllowWowProcess", out paramValue) && (SwitchParameter)paramValue)
                     {
                         Settings |= DeploymentSettings.AllowWowProcess;
@@ -1046,20 +1050,24 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} {{0}} in [{{1}}] seconds with exit code [{{2}}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred"), LogSeverity.Warning);
                     break;
                 case DeploymentStatus.Error:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed"), LogSeverity.Error);
                     break;
                 case DeploymentStatus.RestartRequired:
                 case DeploymentStatus.Complete:
                 default:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed", (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
+                    if (Settings.HasFlag(DeploymentSettings.ExitWithMsiCodes))
+                    {
+                        ExitCode = deploymentStatus == DeploymentStatus.RestartRequired ? 3010 : 0;
+                    }
+                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed"), LogSeverity.Success);
                     if (deploymentStatus == DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                     {
                         WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
