@@ -1037,7 +1037,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Establish initial variable values.
-            int adtExitCode = (int)ModuleDatabase.Get().Properties["LastExitCode"].Value;
+            PSPropertyInfo adtExitCode = ModuleDatabase.Get().Properties["LastExitCode"];
 
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
@@ -1075,7 +1075,7 @@ namespace PSAppDeployToolkit.Foundation
             // Update the module's last tracked exit code.
             if (ExitCode != 0)
             {
-                adtExitCode = ExitCode;
+                adtExitCode.Value = ExitCode;
             }
 
             // Clean up state and write out a log divider to indicate the end of logging.
@@ -1115,7 +1115,7 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex}", LogSeverity.Error);
                 }
             }
-            return adtExitCode;
+            return (int)adtExitCode.Value;
         }
 
         /// <summary>
