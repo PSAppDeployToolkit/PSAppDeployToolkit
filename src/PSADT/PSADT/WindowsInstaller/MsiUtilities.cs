@@ -28,7 +28,7 @@ namespace PSADT.WindowsInstaller
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
         public static string? GetMessageFromMsiExitCode(uint exitCode)
         {
-            using FreeLibrarySafeHandle hInstance = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
+            using FreeLibrarySafeHandle hInstance = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
             string? lpBuffer;
             try
             {
