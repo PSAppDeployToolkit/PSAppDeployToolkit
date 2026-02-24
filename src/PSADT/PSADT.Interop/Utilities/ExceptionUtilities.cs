@@ -41,7 +41,7 @@ namespace PSADT.Interop.Utilities
             List<string> result = new(lines.Length);
             for (int i = 0; i < lines.Length; i++)
             {
-                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[result.Count - 1].TrimStart().StartsWith("at ", StringComparison.Ordinal)))
+                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[result.Count - 1].TrimStart().StartsWith(StackTraceAtPrefix, StringComparison.Ordinal)))
                 {
                     result.Add(lines[i]);
                 }
@@ -266,5 +266,45 @@ namespace PSADT.Interop.Utilities
             }
             return null;
         }
+
+        /// <summary>
+        /// Determines the localized stack trace "at " prefix by generating a real
+        /// stack trace and extracting the word(s) before the fully-qualified method name.
+        /// Falls back to <c>"at "</c> (English) if detection fails.
+        /// </summary>
+        /// <returns>The localized stack trace line prefix (e.g. <c>"at "</c>, <c>"bei "</c>).</returns>
+        private static string GetStackTraceAtPrefix()
+        {
+            // The first stack trace line will reference this method. Extract everything
+            // before the fully-qualified method name to obtain the localized "at " prefix.
+            try
+            {
+                throw new InvalidOperationException();
+            }
+            catch (Exception ex) when (ex.Message is not null)
+            {
+                if (ex.StackTrace is string trace)
+                {
+                    string marker = nameof(ExceptionUtilities) + "." + nameof(GetStackTraceAtPrefix);
+                    foreach (string line in trace.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        string trimmed = line.TrimStart();
+                        int idx = trimmed.IndexOf(marker, StringComparison.Ordinal);
+                        if (idx > 0)
+                        {
+                            return trimmed.Substring(0, idx);
+                        }
+                    }
+                }
+            }
+            return "at ";
+        }
+
+        /// <summary>
+        /// The localized stack trace "at " prefix used by the current runtime
+        /// (e.g. "at " in English, "bei " in German, "à " in French).
+        /// Determined once at class initialization by inspecting a real stack trace.
+        /// </summary>
+        private static readonly string StackTraceAtPrefix = GetStackTraceAtPrefix();
     }
 }
