@@ -68,17 +68,29 @@ function Test-ADTMSUpdates
                 if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
                 {
                     Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
-                    $updateSearcher = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
-                    $updateSearcher.IncludePotentiallySupersededUpdates = $false
-                    $updateSearcher.Online = $false
-                    if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
+                    $updateSession = New-Object -ComObject Microsoft.Update.Session
+                    $null = try
                     {
-                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & { process { if (($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)) { return $_ } } } | Select-Object -First 1)
+                        $updateSearcher = $updateSession.CreateUpdateSearcher()
+                        $updateSearcher.IncludePotentiallySupersededUpdates = $false
+                        $updateSearcher.Online = $false
+                        try
+                        {
+                            if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -le 0)
+                            {
+                                Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
+                                return
+                            }
+                            $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & { process { if (($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)) { return $_ } } } | Select-Object -First 1)
+                        }
+                        finally
+                        {
+                            [System.Runtime.InteropServices.Marshal]::ReleaseComObject($updateSearcher)
+                        }
                     }
-                    else
+                    finally
                     {
-                        Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
-                        return
+                        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($updateSession)
                     }
                 }
 
