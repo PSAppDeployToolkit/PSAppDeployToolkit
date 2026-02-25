@@ -892,34 +892,35 @@ function Start-ADTProcess
                 }
 
                 # Check to see whether we should ignore exit codes.
-                $logEntry = if (($ignoreExitCode = $IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($result.ExitCode))))
+                $waleParams = if (($ignoreExitCode = $IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($result.ExitCode))))
                 {
-                    Write-ADTLogEntry -Message "Execution completed and the exit code [$($result.ExitCode)] is being ignored." -PassThru
+                    @{ Message = "Execution completed and the exit code [$($result.ExitCode)] is being ignored."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Info }
                 }
                 elseif ($SuccessExitCodes.Contains($result.ExitCode))
                 {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$($result.ExitCode)]." -Severity 0 -PassThru
+                    @{ Message = "Execution completed successfully with exit code [$($result.ExitCode)]."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Success }
                 }
                 elseif ($RebootExitCodes.Contains($result.ExitCode))
                 {
-                    Write-ADTLogEntry -Message "Execution completed successfully with exit code [$($result.ExitCode)]. A reboot is required." -Severity 2 -PassThru
+                    @{ Message = "Execution completed successfully with exit code [$($result.ExitCode)]. A reboot is required."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Warning }
                 }
                 elseif (($result.ExitCode -eq 1605) -and ($FilePath -match 'msiexec'))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed." -Severity 3 -PassThru
+                    @{ Message = "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Error }
                 }
                 elseif (($result.ExitCode -eq -2145124329) -and ($FilePath -match 'wusa'))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system." -Severity 3 -PassThru
+                    @{ Message = "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Error }
                 }
                 elseif (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $result.ExitCode }))
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage" -Severity 3 -PassThru
+                    @{ Message = "Execution failed with exit code [$($result.ExitCode)]: $MsiExitCodeMessage"; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Error }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Execution failed with exit code [$($result.ExitCode)].$(if ($CreateNoWindow -and !$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })" -Severity 3 -PassThru
+                    @{ Message = "Execution failed with exit code [$($result.ExitCode)].$(if ($CreateNoWindow -and !$NoStreamLogging) { " Please check the log file for any available stdout/stderr information." })"; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Error }
                 }
+                Write-ADTLogEntry @waleParams
 
                 # Log any stdout/stderr if it's available.
                 if (!$NoStreamLogging)
@@ -946,10 +947,10 @@ function Start-ADTProcess
                 }
 
                 # If we have an error in our process, throw it and let the catch block handle it.
-                if ($logEntry.Message.StartsWith("Execution failed"))
+                if ($waleParams.Message.StartsWith("Execution failed"))
                 {
                     $naerParams = @{
-                        Exception = [System.Runtime.InteropServices.ExternalException]::new($logEntry.Message, $result.ExitCode)
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new($waleParams.Message, $result.ExitCode)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'ProcessExitCodeError'
                         TargetObject = $result

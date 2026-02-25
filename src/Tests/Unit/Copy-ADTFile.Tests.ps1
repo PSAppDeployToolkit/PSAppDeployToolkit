@@ -33,8 +33,8 @@ Describe 'Copy-ADTFile'-ForEach @(
         Set-ItemProperty -Path "$SourcePath\Subfolder3\hiddensystem.txt" -Name Attributes -Value 'Hidden, System'
         Set-ItemProperty -Path "$SourcePath\SubfolderHidden" -Name Attributes -Value 'Hidden'
 
-        # Mock Set-ADTPreferenceVariables due to its expense when running via Pester.
-        Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables { }
+        # Mock Write-ADTLogEntry due to its expense when running via Pester.
+        Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
     }
     BeforeEach {
         if (Test-Path -Path $DestinationPath -PathType Container)

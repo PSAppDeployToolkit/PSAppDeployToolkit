@@ -4,8 +4,8 @@
 }
 Describe 'Set-ADTIniSection' {
     BeforeAll {
-        # Mock Set-ADTPreferenceVariables due to its expense when running via Pester.
-        Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables { }
+        # Mock Write-ADTLogEntry due to its expense when running via Pester.
+        Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
     }
     BeforeEach {
         $IniContent = @"
