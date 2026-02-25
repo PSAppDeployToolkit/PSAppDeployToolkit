@@ -41,15 +41,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 namespace PSADT.Interop
 {
     /// <summary>
-    /// Provides managed wrappers for selected Windows advanced API (AdvApi32.dll) functions related to security,
-    /// registry, process, and service control operations.
+    /// Provides a collection of native methods for interacting with Windows APIs, primarily focused on registry,
+    /// process, and security operations.
     /// </summary>
-    /// <remarks>This static class exposes a set of internal methods that facilitate interaction with
-    /// low-level Windows security and system management APIs, such as registry access, token manipulation, process
-    /// creation, service control, and authorization. Each method enforces error handling by throwing exceptions for
-    /// failure scenarios, and callers are responsible for managing the lifetime of any returned handles or resources as
-    /// documented per method. The class is intended for internal use within the assembly and is not designed for direct
-    /// use by external consumers.</remarks>
+    /// <remarks>This class contains various static methods that wrap native Windows API calls, providing
+    /// managed access to low-level system functionality. It is intended for advanced scenarios requiring direct
+    /// interaction with the Windows operating system.</remarks>
     internal static class NativeMethods
     {
         /// <summary>
