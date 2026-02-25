@@ -196,7 +196,7 @@ function Invoke-ADTCommandWithRetries
                             }
                             throw
                         }
-                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity 2
+                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity Warning
                         [System.Threading.Thread]::Sleep($SleepDuration)
                     }
                     finally

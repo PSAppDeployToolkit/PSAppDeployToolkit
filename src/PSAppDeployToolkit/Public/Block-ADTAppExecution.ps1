@@ -198,7 +198,7 @@ function Block-ADTAppExecution
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity 3
+                    Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity Error
                     return
                 }
 

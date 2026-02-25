@@ -99,7 +99,7 @@ function Set-ADTServiceStartMode
                 }
 
                 # If we're here, we had a bad exit code.
-                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity 3
+                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity Error
                 $naerParams = @{
                     Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult

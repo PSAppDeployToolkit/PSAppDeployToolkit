@@ -115,7 +115,7 @@ function Get-ADTPendingReboot
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                        Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
                         $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                     }
                 }

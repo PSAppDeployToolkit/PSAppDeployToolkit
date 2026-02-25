@@ -142,7 +142,7 @@ function Get-ADTRegistryKey
                 # Check if the registry key exists before continuing.
                 if (!(Test-Path @pathParam))
                 {
-                    Write-ADTLogEntry -Message "Registry key [$($pathParam.($PSCmdlet.ParameterSetName))] does not exist. Return `$null." -Severity 2
+                    Write-ADTLogEntry -Message "Registry key [$($pathParam.($PSCmdlet.ParameterSetName))] does not exist. Return `$null." -Severity Warning
                     return
                 }
 

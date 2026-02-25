@@ -137,7 +137,7 @@ function Remove-ADTRegistryKey
                 {
                     if (!(Test-Path @pathParam))
                     {
-                        Write-ADTLogEntry -Message "Unable to delete registry key [$($pathParam.($PSCmdlet.ParameterSetName))] because it does not exist." -Severity 2
+                        Write-ADTLogEntry -Message "Unable to delete registry key [$($pathParam.($PSCmdlet.ParameterSetName))] because it does not exist." -Severity Warning
                         return
                     }
 
@@ -174,7 +174,7 @@ function Remove-ADTRegistryKey
                 {
                     if (!(Test-Path @pathParam))
                     {
-                        Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name] because registry key does not exist." -Severity 2
+                        Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name] because registry key does not exist." -Severity Warning
                         return
                     }
                     Write-ADTLogEntry -Message "Deleting registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name]."
@@ -200,7 +200,7 @@ function Remove-ADTRegistryKey
         }
         catch [System.Management.Automation.PSArgumentException]
         {
-            Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name] because it does not exist." -Severity 2
+            Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name] because it does not exist." -Severity Warning
         }
         catch
         {

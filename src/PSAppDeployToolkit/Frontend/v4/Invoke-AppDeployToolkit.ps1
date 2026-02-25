@@ -350,7 +350,7 @@ catch
 {
     # An unhandled error has been caught.
     $mainErrorMessage = "An unhandled error within [$($MyInvocation.MyCommand.Name)] has occurred.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)"
-    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
+    Write-ADTLogEntry -Message $mainErrorMessage -Severity Error
 
     ## Error details hidden from the user by default. Show a simple dialog with full stack trace:
     # Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait

@@ -365,7 +365,7 @@ function Show-ADTInstallationPrompt
                 {
                     if ($adtConfig.UI.DialogStyle -eq 'Fluent')
                     {
-                        Write-ADTLogEntry -Message "The parameter [-MessageAlignment] is not supported with Fluent dialogs and has no effect." -Severity 2
+                        Write-ADTLogEntry -Message "The parameter [-MessageAlignment] is not supported with Fluent dialogs and has no effect." -Severity Warning
                     }
                     $dialogOptions.MessageAlignment = $MessageAlignment
                 }
@@ -373,7 +373,7 @@ function Show-ADTInstallationPrompt
                 {
                     if ($adtConfig.UI.DialogStyle -eq 'Fluent')
                     {
-                        Write-ADTLogEntry -Message "The parameter [-Icon] is not supported with Fluent dialogs and has no effect." -Severity 2
+                        Write-ADTLogEntry -Message "The parameter [-Icon] is not supported with Fluent dialogs and has no effect." -Severity Warning
                     }
                     $dialogOptions.Add('Icon', $Icon)
                 }

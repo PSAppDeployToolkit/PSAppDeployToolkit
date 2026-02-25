@@ -119,7 +119,7 @@ function Send-ADTKeys
         {
             if (!($Windows = Get-ADTWindowTitle @gawtParams))
             {
-                Write-ADTLogEntry -Message "No windows matching the specified input were discovered." -Severity 2
+                Write-ADTLogEntry -Message "No windows matching the specified input were discovered." -Severity Warning
                 return
             }
         }

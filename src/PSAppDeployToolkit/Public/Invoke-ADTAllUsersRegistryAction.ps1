@@ -170,7 +170,7 @@ function Invoke-ADTAllUsersRegistryAction
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
             }
             finally
             {
@@ -188,7 +188,7 @@ function Invoke-ADTAllUsersRegistryAction
                         }
                         catch
                         {
-                            Write-ADTLogEntry -Message "Failed to unload the registry path [$($regHive.Mountpoint)] for User [$($UserProfile.NTAccount)]. REG.exe exit code [$Global:LASTEXITCODE]. Error message: [$($_.Exception.Message)]" -Severity 3
+                            Write-ADTLogEntry -Message "Failed to unload the registry path [$($regHive.Mountpoint)] for User [$($UserProfile.NTAccount)]. REG.exe exit code [$Global:LASTEXITCODE]. Error message: [$($_.Exception.Message)]" -Severity Error
                         }
                     }
                 }

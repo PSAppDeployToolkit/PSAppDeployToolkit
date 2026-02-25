@@ -121,7 +121,7 @@ function Test-ADTMutexAvailability
         catch
         {
             # Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
-            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
             $IsUnhandledException = $true
             $IsMutexFree = $true
         }
@@ -136,7 +136,7 @@ function Test-ADTMutexAvailability
             }
             elseif (($MutexName -eq 'Global\_MSIExecute') -and ($msiInProgressCmdLine = Get-CimInstance -ClassName Win32_Process -Filter "(Name = 'msiexec.exe') AND (CommandLine like '*.msi*')" | Select-Object -ExpandProperty CommandLine))
             {
-                Write-ADTLogEntry -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$($msiInProgressCmdLine.Trim())]." -Severity 2
+                Write-ADTLogEntry -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$($msiInProgressCmdLine.Trim())]." -Severity Warning
             }
             else
             {

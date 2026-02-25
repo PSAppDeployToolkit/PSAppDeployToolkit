@@ -135,7 +135,7 @@ function Copy-ADTFile
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Announce deprecation of Robocopy file copy mode.
-            Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use the [Native] file copy mode and instead." -Severity 2
+            Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use the [Native] file copy mode and instead." -Severity Warning
 
             # Check if Robocopy is on the system.
             if (Test-Path -LiteralPath "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
@@ -143,13 +143,13 @@ function Copy-ADTFile
                 # Disable Robocopy if $Path has a folder containing a * wildcard.
                 if ($Path -match '\*.*\\')
                 {
-                    Write-ADTLogEntry -Message "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity 2
+                    Write-ADTLogEntry -Message "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity Warning
                     $FileCopyMode = 'Native'
                 }
                 # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config.
                 elseif ([System.IO.Path]::HasExtension($Destination) -and [System.IO.Path]::GetFileNameWithoutExtension($Destination) -and !(Test-Path -LiteralPath $Destination -PathType Container))
                 {
-                    Write-ADTLogEntry -Message "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
+                    Write-ADTLogEntry -Message "Destination path appears to be a file. Falling back to native PowerShell method." -Severity Warning
                     $FileCopyMode = 'Native'
                 }
                 else
@@ -180,7 +180,7 @@ function Copy-ADTFile
             }
             else
             {
-                Write-ADTLogEntry -Message "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity 2
+                Write-ADTLogEntry -Message "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity Warning
                 $FileCopyMode = 'Native'
             }
         }
@@ -306,7 +306,7 @@ function Copy-ADTFile
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.Exception.Message)" -Severity 2
+                        Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.Exception.Message)" -Severity Warning
                     }
 
                     # Process the resulting exit code.
@@ -316,14 +316,14 @@ function Copy-ADTFile
                         1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully."; break }
                         2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied."; break }
                         3 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered."; break }
-                        4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2; break }
+                        4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity Warning; break }
                         5 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered."; break }
-                        6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2; break }
-                        7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2; break }
-                        8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity 2; break }
+                        6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity Warning; break }
+                        7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity Warning; break }
+                        8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity Warning; break }
                         16
                         {
-                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]: Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories." -Severity 3
+                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]: Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories." -Severity Error
                             if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
@@ -339,7 +339,7 @@ function Copy-ADTFile
                         }
                         default
                         {
-                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]. Unknown Robocopy error." -Severity 3
+                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]. Unknown Robocopy error." -Severity Error
                             if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
@@ -444,7 +444,7 @@ function Copy-ADTFile
                         # Measure success.
                         if ($ContinueFileCopyOnError -and (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError) -and $FileCopyError -and $FileCopyError.Count)
                         {
-                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.Exception.Message))" -Severity 2
+                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.Exception.Message))" -Severity Warning
                         }
                         else
                         {

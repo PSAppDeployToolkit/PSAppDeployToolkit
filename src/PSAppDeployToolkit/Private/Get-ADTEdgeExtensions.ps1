@@ -13,6 +13,6 @@ function Private:Get-ADTEdgeExtensions
         return [pscustomobject]@{}
     }
     $extensionSettings = Get-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings
-    Write-ADTLogEntry -Message "Configured extensions: [$($extensionSettings)]." -Severity 1
+    Write-ADTLogEntry -Message "Configured extensions: [$($extensionSettings)]."
     return $extensionSettings | ConvertFrom-Json
 }

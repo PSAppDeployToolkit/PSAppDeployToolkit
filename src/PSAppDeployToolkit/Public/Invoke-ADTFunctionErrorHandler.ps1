@@ -157,7 +157,7 @@ function Invoke-ADTFunctionErrorHandler
     }
     if (!$Silent)
     {
-        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity Error
     }
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,

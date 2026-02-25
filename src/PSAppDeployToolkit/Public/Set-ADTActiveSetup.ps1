@@ -640,7 +640,7 @@ function Set-ADTActiveSetup
                     # Skip if Active Setup reg key is present and Version is equal or higher
                     if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -SID $runAsActiveUser.SID))
                     {
-                        Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity 2
+                        Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity Warning
                         return
                     }
 
@@ -662,7 +662,7 @@ function Set-ADTActiveSetup
                     # Skip if Active Setup reg key is present and Version is equal or higher
                     if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey))
                     {
-                        Write-ADTLogEntry -Message 'Skipping executing Active Setup StubPath file for current user.' -Severity 2
+                        Write-ADTLogEntry -Message 'Skipping executing Active Setup StubPath file for current user.' -Severity Warning
                         return
                     }
 

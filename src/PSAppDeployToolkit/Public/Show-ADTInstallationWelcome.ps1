@@ -1008,7 +1008,7 @@ function Show-ADTInstallationWelcome
                     }
                     if (($freeDiskSpace = Get-ADTFreeDiskSpace) -lt $RequiredDiskSpace)
                     {
-                        Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
+                        Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity Error
                         if (!$Silent)
                         {
                             Show-ADTInstallationPrompt -Message ([System.String]::Format($adtStrings.DiskSpaceText.Message.($DeploymentType.ToString()), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonLeftText OK -Icon Error

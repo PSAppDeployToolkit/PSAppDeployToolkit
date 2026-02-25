@@ -183,7 +183,7 @@ function ConvertTo-ADTNTAccountOrSID
             }
             catch
             {
-                Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
+                Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity Warning
             }
         }
     }

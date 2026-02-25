@@ -164,7 +164,7 @@ function Mount-ADTWimFile
                 # Provide a warning if this WIM file is already mounted.
                 if (($wimFile = Get-ADTMountedWimFile -ImagePath $ImagePath))
                 {
-                    Write-ADTLogEntry -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.Path)] and will be mounted again." -Severity 2
+                    Write-ADTLogEntry -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.Path)] and will be mounted again." -Severity Warning
                 }
 
                 # If we're using the force, forcibly remove the existing directory.

@@ -95,18 +95,18 @@ function Remove-ADTFile
                     $giParams = @{ $PSCmdlet.ParameterSetName = $Value }
                     if (!($Items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
                     {
-                        Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity 2
+                        Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
                         continue
                     }
                 }
                 catch [System.Management.Automation.ItemNotFoundException]
                 {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
                     continue
                 }
                 catch [System.Management.Automation.DriveNotFoundException]
                 {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because the drive does not exist." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because the drive does not exist." -Severity Warning
                     continue
                 }
                 catch
