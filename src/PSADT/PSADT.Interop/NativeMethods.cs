@@ -3478,6 +3478,152 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Opens a view on the specified database using the provided SQL query.
+        /// </summary>
+        /// <remarks>If the operation fails, an exception is thrown with details about the error. Ensure
+        /// that the database handle is valid and the query is correctly formatted before calling this method.</remarks>
+        /// <param name="hDatabase">A handle to the database to be queried. This handle must be valid and opened prior to calling this method.</param>
+        /// <param name="szQuery">The SQL query string that defines the view to be opened. This query must be syntactically correct and valid
+        /// for the database schema.</param>
+        /// <param name="phView">An output parameter that receives a handle to the opened view. This handle should be closed using the
+        /// appropriate method when no longer needed.</param>
+        /// <returns>Returns a WIN32_ERROR code indicating the result of the operation. A value of ERROR_SUCCESS indicates that
+        /// the view was opened successfully.</returns>
+        internal static WIN32_ERROR MsiDatabaseOpenView(SafeHandle hDatabase, string szQuery, out MsiCloseHandleSafeHandle phView)
+        {
+            MSIHANDLE phViewLocal = default;
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiDatabaseOpenView(hDatabase, szQuery, ref phViewLocal)).ThrowOnFailure();
+            phView = new(phViewLocal, true);
+            return res;
+        }
+
+        /// <summary>
+        /// Creates a new Windows Installer record with the specified number of fields.
+        /// </summary>
+        /// <remarks>This method wraps the Windows Installer API function for record creation. The
+        /// returned handle must be released when no longer needed to avoid resource leaks.</remarks>
+        /// <param name="cParams">The number of fields that the record will contain. Must be a non-negative integer.</param>
+        /// <returns>A safe handle representing the newly created record. Use this handle in subsequent operations to manipulate
+        /// the record.</returns>
+        internal static MsiCloseHandleSafeHandle MsiCreateRecord(uint cParams)
+        {
+            MsiCloseHandleSafeHandle res = PInvoke.MsiCreateRecord_SafeHandle(cParams);
+            return res.IsInvalid ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
+        }
+
+        /// <summary>
+        /// Retrieves the integer value from the specified field of a Windows Installer record.
+        /// </summary>
+        /// <remarks>If the specified field does not contain an integer value, an exception is thrown
+        /// indicating that there are no more items.</remarks>
+        /// <param name="hRecord">A handle to the record from which to retrieve the integer value. This handle must be valid and not null.</param>
+        /// <param name="iField">The zero-based index of the field in the record. Must be within the bounds of the record's fields.</param>
+        /// <returns>The integer value contained in the specified field. If the field does not contain an integer value, an
+        /// exception is thrown.</returns>
+        internal static int MsiRecordGetInteger(SafeHandle hRecord, uint iField)
+        {
+            int res = PInvoke.MsiRecordGetInteger(hRecord, iField);
+            return res == unchecked((int)PInvoke.MSI_NULL_INTEGER)
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_NO_MORE_ITEMS, "Field does not contain an integer value.")
+                : res;
+        }
+
+        /// <summary>
+        /// Retrieves the string value from the specified field of a Windows Installer record.
+        /// </summary>
+        /// <remarks>If the buffer is not large enough to hold the string, the method returns an error
+        /// code indicating the required size. To determine the required buffer size, call the method with an empty
+        /// buffer and use the value returned in pcchValueBuf.</remarks>
+        /// <param name="hRecord">A handle to the record from which the string value is retrieved. Must be a valid Windows Installer record
+        /// handle.</param>
+        /// <param name="iField">The zero-based index of the field within the record containing the string to retrieve.</param>
+        /// <param name="szValueBuf">An optional buffer that receives the string value. If provided, it must be large enough to hold the string,
+        /// including the terminating null character.</param>
+        /// <param name="pcchValueBuf">On entry, specifies the size of the buffer in characters. On exit, receives the length of the retrieved
+        /// string, including the terminating null character.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns ERROR_SUCCESS if the string is retrieved
+        /// successfully; otherwise, returns an error code.</returns>
+        internal static WIN32_ERROR MsiRecordGetString(SafeHandle hRecord, uint iField, [Optional] Span<char> szValueBuf, out uint pcchValueBuf)
+        {
+            pcchValueBuf = (uint)szValueBuf.Length;
+            return ((WIN32_ERROR)PInvoke.MsiRecordGetString(hRecord, iField, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Sets the value of a specified field in a Windows Installer record to the given integer.
+        /// </summary>
+        /// <remarks>Throws an exception if the operation fails. Ensure that the record handle and field
+        /// index are valid before calling this method.</remarks>
+        /// <param name="hRecord">A handle to the record whose field will be updated. Must be a valid, non-null handle.</param>
+        /// <param name="iField">The zero-based index of the field within the record to set. Must be within the bounds of the record's
+        /// fields.</param>
+        /// <param name="iValue">The integer value to assign to the specified field. This value replaces any existing value in that field.</param>
+        /// <returns>A WIN32_ERROR code that indicates the result of the operation. Zero indicates success; otherwise, an error
+        /// code is returned.</returns>
+        internal static WIN32_ERROR MsiRecordSetInteger(SafeHandle hRecord, uint iField, int iValue)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiRecordSetInteger(hRecord, iField, iValue)).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Sets the string value of a specified field in a Windows Installer record.
+        /// </summary>
+        /// <remarks>An exception is thrown if the operation does not succeed. Ensure that the field index
+        /// is valid and that the record handle is properly initialized before calling this method.</remarks>
+        /// <param name="hRecord">A handle to the record that contains the field to be updated. Must be a valid, initialized handle.</param>
+        /// <param name="iField">The zero-based index of the field within the record to set.</param>
+        /// <param name="szValue">The string value to assign to the specified field. Cannot be null.</param>
+        /// <returns>A WIN32_ERROR code indicating the result of the operation. Throws an exception if the operation fails.</returns>
+        internal static WIN32_ERROR MsiRecordSetString(SafeHandle hRecord, uint iField, string szValue)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiRecordSetString(hRecord, iField, szValue)).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Executes a prepared view against a specified record in the Windows Installer database.
+        /// </summary>
+        /// <remarks>This method is used to execute a view that has already been prepared. Ensure that
+        /// both the view and record handles are valid before calling this method. The operation may fail if the handles
+        /// are invalid or if the record does not meet the requirements of the view.</remarks>
+        /// <param name="hView">A handle to the view that was previously opened with MsiDatabaseOpenView. The handle must be valid and not
+        /// closed.</param>
+        /// <param name="hRecord">A handle to the record containing the data to be processed by the view. The record must be properly
+        /// initialized and contain the required fields for execution.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Zero indicates success; a non-zero value
+        /// indicates an error.</returns>
+        internal static WIN32_ERROR MsiViewExecute(SafeHandle hView, SafeHandle? hRecord)
+        {
+            if (hRecord is null)
+            {
+                using SafeFileHandle nullHandle = new(default, true);
+                return ((WIN32_ERROR)PInvoke.MsiViewExecute(hView, nullHandle)).ThrowOnFailure();
+            }
+            else
+            {
+                return ((WIN32_ERROR)PInvoke.MsiViewExecute(hView, hRecord)).ThrowOnFailure();
+            }
+        }
+
+        /// <summary>
+        /// Fetches the next record from the specified view and returns a handle to the record.
+        /// </summary>
+        /// <remarks>If there are no more records to fetch, the method returns an error code indicating
+        /// the end of the view. To avoid resource leaks, ensure that the record handle is released after use.</remarks>
+        /// <param name="hView">A handle to the view from which to fetch the record. The handle must be valid and opened with appropriate
+        /// permissions.</param>
+        /// <param name="phRecord">When this method returns, contains a handle to the fetched record. The caller is responsible for releasing
+        /// this handle when it is no longer needed.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Zero indicates success; a nonzero value
+        /// indicates an error or that no more records are available.</returns>
+        internal static WIN32_ERROR MsiViewFetch(SafeHandle hView, out MsiCloseHandleSafeHandle phRecord)
+        {
+            MSIHANDLE phRecordLocal = default;
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiViewFetch(hView, ref phRecordLocal)).ThrowOnFailure();
+            phRecord = new(phRecordLocal);
+            return res;
+        }
+
+        /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
         internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()

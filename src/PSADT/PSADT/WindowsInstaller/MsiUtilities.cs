@@ -6,10 +6,10 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Windows.Win32;
 using PSADT.Extensions;
 using PSADT.Interop;
 using PSADT.Utilities;
-using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.Variant;
 
@@ -40,6 +40,61 @@ namespace PSADT.WindowsInstaller
                 throw;
             }
             return !string.IsNullOrWhiteSpace(lpBuffer) ? Regex.Replace(lpBuffer, @"\s{2,}", " ") : null;
+        }
+
+        /// <summary>
+        /// Retrieves a read-only dictionary of key-value pairs from a specified table in an MSI database, using the
+        /// provided column indices for keys and values.
+        /// </summary>
+        /// <remarks>The method applies any provided transform files before querying the database. If the
+        /// table or columns specified do not exist, an exception is thrown. The returned dictionary is immutable and
+        /// will be null if the table contains no matching rows.</remarks>
+        /// <param name="szDatabasePath">The path to the MSI database file to query.</param>
+        /// <param name="table">The name of the table within the MSI database from which to retrieve properties.</param>
+        /// <param name="keyColumn">The zero-based index of the column to use as the key in the resulting dictionary.</param>
+        /// <param name="valueColumn">The zero-based index of the column to use as the value in the resulting dictionary.</param>
+        /// <param name="szTransformFiles">An optional collection of transform files to apply when opening the database. May be null if no transforms
+        /// are required.</param>
+        /// <returns>A read-only dictionary containing the key-value pairs from the specified table and columns, or null if no
+        /// properties are found.</returns>
+        /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database.</exception>
+        public static IReadOnlyDictionary<string, string>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, ReadOnlyCollection<string>? szTransformFiles = null)
+        {
+            // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
+            using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
+            if (ResolveTableName(hDatabase, table) is not string resolvedTableName)
+            {
+                throw new InvalidDataException($"The specified table '{table}' was not found in the database.");
+            }
+            if (ResolveColumnName(hDatabase, resolvedTableName, keyColumn) is not string keyColumnName)
+            {
+                throw new InvalidDataException($"The specified key column number '{keyColumn}' was not found in the table '{resolvedTableName}'.");
+            }
+            if (ResolveColumnName(hDatabase, resolvedTableName, valueColumn) is not string valueColumnName)
+            {
+                throw new InvalidDataException($"The specified value column number '{valueColumn}' was not found in the table '{resolvedTableName}'.");
+            }
+
+            // Query the database for the specified table and columns, then build a dictionary from the results.
+            _ = NativeMethods.MsiDatabaseOpenView(hDatabase, $"SELECT `{keyColumnName}`, `{valueColumnName}` FROM `{resolvedTableName}`", out MsiCloseHandleSafeHandle hView);
+            using (hView)
+            {
+                _ = NativeMethods.MsiViewExecute(hView, null);
+                Dictionary<string, string> result = [];
+                while (true)
+                {
+                    using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);
+                    if (hRecord is null)
+                    {
+                        break;
+                    }
+                    if (GetRecordString(hRecord, 1) is string key && GetRecordString(hRecord, 2) is string value)
+                    {
+                        result.Add(key, value);
+                    }
+                }
+                return result.Count > 0 ? new ReadOnlyDictionary<string, string>(result) : null;
+            }
         }
 
         /// <summary>
@@ -307,8 +362,8 @@ namespace PSADT.WindowsInstaller
             }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
-            ReadOnlySpan<char> resultSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
-            return !resultSpan.IsEmpty ? resultSpan.ToString() : null;
+            ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
 
         /// <summary>
@@ -339,6 +394,103 @@ namespace PSADT.WindowsInstaller
         {
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out FILETIME pftValue, null, out _);
             return !pftValue.IsZero() ? pftValue.ToDateTime() : null;
+        }
+
+        /// <summary>
+        /// Retrieves the name of the specified table from the database if it exists.
+        /// </summary>
+        /// <remarks>This method executes a query against the database to check for the existence of the
+        /// specified table. It is important to ensure that the database handle is properly managed and disposed of
+        /// after use.</remarks>
+        /// <param name="hDatabase">The handle to the database from which to retrieve the table name. This handle must be valid and opened prior
+        /// to calling this method.</param>
+        /// <param name="table">The name of the table to resolve. This parameter cannot be null or empty.</param>
+        /// <returns>The name of the table if it exists; otherwise, null.</returns>
+        private static string? ResolveTableName(MsiCloseHandleSafeHandle hDatabase, string table)
+        {
+            _ = NativeMethods.MsiDatabaseOpenView(hDatabase, "SELECT `Name` FROM `_Tables` WHERE `Name` = ?", out MsiCloseHandleSafeHandle hView);
+            using (hView)
+            {
+                using MsiCloseHandleSafeHandle hRecord = NativeMethods.MsiCreateRecord(1);
+                _ = NativeMethods.MsiRecordSetString(hRecord, 1, table);
+                _ = NativeMethods.MsiViewExecute(hView, hRecord);
+                _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle phRecord);
+                using (phRecord)
+                {
+                    return GetRecordString(phRecord, 1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the name of the specified column from a given table in the Windows Installer database.
+        /// </summary>
+        /// <remarks>This method queries the Windows Installer database to obtain the column name based on
+        /// the provided table and column index. Ensure that the table name and column number are valid to avoid
+        /// unexpected results.</remarks>
+        /// <param name="hDatabase">A handle to the Windows Installer database from which the column name is to be resolved.</param>
+        /// <param name="table">The name of the table containing the column whose name is to be retrieved. Cannot be null or empty.</param>
+        /// <param name="columnNumber">The zero-based index of the column within the specified table. Must be a valid column index.</param>
+        /// <returns>The name of the column as a string if found; otherwise, null.</returns>
+        private static string? ResolveColumnName(MsiCloseHandleSafeHandle hDatabase, string table, int columnNumber)
+        {
+            _ = NativeMethods.MsiDatabaseOpenView(hDatabase, "SELECT `Name` FROM `_Columns` WHERE `Table` = ? AND `Number` = ?", out MsiCloseHandleSafeHandle hView);
+            using (hView)
+            {
+                using MsiCloseHandleSafeHandle hRecord = NativeMethods.MsiCreateRecord(2);
+                _ = NativeMethods.MsiRecordSetString(hRecord, 1, table);
+                _ = NativeMethods.MsiRecordSetInteger(hRecord, 2, columnNumber);
+                _ = NativeMethods.MsiViewExecute(hView, hRecord);
+                _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle phRecord);
+                using (phRecord)
+                {
+                    return GetRecordString(phRecord, 1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fetches the next record from the specified Windows Installer view.
+        /// </summary>
+        /// <remarks>If the fetch operation fails, the method returns null without throwing an exception.
+        /// Ensure that the view handle is properly initialized before calling this method.</remarks>
+        /// <param name="hView">The handle to the view from which to fetch the record. This handle must be valid and opened with the
+        /// appropriate permissions.</param>
+        /// <returns>A handle to the fetched record, or null if no more records are available or an error occurs during the fetch
+        /// operation.</returns>
+        private static MsiCloseHandleSafeHandle? ViewFetch(MsiCloseHandleSafeHandle hView)
+        {
+            try
+            {
+                _ = NativeMethods.MsiViewFetch(hView, out MsiCloseHandleSafeHandle hRecord);
+                return hRecord;
+            }
+            catch
+            {
+                return null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the string value of the specified field from a Windows Installer record handle.
+        /// </summary>
+        /// <remarks>If the required size for the string is zero, the method returns null. The returned
+        /// string is trimmed of any leading or trailing whitespace.</remarks>
+        /// <param name="hRecord">The handle to the record from which to obtain the string value. This handle must be valid and not closed.</param>
+        /// <param name="field">The zero-based index of the field within the record whose string value is to be retrieved.</param>
+        /// <returns>The string value of the specified field if it exists; otherwise, null if the field is empty or not found.</returns>
+        private static string? GetRecordString(MsiCloseHandleSafeHandle hRecord, uint field)
+        {
+            _ = NativeMethods.MsiRecordGetString(hRecord, field, null, out uint requiredSize);
+            if (requiredSize == 0)
+            {
+                return null;
+            }
+            Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
+            _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
+            ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
     }
 }
