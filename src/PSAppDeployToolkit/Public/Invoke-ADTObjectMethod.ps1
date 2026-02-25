@@ -82,6 +82,7 @@ function Invoke-ADTObjectMethod
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
     }
 
     process
