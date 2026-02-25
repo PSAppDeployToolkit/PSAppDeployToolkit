@@ -98,6 +98,53 @@ namespace PSADT.WindowsInstaller
         }
 
         /// <summary>
+        /// Retrieves the values from a specified column in a given table within an MSI database file.
+        /// </summary>
+        /// <param name="szDatabasePath">The path to the MSI database file from which to retrieve column values. Cannot be null or empty.</param>
+        /// <param name="table">The name of the table to query for column values. Must exist in the database.</param>
+        /// <param name="column">The zero-based index of the column whose values are to be retrieved. Must refer to a valid column in the
+        /// specified table.</param>
+        /// <param name="szTransformFiles">An optional collection of transform files to apply when opening the database. If provided, transforms are
+        /// applied in the order specified.</param>
+        /// <returns>A read-only list of strings containing the values from the specified column in the specified table. The list
+        /// will be empty if the table contains no rows.</returns>
+        /// <exception cref="InvalidDataException">Thrown if the specified table or column does not exist in the database.</exception>
+        public static IReadOnlyList<string> GetMsiTableColumnValues(string szDatabasePath, string table, int column, ReadOnlyCollection<string>? szTransformFiles = null)
+        {
+            // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
+            using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
+            if (ResolveTableName(hDatabase, table) is not string resolvedTableName)
+            {
+                throw new InvalidDataException($"The specified table '{table}' was not found in the database.");
+            }
+            if (ResolveColumnName(hDatabase, resolvedTableName, column) is not string columnName)
+            {
+                throw new InvalidDataException($"The specified column number '{column}' was not found in the table '{resolvedTableName}'.");
+            }
+
+            // Query the database for the specified table and columns, then build a dictionary from the results.
+            _ = NativeMethods.MsiDatabaseOpenView(hDatabase, $"SELECT `{columnName}` FROM `{resolvedTableName}`", out MsiCloseHandleSafeHandle hView);
+            using (hView)
+            {
+                _ = NativeMethods.MsiViewExecute(hView, null);
+                List<string> result = [];
+                while (true)
+                {
+                    using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);
+                    if (hRecord is null)
+                    {
+                        break;
+                    }
+                    if (GetRecordString(hRecord, 1) is string value)
+                    {
+                        result.Add(value);
+                    }
+                }
+                return new ReadOnlyCollection<string>(result);
+            }
+        }
+
+        /// <summary>
         /// Retrieves the list of product codes supported by the specified Windows Installer patch package (MSP file).
         /// </summary>
         /// <remarks>The returned product codes indicate which products the patch can be applied to. This
