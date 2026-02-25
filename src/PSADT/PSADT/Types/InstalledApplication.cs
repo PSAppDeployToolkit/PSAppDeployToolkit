@@ -50,7 +50,7 @@ namespace PSADT.Types
             uint? estimatedSize,
             bool systemComponent,
             bool windowsInstaller,
-            bool is64BitApplication)
+            bool? is64BitApplication)
         {
             PSPath = !string.IsNullOrWhiteSpace(psPath) ? psPath : throw new ArgumentNullException("PSPath cannot be null or empty.", (Exception?)null);
             PSParentPath = !string.IsNullOrWhiteSpace(psParentPath) ? psParentPath : throw new ArgumentNullException("PSParentPath cannot be null or empty.", (Exception?)null);
@@ -210,6 +210,6 @@ namespace PSADT.Types
         /// <summary>
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
-        public bool Is64BitApplication { get; }
+        public bool? Is64BitApplication { get; }
     }
 }
