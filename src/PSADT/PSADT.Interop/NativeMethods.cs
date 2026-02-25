@@ -2147,7 +2147,7 @@ namespace PSADT.Interop
                 {
                     res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
-                phDatabase = new MsiCloseHandleSafeHandle(phDatabaseLocal, true);
+                phDatabase = new(phDatabaseLocal, true);
             }
             return res;
         }
@@ -2179,7 +2179,7 @@ namespace PSADT.Interop
             {
                 res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
-            phSummaryInfo = new MsiCloseHandleSafeHandle(phSummaryInfoLocal, true);
+            phSummaryInfo = new(phSummaryInfoLocal, true);
             return res;
         }
 
@@ -2236,10 +2236,9 @@ namespace PSADT.Interop
         /// retrieved successfully; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR MsiSummaryInfoGetProperty(SafeHandle hSummaryInfo, MSI_PROPERTY_ID uiProperty, out VARENUM puiDataType, out int piValue, out System.Runtime.InteropServices.ComTypes.FILETIME pftValue, Span<char> szValueBuf, out uint pcchValueBuf)
         {
-            uint pcchValueBufLocal = (uint)szValueBuf.Length;
-            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBufLocal)).ThrowOnFailure();
+            pcchValueBuf = (uint)szValueBuf.Length;
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
             puiDataType = (VARENUM)puiDataTypeLocal;
-            pcchValueBuf = pcchValueBufLocal;
             return res;
         }
 
@@ -2258,10 +2257,8 @@ namespace PSADT.Interop
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the XML data was successfully extracted.</returns>
         internal static WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
         {
-            uint pcchXMLDataLocal = (uint)szXMLData.Length;
-            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLDataLocal)).ThrowOnFailure();
-            pcchXMLData = pcchXMLDataLocal;
-            return res;
+            pcchXMLData = (uint)szXMLData.Length;
+            return ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath, szXMLData, ref pcchXMLData)).ThrowOnFailure();
         }
 
         /// <summary>
