@@ -25,10 +25,19 @@ namespace PSADT.Utilities
         /// <param name="key">The name of the key whose value is to be retrieved. Cannot be null or empty.</param>
         /// <returns>A string containing the value associated with the specified key in the specified section. Returns an empty
         /// string if the key does not exist.</returns>
-        public static string GetSectionKeyValue(string filepath, string section, string key)
+        public static string? GetSectionKeyValue(string filepath, string section, string key)
         {
             Span<char> buffer = stackalloc char[4096]; buffer.Clear();
-            return buffer.Slice(0, (int)NativeMethods.GetPrivateProfileString(section, key, null, buffer, filepath)).ToString();
+            uint len;
+            try
+            {
+                len = NativeMethods.GetPrivateProfileString(section, key, null, buffer, filepath);
+            }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
+            return buffer.Slice(0, (int)len).Trim().ToString();
         }
 
         /// <summary>

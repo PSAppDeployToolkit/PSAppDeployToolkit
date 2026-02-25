@@ -98,8 +98,12 @@ function Get-ADTIniValue
         {
             try
             {
-                $iniValue = [PSADT.Utilities.IniUtilities]::GetSectionKeyValue($FilePath, $Section, $Key)
-                Write-ADTLogEntry -Message "INI value: [Value = $iniValue]."
+                if ($null -eq ($iniValue = [PSADT.Utilities.IniUtilities]::GetSectionKeyValue($FilePath, $Section, $Key)))
+                {
+                    Write-ADTLogEntry -Message "No INI value was found for [Key = $Key] in [Section = $Section]. Return `$null."
+                    return
+                }
+                Write-ADTLogEntry -Message "INI value: [Value = '$iniValue']."
                 return $iniValue
             }
             catch

@@ -28,13 +28,11 @@ MyWhitespaceKey=
         It 'Should return empty for whitespace values' {
             Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'MyWhitespaceKey' | Should -Be ''
         }
-        It 'Should throw for a non-existent Section' {
-            # Querying a non-existent section currently throws an error, unlike PSADT v3
-            { Get-ADTIniValue -FilePath $IniPath -Section 'NonExistentSection' -Key 'MyKey' } | Should -Throw
+        It 'Should return null for a non-existent Section' {
+            Get-ADTIniValue -FilePath $IniPath -Section 'NonExistentSection' -Key 'MyKey' | Should -BeNull
         }
-        It 'Should throw for a non-existent Key' {
-            # Querying a non-existent key currently throws an error, unlike PSADT v3
-            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NonExistentKey' } | Should -Throw
+        It 'Should return null for a non-existent Key' {
+            Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NonExistentKey' | Should -BeNull
         }
     }
 
