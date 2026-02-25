@@ -156,7 +156,10 @@ MSIDBOPEN_READONLY
 MSIDBOPEN_TRANSACT
 MSI_NULL_INTEGER
 MsiCreateRecord
+MsiCreateTransformSummaryInfo
 MsiDatabaseApplyTransform
+MsiDatabaseCommit
+MsiDatabaseGenerateTransform
 MsiDatabaseOpenView
 MsiExtractPatchXMLData
 MsiGetLastErrorRecord
@@ -170,6 +173,7 @@ MsiRecordSetString
 MsiSummaryInfoGetProperty
 MsiViewExecute
 MsiViewFetch
+MsiViewModify
 NtQueryInformationProcess
 NtQueryObject
 NtQuerySystemInformation

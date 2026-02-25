@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Windows.Win32;
 using PSADT.Extensions;
 using PSADT.Interop;
 using PSADT.Utilities;
+using Windows.Win32;
+using Windows.Win32.System.ApplicationInstallationAndServicing;
 using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.Variant;
 
@@ -79,7 +81,7 @@ namespace PSADT.WindowsInstaller
             _ = NativeMethods.MsiDatabaseOpenView(hDatabase, $"SELECT `{keyColumnName}`, `{valueColumnName}` FROM `{resolvedTableName}`", out MsiCloseHandleSafeHandle hView);
             using (hView)
             {
-                _ = NativeMethods.MsiViewExecute(hView, null);
+                _ = NativeMethods.MsiViewExecute(hView);
                 Dictionary<string, string> result = [];
                 while (true)
                 {
@@ -126,7 +128,7 @@ namespace PSADT.WindowsInstaller
             _ = NativeMethods.MsiDatabaseOpenView(hDatabase, $"SELECT `{columnName}` FROM `{resolvedTableName}`", out MsiCloseHandleSafeHandle hView);
             using (hView)
             {
-                _ = NativeMethods.MsiViewExecute(hView, null);
+                _ = NativeMethods.MsiViewExecute(hView);
                 List<string> result = [];
                 while (true)
                 {
@@ -141,6 +143,155 @@ namespace PSADT.WindowsInstaller
                     }
                 }
                 return new ReadOnlyCollection<string>(result);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new Windows Installer transform (MST) file that updates specified properties in an MSI package.
+        /// Optionally applies an existing transform before generating the new one.
+        /// </summary>
+        /// <remarks>This method creates a temporary copy of the original MSI, applies property changes,
+        /// and generates a transform file representing those changes. If an existing transform is specified, it is
+        /// applied before property modifications. The method ensures that all file paths are absolute and that no
+        /// existing files are overwritten unintentionally.</remarks>
+        /// <param name="msiPath">The path to the original MSI file that serves as the baseline for the transform. This path must be valid and
+        /// the file must exist.</param>
+        /// <param name="newTransformPath">The absolute path where the new transform file will be created. The file must not already exist.</param>
+        /// <param name="transformProperties">A read-only dictionary containing the property names and their new values to be included in the transform.
+        /// At least one property must be specified.</param>
+        /// <param name="applyTransformPath">An optional path to an existing transform file to apply to the temporary MSI before creating the new
+        /// transform. If specified, the file must exist.</param>
+        /// <param name="tempMsiPath">An optional path for a temporary MSI file used during transform creation. If not specified, a temporary file
+        /// is created automatically. The file must not already exist.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="msiPath"/>, <paramref name="newTransformPath"/>, or <paramref
+        /// name="transformProperties"/> is null.</exception>
+        /// <exception cref="FileNotFoundException">Thrown if the file specified by <paramref name="msiPath"/> or <paramref name="applyTransformPath"/> does not
+        /// exist.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="newTransformPath"/> is not an absolute path, if <paramref
+        /// name="transformProperties"/> is empty or contains null or empty keys, or if <paramref name="tempMsiPath"/>
+        /// already exists.</exception>
+        /// <exception cref="IOException">Thrown if the transform file could not be generated at the specified <paramref name="newTransformPath"/>.</exception>
+        public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
+        {
+            // Validate input parameters.
+            if (string.IsNullOrWhiteSpace(msiPath))
+            {
+                throw new ArgumentNullException(nameof(msiPath));
+            }
+            if (!File.Exists(msiPath = Path.GetFullPath(msiPath)))
+            {
+                throw new FileNotFoundException("MSI file not found.", msiPath);
+            }
+            if (string.IsNullOrWhiteSpace(newTransformPath))
+            {
+                throw new ArgumentNullException(nameof(newTransformPath));
+            }
+            if (!Path.IsPathRooted(newTransformPath = Path.GetFullPath(newTransformPath)))
+            {
+                throw new ArgumentException("The new transform path must be an absolute path.", nameof(newTransformPath));
+            }
+            if (transformProperties is null)
+            {
+                throw new ArgumentNullException(nameof(transformProperties));
+            }
+            if (transformProperties.Count == 0)
+            {
+                throw new ArgumentException("TransformProperties cannot be empty. At least one property must be specified to create a transform.", nameof(transformProperties));
+            }
+            if (!string.IsNullOrWhiteSpace(applyTransformPath) && !File.Exists(applyTransformPath = Path.GetFullPath(applyTransformPath)))
+            {
+                throw new FileNotFoundException("The transform file specified in ApplyTransformPath was not found.", applyTransformPath);
+            }
+
+            // Set up the temp MSI path.
+            bool deleteTempMsi; if (!string.IsNullOrWhiteSpace(tempMsiPath))
+            {
+                if (File.Exists(tempMsiPath = Path.GetFullPath(tempMsiPath)))
+                {
+                    throw new ArgumentException("The specified temp MSI path already exists. Please provide a non-existing path or allow the method to create a temp file automatically.", nameof(tempMsiPath));
+                }
+                _ = Directory.CreateDirectory(Path.GetDirectoryName(tempMsiPath)!);
+                deleteTempMsi = false;
+            }
+            else
+            {
+                tempMsiPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(msiPath) + "_" + Guid.NewGuid().ToString("N") + ".msi"));
+                deleteTempMsi = true;
+            }
+
+            // Copy MSI to temp.
+            File.Copy(msiPath, tempMsiPath, overwrite: true);
+            try
+            {
+                // Open original read-only.
+                using MsiCloseHandleSafeHandle hDatabaseOrig = OpenDatabase(msiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
+
+                // Open temp in transact mode so we can modify + commit.
+                using (MsiCloseHandleSafeHandle hDatabaseTemp = OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
+                {
+                    // Optionally apply an existing transform to temp first.
+                    if (!string.IsNullOrWhiteSpace(applyTransformPath))
+                    {
+                        _ = NativeMethods.MsiDatabaseApplyTransform(hDatabaseTemp, applyTransformPath!);
+                    }
+
+                    // One view, executed once, then assign repeatedly. No string interpolation of keys/values; we use records.
+                    _ = NativeMethods.MsiDatabaseOpenView(hDatabaseTemp, "SELECT `Property`,`Value` FROM `Property`", out MsiCloseHandleSafeHandle hView);
+                    using (hView)
+                    {
+                        // Reuse a single record handle for speed.
+                        _ = NativeMethods.MsiViewExecute(hView);
+                        using MsiCloseHandleSafeHandle hRecord = NativeMethods.MsiCreateRecord(2);
+                        foreach (KeyValuePair<string, string> kvp in transformProperties)
+                        {
+                            // Don't allow a null/empty key.
+                            if (string.IsNullOrWhiteSpace(kvp.Key))
+                            {
+                                throw new ArgumentException("TransformProperties cannot contain null or empty keys.", nameof(transformProperties));
+                            }
+
+                            // Field indices are 1-based in MSI records.
+                            _ = NativeMethods.MsiRecordSetString(hRecord, 1, kvp.Key);
+                            _ = NativeMethods.MsiRecordSetString(hRecord, 2, !string.IsNullOrWhiteSpace(kvp.Value) ? kvp.Value : string.Empty);
+                            _ = NativeMethods.MsiViewModify(hView, MSIMODIFY.MSIMODIFY_ASSIGN, hRecord);
+                        }
+                    }
+
+                    // Commit changes to the temp DB.
+                    _ = NativeMethods.MsiDatabaseCommit(hDatabaseTemp);
+                }
+
+                // Reopen temp read-only for transform generation.
+                using MsiCloseHandleSafeHandle hDatabaseTempRo = OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
+
+                // Remove existing MST if present.
+                if (!File.Exists(newTransformPath))
+                {
+                    _ = Directory.CreateDirectory(Path.GetDirectoryName(newTransformPath)!);
+                }
+                else
+                {
+                    File.Delete(newTransformPath);
+                }
+
+                // Generate transform: temp (modified) vs original (baseline)
+                _ = NativeMethods.MsiDatabaseGenerateTransform(hDatabaseTempRo, hDatabaseOrig, newTransformPath);
+
+                // Create summary info for the transform (equivalent to CreateTransformSummaryInfo)
+                MSITRANSFORM_VALIDATE validateFlags = (MSITRANSFORM_VALIDATE)((Enum.GetValues(typeof(MSITRANSFORM_VALIDATE)).Cast<MSITRANSFORM_VALIDATE>().Max(static v => Convert.ToUInt32(v, CultureInfo.InvariantCulture)) << 1) - 1);
+                _ = PInvoke.MsiCreateTransformSummaryInfo(hDatabaseTempRo, hDatabaseOrig, newTransformPath, MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE, validateFlags);
+                if (!File.Exists(newTransformPath))
+                {
+                    throw new IOException($"Failed to generate transform file at '{newTransformPath}'.");
+                }
+            }
+            finally
+            {
+                // Remove temp MSI if we created it.
+                if (deleteTempMsi && File.Exists(tempMsiPath))
+                {
+                    File.Delete(tempMsiPath);
+                }
             }
         }
 
@@ -188,9 +339,9 @@ namespace PSADT.WindowsInstaller
         /// product's status.</remarks>
         /// <param name="productCode">The unique identifier (GUID) of the product whose installation state is to be queried.</param>
         /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
-        public static INSTALLSTATE QueryProductState(Guid productCode)
+        public static Interop.INSTALLSTATE QueryProductState(Guid productCode)
         {
-            return (INSTALLSTATE)NativeMethods.MsiQueryProductState(productCode);
+            return (Interop.INSTALLSTATE)NativeMethods.MsiQueryProductState(productCode);
         }
 
         /// <summary>
@@ -334,17 +485,21 @@ namespace PSADT.WindowsInstaller
         /// <remarks>If the specified database is a patch file, transformations cannot be applied. Ensure
         /// that the database path is valid and accessible.</remarks>
         /// <param name="szDatabasePath">The path to the database file to be opened. This must be a valid file path to an MSI or MSP file.</param>
+        /// <param name="szPersist">An optional persistence mode for opening the database. If null, the method will determine the appropriate mode based on the file type.</param>
         /// <param name="szTransformFiles">An optional collection of transformation file paths to apply to the database. Transforms cannot be applied
         /// to patch files.</param>
         /// <returns>A handle to the opened database. This handle must be disposed of when no longer needed.</returns>
-        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, params IReadOnlyList<string>? szTransformFiles)
+        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, MSI_PERSISTENCE_MODE? szPersist = null, params IReadOnlyList<string>? szTransformFiles)
         {
             // Open the msi/msp as a database.
             bool isPatchFile = Path.GetExtension(szDatabasePath).Equals(".msp", StringComparison.OrdinalIgnoreCase);
-            MSI_PERSISTENCE_MODE szPersist = MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY;
-            if (isPatchFile)
+            if (szPersist is null)
             {
-                szPersist += MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE;
+                szPersist = MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY;
+                if (isPatchFile)
+                {
+                    szPersist += MSI_PERSISTENCE_MODE.MSIDBOPEN_PATCHFILE;
+                }
             }
             _ = NativeMethods.MsiOpenDatabase(szDatabasePath, szPersist, out MsiCloseHandleSafeHandle hDatabase);
             try
@@ -368,6 +523,19 @@ namespace PSADT.WindowsInstaller
                 hDatabase.Dispose();
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Opens a Windows Installer database from the specified file path and applies optional transformation files.
+        /// </summary>
+        /// <param name="szDatabasePath">The full path to the database file to open. This parameter cannot be null or empty.</param>
+        /// <param name="szTransformFiles">An optional array of transformation file paths to apply to the database. Each transformation file must be
+        /// valid and accessible. May be null.</param>
+        /// <returns>A safe handle representing the opened database. The caller is responsible for closing the handle to release
+        /// resources.</returns>
+        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, params IReadOnlyList<string>? szTransformFiles)
+        {
+            return OpenDatabase(szDatabasePath, null, szTransformFiles);
         }
 
         /// <summary>

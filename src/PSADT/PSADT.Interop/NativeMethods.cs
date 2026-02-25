@@ -3588,7 +3588,7 @@ namespace PSADT.Interop
         /// initialized and contain the required fields for execution.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Zero indicates success; a non-zero value
         /// indicates an error.</returns>
-        internal static WIN32_ERROR MsiViewExecute(SafeHandle hView, SafeHandle? hRecord)
+        internal static WIN32_ERROR MsiViewExecute(SafeHandle hView, SafeHandle? hRecord = null)
         {
             if (hRecord is null)
             {
@@ -3618,6 +3618,79 @@ namespace PSADT.Interop
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiViewFetch(hView, ref phRecordLocal)).ThrowOnFailure();
             phRecord = new(phRecordLocal);
             return res;
+        }
+
+        /// <summary>
+        /// Modifies the specified view in a Windows Installer database using the provided modification mode and record.
+        /// </summary>
+        /// <remarks>This method wraps the native MsiViewModify function and throws an exception if the
+        /// operation fails. Ensure that the handles provided are valid and that the modification mode is appropriate
+        /// for the view and record.</remarks>
+        /// <param name="hView">A handle to the view to be modified. Must be a valid handle obtained from a previous call to
+        /// MsiDatabaseOpenView.</param>
+        /// <param name="eModifyMode">The modification mode to apply to the view. Determines the type of operation, such as insert, update, or
+        /// delete.</param>
+        /// <param name="hRecord">A handle to the record containing the data for the modification. The record must be properly initialized and
+        /// contain the required fields for the specified modification mode.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the modification operation. Zero indicates success; a non-zero
+        /// value indicates an error.</returns>
+        internal static WIN32_ERROR MsiViewModify(SafeHandle hView, MSIMODIFY eModifyMode, SafeHandle hRecord)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiViewModify(hView, eModifyMode, hRecord)).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Commits all pending changes to the specified Windows Installer database, making them permanent.
+        /// </summary>
+        /// <remarks>Throws an exception if the commit operation fails. Ensure that the database handle is
+        /// properly initialized and writable before calling this method.</remarks>
+        /// <param name="hDatabase">A handle to the database to be committed. The handle must be valid and opened in a writable state.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the commit operation. Returns zero if the operation succeeds;
+        /// otherwise, returns an error code.</returns>
+        internal static WIN32_ERROR MsiDatabaseCommit(SafeHandle hDatabase)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiDatabaseCommit(hDatabase)).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Generates a transform file that captures the differences between the specified database and a reference
+        /// database.
+        /// </summary>
+        /// <remarks>Use this method to create a transform file that can be applied to the target database
+        /// to synchronize it with the reference database. The transform file records schema and data changes between
+        /// the two databases. Ensure that both database handles remain valid for the duration of the
+        /// operation.</remarks>
+        /// <param name="hDatabase">A handle to the target database for which the transform is generated. Must be valid and opened with
+        /// appropriate permissions.</param>
+        /// <param name="hDatabaseReference">A handle to the reference database used as the baseline for comparison. Must be valid and opened with
+        /// appropriate permissions.</param>
+        /// <param name="szTransformFile">The file path where the generated transform will be saved. The path must be valid and writable.</param>
+        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns zero if successful; otherwise, returns a
+        /// nonzero error code.</returns>
+        internal static WIN32_ERROR MsiDatabaseGenerateTransform(SafeHandle hDatabase, SafeHandle hDatabaseReference, string szTransformFile)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiDatabaseGenerateTransform(hDatabase, hDatabaseReference, szTransformFile, 0, 0)).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Creates summary information for a Windows Installer transform file, associating it with the specified
+        /// database and reference database.
+        /// </summary>
+        /// <remarks>Throws an exception if any provided handle is invalid or if the transform file cannot
+        /// be processed. Ensure all parameters are valid before calling this method.</remarks>
+        /// <param name="hDatabase">A handle to the target database with which the transform file will be associated. Must be valid and open.</param>
+        /// <param name="hDatabaseReference">A handle to the reference database that provides context for validating the transform. Must be valid and
+        /// open.</param>
+        /// <param name="szTransformFile">The path to the transform file for which summary information will be created. Cannot be null or empty.</param>
+        /// <param name="iErrorConditions">Specifies the error conditions to be considered during the creation of the summary information. Determines
+        /// which errors are reported.</param>
+        /// <param name="iValidation">Indicates the validation checks to perform on the transform file. Controls the level and type of validation
+        /// applied.</param>
+        /// <returns>A WIN32_ERROR code that indicates the result of the operation. Returns zero if successful; otherwise,
+        /// returns an error code.</returns>
+        internal static WIN32_ERROR MsiCreateTransformSummaryInfo(SafeHandle hDatabase, SafeHandle hDatabaseReference, string szTransformFile, MSITRANSFORM_ERROR iErrorConditions, MSITRANSFORM_VALIDATE iValidation)
+        {
+            return ((WIN32_ERROR)PInvoke.MsiCreateTransformSummaryInfo(hDatabase, hDatabaseReference, szTransformFile, iErrorConditions, iValidation)).ThrowOnFailure();
         }
 
         /// <summary>
