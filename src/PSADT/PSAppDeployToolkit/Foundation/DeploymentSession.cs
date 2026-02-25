@@ -22,6 +22,7 @@ using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
+using PSADT.WindowsInstaller;
 using PSAppDeployToolkit.Logging;
 using PSAppDeployToolkit.Utilities;
 using Windows.Win32.Storage.FileSystem;
@@ -388,8 +389,8 @@ namespace PSAppDeployToolkit.Foundation
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ProcessDefinition[]? msiExecList = ((ReadOnlyDictionary<string, object>?)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if (![System.String]::IsNullOrWhiteSpace($args[1])) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File -TablePropertyValueColumnNum 3"), DefaultMsiFile!, DefaultMstFile!).FirstOrDefault()?.BaseObject)?.Values.Where(static p => ((string)p).EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(((string)p).Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last()))).ToArray();
-                            if (msiExecList?.Length > 0)
+                            ProcessDefinition[] msiExecList = [.. MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3, DefaultMstFile!).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
+                            if (msiExecList.Length > 0)
                             {
                                 AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
                                 WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
@@ -397,22 +398,22 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Update our app variables with new values.
-                        ReadOnlyDictionary<string, object> msiProps = (ReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!)[0].BaseObject;
+                        IReadOnlyDictionary<string, string> msiProps = MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2, DefaultMstFile!)!;
                         if (string.IsNullOrWhiteSpace(AppVendor))
                         {
-                            AppVendor = (string)msiProps["Manufacturer"];
+                            AppVendor = msiProps["Manufacturer"];
                         }
                         if (string.IsNullOrWhiteSpace(AppName))
                         {
-                            AppName = (string)msiProps["ProductName"];
+                            AppName = msiProps["ProductName"];
                         }
                         if (string.IsNullOrWhiteSpace(AppVersion))
                         {
-                            AppVersion = (string)msiProps["ProductVersion"];
+                            AppVersion = msiProps["ProductVersion"];
                         }
-                        WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
-                        WriteLogEntry($"App Name [{(string)msiProps["ProductName"]}].");
-                        WriteLogEntry($"App Version [{(string)msiProps["ProductVersion"]}].");
+                        WriteLogEntry($"App Vendor [{msiProps["Manufacturer"]}].");
+                        WriteLogEntry($"App Name [{msiProps["ProductName"]}].");
+                        WriteLogEntry($"App Version [{msiProps["ProductVersion"]}].");
                         Settings |= DeploymentSettings.UseDefaultMsi;
                     }
                 }

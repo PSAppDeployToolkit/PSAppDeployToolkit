@@ -58,7 +58,7 @@ namespace PSADT.WindowsInstaller
         /// <returns>A read-only dictionary containing the key-value pairs from the specified table and columns, or null if no
         /// properties are found.</returns>
         /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database.</exception>
-        public static IReadOnlyDictionary<string, string>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, ReadOnlyCollection<string>? szTransformFiles = null)
+        public static IReadOnlyDictionary<string, string>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, params IReadOnlyList<string>? szTransformFiles)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
@@ -109,7 +109,7 @@ namespace PSADT.WindowsInstaller
         /// <returns>A read-only list of strings containing the values from the specified column in the specified table. The list
         /// will be empty if the table contains no rows.</returns>
         /// <exception cref="InvalidDataException">Thrown if the specified table or column does not exist in the database.</exception>
-        public static IReadOnlyList<string> GetMsiTableColumnValues(string szDatabasePath, string table, int column, ReadOnlyCollection<string>? szTransformFiles = null)
+        public static IReadOnlyList<string> GetMsiTableColumnValues(string szDatabasePath, string table, int column, params IReadOnlyList<string>? szTransformFiles)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
@@ -337,7 +337,7 @@ namespace PSADT.WindowsInstaller
         /// <param name="szTransformFiles">An optional collection of transformation file paths to apply to the database. Transforms cannot be applied
         /// to patch files.</param>
         /// <returns>A handle to the opened database. This handle must be disposed of when no longer needed.</returns>
-        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, ReadOnlyCollection<string>? szTransformFiles = null)
+        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, params IReadOnlyList<string>? szTransformFiles)
         {
             // Open the msi/msp as a database.
             bool isPatchFile = Path.GetExtension(szDatabasePath).Equals(".msp", StringComparison.OrdinalIgnoreCase);
@@ -382,7 +382,7 @@ namespace PSADT.WindowsInstaller
         /// information. If null, no transforms are applied.</param>
         /// <returns>A safe handle to the summary information stream of the specified database. The caller is responsible for
         /// disposing of the handle when it is no longer needed.</returns>
-        internal static MsiCloseHandleSafeHandle GetSummaryInformation(string szDatabasePath, ReadOnlyCollection<string>? szTransformFiles = null)
+        internal static MsiCloseHandleSafeHandle GetSummaryInformation(string szDatabasePath, params IReadOnlyList<string>? szTransformFiles)
         {
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
             _ = NativeMethods.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Text;
 using PSADT.Interop;
 using Windows.Win32;
@@ -24,7 +24,7 @@ namespace PSADT.WindowsInstaller
         /// information. If null, no transforms are applied.</param>
         /// <returns>An instance of MsiSummaryInfo containing the summary information extracted from the specified database, with
         /// any transforms applied.</returns>
-        public static MsiSummaryInfo Get(string szDatabasePath, ReadOnlyCollection<string>? szTransformFiles = null)
+        public static MsiSummaryInfo Get(string szDatabasePath, params IReadOnlyList<string>? szTransformFiles)
         {
             // Get the summary information from the given database, with any specified transform files applied.
             using MsiCloseHandleSafeHandle hSummaryInfo = MsiUtilities.GetSummaryInformation(szDatabasePath, szTransformFiles);

@@ -135,87 +135,18 @@ function Get-ADTMsiTableProperty
 
     process
     {
-        if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
-        {
-            Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$LiteralPath] in table [$Table]."
-        }
-        else
-        {
-            Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$LiteralPath]."
-        }
         try
         {
             try
             {
-                # Create a Windows Installer object and define properties for how the MSI database is opened
-                $Installer = New-Object -ComObject WindowsInstaller.Installer
-                $msiOpenDatabaseModeReadOnly = 0
-                $msiSuppressApplyTransformErrors = 63
-                $msiOpenDatabaseModePatchFile = 32
-                $msiOpenDatabaseMode = if (($IsMspFile = [System.IO.Path]::GetExtension($LiteralPath) -eq '.msp'))
-                {
-                    $msiOpenDatabaseModePatchFile
-                }
-                else
-                {
-                    $msiOpenDatabaseModeReadOnly
-                }
-
-                # Open database in read only mode and apply a list of transform(s).
-                $Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @((Get-Item -LiteralPath $LiteralPath).FullName, $msiOpenDatabaseMode)
-                if ($TransformPath -and !$IsMspFile)
-                {
-                    $null = foreach ($Transform in $TransformPath)
-                    {
-                        Invoke-ADTObjectMethod -InputObject $Database -MethodName ApplyTransform -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
-                    }
-                }
-
                 # Get either the requested windows database table information or summary information.
                 if ($GetSummaryInformation)
                 {
-                    # Get the SummaryInformation from the windows installer database.
-                    # Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
-                    $SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                    return [PSADT.WindowsInstaller.MsiSummaryInfo]::new(
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(1)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(2)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(3)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(4)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(5)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(6)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(8)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(9)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(11)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(12)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(13)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(14)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(15)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(16)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(18)),
-                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(19))
-                    )
+                    Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$LiteralPath]."
+                    return [PSADT.WindowsInstaller.MsiSummaryInfo]::Get($LiteralPath, $TransformPath)
                 }
-
-                # Open the requested table view from the database.
-                $TableProperties = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
-                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM ``$($Table.Replace("'", "''").Replace('`', '``'))``")
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
-
-                # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
-                # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                while (($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch))
-                {
-                    $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
-                }
-
-                # Return the accumulated results. We can't use a custom class/record for this as we have no idea what's going to be in the properties of a given MSI.
-                # We also can't use a pscustomobject accelerator here as the MSI may have the same keys with different casing, necessitating the use of a dictionary for storage.
-                if ($TableProperties.Count)
-                {
-                    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]::new($TableProperties)
-                }
+                Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$LiteralPath] in table [$Table]."
+                return [PSADT.WindowsInstaller.MsiUtilities]::GetMsiTableDictionary($LiteralPath, $Table, $TablePropertyNameColumnNum, $TablePropertyValueColumnNum, $TransformPath)
             }
             catch
             {
@@ -225,21 +156,6 @@ function Get-ADTMsiTableProperty
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get the MSI table [$Table]."
-        }
-        finally
-        {
-            # Release all COM objects to prevent file locks.
-            $null = foreach ($variable in (Get-Variable -Name View, SummaryInformation, Database, Installer -ValueOnly -ErrorAction Ignore))
-            {
-                try
-                {
-                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($variable)
-                }
-                catch
-                {
-                    $null
-                }
-            }
         }
     }
 
