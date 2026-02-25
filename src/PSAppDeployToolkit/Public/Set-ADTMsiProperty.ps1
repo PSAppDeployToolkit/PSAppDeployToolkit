@@ -86,13 +86,18 @@ function Set-ADTMsiProperty
                 # Open the requested table view from the database, ensuring that we escape single quotes for MSI SQL queries.
                 $escapedPropertyName = $PropertyName.Replace("'", "''"); $escapedPropertyValue = $PropertyValue.Replace("'", "''")
                 $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$escapedPropertyName'")
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
-
-                # Retrieve the requested property from the requested table and close off the view.
-                # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close
-                $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
+                $Record = try
+                {
+                    # Retrieve the requested property from the requested table and close off the view.
+                    # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
+                    Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
+                }
+                finally
+                {
+                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close
+                    $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
+                }
 
                 # Set the MSI property.
                 $View = if ($Record)
@@ -105,7 +110,15 @@ function Set-ADTMsiProperty
                     # If property does not exist, then create view for inserting the property.
                     Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$escapedPropertyName','$escapedPropertyValue')")
                 }
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
+                $null = try
+                {
+                    Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
+                }
+                finally
+                {
+                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close
+                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
+                }
             }
             catch
             {
@@ -115,21 +128,6 @@ function Set-ADTMsiProperty
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
-        }
-        finally
-        {
-            $null = try
-            {
-                if ($View)
-                {
-                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close
-                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
-                }
-            }
-            catch
-            {
-                $null
-            }
         }
     }
 
