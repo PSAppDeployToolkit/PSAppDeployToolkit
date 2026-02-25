@@ -1748,21 +1748,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Loads the specified dynamic-link library (DLL) into the address space of the calling process.
-        /// </summary>
-        /// <remarks>The caller is responsible for releasing the returned handle to avoid resource leaks.
-        /// If the library cannot be loaded, an exception is thrown.</remarks>
-        /// <param name="lpLibFileName">The name of the DLL file to load. This can be a full path or a file name that is searched for in the
-        /// system's standard DLL search order. Cannot be null or empty.</param>
-        /// <returns>A <see cref="FreeLibrarySafeHandle"/> representing the loaded library. The handle must be released when no
-        /// longer needed.</returns>
-        internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
-        {
-            FreeLibrarySafeHandle res = PInvoke.LoadLibrary(lpLibFileName);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
-        }
-
-        /// <summary>
         /// Retrieves a safe handle representing the current process.
         /// </summary>
         /// <remarks>The returned handle is safe to use with Windows API functions that require a process
