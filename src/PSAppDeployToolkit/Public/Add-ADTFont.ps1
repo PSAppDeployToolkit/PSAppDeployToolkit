@@ -15,7 +15,7 @@ function Add-ADTFont
 
         Supports .ttf, .ttc, and .otf file types.
 
-    .PARAMETER LiteralPath
+    .PARAMETER Path
         The path to the font file or directory containing font files.
 
     .PARAMETER Recurse
@@ -28,12 +28,12 @@ function Add-ADTFont
         None
 
     .EXAMPLE
-        Add-ADTFont -LiteralPath "$($adtSession.DirFiles)\MyFont.ttf"
+        Add-ADTFont -Path "$($adtSession.DirFiles)\MyFont.ttf"
 
         Installs the MyFont.ttf font file.
 
     .EXAMPLE
-        Add-ADTFont -LiteralPath "$($adtSession.DirFiles)\Fonts" -Recurse
+        Add-ADTFont -Path "$($adtSession.DirFiles)\Fonts" -Recurse
 
         Installs all font files in the Fonts directory and its subdirectories.
 
@@ -54,7 +54,8 @@ function Add-ADTFont
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$LiteralPath,
+        [SupportsWildcards()]
+        [System.String[]]$Path,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse
@@ -76,7 +77,7 @@ function Add-ADTFont
 
     process
     {
-        foreach ($item in $LiteralPath)
+        foreach ($item in $Path)
         {
             try
             {
@@ -120,17 +121,17 @@ function Add-ADTFont
                         elseif (Test-Path -LiteralPath $resolvedPath -PathType Container)
                         {
                             # We've got a directory. Get all font files and pipe them through.
-                            $null = $PSBoundParameters.Remove('LiteralPath')
-                            Get-ChildItem -LiteralPath $resolvedPath -File -Recurse:$Recurse | & { process { if ($fontTypes.ContainsKey($_.Extension.ToLower())) { return $_.FullName } } } | Add-ADTFont @PSBoundParameters
+                            $null = $PSBoundParameters.Remove('Path')
+                            Get-ChildItem -Path $resolvedPath -File -Recurse:$Recurse | & { process { if ($fontTypes.ContainsKey($_.Extension.ToLower())) { return $_.FullName } } } | Add-ADTFont @PSBoundParameters
                             continue
                         }
                         else
                         {
                             # Whatever we have isn't valid. Throw and let the caller handle it.
                             $naerParams = @{
-                                Exception = [System.ArgumentException]::new("The specified LiteralPath of [$resolvedPath] could not be found.")
+                                Exception = [System.ArgumentException]::new("The specified Path of [$resolvedPath] could not be found.")
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                                ErrorId = 'LiteralPathInvalidError'
+                                ErrorId = 'PathInvalidError'
                                 TargetObject = $resolvedPath
                                 RecommendedAction = "Please confirm the supplied value is correct and try again."
                             }
