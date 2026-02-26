@@ -269,7 +269,7 @@ namespace PSADT.Security
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle)
         {
-            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
             if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
             {
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
