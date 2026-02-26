@@ -38,7 +38,7 @@ BeforeAll {
         Copy-Item -Path $sourceFont -Destination $testDrivePath -Force
 
         # Install using Add-ADTFont
-        Add-ADTFont -Path $testDrivePath
+        Add-ADTFont -LiteralPath $testDrivePath
 
         # Get the registry name that was created
         $regKey = Get-Item -LiteralPath $script:FontRegKey
