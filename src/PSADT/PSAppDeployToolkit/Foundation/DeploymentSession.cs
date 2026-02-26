@@ -893,9 +893,9 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
-                        if (RunningProcessInfo.Get(AppProcessesToClose) is var runningProcesses && (runningProcesses.Count == 0))
+                        if (AppProcessesToClose.Count == 0 || (RunningProcessInfo.Get(AppProcessesToClose) is var runningProcesses && (runningProcesses.Count == 0)))
                         {
-                            if (!forceProcessDetection)
+                            if (AppProcessesToClose.Count > 0 && !forceProcessDetection)
                             {
                                 WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{DeployMode = DeployMode.Silent}].");
                             }
