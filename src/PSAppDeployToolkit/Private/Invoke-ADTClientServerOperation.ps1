@@ -550,7 +550,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -IgnoreExitCodes *
+                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -ErrorAction SilentlyContinue
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]

@@ -105,7 +105,7 @@ function Start-ADTProcess
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
     .PARAMETER IgnoreExitCodes
-        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead.
+        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead, or `-ErrorAction SilentlyContinue` as this parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
@@ -117,7 +117,7 @@ function Start-ADTProcess
         Immediately continue after executing the process.
 
     .PARAMETER PassThru
-        If `-NoWait` is not specified, returns an object with ExitCode, StdOut, and StdErr output from the process. If `-NoWait` is specified, returns a task that can be awaited. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
+        If `-NoWait` is not specified, returns an object with ExitCode, StdOut, and StdErr output from the process. If `-NoWait` is specified, returns a task that can be awaited. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
 
     .EXAMPLE
         Start-ADTProcess -FilePath 'setup.exe' -ArgumentList '/S' -SuccessExitCodes 1,2
@@ -999,7 +999,7 @@ function Start-ADTProcess
                         {
                             Set-ADTSessionExitCode -ExitCode $result.ExitCode
                         }
-                        if ($ExitOnProcessFailure)
+                        if ($ExitOnProcessFailure -and !$PSBoundParameters.ContainsKey('ErrorAction'))
                         {
                             $iafehParams.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                         }
@@ -1008,7 +1008,7 @@ function Start-ADTProcess
                     # Process the error and potentially close out the session.
                     # This isn't logged as it's already been logged before the throw.
                     Invoke-ADTFunctionErrorHandler @iafehParams -Silent
-                    if ($iafehParams.ContainsKey('ErrorAction'))
+                    if ($ExitOnProcessFailure)
                     {
                         $sessionClosed = $true
                         Close-ADTSession

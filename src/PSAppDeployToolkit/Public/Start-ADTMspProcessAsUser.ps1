@@ -54,7 +54,7 @@ function Start-ADTMspProcessAsUser
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
     .PARAMETER IgnoreExitCodes
-        List the exit codes to ignore or * to ignore all exit codes.
+        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead, or `-ErrorAction SilentlyContinue` as this parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
@@ -72,7 +72,7 @@ function Start-ADTMspProcessAsUser
         Immediately continue after executing the process.
 
     .PARAMETER PassThru
-        Returns ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
+        Returns ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
 
     .INPUTS
         None
@@ -169,6 +169,7 @@ function Start-ADTMspProcessAsUser
         [System.Int32[]]$RebootExitCodes,
 
         [Parameter(Mandatory = $false)]
+        [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$IgnoreExitCodes,
 

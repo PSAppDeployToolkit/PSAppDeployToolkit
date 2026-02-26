@@ -91,7 +91,7 @@ function Update-ADTGroupPolicy
                 {
                     try
                     {
-                        if (($result = Start-ADTProcess @sapParams -IgnoreExitCodes * -PassThru).ExitCode -ne 0)
+                        if (($result = Start-ADTProcess @sapParams -ErrorAction SilentlyContinue -PassThru).ExitCode -ne 0)
                         {
                             $naerParams = @{
                                 Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$result.ExitCode].", $result.ExitCode)

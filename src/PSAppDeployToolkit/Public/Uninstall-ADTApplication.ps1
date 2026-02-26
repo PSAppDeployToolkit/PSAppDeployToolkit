@@ -71,7 +71,7 @@ function Uninstall-ADTApplication
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
     .PARAMETER IgnoreExitCodes
-        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead.
+        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead, or `-ErrorAction SilentlyContinue` as this parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
@@ -198,6 +198,7 @@ function Uninstall-ADTApplication
         [System.Int32[]]$RebootExitCodes,
 
         [Parameter(Mandatory = $false)]
+        [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
         [System.String[]]$IgnoreExitCodes,
