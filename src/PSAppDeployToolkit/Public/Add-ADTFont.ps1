@@ -82,57 +82,60 @@ function Add-ADTFont
             {
                 try
                 {
-                    # Test whether we've got a file or directory.
-                    $resolvedPath = Resolve-Path -Path $item
-                    if (Test-Path -Path $resolvedPath -PathType Leaf)
+                    # Resolve wildcards and iterate over each resolved path.
+                    foreach ($resolvedPath in (Resolve-Path -Path $item))
                     {
-                        # If we're here, it's a file. Make sure it's valid before proceeding.
-                        $fileItem = Get-Item -LiteralPath $resolvedPath -Force
-                        $extension = $fileItem.Extension.ToLower()
-                        if (!$fontTypes.ContainsKey($extension))
+                        # Test whether we've got a file or directory.
+                        if (Test-Path -LiteralPath $resolvedPath -PathType Leaf)
                         {
+                            # If we're here, it's a file. Make sure it's valid before proceeding.
+                            $fileItem = Get-Item -LiteralPath $resolvedPath -Force
+                            $extension = $fileItem.Extension.ToLower()
+                            if (!$fontTypes.ContainsKey($extension))
+                            {
+                                $naerParams = @{
+                                    Exception = [System.ArgumentException]::new("File [$($fileItem.Name)] is not a supported font type.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                                    ErrorId = 'FontFileUnsupportedExtensionError'
+                                    TargetObject = $fileItem
+                                    RecommendedAction = "Please confirm the supplied value is correct and try again."
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+
+                            # Copy file to Fonts directory.
+                            Write-ADTLogEntry -Message "Installing font [$($fileItem.Name)]..."
+                            $destPath = Join-Path -Path $fontsDir -ChildPath $fileItem.Name
+                            if (!(Test-Path -LiteralPath $destPath))
+                            {
+                                Copy-Item -LiteralPath $fileItem.FullName -Destination $destPath -Force
+                            }
+
+                            # Register font resource and set up the font name correctly in the registry.
+                            $null = [PSADT.Utilities.FontUtilities]::AddFont($destPath)
+                            $regName = "$([PSADT.Utilities.FontUtilities]::GetFontTitle($destPath))$($fontTypes[$extension])"
+                            Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name -InformationAction SilentlyContinue
+                            Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.Name)] as [$regName]."
+                        }
+                        elseif (Test-Path -LiteralPath $resolvedPath -PathType Container)
+                        {
+                            # We've got a directory. Get all font files and pipe them through.
+                            $null = $PSBoundParameters.Remove('LiteralPath')
+                            Get-ChildItem -LiteralPath $resolvedPath -File -Recurse:$Recurse | & { process { if ($fontTypes.ContainsKey($_.Extension.ToLower())) { return $_.FullName } } } | Add-ADTFont @PSBoundParameters
+                            continue
+                        }
+                        else
+                        {
+                            # Whatever we have isn't valid. Throw and let the caller handle it.
                             $naerParams = @{
-                                Exception = [System.ArgumentException]::new("File [$($fileItem.Name)] is not a supported font type.")
+                                Exception = [System.ArgumentException]::new("The specified LiteralPath of [$resolvedPath] could not be found.")
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                                ErrorId = 'FontFileUnsupportedExtensionError'
-                                TargetObject = $fileItem
+                                ErrorId = 'LiteralPathInvalidError'
+                                TargetObject = $resolvedPath
                                 RecommendedAction = "Please confirm the supplied value is correct and try again."
                             }
                             throw (New-ADTErrorRecord @naerParams)
                         }
-
-                        # Copy file to Fonts directory.
-                        Write-ADTLogEntry -Message "Installing font [$($fileItem.Name)]..."
-                        $destPath = Join-Path -Path $fontsDir -ChildPath $fileItem.Name
-                        if (!(Test-Path -LiteralPath $destPath))
-                        {
-                            Copy-Item -LiteralPath $fileItem.FullName -Destination $destPath -Force
-                        }
-
-                        # Register font resource and set up the font name correctly in the registry.
-                        $null = [PSADT.Utilities.FontUtilities]::AddFont($destPath)
-                        $regName = "$([PSADT.Utilities.FontUtilities]::GetFontTitle($destPath))$($fontTypes[$extension])"
-                        Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name -InformationAction SilentlyContinue
-                        Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.Name)] as [$regName]."
-                    }
-                    elseif (Test-Path -Path $resolvedPath -PathType Container)
-                    {
-                        # We've got a directory. Get all the files and pipe them through.
-                        $null = $PSBoundParameters.Remove('LiteralPath')
-                        Get-ChildItem -Path $resolvedPath -File -Recurse:$Recurse | Add-ADTFont @PSBoundParameters
-                        continue
-                    }
-                    else
-                    {
-                        # Whatever we have isn't valid. Throw and let the caller handle it.
-                        $naerParams = @{
-                            Exception = [System.ArgumentException]::new("The specified LiteralPath of [$item] could not be found.")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                            ErrorId = 'LiteralPathInvalidError'
-                            TargetObject = $item
-                            RecommendedAction = "Please confirm the supplied value is correct and try again."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
                     }
                 }
                 catch
