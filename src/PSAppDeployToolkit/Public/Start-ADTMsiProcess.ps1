@@ -567,6 +567,10 @@ function Start-ADTMsiProcess
                             Write-ADTLogEntry -Message "The MSI is not installed on this system, continuing action [$Action]..."
                         }
                     }
+                    else
+                    {
+                        !!$InstalledApplication
+                    }
                 }
                 else
                 {
