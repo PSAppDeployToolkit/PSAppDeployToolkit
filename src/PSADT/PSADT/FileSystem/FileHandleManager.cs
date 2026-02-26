@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -204,11 +205,11 @@ namespace PSADT.FileSystem
         /// <remarks>This method queries the system for extended handle information and may require
         /// elevated permissions to access certain handles. It is designed to efficiently gather information about file
         /// handles, potentially using parallel processing to improve performance.</remarks>
-        /// <param name="directoryPath">The optional path of the directory to filter the open file handles. If null, all open file handles are
+        /// <param name="path">The optional path filter for the open file handles. If null, all open file handles are
         /// returned.</param>
         /// <returns>A read-only list of FileHandleInfo objects representing the open file handles that match the specified
-        /// directory path.</returns>
-        public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
+        /// path.</returns>
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? path = null)
         {
             // Internal helper to get the required buffer size for extended handle information.
             static int GetExtendedHandleBufferSize(int queryBufferSize)
@@ -372,8 +373,8 @@ namespace PSADT.FileSystem
                     }
 
                     // Add the handle information to the list if it matches the specified directory path.
-                    string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], 2, StringSplitOptions.RemoveEmptyEntries))}";
-                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (directoryPath is null || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
+                    string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (path is null || dosPath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
                     {
                         openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                     }
