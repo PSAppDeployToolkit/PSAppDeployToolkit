@@ -58,7 +58,7 @@ function Private:Set-ADTPreferenceVariables
         }
         else
         {
-            $SessionState.PSVariable.Set($param.Value, $param.Value)
+            $SessionState.PSVariable.Set($param.Name, $param.Value)
         }
     }
 }
