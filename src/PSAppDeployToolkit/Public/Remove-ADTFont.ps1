@@ -66,48 +66,35 @@ function Remove-ADTFont
                     Write-ADTLogEntry -Message "Removing font [$item]..."
                     $regData = Get-ItemProperty -LiteralPath $fontsRegKeyPath
                     $fileName = $null; $displayName = $null
-                    if (Test-Path -LiteralPath (Join-Path -Path $fontsDir -ChildPath $item))
+                    if (!(Test-Path -LiteralPath (Join-Path -Path $fontsDir -ChildPath $item)))
                     {
-                        # Get the display name from the registry.
-                        $fileName = $item
-                        if (!($displayName = $regData.PSObject.Properties | & { process { if ($_.Value -eq $fileName) { return $_.Name } } } | Select-Object -First 1))
-                        {
-                            $naerParams = @{
-                                Exception = [System.ArgumentException]::new("The font [$item] could not be found in the registry.")
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                                ErrorId = 'FontNotFoundError'
-                                TargetObject = $item
-                                RecommendedAction = "Please confirm the supplied value is correct and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
-                        }
+                        # Get the file name from the registry.
+                        $displayName = $regData.PSObject.Properties | & { process { if ($_.Name -eq $item) { return $_.Name } } } | Select-Object -First 1
+                        $fileName = $regData.PSObject.Properties | & { process { if ($_.Name -eq $displayName) { return $_.Value } } } | Select-Object -First 1
                     }
                     else
                     {
-                        # Get the file name from the registry.
-                        $displayName = $item
-                        if (!($fileName = $regData.PSObject.Properties | & { process { if ($_.Name -eq $displayName) { return $_.Value } } } | Select-Object -First 1))
-                        {
-                            $naerParams = @{
-                                Exception = [System.ArgumentException]::new("The font [$item] could not be found in the registry.")
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                                ErrorId = 'FontNotFoundError'
-                                TargetObject = $item
-                                RecommendedAction = "Please confirm the supplied value is correct and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
-                        }
+                        # Get the display name from the registry.
+                        $displayName = $regData.PSObject.Properties | & { process { if ($_.Value -eq $item) { return $_.Name } } } | Select-Object -First 1
+                        $fileName = $item
+                    }
+
+                    # Continue if the font is already removed.
+                    if (($null -eq $fileName) -and ($null -eq $displayName))
+                    {
+                        Write-ADTLogEntry -Message "The font [$item] is already uninstalled."
+                        continue
                     }
 
                     # Remove font resource, delete registry value and remove remaining file.
-                    [PSADT.Utilities.FontUtilities]::RemoveFont(($fontFilePath = Join-Path -Path $fontsDir -ChildPath $fileName))
+                    if ($fileName -and (Test-Path -LiteralPath ($fontFilePath = Join-Path -Path $fontsDir -ChildPath $fileName) -PathType Leaf))
+                    {
+                        [PSADT.Utilities.FontUtilities]::RemoveFont(($fontFilePath = Join-Path -Path $fontsDir -ChildPath $fileName))
+                        Remove-Item -LiteralPath $fontFilePath -Force
+                    }
                     if ($displayName)
                     {
                         Remove-ADTRegistryKey -Key $fontsRegKeyPath -Name $displayName -InformationAction SilentlyContinue
-                    }
-                    if (Test-Path -LiteralPath $fontFilePath)
-                    {
-                        Remove-Item -LiteralPath $fontFilePath -Force
                     }
                     Write-ADTLogEntry -Message "Successfully uninstalled font [$item]."
                 }

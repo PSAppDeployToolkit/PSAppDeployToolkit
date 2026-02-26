@@ -15,17 +15,20 @@ BeforeAll {
     {
         param(
             [Parameter(Mandatory)]
-            [string]$Extension
+            [string]$Extension,
+
+            [Parameter(Mandatory = $false)]
+            [int]$Skip = 0
         )
 
         $uniqueName = "PesterRemoveTest_$([guid]::NewGuid().ToString('N').Substring(0, 8))$Extension"
 
-        # Find a source font
+        # Find a source font (skip N fonts to allow getting different source fonts for multiple installs)
         $sourceFont = switch ($Extension)
         {
-            '.ttf' { Get-ChildItem "$env:SystemRoot\Fonts\*.ttf" | Select-Object -First 1 -ExpandProperty FullName }
-            '.ttc' { Get-ChildItem "$env:SystemRoot\Fonts\*.ttc" | Select-Object -First 1 -ExpandProperty FullName }
-            '.otf' { Get-ChildItem "$env:SystemRoot\Fonts\*.otf" | Select-Object -First 1 -ExpandProperty FullName }
+            '.ttf' { Get-ChildItem "$env:SystemRoot\Fonts\*.ttf" | Select-Object -Skip $Skip -First 1 -ExpandProperty FullName }
+            '.ttc' { Get-ChildItem "$env:SystemRoot\Fonts\*.ttc" | Select-Object -Skip $Skip -First 1 -ExpandProperty FullName }
+            '.otf' { Get-ChildItem "$env:SystemRoot\Fonts\*.otf" | Select-Object -Skip $Skip -First 1 -ExpandProperty FullName }
         }
 
         if (-not $sourceFont)
@@ -310,7 +313,8 @@ Describe 'Remove-ADTFont' {
         It 'Should continue with -ErrorAction SilentlyContinue when a removal fails' {
             $script:TestFonts = @()
             $script:TestFonts += $script:TestFont
-            $script:TestFonts += Install-TestFont -Extension '.ttf'
+            # Use Skip 1 to get a different source font with different internal title
+            $script:TestFonts += Install-TestFont -Extension '.ttf' -Skip 1
 
             $nonExistentFont = "NonExistent_$([guid]::NewGuid().ToString('N')).ttf"
 
