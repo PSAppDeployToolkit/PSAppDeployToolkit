@@ -21,6 +21,7 @@ using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
+using Windows.Win32.System.Com;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
@@ -36,6 +37,7 @@ using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.Shell.PropertiesSystem;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.Interop
@@ -3713,6 +3715,31 @@ namespace PSADT.Interop
         {
             BOOL res = PInvoke.RemoveFontResource(lpFileName);
             return res == 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "The call to RemoveFontResource() failed.") : res;
+        }
+
+        /// <summary>
+        /// Retrieves a property store for a shell item specified by its parsing name.
+        /// </summary>
+        /// <remarks>The caller is responsible for releasing the returned IPropertyStore interface when it
+        /// is no longer needed. This method is typically used to access or modify properties of shell items, such as
+        /// files or folders, without opening them.</remarks>
+        /// <param name="pszPath">The parsing name of the shell item for which to retrieve the property store. This is typically a file system
+        /// path or other shell namespace path. Cannot be null.</param>
+        /// <param name="pbc">An optional binding context used to control the parsing operation, or null to use default parsing behavior.</param>
+        /// <param name="flags">A combination of flags that specify the type and behavior of the property store to retrieve.</param>
+        /// <param name="ppv">When this method returns, contains the property store interface for the specified item, if the call
+        /// succeeds.</param>
+        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
+        internal static HRESULT SHGetPropertyStoreFromParsingName(string pszPath, IBindCtx? pbc, GETPROPERTYSTOREFLAGS flags, out IPropertyStore ppv)
+        {
+            Guid riid = typeof(IPropertyStore).GUID;
+            HRESULT res = PInvoke.SHGetPropertyStoreFromParsingName(pszPath, pbc, flags, in riid, out object ppvLocal);
+            if (res != HRESULT.S_OK)
+            {
+                throw ExceptionUtilities.GetException(res);
+            }
+            ppv = (IPropertyStore)ppvLocal;
+            return res;
         }
 
         /// <summary>
