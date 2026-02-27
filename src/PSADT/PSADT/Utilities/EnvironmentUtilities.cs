@@ -132,23 +132,23 @@ namespace PSADT.Utilities
             }
             if (string.IsNullOrWhiteSpace(variable))
             {
-                throw new ArgumentException("String cannot contain only whitespace characters.", nameof(variable));
+                throw new ArgumentNullException(nameof(variable), "String cannot contain only whitespace characters.");
             }
             if (variable[0] == '\0')
             {
-                throw new ArgumentException("The first char in the string is the null character.", nameof(variable));
+                throw new FormatException("The first char in the variable is a null character.");
             }
             if (variable.Length >= 1024)
             {
-                throw new ArgumentException("Environment variable name or value is too long.");
+                throw new ArgumentException("Environment variable name or value is too long.", nameof(variable));
             }
             if (variable.Contains("="))
             {
-                throw new ArgumentException("Environment variable name cannot contain equal character.");
+                throw new FormatException("Environment variable name cannot contain equal character.");
             }
             if (append && remove)
             {
-                throw new ArgumentException("Cannot both append and remove from an environment variable.");
+                throw new InvalidOperationException("Cannot both append and remove from an environment variable.");
             }
 
             // Treat empty or whitespace-only values as null (deletion).
@@ -163,7 +163,7 @@ namespace PSADT.Utilities
                 // If the existing value when split results in an empty list, remove it and return.
                 if (value is null)
                 {
-                    throw new ArgumentException("Cannot remove a null environment variable value.");
+                    throw new ArgumentNullException(nameof(value), "Cannot remove a null environment variable value.");
                 }
                 string? existingValue = GetEnvironmentVariable(variable);
                 if (existingValue is null || string.IsNullOrWhiteSpace(existingValue))
@@ -190,7 +190,7 @@ namespace PSADT.Utilities
                 // Append the new value to the existing one if the existing value does not already contain it.
                 if (value is null)
                 {
-                    throw new ArgumentException("Cannot append to a null environment variable value.");
+                    throw new ArgumentNullException(nameof(value), "Cannot append to a null environment variable value.");
                 }
                 string? existingValue = GetEnvironmentVariable(variable);
                 if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
@@ -219,7 +219,7 @@ namespace PSADT.Utilities
                     {
                         if (variable.Length >= 255)
                         {
-                            throw new ArgumentException("Environment variable name or value is too long.");
+                            throw new ArgumentException("Environment variable name or value is too long.", nameof(variable));
                         }
                         using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("Could not open registry key for user environment variables.");
                         if (value is null)
@@ -235,7 +235,7 @@ namespace PSADT.Utilities
                 case EnvironmentVariableTarget.Process:
                     throw new InvalidOperationException("Process target should be handled separately.");
                 default:
-                    throw new ArgumentException($"Illegal enum value: {target}.");
+                    throw new ArgumentOutOfRangeException(nameof(target), target, $"Illegal enum value: {target}.");
             }
 
             // Refresh environment variables in the current process.

@@ -3328,7 +3328,7 @@ namespace PSADT.Interop
         {
             if (pLevel > 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(pLevel), "pLevel must be 0 or 1.");
+                throw new ArgumentOutOfRangeException(nameof(pLevel), pLevel, "pLevel must be 0 or 1.");
             }
             PWSTR ppProcessInfo; uint pCount;
             BOOL res;

@@ -26,7 +26,6 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="length">The length of the memory block. Must be greater than zero.</param>
         /// <param name="ownsHandle">A value indicating whether the <see cref="SafeMemoryHandle{TSelf}"/> should reliably release the handle during the
         /// finalization phase.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
         private protected SafeMemoryHandle(nint handle, int length, bool ownsHandle) : base(ownsHandle)
         {
             Length = length.ThrowIfNegative();
@@ -189,7 +188,7 @@ namespace PSADT.Interop.SafeHandles
             }
             if (data.Length + startIndex > Length)
             {
-                throw new ArgumentException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].", nameof(data));
+                throw new InvalidOperationException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].");
             }
             Marshal.Copy(data, startIndex.ThrowIfNegative(), this.ThrowIfNullOrInvalid().handle, data.Length - startIndex);
             return (TSelf)this;
@@ -206,15 +205,14 @@ namespace PSADT.Interop.SafeHandles
         /// equal to the length of the memory region.</param>
         /// <returns>A read-only span of type T beginning at the specified offset and extending to the end of the memory region.</returns>
         /// <exception cref="ObjectDisposedException">Thrown when the handle has been disposed or is invalid.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified offset is less than 0 or greater than the length of the memory region.</exception>
-        /// <exception cref="ArgumentException">Thrown if offset is not aligned to the size of T.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if offset is not aligned to the size of T.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make a mess.")]
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
             int length = ((Length - offset.ThrowIfNegative()) / Marshal.SizeOf<T>()).ThrowIfNegative();
             if ((Length - offset) % Marshal.SizeOf<T>() != 0)
             {
-                throw new ArgumentException("Offset must be aligned to the size of the type T.", nameof(offset));
+                throw new InvalidOperationException("Offset must be aligned to the size of the type T.");
             }
             return (this.ThrowIfNullOrInvalid().handle + offset).AsReadOnlySpan<T>(length);
         }

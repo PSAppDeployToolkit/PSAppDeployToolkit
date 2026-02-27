@@ -131,17 +131,17 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
-            if (bytes is null || bytes.Length == 0)
+            if (bytes is null)
             {
-                throw new ArgumentNullException(nameof(bytes));
+                throw new ArgumentNullException(nameof(bytes), "Byte array cannot be null.");
             }
-            if ((uint)offset > (uint)bytes.Length)
+            if (bytes.Length == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                throw new ArgumentException("Byte array cannot be empty.", nameof(bytes));
             }
-            if (offset == bytes.Length)
+            if (((uint)offset > (uint)bytes.Length) || (offset == bytes.Length))
             {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset points past the end of the buffer.");
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset points past the end of the buffer.");
             }
             bool deserializingException = typeof(Exception).IsAssignableFrom(type);
             using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);

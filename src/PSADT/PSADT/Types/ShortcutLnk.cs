@@ -25,7 +25,7 @@ namespace PSADT.Types
         {
             if (string.IsNullOrWhiteSpace(windowStyle) || !Regex.IsMatch(windowStyle, "^(Normal|Minimized|Maximized)$", RegexOptions.IgnoreCase))
             {
-                throw new ArgumentException($"Invalid window style: {windowStyle}. Must be one of: Normal, Minimized, Maximized.");
+                throw new ArgumentOutOfRangeException(nameof(windowStyle), windowStyle, $"Invalid window style: {windowStyle}. Must be one of: Normal, Minimized, Maximized.");
             }
             WindowStyle = windowStyle;
             Arguments = arguments;

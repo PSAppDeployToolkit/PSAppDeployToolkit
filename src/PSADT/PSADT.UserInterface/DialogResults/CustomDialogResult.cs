@@ -21,7 +21,6 @@ namespace PSADT.UserInterface.DialogResults
         /// Initializes a new instance of the CustomDialogResult class with the specified result string.
         /// </summary>
         /// <param name="result">The result string that represents the outcome of the dialog. This value cannot be null or empty.</param>
-        /// <exception cref="ArgumentException">Thrown if the result parameter is null or empty.</exception>
         internal CustomDialogResult(string result)
         {
             Result = result.ThrowIfNullOrWhiteSpace();

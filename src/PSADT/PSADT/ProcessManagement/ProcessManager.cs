@@ -566,14 +566,10 @@ namespace PSADT.ProcessManagement
         /// expected "Name=Value" format.</exception>
         private static ReadOnlyDictionary<string, string> EnvironmentBlockToDictionary(SafeEnvironmentBlockHandle environmentBlock)
         {
-            if (environmentBlock.IsInvalid)
-            {
-                throw new ArgumentException("The environment block is invalid.", nameof(environmentBlock));
-            }
             bool envBlockAddRef = false;
             try
             {
-                environmentBlock.DangerousAddRef(ref envBlockAddRef);
+                environmentBlock.ThrowIfNullOrInvalid().DangerousAddRef(ref envBlockAddRef);
                 nint envBlockPtr = environmentBlock.DangerousGetHandle();
                 Dictionary<string, string> envDict = new(StringComparer.OrdinalIgnoreCase);
                 while (true)
@@ -621,7 +617,11 @@ namespace PSADT.ProcessManagement
         {
             if (environment is null)
             {
-                throw new ArgumentException("The environment block is invalid.", nameof(environment));
+                throw new ArgumentNullException(nameof(environment), "The environment block is invalid.");
+            }
+            if (environment.Count == 0)
+            {
+                throw new ArgumentException("The environment block is empty.", nameof(environment));
             }
             return EnvironmentVariableRegex.Replace(input.ThrowIfNullOrWhiteSpace(), m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
@@ -882,7 +882,7 @@ namespace PSADT.ProcessManagement
             // Validate that at least one attribute is specified.
             if (attributeCount == 0)
             {
-                throw new ArgumentException("At least one attribute must be specified.");
+                throw new InvalidOperationException("At least one attribute must be specified.");
             }
 
             // Allocate the attribute list.

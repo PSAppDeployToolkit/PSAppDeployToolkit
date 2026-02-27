@@ -178,7 +178,6 @@ namespace PSAppDeployToolkit.Logging
         /// <returns>A string in which any unmatched high or low surrogate characters are replaced with marker text indicating
         /// the invalid surrogate. If the input string contains only valid surrogate pairs, the original string is
         /// returned.</returns>
-        /// <exception cref="ArgumentException">Thrown if the input string is null, empty, or consists only of white-space characters.</exception>
         internal static string ReplaceInvalidSurrogates(string s)
         {
             // Internal helper methods for appending hex representations of characters and markers.

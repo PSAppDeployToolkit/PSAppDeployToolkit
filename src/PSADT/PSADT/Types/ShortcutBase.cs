@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Globalization;
 using PSADT.Interop.Extensions;
 
 namespace PSADT.Types
@@ -19,11 +19,7 @@ namespace PSADT.Types
         {
             if (!string.IsNullOrWhiteSpace(iconIndex))
             {
-                if (!int.TryParse(iconIndex, out int parsedIndex))
-                {
-                    throw new ArgumentException("IconIndex must be a numeric value.");
-                }
-                IconIndex = parsedIndex;
+                IconIndex = int.Parse(iconIndex, CultureInfo.InvariantCulture);
             }
             Path = path.ThrowIfNullOrWhiteSpace();
             TargetPath = targetPath.ThrowIfNullOrWhiteSpace();

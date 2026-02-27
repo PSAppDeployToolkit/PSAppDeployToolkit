@@ -32,7 +32,7 @@ namespace PSADT.Foundation
         /// <param name="useLinkedAdminToken">Specifies whether to use the RunAsActiveUser's linked admin token only.</param>
         /// <param name="useHighestAvailableToken">Specifies whether to use the RunAsActiveUser's linked admin token if available.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
+        /// <exception cref="DriveNotFoundException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
         internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false)
         {
@@ -49,7 +49,7 @@ namespace PSADT.Foundation
             {
                 if (!Path.IsPathRooted(path.FullName))
                 {
-                    throw new ArgumentException($"The path [{path.FullName}] is not rooted. All paths must be absolute.", nameof(extraPaths));
+                    throw new DriveNotFoundException($"The path [{path.FullName}] is not rooted. All paths must be absolute.");
                 }
                 if (!path.Exists)
                 {

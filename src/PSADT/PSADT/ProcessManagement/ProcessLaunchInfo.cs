@@ -52,7 +52,7 @@ namespace PSADT.ProcessManagement
         /// supported.</param>
         /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if filePath is not a fully qualified path when required.</exception>
+        /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
         public ProcessLaunchInfo(
             string filePath,
             IEnumerable<string>? argumentList = null,
@@ -87,7 +87,7 @@ namespace PSADT.ProcessManagement
             // Validate the file path is rooted.
             if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%"))
             {
-                throw new ArgumentException("File path must be fully qualified.", nameof(filePath));
+                throw new DriveNotFoundException("File path must be fully qualified.");
             }
 
             // Validate all nullable parameters.

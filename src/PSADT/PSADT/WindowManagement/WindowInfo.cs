@@ -23,7 +23,7 @@ namespace PSADT.WindowManagement
             WindowTitle = windowTitle.ThrowIfNullOrWhiteSpace();
             WindowHandle = windowHandle != default ? windowHandle : throw new ArgumentNullException(nameof(windowHandle), "Window handle cannot be null.");
             ParentProcess = parentProcess.ThrowIfNullOrWhiteSpace();
-            ParentProcessId = parentProcessId > 0 ? parentProcessId : throw new ArgumentOutOfRangeException(nameof(parentProcessId), "Parent process ID must be greater than zero.");
+            ParentProcessId = parentProcessId > 0 ? parentProcessId : throw new ArgumentOutOfRangeException(nameof(parentProcessId), parentProcessId, "Parent process ID must be greater than zero.");
             ParentProcessMainWindowHandle = parentProcessMainWindowHandle != default ? parentProcessMainWindowHandle : throw new ArgumentNullException(nameof(parentProcessMainWindowHandle), "Parent process main window handle cannot be null.");
         }
 

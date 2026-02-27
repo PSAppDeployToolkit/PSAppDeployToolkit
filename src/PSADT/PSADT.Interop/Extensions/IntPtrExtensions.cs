@@ -89,14 +89,20 @@ namespace PSADT.Interop.Extensions
         }
 
         /// <summary>
-        /// Validates that the specified pointer is neither zero nor negative one, ensuring it is a valid handle.
+        /// Validates that the specified native integer handle is neither zero nor minus one, throwing an exception if
+        /// the handle is invalid.
         /// </summary>
-        /// <param name="handle">The handle to validate. Must not be zero or negative one.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is zero or negative one.</exception>
-        internal static nint ThrowIfZeroOrMinusOne(this nint handle)
+        /// <remarks>Use this method to ensure that a native handle is valid before performing operations
+        /// that require a valid pointer. This is commonly used when working with unmanaged resources or interop
+        /// scenarios to prevent invalid pointer usage.</remarks>
+        /// <param name="handle">The native integer handle to validate. Must not be zero or minus one.</param>
+        /// <param name="name">The name of the parameter or caller to include in the exception message if validation fails.</param>
+        /// <returns>The original handle if it is valid.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is zero or minus one, indicating an invalid or null pointer.</exception>
+        internal static nint ThrowIfZeroOrMinusOne(this nint handle, [CallerMemberName] string name = null!)
         {
             return handle == IntPtr.Zero || handle == -1
-                ? throw new ArgumentNullException("The specified pointer is not valid.", (Exception?)null)
+                ? throw new ArgumentNullException(name, "The specified pointer is not valid.")
                 : handle;
         }
     }

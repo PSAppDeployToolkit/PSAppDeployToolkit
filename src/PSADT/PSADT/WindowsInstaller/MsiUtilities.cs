@@ -201,7 +201,7 @@ namespace PSADT.WindowsInstaller
             {
                 if (File.Exists(tempMsiPath = Path.GetFullPath(tempMsiPath)))
                 {
-                    throw new ArgumentException("The specified temp MSI path already exists. Please provide a non-existing path or allow the method to create a temp file automatically.", nameof(tempMsiPath));
+                    throw new InvalidOperationException("The specified temp MSI path already exists. Please provide a non-existing path or allow the method to create a temp file automatically.");
                 }
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(tempMsiPath)!);
                 deleteTempMsi = false;
@@ -234,7 +234,7 @@ namespace PSADT.WindowsInstaller
                             // Don't allow a null/empty key.
                             if (string.IsNullOrWhiteSpace(kvp.Key))
                             {
-                                throw new ArgumentException("TransformProperties cannot contain null or empty keys.", nameof(transformProperties));
+                                throw new InvalidOperationException("TransformProperties cannot contain null or empty keys.");
                             }
 
                             // Field indices are 1-based in MSI records.

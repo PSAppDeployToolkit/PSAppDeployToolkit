@@ -54,7 +54,7 @@ namespace PSADT.Utilities
         /// hive names such as "HKLM" are also supported. Cannot be null or empty.</param>
         /// <param name="writable">Indicates whether the returned <see cref="RegistryKey"/> should be opened with write access.</param>
         /// <returns>A read-only <see cref="RegistryKey"/> object representing the specified registry key.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="keyPath"/> is null, empty, not in a valid format, specifies an unrecognized hive,
+        /// <exception cref="FormatException">Thrown if <paramref name="keyPath"/> is null, empty, not in a valid format, specifies an unrecognized hive,
         /// or if the specified registry key does not exist.</exception>
         internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable)
         {
@@ -62,7 +62,7 @@ namespace PSADT.Utilities
             int firstBackslashIndex = keyPath.IndexOf('\\');
             if (firstBackslashIndex == -1)
             {
-                throw new ArgumentException("Invalid registry key format.", nameof(keyPath));
+                throw new FormatException("Invalid registry key format.");
             }
             string hiveName = keyPath.Substring(0, firstBackslashIndex);
             RegistryKey baseKey = hiveName switch
@@ -72,9 +72,9 @@ namespace PSADT.Utilities
                 "HKEY_CLASSES_ROOT" or "HKCR" => Registry.ClassesRoot,
                 "HKEY_USERS" or "HKU" => Registry.Users,
                 "HKEY_CURRENT_CONFIG" or "HKCC" => Registry.CurrentConfig,
-                _ => throw new ArgumentException($"Invalid registry hive: {hiveName}", nameof(keyPath)),
+                _ => throw new FormatException($"Invalid registry hive: {hiveName}"),
             };
-            return baseKey.OpenSubKey(keyPath.Substring(firstBackslashIndex + 1), writable) ?? throw new ArgumentException("The specified registry key does not exist.", nameof(keyPath)); ;
+            return baseKey.OpenSubKey(keyPath.Substring(firstBackslashIndex + 1), writable) ?? throw new InvalidOperationException("The specified registry key does not exist."); ;
         }
 
         /// <summary>
@@ -87,14 +87,14 @@ namespace PSADT.Utilities
         /// "HKEY_LOCAL_MACHINE\Software\Example").</param>
         /// <param name="openFlags">The access flags to use when opening the registry key. Defaults to <see cref="REG_SAM_FLAGS.KEY_READ"/>.</param>
         /// <returns>A <see cref="SafeRegistryHandle"/> representing the opened registry key.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="fullKeyPath"/> is null, empty, or not in a valid registry key format.</exception>
+        /// <exception cref="FormatException">Thrown if <paramref name="fullKeyPath"/> is null, empty, or not in a valid registry key format.</exception>
         private static SafeRegistryHandle OpenRegistryKey(string fullKeyPath, REG_SAM_FLAGS openFlags = REG_SAM_FLAGS.KEY_READ)
         {
             // Split hive and subkey so we know what root hive we're accessing.
             string[] parts = fullKeyPath.ThrowIfNullOrWhiteSpace().Replace(@"Microsoft.PowerShell.Core\Registry::", null).Split(['\\'], 2);
             if (parts.Length < 2)
             {
-                throw new ArgumentException("Invalid registry key format.", nameof(fullKeyPath));
+                throw new FormatException("Invalid registry key format.");
             }
             string hiveName = parts[0];
             string subKeyPath = parts[1];
@@ -112,7 +112,7 @@ namespace PSADT.Utilities
         /// <c>"HKEY_CURRENT_USER"</c>, <c>"HKEY_CLASSES_ROOT"</c>, <c>"HKEY_USERS"</c>, and <c>"HKEY_CURRENT_CONFIG"</c>.</param>
         /// <returns>A <see cref="SafeRegistryHandle"/> representing the handle to the specified
         /// registry hive.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="hiveName"/> is not one of the supported registry hive names.</exception>
+        /// <exception cref="FormatException">Thrown if <paramref name="hiveName"/> is not one of the supported registry hive names.</exception>
         private static SafeRegistryHandle GetRegistryHiveHandle(string hiveName)
         {
             return hiveName switch
@@ -122,7 +122,7 @@ namespace PSADT.Utilities
                 "HKEY_CLASSES_ROOT" => new(HKEY.HKEY_CLASSES_ROOT, false),
                 "HKEY_USERS" => new(HKEY.HKEY_USERS, false),
                 "HKEY_CURRENT_CONFIG" => new(HKEY.HKEY_CURRENT_CONFIG, false),
-                _ => throw new ArgumentException($"Invalid registry hive: {hiveName}", nameof(hiveName)),
+                _ => throw new FormatException($"Invalid registry hive: {hiveName}"),
             };
         }
     }

@@ -82,13 +82,13 @@ namespace PSADT.AccountManagement
         /// well-known SID type.</remarks>
         /// <param name="wellKnownSidType">The type of the well-known SID to retrieve. This must be a valid <see cref="WellKnownSidType"/> value.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the specified well-known SID type.</returns>
-        /// <exception cref="ArgumentException">Thrown if the specified <paramref name="wellKnownSidType"/> is not recognized or is unavailable in the
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified <paramref name="wellKnownSidType"/> is not recognized or is unavailable in the
         /// current context.</exception>
         public static SecurityIdentifier GetWellKnownSid(WellKnownSidType wellKnownSidType)
         {
             // Return the SecurityIdentifier for the specified well-known SID type.
             return !WellKnownSidLookupTable.TryGetValue(wellKnownSidType, out SecurityIdentifier? sid)
-                ? throw new ArgumentException($"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.")
+                ? throw new ArgumentOutOfRangeException(nameof(wellKnownSidType), wellKnownSidType, $"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.")
                 : sid;
         }
 

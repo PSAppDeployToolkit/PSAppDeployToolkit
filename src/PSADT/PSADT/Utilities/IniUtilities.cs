@@ -67,7 +67,7 @@ namespace PSADT.Utilities
             ReadOnlyCollection<string> sections = GetSectionNames(filepath);
             if (!sections.Contains(section, StringComparer.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Section [{section}] was not found in the INI file. Sections found: {string.Join(", ", sections)}", nameof(section));
+                throw new ArgumentOutOfRangeException(nameof(section), section, $"Section [{section}] was not found in the INI file. Sections found: {string.Join(", ", sections)}");
             }
 
             Span<char> buffer = new char[65536];
@@ -147,7 +147,7 @@ namespace PSADT.Utilities
                     string key = entry.Key?.ToString()?.Trim() ?? string.Empty;
                     if (string.IsNullOrWhiteSpace(key))
                     {
-                        throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]", nameof(content));
+                        throw new ArgumentNullException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]");
                     }
 
                     if (entry.Value is not (string or ValueType or null))

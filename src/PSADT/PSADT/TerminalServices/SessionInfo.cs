@@ -68,7 +68,7 @@ namespace PSADT.TerminalServices
             SID = sid ?? throw new ArgumentNullException(nameof(sid), "SID cannot be null.");
             UserName = userName.ThrowIfNullOrWhiteSpace();
             DomainName = domainName.ThrowIfNullOrWhiteSpace();
-            SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException(nameof(sessionId), "SessionId must be greater than zero.");
+            SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException(nameof(sessionId), sessionId, "SessionId must be greater than zero.");
             SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : null;
             ConnectState = connectState;
             IsCurrentSession = isCurrentSession;

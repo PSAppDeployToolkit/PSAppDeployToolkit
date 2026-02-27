@@ -27,18 +27,26 @@ namespace PSADT.Security
         /// <param name="attributes">Optional attributes used to filter the privileges. If specified, only privileges matching the given <see
         /// cref="TOKEN_PRIVILEGES_ATTRIBUTES"/> will be included in the result.</param>
         /// <returns>A <see cref="ReadOnlyCollection{T}"/> containing the privileges associated with the token.</returns>
-        /// <exception cref="ArgumentException">Thrown if a privilege name retrieved from the token cannot be mapped to a known <see cref="SE_PRIVILEGE"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if a privilege name retrieved from the token cannot be mapped to a known <see cref="SE_PRIVILEGE"/>
         /// value.</exception>
         private static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(SafeFileHandle token, TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
             // Internal worker function to retrieve the privilege name from the token attributes.
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this here just makes for messier code.")]
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 _ = NativeMethods.LookupPrivilegeName(null, attr.Luid, buffer, out uint retLength);
-                string privilegeName = buffer.Slice(0, (int)retLength).ToString();
-                return !Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege)
-                    ? throw new ArgumentException($"Unknown privilege: {privilegeName}")
-                    : privilege;
+                ReadOnlySpan<char> refBuf = buffer.Slice(0, (int)retLength).Trim();
+                if (refBuf.IsEmpty)
+                {
+                    throw new InvalidOperationException($"Privilege name for LUID: {attr.Luid} is empty.");
+                }
+                string privilegeName = refBuf.ToString();
+                if (!Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege))
+                {
+                    throw new InvalidOperationException("Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.");
+                }
+                return privilege;
             }
 
             // Get the size of the buffer required to hold the token privileges.

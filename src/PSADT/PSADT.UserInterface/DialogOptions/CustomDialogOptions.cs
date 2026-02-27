@@ -86,7 +86,7 @@ namespace PSADT.UserInterface.DialogOptions
             // At least one button must be defined.
             if (string.IsNullOrWhiteSpace(buttonLeftText) && string.IsNullOrWhiteSpace(buttonMiddleText) && string.IsNullOrWhiteSpace(buttonRightText))
             {
-                throw new ArgumentException("At least one button must be defined.");
+                throw new InvalidOperationException("At least one button must be defined.");
             }
 
             // Assign remaining properties.

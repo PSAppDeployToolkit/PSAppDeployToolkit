@@ -30,7 +30,7 @@ namespace PSADT.Interop.SafeHandles
         {
             if (count == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than zero.");
+                throw new ArgumentOutOfRangeException(nameof(count), count, "Count must be greater than zero.");
             }
             nuint lpSize = default; _ = Initialize(default, count, ref lpSize);
             nint handle = Marshal.AllocHGlobal((int)lpSize).ThrowIfZeroOrMinusOne();
@@ -94,8 +94,8 @@ namespace PSADT.Interop.SafeHandles
             BOOL res;
             try
             {
-                DangerousAddRef(ref lpAttributeListAddRef);
-                res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)this.ThrowIfNullOrInvalid().DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
+                this.ThrowIfNullOrInvalid().DangerousAddRef(ref lpAttributeListAddRef);
+                res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
             }
             finally
             {
