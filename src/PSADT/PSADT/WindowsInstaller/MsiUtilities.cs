@@ -227,14 +227,8 @@ namespace PSADT.WindowsInstaller
                 using MsiCloseHandleSafeHandle hDatabaseOrig = OpenDatabase(msiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
 
                 // Open temp in transact mode so we can modify + commit.
-                using (MsiCloseHandleSafeHandle hDatabaseTemp = OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
+                using (MsiCloseHandleSafeHandle hDatabaseTemp = !string.IsNullOrWhiteSpace(applyTransformPath) ? OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT, applyTransformPath!) : OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
                 {
-                    // Optionally apply an existing transform to temp first.
-                    if (!string.IsNullOrWhiteSpace(applyTransformPath))
-                    {
-                        _ = NativeMethods.MsiDatabaseApplyTransform(hDatabaseTemp, applyTransformPath!);
-                    }
-
                     // One view, executed once, then assign repeatedly. No string interpolation of keys/values; we use records.
                     _ = NativeMethods.MsiDatabaseOpenView(hDatabaseTemp, "SELECT `Property`,`Value` FROM `Property`", out MsiCloseHandleSafeHandle hView);
                     using (hView)
