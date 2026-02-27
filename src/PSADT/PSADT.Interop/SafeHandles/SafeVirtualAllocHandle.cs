@@ -27,12 +27,7 @@ namespace PSADT.Interop.SafeHandles
         {
             unsafe
             {
-                void* handle = PInvoke.VirtualAlloc(null, (nuint)length, allocationType, protect);
-                if (handle is null)
-                {
-                    throw new InvalidOperationException("Failed to allocate memory.");
-                }
-                return new((nint)handle, length, true);
+                return new((nint)PInvoke.VirtualAlloc(null, (nuint)length, allocationType, protect), length, true);
             }
         }
 

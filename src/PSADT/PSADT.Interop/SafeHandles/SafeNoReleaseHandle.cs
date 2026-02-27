@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.Interop.SafeHandles
 {
@@ -21,7 +22,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="handle">The native handle to be encapsulated by the SafeNoReleaseHandle instance.</param>
         internal SafeNoReleaseHandle(nint handle) : base(false)
         {
-            SetHandle(handle);
+            SetHandle(handle.ThrowIfZeroOrMinusOne());
         }
 
         /// <summary>

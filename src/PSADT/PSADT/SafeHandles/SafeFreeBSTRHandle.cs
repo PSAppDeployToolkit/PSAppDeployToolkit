@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.SafeHandles
 {
@@ -31,7 +32,7 @@ namespace PSADT.SafeHandles
         /// <param name="ownsHandle">A value indicating whether the SafeFreeBSTRHandle instance is responsible for releasing the handle.</param>
         private SafeFreeBSTRHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle);
+            SetHandle(handle.ThrowIfZeroOrMinusOne());
         }
 
         /// <summary>

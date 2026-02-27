@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using Windows.Win32;
 using Windows.Win32.UI.Shell;
 
@@ -116,7 +117,7 @@ namespace PSADT.UserInterface.Utilities
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
             _ = NativeMethods.SHGetFileInfo(path, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
-            using DestroyIconSafeHandle hIcon = new(psfi.hIcon, true);
+            using DestroyIconSafeHandle hIcon = new(((nint)psfi.hIcon).ThrowIfZeroOrMinusOne(), true);
             bool hIconAddRef = false;
             try
             {

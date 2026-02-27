@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Drawing;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.UI.Controls;
@@ -52,7 +53,7 @@ namespace PSADT.UserInterface
                     bool iconHandleAddRef = false;
                     try
                     {
-                        iconHandle.DangerousAddRef(ref iconHandleAddRef);
+                        iconHandle.ThrowIfNullOrInvalid().DangerousAddRef(ref iconHandleAddRef);
                         using Icon icon = Icon.FromHandle(iconHandle.DangerousGetHandle());
                         return icon.ToBitmap();
                     }

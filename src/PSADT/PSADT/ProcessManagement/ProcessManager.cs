@@ -156,8 +156,8 @@ namespace PSADT.ProcessManagement
                         hStdErrRead = new(PipeDirection.In, HandleInheritability.Inheritable);
                         hStdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
                         hStdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
-                        hStdOutWrite = hStdOutRead.ClientSafePipeHandle;
-                        hStdErrWrite = hStdErrRead.ClientSafePipeHandle;
+                        hStdOutWrite = hStdOutRead.ClientSafePipeHandle.ThrowIfNullOrInvalid();
+                        hStdErrWrite = hStdErrRead.ClientSafePipeHandle.ThrowIfNullOrInvalid();
                         hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
                         hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
@@ -169,7 +169,7 @@ namespace PSADT.ProcessManagement
                         if (launchInfo.StandardInput.Count > 0)
                         {
                             hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
-                            hStdInRead = hStdInWrite.ClientSafePipeHandle;
+                            hStdInRead = hStdInWrite.ClientSafePipeHandle.ThrowIfNullOrInvalid();
                             hStdInRead.DangerousAddRef(ref hStdInReadAddRef);
                             startupInfo.hStdInput = (HANDLE)hStdInRead.DangerousGetHandle();
                             handlesToInherit.Add(startupInfo.hStdInput);
@@ -585,14 +585,8 @@ namespace PSADT.ProcessManagement
                         break;
                     }
 
-                    // Split into name and value (only on the first '=').
-                    int idx = entry.IndexOf("=");
-                    if (idx < 0)
-                    {
-                        throw new ArgumentException($"Invalid environment variable entry: '{entry}'. Expected format is 'Name=Value'.", nameof(environmentBlock));
-                    }
-
                     // Add the valid entry and advance pointer past this string + its null terminator.
+                    int idx = entry.IndexOf("=").ThrowIfNegative();
                     envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
                     envBlockPtr += (entry.Length + 1) * sizeof(char);
                 }

@@ -133,18 +133,6 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown if <paramref name="hProcess"/> is closed or invalid.</exception>
         internal static string GetApplicationUserModelId(SafeHandle hProcess)
         {
-            if (hProcess is null)
-            {
-                throw new ArgumentNullException(nameof(hProcess), "Process handle cannot be null.");
-            }
-            if (hProcess.IsClosed)
-            {
-                throw new InvalidOperationException("Process handle is closed.");
-            }
-            if (hProcess.IsInvalid)
-            {
-                throw new InvalidOperationException("Process handle is invalid.");
-            }
             Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH];
             _ = NativeMethods.GetApplicationUserModelId(hProcess, out uint length, appUserModelId);
             return appUserModelId.Slice(0, (int)length - 1).ToString();

@@ -27,11 +27,9 @@ namespace PSADT.Interop.Extensions
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified memory address and offset.</returns>
         internal static ref readonly T AsReadOnlyStructure<T>(this nint handle, int offset = 0) where T : unmanaged
         {
-            ConfirmNotZeroOrMinusOne(handle);
-            ConfirmOffsetIsValid(offset);
             unsafe
             {
-                return ref Unsafe.AsRef<T>((void*)unchecked(handle + offset));
+                return ref Unsafe.AsRef<T>((void*)unchecked(handle.ThrowIfZeroOrMinusOne() + offset.ThrowIfNegative()));
             }
         }
 
@@ -47,11 +45,9 @@ namespace PSADT.Interop.Extensions
         /// <returns>A ReadOnlySpan{T} representing the specified region of memory.</returns>
         internal static ReadOnlySpan<T> AsReadOnlySpan<T>(this IntPtr handle, int length) where T : unmanaged
         {
-            ConfirmNotZeroOrMinusOne(handle);
-            ConfirmLengthIsValid(length);
             unsafe
             {
-                return new ReadOnlySpan<T>((void*)handle, length);
+                return new ReadOnlySpan<T>((void*)handle.ThrowIfZeroOrMinusOne(), length.ThrowIfZeroOrNegative());
             }
         }
 
@@ -66,11 +62,9 @@ namespace PSADT.Interop.Extensions
         /// characters.</returns>
         internal static ReadOnlySpan<char> AsReadOnlyCharSpan(this nint handle, int length)
         {
-            ConfirmNotZeroOrMinusOne(handle);
-            ConfirmLengthIsValid(length);
             unsafe
             {
-                return new ReadOnlySpan<char>((char*)handle, length).TrimEndNullAndTrim();
+                return new ReadOnlySpan<char>((char*)handle.ThrowIfZeroOrMinusOne(), length.ThrowIfZeroOrNegative()).TrimEndNullAndTrim();
             }
         }
 
@@ -88,8 +82,7 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="InvalidOperationException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
         internal static string ToManagedString(this nint handle, int length)
         {
-            ConfirmNotZeroOrMinusOne(handle); ConfirmLengthIsValid(length);
-            ReadOnlySpan<char> stringSpan = handle.AsReadOnlyCharSpan(length);
+            ReadOnlySpan<char> stringSpan = handle.ThrowIfZeroOrMinusOne().AsReadOnlyCharSpan(length.ThrowIfZeroOrNegative());
             return stringSpan.IsWhiteSpace()
                 ? throw new InvalidOperationException("The specified pointer does not contain a valid string.")
                 : stringSpan.ToString();
@@ -100,38 +93,11 @@ namespace PSADT.Interop.Extensions
         /// </summary>
         /// <param name="handle">The handle to validate. Must not be zero or negative one.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is zero or negative one.</exception>
-        private static void ConfirmNotZeroOrMinusOne(nint handle)
+        internal static nint ThrowIfZeroOrMinusOne(this nint handle)
         {
-            if (handle == IntPtr.Zero || handle == -1)
-            {
-                throw new ArgumentNullException("The specified pointer is not valid.", (Exception?)null);
-            }
-        }
-
-        /// <summary>
-        /// Validates that the specified offset is not negative.
-        /// </summary>
-        /// <param name="offset">The offset value to validate. Must be zero or greater.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="offset"/> is less than zero.</exception>
-        private static void ConfirmOffsetIsValid(int offset)
-        {
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException("The specified offset is not valid", (Exception?)null);
-            }
-        }
-
-        /// <summary>
-        /// Validates that the specified length is greater than zero.
-        /// </summary>
-        /// <param name="length">The length to validate. Must be a positive integer.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
-        private static void ConfirmLengthIsValid(int length)
-        {
-            if (length <= 0)
-            {
-                throw new ArgumentOutOfRangeException("The specified length is not valid", (Exception?)null);
-            }
+            return handle == IntPtr.Zero || handle == -1
+                ? throw new ArgumentNullException("The specified pointer is not valid.", (Exception?)null)
+                : handle;
         }
     }
 }

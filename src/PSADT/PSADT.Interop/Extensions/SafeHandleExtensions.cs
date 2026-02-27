@@ -22,7 +22,7 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null.</exception>
         /// <exception cref="ObjectDisposedException">Thrown if <paramref name="handle"/> is closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make for worse code.")]
-        internal static SafeHandle ThrowIfNullOrClosed(this SafeHandle handle, [CallerMemberName] string name = null!)
+        internal static TSelf ThrowIfNullOrClosed<TSelf>(this TSelf handle, [CallerMemberName] string name = null!) where TSelf : SafeHandle
         {
             if (handle is null)
             {
@@ -47,7 +47,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>The validated SafeHandle instance if it is valid and open.</returns>
         /// <exception cref="ArgumentException">Thrown if the SafeHandle is invalid, indicating that the handle cannot be used.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make for worse code.")]
-        internal static SafeHandle ThrowIfNullOrInvalid(this SafeHandle handle, [CallerMemberName] string name = null!)
+        internal static TSelf ThrowIfNullOrInvalid<TSelf>(this TSelf handle, [CallerMemberName] string name = null!) where TSelf : SafeHandle
         {
             if (handle.ThrowIfNullOrClosed(name).IsInvalid)
             {

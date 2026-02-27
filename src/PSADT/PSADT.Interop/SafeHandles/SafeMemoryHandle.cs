@@ -29,8 +29,8 @@ namespace PSADT.Interop.SafeHandles
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="length"/> is less than or equal to zero.</exception>
         private protected SafeMemoryHandle(nint handle, int length, bool ownsHandle) : base(ownsHandle)
         {
-            Length = length >= 0 ? length : throw new ArgumentOutOfRangeException(nameof(length));
-            SetHandle(handle);
+            Length = length.ThrowIfNegative();
+            SetHandle(handle.ThrowIfZeroOrMinusOne());
         }
 
         /// <summary>
@@ -40,8 +40,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The string value at the specified offset.</returns>
         internal string ToStringUni(int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            return (handle + offset).ToManagedString((Length - offset) / sizeof(char));
+            return (this.ThrowIfNullOrInvalid().handle + offset.ThrowIfNegative()).ToManagedString((Length - offset) / sizeof(char));
         }
 
         /// <summary>
@@ -56,8 +55,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
         internal ref readonly T AsReadOnlyStructure<T>(int offset = 0) where T : unmanaged
         {
-            ConfirmStateValidity(offset);
-            return ref handle.AsReadOnlyStructure<T>(offset);
+            return ref this.ThrowIfNullOrInvalid().handle.AsReadOnlyStructure<T>(offset.ThrowIfNegative());
         }
 
         /// <summary>
@@ -71,8 +69,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The 64-bit signed integer value read from the specified memory location.</returns>
         internal long ReadInt64(int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            return Marshal.ReadInt64(handle, offset);
+            return Marshal.ReadInt64(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative());
         }
 
         /// <summary>
@@ -86,8 +83,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The 32-bit signed integer value read from the specified memory location.</returns>
         internal int ReadInt32(int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            return Marshal.ReadInt32(handle, offset);
+            return Marshal.ReadInt32(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative());
         }
 
         /// <summary>
@@ -100,8 +96,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The 16-bit signed integer value read from the specified offset.</returns>
         internal short ReadInt16(int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            return Marshal.ReadInt16(handle, offset);
+            return Marshal.ReadInt16(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative());
         }
 
         /// <summary>
@@ -114,8 +109,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The byte value read from the specified offset in the memory handle.</returns>
         internal byte ReadByte(int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            return Marshal.ReadByte(handle, offset);
+            return Marshal.ReadByte(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative());
         }
 
         /// <summary>
@@ -128,8 +122,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt64(long value, int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            Marshal.WriteInt64(handle, offset, value);
+            Marshal.WriteInt64(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative(), value);
             return (TSelf)this;
         }
 
@@ -143,8 +136,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt32(int value, int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            Marshal.WriteInt32(handle, offset, value);
+            Marshal.WriteInt32(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative(), value);
             return (TSelf)this;
         }
 
@@ -158,8 +150,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt16(short value, int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            Marshal.WriteInt16(handle, offset, value);
+            Marshal.WriteInt16(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative(), value);
             return (TSelf)this;
         }
 
@@ -173,8 +164,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteByte(byte value, int offset = 0)
         {
-            ConfirmStateValidity(offset);
-            Marshal.WriteByte(handle, offset, value);
+            Marshal.WriteByte(this.ThrowIfNullOrInvalid().handle, offset.ThrowIfNegative(), value);
             return (TSelf)this;
         }
 
@@ -189,7 +179,6 @@ namespace PSADT.Interop.SafeHandles
         /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
-            ConfirmStateValidity(startIndex);
             if (data is null)
             {
                 throw new ArgumentNullException(nameof(data));
@@ -202,7 +191,7 @@ namespace PSADT.Interop.SafeHandles
             {
                 throw new ArgumentException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].", nameof(data));
             }
-            Marshal.Copy(data, startIndex, handle, data.Length - startIndex);
+            Marshal.Copy(data, startIndex.ThrowIfNegative(), this.ThrowIfNullOrInvalid().handle, data.Length - startIndex);
             return (TSelf)this;
         }
 
@@ -222,16 +211,12 @@ namespace PSADT.Interop.SafeHandles
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make a mess.")]
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
-            ConfirmStateValidity(offset); int length = (Length - offset) / Marshal.SizeOf<T>();
-            if (length < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset is out of bounds of the allocated memory.");
-            }
+            int length = ((Length - offset.ThrowIfNegative()) / Marshal.SizeOf<T>()).ThrowIfNegative();
             if ((Length - offset) % Marshal.SizeOf<T>() != 0)
             {
                 throw new ArgumentException("Offset must be aligned to the size of the type T.", nameof(offset));
             }
-            return (handle + offset).AsReadOnlySpan<T>(length);
+            return (this.ThrowIfNullOrInvalid().handle + offset).AsReadOnlySpan<T>(length);
         }
 
         /// <summary>
@@ -241,7 +226,7 @@ namespace PSADT.Interop.SafeHandles
         {
             unsafe
             {
-                new Span<byte>((void*)handle, Length).Clear();
+                new Span<byte>((void*)this.ThrowIfNullOrInvalid().handle, Length).Clear();
             }
         }
 
@@ -253,25 +238,6 @@ namespace PSADT.Interop.SafeHandles
         /// prevent resource leaks.</remarks>
         /// <returns>true if the handle is released successfully; otherwise, false.</returns>
         protected abstract override bool ReleaseHandle();
-
-        /// <summary>
-        /// Validates that the current object is in a usable state and that the specified offset is within the valid
-        /// range.
-        /// </summary>
-        /// <param name="offset">The offset to validate. Must be zero or greater.</param>
-        /// <exception cref="ObjectDisposedException">Thrown if the object is in an invalid or closed state.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than zero.</exception>
-        private void ConfirmStateValidity(int offset)
-        {
-            if (IsInvalid || IsClosed)
-            {
-                throw new ObjectDisposedException(typeof(TSelf).Name);
-            }
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative.");
-            }
-        }
 
         /// <summary>
         /// Gets the size of the allocated memory block.

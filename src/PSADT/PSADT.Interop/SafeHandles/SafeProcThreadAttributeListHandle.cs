@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Interop.Extensions;
 using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -32,7 +33,7 @@ namespace PSADT.Interop.SafeHandles
                 throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than zero.");
             }
             nuint lpSize = default; _ = Initialize(default, count, ref lpSize);
-            nint handle = Marshal.AllocHGlobal((int)lpSize);
+            nint handle = Marshal.AllocHGlobal((int)lpSize).ThrowIfZeroOrMinusOne();
             try
             {
                 _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
@@ -56,7 +57,7 @@ namespace PSADT.Interop.SafeHandles
         /// handle should be released; otherwise, false.</param>
         private SafeProcThreadAttributeListHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle);
+            SetHandle(handle.ThrowIfZeroOrMinusOne());
         }
 
         /// <summary>
@@ -94,7 +95,7 @@ namespace PSADT.Interop.SafeHandles
             try
             {
                 DangerousAddRef(ref lpAttributeListAddRef);
-                res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
+                res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)this.ThrowIfNullOrInvalid().DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
             }
             finally
             {
