@@ -505,6 +505,10 @@ namespace PSADT.WindowsInstaller
                     {
                         throw new InvalidOperationException("Cannot apply transforms to patch files.");
                     }
+                    if (szTransformFiles.Count == 0)
+                    {
+                        throw new ArgumentException("Transform files collection cannot be empty if provided.", nameof(szTransformFiles));
+                    }
                     foreach (string szTransformFile in szTransformFiles)
                     {
                         _ = NativeMethods.MsiDatabaseApplyTransform(hDatabase, szTransformFile);
