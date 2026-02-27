@@ -3309,44 +3309,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Enumerates processes running on a specified server and retrieves detailed process information.
-        /// </summary>
-        /// <remarks>This method wraps the Windows API function <c>WTSEnumerateProcessesEx</c> and
-        /// provides a managed interface for enumerating processes. The level of detail returned is determined by the
-        /// <paramref name="pLevel"/> parameter: <list type="bullet"> <item><description>Level 0 returns basic process
-        /// information (<c>WTS_PROCESS_INFOW</c>).</description></item> <item><description>Level 1 returns extended
-        /// process information (<c>WTS_PROCESS_INFO_EXW</c>).</description></item> </list> The <paramref
-        /// name="pProcessInfo"/> parameter must be disposed to avoid memory leaks.</remarks>
-        /// <param name="hServer">A handle to the server on which the processes are to be enumerated. Use <see langword="null"/> to specify
-        /// the local server.</param>
-        /// <param name="pLevel">The level of detail for the process information. Use 0 for basic information or 1 for extended information.</param>
-        /// <param name="SessionId">The session ID for which processes are to be enumerated. Use 0 to enumerate processes for all sessions.</param>
-        /// <param name="pProcessInfo">When the method returns, contains a <see cref="SafeWtsExHandle"/> object that holds the enumerated process
-        /// information. The caller is responsible for disposing of this handle to release the allocated resources.</param>
-        /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL WTSEnumerateProcessesEx(HANDLE hServer, uint pLevel, uint SessionId, out SafeWtsExHandle pProcessInfo)
-        {
-            if (pLevel > 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(pLevel), pLevel, "pLevel must be 0 or 1.");
-            }
-            PWSTR ppProcessInfo; uint pCount;
-            BOOL res;
-            unsafe
-            {
-                res = PInvoke.WTSEnumerateProcessesEx(hServer, &pLevel, SessionId, &ppProcessInfo, &pCount);
-            }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            pProcessInfo = pLevel > 0
-                ? new(ppProcessInfo.ToIntPtr().ThrowIfZeroOrMinusOne(), WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * Marshal.SizeOf<WTS_PROCESS_INFO_EXW>(), true)
-                : new(ppProcessInfo.ToIntPtr().ThrowIfZeroOrMinusOne(), WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * Marshal.SizeOf<WTS_PROCESS_INFOW>(), true);
-            return res;
-        }
-
-        /// <summary>
         /// Enumerates the sessions on the specified Remote Desktop Session Host (RD Session Host) server.
         /// </summary>
         /// <remarks>If the method returns <see langword="false"/>, an exception is thrown containing the

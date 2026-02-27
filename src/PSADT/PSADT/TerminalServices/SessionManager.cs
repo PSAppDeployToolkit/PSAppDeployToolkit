@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
@@ -190,50 +188,17 @@ namespace PSADT.TerminalServices
         /// <returns>A <see cref="SecurityIdentifier"/> representing the SID of the specified session and user account</returns>
         private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
         {
+            // Just return the caller's SID if it's the same session.
+            if (sessionid == AccountUtilities.CallerSessionId)
+            {
+                return AccountUtilities.CallerSid;
+            }
+
             // If we have the privileges, we can get the SID from the user's token.
             if (AccountUtilities.CallerIsAdmin)
             {
                 using SafeFileHandle hUserToken = TokenManager.GetUserPrimaryToken(sessionid);
                 return TokenUtilities.GetTokenSid(hUserToken);
-            }
-
-            // If we're an admin, we can get the SID from a process running in the session.
-            if (AccountUtilities.CallerIsAdmin)
-            {
-                _ = NativeMethods.WTSEnumerateProcessesEx(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, sessionid, out SafeWtsExHandle pProcessInfo);
-                using (pProcessInfo)
-                {
-                    ReadOnlySpan<byte> pProcessInfoSpan = pProcessInfo.AsReadOnlySpan<byte>();
-                    int objLength = Marshal.SizeOf<WTS_PROCESS_INFOW>();
-                    for (int i = 0; i < pProcessInfo.Length / objLength; i++)
-                    {
-                        ref readonly WTS_PROCESS_INFOW process = ref pProcessInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_PROCESS_INFOW>();
-                        if (process.pProcessName.ToString()?.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            return process.pUserSid.ToSecurityIdentifier();
-                        }
-                    }
-                }
-            }
-
-            // Attempt to get the SID from the caller's explorer.exe process if it exists.
-            if (AccountUtilities.CallerIsAdmin || sessionid == AccountUtilities.CallerSessionId)
-            {
-                foreach (Process explorerProcess in Process.GetProcessesByName("explorer").Where(p => p.SessionId == sessionid).OrderBy(static p => p.StartTime))
-                {
-                    try
-                    {
-                        using (explorerProcess)
-                        {
-                            return ProcessUtilities.GetProcessSid(explorerProcess);
-                        }
-                    }
-                    catch
-                    {
-                        continue;
-                        throw;
-                    }
-                }
             }
 
             // If any of the above fail, just try to translate the SID using the builtin API.
