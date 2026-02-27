@@ -145,6 +145,7 @@ When working on the PowerShell module in VS Code:
 - **Minimize Unnecessary Changes**: Preserve existing XML documentation comments when refactoring code. Don't strip them unnecessarily, as it makes git diffs noisy and loses valuable documentation. Only modify what's strictly necessary for the structural changes.
 - **Resource Management**: Use nested try/finally blocks for COM cleanup and resource management rather than flat structures with nullable checks, even if it results in deep indentation.
 - **ThrowIfNullOrWhiteSpace Usage**: When using the `ThrowIfNullOrWhiteSpace` extension method, do not pass explicit `nameof()` arguments — rely on the `[CallerMemberName]` attribute to automatically populate the name parameter.
+- **SafeHandle Validation**: When validating SafeHandle parameters, avoid standalone `ThrowIfNullOrInvalid` or `ThrowIfNullOrClosed` calls that discard return values; inline the call into the subsequent usage (e.g., chain into `DangerousAddRef` or PInvoke argument).
 
 ### Testing Strategy
 `powershell.exe -ExecutionPolicy Bypass -File build.ps1`
