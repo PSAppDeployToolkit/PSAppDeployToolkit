@@ -70,7 +70,9 @@ namespace PSADT.Interop
         /// opened successfully; otherwise, an error code is returned.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            return PInvoke.RegOpenKeyEx(hKey.ThrowIfNullOrInvalid(), lpSubKey, (uint)ulOptions, samDesired, out phkResult).ThrowOnFailure();
+            WIN32_ERROR res = PInvoke.RegOpenKeyEx(hKey.ThrowIfNullOrInvalid(), lpSubKey, (uint)ulOptions, samDesired, out phkResult).ThrowOnFailure();
+            phkResult = ThrowIfClosedOrInvalidHandle(phkResult);
+            return res;
         }
 
         /// <summary>
@@ -141,7 +143,12 @@ namespace PSADT.Interop
         internal static BOOL DuplicateTokenEx(SafeHandle hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, in SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out SafeFileHandle phNewToken)
         {
             BOOL res = PInvoke.DuplicateTokenEx(hExistingToken.ThrowIfNullOrInvalid(), dwDesiredAccess, lpTokenAttributes, ImpersonationLevel, TokenType, out phNewToken);
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            phNewToken = ThrowIfClosedOrInvalidHandle(phNewToken);
+            return res;
         }
 
         /// <summary>
@@ -160,7 +167,12 @@ namespace PSADT.Interop
         internal static BOOL OpenProcessToken(SafeHandle ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out SafeFileHandle TokenHandle)
         {
             BOOL res = PInvoke.OpenProcessToken(ProcessHandle.ThrowIfNullOrClosed(), DesiredAccess, out TokenHandle);
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            TokenHandle = ThrowIfClosedOrInvalidHandle(TokenHandle);
+            return res;
         }
 
         /// <summary>
@@ -470,8 +482,7 @@ namespace PSADT.Interop
         /// database.</returns>
         internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpMachineName, string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
         {
-            CloseServiceHandleSafeHandle handle = PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess);
-            return handle.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : handle;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess));
         }
 
         /// <summary>
@@ -512,8 +523,7 @@ namespace PSADT.Interop
         /// must be closed using the appropriate method when it is no longer needed.</returns>
         internal static CloseServiceHandleSafeHandle OpenService(SafeHandle hSCManager, string lpServiceName, SERVICE_ACCESS_RIGHTS dwDesiredAccess)
         {
-            CloseServiceHandleSafeHandle handle = PInvoke.OpenService(hSCManager.ThrowIfNullOrInvalid(), lpServiceName.ThrowIfNullOrWhiteSpace(), (uint)dwDesiredAccess);
-            return handle.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : handle;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.OpenService(hSCManager.ThrowIfNullOrInvalid(), lpServiceName.ThrowIfNullOrWhiteSpace(), (uint)dwDesiredAccess));
         }
 
         /// <summary>
@@ -589,7 +599,7 @@ namespace PSADT.Interop
                     {
                         res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal).ThrowOnFailure();
                     }
-                    NewAcl = new((nint)NewAclLocal, true);
+                    NewAcl = new(((nint)NewAclLocal).ThrowIfZeroOrMinusOne(), true);
                 }
                 return res;
             }
@@ -724,11 +734,11 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
                 }
-                ppsidOwner = psidOwner != default ? new((nint)psidOwner.Value) : null;
-                ppsidGroup = pSidGroup != default ? new((nint)pSidGroup.Value) : null;
-                ppDacl = pDacl is not null ? new((nint)pDacl, false) : null;
-                ppSacl = pSacl is not null ? new((nint)pSacl, false) : null;
-                ppSecurityDescriptor = new((nint)pSecurityDescriptor, true);
+                ppsidOwner = psidOwner != default ? new(((nint)psidOwner.Value).ThrowIfZeroOrMinusOne()) : null;
+                ppsidGroup = pSidGroup != default ? new(((nint)pSidGroup.Value).ThrowIfZeroOrMinusOne()) : null;
+                ppDacl = pDacl is not null ? new(((nint)pDacl).ThrowIfZeroOrMinusOne(), false) : null;
+                ppSacl = pSacl is not null ? new(((nint)pSacl).ThrowIfZeroOrMinusOne(), false) : null;
+                ppSecurityDescriptor = new(((nint)pSecurityDescriptor).ThrowIfZeroOrMinusOne(), true);
             }
             return res;
         }
@@ -912,10 +922,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            if (phAuthzResourceManager.IsInvalid)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
-            }
+            phAuthzResourceManager = ThrowIfClosedOrInvalidHandle(phAuthzResourceManager);
             return res;
         }
 
@@ -966,10 +973,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            if (phAuthzClientContext.IsInvalid)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
-            }
+            phAuthzClientContext = ThrowIfClosedOrInvalidHandle(phAuthzClientContext);
             return res;
         }
 
@@ -1004,10 +1008,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            if (phAuthzClientContext.IsInvalid)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
-            }
+            phAuthzClientContext = ThrowIfClosedOrInvalidHandle(phAuthzClientContext);
             return res;
         }
 
@@ -1059,10 +1060,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            if (phAccessCheckResults.IsInvalid)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
-            }
+            phAccessCheckResults = ThrowIfClosedOrInvalidHandle(phAccessCheckResults);
             return res;
         }
 
@@ -1099,7 +1097,9 @@ namespace PSADT.Interop
         /// from the returned <see cref="NTSTATUS"/> value.</exception>
         internal static NTSTATUS LsaOpenPolicy(LSA_UNICODE_STRING? SystemName, in LSA_OBJECT_ATTRIBUTES ObjectAttributes, LSA_POLICY_ACCESS DesiredAccess, out LsaCloseSafeHandle PolicyHandle)
         {
-            return PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle).ThrowOnFailure();
+            NTSTATUS res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle).ThrowOnFailure();
+            PolicyHandle = ThrowIfClosedOrInvalidHandle(PolicyHandle);
+            return res;
         }
 
         /// <summary>
@@ -1123,7 +1123,7 @@ namespace PSADT.Interop
             unsafe
             {
                 res = PInvoke.LsaQueryInformationPolicy(PolicyHandle.ThrowIfNullOrInvalid(), InformationClass, out void* BufferLocal).ThrowOnFailure();
-                Buffer = new((nint)BufferLocal, true);
+                Buffer = new(((nint)BufferLocal).ThrowIfZeroOrMinusOne(), true);
             }
             return res;
         }
@@ -1181,8 +1181,7 @@ namespace PSADT.Interop
         /// no longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags = LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32)
         {
-            FreeLibrarySafeHandle res = PInvoke.LoadLibraryEx(lpLibFileName.ThrowIfNullOrWhiteSpace(), dwFlags);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.LoadLibraryEx(lpLibFileName.ThrowIfNullOrWhiteSpace(), dwFlags));
         }
 
         /// <summary>
@@ -1324,8 +1323,7 @@ namespace PSADT.Interop
         /// caller.</returns>
         internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
-            SafeFileHandle res = PInvoke.CreateIoCompletionPort(FileHandle.ThrowIfNullOrClosed(), ExistingCompletionPort?.ThrowIfNullOrInvalid(), CompletionKey, NumberOfConcurrentThreads);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.CreateIoCompletionPort(FileHandle.ThrowIfNullOrClosed(), ExistingCompletionPort?.ThrowIfNullOrInvalid(), CompletionKey, NumberOfConcurrentThreads));
         }
 
         /// <summary>
@@ -1364,8 +1362,7 @@ namespace PSADT.Interop
         /// <returns>A SafeFileHandle representing the newly created job object. If the creation fails, an exception is thrown.</returns>
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
-            SafeFileHandle res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.CreateJobObject(lpJobAttributes, lpName));
         }
 
         /// <summary>
@@ -1687,7 +1684,12 @@ namespace PSADT.Interop
         internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
         {
             BOOL res = PInvoke.DuplicateHandle(hSourceProcessHandle.ThrowIfNullOrClosed(), hSourceHandle.ThrowIfNullOrInvalid(), hTargetProcessHandle.ThrowIfNullOrClosed(), out lpTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            lpTargetHandle = ThrowIfClosedOrInvalidHandle(lpTargetHandle);
+            return res;
         }
 
         /// <summary>
@@ -1705,8 +1707,7 @@ namespace PSADT.Interop
         /// releasing the handle when it is no longer needed.</returns>
         internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
         {
-            SafeFileHandle res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId));
         }
 
         /// <summary>
@@ -1973,8 +1974,7 @@ namespace PSADT.Interop
         /// and ready for use. If the operation fails, an exception is thrown.</returns>
         internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, in SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FileAttributes dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
         {
-            SafeFileHandle res = PInvoke.CreateFile(lpFileName.ThrowIfNullOrWhiteSpace(), (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, (FILE_FLAGS_AND_ATTRIBUTES)dwFlagsAndAttributes, hTemplateFile);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.CreateFile(lpFileName.ThrowIfNullOrWhiteSpace(), (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, (FILE_FLAGS_AND_ATTRIBUTES)dwFlagsAndAttributes, hTemplateFile));
         }
 
         /// <summary>
@@ -2144,7 +2144,7 @@ namespace PSADT.Interop
                 {
                     res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
-                phDatabase = new(phDatabaseLocal, true);
+                phDatabase = new(((nint)phDatabaseLocal).ThrowIfZeroOrMinusOne(), true);
             }
             return res;
         }
@@ -2176,7 +2176,7 @@ namespace PSADT.Interop
             {
                 res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase.ThrowIfNullOrInvalid(), szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
-            phSummaryInfo = new(phSummaryInfoLocal, true);
+            phSummaryInfo = new(((nint)phSummaryInfoLocal).ThrowIfZeroOrMinusOne(), true);
             return res;
         }
 
@@ -2409,7 +2409,7 @@ namespace PSADT.Interop
                 StartRoutine.ThrowIfNullOrInvalid().DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.ThrowIfNullOrClosed().DangerousAddRef(ref ProcessHandleAddRef);
                 NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default).ThrowOnFailure();
-                ThreadHandle = new(hThread, true);
+                ThreadHandle = new(hThread.ThrowIfZeroOrMinusOne(), true);
                 return res;
             }
             finally
@@ -3048,8 +3048,7 @@ namespace PSADT.Interop
         /// <exception cref="InvalidOperationException">Thrown if the system menu handle cannot be retrieved.</exception>
         internal static DestroyMenuSafeHandle GetSystemMenu(HWND hWnd, BOOL bRevert)
         {
-            DestroyMenuSafeHandle res = PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert);
-            return res.IsInvalid ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert));
         }
 
         /// <summary>
@@ -3252,7 +3251,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                lpEnvironment = new((nint)lpEnvironmentPtr, true);
+                lpEnvironment = new(((nint)lpEnvironmentPtr).ThrowIfZeroOrMinusOne(), true);
             }
             return res;
         }
@@ -3331,19 +3330,19 @@ namespace PSADT.Interop
             {
                 throw new ArgumentOutOfRangeException(nameof(pLevel), "pLevel must be 0 or 1.");
             }
+            PWSTR ppProcessInfo; uint pCount;
             BOOL res;
             unsafe
             {
-                PWSTR ppProcessInfo; uint pCount;
                 res = PInvoke.WTSEnumerateProcessesEx(hServer, &pLevel, SessionId, &ppProcessInfo, &pCount);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                pProcessInfo = pLevel > 0
-                    ? new((nint)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * sizeof(WTS_PROCESS_INFO_EXW), true)
-                    : new((nint)ppProcessInfo.Value, WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * sizeof(WTS_PROCESS_INFOW), true);
             }
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            pProcessInfo = pLevel > 0
+                ? new(ppProcessInfo.ToIntPtr().ThrowIfZeroOrMinusOne(), WTS_TYPE_CLASS.WTSTypeProcessInfoLevel1, (int)pCount * Marshal.SizeOf<WTS_PROCESS_INFO_EXW>(), true)
+                : new(ppProcessInfo.ToIntPtr().ThrowIfZeroOrMinusOne(), WTS_TYPE_CLASS.WTSTypeProcessInfoLevel0, (int)pCount * Marshal.SizeOf<WTS_PROCESS_INFOW>(), true);
             return res;
         }
 
@@ -3368,7 +3367,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                pSessionInfo = new((nint)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
+                pSessionInfo = new(((nint)ppSessionInfo).ThrowIfZeroOrMinusOne(), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             }
             return res;
         }
@@ -3397,7 +3396,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            pBuffer = new(ppBuffer.ToIntPtr(), (int)bytesReturned, true);
+            pBuffer = new(ppBuffer.ToIntPtr().ThrowIfZeroOrMinusOne(), (int)bytesReturned, true);
             return res;
         }
 
@@ -3423,7 +3422,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                phToken = new(phTokenLocal, true);
+                phToken = new(((nint)phTokenLocal).ThrowIfZeroOrMinusOne(), true);
             }
             return res;
         }
@@ -3463,7 +3462,7 @@ namespace PSADT.Interop
         {
             MSIHANDLE phViewLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiDatabaseOpenView(hDatabase.ThrowIfNullOrInvalid(), szQuery.ThrowIfNullOrWhiteSpace(), ref phViewLocal)).ThrowOnFailure();
-            phView = new(phViewLocal, true);
+            phView = new(((nint)phViewLocal).ThrowIfZeroOrMinusOne(), true);
             return res;
         }
 
@@ -3477,8 +3476,7 @@ namespace PSADT.Interop
         /// the record.</returns>
         internal static MsiCloseHandleSafeHandle MsiCreateRecord(uint cParams)
         {
-            MsiCloseHandleSafeHandle res = PInvoke.MsiCreateRecord_SafeHandle(cParams);
-            return res.IsInvalid ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
+            return ThrowIfClosedOrInvalidHandle(PInvoke.MsiCreateRecord_SafeHandle(cParams));
         }
 
         /// <summary>
@@ -3589,7 +3587,7 @@ namespace PSADT.Interop
         {
             MSIHANDLE phRecordLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiViewFetch(hView.ThrowIfNullOrInvalid(), ref phRecordLocal)).ThrowOnFailure();
-            phRecord = new(phRecordLocal);
+            phRecord = new(((nint)phRecordLocal).ThrowIfZeroOrMinusOne(), true);
             return res;
         }
 
@@ -3754,5 +3752,20 @@ namespace PSADT.Interop
         /// A window command to restore all minimised windows.
         /// </summary>
         internal const nuint MIN_ALL_UNDO = 416;
+
+        /// <summary>
+        /// Validates that the specified handle is open and valid, and throws an exception if it is closed or invalid.
+        /// </summary>
+        /// <remarks>Use this method to ensure that operations are performed only on valid handles,
+        /// preventing errors caused by invalid or closed handles.</remarks>
+        /// <typeparam name="T">Specifies the type of the handle, which must derive from SafeHandle.</typeparam>
+        /// <param name="handle">The handle to validate. Must be a SafeHandle instance that is not closed or invalid.</param>
+        /// <returns>The original handle if it is open and valid.</returns>
+        private static T ThrowIfClosedOrInvalidHandle<T>(T handle) where T : SafeHandle
+        {
+            return handle.IsClosed || handle.IsInvalid
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE)
+                : handle;
+        }
     }
 }

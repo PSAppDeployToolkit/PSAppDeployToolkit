@@ -290,12 +290,6 @@ namespace PSADT.FileSystem
                         }
                     }
 
-                    // Skip to the next iteration if the duplicated handle is invalid.
-                    if (fileDupHandle.IsInvalid)
-                    {
-                        return;
-                    }
-
                     // If the duplicated handle isn't a disk handle, skip to the next iteration.
                     try
                     {
