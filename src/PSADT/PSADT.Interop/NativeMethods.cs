@@ -328,6 +328,10 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
         internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            if (!string.IsNullOrWhiteSpace(lpCurrentDirectory))
+            {
+                lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
+            }
             bool lpEnvironmentAddRef = false;
             BOOL res;
             try
@@ -377,6 +381,10 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
         internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            if (!string.IsNullOrWhiteSpace(lpCurrentDirectory))
+            {
+                lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
+            }
             bool lpEnvironmentAddRef = false;
             BOOL res;
             try
@@ -432,6 +440,10 @@ namespace PSADT.Interop
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
+            }
+            if (!string.IsNullOrWhiteSpace(lpCurrentDirectory))
+            {
+                lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
             bool hTokenAddRef = false;
             bool lpEnvironmentAddRef = false;
@@ -1181,7 +1193,7 @@ namespace PSADT.Interop
         /// no longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags = LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32)
         {
-            return ThrowIfClosedOrInvalidHandle(PInvoke.LoadLibraryEx(lpLibFileName.ThrowIfNullOrWhiteSpace(), dwFlags));
+            return ThrowIfClosedOrInvalidHandle(PInvoke.LoadLibraryEx(lpLibFileName.ThrowIfFileDoesNotExist(), dwFlags));
         }
 
         /// <summary>
@@ -1213,7 +1225,7 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to lpReturnedString, not including the final null character.</returns>
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
-            uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfNullOrWhiteSpace());
+            uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             return res == lpReturnedString.Length - 2
                 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                 : res;
@@ -1233,7 +1245,7 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
         internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
         {
-            uint res = PInvoke.GetPrivateProfileSection(lpAppName.ThrowIfNullOrWhiteSpace(), lpReturnedString, lpFileName.ThrowIfNullOrWhiteSpace());
+            uint res = PInvoke.GetPrivateProfileSection(lpAppName.ThrowIfNullOrWhiteSpace(), lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             return res == lpReturnedString.Length - 2
                 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                 : res;
@@ -1254,7 +1266,7 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
         internal static uint GetPrivateProfileString(string lpAppName, string? lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
-            uint res = PInvoke.GetPrivateProfileString(lpAppName.ThrowIfNullOrWhiteSpace(), lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfNullOrWhiteSpace());
+            uint res = PInvoke.GetPrivateProfileString(lpAppName.ThrowIfNullOrWhiteSpace(), lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
                 throw ExceptionUtilities.GetException(lastWin32Error);
@@ -1281,7 +1293,7 @@ namespace PSADT.Interop
         /// written successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WritePrivateProfileSection(string lpAppName, string? lpString, string lpFileName)
         {
-            BOOL res = PInvoke.WritePrivateProfileSection(lpAppName.ThrowIfNullOrWhiteSpace(), lpString, lpFileName.ThrowIfNullOrWhiteSpace());
+            BOOL res = PInvoke.WritePrivateProfileSection(lpAppName.ThrowIfNullOrWhiteSpace(), lpString, lpFileName.ThrowIfFileDirectoryDoesNotExist());
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -1300,7 +1312,7 @@ namespace PSADT.Interop
         /// <returns>true if the operation succeeds; otherwise, false.</returns>
         internal static BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
-            BOOL res = PInvoke.WritePrivateProfileString(lpAppName.ThrowIfNullOrWhiteSpace(), lpKeyName, lpString, lpFileName.ThrowIfNullOrWhiteSpace());
+            BOOL res = PInvoke.WritePrivateProfileString(lpAppName.ThrowIfNullOrWhiteSpace(), lpKeyName, lpString, lpFileName.ThrowIfFileDirectoryDoesNotExist());
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -1974,7 +1986,7 @@ namespace PSADT.Interop
         /// and ready for use. If the operation fails, an exception is thrown.</returns>
         internal static SafeFileHandle CreateFile(string lpFileName, FileSystemRights dwDesiredAccess, FILE_SHARE_MODE dwShareMode, in SECURITY_ATTRIBUTES? lpSecurityAttributes, FILE_CREATION_DISPOSITION dwCreationDisposition, FileAttributes dwFlagsAndAttributes, SafeHandle? hTemplateFile = null)
         {
-            return ThrowIfClosedOrInvalidHandle(PInvoke.CreateFile(lpFileName.ThrowIfNullOrWhiteSpace(), (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, (FILE_FLAGS_AND_ATTRIBUTES)dwFlagsAndAttributes, hTemplateFile));
+            return ThrowIfClosedOrInvalidHandle(PInvoke.CreateFile(lpFileName.ThrowIfFileDoesNotExist(), (uint)dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, (FILE_FLAGS_AND_ATTRIBUTES)dwFlagsAndAttributes, hTemplateFile));
         }
 
         /// <summary>
@@ -2044,18 +2056,6 @@ namespace PSADT.Interop
             return res == FILE_TYPE.FILE_TYPE_UNKNOWN && ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
-        }
-
-        /// <summary>
-        /// Retrieves the file attributes for the specified file or directory path.
-        /// </summary>
-        /// <param name="lpFileName">The full path to the file or directory for which to retrieve attributes. This parameter cannot be null or an
-        /// empty string.</param>
-        /// <returns>A value of type FileAttributes that describes the attributes of the specified file or directory.</returns>
-        internal static FileAttributes GetFileAttributes(string lpFileName)
-        {
-            uint res = PInvoke.GetFileAttributes(lpFileName.ThrowIfNullOrWhiteSpace());
-            return res == PInvoke.INVALID_FILE_ATTRIBUTES ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : (FileAttributes)res;
         }
 
         /// <summary>
@@ -2140,7 +2140,7 @@ namespace PSADT.Interop
             unsafe
             {
                 MSIHANDLE phDatabaseLocal = default;
-                fixed (char* pszDatabasePath = szDatabasePath.ThrowIfNullOrWhiteSpace())
+                fixed (char* pszDatabasePath = szDatabasePath.ThrowIfFileDoesNotExist())
                 {
                     res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
@@ -2170,7 +2170,7 @@ namespace PSADT.Interop
             if (hDatabase is null)
             {
                 using SafeFileHandle nullHandle = new(default, true);
-                res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
+                res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath.ThrowIfFileDoesNotExist(), uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
             else
             {
@@ -2209,7 +2209,7 @@ namespace PSADT.Interop
         /// information was retrieved successfully; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR MsiGetSummaryInformation(string szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
-            return MsiGetSummaryInformation(null, szDatabasePath.ThrowIfNullOrWhiteSpace(), uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
+            return MsiGetSummaryInformation(null, szDatabasePath.ThrowIfFileDoesNotExist(), uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
         }
 
         /// <summary>
@@ -2255,7 +2255,7 @@ namespace PSADT.Interop
         internal static WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
         {
             pcchXMLData = (uint)szXMLData.Length;
-            return ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath.ThrowIfNullOrWhiteSpace(), szXMLData, ref pcchXMLData)).ThrowOnFailure();
+            return ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath.ThrowIfFileDoesNotExist(), szXMLData, ref pcchXMLData)).ThrowOnFailure();
         }
 
         /// <summary>
@@ -2692,7 +2692,7 @@ namespace PSADT.Interop
         {
             [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern nint SHGetFileInfoW(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            psfi = new(); nint res = SHGetFileInfoW(pszPath.ThrowIfNullOrWhiteSpace(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
+            psfi = new(); nint res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
             return res == default ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve file information.") : res;
         }
 
@@ -3443,7 +3443,7 @@ namespace PSADT.Interop
         /// otherwise, the error code represents the failure reason.</returns>
         internal static WIN32_ERROR MsiDatabaseApplyTransform(SafeHandle hDatabase, string szTransformFile, MSITRANSFORM_ERROR iErrorConditions = MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE)
         {
-            return ((WIN32_ERROR)PInvoke.MsiDatabaseApplyTransform(hDatabase.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfNullOrWhiteSpace(), iErrorConditions)).ThrowOnFailure();
+            return ((WIN32_ERROR)PInvoke.MsiDatabaseApplyTransform(hDatabase.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfFileDoesNotExist(), iErrorConditions)).ThrowOnFailure();
         }
 
         /// <summary>
@@ -3640,7 +3640,7 @@ namespace PSADT.Interop
         /// nonzero error code.</returns>
         internal static WIN32_ERROR MsiDatabaseGenerateTransform(SafeHandle hDatabase, SafeHandle hDatabaseReference, string szTransformFile)
         {
-            return ((WIN32_ERROR)PInvoke.MsiDatabaseGenerateTransform(hDatabase.ThrowIfNullOrInvalid(), hDatabaseReference.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfNullOrWhiteSpace(), 0, 0)).ThrowOnFailure();
+            return ((WIN32_ERROR)PInvoke.MsiDatabaseGenerateTransform(hDatabase.ThrowIfNullOrInvalid(), hDatabaseReference.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfFileDirectoryDoesNotExist(), 0, 0)).ThrowOnFailure();
         }
 
         /// <summary>
@@ -3661,7 +3661,7 @@ namespace PSADT.Interop
         /// returns an error code.</returns>
         internal static WIN32_ERROR MsiCreateTransformSummaryInfo(SafeHandle hDatabase, SafeHandle hDatabaseReference, string szTransformFile, MSITRANSFORM_ERROR iErrorConditions, MSITRANSFORM_VALIDATE iValidation)
         {
-            return ((WIN32_ERROR)PInvoke.MsiCreateTransformSummaryInfo(hDatabase.ThrowIfNullOrInvalid(), hDatabaseReference.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfNullOrWhiteSpace(), iErrorConditions, iValidation)).ThrowOnFailure();
+            return ((WIN32_ERROR)PInvoke.MsiCreateTransformSummaryInfo(hDatabase.ThrowIfNullOrInvalid(), hDatabaseReference.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfFileDoesNotExist(), iErrorConditions, iValidation)).ThrowOnFailure();
         }
 
         /// <summary>
@@ -3671,7 +3671,7 @@ namespace PSADT.Interop
         /// <returns>If the function succeeds, the return value specifies the number of fonts added. If the function fails, the return value is zero.</returns>
         internal static int AddFontResource(string lpFileName)
         {
-            int res = PInvoke.AddFontResource(lpFileName.ThrowIfNullOrWhiteSpace());
+            int res = PInvoke.AddFontResource(lpFileName.ThrowIfFileDoesNotExist());
             return res == 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "The call to AddFontResource() failed.") : res;
         }
 

@@ -146,6 +146,7 @@ When working on the PowerShell module in VS Code:
 - **Resource Management**: Use nested try/finally blocks for COM cleanup and resource management rather than flat structures with nullable checks, even if it results in deep indentation.
 - **ThrowIfNullOrWhiteSpace Usage**: When using the `ThrowIfNullOrWhiteSpace` extension method, do not pass explicit `nameof()` arguments — rely on the `[CallerMemberName]` attribute to automatically populate the name parameter.
 - **SafeHandle Validation**: When validating SafeHandle parameters, avoid standalone `ThrowIfNullOrInvalid` or `ThrowIfNullOrClosed` calls that discard return values; inline the call into the subsequent usage (e.g., chain into `DangerousAddRef` or PInvoke argument).
+- **RemoveFontResource Input**: Do not pre-validate `RemoveFontResource` input with file existence checks; it can operate on file names and not necessarily full paths.
 
 ### Testing Strategy
 `powershell.exe -ExecutionPolicy Bypass -File build.ps1`
