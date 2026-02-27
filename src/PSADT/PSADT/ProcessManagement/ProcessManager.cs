@@ -574,9 +574,8 @@ namespace PSADT.ProcessManagement
                 Dictionary<string, string> envDict = new(StringComparer.OrdinalIgnoreCase);
                 while (true)
                 {
-                    // Marshal.PtrToStringUni will read up to the first null terminator.
-                    string entry = Marshal.PtrToStringUni(envBlockPtr)!;
-                    if (string.IsNullOrWhiteSpace(entry))
+                    // Read up to the first null terminator.
+                    if (Marshal.PtrToStringUni(envBlockPtr) is not string entry || string.IsNullOrWhiteSpace(entry))
                     {
                         break;
                     }
