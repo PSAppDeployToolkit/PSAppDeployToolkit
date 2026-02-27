@@ -1,5 +1,4 @@
-﻿using System;
-using PSADT.Interop.SafeHandles;
+﻿using PSADT.Interop.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.DirectWrite;
@@ -27,13 +26,13 @@ namespace PSADT.Interop.Extensions
         /// only if the table exists.</param>
         /// <param name="exists">When this method returns, set to <see langword="true"/> if the specified font table exists; otherwise, <see
         /// langword="false"/>.</param>
-        internal static void TryGetFontTable(this IDWriteFontFace fontFace, uint openTypeTableTag, out IntPtr tableData, out uint tableSize, out SafeFontTableHandle tableContext, out BOOL exists)
+        internal static void TryGetFontTable(this IDWriteFontFace fontFace, uint openTypeTableTag, out nint tableData, out uint tableSize, out SafeFontTableHandle tableContext, out BOOL exists)
         {
             unsafe
             {
                 fontFace.TryGetFontTable(openTypeTableTag, out void* tableDataLocal, out tableSize, out void* tableContextLocal, out exists);
-                tableContext = new(fontFace, (IntPtr)tableContextLocal, true);
-                tableData = (IntPtr)tableDataLocal;
+                tableContext = new(fontFace, ((nint)tableContextLocal).ThrowIfMinusOne(), true);
+                tableData = (nint)tableDataLocal;
             }
         }
     }
