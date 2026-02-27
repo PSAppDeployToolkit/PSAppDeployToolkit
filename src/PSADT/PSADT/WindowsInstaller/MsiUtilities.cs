@@ -266,11 +266,7 @@ namespace PSADT.WindowsInstaller
 
                 // Create summary info for the transform (equivalent to CreateTransformSummaryInfo)
                 MSITRANSFORM_VALIDATE validateFlags = (MSITRANSFORM_VALIDATE)((Enum.GetValues(typeof(MSITRANSFORM_VALIDATE)).Cast<MSITRANSFORM_VALIDATE>().Max(static v => Convert.ToUInt32(v, CultureInfo.InvariantCulture)) << 1) - 1);
-                _ = PInvoke.MsiCreateTransformSummaryInfo(hDatabaseTempRo, hDatabaseOrig, newTransformPath, MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE, validateFlags);
-                if (!File.Exists(newTransformPath))
-                {
-                    throw new IOException($"Failed to generate transform file at '{newTransformPath}'.");
-                }
+                _ = NativeMethods.MsiCreateTransformSummaryInfo(hDatabaseTempRo, hDatabaseOrig, newTransformPath, MSITRANSFORM_ERROR.MSITRANSFORM_ERROR_NONE, validateFlags);
             }
             finally
             {

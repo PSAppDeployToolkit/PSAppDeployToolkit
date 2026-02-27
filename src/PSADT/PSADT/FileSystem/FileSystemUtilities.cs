@@ -105,17 +105,11 @@ namespace PSADT.FileSystem
                 return path;
             }
 
-            // Validate the specified input.
-            if (!Directory.Exists(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath.ThrowIfNullOrWhiteSpace()))))
-            {
-                throw new DirectoryNotFoundException($"The specified directory does not exist: {rootPath}");
-            }
-
             // Note: this is a breadth-first parallel enumeration. It is "fire and forget" in that it does not support cancellation, progress,
             // or partial results. It is optimized for speed and low memory usage on large directory trees with many files and subdirectories.
+            using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath.ThrowIfNullOrWhiteSpace()))).ThrowIfDirectoryDoesNotExist()];
             Task[] tasks = new Task[Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32))];
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
-            using BlockingCollection<string> queue = [rootPath];
             for (int i = 0; i < tasks.Length; i++)
             {
                 tasks[i] = Task.Run(() =>
@@ -300,10 +294,6 @@ namespace PSADT.FileSystem
         /// given path.</returns>
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path), "Path cannot be null.");
-            }
             if (sid is null)
             {
                 throw new ArgumentNullException(nameof(sid), "SecurityIdentifier cannot be null.");
@@ -331,14 +321,6 @@ namespace PSADT.FileSystem
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path), "Path cannot be null.");
-            }
-            if (token is null || token.IsInvalid)
-            {
-                throw new ArgumentNullException(nameof(token), "Token cannot be null or invalid.");
-            }
             return GetEffectiveAccess(path, token, desiredAccessMask, NativeMethods.AuthzInitializeContextFromToken);
         }
 
@@ -357,19 +339,13 @@ namespace PSADT.FileSystem
         /// <exception cref="DirectoryNotFoundException">Thrown if the directory specified by <paramref name="path"/> does not exist.</exception>
         public static void ResetPermissionsForPath(string path)
         {
-            // Validate the input path.
-            if (!Directory.Exists(path.ThrowIfNullOrWhiteSpace()))
-            {
-                throw new DirectoryNotFoundException($"The specified path does not exist: {path}");
-            }
-
             // Define the flags for setting and getting security information.
             OBJECT_SECURITY_INFORMATION getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
             OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
 
             // Create an empty ACL for the purpose of enabling inheritance, then set it on the path.
             Span<byte> pEmptyAcl = stackalloc byte[Marshal.SizeOf<ACL>()]; _ = NativeMethods.InitializeAcl(pEmptyAcl, ACE_REVISION.ACL_REVISION);
-            _ = NativeMethods.SetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, default, default, pEmptyAcl, default);
+            _ = NativeMethods.SetNamedSecurityInfo(path.ThrowIfDirectoryDoesNotExist(), SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, default, default, pEmptyAcl, default);
 
             // Retrieve the set security descriptor for the path and reapply it to all child objects. This is the same as the
             // "Replace all child object permission entries with inheritable permission entries from this object" checkbox.
@@ -430,17 +406,11 @@ namespace PSADT.FileSystem
         /// <exception cref="FileNotFoundException">Thrown if the specified file does not exist.</exception>
         public static bool IsAuthenticodeTrusted(string filePath)
         {
-            // Verify specified input.
-            if (!File.Exists(filePath.ThrowIfNullOrWhiteSpace()))
-            {
-                throw new FileNotFoundException($"The specified file does not exist: {filePath}", filePath);
-            }
-
             // Load up everything we need for WinVerifyTrust. The CsWin32 projects this
             // all using pointers, so we must follow suite as well or roll our own setup.
             unsafe
             {
-                fixed (char* pFilePath = filePath)
+                fixed (char* pFilePath = filePath.ThrowIfFileDoesNotExist())
                 {
                     // Set up WINTRUST_DATA to not perform any network comms.
                     WINTRUST_FILE_INFO wtFileInfo = new()
@@ -494,6 +464,10 @@ namespace PSADT.FileSystem
         private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, AuthzInitializeContext AuthzInitializeContext)
         {
             // Validate that the path exists.
+            if (path is null)
+            {
+                throw new ArgumentNullException(nameof(path), "Path cannot be null.");
+            }
             if (!path.Exists)
             {
                 if (path is DirectoryInfo)
@@ -519,7 +493,7 @@ namespace PSADT.FileSystem
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
-                    _ = AuthzInitializeContext(0, token, hAuthzResourceManager, null, default, default, out AuthzFreeContextSafeHandle phAuthzClientContext);
+                    _ = AuthzInitializeContext(0, token.ThrowIfNullOrInvalid(), hAuthzResourceManager, null, default, default, out AuthzFreeContextSafeHandle phAuthzClientContext);
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.

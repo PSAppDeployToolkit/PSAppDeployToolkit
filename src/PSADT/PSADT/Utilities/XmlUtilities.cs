@@ -20,11 +20,7 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument representing the contents of the specified file.</returns>
         internal static XmlDocument SafeLoadFromPath(string path)
         {
-            if (!File.Exists(path.ThrowIfNullOrWhiteSpace()))
-            {
-                throw new FileNotFoundException($"The specified file does not exist: {path}", path);
-            }
-            using StreamReader reader = new(path);
+            using StreamReader reader = new(path.ThrowIfFileDoesNotExist());
             return SafeLoadCommon(reader);
         }
 

@@ -3661,7 +3661,9 @@ namespace PSADT.Interop
         /// returns an error code.</returns>
         internal static WIN32_ERROR MsiCreateTransformSummaryInfo(SafeHandle hDatabase, SafeHandle hDatabaseReference, string szTransformFile, MSITRANSFORM_ERROR iErrorConditions, MSITRANSFORM_VALIDATE iValidation)
         {
-            return ((WIN32_ERROR)PInvoke.MsiCreateTransformSummaryInfo(hDatabase.ThrowIfNullOrInvalid(), hDatabaseReference.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfFileDoesNotExist(), iErrorConditions, iValidation)).ThrowOnFailure();
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiCreateTransformSummaryInfo(hDatabase.ThrowIfNullOrInvalid(), hDatabaseReference.ThrowIfNullOrInvalid(), szTransformFile.ThrowIfFileDoesNotExist(), iErrorConditions, iValidation)).ThrowOnFailure();
+            _ = szTransformFile.ThrowIfFileDoesNotExist();
+            return res;
         }
 
         /// <summary>

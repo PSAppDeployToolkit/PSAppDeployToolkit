@@ -26,10 +26,6 @@ namespace PSADT.Utilities
         /// <exception cref="FileNotFoundException">Thrown when the font file does not exist.</exception>
         public static int AddFont(string fontFilePath)
         {
-            if (!File.Exists(fontFilePath))
-            {
-                throw new FileNotFoundException("Font file not found.", fontFilePath);
-            }
             int result = NativeMethods.AddFontResource(fontFilePath);
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
             return result;
@@ -58,10 +54,6 @@ namespace PSADT.Utilities
             Dictionary<string, int> fontResults = [];
             foreach (string fontFilePath in fontFilePaths)
             {
-                if (!File.Exists(fontFilePath))
-                {
-                    throw new FileNotFoundException("Font file not found.", fontFilePath);
-                }
                 fontResults.Add(fontFilePath, NativeMethods.AddFontResource(fontFilePath));
             }
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
@@ -125,15 +117,10 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown if the font file format is not supported or if the font file contains no font faces.</exception>
         public static string GetFontTitle(string fontPath)
         {
-            // Ensure the specified path is valid.
-            if (!File.Exists(fontPath = Path.GetFullPath(fontPath.ThrowIfNullOrWhiteSpace().Trim().Trim('"'))))
-            {
-                throw new FileNotFoundException("Font file not found.", fontPath);
-            }
-
             // Create factory and font file reference.
             _ = NativeMethods.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED, out IDWriteFactory factory);
-            factory.CreateFontFileReference(fontPath, null, out IDWriteFontFile fontFile);
+            fontPath = Path.GetFullPath(fontPath.ThrowIfNullOrWhiteSpace().Trim().Trim('"'));
+            factory.CreateFontFileReference(fontPath.ThrowIfFileDoesNotExist(), null, out IDWriteFontFile fontFile);
             fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
             if (!supported)
             {
