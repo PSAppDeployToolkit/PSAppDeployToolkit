@@ -82,7 +82,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Domain Membership
     $domainInfo = [PSADT.DeviceManagement.DeviceUtilities]::GetDomainStatus()
-    $variables.Add('IsMachinePartOfDomain', $domainInfo.JoinStatus.Equals([PSADT.LibraryInterfaces.NETSETUP_JOIN_STATUS]::NetSetupDomainName))
+    $variables.Add('IsMachinePartOfDomain', $domainInfo.JoinStatus.Equals([PSADT.Interop.NETSETUP_JOIN_STATUS]::NetSetupDomainName))
     $variables.Add('envMachineWorkgroup', $null)
     $variables.Add('envMachineADDomain', $null)
     $variables.Add('envLogonServer', $null)
