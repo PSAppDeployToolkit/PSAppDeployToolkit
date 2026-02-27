@@ -26,7 +26,7 @@ namespace PSADT.ProcessManagement
         /// <param name="interleaved">The interleaved output of the process.</param>
         public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(launchInfo, commandLine, exitCode, stdOut, stdErr, interleaved)
         {
-            Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
+            Process = process ?? throw new ArgumentNullException(nameof(process), "Process cannot be null.");
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace PSADT.ProcessManagement
         /// <param name="interleaved">The interleaved output of the process.</param>
         public ProcessResult(ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
         {
-            LaunchInfo = launchInfo ?? throw new ArgumentNullException("LaunchInfo cannot be null.", (Exception?)null);
+            LaunchInfo = launchInfo ?? throw new ArgumentNullException(nameof(launchInfo), "LaunchInfo cannot be null.");
             CommandLine = commandLine.ThrowIfNullOrWhiteSpace();
         }
 

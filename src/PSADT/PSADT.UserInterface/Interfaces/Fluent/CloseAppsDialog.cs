@@ -49,7 +49,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 Name = CultureInfo.InvariantCulture.TextInfo.ToLower(Path.GetFileName(processToClose.Path.ThrowIfNullOrWhiteSpace()));
                 Description = processToClose.Description.ThrowIfNullOrWhiteSpace();
-                Icon = GetAppIcon(processToClose.Path) ?? throw new ArgumentNullException("Could not retrieve an icon for the given application.", (Exception?)null);
+                Icon = GetAppIcon(processToClose.Path);
             }
 
             /// <summary>

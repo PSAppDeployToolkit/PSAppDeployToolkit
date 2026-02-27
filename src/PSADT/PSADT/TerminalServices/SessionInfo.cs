@@ -64,11 +64,11 @@ namespace PSADT.TerminalServices
             string? clientDirectory,
             uint? clientBuildNumber)
         {
-            NTAccount = ntAccount ?? throw new ArgumentNullException("NTAccount cannot be null.", (Exception?)null);
-            SID = sid ?? throw new ArgumentNullException("SID cannot be null.", (Exception?)null);
+            NTAccount = ntAccount ?? throw new ArgumentNullException(nameof(ntAccount), "NTAccount cannot be null.");
+            SID = sid ?? throw new ArgumentNullException(nameof(sid), "SID cannot be null.");
             UserName = userName.ThrowIfNullOrWhiteSpace();
             DomainName = domainName.ThrowIfNullOrWhiteSpace();
-            SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException("SessionId must be greater than zero.", (Exception?)null);
+            SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException(nameof(sessionId), "SessionId must be greater than zero.");
             SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : null;
             ConnectState = connectState;
             IsCurrentSession = isCurrentSession;

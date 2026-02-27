@@ -41,7 +41,7 @@ namespace PSADT.ClientServer
         /// stream is set to automatically flush data to ensure timely communication.</remarks>
         public ServerInstance(RunAsActiveUser runAsActiveUser)
         {
-            RunAsActiveUser = runAsActiveUser ?? throw new ArgumentNullException("User cannot be null.", (Exception?)null);
+            RunAsActiveUser = runAsActiveUser ?? throw new ArgumentNullException(nameof(runAsActiveUser), "User cannot be null.");
         }
 
         /// <summary>

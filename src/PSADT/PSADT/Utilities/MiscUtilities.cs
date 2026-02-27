@@ -25,7 +25,7 @@ namespace PSADT.Utilities
         {
             return value is not null
                 ? new ReadOnlyCollection<string>([.. value.Select(static s => s.TrimEnd()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()])
-                : throw new ArgumentNullException("The input collection cannot be null.", (Exception?)null);
+                : throw new ArgumentNullException(nameof(value), "The input collection cannot be null.");
         }
 
         /// <summary>

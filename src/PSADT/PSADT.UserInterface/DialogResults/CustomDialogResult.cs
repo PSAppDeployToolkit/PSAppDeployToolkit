@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using PSADT.Interop.Extensions;
+using PSADT.UserInterface.Extensions;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -84,15 +85,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="dialogResult">The CustomDialogResult instance to convert to a string.</param>
         public static implicit operator string(CustomDialogResult dialogResult)
         {
-            static void AssertNotNull(CustomDialogResult value, string message)
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(message, (Exception?)null);
-                }
-            }
-            AssertNotNull(dialogResult, "CustomDialogResult instance cannot be null.");
-            return dialogResult.Result;
+            return dialogResult.ThrowIfNull().Result;
         }
     }
 }

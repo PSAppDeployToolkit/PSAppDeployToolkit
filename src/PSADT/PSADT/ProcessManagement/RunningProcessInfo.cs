@@ -197,7 +197,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if process is null, or if description or fileName is null or empty.</exception>
         private RunningProcessInfo(Process process, string description, string fileName, IEnumerable<string> argumentList, SecurityIdentifier? sid)
         {
-            Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
+            Process = process ?? throw new ArgumentNullException(nameof(process), "Process cannot be null.");
             Description = description.ThrowIfNullOrWhiteSpace();
             FileName = fileName.ThrowIfNullOrWhiteSpace();
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);

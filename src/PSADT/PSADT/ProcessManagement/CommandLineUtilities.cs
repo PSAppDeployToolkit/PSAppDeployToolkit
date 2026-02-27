@@ -62,7 +62,7 @@ namespace PSADT.ProcessManagement
             // Consider a null or empty argument list as an error.
             if (!(argv?.Count > 0))
             {
-                throw new ArgumentNullException("The specified enumerable is null or empty.", (Exception?)null);
+                throw new ArgumentNullException(nameof(argv), "The specified enumerable is null or empty.");
             }
 
             // Construct and return the command line string.
@@ -71,7 +71,7 @@ namespace PSADT.ProcessManagement
             {
                 if (string.IsNullOrWhiteSpace(arg))
                 {
-                    throw new ArgumentNullException("The specified enumerable contains null or empty arguments.", (Exception?)null);
+                    throw new ArgumentNullException(nameof(argv), "The specified enumerable contains null or empty arguments.");
                 }
                 _ = sb.Append(strict ? EscapeArgumentStrict(arg) : EscapeArgumentCompatible(arg)).Append(' ');
             }
