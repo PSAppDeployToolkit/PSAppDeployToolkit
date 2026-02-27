@@ -89,6 +89,21 @@ namespace PSADT.Interop.Extensions
         }
 
         /// <summary>
+        /// Throws an exception if the specified handle is -1, indicating an invalid pointer; otherwise, returns the
+        /// original handle.
+        /// </summary>
+        /// <param name="handle">The handle to validate. Must not be -1.</param>
+        /// <param name="name">The name of the calling member. This value is automatically supplied by the compiler.</param>
+        /// <returns>The original handle if it is not -1.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is -1, indicating an invalid pointer.</exception>
+        internal static nint ThrowIfMinusOne(this nint handle, [CallerMemberName] string name = null!)
+        {
+            return handle == -1
+                ? throw new ArgumentNullException(name, "The specified pointer is not valid.")
+                : handle;
+        }
+
+        /// <summary>
         /// Validates that the specified native integer handle is neither zero nor minus one, throwing an exception if
         /// the handle is invalid.
         /// </summary>

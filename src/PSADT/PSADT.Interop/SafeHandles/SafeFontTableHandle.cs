@@ -12,7 +12,7 @@ namespace PSADT.Interop.SafeHandles
     /// <remarks>This class ensures that the native font table resource is released appropriately when the
     /// handle is disposed or finalized. It is intended for internal use when working with DirectWrite font tables and
     /// should not be used directly by application code.</remarks>
-    internal sealed class SafeFontTableHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal sealed class SafeFontTableHandle : SafeHandleMinusOneIsInvalid
     {
         /// <summary>
         /// Initializes a new instance of the SafeFontTableHandle class for managing a font table handle associated with
@@ -25,7 +25,7 @@ namespace PSADT.Interop.SafeHandles
         internal SafeFontTableHandle(IDWriteFontFace fontFace, IntPtr context, bool ownsHandle) : base(ownsHandle)
         {
             FontFace = fontFace ?? throw new ArgumentNullException(nameof(fontFace));
-            SetHandle(context.ThrowIfZeroOrMinusOne());
+            SetHandle(context.ThrowIfMinusOne());
         }
 
         /// <summary>
