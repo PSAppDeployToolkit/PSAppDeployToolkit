@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -22,11 +23,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <exception cref="ArgumentException">Thrown if the result parameter is null or empty.</exception>
         internal CustomDialogResult(string result)
         {
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                throw new ArgumentNullException(nameof(result), "Result cannot be null or empty.");
-            }
-            Result = result;
+            Result = result.ThrowIfNullOrWhiteSpace();
         }
 
         /// <summary>

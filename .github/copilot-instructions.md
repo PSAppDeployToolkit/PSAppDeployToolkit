@@ -144,6 +144,7 @@ When working on the PowerShell module in VS Code:
 - **Comment-Based Help**: Required for all public functions with `.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`.
 - **Minimize Unnecessary Changes**: Preserve existing XML documentation comments when refactoring code. Don't strip them unnecessarily, as it makes git diffs noisy and loses valuable documentation. Only modify what's strictly necessary for the structural changes.
 - **Resource Management**: Use nested try/finally blocks for COM cleanup and resource management rather than flat structures with nullable checks, even if it results in deep indentation.
+- **ThrowIfNullOrWhiteSpace Usage**: When using the `ThrowIfNullOrWhiteSpace` extension method, do not pass explicit `nameof()` arguments — rely on the `[CallerMemberName]` attribute to automatically populate the name parameter.
 
 ### Testing Strategy
 `powershell.exe -ExecutionPolicy Bypass -File build.ps1`

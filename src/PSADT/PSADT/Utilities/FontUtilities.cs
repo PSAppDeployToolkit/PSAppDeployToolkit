@@ -51,6 +51,10 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(fontFilePaths));
             }
+            if (fontFilePaths.Count == 0)
+            {
+                throw new ArgumentException("At least one font file path must be provided.", nameof(fontFilePaths));
+            }
             Dictionary<string, int> fontResults = [];
             foreach (string fontFilePath in fontFilePaths)
             {
@@ -74,7 +78,7 @@ namespace PSADT.Utilities
         {
             // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.
             // See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-removefontresourcew#parameters for more details.
-            _ = NativeMethods.RemoveFontResource(fontFilePath);
+            _ = NativeMethods.RemoveFontResource(fontFilePath.ThrowIfNullOrWhiteSpace());
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
         }
 
@@ -93,11 +97,15 @@ namespace PSADT.Utilities
             {
                 throw new ArgumentNullException(nameof(fontFilePaths));
             }
+            if (fontFilePaths.Count == 0)
+            {
+                throw new ArgumentException("At least one font file path must be provided.", nameof(fontFilePaths));
+            }
             foreach (string fontFilePath in fontFilePaths)
             {
                 // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.
                 // See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-removefontresourcew#parameters for more details.
-                _ = NativeMethods.RemoveFontResource(fontFilePath);
+                _ = NativeMethods.RemoveFontResource(fontFilePath.ThrowIfNullOrWhiteSpace());
             }
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
         }
@@ -118,11 +126,7 @@ namespace PSADT.Utilities
         public static string GetFontTitle(string fontPath)
         {
             // Ensure the specified path is valid.
-            if (string.IsNullOrWhiteSpace(fontPath))
-            {
-                throw new ArgumentNullException(nameof(fontPath), "Path cannot be null/empty.");
-            }
-            if (!File.Exists(fontPath = Path.GetFullPath(fontPath.Trim().Trim('"'))))
+            if (!File.Exists(fontPath = Path.GetFullPath(fontPath.ThrowIfNullOrWhiteSpace().Trim().Trim('"'))))
             {
                 throw new FileNotFoundException("Font file not found.", fontPath);
             }

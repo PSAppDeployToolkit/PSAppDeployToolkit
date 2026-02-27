@@ -446,12 +446,6 @@ namespace PSAppDeployToolkit.Foundation
                     }
                 }
 
-                // If we're left with a blank AppName, throw a terminating error.
-                if (string.IsNullOrWhiteSpace(AppName))
-                {
-                    throw new ArgumentException("The application name was not specified.");
-                }
-
 
                 #endregion
                 #region SetInstallProperties

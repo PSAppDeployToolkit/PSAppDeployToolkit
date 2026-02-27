@@ -89,7 +89,7 @@ namespace PSADT.FileSystem
         /// <exception cref="ArgumentNullException">Thrown when the filePath parameter is null or empty.</exception>
         private ExecutableInfo(string filePath, IMAGE_FILE_MACHINE machine, IMAGE_SUBSYSTEM subsystem, bool isDotNetExecutable, uint entryPoint, ulong imageBase)
         {
-            FileInfo = !string.IsNullOrWhiteSpace(filePath) ? new(filePath) : throw new ArgumentNullException("File path cannot be null or empty.", (Exception?)null);
+            FileInfo = new(filePath.ThrowIfNullOrWhiteSpace());
             Machine = (Interop.IMAGE_FILE_MACHINE)machine;
             Subsystem = (Interop.IMAGE_SUBSYSTEM)subsystem;
             IsDotNetExecutable = isDotNetExecutable;

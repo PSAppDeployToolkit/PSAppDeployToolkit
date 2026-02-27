@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -150,11 +151,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="listSelectionMessage">The heading text displayed next to the list selection dropdown.</param>
             private ListSelectionDialogStrings(string listSelectionMessage)
             {
-                if (string.IsNullOrWhiteSpace(listSelectionMessage))
-                {
-                    throw new ArgumentException("ListSelectionMessage cannot be null or whitespace.", nameof(listSelectionMessage));
-                }
-                ListSelectionMessage = listSelectionMessage;
+                ListSelectionMessage = listSelectionMessage.ThrowIfNullOrWhiteSpace();
             }
 
             /// <summary>

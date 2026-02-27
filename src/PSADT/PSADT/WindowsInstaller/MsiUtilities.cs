@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using PSADT.Extensions;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
@@ -174,19 +175,11 @@ namespace PSADT.WindowsInstaller
         public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
         {
             // Validate input parameters.
-            if (string.IsNullOrWhiteSpace(msiPath))
-            {
-                throw new ArgumentNullException(nameof(msiPath));
-            }
-            if (!File.Exists(msiPath = Path.GetFullPath(msiPath)))
+            if (!File.Exists(msiPath = Path.GetFullPath(msiPath.ThrowIfNullOrWhiteSpace())))
             {
                 throw new FileNotFoundException("MSI file not found.", msiPath);
             }
-            if (string.IsNullOrWhiteSpace(newTransformPath))
-            {
-                throw new ArgumentNullException(nameof(newTransformPath));
-            }
-            if (!Path.IsPathRooted(newTransformPath = Path.GetFullPath(newTransformPath)))
+            if (!Path.IsPathRooted(newTransformPath = Path.GetFullPath(newTransformPath.ThrowIfNullOrWhiteSpace())))
             {
                 throw new ArgumentException("The new transform path must be an absolute path.", nameof(newTransformPath));
             }
@@ -246,7 +239,7 @@ namespace PSADT.WindowsInstaller
 
                             // Field indices are 1-based in MSI records.
                             _ = NativeMethods.MsiRecordSetString(hRecord, 1, kvp.Key);
-                            _ = NativeMethods.MsiRecordSetString(hRecord, 2, !string.IsNullOrWhiteSpace(kvp.Value) ? kvp.Value : string.Empty);
+                            _ = NativeMethods.MsiRecordSetString(hRecord, 2, kvp.Value);
                             _ = NativeMethods.MsiViewModify(hView, MSIMODIFY.MSIMODIFY_ASSIGN, hRecord);
                         }
                     }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -73,16 +74,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// langword="null"/>.</exception>
         private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            if (string.IsNullOrWhiteSpace(progressMessageText))
-            {
-                throw new ArgumentNullException(nameof(progressMessageText), "ProgressMessageText value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(progressDetailMessageText))
-            {
-                throw new ArgumentNullException(nameof(progressDetailMessageText), "ProgressDetailMessageText value is null or invalid.");
-            }
-            ProgressMessageText = progressMessageText;
-            ProgressDetailMessageText = progressDetailMessageText;
+            ProgressMessageText = progressMessageText.ThrowIfNullOrWhiteSpace();
+            ProgressDetailMessageText = progressDetailMessageText.ThrowIfNullOrWhiteSpace();
             ProgressPercentage = progressPercentage;
             MessageAlignment = messageAlignment;
         }

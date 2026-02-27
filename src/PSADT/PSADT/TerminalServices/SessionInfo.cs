@@ -2,6 +2,7 @@
 using System.Security.Principal;
 using PSADT.Foundation;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.TerminalServices
 {
@@ -65,8 +66,8 @@ namespace PSADT.TerminalServices
         {
             NTAccount = ntAccount ?? throw new ArgumentNullException("NTAccount cannot be null.", (Exception?)null);
             SID = sid ?? throw new ArgumentNullException("SID cannot be null.", (Exception?)null);
-            UserName = !string.IsNullOrWhiteSpace(userName) ? userName : throw new ArgumentNullException("UserName cannot be null or empty.", (Exception?)null);
-            DomainName = !string.IsNullOrWhiteSpace(domainName) ? domainName : throw new ArgumentNullException("DomainName cannot be null or empty.", (Exception?)null);
+            UserName = userName.ThrowIfNullOrWhiteSpace();
+            DomainName = domainName.ThrowIfNullOrWhiteSpace();
             SessionId = sessionId > 0 ? sessionId : throw new ArgumentOutOfRangeException("SessionId must be greater than zero.", (Exception?)null);
             SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : null;
             ConnectState = connectState;

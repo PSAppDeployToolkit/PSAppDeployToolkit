@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using Windows.Win32;
@@ -105,11 +106,7 @@ namespace PSADT.FileSystem
             }
 
             // Validate the specified input.
-            if (string.IsNullOrWhiteSpace(rootPath))
-            {
-                throw new ArgumentNullException(nameof(rootPath));
-            }
-            if (!Directory.Exists(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))))
+            if (!Directory.Exists(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath.ThrowIfNullOrWhiteSpace()))))
             {
                 throw new DirectoryNotFoundException($"The specified directory does not exist: {rootPath}");
             }
@@ -361,13 +358,7 @@ namespace PSADT.FileSystem
         public static void ResetPermissionsForPath(string path)
         {
             // Validate the input path.
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            // Validate that the path exists.
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(path.ThrowIfNullOrWhiteSpace()))
             {
                 throw new DirectoryNotFoundException($"The specified path does not exist: {path}");
             }
@@ -440,11 +431,7 @@ namespace PSADT.FileSystem
         public static bool IsAuthenticodeTrusted(string filePath)
         {
             // Verify specified input.
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-            if (!File.Exists(filePath))
+            if (!File.Exists(filePath.ThrowIfNullOrWhiteSpace()))
             {
                 throw new FileNotFoundException($"The specified file does not exist: {filePath}", filePath);
             }

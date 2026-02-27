@@ -11,6 +11,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -46,17 +47,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             /// whitespace.</exception>
             public AppToClose(ProcessToClose processToClose)
             {
-                Name = CultureInfo.InvariantCulture.TextInfo.ToLower(Path.GetFileName(processToClose.Path));
-                Description = processToClose.Description;
+                Name = CultureInfo.InvariantCulture.TextInfo.ToLower(Path.GetFileName(processToClose.Path.ThrowIfNullOrWhiteSpace()));
+                Description = processToClose.Description.ThrowIfNullOrWhiteSpace();
                 Icon = GetAppIcon(processToClose.Path) ?? throw new ArgumentNullException("Could not retrieve an icon for the given application.", (Exception?)null);
-                if (string.IsNullOrWhiteSpace(Name))
-                {
-                    throw new ArgumentNullException("Process name cannot be null or empty.", (Exception?)null);
-                }
-                if (string.IsNullOrWhiteSpace(Description))
-                {
-                    throw new ArgumentNullException("Process description cannot be null or empty.", (Exception?)null);
-                }
             }
 
             /// <summary>

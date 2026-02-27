@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.Types
 {
@@ -36,7 +37,7 @@ namespace PSADT.Types
             IReadOnlyList<string>? pendingFileRenameOperations,
             IReadOnlyList<string> errorMsg)
         {
-            ComputerName = !string.IsNullOrWhiteSpace(computerName) ? computerName : throw new ArgumentNullException("Computer name cannot be null or empty.", (Exception?)null);
+            ComputerName = computerName.ThrowIfNullOrWhiteSpace();
             LastBootUpTime = lastBootUpTime;
             IsSystemRebootPending = isSystemRebootPending;
             IsCBServicingRebootPending = isCBServicingRebootPending;

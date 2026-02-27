@@ -1,5 +1,5 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -21,11 +21,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="result">The result string that represents the outcome of the dialog operation. This value cannot be null.</param>
         internal CustomDialogDerivative(string result) : base(result)
         {
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                throw new ArgumentNullException(nameof(result), "Result cannot be null or empty.");
-            }
-            Result = result;
+            Result = result.ThrowIfNullOrWhiteSpace();
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using PSADT.Interop.Extensions;
 using PSAppDeployToolkit.Extensions;
 using PSAppDeployToolkit.Foundation;
 
@@ -202,14 +203,8 @@ namespace PSAppDeployToolkit.Logging
                 _ = sb.Append("[Invalid UTF-16 Low Surrogate \\u"); AppendHex4(sb, low); _ = sb.Append(']');
             }
 
-            // Validate input.
-            if (string.IsNullOrWhiteSpace(s))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(s));
-            }
-
             // Process the string, replacing invalid surrogate pairs with markers.
-            StringBuilder? sb = null; int len = s.Length;
+            StringBuilder? sb = null; int len = s.ThrowIfNullOrWhiteSpace().Length;
             for (int i = 0; i < len; i++)
             {
                 // Check if this is a high surrogate.

@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
+using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -51,25 +52,16 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="FileNotFoundException">Thrown if the specified tray icon file does not exist.</exception>
         private BalloonTipOptions(string trayTitle, string trayIcon, string balloonTipTitle, string balloonTipText, ToolTipIcon balloonTipIcon, uint balloonTipTime)
         {
-            if (string.IsNullOrWhiteSpace(trayTitle))
+            // Set initial string properties.
+            TrayTitle = trayTitle.ThrowIfNullOrWhiteSpace();
+            TrayIcon = trayIcon.ThrowIfNullOrWhiteSpace();
+            BalloonTipTitle = balloonTipTitle.ThrowIfNullOrWhiteSpace();
+            BalloonTipText = balloonTipText.ThrowIfNullOrWhiteSpace();
+
+            // Confirm remaining parameters are valid.
+            if (!(MiscUtilities.GetBase64StringBytes(TrayIcon)?.Length > 0) && !File.Exists(TrayIcon))
             {
-                throw new ArgumentNullException(nameof(trayTitle), "TrayTitle value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(trayIcon))
-            {
-                throw new ArgumentNullException(nameof(trayIcon), "TrayIcon value is null or invalid.");
-            }
-            if (!(MiscUtilities.GetBase64StringBytes(trayIcon)?.Length > 0) && !File.Exists(trayIcon))
-            {
-                throw new FileNotFoundException($"The specified AppIconImage [{trayIcon}] cannot be found", trayIcon);
-            }
-            if (string.IsNullOrWhiteSpace(balloonTipTitle))
-            {
-                throw new ArgumentNullException(nameof(balloonTipTitle), "BalloonTipTitle value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(balloonTipText))
-            {
-                throw new ArgumentNullException(nameof(balloonTipText), "BalloonTipText value is null or invalid.");
+                throw new FileNotFoundException($"The specified AppIconImage [{TrayIcon}] cannot be found", TrayIcon);
             }
             if ((int)balloonTipIcon == -1)
             {
@@ -79,10 +71,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(balloonTipTime), "BalloonTipTime value is null or invalid.");
             }
-            TrayTitle = trayTitle;
-            TrayIcon = trayIcon;
-            BalloonTipTitle = balloonTipTitle;
-            BalloonTipText = balloonTipText;
             BalloonTipIcon = balloonTipIcon;
             BalloonTipTime = balloonTipTime;
         }

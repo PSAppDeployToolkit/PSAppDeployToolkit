@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -153,41 +154,13 @@ namespace PSADT.UserInterface.DialogOptions
             /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
             private RestartDialogStrings(string title, string message, string messageTime, string messageRestart, string timeRemaining, string buttonRestartNow, string buttonRestartLater)
             {
-                if (string.IsNullOrWhiteSpace(title))
-                {
-                    throw new ArgumentNullException(nameof(title), "Title value is null or invalid.");
-                }
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    throw new ArgumentNullException(nameof(message), "Message value is null or invalid.");
-                }
-                if (string.IsNullOrWhiteSpace(messageTime))
-                {
-                    throw new ArgumentNullException(nameof(messageTime), "MessageTime value is null or invalid.");
-                }
-                if (string.IsNullOrWhiteSpace(messageRestart))
-                {
-                    throw new ArgumentNullException(nameof(messageRestart), "MessageRestart value is null or invalid.");
-                }
-                if (string.IsNullOrWhiteSpace(timeRemaining))
-                {
-                    throw new ArgumentNullException(nameof(timeRemaining), "TimeRemaining value is null or invalid.");
-                }
-                if (string.IsNullOrWhiteSpace(buttonRestartNow))
-                {
-                    throw new ArgumentNullException(nameof(buttonRestartNow), "ButtonRestartNow value is null or invalid.");
-                }
-                if (string.IsNullOrWhiteSpace(buttonRestartLater))
-                {
-                    throw new ArgumentNullException(nameof(buttonRestartLater), "ButtonRestartLater value is null or invalid.");
-                }
-                Title = title;
-                Message = message;
-                MessageTime = messageTime;
-                MessageRestart = messageRestart;
-                TimeRemaining = timeRemaining;
-                ButtonRestartNow = buttonRestartNow;
-                ButtonRestartLater = buttonRestartLater;
+                Title = title.ThrowIfNullOrWhiteSpace();
+                Message = message.ThrowIfNullOrWhiteSpace();
+                MessageTime = messageTime.ThrowIfNullOrWhiteSpace();
+                MessageRestart = messageRestart.ThrowIfNullOrWhiteSpace();
+                TimeRemaining = timeRemaining.ThrowIfNullOrWhiteSpace();
+                ButtonRestartNow = buttonRestartNow.ThrowIfNullOrWhiteSpace();
+                ButtonRestartLater = buttonRestartLater.ThrowIfNullOrWhiteSpace();
             }
 
             /// <summary>

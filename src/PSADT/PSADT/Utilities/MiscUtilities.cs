@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.Utilities
 {
@@ -49,13 +50,9 @@ namespace PSADT.Utilities
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64String"/> is null, empty, or consists only of white-space characters.</exception>
         public static byte[]? GetBase64StringBytes(string base64String)
         {
-            if (string.IsNullOrWhiteSpace(base64String))
-            {
-                throw new ArgumentNullException(nameof(base64String));
-            }
             try
             {
-                return Convert.FromBase64String(base64String);
+                return Convert.FromBase64String(base64String.ThrowIfNullOrWhiteSpace());
             }
             catch (FormatException)
             {

@@ -1,6 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Xml;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.Utilities
 {
@@ -20,11 +20,7 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument representing the contents of the specified file.</returns>
         internal static XmlDocument SafeLoadFromPath(string path)
         {
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-            if (!File.Exists(path))
+            if (!File.Exists(path.ThrowIfNullOrWhiteSpace()))
             {
                 throw new FileNotFoundException($"The specified file does not exist: {path}", path);
             }
@@ -39,11 +35,7 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument representing the parsed XML content.</returns>
         internal static XmlDocument SafeLoadFromText(string input)
         {
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-            using StringReader reader = new(input);
+            using StringReader reader = new(input.ThrowIfNullOrWhiteSpace());
             return SafeLoadCommon(reader);
         }
 

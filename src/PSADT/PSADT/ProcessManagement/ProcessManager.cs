@@ -625,15 +625,11 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                throw new ArgumentException("Input cannot be null or empty.", nameof(input));
-            }
             if (environment is null)
             {
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
-            return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
+            return EnvironmentVariableRegex.Replace(input.ThrowIfNullOrWhiteSpace(), m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
 
         /// <summary>

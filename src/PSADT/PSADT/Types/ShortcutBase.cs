@@ -1,4 +1,5 @@
 ﻿using System;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.Types
 {
@@ -16,19 +17,6 @@ namespace PSADT.Types
         /// <param name="iconLocation">The location of the icon used for the shortcut.</param>
         private protected ShortcutBase(string path, string targetPath, string? iconLocation, string? iconIndex)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException("Invalid file path provided for the shortcut.");
-            }
-            Path = path;
-
-            if (string.IsNullOrWhiteSpace(targetPath))
-            {
-                throw new ArgumentException("Invalid target path provided for the shortcut.");
-            }
-            TargetPath = targetPath;
-            IconLocation = iconLocation;
-
             if (!string.IsNullOrWhiteSpace(iconIndex))
             {
                 if (!int.TryParse(iconIndex, out int parsedIndex))
@@ -37,6 +25,9 @@ namespace PSADT.Types
                 }
                 IconIndex = parsedIndex;
             }
+            Path = path.ThrowIfNullOrWhiteSpace();
+            TargetPath = targetPath.ThrowIfNullOrWhiteSpace();
+            IconLocation = iconLocation;
         }
 
         /// <summary>

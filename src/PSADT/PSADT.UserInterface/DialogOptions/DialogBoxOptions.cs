@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -47,14 +48,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
         private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint dialogExpiryDuration)
         {
-            if (string.IsNullOrWhiteSpace(appTitle))
-            {
-                throw new ArgumentNullException(nameof(appTitle), "AppTitle value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(messageText))
-            {
-                throw new ArgumentNullException(nameof(messageText), "MessageText value is null or invalid.");
-            }
             if ((uint)dialogButtons == uint.MaxValue)
             {
                 throw new ArgumentNullException(nameof(dialogButtons), "DialogButtons value is null or invalid.");
@@ -67,8 +60,8 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
             }
-            AppTitle = appTitle;
-            MessageText = messageText;
+            AppTitle = appTitle.ThrowIfNullOrWhiteSpace();
+            MessageText = messageText.ThrowIfNullOrWhiteSpace();
             DialogButtons = dialogButtons;
             DialogDefaultButton = dialogDefaultButton;
             DialogIcon = dialogIcon;

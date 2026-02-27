@@ -3,6 +3,7 @@ using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -71,43 +72,31 @@ namespace PSADT.UserInterface.DialogOptions
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
         private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
-            if (string.IsNullOrWhiteSpace(appTitle))
-            {
-                throw new ArgumentNullException(nameof(appTitle), "AppTitle value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(subtitle))
-            {
-                throw new ArgumentNullException(nameof(subtitle), "Subtitle value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(appIconImage))
-            {
-                throw new ArgumentNullException(nameof(appIconImage), "AppIconImage value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(appIconDarkImage))
-            {
-                throw new ArgumentNullException(nameof(appIconDarkImage), "AppIconDarkImage value is null or invalid.");
-            }
-            if (string.IsNullOrWhiteSpace(appBannerImage))
-            {
-                throw new ArgumentNullException(nameof(appBannerImage), "AppBannerImage value is null or invalid.");
-            }
+            // Confirm that the language parameter is not null before attempting to access its properties.
             if (language is null)
             {
                 throw new ArgumentNullException(nameof(language), "Language value is null or invalid.");
             }
 
+            // Set initial string properties.
+            AppTitle = appTitle.ThrowIfNullOrWhiteSpace();
+            Subtitle = subtitle.ThrowIfNullOrWhiteSpace();
+            AppIconImage = appIconImage.ThrowIfNullOrWhiteSpace();
+            AppIconDarkImage = appIconDarkImage.ThrowIfNullOrWhiteSpace();
+            AppBannerImage = appBannerImage.ThrowIfNullOrWhiteSpace();
+
             // Test that the specified image paths are valid.
-            if (!(MiscUtilities.GetBase64StringBytes(appIconImage)?.Length > 0) && !File.Exists(appIconImage))
+            if (!(MiscUtilities.GetBase64StringBytes(AppIconImage)?.Length > 0) && !File.Exists(AppIconImage))
             {
-                throw new FileNotFoundException($"The specified AppIconImage [{appIconImage}] cannot be found", appIconImage);
+                throw new FileNotFoundException($"The specified AppIconImage [{AppIconImage}] cannot be found", AppIconImage);
             }
-            if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
+            if (!(MiscUtilities.GetBase64StringBytes(AppIconDarkImage)?.Length > 0) && !File.Exists(AppIconDarkImage))
             {
-                throw new FileNotFoundException($"The specified AppIconDarkImage [{appIconDarkImage}] cannot be found", appIconDarkImage);
+                throw new FileNotFoundException($"The specified AppIconDarkImage [{AppIconDarkImage}] cannot be found", AppIconDarkImage);
             }
-            if (!(MiscUtilities.GetBase64StringBytes(appBannerImage)?.Length > 0) && !File.Exists(appBannerImage))
+            if (!(MiscUtilities.GetBase64StringBytes(AppBannerImage)?.Length > 0) && !File.Exists(AppBannerImage))
             {
-                throw new FileNotFoundException($"The specified AppBannerImage [{appBannerImage}] cannot be found", appBannerImage);
+                throw new FileNotFoundException($"The specified AppBannerImage [{AppBannerImage}] cannot be found", AppBannerImage);
             }
 
             // AppTaskbarIconImage is optional, so only validate it if it has a value.
@@ -121,11 +110,6 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Set all remaining properties.
-            AppTitle = appTitle;
-            Subtitle = subtitle;
-            AppIconImage = appIconImage;
-            AppIconDarkImage = appIconDarkImage;
-            AppBannerImage = appBannerImage;
             DialogTopMost = dialogTopMost;
             LanguageName = language.Name;
             FluentAccentColor = fluentAccentColor;

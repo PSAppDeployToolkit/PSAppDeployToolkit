@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Security.Principal;
+using PSADT.Interop.Extensions;
 using PSADT.TerminalServices;
 
 namespace PSADT.Foundation
@@ -24,16 +25,8 @@ namespace PSADT.Foundation
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
-            if (nTAccount?.Value is not string ntAccountValue || string.IsNullOrWhiteSpace(ntAccountValue))
-            {
-                throw new ArgumentNullException(nameof(nTAccount));
-            }
-            if (sID?.Value is not string sidValue || string.IsNullOrWhiteSpace(sidValue))
-            {
-                throw new ArgumentNullException(nameof(sID));
-            }
-            NTAccountValue = ntAccountValue;
-            SIDValue = sidValue;
+            NTAccountValue = nTAccount?.Value.ThrowIfNullOrWhiteSpace()!;
+            SIDValue = sID?.Value.ThrowIfNullOrWhiteSpace()!;
             SessionId = sessionId;
             IsLocalAdmin = isLocalAdmin;
         }

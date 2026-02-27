@@ -8,6 +8,7 @@ using System.Security.Principal;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using PSADT.Security;
 
 namespace PSADT.ProcessManagement
@@ -197,8 +198,8 @@ namespace PSADT.ProcessManagement
         private RunningProcessInfo(Process process, string description, string fileName, IEnumerable<string> argumentList, SecurityIdentifier? sid)
         {
             Process = process ?? throw new ArgumentNullException("Process cannot be null.", (Exception?)null);
-            Description = !string.IsNullOrWhiteSpace(description) ? description : throw new ArgumentNullException("Description cannot be null or empty.", (Exception?)null);
-            FileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : throw new ArgumentNullException("FileName cannot be null or empty.", (Exception?)null);
+            Description = description.ThrowIfNullOrWhiteSpace();
+            FileName = fileName.ThrowIfNullOrWhiteSpace();
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
             if (sid is not null)
             {

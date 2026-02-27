@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using PSADT.FileSystem;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.ProcessManagement
 {
@@ -39,18 +40,9 @@ namespace PSADT.ProcessManagement
         /// DOS drive paths (like C:\Program Files\app.exe) and UNC paths (like \\server\share\file.exe)
         /// that contain spaces and group them as single arguments.
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool strict = false)
         {
-            if (string.IsNullOrWhiteSpace(commandLine))
-            {
-                throw new ArgumentNullException(nameof(commandLine));
-            }
-            if (strict)
-            {
-                return CommandLineToArgumentListStrict(commandLine.AsSpan());
-            }
-            return CommandLineToArgumentListEnhanced(commandLine.AsSpan());
+            return strict ? CommandLineToArgumentListStrict(commandLine.ThrowIfNullOrWhiteSpace().AsSpan()) : CommandLineToArgumentListEnhanced(commandLine.ThrowIfNullOrWhiteSpace().AsSpan());
         }
 
         /// <summary>

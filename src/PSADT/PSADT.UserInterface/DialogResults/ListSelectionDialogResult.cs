@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogResults
@@ -19,7 +20,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <exception cref="ArgumentNullException">Thrown if the selectedItem parameter is null or an empty string.</exception>
         internal ListSelectionDialogResult(string result, string selectedItem) : base(result)
         {
-            SelectedItem = !string.IsNullOrWhiteSpace(selectedItem) ? selectedItem : throw new ArgumentNullException("SelectedItem cannot be null or empty.", (Exception?)null);
+            SelectedItem = selectedItem.ThrowIfNullOrWhiteSpace();
         }
 
         /// <summary>

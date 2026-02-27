@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using PSADT.Interop.Extensions;
 using PSADT.ProcessManagement;
 
 namespace PSADT.Types
@@ -52,11 +53,11 @@ namespace PSADT.Types
             bool windowsInstaller,
             bool? is64BitApplication)
         {
-            PSPath = !string.IsNullOrWhiteSpace(psPath) ? psPath : throw new ArgumentNullException("PSPath cannot be null or empty.", (Exception?)null);
-            PSParentPath = !string.IsNullOrWhiteSpace(psParentPath) ? psParentPath : throw new ArgumentNullException("PSParentPath cannot be null or empty.", (Exception?)null);
-            PSChildName = !string.IsNullOrWhiteSpace(psChildName) ? psChildName : throw new ArgumentNullException("PSChildName cannot be null or empty.", (Exception?)null);
+            PSPath = psPath.ThrowIfNullOrWhiteSpace();
+            PSParentPath = psParentPath.ThrowIfNullOrWhiteSpace();
+            PSChildName = psChildName.ThrowIfNullOrWhiteSpace();
             ProductCode = productCode;
-            DisplayName = !string.IsNullOrWhiteSpace(displayName) ? displayName : throw new ArgumentNullException("DisplayName cannot be null or empty.", (Exception?)null);
+            DisplayName = displayName.ThrowIfNullOrWhiteSpace();
             DisplayVersion = !string.IsNullOrWhiteSpace(displayVersion) ? displayVersion : null;
             UninstallString = !string.IsNullOrWhiteSpace(uninstallString) ? uninstallString : null;
             QuietUninstallString = !string.IsNullOrWhiteSpace(quietUninstallString) ? quietUninstallString : null;

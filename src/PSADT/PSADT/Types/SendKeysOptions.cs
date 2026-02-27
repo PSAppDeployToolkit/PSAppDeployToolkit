@@ -1,5 +1,5 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.Types
 {
@@ -24,7 +24,7 @@ namespace PSADT.Types
         public SendKeysOptions(nint windowHandle, string keys)
         {
             WindowHandle = windowHandle;
-            Keys = !string.IsNullOrWhiteSpace(keys) ? keys : throw new ArgumentNullException("Keys cannot be null or empty.", (Exception?)null);
+            Keys = keys.ThrowIfNullOrWhiteSpace();
         }
 
         /// <summary>

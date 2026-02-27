@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -273,67 +274,18 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonContinueTooltip">The tooltip text for the continue button, providing additional context or instructions.</param>
                 private CloseAppsDialogClassicStrings(string welcomeMessage, string closeAppsMessage, string expiryMessage, string deferralsRemaining, string deferralDeadline, string expiryWarning, string countdownDefer, string countdownClose, string buttonClose, string buttonDefer, string buttonContinue, string buttonContinueTooltip)
                 {
-                    if (string.IsNullOrWhiteSpace(welcomeMessage))
-                    {
-                        throw new ArgumentNullException(nameof(welcomeMessage), "WelcomeMessage value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(closeAppsMessage))
-                    {
-                        throw new ArgumentNullException(nameof(closeAppsMessage), "CloseAppsMessage value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(expiryMessage))
-                    {
-                        throw new ArgumentNullException(nameof(expiryMessage), "ExpiryMessage value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(deferralsRemaining))
-                    {
-                        throw new ArgumentNullException(nameof(deferralsRemaining), "DeferralsRemaining value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(deferralDeadline))
-                    {
-                        throw new ArgumentNullException(nameof(deferralDeadline), "DeferralDeadline value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(expiryWarning))
-                    {
-                        throw new ArgumentNullException(nameof(expiryWarning), "ExpiryWarning value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(countdownDefer))
-                    {
-                        throw new ArgumentNullException(nameof(countdownDefer), "CountdownDefer value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(countdownClose))
-                    {
-                        throw new ArgumentNullException(nameof(countdownClose), "CountdownClose value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonClose))
-                    {
-                        throw new ArgumentNullException(nameof(buttonClose), "ButtonClose value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonDefer))
-                    {
-                        throw new ArgumentNullException(nameof(buttonDefer), "ButtonDefer value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonContinue))
-                    {
-                        throw new ArgumentNullException(nameof(buttonContinue), "ButtonContinue value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonContinueTooltip))
-                    {
-                        throw new ArgumentNullException(nameof(buttonContinueTooltip), "ButtonContinueTooltip value is null or invalid.");
-                    }
-
-                    WelcomeMessage = welcomeMessage;
-                    CloseAppsMessage = closeAppsMessage;
-                    ExpiryMessage = expiryMessage;
-                    DeferralsRemaining = deferralsRemaining;
-                    DeferralDeadline = deferralDeadline;
-                    ExpiryWarning = expiryWarning;
-                    CountdownDefer = countdownDefer;
-                    CountdownClose = countdownClose;
-                    ButtonClose = buttonClose;
-                    ButtonDefer = buttonDefer;
-                    ButtonContinue = buttonContinue;
-                    ButtonContinueTooltip = buttonContinueTooltip;
+                    WelcomeMessage = welcomeMessage.ThrowIfNullOrWhiteSpace();
+                    CloseAppsMessage = closeAppsMessage.ThrowIfNullOrWhiteSpace();
+                    ExpiryMessage = expiryMessage.ThrowIfNullOrWhiteSpace();
+                    DeferralsRemaining = deferralsRemaining.ThrowIfNullOrWhiteSpace();
+                    DeferralDeadline = deferralDeadline.ThrowIfNullOrWhiteSpace();
+                    ExpiryWarning = expiryWarning.ThrowIfNullOrWhiteSpace();
+                    CountdownDefer = countdownDefer.ThrowIfNullOrWhiteSpace();
+                    CountdownClose = countdownClose.ThrowIfNullOrWhiteSpace();
+                    ButtonClose = buttonClose.ThrowIfNullOrWhiteSpace();
+                    ButtonDefer = buttonDefer.ThrowIfNullOrWhiteSpace();
+                    ButtonContinue = buttonContinue.ThrowIfNullOrWhiteSpace();
+                    ButtonContinueTooltip = buttonContinueTooltip.ThrowIfNullOrWhiteSpace();
                 }
 
                 /// <summary>
@@ -466,47 +418,14 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonLeftTextNoProcesses">The text displayed on the left button when no processes are detected.</param>
                 private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftTextNoProcesses)
                 {
-                    if (string.IsNullOrWhiteSpace(dialogMessage))
-                    {
-                        throw new ArgumentNullException(nameof(dialogMessage), "DialogMessage value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(dialogMessageNoProcesses))
-                    {
-                        throw new ArgumentNullException(nameof(dialogMessageNoProcesses), "DialogMessageNoProcesses value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(automaticStartCountdown))
-                    {
-                        throw new ArgumentNullException(nameof(automaticStartCountdown), "AutomaticStartCountdown value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(deferralsRemaining))
-                    {
-                        throw new ArgumentNullException(nameof(deferralsRemaining), "DeferralsRemaining value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(deferralDeadline))
-                    {
-                        throw new ArgumentNullException(nameof(deferralDeadline), "DeferralDeadline value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonLeftText))
-                    {
-                        throw new ArgumentNullException(nameof(buttonLeftText), "ButtonLeftText value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonRightText))
-                    {
-                        throw new ArgumentNullException(nameof(buttonRightText), "ButtonRightText value is null or invalid.");
-                    }
-                    if (string.IsNullOrWhiteSpace(buttonLeftTextNoProcesses))
-                    {
-                        throw new ArgumentNullException(nameof(buttonLeftTextNoProcesses), "ButtonLeftNoProcessesText value is null or invalid.");
-                    }
-
-                    DialogMessage = dialogMessage;
-                    DialogMessageNoProcesses = dialogMessageNoProcesses;
-                    AutomaticStartCountdown = automaticStartCountdown;
-                    DeferralsRemaining = deferralsRemaining;
-                    DeferralDeadline = deferralDeadline;
-                    ButtonLeftText = buttonLeftText;
-                    ButtonRightText = buttonRightText;
-                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses;
+                    DialogMessage = dialogMessage.ThrowIfNullOrWhiteSpace();
+                    DialogMessageNoProcesses = dialogMessageNoProcesses.ThrowIfNullOrWhiteSpace();
+                    AutomaticStartCountdown = automaticStartCountdown.ThrowIfNullOrWhiteSpace();
+                    DeferralsRemaining = deferralsRemaining.ThrowIfNullOrWhiteSpace();
+                    DeferralDeadline = deferralDeadline.ThrowIfNullOrWhiteSpace();
+                    ButtonLeftText = buttonLeftText.ThrowIfNullOrWhiteSpace();
+                    ButtonRightText = buttonRightText.ThrowIfNullOrWhiteSpace();
+                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses.ThrowIfNullOrWhiteSpace();
                 }
 
                 /// <summary>

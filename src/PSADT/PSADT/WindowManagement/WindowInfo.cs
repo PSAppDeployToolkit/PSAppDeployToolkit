@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 
 namespace PSADT.WindowManagement
 {
@@ -19,9 +20,9 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandle">The handle to the main window of the parent process.</param>
         internal WindowInfo(string windowTitle, nint windowHandle, string parentProcess, int parentProcessId, nint parentProcessMainWindowHandle)
         {
-            WindowTitle = !string.IsNullOrWhiteSpace(windowTitle) ? windowTitle : throw new ArgumentNullException("Window title cannot be null or empty.", (Exception?)null);
+            WindowTitle = windowTitle.ThrowIfNullOrWhiteSpace();
             WindowHandle = windowHandle != default ? windowHandle : throw new ArgumentNullException("Window handle cannot be null.", (Exception?)null);
-            ParentProcess = !string.IsNullOrWhiteSpace(parentProcess) ? parentProcess : throw new ArgumentNullException("Parent process name cannot be null or empty.", (Exception?)null);
+            ParentProcess = parentProcess.ThrowIfNullOrWhiteSpace();
             ParentProcessId = parentProcessId > 0 ? parentProcessId : throw new ArgumentNullException("Parent process ID cannot be null or empty.", (Exception?)null);
             ParentProcessMainWindowHandle = parentProcessMainWindowHandle != default ? parentProcessMainWindowHandle : throw new ArgumentNullException("Parent process main window handle cannot be null.", (Exception?)null);
         }

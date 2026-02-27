@@ -1,5 +1,5 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+using PSADT.Interop.Extensions;
 using PSAppDeployToolkit.Logging;
 
 namespace PSADT.ClientServer.Payloads
@@ -36,8 +36,8 @@ namespace PSADT.ClientServer.Payloads
         /// <param name="source">The source of the log message.</param>
         internal LogMessagePayload(string message, LogSeverity severity, string source)
         {
-            Message = !string.IsNullOrWhiteSpace(message) ? message : throw new ArgumentNullException(nameof(message), "Message cannot be null or whitespace.");
-            Source = !string.IsNullOrWhiteSpace(source) ? source : throw new ArgumentNullException(nameof(source), "Source cannot be null or whitespace.");
+            Message = message.ThrowIfNullOrWhiteSpace();
+            Source = source.ThrowIfNullOrWhiteSpace();
             Severity = severity;
         }
     }
