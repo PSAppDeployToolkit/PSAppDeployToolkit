@@ -200,14 +200,10 @@ namespace PSADT.TerminalServices
         private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
         {
             // If we have the privileges, we can get the SID from the user's token.
-            if (AccountUtilities.CallerIsLocalSystem)
+            if (AccountUtilities.CallerIsAdmin)
             {
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = NativeMethods.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken);
-                using (hUserToken)
-                {
-                    return TokenUtilities.GetTokenSid(hUserToken);
-                }
+                using SafeFileHandle hUserToken = TokenManager.GetUserPrimaryToken(sessionid);
+                return TokenUtilities.GetTokenSid(hUserToken);
             }
 
             // If we're an admin, we can get the SID from a process running in the session.
@@ -268,14 +264,10 @@ namespace PSADT.TerminalServices
         private static bool IsWtsSessionUserLocalAdmin(uint sessionid, SecurityIdentifier sid)
         {
             // If we have the privileges, we can get the user's token and do a WindowsIdentity check.
-            if (AccountUtilities.CallerIsLocalSystem)
+            if (AccountUtilities.CallerIsAdmin)
             {
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = NativeMethods.WTSQueryUserToken(sessionid, out SafeFileHandle hUserToken); using (hUserToken)
-                using (SafeFileHandle hPrimaryToken = TokenManager.GetHighestPrimaryToken(hUserToken))
-                {
-                    return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
-                }
+                using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionid, ElevatedTokenType.HighestAvailable);
+                return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
             }
             return AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
         }

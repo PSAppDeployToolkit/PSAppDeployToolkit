@@ -9,6 +9,7 @@ using System.Threading;
 using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.Interop;
+using PSADT.Security;
 
 namespace PSADT.ProcessManagement
 {
@@ -152,10 +153,19 @@ namespace PSADT.ProcessManagement
                     : IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
             }
 
+            // Set up the token type to use. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
+            if (useHighestAvailableToken)
+            {
+                ElevatedTokenType = ElevatedTokenType.HighestAvailable;
+
+            }
+            if (useLinkedAdminToken)
+            {
+                ElevatedTokenType = ElevatedTokenType.HighestMandatory;
+            }
+
             // Set remaining parameters.
             RunAsActiveUser = runAsActiveUser;
-            UseLinkedAdminToken = useLinkedAdminToken;
-            UseHighestAvailableToken = useHighestAvailableToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             ExpandEnvironmentVariables = expandEnvironmentVariables;
             DenyUserTermination = denyUserTermination;
@@ -212,18 +222,11 @@ namespace PSADT.ProcessManagement
         public readonly RunAsActiveUser? RunAsActiveUser;
 
         /// <summary>
-        /// Gets a value indicating whether to use the linked admin token to start the process.
+        /// Gets a value indicating the token type to use when starting a process for another user.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly bool UseLinkedAdminToken;
-
-        /// <summary>
-        /// Gets a value indicating whether to use the highest available token to start the process.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
-        [DataMember]
-        public readonly bool UseHighestAvailableToken;
+        public readonly ElevatedTokenType ElevatedTokenType;
 
         /// <summary>
         /// Gets a value indicating whether to inherit the environment variables of the current process.

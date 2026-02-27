@@ -373,11 +373,12 @@ namespace PSADT.ClientServer
                 typeof(UserInterface.DialogResults.ListSelectionDialogResult),
 
                 // Process and window types
+                typeof(Foundation.RunAsActiveUser),
+                typeof(Interop.QUERY_USER_NOTIFICATION_STATE),
                 typeof(ProcessManagement.ProcessDefinition),
                 typeof(ProcessManagement.ProcessLaunchInfo),
                 typeof(ProcessManagement.ProcessResult),
-                typeof(Interop.QUERY_USER_NOTIFICATION_STATE),
-                typeof(Foundation.RunAsActiveUser),
+                typeof(Security.ElevatedTokenType),
                 typeof(WindowManagement.WindowInfo),
                 typeof(WindowManagement.WindowInfoOptions),
 

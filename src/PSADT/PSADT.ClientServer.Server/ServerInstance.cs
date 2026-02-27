@@ -11,6 +11,7 @@ using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.ProcessManagement;
+using PSADT.Security;
 using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
@@ -87,8 +88,8 @@ namespace PSADT.ClientServer
                     ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
                     Environment.SystemDirectory,
                     RunAsActiveUser,
-                    UseLinkedAdminToken,
-                    UseHighestAvailableToken,
+                    ElevatedTokenType == ElevatedTokenType.HighestMandatory,
+                    ElevatedTokenType == ElevatedTokenType.HighestAvailable,
                     denyUserTermination: true,
                     handlesToInherit: [NumericalUtilities.ParseIntPtr(outputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(inputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(logServerClientSafePipeHandle)],
                     createNoWindow: true,
@@ -880,18 +881,11 @@ namespace PSADT.ClientServer
         public const string SuccessSentinel = "\x1F";
 
         /// <summary>
-        /// Indicates whether a linked administrator token should be used.
-        /// </summary>
-        /// <remarks>This constant is set to <see langword="false"/>, meaning that linked administrator
-        /// tokens are not utilized by default. This value is internal and cannot be modified.</remarks>
-        internal const bool UseLinkedAdminToken = false;
-
-        /// <summary>
         /// Indicates whether the highest available token should be used.
         /// </summary>
         /// <remarks>This constant is set to <see langword="true"/> and is intended for internal use to
         /// specify that the highest available token should be utilized in relevant operations.</remarks>
-        internal const bool UseHighestAvailableToken = true;
+        internal static readonly ElevatedTokenType ElevatedTokenType = ElevatedTokenType.HighestAvailable;
 
         /// <summary>
         /// Represents the server side of an anonymous pipe used for interprocess communication.

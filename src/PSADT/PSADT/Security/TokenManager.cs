@@ -29,37 +29,33 @@ namespace PSADT.Security
     internal static class TokenManager
     {
         /// <summary>
-        /// Retrieves the primary security token for a specified user, optionally obtaining a linked administrative
-        /// token or the highest available token.
+        /// Retrieves the primary access token for a user in the specified session, optionally requesting an elevated
+        /// token type.
         /// </summary>
-        /// <remarks>This method retrieves the primary token for a user by either querying the user's
-        /// session or obtaining the token from an active process associated with the user. If the caller is not running
-        /// as the local system account, the method attempts to locate the user's Explorer process and retrieve its
-        /// token. If the caller is running as the local system account, the method directly queries the user's session
-        /// token.</remarks>
-        /// <param name="runAsActiveUser">The user for whom the primary token is being retrieved. This must represent an active session.</param>
-        /// <param name="useLinkedAdminToken">A value indicating whether to retrieve the linked administrative token for the user, if available. If <see
-        /// langword="true"/>, the method attempts to retrieve the linked token.</param>
-        /// <param name="useHighestAvailableToken">A value indicating whether to retrieve the highest available token for the user if the linked administrative
-        /// token cannot be obtained. If <see langword="true"/>, the method falls back to the highest available token
-        /// when the linked token is unavailable.</param>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the specified user.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the primary token for the specified user cannot be retrieved. This may occur if the user is not
-        /// logged on or does not have an active session.</exception>
-        /// <exception cref="UnauthorizedAccessException">Thrown if the linked administrative token cannot be retrieved and <paramref
-        /// name="useHighestAvailableToken"/> is <see langword="false"/>.</exception>
-        internal static SafeFileHandle GetUserPrimaryToken(RunAsActiveUser runAsActiveUser, bool useLinkedAdminToken, bool useHighestAvailableToken)
+        /// <remarks>This method requires administrative privileges. When called from a non-local system
+        /// context, a token broker process is used to obtain the token. The returned handle can be used to perform
+        /// operations that require user authentication.</remarks>
+        /// <param name="sessionId">The identifier of the session for the user whose primary token is to be retrieved. Must correspond to a
+        /// valid user session.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to retrieve. Specify a value from the ElevatedTokenType enumeration. The default
+        /// is None.</param>
+        /// <returns>A SafeFileHandle representing the user's primary access token. The caller is responsible for disposing of
+        /// the handle when it is no longer needed.</returns>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
+        /// obtained.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
+        internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
-            // Validate parameters.
-            if (runAsActiveUser is null)
-            {
-                throw new ArgumentNullException(nameof(runAsActiveUser));
-            }
-
             // Confirm that the caller is an administrator.
             if (!AccountUtilities.CallerIsAdmin)
             {
                 throw new UnauthorizedAccessException("The caller must be an administrator to retrieve another user's primary token.");
+            }
+
+            // Confirm the session Id isn't the SYSTEM's.
+            if (sessionId == 0)
+            {
+                throw new UnauthorizedAccessException("Brokering of the Local System session token is not permitted.");
             }
 
             // Get the user's token. If we're not local system, we need to use the token broker.
@@ -98,7 +94,7 @@ namespace PSADT.Security
                                         {
                                             using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
                                             using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(EnvironmentInfo.ClientServerClientPath);
-                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {runAsActiveUser.SessionId} -UseLinkedAdminToken {useLinkedAdminToken} -UseHighestAvailableToken {useHighestAvailableToken}");
+                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType}");
                                             bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                             try
                                             {
@@ -202,10 +198,10 @@ namespace PSADT.Security
             {
                 // When we're local system, we can just get the primary token for the user.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = NativeMethods.WTSQueryUserToken(runAsActiveUser.SessionId, out SafeFileHandle hUserToken);
+                _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
                 using (hUserToken)
                 {
-                    if (useLinkedAdminToken || useHighestAvailableToken)
+                    if (elevatedTokenType != ElevatedTokenType.None)
                     {
                         try
                         {
@@ -213,9 +209,9 @@ namespace PSADT.Security
                         }
                         catch (Exception ex)
                         {
-                            if (!useHighestAvailableToken)
+                            if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
                             {
-                                throw new UnauthorizedAccessException($"Failed to get the linked admin token for user [{runAsActiveUser.NTAccount}].", ex);
+                                throw new UnauthorizedAccessException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                             }
                         }
                     }

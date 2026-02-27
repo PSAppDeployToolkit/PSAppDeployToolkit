@@ -29,12 +29,12 @@ namespace PSADT.Foundation
         /// langword="null"/>.</param>
         /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must be absolute
         /// and point to existing files.</param>
-        /// <param name="useLinkedAdminToken">Specifies whether to use the RunAsActiveUser's linked admin token only.</param>
-        /// <param name="useHighestAvailableToken">Specifies whether to use the RunAsActiveUser's linked admin token if available.</param>
+        /// <param name="elevatedTokenType">An optional parameter specifying the type of elevated token to use when checking permissions.
+        /// The default value is <see cref="ElevatedTokenType.None"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
-        internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false)
+        internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
             // Validate the runAsActiveUser parameter.
             if (runAsActiveUser is null)
@@ -43,7 +43,7 @@ namespace PSADT.Foundation
             }
 
             // Get the primary token for the user if they have a valid session ID, then proceed to check and remediate file system permissions.
-            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? TokenManager.GetUserPrimaryToken(runAsActiveUser, useLinkedAdminToken, useHighestAvailableToken) : null;
+            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType) : null;
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
             foreach (FileInfo path in _assemblies.Concat(extraPaths ?? []))
             {

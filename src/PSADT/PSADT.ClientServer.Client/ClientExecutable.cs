@@ -762,13 +762,15 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("The 'SessionId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
-            if (!arguments.TryGetValue("UseLinkedAdminToken", out string? useLinkedAdminTokenStr) || string.IsNullOrWhiteSpace(useLinkedAdminTokenStr) || !bool.TryParse(useLinkedAdminTokenStr, out bool useLinkedAdminToken))
+
+            // Confirm we've got a ElevatedTokenType and that it's valid.
+            if (!arguments.TryGetValue("ElevatedTokenType", out string? elevatedTokenTypeArg) || string.IsNullOrWhiteSpace(elevatedTokenTypeArg))
             {
-                throw new ClientException("The 'UseLinkedAdminTokenStr' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                throw new ClientException("A required ElevatedTokenType was not specified on the command line.", ClientExitCode.InvalidArguments);
             }
-            if (!arguments.TryGetValue("UseHighestAvailableToken", out string? useHighestAvailableTokenStr) || string.IsNullOrWhiteSpace(useHighestAvailableTokenStr) || !bool.TryParse(useHighestAvailableTokenStr, out bool useHighestAvailableToken))
+            if (!Enum.TryParse(elevatedTokenTypeArg, true, out ElevatedTokenType elevatedTokenType))
             {
-                throw new ClientException("The 'UseHighestAvailableTokenStr' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                throw new ClientException($"The specified ElevatedTokenType of [{elevatedTokenType}] is invalid.", ClientExitCode.InvalidArguments);
             }
 
             // Confirm the session Id is greater than 0; we never want to broker SYSTEM tokens.
@@ -781,37 +783,11 @@ namespace PSADT.ClientServer
             using NamedPipeClientStream pipe = new(".", pipeName, PipeDirection.InOut, PipeOptions.None);
             pipe.Connect();
 
-            // Get the user's token from the WTS subsystem.
-            _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
-            SafeFileHandle hPrimaryToken;
-            using (hUserToken)
-            {
-                if (useLinkedAdminToken || useHighestAvailableToken)
-                {
-                    try
-                    {
-                        hPrimaryToken = TokenManager.GetLinkedPrimaryToken(hUserToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!useHighestAvailableToken)
-                        {
-                            throw new ClientException("Failed to get linked admin token.", ClientExitCode.LinkedAdminTokenFailure, ex);
-                        }
-                        hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
-                    }
-                }
-                else
-                {
-                    hPrimaryToken = TokenManager.GetPrimaryToken(hUserToken);
-                }
-            }
-
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
+            using (SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionId, elevatedTokenType))
             using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
             using (SafeProcessHandle hCurrentProcess = NativeMethods.GetCurrentProcess())
-            using (hPrimaryToken)
             {
                 _ = NativeMethods.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
             }
