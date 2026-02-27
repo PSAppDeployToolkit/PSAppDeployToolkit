@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.Extensions;
@@ -104,7 +103,7 @@ namespace PSADT.Interop.SafeHandles
                     DangerousRelease();
                 }
             }
-            return !res ? throw new Win32Exception() : res;
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
