@@ -71,7 +71,6 @@ namespace PSADT.Interop
         /// <returns>A new <see cref="MSI_PERSISTENCE_MODE"/> representing the combined mode.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="left"/> or <paramref name="right"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown when neither operand is MSIDBOPEN_PATCHFILE.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Converting this to conditional expression just makes a mess.")]
         public static MSI_PERSISTENCE_MODE operator +(MSI_PERSISTENCE_MODE left, MSI_PERSISTENCE_MODE right)
         {
             // Validate that neither operand is null.
