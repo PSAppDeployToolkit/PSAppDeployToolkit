@@ -29,7 +29,6 @@ namespace PSADT.TerminalServices
         /// <param name="isUserSession">true if this session is a user session; otherwise, false.</param>
         /// <param name="isRdpSession">true if this session is a Remote Desktop Protocol (RDP) session; otherwise, false.</param>
         /// <param name="isLocalAdmin">true if the user is a local administrator; otherwise, false. Can be null if the status is unknown.</param>
-        /// <param name="isLocalAdminException">The exception encountered when determining local administrator status, or null if no exception occurred.</param>
         /// <param name="logonTime">The date and time when the user logged on to the session.</param>
         /// <param name="idleTime">The duration for which the session has been idle, or null if not available.</param>
         /// <param name="disconnectTime">The date and time when the session was disconnected, or null if the session is currently connected.</param>
@@ -55,7 +54,6 @@ namespace PSADT.TerminalServices
             bool isUserSession,
             bool isRdpSession,
             bool? isLocalAdmin,
-            Exception? isLocalAdminException,
             DateTime logonTime,
             TimeSpan? idleTime,
             DateTime? disconnectTime,
@@ -78,7 +76,6 @@ namespace PSADT.TerminalServices
             IsUserSession = isUserSession;
             IsRdpSession = isRdpSession;
             IsLocalAdmin = isLocalAdmin;
-            IsLocalAdminException = isLocalAdminException;
             LogonTime = logonTime;
             IdleTime = idleTime;
             DisconnectTime = disconnectTime;
@@ -166,11 +163,6 @@ namespace PSADT.TerminalServices
         /// Whether the user of the session is a local administrator.
         /// </summary>
         public bool? IsLocalAdmin { get; }
-
-        /// <summary>
-        /// Represents an exception that occurred while determining whether the current user is a local administrator.
-        /// </summary>
-        public Exception? IsLocalAdminException { get; }
 
         /// <summary>
         /// The logon time of the session.

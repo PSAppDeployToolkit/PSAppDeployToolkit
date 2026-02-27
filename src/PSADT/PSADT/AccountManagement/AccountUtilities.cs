@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.DirectoryServices;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -90,60 +88,6 @@ namespace PSADT.AccountManagement
             return !WellKnownSidLookupTable.TryGetValue(wellKnownSidType, out SecurityIdentifier? sid)
                 ? throw new ArgumentOutOfRangeException(nameof(wellKnownSidType), wellKnownSidType, $"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.")
                 : sid;
-        }
-
-        /// <summary>
-        /// Determines whether the specified security identifier (SID) is a member of a well-known group, including
-        /// nested group memberships.
-        /// </summary>
-        /// <remarks>This method performs a recursive search to account for nested group memberships. It
-        /// tracks visited groups to prevent infinite loops caused by circular group references.</remarks>
-        /// <param name="targetSid">The security identifier to check for membership in the well-known group.</param>
-        /// <param name="wellKnownGroupSid">A value that identifies the well-known group to check against.</param>
-        /// <returns>true if the specified SID is a member of the well-known group; otherwise, false.</returns>
-        internal static bool IsSidMemberOfWellKnownGroup(SecurityIdentifier targetSid, WellKnownSidType wellKnownGroupSid)
-        {
-            // Internal method to recursively check group membership.
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No idea, but the compiler just doesn't understand that this is OK.")]
-            static bool CheckMemberRecursive(DirectoryEntry groupEntry, SecurityIdentifier targetSid, HashSet<string> visited)
-            {
-                // Return early if we have no members to check.
-                if (groupEntry.Invoke("Members") is not IEnumerable members)
-                {
-                    return false;
-                }
-
-                // Recursively test all member SIDs against our target SID, returning false if we have no match.
-                foreach (object member in members)
-                {
-                    // Skip over already parsed groups (group membership loops).
-                    using DirectoryEntry memberEntry = new(member);
-                    if (!visited.Add(memberEntry.Path))
-                    {
-                        continue;
-                    }
-
-                    // Skip over the SID if it's malformed.
-                    byte[]? sid = (byte[]?)memberEntry.Properties["ObjectSID"].Value;
-                    if (sid is null)
-                    {
-                        continue;
-                    }
-
-                    // Return true if the current SID is the one we're testing for or if the member is a group that contains the target SID.
-                    if (new SecurityIdentifier(sid, 0) == targetSid || (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited)))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            // Recursively check the members of the well-known group SID for the target SID.
-            string groupName = GetWellKnownSid(wellKnownGroupSid).Translate(typeof(NTAccount)).Value;
-            string adsiPath = $"WinNT://./{groupName.Substring(groupName.IndexOf('\\') + 1)},group";
-            HashSet<string> visited = []; using DirectoryEntry groupEntry = new(adsiPath);
-            return CheckMemberRecursive(groupEntry, targetSid, visited);
         }
 
         /// <summary>

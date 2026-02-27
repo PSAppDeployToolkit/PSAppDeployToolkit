@@ -105,27 +105,6 @@ function Get-ADTLoggedOnUser
             {
                 if (($sessionInfo = [PSADT.TerminalServices.SessionManager]::GetSessionInfo()))
                 {
-                    # Write out any local admin check exceptions as warnings prior to writing output.
-                    foreach ($session in $sessionInfo)
-                    {
-                        if ($session.IsLocalAdminException)
-                        {
-                            try
-                            {
-                                $naerParams = @{
-                                    Exception = [System.InvalidProgramException]::new("Failed to determine whether [$($session.NTAccount)] is a local administrator.", $session.IsLocalAdminException)
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                    ErrorId = 'SessionInfoIsLocalAdminError'
-                                    TargetObject = $session
-                                }
-                                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                            }
-                            catch
-                            {
-                                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -ErrorAction SilentlyContinue
-                            }
-                        }
-                    }
                     return $sessionInfo
                 }
             }

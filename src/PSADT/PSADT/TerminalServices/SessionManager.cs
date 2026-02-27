@@ -128,15 +128,7 @@ namespace PSADT.TerminalServices
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
 
             // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
-            Exception? isLocalAdminException = null; bool? isLocalAdmin = null;
-            try
-            {
-                isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId, sid);
-            }
-            catch (Exception ex) when (ex.Message is not null)
-            {
-                isLocalAdminException = ex;
-            }
+            bool? isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId);
 
             // If there's an active console session and we've got the privileges, get the idle time via GetLastInputInfo().
             if (isConsoleSession)
@@ -176,7 +168,6 @@ namespace PSADT.TerminalServices
                 pWinStationName is not "Services" and not "RDP-Tcp",
                 clientProtocolType != 0,
                 isLocalAdmin,
-                isLocalAdminException,
                 DateTime.FromFileTime(sessionInfo.LogonTime),
                 idleTime,
                 sessionInfo.DisconnectTime != 0 && !isActiveUserSession ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
@@ -258,18 +249,25 @@ namespace PSADT.TerminalServices
         /// token and evaluating their group membership. If the required privileges are not enabled, it falls back to 
         /// checking the user's SID against the well-known local administrators group.</remarks>
         /// <param name="sessionid">The ID of the WTS session for which the user's administrative status is being checked.</param>
-        /// <param name="sid">The security identifier (SID) of the user associated with the session.</param>
         /// <returns><see langword="true"/> if the user is a member of the local administrators group; otherwise, <see
         /// langword="false"/>.</returns>
-        private static bool IsWtsSessionUserLocalAdmin(uint sessionid, SecurityIdentifier sid)
+        private static bool? IsWtsSessionUserLocalAdmin(uint sessionid)
         {
+            // Just return the caller's admin state if it's the same session.
+            if (sessionid == AccountUtilities.CallerSessionId)
+            {
+                return AccountUtilities.CallerIsAdmin;
+            }
+
             // If we have the privileges, we can get the user's token and do a WindowsIdentity check.
             if (AccountUtilities.CallerIsAdmin)
             {
                 using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionid, ElevatedTokenType.HighestAvailable);
                 return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
             }
-            return AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid);
+
+            // We don't know, and if we can't get it, it doesn't matter.
+            return null;
         }
     }
 }

@@ -24,12 +24,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.18362.0'">
-    <PackageReference Include="System.DirectoryServices" Version="10.0.3" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.3" />
   </ItemGroup>
 
