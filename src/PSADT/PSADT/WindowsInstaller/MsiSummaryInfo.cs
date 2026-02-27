@@ -24,7 +24,7 @@ namespace PSADT.WindowsInstaller
         /// information. If null, no transforms are applied.</param>
         /// <returns>An instance of MsiSummaryInfo containing the summary information extracted from the specified database, with
         /// any transforms applied.</returns>
-        public static MsiSummaryInfo Get(string szDatabasePath, params IReadOnlyList<string>? szTransformFiles)
+        public static MsiSummaryInfo Get(string szDatabasePath, IReadOnlyList<string>? szTransformFiles = null)
         {
             // Get the summary information from the given database, with any specified transform files applied.
             using MsiCloseHandleSafeHandle hSummaryInfo = MsiUtilities.GetSummaryInformation(szDatabasePath, szTransformFiles);

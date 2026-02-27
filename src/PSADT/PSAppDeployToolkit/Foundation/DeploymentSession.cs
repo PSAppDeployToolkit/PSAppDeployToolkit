@@ -389,7 +389,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ProcessDefinition[] msiExecList = [.. (!string.IsNullOrWhiteSpace(DefaultMstFile) ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3, DefaultMstFile!) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
+                            ProcessDefinition[] msiExecList = [.. (!string.IsNullOrWhiteSpace(DefaultMstFile) ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3, [DefaultMstFile!]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
                             if (msiExecList.Length > 0)
                             {
                                 AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
@@ -398,7 +398,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Update our app variables with new values.
-                        IReadOnlyDictionary<string, string> msiProps = (!string.IsNullOrWhiteSpace(DefaultMstFile) ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2, DefaultMstFile!) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2))!;
+                        IReadOnlyDictionary<string, string> msiProps = (!string.IsNullOrWhiteSpace(DefaultMstFile) ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2, [DefaultMstFile!]) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2))!;
                         if (string.IsNullOrWhiteSpace(AppVendor))
                         {
                             AppVendor = msiProps["Manufacturer"];
