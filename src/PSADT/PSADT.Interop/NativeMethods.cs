@@ -1911,6 +1911,7 @@ namespace PSADT.Interop
             {
                 res = PInvoke.ReadProcessMemory(hProcess.ThrowIfNullOrClosed(), (void*)lpBaseAddress, lpBuffer, out lpNumberOfBytesRead);
             }
+            lpNumberOfBytesRead = lpNumberOfBytesRead.ThrowIfZeroOrMinusOne();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
