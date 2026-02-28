@@ -269,7 +269,10 @@ namespace PSADT.Interop
                     res = PInvoke.AdjustTokenPrivileges(TokenHandle.ThrowIfNullOrInvalid(), DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength);
                 }
             }
-            ReturnLength = ReturnLength.ThrowIfZero();
+            if (PreviousState.Length != 0)
+            {
+                ReturnLength = ReturnLength.ThrowIfZero();
+            }
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
