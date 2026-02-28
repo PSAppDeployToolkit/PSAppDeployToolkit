@@ -44,7 +44,7 @@ namespace PSADT.Security
                 string privilegeName = refBuf.ToString();
                 if (!Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege))
                 {
-                    throw new InvalidOperationException("Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.");
+                    throw new InvalidOperationException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.");
                 }
                 return privilege;
             }
