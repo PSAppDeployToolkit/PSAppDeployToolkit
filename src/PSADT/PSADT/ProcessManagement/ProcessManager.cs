@@ -819,14 +819,15 @@ namespace PSADT.ProcessManagement
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus canUseCreateProcessAsUser = CanUseCreateProcessAsUser(isCallerToken);
-            if (canUseCreateProcessAsUser is CreateProcessUsingTokenStatus.OK or CreateProcessUsingTokenStatus.JobBreakawayNotPermitted)
+            bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
+            if (canUseCreateProcessAsUser is CreateProcessUsingTokenStatus.OK || forceBreakaway || handlesToInherit.Count > 0)
             {
                 // Ensure necessary privileges are enabled.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
-                if ((canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted) is bool forceBreakaway && (handlesToInherit.Count > 0 || forceBreakaway))
+                if (handlesToInherit.Count > 0 || forceBreakaway)
                 {
                     // Create the extended startup info with the necessary attributes.
                     (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
@@ -847,7 +848,10 @@ namespace PSADT.ProcessManagement
                     }
                     return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                 }
-                throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
+                else
+                {
+                    throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
+                }
             }
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
@@ -867,7 +871,7 @@ namespace PSADT.ProcessManagement
 
             // Neither CreateProcessAsUser() nor CreateProcessWithToken() can be used.
             string exceptionMessage = "Unable to create a new process via token.";
-            if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK)
+            if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK && !forceBreakaway)
             {
                 exceptionMessage += $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}";
             }
