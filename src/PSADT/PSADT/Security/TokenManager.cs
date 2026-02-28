@@ -93,7 +93,7 @@ namespace PSADT.Security
                                         try
                                         {
                                             using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
-                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(EnvironmentInfo.ClientServerClientPath);
+                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(EnvironmentInfo.ClientServerClientCompatiblePath);
                                             using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType}");
                                             bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                             try
