@@ -435,10 +435,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     break;
 
                 case DialogPosition.Oobe:
-                    // Center vertically, offset to the left from center by half the dialog's width + 10% of the dialog's width (in DIPs)
+                    // Center vertically on full screen (compensating for non-existent taskbar in OOBE)
+                    // Calculate taskbar offset in pixels: difference between full screen and working area
+                    Rectangle screenBounds = screen.Bounds;
+                    int taskbarOffsetPixels = screenBounds.Height - workingArea.Height - (workingArea.Top - screenBounds.Top);
                     double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
                     left = workingArea.Left + ((workingArea.Width - Width) / 2) - (Width / dpiScale * 0.6 * dpiScale);
-                    top = workingArea.Top + ((workingArea.Height - Height) / 2);
+                    top = workingArea.Top + ((workingArea.Height - Height) / 2) + (taskbarOffsetPixels / 2.0);
                     break;
 
                 case DialogPosition.Center:

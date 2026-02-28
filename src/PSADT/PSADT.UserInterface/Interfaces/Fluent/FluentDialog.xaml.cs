@@ -852,9 +852,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     break;
 
                 case DialogPosition.Oobe:
-                    // Center vertically, offset to the left from center by half the dialog's width + 10% of the dialog's width
+                    // Center vertically on full screen (compensating for non-existent taskbar in OOBE)
+                    // Calculate taskbar offset: difference between full screen and working area
+                    double taskbarOffset = SystemParameters.PrimaryScreenHeight - workingArea.Height - workingArea.Top;
                     left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2) - (ActualWidth * 0.6);
-                    top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
+                    top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2) + (taskbarOffset / 2);
                     break;
 
                 case DialogPosition.BottomRight:
