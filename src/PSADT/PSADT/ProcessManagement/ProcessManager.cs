@@ -53,7 +53,6 @@ namespace PSADT.ProcessManagement
         /// null if the process could not be started.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="launchInfo"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the process fails to start.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The setup is too complex for the compiler to understand.")]
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
@@ -62,28 +61,41 @@ namespace PSADT.ProcessManagement
                 throw new ArgumentNullException(nameof(launchInfo));
             }
             Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask, hStdInTask = Task.CompletedTask;
+            AnonymousPipeServerStream? hStdOutRead = null;
+            AnonymousPipeServerStream? hStdErrRead = null;
+            AnonymousPipeServerStream? hStdInWrite = null;
             List<string> stdout = [], stderr = [];
             ConcurrentQueue<string> interleaved = [];
             SafeProcessHandle? hProcess;
+            SafeFileHandle? iocp = null;
+            SafeFileHandle? job = null;
+            bool iocpAddRef = false;
             Process process;
             uint? processId;
             string commandLine;
 
-            // Set up the job object and I/O completion port for the process.
-            // No using statements here, they're disposed of in the final task.
+            // Determine whether this process should be assigned to a job or not.
             bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
-            SafeFileHandle iocp = NativeMethods.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, default, 1);
-            SafeFileHandle job = NativeMethods.CreateJobObject(null, default); bool iocpAddRef = false; iocp.DangerousAddRef(ref iocpAddRef);
-            _ = NativeMethods.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+            if (assignProcessToJob)
             {
-                CompletionPort = (HANDLE)iocp.DangerousGetHandle(),
-                CompletionKey = null,
-            });
+                // Set up the job object and I/O completion port for the process.
+                // No using statements here, they're disposed of in the final task.
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                iocp = NativeMethods.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, default, 1);
+                job = NativeMethods.CreateJobObject(null, default);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                iocp.DangerousAddRef(ref iocpAddRef);
+                _ = NativeMethods.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+                {
+                    CompletionPort = (HANDLE)iocp.DangerousGetHandle(),
+                    CompletionKey = null,
+                });
+            }
 
             // Set up the required job limit if child processes must be killed with the parent.
             if (launchInfo.KillChildProcessesWithParent)
             {
-                _ = NativeMethods.SetInformationJobObject(job, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+                _ = NativeMethods.SetInformationJobObject(job!, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
                 {
                     BasicLimitInformation = new()
                     {
@@ -96,9 +108,6 @@ namespace PSADT.ProcessManagement
             // Invoking processes as user has no ShellExecute capability, so it always comes through here.
             if (launchInfo.RunAsActiveUser is not null || launchInfo.CreateNoWindow || !launchInfo.UseShellExecute)
             {
-                AnonymousPipeServerStream? hStdOutRead = null;
-                AnonymousPipeServerStream? hStdErrRead = null;
-                AnonymousPipeServerStream? hStdInWrite = null;
                 SafePipeHandle? hStdOutWrite = null;
                 SafePipeHandle? hStdErrWrite = null;
                 SafePipeHandle? hStdInRead = null;
@@ -152,8 +161,10 @@ namespace PSADT.ProcessManagement
 
                     if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                     {
+#pragma warning disable CA2000 // Dispose objects before losing scope
                         hStdOutRead = new(PipeDirection.In, HandleInheritability.Inheritable);
                         hStdErrRead = new(PipeDirection.In, HandleInheritability.Inheritable);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                         hStdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
                         hStdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
                         hStdOutWrite = hStdOutRead.ClientSafePipeHandle.ThrowIfNullOrInvalid();
@@ -168,7 +179,9 @@ namespace PSADT.ProcessManagement
                         // Create stdin pipe if we have input data to write.
                         if (launchInfo.StandardInput.Count > 0)
                         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
                             hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                             hStdInRead = hStdInWrite.ClientSafePipeHandle.ThrowIfNullOrInvalid();
                             hStdInRead.DangerousAddRef(ref hStdInReadAddRef);
                             startupInfo.hStdInput = (HANDLE)hStdInRead.DangerousGetHandle();
@@ -231,10 +244,12 @@ namespace PSADT.ProcessManagement
                     process = GetProcessFromId((processId = pi.dwProcessId).Value);
                     using SafeThreadHandle hThread = new(pi.hThread, true);
                     commandLine = commandSpan.TrimEndNullAndTrim().ToString();
+#pragma warning disable CA2000 // Dispose objects before losing scope
                     hProcess = new(pi.hProcess, true);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                     if (assignProcessToJob)
                     {
-                        _ = NativeMethods.AssignProcessToJobObject(job, hProcess);
+                        _ = NativeMethods.AssignProcessToJobObject(job!, hProcess);
                     }
                     _ = NativeMethods.ResumeThread(hThread);
 
@@ -313,7 +328,7 @@ namespace PSADT.ProcessManagement
                 {
                     if (assignProcessToJob)
                     {
-                        _ = NativeMethods.AssignProcessToJobObject(job, hProcess);
+                        _ = NativeMethods.AssignProcessToJobObject(job!, hProcess);
                     }
                     if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
@@ -327,10 +342,15 @@ namespace PSADT.ProcessManagement
             {
                 if (iocpAddRef)
                 {
-                    iocp.DangerousRelease();
+                    iocp?.DangerousRelease();
                 }
-                iocp.Dispose();
-                job.Dispose();
+                hStdOutRead?.Dispose();
+                hStdErrRead?.Dispose();
+                hStdInWrite?.Dispose();
+                hProcess?.Dispose();
+                process.Dispose();
+                iocp?.Dispose();
+                job?.Dispose();
                 return null;
             }
 
@@ -418,7 +438,6 @@ namespace PSADT.ProcessManagement
             {
                 // Set up the cancellation token source and registration if needed.
                 uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
-                using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => NativeMethods.PostQueuedCompletionStatus(iocp, timeoutExitCode, default)) : default;
 
                 // Spin until complete or cancelled.
                 bool disposeJob = true; int exitCode = TimeoutExitCode;
@@ -426,9 +445,10 @@ namespace PSADT.ProcessManagement
                 {
                     if (assignProcessToJob)
                     {
+                        using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => NativeMethods.PostQueuedCompletionStatus(iocp!, timeoutExitCode, default)) : default;
                         while (true)
                         {
-                            _ = NativeMethods.GetQueuedCompletionStatus(iocp, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
+                            _ = NativeMethods.GetQueuedCompletionStatus(iocp!, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
                             if (lpCompletionCode == timeoutExitCode)
                             {
                                 if (launchInfo.NoTerminateOnTimeout)
@@ -443,7 +463,7 @@ namespace PSADT.ProcessManagement
                                     exitCode = TimeoutExitCode;
                                     break;
                                 }
-                                _ = NativeMethods.TerminateJobObject(job, timeoutExitCode);
+                                _ = NativeMethods.TerminateJobObject(job!, timeoutExitCode);
                             }
                             else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                             {
@@ -477,20 +497,20 @@ namespace PSADT.ProcessManagement
                     // We're no longer monitoring the process's state, so we can release the completion port.
                     if (iocpAddRef)
                     {
-                        iocp.DangerousRelease();
+                        iocp?.DangerousRelease();
                     }
-                    iocp.Dispose();
+                    iocp?.Dispose();
 
                     // We only dispose of the job if the process has closed or if we're killing all child processes along with the parent.
                     if (!disposeJob)
                     {
                         // Prevent the finalizer from closing the job handle, which would kill the processes
                         // due to JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE. This intentionally leaks the handle.
-                        job.SetHandleAsInvalid();
+                        job?.SetHandleAsInvalid();
                     }
                     else
                     {
-                        job.Dispose();
+                        job?.Dispose();
                     }
                 }
             });
