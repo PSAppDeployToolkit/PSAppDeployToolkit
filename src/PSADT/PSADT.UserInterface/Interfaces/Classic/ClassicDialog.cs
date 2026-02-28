@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -436,8 +435,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     break;
 
                 case DialogPosition.Oobe:
-                    // Center vertically, offset to the left from center by a fixed amount (independent of screen aspect ratio)
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2) - int.Parse(File.ReadAllText("C:\\offset.txt"), CultureInfo.InvariantCulture);
+                    // Center vertically, offset to the left from center by half the dialog's width + 10% of the dialog's width (in DIPs)
+                    double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2) - (Width / dpiScale * 0.6 * dpiScale);
                     top = workingArea.Top + ((workingArea.Height - Height) / 2);
                     break;
 
