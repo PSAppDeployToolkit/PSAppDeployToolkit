@@ -98,7 +98,6 @@ namespace PSADT.ClientServer
         /// <returns>An object representing the deserialized data.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Xml"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if the deserialization process results in a null object.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static object DeserializeFromString(string base64Xml, Type type)
         {
             return DeserializeFromBytes(Convert.FromBase64String(base64Xml), 0, type);

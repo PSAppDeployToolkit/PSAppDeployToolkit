@@ -318,7 +318,6 @@ namespace PSADT.FileSystem
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified token
         /// has for the given path.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="token"/> is null or invalid.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
             return GetEffectiveAccess(path, token, desiredAccessMask, NativeMethods.AuthzInitializeContextFromToken);
