@@ -100,7 +100,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// form loads.</remarks>
         /// <param name="sender">The source of the event, typically the form instance.</param>
         /// <param name="e">An object that contains the event data.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the countdown timer fails to start.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the countdown timer fails to start.</exception>
         private protected override void Form_Load(object? sender, EventArgs e)
         {
             // Perform the base event.
@@ -115,7 +115,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
                 if (!countdownTimer.Change(0, 1000))
                 {
-                    throw new InvalidOperationException("Failed to start the countdown timer.");
+                    throw new InvalidProgramException("Failed to start the countdown timer.");
                 }
             }
         }

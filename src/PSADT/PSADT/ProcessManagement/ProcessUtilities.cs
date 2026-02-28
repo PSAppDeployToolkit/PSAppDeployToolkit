@@ -385,14 +385,14 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
         /// <returns>A string containing the full path to the executable file of the process.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
         internal static string QueryFullProcessImageName(SafeHandle hProcess)
         {
             Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
             string result = buffer.Slice(0, (int)requiredLength).ToString();
             return string.IsNullOrWhiteSpace(result)
-                ? throw new InvalidOperationException("The QueryFullProcessImageName() call returned a null or empty result.")
+                ? throw new InvalidProgramException("The QueryFullProcessImageName() call returned a null or empty result.")
                 : result;
         }
 
@@ -407,13 +407,13 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to Win32 file system paths. The method uses this
         /// table to convert the native NT path returned by the system to a standard Win32 path.</param>
         /// <returns>A string containing the full Win32 file system path of the process's executable image.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the underlying system call does not return a valid image file name.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the underlying system call does not return a valid image file name.</exception>
         internal static string GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             string result = buffer.Slice(0, (int)NativeMethods.GetProcessImageFileName(hProcess, buffer)).ToString();
             return string.IsNullOrWhiteSpace(result)
-                ? throw new InvalidOperationException("The GetProcessImageFileName() call returned a null or empty result.")
+                ? throw new InvalidProgramException("The GetProcessImageFileName() call returned a null or empty result.")
                 : TranslateNtPathToWin32Path(result, ntPathLookupTable);
         }
 

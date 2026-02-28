@@ -52,7 +52,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A ProcessHandle object that provides access to the launched process and its associated asynchronous task, or
         /// null if the process could not be started.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="launchInfo"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the process fails to start.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the process fails to start.</exception>
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
@@ -310,7 +310,7 @@ namespace PSADT.ProcessManagement
                 // For a pure shell action, we won't ever be able to get one.
                 if (!process.Start())
                 {
-                    throw new InvalidOperationException("Failed to start the process.");
+                    throw new InvalidProgramException("Failed to start the process.");
                 }
                 try
                 {

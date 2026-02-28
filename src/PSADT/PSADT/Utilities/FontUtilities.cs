@@ -124,7 +124,7 @@ namespace PSADT.Utilities
             fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
             if (!supported)
             {
-                throw new InvalidOperationException("Font file format is not supported.");
+                throw new ArgumentOutOfRangeException(nameof(fontPath), fontPath, "Font file format is not supported.");
             }
             if (faceCount == 0)
             {

@@ -177,18 +177,18 @@ namespace PSADT.Security
                 // Read the token length from the pipe.
                 if (pipe.ReadByte() is int tokenLength && tokenLength == -1)
                 {
-                    throw new InvalidOperationException("No token length received from the token broker.");
+                    throw new InvalidProgramException("No token length received from the token broker.");
                 }
                 if (tokenLength is not 4 and not 8)
                 {
-                    throw new InvalidOperationException("Invalid token length received from the token broker.");
+                    throw new InvalidProgramException("Invalid token length received from the token broker.");
                 }
 
                 // Read the token from the pipe.
                 byte[] tokenBuf = new byte[tokenLength];
                 if (pipe.Read(tokenBuf, 0, tokenLength) != tokenLength)
                 {
-                    throw new InvalidOperationException("Invalid token received from the token broker.");
+                    throw new InvalidProgramException("Invalid token received from the token broker.");
                 }
 
                 // Return the token handle.
@@ -245,7 +245,7 @@ namespace PSADT.Security
             {
                 if (TokenUtilities.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
                 {
-                    throw new InvalidOperationException("Failed to retrieve an unelevated token for the calling account.");
+                    throw new InvalidProgramException("Failed to retrieve an unelevated token for the calling account.");
                 }
                 if (TokenUtilities.IsTokenElevated(hProcessToken))
                 {
@@ -355,7 +355,7 @@ namespace PSADT.Security
             if (typeof(NamedPipeServerStream).GetConstructor([typeof(string), typeof(PipeDirection), typeof(int), typeof(PipeTransmissionMode), typeof(PipeOptions), typeof(int), typeof(int), typeof(PipeSecurity)]) is System.Reflection.ConstructorInfo ctor)
             {
                 return ctor.Invoke([pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity]) is not object stream
-                    ? throw new InvalidOperationException("Failed to create named pipe server stream.")
+                    ? throw new InvalidProgramException("Failed to create named pipe server stream.")
                     : (NamedPipeServerStream)stream;
             }
             if (Type.GetType("System.IO.Pipes.NamedPipeServerStreamAcl, System.IO.Pipes.AccessControl", throwOnError: true) is not Type aclType)
@@ -370,7 +370,7 @@ namespace PSADT.Security
                 ? [pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity, Enum.ToObject(createMethod.GetParameters()[8].ParameterType, 0), Enum.ToObject(createMethod.GetParameters()[9].ParameterType, 0)]
                 : [pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity];
             return createMethod.Invoke(null, invokeArgs) is not object aclStream
-                ? throw new InvalidOperationException("Failed to create named pipe server stream.")
+                ? throw new InvalidProgramException("Failed to create named pipe server stream.")
                 : (NamedPipeServerStream)aclStream;
 #else
             return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);

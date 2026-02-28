@@ -1,6 +1,7 @@
-﻿using System;
+﻿using System.ComponentModel;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.Extensions;
+using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -31,7 +32,7 @@ namespace PSADT.Interop.SafeHandles
         /// <remarks>If the handle is already set to the default value, this method returns true without
         /// attempting to delete the handle.</remarks>
         /// <returns>true if the handle was successfully released or was already set to the default value; otherwise, false.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the deletion of the GDI object handle fails.</exception>
+        /// <exception cref="Win32Exception">Thrown if the deletion of the GDI object handle fails.</exception>
         protected override bool ReleaseHandle()
         {
             if (default == handle)
@@ -45,7 +46,7 @@ namespace PSADT.Interop.SafeHandles
             }
             if (!res)
             {
-                throw new InvalidOperationException("Failed to delete GDI object handle.");
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to delete GDI object handle.");
             }
             handle = default;
             return res;

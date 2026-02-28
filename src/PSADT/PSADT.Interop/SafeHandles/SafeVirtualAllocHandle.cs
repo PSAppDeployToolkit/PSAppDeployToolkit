@@ -1,5 +1,4 @@
-﻿using System;
-using PSADT.Interop.Utilities;
+﻿using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Memory;
@@ -22,7 +21,6 @@ namespace PSADT.Interop.SafeHandles
         /// block.</param>
         /// <returns>A SafeVirtualAllocHandle that represents the allocated memory block. The caller is responsible for releasing
         /// the handle when it is no longer needed.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the memory allocation fails.</exception>
         internal static SafeVirtualAllocHandle Alloc(int length, VIRTUAL_ALLOCATION_TYPE allocationType, PAGE_PROTECTION_FLAGS protect)
         {
             unsafe

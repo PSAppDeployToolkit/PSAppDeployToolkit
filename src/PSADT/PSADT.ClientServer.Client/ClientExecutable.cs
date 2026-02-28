@@ -449,8 +449,6 @@ namespace PSADT.ClientServer
         /// <param name="argv">An array of command-line arguments that specify the operation to perform and any required options.</param>
         /// <returns>An integer exit code indicating the result of the operation. Returns 0 for success or a nonzero value for
         /// error conditions.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if an operation cannot be completed due to the current state, such as attempting to send keys to a
-        /// disabled window.</exception>
         /// <exception cref="ClientException">Thrown if required arguments are missing, invalid, or if the specified arguments do not correspond to a
         /// supported operation.</exception>
         private static int EnterStandaloneMode(string[] argv)

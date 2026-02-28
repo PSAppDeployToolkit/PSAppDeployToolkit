@@ -126,7 +126,7 @@ namespace PSADT.ClientServer
                 (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
                 if (!(opened = Invoke<bool>(PipeCommand.Open)).Value)
                 {
-                    throw new InvalidOperationException("The opened client process returned an invalid response.");
+                    throw new InvalidProgramException("The opened client process returned an invalid response.");
                 }
             }
             catch (Exception ex)
@@ -185,7 +185,7 @@ namespace PSADT.ClientServer
                     {
                         if (!Invoke<bool>(PipeCommand.Close))
                         {
-                            throw new InvalidOperationException("The opened client process did not properly respond to the close command.");
+                            throw new InvalidProgramException("The opened client process did not properly respond to the close command.");
                         }
                         if ((exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode) != 0)
                         {

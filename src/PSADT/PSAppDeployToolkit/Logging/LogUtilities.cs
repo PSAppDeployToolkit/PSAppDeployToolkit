@@ -77,11 +77,11 @@ namespace PSAppDeployToolkit.Logging
             // Ensure we got a file name and a source.
             if (string.IsNullOrWhiteSpace(callerFileName))
             {
-                throw new InvalidOperationException("Failed to determine a file name for the caller.");
+                throw new InvalidProgramException("Failed to determine a file name for the caller.");
             }
             if (string.IsNullOrWhiteSpace(callerSource))
             {
-                throw new InvalidOperationException("Failed to determine a command source for the caller.");
+                throw new InvalidProgramException("Failed to determine a command source for the caller.");
             }
 
             // Set up default values if not specified.

@@ -970,7 +970,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             if (!_countdownTimer.Change(0, 1000))
             {
-                throw new InvalidOperationException("Failed to start countdown timer.");
+                throw new InvalidProgramException("Failed to start countdown timer.");
             }
         }
 

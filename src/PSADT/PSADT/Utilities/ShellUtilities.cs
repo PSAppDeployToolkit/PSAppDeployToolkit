@@ -57,7 +57,6 @@ namespace PSADT.Utilities
         /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
         internal static void RefreshDesktopAndEnvironmentVariables()
         {
             // Update desktop icons using SHChangeNotify.
@@ -130,7 +129,6 @@ namespace PSADT.Utilities
         /// not closed.</param>
         /// <returns>The Application User Model ID of the specified process as a string.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="hProcess"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if <paramref name="hProcess"/> is closed or invalid.</exception>
         internal static string GetApplicationUserModelId(SafeHandle hProcess)
         {
             Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH];

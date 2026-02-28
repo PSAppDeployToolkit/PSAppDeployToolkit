@@ -1009,7 +1009,7 @@ namespace PSADT.Interop
         /// authorization context. This handle must be released by the caller when no longer needed.</param>
         /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
         /// langword="false"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
+        /// <exception cref="Win32Exception">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
         internal static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             BOOL res;
@@ -2005,7 +2005,7 @@ namespace PSADT.Interop
         /// uninitialized.</param>
         /// <returns><see langword="true"/> if the product type information was successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the product type information could not be retrieved.</exception>
+        /// <exception cref="Win32Exception">Thrown if the product type information could not be retrieved.</exception>
         internal static BOOL GetProductInfo(uint dwOSMajorVersion, uint dwOSMinorVersion, uint dwSpMajorVersion, uint dwSpMinorVersion, out OS_PRODUCT_TYPE pdwReturnedProductType)
         {
             BOOL res = PInvoke.GetProductInfo(dwOSMajorVersion, dwOSMinorVersion, dwSpMajorVersion, dwSpMinorVersion, out pdwReturnedProductType);
@@ -2701,7 +2701,7 @@ namespace PSADT.Interop
         /// indicating that file attributes are provided. The default is 0.</param>
         /// <returns>A handle to the system image list or icon, depending on the flags specified. The handle is valid only while
         /// the image list exists. Returns a non-zero value on success.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the file information could not be retrieved.</exception>
+        /// <exception cref="Win32Exception">Thrown if the file information could not be retrieved.</exception>
         internal static nint SHGetFileInfo(string pszPath, out SHFILEINFO psfi, SHGFI_FLAGS uFlags, FileAttributes dwFileAttributes = 0)
         {
             [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -2794,7 +2794,7 @@ namespace PSADT.Interop
         /// Retrieves a handle to the window that is currently in the foreground.
         /// </summary>
         /// <returns>A handle to the foreground window. The handle uniquely identifies the window currently receiving user input.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if no foreground window is found.</exception>
+        /// <exception cref="Win32Exception">Thrown if no foreground window is found.</exception>
         internal static HWND GetForegroundWindow()
         {
             HWND res = PInvoke.GetForegroundWindow();
@@ -3061,7 +3061,7 @@ namespace PSADT.Interop
         /// <param name="bRevert">A value that determines the operation to perform. Specify <see langword="false"/> to retrieve the current
         /// system menu, or <see langword="true"/> to reset the system menu to its default state.</param>
         /// <returns>A safe handle to the system menu associated with the specified window.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the system menu handle cannot be retrieved.</exception>
+        /// <exception cref="ArgumentException">Thrown if the system menu handle cannot be retrieved.</exception>
         internal static DestroyMenuSafeHandle GetSystemMenu(HWND hWnd, BOOL bRevert)
         {
             return PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert).ThrowIfNullOrInvalid();
@@ -3158,7 +3158,7 @@ namespace PSADT.Interop
         /// <param name="pt">The <see cref="Point"/> structure specifying the coordinates of the point to check.</param>
         /// <param name="dwFlags">A <see cref="MONITOR_FROM_FLAGS"/> value that determines the behavior if the point is not contained within any monitor.</param>
         /// <returns>A handle to the monitor that contains the specified point.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if no monitor is found for the specified point.</exception>
+        /// <exception cref="Win32Exception">Thrown if no monitor is found for the specified point.</exception>
         internal static HMONITOR MonitorFromPoint(Point pt, MONITOR_FROM_FLAGS dwFlags)
         {
             HMONITOR monitor = PInvoke.MonitorFromPoint(pt, dwFlags);
@@ -3171,7 +3171,7 @@ namespace PSADT.Interop
         /// <param name="hwnd">The handle of the window for which to retrieve the DPI value. Cannot be null.</param>
         /// <returns>The DPI value for the specified window. This value represents the scaling factor applied to the window.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="hwnd"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the DPI value could not be retrieved for the specified window handle.</exception>
+        /// <exception cref="Win32Exception">Thrown if the DPI value could not be retrieved for the specified window handle.</exception>
         internal static uint GetDpiForWindow(HWND hwnd)
         {
             if (hwnd.IsNull)
@@ -3207,7 +3207,7 @@ namespace PSADT.Interop
         /// <param name="hWnd">A handle to the window to be set as the foreground window.</param>
         /// <param name="noThrowOnFailure">If set to <see langword="true"/>, the method will not throw an exception on failure.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the operation fails to set the specified window as the foreground window.</exception>
+        /// <exception cref="Win32Exception">Thrown if the operation fails to set the specified window as the foreground window.</exception>
         internal static BOOL SetForegroundWindow(HWND hWnd, bool noThrowOnFailure = false)
         {
             BOOL res = PInvoke.SetForegroundWindow(hWnd);
@@ -3218,7 +3218,7 @@ namespace PSADT.Interop
         /// Retrieves the handle to the shell's desktop window.
         /// </summary>
         /// <returns>A <see cref="HWND"/> representing the handle to the shell's desktop window.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the shell window handle cannot be retrieved.</exception>
+        /// <exception cref="Win32Exception">Thrown if the shell window handle cannot be retrieved.</exception>
         internal static HWND GetShellWindow()
         {
             HWND res = PInvoke.GetShellWindow();
@@ -3236,7 +3236,7 @@ namespace PSADT.Interop
         /// input event. The <see cref="LASTINPUTINFO.dwTime"/> field represents the tick count at the time of the last
         /// input, relative to system startup.</param>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the method fails to retrieve the last input information.</exception>
+        /// <exception cref="Win32Exception">Thrown if the method fails to retrieve the last input information.</exception>
         internal static BOOL GetLastInputInfo(out LASTINPUTINFO plii)
         {
             plii = new() { cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>() }; BOOL res = PInvoke.GetLastInputInfo(ref plii);
@@ -3285,7 +3285,7 @@ namespace PSADT.Interop
         /// name="lplpBuffer"/>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if the specified version-information value is successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the version-information value cannot be queried.</exception>
+        /// <exception cref="Win32Exception">Thrown if the version-information value cannot be queried.</exception>
         internal static BOOL VerQueryValue(ReadOnlySpan<byte> pBlock, string lpSubBlock, out nint lplpBuffer, out uint puLen)
         {
             BOOL res;

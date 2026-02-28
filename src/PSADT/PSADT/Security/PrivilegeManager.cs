@@ -39,12 +39,12 @@ namespace PSADT.Security
                 ReadOnlySpan<char> refBuf = buffer.Slice(0, (int)retLength).Trim();
                 if (refBuf.IsEmpty)
                 {
-                    throw new InvalidOperationException($"Privilege name for LUID: {attr.Luid} is empty.");
+                    throw new InvalidProgramException($"Privilege name for LUID: {attr.Luid} is empty.");
                 }
                 string privilegeName = refBuf.ToString();
                 if (!Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege))
                 {
-                    throw new InvalidOperationException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.");
+                    throw new InvalidProgramException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.");
                 }
                 return privilege;
             }

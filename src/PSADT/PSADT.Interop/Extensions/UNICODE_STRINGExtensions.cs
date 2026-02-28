@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Win32.Foundation;
+﻿using Windows.Win32.Foundation;
 
 namespace PSADT.Interop.Extensions
 {
@@ -16,7 +15,6 @@ namespace PSADT.Interop.Extensions
         /// </summary>
         /// <param name="unicodeString">The UNICODE_STRING structure to convert to a managed string.</param>
         /// <returns>A managed string representation of the specified UNICODE_STRING.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the UNICODE_STRING does not contain a valid string.</exception>
         internal static string ToManagedString(this UNICODE_STRING unicodeString)
         {
             return unicodeString.Buffer.ToIntPtr().ToManagedString(unicodeString.Length / sizeof(char));

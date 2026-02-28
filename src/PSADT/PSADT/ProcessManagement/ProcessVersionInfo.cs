@@ -307,7 +307,7 @@ namespace PSADT.ProcessManagement
                 _ = NativeMethods.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
                 return buffer;
             }
-            throw new InvalidOperationException($"Invalid data entry size: {dataEntry.Size} at address 0x{(long)dataEntryAddress:X}");
+            throw new InvalidProgramException($"Invalid data entry size: {dataEntry.Size} at address 0x{(long)dataEntryAddress:X}");
         }
 
         /// <summary>

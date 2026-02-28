@@ -427,7 +427,7 @@ namespace PSADT.UserInterface
             // The application cannot be restarted, so we throw back in this situation.
             if (app is null)
             {
-                throw new InvalidOperationException("WPF application is not initialized.");
+                throw new InvalidProgramException("WPF application is not initialized.");
             }
 
             // Invoke the callback on the WPF UI thread.
