@@ -225,6 +225,11 @@ namespace PSADT.ProcessManagement
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
                         OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
+                        if (filePath == EnvironmentInfo.ClientServerClientDefaultPath)
+                        {
+                            // Hack, but CreateProcess() can't start a UIAccess executable.
+                            filePath = EnvironmentInfo.ClientServerClientCompatiblePath;
+                        }
                         if (handlesToInherit.Count > 0)
                         {
                             (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit.AsReadOnly(), forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);

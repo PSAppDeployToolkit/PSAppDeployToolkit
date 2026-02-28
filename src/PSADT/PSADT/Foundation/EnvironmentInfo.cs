@@ -21,14 +21,31 @@ namespace PSADT.Foundation
         public static readonly string AssemblyPath = Path.GetDirectoryName(typeof(EnvironmentInfo).Assembly.Location)!;
 
         /// <summary>
+        /// Gets the default file system path to the ClientServer client executable within the application directory
+        /// structure.
+        /// </summary>
+        /// <remarks>This path is constructed by combining the assembly's directory path with the
+        /// executable name "PSADT.ClientServer.Client.exe". It is intended for use when launching or referencing the
+        /// ClientServer client from within the application.</remarks>
+        internal static readonly string ClientServerClientDefaultPath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.exe");
+
+        /// <summary>
+        /// Gets the file path for the compatible version of the PSADT Client Server executable.
+        /// </summary>
+        /// <remarks>This path is constructed by combining the base assembly path with the specific
+        /// executable name. Ensure that the executable exists at the specified location before attempting to use
+        /// it.</remarks>
+        internal static readonly string ClientServerClientCompatiblePath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Compatible.exe");
+
+        /// <summary>
         /// Gets the path to the client server executable, selecting a compatible version if the primary executable is
         /// not Authenticode trusted.
         /// </summary>
         /// <remarks>The path is determined based on the trust status of the primary executable. If the
         /// primary executable is not trusted, the compatible version is used instead.</remarks>
         public static readonly string ClientServerClientPath = !FileSystemUtilities.IsAuthenticodeTrusted(Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.exe"))
-            ? Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Compatible.exe")
-            : Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.exe");
+            ? ClientServerClientCompatiblePath
+            : ClientServerClientDefaultPath;
 
         /// <summary>
         /// Gets the path to the client server launcher executable, selecting a compatible version if the primary
