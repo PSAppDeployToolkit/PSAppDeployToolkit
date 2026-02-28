@@ -65,7 +65,7 @@ namespace PSADT.Security
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
                 string pipeName = $"PSADT.ClientServer.Client_TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
                 PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new(AccountUtilities.LocalSystemSid, PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite, AccessControlType.Allow));
-                using NamedPipeServerStream pipe = CreateNamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 0, 0, pipeSecurity);
+                using NamedPipeServerStream pipe = CreateNamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
 
                 // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
                 ITaskService servicePtr = (ITaskService)new TaskScheduler();
@@ -110,8 +110,19 @@ namespace PSADT.Security
                                                 rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
                                                 try
                                                 {
+                                                    // Wait for the token broker to connect while task is in scope for error reporting.
+                                                    // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
                                                     task.Run(null, out IRunningTask runningTask);
                                                     _ = Marshal.ReleaseComObject(runningTask);
+                                                    try
+                                                    {
+                                                        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
+                                                        pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
+                                                    }
+                                                    catch (OperationCanceledException)
+                                                    {
+                                                        throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                    }
                                                 }
                                                 finally
                                                 {
@@ -169,10 +180,6 @@ namespace PSADT.Security
                 {
                     _ = Marshal.ReleaseComObject(servicePtr);
                 }
-
-                // Wait for the token broker to connect.
-                using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
-                pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
 
                 // Read the token length from the pipe.
                 if (pipe.ReadByte() is int tokenLength && tokenLength == -1)
