@@ -1,36 +1,173 @@
-﻿using System.Management.Automation;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Management.Automation;
+using System.Management.Automation.Internal;
+using System.Management.Automation.Language;
+using System.Reflection;
 
 namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
-    /// Validates that the value of a parameter is not null, empty, or consists only of white-space characters.
+    /// Specifies that a parameter or property must not be null, empty, or consist only of white-space characters. For
+    /// collections, ensures that the collection is not empty and that each element is valid according to the same
+    /// criteria.
     /// </summary>
-    /// <remarks>
-    /// This attribute provides <see cref="ValidateNotNullOrWhiteSpaceAttribute"/> functionality for Windows PowerShell 5.1,
-    /// which lacks the built-in attribute available in PowerShell 7+. Since this attribute is in a different namespace
-    /// (<c>PSAppDeployToolkit.Foundation</c> vs <c>System.Management.Automation</c>), it does not conflict with the
-    /// built-in attribute when the .NET Framework assembly is loaded in PowerShell 7.
-    /// </remarks>
+    /// <remarks>Apply this attribute to parameters or properties to enforce validation rules that prevent
+    /// null, empty, or white-space-only values. When applied to collections, the attribute also validates that the
+    /// collection is not empty and that each element is not null, empty, or white space. This attribute is commonly
+    /// used in PowerShell cmdlets and functions to ensure that required arguments are provided and meet basic content
+    /// requirements.</remarks>
     public sealed class ValidateNotNullOrWhiteSpaceAttribute : ValidateArgumentsAttribute
     {
         /// <summary>
         /// Validates that the argument is not null, empty, or consists only of white-space characters.
+        /// For collections, validates that the collection is not empty and that each element passes validation.
         /// </summary>
         /// <param name="arguments">The argument value to validate.</param>
         /// <param name="engineIntrinsics">Provides access to the PowerShell engine APIs.</param>
         /// <exception cref="ValidationMetadataException">
-        /// Thrown when <paramref name="arguments"/> is null, an empty string, or a string that consists only of white-space characters.
+        /// Thrown when <paramref name="arguments"/> is null, an empty string, a string that consists only of
+        /// white-space characters, an empty collection, or a collection containing null/whitespace elements.
         /// </exception>
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
-            if (arguments is null)
+            // Unwrap PSObject to get the underlying value.
+            if (arguments is PSObject pso)
+            {
+                arguments = pso.BaseObject;
+            }
+
+            // Do basic null checks first, including PowerShell-specific null representations.
+            if (IsNull(arguments))
             {
                 throw new ValidationMetadataException("The argument is null. Provide a valid value for the argument, and then try running the command again.");
             }
-            if (arguments is string str && string.IsNullOrWhiteSpace(str))
+
+            // Handle varying type checks.
+            if (arguments is string str)
             {
-                throw new ValidationMetadataException("The argument is null or white space. Provide an argument that is not null or white space, and then try running the command again.");
+                if (string.IsNullOrWhiteSpace(str))
+                {
+                    throw new ValidationMetadataException("The argument is null or white space. Provide an argument that is not null or white space, and then try running the command again.");
+                }
             }
+            else if (arguments is IDictionary dict)
+            {
+                if (dict.Count == 0)
+                {
+                    throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
+                }
+            }
+            else if (IsReadOnlyDictionary(arguments, out int count))
+            {
+                if (count == 0)
+                {
+                    throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
+                }
+            }
+            else if (IsCollection(arguments.GetType(), out bool isElementValueType))
+            {
+                bool isEmpty = true; if (LanguagePrimitives.GetEnumerator(arguments) is IEnumerator enumerator && enumerator.MoveNext())
+                {
+                    // If elements are non-nullable value types, skip null/whitespace checks (they can't be null).
+                    isEmpty = false; if (!isElementValueType)
+                    {
+                        do
+                        {
+                            object element = enumerator.Current;
+                            if (IsNull(element))
+                            {
+                                throw new ValidationMetadataException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
+                            }
+                            if (element is string elementStr && string.IsNullOrWhiteSpace(elementStr))
+                            {
+                                throw new ValidationMetadataException("The argument collection contains an element that is empty or white space. Provide a collection that does not contain empty or white space elements, and then try running the command again.");
+                            }
+                        }
+                        while (enumerator.MoveNext());
+                    }
+                }
+                if (isEmpty)
+                {
+                    throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified value is null, including PowerShell-specific null representations.
+        /// </summary>
+        /// <param name="value">The value to check.</param>
+        /// <returns><c>true</c> if the value is null or a PowerShell/database null representation; otherwise, <c>false</c>.</returns>
+        private static bool IsNull(object? value)
+        {
+            return value is null || value is DBNull || value == AutomationNull.Value || value == NullString.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the specified type represents a collection that should be validated element-by-element.
+        /// </summary>
+        /// <param name="type">The type to check.</param>
+        /// <param name="isElementValueType">When this method returns, indicates whether the collection's element type is a non-nullable value type.</param>
+        /// <returns><c>true</c> if the type is a collection (array or implements <see cref="IEnumerable"/>); otherwise, <c>false</c>.</returns>
+        private static bool IsCollection(Type type, out bool isElementValueType)
+        {
+            if (type.IsArray)
+            {
+                Type? elementType = type.GetElementType();
+                isElementValueType = IsNonNullableValueType(elementType);
+                return true;
+            }
+            if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
+            {
+                // Try to get the element type from generic IEnumerable<T>
+                foreach (Type iface in type.GetInterfaces())
+                {
+                    if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    {
+                        Type elementType = iface.GetGenericArguments()[0];
+                        isElementValueType = IsNonNullableValueType(elementType);
+                        return true;
+                    }
+                }
+                isElementValueType = false;
+                return true;
+            }
+            isElementValueType = false;
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified type is a non-nullable value type.
+        /// </summary>
+        /// <param name="type">The type to check.</param>
+        /// <returns><c>true</c> if the type is a value type that is not <see cref="Nullable{T}"/>; otherwise, <c>false</c>.</returns>
+        private static bool IsNonNullableValueType(Type? type)
+        {
+            return type != null && type.IsValueType && Nullable.GetUnderlyingType(type) is null;
+        }
+
+        /// <summary>
+        /// Determines whether the specified object implements <see cref="IReadOnlyDictionary{TKey, TValue}"/>
+        /// and retrieves its count.
+        /// </summary>
+        /// <param name="value">The object to check.</param>
+        /// <param name="count">When this method returns, contains the count of elements if the object is a read-only dictionary; otherwise, 0.</param>
+        /// <returns><c>true</c> if the object implements <see cref="IReadOnlyDictionary{TKey, TValue}"/>; otherwise, <c>false</c>.</returns>
+        private static bool IsReadOnlyDictionary(object value, out int count)
+        {
+            foreach (Type iface in value.GetType().GetInterfaces())
+            {
+                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
+                {
+                    // Use reflection to get the Count property
+                    count = iface.GetProperty("Count") is PropertyInfo countProperty ? (int)countProperty.GetValue(value)! : 0;
+                    return true;
+                }
+            }
+            count = 0;
+            return false;
         }
     }
 }
