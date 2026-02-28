@@ -192,27 +192,27 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppVendor = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppVendor = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppVersion = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppVersion = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppArch = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppArch = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppLang = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppLang = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppRevision = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppRevision = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -224,19 +224,19 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$InstallName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$InstallName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$InstallTitle = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$InstallTitle = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeployAppScriptFriendlyName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DeployAppScriptFriendlyName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -287,7 +287,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$DirFiles = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DirFiles = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -301,15 +301,15 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$DirSupportFiles = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DirSupportFiles = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultMsiFile = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DefaultMsiFile = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DefaultMstFile = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DefaultMstFile = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -354,7 +354,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$LogName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, DontShow = $true)]
         [ValidateScript({
@@ -362,7 +362,7 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if (!$_.BaseType.Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
+                if (!$_.get_BaseType().Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified type is not derived from the DeploymentSession base class.'))
                 }
@@ -379,23 +379,23 @@ function Open-ADTSession
     {
         # Make this function stop on any error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
 
         # Throw if we have duplicated process objects.
-        if ($AppProcessesToClose -and !($AppProcessesToClose.Name | Sort-Object | Get-Unique | Measure-Object).Count.Equals($AppProcessesToClose.Count))
+        if ($AppProcessesToClose -and !($AppProcessesToClose.get_Name() | Sort-Object | Get-Unique | Measure-Object).get_Count().Equals($AppProcessesToClose.get_Count()))
         {
             $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName AppProcessesToClose -ProvidedValue $AppProcessesToClose -ExceptionMessage 'The specified AppProcessesToClose array contains duplicate processes.'))
         }
 
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller
-        $callerInvocation = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo } }
-        $noExitOnClose = $callerInvocation -and !$callerInvocation.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
+        $callerInvocation = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.get_InvocationInfo() } }
+        $noExitOnClose = $callerInvocation -and !$callerInvocation.get_MyCommand().get_CommandType().Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
 
         # Set up the SessionState if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('SessionState'))
         {
-            $PSBoundParameters.SessionState = $SessionState = $PSCmdlet.SessionState
+            $PSBoundParameters.SessionState = $SessionState = $PSCmdlet.get_SessionState()
         }
 
         # Set up the ScriptDirectory if one wasn't provided.
@@ -403,11 +403,11 @@ function Open-ADTSession
         {
             [System.String[]]$PSBoundParameters.ScriptDirectory = $ScriptDirectory = if (!$Script:ADT.Initialized -or !$Script:ADT.Directories.Script)
             {
-                if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
+                if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.get_PSVariable().GetValue('PSScriptRoot', $null))))
                 {
                     if ($compatibilityMode)
                     {
-                        [System.IO.Directory]::GetParent($scriptRoot).FullName
+                        [System.IO.Directory]::GetParent($scriptRoot).get_FullName()
                     }
                     else
                     {
@@ -416,7 +416,7 @@ function Open-ADTSession
                 }
                 else
                 {
-                    $ExecutionContext.SessionState.Path.CurrentLocation.Path
+                    $ExecutionContext.get_SessionState().get_Path().get_CurrentLocation().get_Path()
                 }
             }
             else
@@ -429,23 +429,23 @@ function Open-ADTSession
         if ($PSBoundParameters.ContainsKey('UnboundArguments') -and !$SessionClass.Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
         {
             $null = (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator().ForEach({
-                    $PSBoundParameters.Add($_.Key, $_.Value)
+                    $PSBoundParameters.Add($_.get_Key(), $_.get_Value())
                 })
         }
 
         # Remove any values from $PSBoundParameters that are null (empty strings, mostly).
-        $null = ($PSBoundParameters.GetEnumerator().Where({ [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)) })).ForEach({ $PSBoundParameters.Remove($_.Key) })
+        $null = ($PSBoundParameters.GetEnumerator().Where({ [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.get_Value())) })).ForEach({ $PSBoundParameters.Remove($_.get_Key()) })
     }
 
     process
     {
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
-        if (($callerInvocation -and [System.String]::IsNullOrWhiteSpace($callerInvocation.InvocationName) -and [System.String]::IsNullOrWhiteSpace($callerInvocation.Line)) -or $compatibilityMode)
+        if (($callerInvocation -and [System.String]::IsNullOrWhiteSpace($callerInvocation.get_InvocationName()) -and [System.String]::IsNullOrWhiteSpace($callerInvocation.get_Line())) -or $compatibilityMode)
         {
             $Script:ADT.Sessions.Clear()
             $Script:ADT.Initialized = $false
         }
-        $firstSession = !$Script:ADT.Sessions.Count
+        $firstSession = !$Script:ADT.Sessions.get_Count()
 
         # Perform pre-opening tasks.
         $initialized = $false
@@ -494,12 +494,12 @@ function Open-ADTSession
             }
             catch
             {
-                Write-Error -Exception $_.Exception.InnerException -Category OpenError -CategoryTargetName $Script:ADT.LastExitCode -CategoryTargetType $Script:ADT.LastExitCode.GetType().Name
+                Write-Error -Exception $_.get_Exception().get_InnerException() -Category OpenError -CategoryTargetName $Script:ADT.LastExitCode -CategoryTargetType $Script:ADT.LastExitCode.GetType().get_Name()
             }
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while instantiating a new deployment session."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while instantiating a new deployment session."
         }
         finally
         {
@@ -525,12 +525,12 @@ function Open-ADTSession
                     (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator() | & {
                         begin
                         {
-                            $adtSessionProps = $adtSession.PSObject.Properties
+                            $adtSessionProps = $adtSession.PSObject.get_Properties()
                         }
 
                         process
                         {
-                            $adtSessionProps.Add([System.Management.Automation.PSNoteProperty]::new($_.Key, $_.Value))
+                            $adtSessionProps.Add([System.Management.Automation.PSNoteProperty]::new($_.get_Key(), $_.get_Value()))
                         }
                     }
                 }
@@ -548,7 +548,7 @@ function Open-ADTSession
                 }
 
                 # Change the install phase and return the most recent session if passing through.
-                $adtSession.InstallPhase = 'Execution'
+                $adtSession.set_InstallPhase('Execution')
                 if ($PassThru)
                 {
                     return $adtSession
@@ -556,12 +556,12 @@ function Open-ADTSession
             }
             catch
             {
-                Write-Error -ErrorRecord $_ -CategoryTargetName 60008 -CategoryTargetType ([System.Int32].Name)
+                Write-Error -ErrorRecord $_ -CategoryTargetName 60008 -CategoryTargetType ([System.Int32].get_Name())
             }
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred following new deployment session instantiation."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred following new deployment session instantiation."
         }
         finally
         {

@@ -84,8 +84,8 @@ function Install-ADTSCCMSoftwareUpdates
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $StartTime = [System.DateTime]::Now
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        $StartTime = [System.DateTime]::get_Now()
     }
 
     process
@@ -117,11 +117,11 @@ function Install-ADTSCCMSoftwareUpdates
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to find the number of missing software updates."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to find the number of missing software updates."
         }
 
         # Return early if there's no missing updates to install.
-        if (!$CMMissingUpdates -or !$CMMissingUpdates.Count)
+        if (!$CMMissingUpdates -or !$CMMissingUpdates.get_Count())
         {
             Write-ADTLogEntry -Message 'There are no missing updates.'
             return
@@ -132,8 +132,8 @@ function Install-ADTSCCMSoftwareUpdates
             try
             {
                 # Install missing updates.
-                Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                if (!$PSCmdlet.ShouldProcess("[$($CMMissingUpdates.Count)] SCCM software updates", 'Install'))
+                Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.get_Count())]."
+                if (!$PSCmdlet.ShouldProcess("[$($CMMissingUpdates.get_Count())] SCCM software updates", 'Install'))
                 {
                     return
                 }
@@ -148,10 +148,10 @@ function Install-ADTSCCMSoftwareUpdates
                     }
                     throw (New-ADTErrorRecord @naerParams)
                 }
-                if ($result.ReturnValue -ne 0)
+                if ($result.get_ReturnValue() -ne 0)
                 {
                     $naerParams = @{
-                        Exception = [System.InvalidOperationException]::new("The InstallUpdates method invocation returned an error code of [$($result.ReturnValue)].")
+                        Exception = [System.InvalidOperationException]::new("The InstallUpdates method invocation returned an error code of [$($result.get_ReturnValue())].")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'InstallUpdatesMethodInvalidResult'
                         TargetObject = $result
@@ -164,9 +164,9 @@ function Install-ADTSCCMSoftwareUpdates
                 do
                 {
                     Start-Sleep -Seconds 60; [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
-                    Write-ADTLogEntry -Message "The number of updates pending installation is [$(if ($CMInstallPendingUpdates) { $CMInstallPendingUpdates.Count } else { 0 })]."
+                    Write-ADTLogEntry -Message "The number of updates pending installation is [$(if ($CMInstallPendingUpdates) { $CMInstallPendingUpdates.get_Count() } else { 0 })]."
                 }
-                while ($CMInstallPendingUpdates -and $CMInstallPendingUpdates.Count -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
+                while ($CMInstallPendingUpdates -and $CMInstallPendingUpdates.get_Count() -and ([System.DateTime]::get_Now() - $StartTime) -lt $WaitForPendingUpdatesTimeout)
             }
             catch
             {
@@ -175,7 +175,7 @@ function Install-ADTSCCMSoftwareUpdates
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger installation of missing software updates."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to trigger installation of missing software updates."
         }
     }
 

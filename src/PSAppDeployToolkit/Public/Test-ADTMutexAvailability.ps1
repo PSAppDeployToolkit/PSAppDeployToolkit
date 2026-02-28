@@ -69,7 +69,7 @@ function Test-ADTMutexAvailability
     begin
     {
         # Initialize variables.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         $WaitLogMsg = if ($MutexWaitTime.TotalMinutes -ge 1)
         {
             "$($MutexWaitTime.TotalMinutes) minute(s)"

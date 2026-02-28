@@ -54,7 +54,7 @@ function Test-ADTNetworkConnection
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -68,9 +68,9 @@ function Test-ADTNetworkConnection
                 [System.UInt32[]]$interfaceTypes = $InterfaceType.value__
                 foreach ($adapter in (Get-NetAdapter -Physical))
                 {
-                    if ($adapter.Status.Equals('Up') -and $interfaceTypes.Contains($adapter.InterfaceType))
+                    if ($adapter.get_Status().Equals('Up') -and $interfaceTypes.Contains($adapter.get_InterfaceType()))
                     {
-                        Write-ADTLogEntry -Message "Active connection of type [$([System.Net.NetworkInformation.NetworkInterfaceType]$adapter.InterfaceType)] found."
+                        Write-ADTLogEntry -Message "Active connection of type [$([System.Net.NetworkInformation.NetworkInterfaceType]$adapter.get_InterfaceType())] found."
                         return $true
                     }
                 }
@@ -84,7 +84,7 @@ function Test-ADTNetworkConnection
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

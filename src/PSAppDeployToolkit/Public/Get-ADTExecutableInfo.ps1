@@ -72,15 +72,15 @@ function Get-ADTExecutableInfo
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
     {
         # Grab and cache all files.
-        $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
+        $files = if (!$PSCmdlet.get_ParameterSetName().Equals('InputObject'))
         {
-            $gciParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+            $gciParams = @{ $PSCmdlet.get_ParameterSetName() = Get-Variable -Name $PSCmdlet.get_ParameterSetName() -ValueOnly }
             Get-ChildItem @gciParams -File
         }
         else
@@ -89,14 +89,14 @@ function Get-ADTExecutableInfo
         }
 
         # Return the executable info for each file, continuing to the next file on error by default.
-        Write-ADTLogEntry -Message "Retrieving executable info for ['$([System.String]::Join("', '", $files.FullName))']."
+        Write-ADTLogEntry -Message "Retrieving executable info for ['$([System.String]::Join("', '", $files.get_FullName()))']."
         foreach ($file in $files)
         {
             try
             {
                 try
                 {
-                    [PSADT.FileSystem.ExecutableInfo]::Get($file.FullName)
+                    [PSADT.FileSystem.ExecutableInfo]::Get($file.get_FullName())
                 }
                 catch
                 {
@@ -105,7 +105,7 @@ function Get-ADTExecutableInfo
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
             }
         }
     }

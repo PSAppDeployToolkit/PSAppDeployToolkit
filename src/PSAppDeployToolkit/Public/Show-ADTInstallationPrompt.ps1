@@ -147,15 +147,15 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -246,14 +246,14 @@ function Show-ADTInstallationPrompt
     begin
     {
         # Throw a terminating error if at least one button isn't specified.
-        if (!($PSBoundParameters.Keys -match '^Button'))
+        if (!($PSBoundParameters.get_Keys() -match '^Button'))
         {
             $naerParams = @{
                 Exception = [System.ArgumentException]::new('At least one button must be specified when calling this function.')
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 ErrorId = 'MandatoryParameterMissing'
                 TargetObject = $PSBoundParameters
-                RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
+                RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.get_MyCommand().get_Name()) and try again."
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
@@ -272,7 +272,7 @@ function Show-ADTInstallationPrompt
         }
 
         # Validate list selection default item.
-        if ($PSCmdlet.ParameterSetName -eq 'ShowListSelectionDialog' -and ($DefaultIndex -ge $ListItems.Count))
+        if ($PSCmdlet.get_ParameterSetName() -eq 'ShowListSelectionDialog' -and ($DefaultIndex -ge $ListItems.get_Count()))
         {
             $naerParams = @{
                 Exception = [System.ArgumentOutOfRangeException]::new('The default index is out of range for the provided ListItems array.', $null)
@@ -285,23 +285,23 @@ function Show-ADTInstallationPrompt
         }
 
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
 
         # Initialise the string table.
         $sessionState = if ($adtSession)
         {
-            $adtSession.SessionState
+            $adtSession.get_SessionState()
         }
         if ($null -eq $sessionState)
         {
-            $sessionState = $PSCmdlet.SessionState
+            $sessionState = $PSCmdlet.get_SessionState()
         }
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
         $DeploymentType = if ($adtSession)
         {
-            $adtSession.DeploymentType
+            $adtSession.get_DeploymentType()
         }
         else
         {
@@ -311,7 +311,7 @@ function Show-ADTInstallationPrompt
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
+            $PSBoundParameters.Add('Title', $adtSession.get_InstallTitle())
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
@@ -336,14 +336,14 @@ function Show-ADTInstallationPrompt
                 # Bypass if in non-interactive mode.
                 if ($adtSession -and $adtSession.IsNonInteractive() -and !$Force)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Message: $Message"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Mode: $($adtSession.get_DeployMode())]. Message: $Message"
                     return
                 }
 
                 # Bypass if no one's logged on to answer the dialog.
                 if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
                     return
                 }
 
@@ -436,10 +436,10 @@ function Show-ADTInstallationPrompt
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
-                $dialogType = $PSCmdlet.ParameterSetName.Replace('Show', [System.Management.Automation.Language.NullString]::Value).Split('_')[0]
+                $dialogType = $PSCmdlet.get_ParameterSetName().Replace('Show', [System.Management.Automation.Language.NullString]::get_Value()).Split('_')[0]
                 if ($NoWait)
                 {
-                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Message]."
+                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.get_NTAccount())] with message: [$Message]."
                     Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $dialogType -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
@@ -496,7 +496,7 @@ function Show-ADTInstallationPrompt
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

@@ -15,7 +15,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
     process
     {
         # Process potential subkeys first.
-        $subdata = $_ | Get-ChildItem | & $MyInvocation.MyCommand
+        $subdata = $_ | Get-ChildItem | & $MyInvocation.get_MyCommand()
 
         # Open a new subdata hashtable if we had no subkeys.
         if ($null -eq $subdata)
@@ -27,27 +27,27 @@ function Private:Convert-ADTRegistryKeyToHashtable
         $_ | Get-ItemProperty | & {
             process
             {
-                $_.PSObject.Properties | & {
+                $_.PSObject.get_Properties() | & {
                     process
                     {
-                        if (($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$') -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)))
+                        if (($_.get_Name() -notmatch '^PS((Parent)?Path|ChildName|Provider)$') -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.get_Value())))
                         {
                             # Handle bools as string values.
-                            if ($_.Value -match '^(True|False)$')
+                            if ($_.get_Value() -match '^(True|False)$')
                             {
-                                $subdata.Add($_.Name, [System.Boolean]::Parse($_.Value))
+                                $subdata.Add($_.get_Name(), [System.Boolean]::Parse($_.get_Value()))
                             }
-                            elseif ($_.Value -match '^-?\d+$')
+                            elseif ($_.get_Value() -match '^-?\d+$')
                             {
-                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value))
+                                $subdata.Add($_.get_Name(), [System.Int32]::Parse($_.get_Value()))
                             }
-                            elseif ($_.Value -match '^0[xX][0-9a-fA-F]+$')
+                            elseif ($_.get_Value() -match '^0[xX][0-9a-fA-F]+$')
                             {
-                                $subdata.Add($_.Name, [System.Int32]::Parse($_.Value.Replace('0x', [System.Management.Automation.Language.NullString]::Value), [System.Globalization.NumberStyles]::HexNumber))
+                                $subdata.Add($_.get_Name(), [System.Int32]::Parse($_.get_Value().Replace('0x', [System.Management.Automation.Language.NullString]::get_Value()), [System.Globalization.NumberStyles]::HexNumber))
                             }
                             else
                             {
-                                $subdata.Add($_.Name, $_.Value)
+                                $subdata.Add($_.get_Name(), $_.get_Value())
                             }
                         }
                     }
@@ -56,7 +56,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
         }
 
         # Add the subdata to the sections if it's got a count.
-        if ($subdata.Count)
+        if ($subdata.get_Count())
         {
             $data.Add($_.PSPath -replace '^.+\\', $subdata)
         }
@@ -65,7 +65,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
     end
     {
         # If there's something in the collector, return it.
-        if ($data.Count)
+        if ($data.get_Count())
         {
             return $data
         }

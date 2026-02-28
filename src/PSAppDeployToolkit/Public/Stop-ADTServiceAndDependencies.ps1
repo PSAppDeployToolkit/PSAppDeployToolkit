@@ -78,7 +78,7 @@ function Stop-ADTServiceAndDependencies
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InputObject')]
         [ValidateScript({
-                if (!$_.Name)
+                if (!$_.get_Name())
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
@@ -99,8 +99,8 @@ function Stop-ADTServiceAndDependencies
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ($pipelining = $PSCmdlet.ParameterSetName.Equals('InputObject'))
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        if ($pipelining = $PSCmdlet.get_ParameterSetName().Equals('InputObject'))
         {
             $null = $PSBoundParameters.Remove('InputObject')
         }
@@ -114,9 +114,9 @@ function Stop-ADTServiceAndDependencies
             {
                 if ($pipelining)
                 {
-                    $PSBoundParameters.Name = $InputObject.Name
+                    $PSBoundParameters.Name = $InputObject.get_Name()
                 }
-                $serviceName = if ($pipelining) { $InputObject.Name } else { $Name }
+                $serviceName = if ($pipelining) { $InputObject.get_Name() } else { $Name }
                 if ($PSCmdlet.ShouldProcess($serviceName, 'Stop service and dependencies'))
                 {
                     Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
@@ -131,12 +131,12 @@ function Stop-ADTServiceAndDependencies
         {
             $iafehParams = @{
                 Cmdlet = $PSCmdlet
-                SessionState = $ExecutionContext.SessionState
+                SessionState = $ExecutionContext.get_SessionState()
                 ErrorRecord = $_
             }
             if ($pipelining)
             {
-                $iafehParams.Add('LogMessage', "Failed to stop the service [$($InputObject.Name)].")
+                $iafehParams.Add('LogMessage', "Failed to stop the service [$($InputObject.get_Name())].")
             }
             else
             {

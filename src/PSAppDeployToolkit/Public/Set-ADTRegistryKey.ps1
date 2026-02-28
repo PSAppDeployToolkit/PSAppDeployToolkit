@@ -100,7 +100,7 @@ function Set-ADTRegistryKey
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
         [System.Object]$Value,
@@ -127,7 +127,7 @@ function Set-ADTRegistryKey
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -152,7 +152,7 @@ function Set-ADTRegistryKey
                     Write-ADTLogEntry -Message "Creating registry key [$LiteralPath]."
                     if ($PSCmdlet.ShouldProcess($LiteralPath, 'Create registry key'))
                     {
-                        $provider, $subkey = [System.Text.RegularExpressions.Regex]::Matches($LiteralPath, '^(.+::[a-zA-Z_]+)\\(.+)$').Groups[1..2].Value
+                        $provider, $subkey = [System.Text.RegularExpressions.Regex]::Matches($LiteralPath, '^(.+::[a-zA-Z_]+)\\(.+)$').get_Groups()[1..2].get_Value()
                         $regKey = Get-Item -LiteralPath $provider
                         $null = $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions)
                         $regKey.Close()
@@ -214,7 +214,7 @@ function Set-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$LiteralPath]", "update value [$Value] for registry key [$LiteralPath] [$Name]")[!!$Name])."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$LiteralPath]", "update value [$Value] for registry key [$LiteralPath] [$Name]")[!!$Name])."
         }
     }
 

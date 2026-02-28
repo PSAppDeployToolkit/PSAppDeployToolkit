@@ -92,19 +92,19 @@ function New-ADTErrorRecord
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$TargetName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TargetName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$TargetType = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TargetType = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Activity = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Activity = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Reason = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Reason = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -117,24 +117,24 @@ function New-ADTErrorRecord
     # Add in all optional values, if specified.
     if ($Activity)
     {
-        $errRecord.CategoryInfo.Activity = $Activity
+        $errRecord.get_CategoryInfo().set_Activity($Activity)
     }
     if ($TargetName)
     {
-        $errRecord.CategoryInfo.TargetName = $TargetName
+        $errRecord.get_CategoryInfo().set_TargetName($TargetName)
     }
     if ($TargetType)
     {
-        $errRecord.CategoryInfo.TargetType = $TargetType
+        $errRecord.get_CategoryInfo().set_TargetType($TargetType)
     }
     if ($Reason)
     {
-        $errRecord.CategoryInfo.Reason = $Reason
+        $errRecord.get_CategoryInfo().set_Reason($Reason)
     }
     if ($RecommendedAction)
     {
-        $errRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new($errRecord.Exception.Message)
-        $errRecord.ErrorDetails.RecommendedAction = $RecommendedAction
+        $errRecord.set_ErrorDetails([System.Management.Automation.ErrorDetails]::new($errRecord.get_Exception().get_Message()))
+        $errRecord.get_ErrorDetails().set_RecommendedAction($RecommendedAction)
     }
 
     # Return the ErrorRecord to the caller, who will then throw it.

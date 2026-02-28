@@ -68,12 +68,12 @@ function New-ADTTemplate
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Destination = $ExecutionContext.SessionState.Path.CurrentLocation.Path,
+        [System.String]$Destination = $ExecutionContext.get_SessionState().get_Path().get_CurrentLocation().get_Path(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = "PSAppDeployToolkit_<ModuleVersion>")]
-        [System.String]$Name = "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)",
+        [System.String]$Name = "$($MyInvocation.get_MyCommand().get_Module().get_Name())_$($MyInvocation.get_MyCommand().get_Module().get_Version())",
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(3, 4)]
@@ -92,18 +92,18 @@ function New-ADTTemplate
     begin
     {
         # Initialize the function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
 
         # Resolve the path to handle setups like ".\", etc.
         # We can't use things like a DirectoryInfo cast as .NET doesn't
         # track when the current location in PowerShell has been changed.
         if (($resolvedDest = Resolve-Path -LiteralPath $Destination -ErrorAction Ignore))
         {
-            $Destination = $resolvedDest.Path
+            $Destination = $resolvedDest.get_Path()
         }
 
         # Set up remaining variables.
-        $moduleName = $MyInvocation.MyCommand.Module.Name
+        $moduleName = $MyInvocation.get_MyCommand().get_Module().get_Name()
         $templatePath = (Join-Path -Path $Destination -ChildPath $Name).Trim()
         $templateModulePath = if ($Version.Equals(3))
         {
@@ -129,7 +129,7 @@ function New-ADTTemplate
                         Category = [System.Management.Automation.ErrorCategory]::InvalidData
                         ErrorId = 'ADTDataFileSignatureError'
                         TargetObject = $badFiles
-                        RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
+                        RecommendedAction = "Please re-download $($MyInvocation.get_MyCommand().get_Module().get_Name()) and try again."
                     }
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
@@ -167,9 +167,9 @@ function New-ADTTemplate
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
                     process
                     {
-                        if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.FullName)) -match '^# SIG # Begin signature block$')))
+                        if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.get_FullName())) -match '^# SIG # Begin signature block$')))
                         {
-                            [System.IO.File]::WriteAllLines($_.FullName, $fileLines[0..($fileLines.IndexOf($sigLine) - 2)])
+                            [System.IO.File]::WriteAllLines($_.get_FullName(), $fileLines[0..($fileLines.IndexOf($sigLine) - 2)])
                         }
                     }
                 }
@@ -182,7 +182,7 @@ function New-ADTTemplate
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
                     process
                     {
-                        $_.Attributes = 'ReadOnly'
+                        $_.set_Attributes('ReadOnly')
                     }
                 }
 
@@ -193,7 +193,7 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
+                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', [System.Management.Automation.Language.NullString]::get_Value()).Replace('2000-12-31', [System.DateTime]::get_Now().ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
                 }
 
                 # Display the newly created folder in Windows Explorer.
@@ -215,7 +215,7 @@ function New-ADTTemplate
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

@@ -76,14 +76,14 @@ function Set-ADTDeferHistory
     )
 
     # Throw if at least one parameter isn't called.
-    if (!($PSBoundParameters.Keys.GetEnumerator() | & { process { if (!$Script:PowerShellCommonParameters.Contains($_)) { return $_ } } }))
+    if (!($PSBoundParameters.get_Keys().GetEnumerator() | & { process { if (!$Script:PowerShellCommonParameters.Contains($_)) { return $_ } } }))
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The function [$($MyInvocation.MyCommand.Name)] requires at least one parameter be specified.")
+            Exception = [System.InvalidOperationException]::new("The function [$($MyInvocation.get_MyCommand().get_Name())] requires at least one parameter be specified.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
             ErrorId = 'SetDeferHistoryNoParamSpecified'
             TargetObject = $PSBoundParameters
-            RecommendedAction = "Please check your usage of [$($MyInvocation.MyCommand.Name)] and try again."
+            RecommendedAction = "Please check your usage of [$($MyInvocation.get_MyCommand().get_Name())] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }

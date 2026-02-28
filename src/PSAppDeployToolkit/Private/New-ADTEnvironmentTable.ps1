@@ -20,26 +20,26 @@ function Private:New-ADTEnvironmentTable
     $variables = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
 
     ## Variables: Toolkit Info
-    $variables.Add('appDeployToolkitName', $MyInvocation.MyCommand.Module.Name)
-    $variables.Add('appDeployToolkitPath', $MyInvocation.MyCommand.Module.ModuleBase)
-    $variables.Add('appDeployMainScriptVersion', $MyInvocation.MyCommand.Module.Version)
+    $variables.Add('appDeployToolkitName', $MyInvocation.get_MyCommand().get_Module().get_Name())
+    $variables.Add('appDeployToolkitPath', $MyInvocation.get_MyCommand().get_Module().get_ModuleBase())
+    $variables.Add('appDeployMainScriptVersion', $MyInvocation.get_MyCommand().get_Module().get_Version())
 
     ## Variables: Culture
-    $variables.Add('culture', $Host.CurrentCulture)
-    $variables.Add('uiculture', $Host.CurrentUICulture)
-    $variables.Add('currentLanguage', $variables.culture.TwoLetterISOLanguageName.ToUpperInvariant())
-    $variables.Add('currentUILanguage', $variables.uiculture.TwoLetterISOLanguageName.ToUpperInvariant())
+    $variables.Add('culture', $Host.get_CurrentCulture())
+    $variables.Add('uiculture', $Host.get_CurrentUICulture())
+    $variables.Add('currentLanguage', $variables.culture.get_TwoLetterISOLanguageName().ToUpperInvariant())
+    $variables.Add('currentUILanguage', $variables.uiculture.get_TwoLetterISOLanguageName().ToUpperInvariant())
 
     ## Variables: Environment Variables
     $variables.Add('envHost', $Host)
-    $variables.Add('envHostVersion', [System.Version]$Host.Version)
-    $variables.Add('envHostVersionSemantic', $(if ($Host.Version.PSObject.Properties.Name -match '^PSSemVer') { [System.Management.Automation.SemanticVersion]$Host.Version }))
-    $variables.Add('envHostVersionMajor', $variables.envHostVersion.Major)
-    $variables.Add('envHostVersionMinor', $variables.envHostVersion.Minor)
-    $variables.Add('envHostVersionBuild', $(if ($variables.envHostVersion.Build -ge 0) { $variables.envHostVersion.Build }))
-    $variables.Add('envHostVersionRevision', $(if ($variables.envHostVersion.Revision -ge 0) { $variables.envHostVersion.Revision }))
-    $variables.Add('envHostVersionPreReleaseLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.PreReleaseLabel) { $variables.envHostVersionSemantic.PreReleaseLabel }))
-    $variables.Add('envHostVersionBuildLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.BuildLabel) { $variables.envHostVersionSemantic.BuildLabel }))
+    $variables.Add('envHostVersion', [System.Version]$Host.get_Version())
+    $variables.Add('envHostVersionSemantic', $(if ($Host.get_Version().PSObject.get_Properties().get_Name() -match '^PSSemVer') { [System.Management.Automation.SemanticVersion]$Host.get_Version() }))
+    $variables.Add('envHostVersionMajor', $variables.envHostVersion.get_Major())
+    $variables.Add('envHostVersionMinor', $variables.envHostVersion.get_Minor())
+    $variables.Add('envHostVersionBuild', $(if ($variables.envHostVersion.get_Build() -ge 0) { $variables.envHostVersion.get_Build() }))
+    $variables.Add('envHostVersionRevision', $(if ($variables.envHostVersion.get_Revision() -ge 0) { $variables.envHostVersion.get_Revision() }))
+    $variables.Add('envHostVersionPreReleaseLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.get_PreReleaseLabel()) { $variables.envHostVersionSemantic.get_PreReleaseLabel() }))
+    $variables.Add('envHostVersionBuildLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.get_BuildLabel()) { $variables.envHostVersionSemantic.get_BuildLabel() }))
     $variables.Add('envAllUsersProfile', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::ApplicationData))
     $variables.Add('envArchitecture', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))
@@ -56,7 +56,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envLogicalDrives', [System.Collections.Generic.IReadOnlyList[System.String]][System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.Environment]::GetLogicalDrives())
     $variables.Add('envProgramData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envPublic', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PUBLIC'))
-    $variables.Add('envSystemDrive', [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory).TrimEnd('\'))
+    $variables.Add('envSystemDrive', [System.IO.Path]::GetPathRoot([System.Environment]::get_SystemDirectory()).TrimEnd('\'))
     $variables.Add('envSystemRoot', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))
     $variables.Add('envTemp', [System.IO.Path]::GetTempPath())
     $variables.Add('envUserCookies', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Cookies))
@@ -65,7 +65,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envUserInternetCache', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::InternetCache))
     $variables.Add('envUserInternetHistory', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::History))
     $variables.Add('envUserMyDocuments', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::MyDocuments))
-    $variables.Add('envUserName', [System.Environment]::UserName)
+    $variables.Add('envUserName', [System.Environment]::get_UserName())
     $variables.Add('envUserPictures', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::MyPictures))
     $variables.Add('envUserProfile', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::UserProfile))
     $variables.Add('envUserSendTo', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SendTo))
@@ -73,7 +73,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envUserStartMenuPrograms', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Programs))
     $variables.Add('envUserStartUp', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::StartUp))
     $variables.Add('envUserTemplates', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Templates))
-    $variables.Add('envSystem32Directory', [System.Environment]::SystemDirectory)
+    $variables.Add('envSystem32Directory', [System.Environment]::get_SystemDirectory())
     $variables.Add('envWinDir', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))
 
     ## Variables: Running in SCCM Task Sequence.
@@ -87,9 +87,9 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envMachineADDomain', $null)
     $variables.Add('envLogonServer', $null)
     $variables.Add('MachineDomainController', $null)
-    $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
+    $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().get_DomainName() | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
     $variables.Add('envUserDNSDomain', ([PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLowerInvariant() } } } | Select-Object -First 1))
-    $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpperInvariant() }))
+    $variables.Add('envUserDomain', $(if ([System.Environment]::get_UserDomainName()) { [System.Environment]::get_UserDomainName().ToUpperInvariant() }))
     $variables.Add('envComputerName', [System.Net.Dns]::GetHostName().ToUpperInvariant())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain)
@@ -97,7 +97,7 @@ function Private:New-ADTEnvironmentTable
         $variables.envMachineADDomain = $domainInfo.DomainOrWorkgroupName.ToLowerInvariant()
         $variables.envComputerNameFQDN = try
         {
-            [System.Net.Dns]::GetHostEntry('localhost').HostName
+            [System.Net.Dns]::GetHostEntry('localhost').get_HostName()
         }
         catch
         {
@@ -108,7 +108,7 @@ function Private:New-ADTEnvironmentTable
         # Set the logon server and remove backslashes at the beginning.
         $variables.envLogonServer = try
         {
-            [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
+            [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).get_HostName() } } }
         }
         catch
         {
@@ -122,7 +122,7 @@ function Private:New-ADTEnvironmentTable
 
         try
         {
-            $variables.MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().Name
+            $variables.MachineDomainController = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().FindDomainController().get_Name()
         }
         catch
         {
@@ -135,11 +135,11 @@ function Private:New-ADTEnvironmentTable
     }
 
     # Get the OS Architecture.
-    $variables.Add('Is64Bit', [System.Environment]::Is64BitOperatingSystem)
-    $variables.Add('envOSArchitecture', [System.Runtime.InteropServices.RuntimeInformation, mscorlib, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089]::OSArchitecture)
+    $variables.Add('Is64Bit', [System.Environment]::get_Is64BitOperatingSystem())
+    $variables.Add('envOSArchitecture', [System.Runtime.InteropServices.RuntimeInformation, mscorlib, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089]::get_OSArchitecture())
 
     ## Variables: Current Process Architecture
-    $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
+    $variables.Add('Is64BitProcess', [System.Environment]::get_Is64BitProcess())
     $variables.Add('psArchitecture', [System.Runtime.InteropServices.RuntimeInformation, mscorlib, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089]::ProcessArchitecture)
 
     ## Variables: Get normalized paths that vary depending on process bitness.
@@ -149,7 +149,7 @@ function Private:New-ADTEnvironmentTable
         {
             $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
             $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
-            $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
+            $variables.Add('envSysNativeDirectory', [System.Environment]::get_SystemDirectory())
             $variables.Add('envSYSWOW64Directory', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SystemX86))
         }
         else
@@ -157,7 +157,7 @@ function Private:New-ADTEnvironmentTable
             $variables.Add('envProgramFiles', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('ProgramW6432'))
             $variables.Add('envCommonProgramFiles', [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('CommonProgramW6432'))
             $variables.Add('envSysNativeDirectory', (Join-Path -Path ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows)) -ChildPath sysnative))
-            $variables.Add('envSYSWOW64Directory', [System.Environment]::SystemDirectory)
+            $variables.Add('envSYSWOW64Directory', [System.Environment]::get_SystemDirectory())
         }
         $variables.Add('envProgramFilesX86', [System.Environment]::GetFolderPath('ProgramFilesX86'))
         $variables.Add('envCommonProgramFilesX86', [System.Environment]::GetFolderPath('CommonProgramFilesX86'))
@@ -170,7 +170,7 @@ function Private:New-ADTEnvironmentTable
         $variables.Add('envProgramFilesX86', $null)
         $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
         $variables.Add('envCommonProgramFilesX86', $null)
-        $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
+        $variables.Add('envSysNativeDirectory', [System.Environment]::get_SystemDirectory())
         $variables.Add('envSYSWOW64Directory', $null)
         $variables.Add('envSystemProfile', [System.IO.Path]::Combine($variables.envSysNativeDirectory, 'Config', 'systemprofile'))
         $variables.Add('envSystemProfileX86', $null)
@@ -178,20 +178,20 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Operating System
     $osInfo = Get-ADTOperatingSystemInfo
-    $variables.Add('envOSName', $osInfo.Name)
-    $variables.Add('envOSVersion', $osInfo.Version)
-    $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
-    $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
-    $variables.Add('envOSVersionBuild', $(if ($variables.envOSVersion.Build -ge 0) { $variables.envOSVersion.Build }))
-    $variables.Add('envOSVersionRevision', $(if ($variables.envOSVersion.Revision -ge 0) { $variables.envOSVersion.Revision }))
+    $variables.Add('envOSName', $osInfo.get_Name())
+    $variables.Add('envOSVersion', $osInfo.get_Version())
+    $variables.Add('envOSVersionMajor', $variables.envOSVersion.get_Major())
+    $variables.Add('envOSVersionMinor', $variables.envOSVersion.get_Minor())
+    $variables.Add('envOSVersionBuild', $(if ($variables.envOSVersion.get_Build() -ge 0) { $variables.envOSVersion.get_Build() }))
+    $variables.Add('envOSVersionRevision', $(if ($variables.envOSVersion.get_Revision() -ge 0) { $variables.envOSVersion.get_Revision() }))
 
     # Get the operating system type.
     $variables.Add('envOSProductType', [System.Int32]$osInfo.ProductType)
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
-    $variables.Add('IsTerminalServer', $osInfo.IsTerminalServer)
-    $variables.Add('IsMultiSessionOS', $osInfo.IsWorkstationEnterpriseMultiSessionOS)
+    $variables.Add('IsTerminalServer', $osInfo.get_IsTerminalServer())
+    $variables.Add('IsMultiSessionOS', $osInfo.get_IsWorkstationEnterpriseMultiSessionOS())
     $variables.Add('envOSProductTypeName', [Microsoft.PowerShell.Commands.ProductType]$variables.envOSProductType)
 
     ## Variables: Office C2R version, bitness and channel
@@ -254,26 +254,26 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: PowerShell And CLR (.NET) Versions
     $variables.Add('envPSVersionTable', $PSVersionTable)
-    $variables.Add('envPSProcessPath', [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName)
+    $variables.Add('envPSProcessPath', [System.Diagnostics.Process]::GetCurrentProcess().get_MainModule().get_FileName())
 
     # PowerShell Version
     $variables.Add('envPSVersion', [System.Version]$variables.envPSVersionTable.PSVersion)
-    $variables.Add('envPSVersionSemantic', $(if ($variables.envPSVersionTable.PSVersion.GetType().FullName.Equals('System.Management.Automation.SemanticVersion')) { $variables.envPSVersionTable.PSVersion }))
-    $variables.Add('envPSVersionMajor', $variables.envPSVersion.Major)
-    $variables.Add('envPSVersionMinor', $variables.envPSVersion.Minor)
-    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.Build -ge 0) { $variables.envPSVersion.Build }))
-    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.Revision -ge 0) { $variables.envPSVersion.Revision }))
-    $variables.Add('envPSVersionPreReleaseLabel', $(if ($variables.envPSVersionSemantic -and $variables.envPSVersionSemantic.PreReleaseLabel) { $variables.envPSVersionSemantic.PreReleaseLabel }))
-    $variables.Add('envPSVersionBuildLabel', $(if ($variables.envPSVersionSemantic -and $variables.envPSVersionSemantic.BuildLabel) { $variables.envPSVersionSemantic.BuildLabel }))
+    $variables.Add('envPSVersionSemantic', $(if ($variables.envPSVersionTable.PSVersion.GetType().get_FullName().Equals('System.Management.Automation.SemanticVersion')) { $variables.envPSVersionTable.PSVersion }))
+    $variables.Add('envPSVersionMajor', $variables.envPSVersion.get_Major())
+    $variables.Add('envPSVersionMinor', $variables.envPSVersion.get_Minor())
+    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.get_Build() -ge 0) { $variables.envPSVersion.get_Build() }))
+    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.get_Revision() -ge 0) { $variables.envPSVersion.get_Revision() }))
+    $variables.Add('envPSVersionPreReleaseLabel', $(if ($variables.envPSVersionSemantic -and $variables.envPSVersionSemantic.get_PreReleaseLabel()) { $variables.envPSVersionSemantic.get_PreReleaseLabel() }))
+    $variables.Add('envPSVersionBuildLabel', $(if ($variables.envPSVersionSemantic -and $variables.envPSVersionSemantic.get_BuildLabel()) { $variables.envPSVersionSemantic.get_BuildLabel() }))
 
     # CLR (.NET) Version used by Windows PowerShell
     if ($variables.envPSVersionTable.ContainsKey('CLRVersion'))
     {
         $variables.Add('envCLRVersion', $variables.envPSVersionTable.CLRVersion)
-        $variables.Add('envCLRVersionMajor', $variables.envCLRVersion.Major)
-        $variables.Add('envCLRVersionMinor', $variables.envCLRVersion.Minor)
-        $variables.Add('envCLRVersionBuild', $(if ($variables.envCLRVersion.Build -ge 0) { $variables.envCLRVersion.Build }))
-        $variables.Add('envCLRVersionRevision', $(if ($variables.envCLRVersion.Revision -ge 0) { $variables.envCLRVersion.Revision }))
+        $variables.Add('envCLRVersionMajor', $variables.envCLRVersion.get_Major())
+        $variables.Add('envCLRVersionMinor', $variables.envCLRVersion.get_Minor())
+        $variables.Add('envCLRVersionBuild', $(if ($variables.envCLRVersion.get_Build() -ge 0) { $variables.envCLRVersion.get_Build() }))
+        $variables.Add('envCLRVersionRevision', $(if ($variables.envCLRVersion.get_Revision() -ge 0) { $variables.envCLRVersion.get_Revision() }))
     }
     else
     {
@@ -286,15 +286,15 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Permissions/Accounts
     $variables.Add('CurrentProcessToken', [System.Security.Principal.WindowsIdentity]::GetCurrent())
-    $variables.Add('CurrentProcessSID', [System.Security.Principal.SecurityIdentifier]$variables.CurrentProcessToken.User)
-    $variables.Add('ProcessNTAccount', [System.Security.Principal.NTAccount]$variables.CurrentProcessToken.Name)
-    $variables.Add('ProcessNTAccountSID', $variables.CurrentProcessSID.Value)
+    $variables.Add('CurrentProcessSID', [System.Security.Principal.SecurityIdentifier]$variables.CurrentProcessToken.get_User())
+    $variables.Add('ProcessNTAccount', [System.Security.Principal.NTAccount]$variables.CurrentProcessToken.get_Name())
+    $variables.Add('ProcessNTAccountSID', $variables.CurrentProcessSID.get_Value())
     $variables.Add('IsAdmin', (Test-ADTCallerIsAdmin))
     $variables.Add('IsLocalSystemAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
     $variables.Add('IsLocalServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalServiceSid))
     $variables.Add('IsNetworkServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NetworkServiceSid))
-    $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.Groups -contains ([System.Security.Principal.SecurityIdentifier]'S-1-5-6')))
-    $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
+    $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.get_Groups() -contains ([System.Security.Principal.SecurityIdentifier]'S-1-5-6')))
+    $variables.Add('IsProcessUserInteractive', [System.Environment]::get_UserInteractive())
     $variables.Add('LocalSystemNTAccount', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::LocalSystemSid).Translate([System.Security.Principal.NTAccount]))
     $variables.Add('LocalUsersGroup', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid).Translate([System.Security.Principal.NTAccount]))
     $variables.Add('LocalAdministratorsGroup', [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid).Translate([System.Security.Principal.NTAccount]))
@@ -304,12 +304,12 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('LoggedOnUserSessions', [System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]][PSADT.TerminalServices.SessionManager]::GetSessionInfo())
     if ($variables.LoggedOnUserSessions)
     {
-        $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
-        $variables.Add('CurrentLoggedOnUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
-        $variables.Add('CurrentConsoleUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.get_NTAccount())
+        $variables.Add('CurrentLoggedOnUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.get_IsCurrentSession()) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('CurrentConsoleUserSession', ($($variables.LoggedOnUserSessions) | & { process { if ($_.get_IsConsoleSession()) { return $_ } } } | Select-Object -First 1))
         $variables.Add('LoggedOnUserSessionsText', ($($variables.LoggedOnUserSessions) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
         $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions 4>$null))
-        $variables.Add('RunAsActiveUserLocale', [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\$($variables.RunAsActiveUser.SID)\Control Panel\International", "LocaleName", $null))
+        $variables.Add('RunAsActiveUserLocale', [Microsoft.Win32.Registry]::GetValue("HKEY_USERS\$($variables.RunAsActiveUser.get_SID())\Control Panel\International", "LocaleName", $null))
     }
     else
     {
@@ -324,12 +324,12 @@ function Private:New-ADTEnvironmentTable
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
     $variables.Add('defaultUserProfile', [Microsoft.Win32.Registry]::GetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList', 'Default', $null))
-    $variables.Add('runAsUserProfile', $(if ($variables.RunAsActiveUser) { [Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$($variables.RunAsActiveUser.SID)", 'ProfileImagePath', $null) }))
+    $variables.Add('runAsUserProfile', $(if ($variables.RunAsActiveUser) { [Microsoft.Win32.Registry]::GetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$($variables.RunAsActiveUser.get_SID())", 'ProfileImagePath', $null) }))
     $variables.Add('userProfileName', $(if ($variables.runAsUserProfile) { $variables.runAsUserProfile.Split('\')[-1] }))
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]][System.IO.Path]::GetInvalidFileNameChars())
-    $variables.Add('invalidFileNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.Management.Automation.Language.NullString]::Value, $variables.invalidFileNameChars)))]", [System.Text.RegularExpressions.RegexOptions]::Compiled))
+    $variables.Add('invalidFileNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::new("[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.Management.Automation.Language.NullString]::get_Value(), $variables.invalidFileNameChars)))]", [System.Text.RegularExpressions.RegexOptions]::Compiled))
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
@@ -340,7 +340,7 @@ function Private:New-ADTEnvironmentTable
     {
         foreach ($kvp in $AdditionalEnvironmentVariables.GetEnumerator())
         {
-            $variables.Add($kvp.Key, $kvp.Value)
+            $variables.Add($kvp.get_Key(), $kvp.get_Value())
         }
     }
 

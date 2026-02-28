@@ -15,7 +15,7 @@ function Private:Set-ADTClientServerProcessPermissions
     )
 
     # If we're running under the active user's account, return early as the user already has access.
-    if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.Equals($User.SID))
+    if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.Equals($User.get_SID()))
     {
         return
     }

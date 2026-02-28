@@ -80,19 +80,19 @@ function Remove-ADTFile
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
     }
 
     process
     {
-        foreach ($Value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+        foreach ($Value in $PSBoundParameters[$PSCmdlet.get_ParameterSetName()])
         {
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
             {
                 try
                 {
-                    $giParams = @{ $PSCmdlet.ParameterSetName = $Value }
+                    $giParams = @{ $PSCmdlet.get_ParameterSetName() = $Value }
                     if (!($Items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
                     {
                         Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
@@ -116,7 +116,7 @@ function Remove-ADTFile
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Value]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Value]."
                 continue
             }
 
@@ -157,7 +157,7 @@ function Remove-ADTFile
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete items in path [$Item]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to delete items in path [$Item]."
             }
         }
     }

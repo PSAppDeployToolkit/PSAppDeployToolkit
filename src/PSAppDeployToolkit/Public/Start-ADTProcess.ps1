@@ -211,7 +211,7 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         # Identity: RunAsActiveUser (only present in sets where identity is "RunAsActiveUser")
         [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
@@ -303,7 +303,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Verb = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Verb = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
@@ -397,9 +397,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [ValidateScript({
-                if ($_.TotalMilliseconds -lt 1)
+                if ($_.get_TotalMilliseconds() -lt 1)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "The `-Timeout` parameter expects a `[System.TimeSpan]` object of 1ms or above; the supplied value of $($_.Ticks) ticks equates to $($_.TotalMilliSeconds) milliseconds. Try `-Timeout (New-Timespan -Seconds $($_.Ticks))` instead."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "The `-Timeout` parameter expects a `[System.TimeSpan]` object of 1ms or above; the supplied value of $($_.get_Ticks()) ticks equates to $($_.get_TotalMilliSeconds()) milliseconds. Try `-Timeout (New-Timespan -Seconds $($_.get_Ticks()))` instead."))
                 }
                 return !!$_
             })]
@@ -540,7 +540,7 @@ function Start-ADTProcess
         {
             Get-ADTSession
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         $canSetExitCode = $true
 
         # Log the deprecation of -IgnoreExitCodes to the log.
@@ -554,7 +554,7 @@ function Start-ADTProcess
         {
             $SuccessExitCodes = if ($adtSession)
             {
-                $adtSession.AppSuccessExitCodes
+                $adtSession.get_AppSuccessExitCodes()
             }
             else
             {
@@ -569,7 +569,7 @@ function Start-ADTProcess
         {
             $RebootExitCodes = if ($adtSession)
             {
-                $adtSession.AppRebootExitCodes
+                $adtSession.get_AppRebootExitCodes()
             }
             else
             {
@@ -590,8 +590,8 @@ function Start-ADTProcess
         }
 
         # Set up initial variables.
-        $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo.MyCommand } }
-        $extInvoker = !$funcCaller -or !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
+        $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.get_InvocationInfo().get_MyCommand() } }
+        $extInvoker = !$funcCaller -or !$funcCaller.get_Source().StartsWith($MyInvocation.get_MyCommand().get_Module().get_Name()) -or $funcCaller.get_Name().Equals('Start-ADTMsiProcess')
         $SEE_MASK_NOZONECHECKS = [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('SEE_MASK_NOZONECHECKS')
         [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable('SEE_MASK_NOZONECHECKS', 1)
 
@@ -666,7 +666,7 @@ function Start-ADTProcess
     process
     {
         # Commence the underlying execution process.
-        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.get_NTAccount())]"})..."
         if ($PSBoundParameters.ContainsKey('IgnoreExitCodes') -and !$($IgnoreExitCodes).Equals('*'))
         {
             Write-ADTLogEntry -Message "Please use [-SuccessExitCodes] and/or [-RebootExitCodes] to specify your process's exit codes."
@@ -684,15 +684,15 @@ function Start-ADTProcess
                         {
                             $WorkingDirectory
                         }
-                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
+                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.get_DirFiles()))
                         {
-                            $adtSession.DirFiles
+                            $adtSession.get_DirFiles()
                         }
-                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirSupportFiles))
+                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.get_DirSupportFiles()))
                         {
-                            $adtSession.DirSupportFiles
+                            $adtSession.get_DirSupportFiles()
                         }
-                        $ExecutionContext.SessionState.Path.CurrentLocation.Path
+                        $ExecutionContext.get_SessionState().get_Path().get_CurrentLocation().get_Path()
                         [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH').Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).TrimEnd('\')
                     )
                     if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
@@ -742,9 +742,9 @@ function Start-ADTProcess
                     {
                         $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                     }
-                    elseif (![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
+                    elseif (![System.String]::IsNullOrWhiteSpace($adtSession.get_DirFiles()))
                     {
-                        $WorkingDirectory = $adtSession.DirFiles
+                        $WorkingDirectory = $adtSession.get_DirFiles()
                     }
                 }
 
@@ -791,16 +791,16 @@ function Start-ADTProcess
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.get_NTAccount())]"})..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.get_Length() -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.get_NTAccount())]"})..."
                     }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.get_NTAccount())]"})..."
                 }
 
                 # Start the process.
@@ -929,7 +929,7 @@ function Start-ADTProcess
                     {
                         $streamMessage = if ($result.$property)
                         {
-                            if ($result.$property.Count -gt 1)
+                            if ($result.$property.get_Count() -gt 1)
                             {
                                 "`n`n$([System.String]::Join("`n", $result.$property))"
                             }
@@ -982,13 +982,13 @@ function Start-ADTProcess
             # Set up base parameters for Invoke-ADTFunctionErrorHandler.
             $iafehParams = @{
                 Cmdlet = $PSCmdlet
-                SessionState = $ExecutionContext.SessionState
+                SessionState = $ExecutionContext.get_SessionState()
                 ErrorRecord = $_
             }
 
             # Switch on the exception type's name.
             $sessionClosed = $false
-            switch -Regex ($_.Exception.GetType().FullName)
+            switch -Regex ($_.get_Exception().GetType().get_FullName())
             {
                 '^System\.(Runtime\.InteropServices\.ExternalException|Threading\.SynchronizationLockException)$'
                 {

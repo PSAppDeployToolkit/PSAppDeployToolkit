@@ -31,36 +31,36 @@ function Private:Import-ADTConfig
         foreach ($asset in $($_.GetEnumerator()))
         {
             # Re-process if this is a hashtable.
-            if ($asset.Value -is [System.Collections.Hashtable])
+            if ($asset.get_Value() -is [System.Collections.Hashtable])
             {
-                $asset.Value | & $MyInvocation.MyCommand; continue
+                $asset.get_Value() | & $MyInvocation.get_MyCommand(); continue
             }
 
             # Skip if the value is null (some are optional).
-            if ($asset.Name -eq 'TaskbarIcon' -and [System.String]::IsNullOrWhiteSpace($asset.Value))
+            if ($asset.get_Key() -eq 'TaskbarIcon' -and [System.String]::IsNullOrWhiteSpace($asset.get_Value()))
             {
                 continue
             }
 
             # Skip if the path is a Base64 string.
-            if ($null -ne [PSADT.Utilities.MiscUtilities]::GetBase64StringBytes($asset.Value))
+            if ($null -ne [PSADT.Utilities.MiscUtilities]::GetBase64StringBytes($asset.get_Value()))
             {
                 continue
             }
 
             # Skip if the path is fully qualified.
-            if ([System.IO.Path]::IsPathRooted($asset.Value))
+            if ([System.IO.Path]::IsPathRooted($asset.get_Value()))
             {
                 continue
             }
 
             # Get the asset's full path based on the supplied BaseDirectory.
             # Fall back to the module's path if the asset is unable to be found.
-            $assetPath = foreach ($directory in $($BaseDirectory[($BaseDirectory.Count - 1)..(0)]; $Script:ADT.Directories.Defaults.Config))
+            $assetPath = foreach ($directory in $($BaseDirectory[($BaseDirectory.get_Count() - 1)..(0)]; $Script:ADT.Directories.Defaults.Config))
             {
-                if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.Key))" -ErrorAction Ignore))
+                if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.get_Key()))" -ErrorAction Ignore))
                 {
-                    $assetPath.FullName
+                    $assetPath.get_FullName()
                     break
                 }
             }
@@ -69,15 +69,15 @@ function Private:Import-ADTConfig
             if (!$assetPath)
             {
                 $naerParams = @{
-                    Exception = [System.IO.FileNotFoundException]::new("Failed to resolve the asset [$($asset.Key)] to a valid file path.", $_.($asset.Key))
+                    Exception = [System.IO.FileNotFoundException]::new("Failed to resolve the asset [$($asset.get_Key())] to a valid file path.", $_.($asset.get_Key()))
                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                     ErrorId = 'DialogAssetNotFound'
-                    TargetObject = $_.($asset.Key)
+                    TargetObject = $_.($asset.get_Key())
                     RecommendedAction = "Ensure the file exists and try again."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
-            $_.($asset.Key) = $assetPath
+            $_.($asset.get_Key()) = $assetPath
         }
     }
 
@@ -88,19 +88,19 @@ function Private:Import-ADTConfig
         foreach ($section in $($_.GetEnumerator()))
         {
             # Re-process if this is a hashtable.
-            if ($section.Value -is [System.Collections.Hashtable])
+            if ($section.get_Value() -is [System.Collections.Hashtable])
             {
-                $section.Value | & $MyInvocation.MyCommand; continue
+                $section.get_Value() | & $MyInvocation.get_MyCommand(); continue
             }
 
             # Confirm the value signedness.
-            if (($section.Value -is [System.Int32]) -and !('DefaultExitCode', 'DeferExitCode', 'FluentAccentColor').Contains($section.Key) -and ($section.Value -le 0))
+            if (($section.get_Value() -is [System.Int32]) -and !('DefaultExitCode', 'DeferExitCode', 'FluentAccentColor').Contains($section.get_Key()) -and ($section.get_Value() -le 0))
             {
                 $naerParams = @{
-                    Exception = [System.ArgumentOutOfRangeException]::new("The value for [$($section.Key)] must be greater than zero.", $null)
+                    Exception = [System.ArgumentOutOfRangeException]::new("The value for [$($section.get_Key())] must be greater than zero.", $null)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidData
                     ErrorId = 'ConfigIntLessThanOrEqualToZero'
-                    TargetObject = $_.($section.Key)
+                    TargetObject = $_.($section.get_Key())
                     RecommendedAction = "Review your configuration and try again."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
@@ -134,7 +134,7 @@ function Private:Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.Key -Value $_.Value -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.SessionState } }
+    ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.get_Key() -Value $_.get_Value() -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.get_SessionState() } }
     $config.Assets | Update-ADTAssetFilePath
 
     # Change paths to user accessible ones if user isn't an admin.

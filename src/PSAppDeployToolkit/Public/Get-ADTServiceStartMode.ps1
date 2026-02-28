@@ -48,7 +48,7 @@ function Get-ADTServiceStartMode
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!$_.Name)
+                if (!$_.get_Name())
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
@@ -59,24 +59,24 @@ function Get-ADTServiceStartMode
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
     {
-        Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
+        Write-ADTLogEntry -Message "Getting the service [$($Service.get_Name())] startup mode."
         try
         {
             try
             {
                 # Get the start mode and adjust it if the automatic type is delayed.
-                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.Name)" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
+                if ((($serviceStartMode = $Service.get_StartType()) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.get_Name())" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
                 {
                     $serviceStartMode = 'Automatic (Delayed Start)'
                 }
 
                 # Return startup type to the caller.
-                Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
+                Write-ADTLogEntry -Message "Service [$($Service.get_Name())] startup mode is set to [$serviceStartMode]."
                 return $serviceStartMode
             }
             catch
@@ -86,7 +86,7 @@ function Get-ADTServiceStartMode
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

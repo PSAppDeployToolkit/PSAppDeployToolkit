@@ -187,7 +187,7 @@ function Start-ADTMsiProcessAsUser
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
@@ -213,7 +213,7 @@ function Start-ADTMsiProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -240,7 +240,7 @@ function Start-ADTMsiProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -254,7 +254,7 @@ function Start-ADTMsiProcessAsUser
                 }
                 return $true
             })]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Repair', 'Reinstall')]
@@ -314,7 +314,7 @@ function Start-ADTMsiProcessAsUser
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -326,7 +326,7 @@ function Start-ADTMsiProcessAsUser
         }
 
         # Just farm it out to Start-ADTMsiProcess as it can do it all.
-        if (!$PSCmdlet.ShouldProcess($(if ($FilePath) { "MSI/MSP [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]" } elseif ($ProductCode) { "MSI ProductCode [$ProductCode] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]" } else { "MSI as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]" }), $Action))
+        if (!$PSCmdlet.ShouldProcess($(if ($FilePath) { "MSI/MSP [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.get_NTAccount())]" } elseif ($ProductCode) { "MSI ProductCode [$ProductCode] as user [$($PSBoundParameters.RunAsActiveUser.get_NTAccount())]" } else { "MSI as user [$($PSBoundParameters.RunAsActiveUser.get_NTAccount())]" }), $Action))
         {
             return
         }

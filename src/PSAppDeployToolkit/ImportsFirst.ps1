@@ -27,26 +27,26 @@ https://psappdeploytoolkit.com
 #-----------------------------------------------------------------------------
 
 # Throw if this psm1 file isn't being imported via our manifest.
-if (!([System.Environment]::StackTrace.Split("`n") -like '*Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
+if (!([System.Environment]::get_StackTrace().Split("`n") -like '*Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
 {
     throw [System.Management.Automation.ErrorRecord]::new(
         [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply them."),
         'ModuleImportError',
         [System.Management.Automation.ErrorCategory]::InvalidOperation,
-        $MyInvocation.MyCommand.ScriptBlock.Module
+        $MyInvocation.get_MyCommand().get_ScriptBlock().get_Module()
     )
 }
 
 # Clock when the module import starts so we can track it.
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ModuleImportStart', Justification = "This variable is used within ImportsLast.ps1 and therefore cannot be seen here.")]
-$ModuleImportStart = [System.DateTime]::Now
+$ModuleImportStart = [System.DateTime]::get_Now()
 
 # Rethrowing caught exceptions makes the error output from Import-Module look better.
 try
 {
     # Build out lookup table for all cmdlets used within module.
     $CommandTable = [System.Collections.Generic.Dictionary[System.String, System.Management.Automation.CommandInfo]]::new()
-    $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
+    $ExecutionContext.get_SessionState().get_InvokeCommand().GetCmdlets() | & { process { if ($_.get_PSSnapIn() -and $_.get_PSSnapIn().get_Name().Equals('Microsoft.PowerShell.Core') -and $_.get_PSSnapIn().get_IsDefault()) { $CommandTable.Add($_.get_Name(), $_) } } }
     [System.Collections.ObjectModel.ReadOnlyCollection[System.Management.Automation.PSModuleInfo]]$ImportedModules = Import-Module -Global -Force -PassThru -ErrorAction Stop -FullyQualifiedName $(
         @{ ModuleName = 'Microsoft.PowerShell.Archive'; Guid = 'eb74e8da-9ae2-482a-a648-e96550fb8733'; ModuleVersion = '1.0' }
         @{ ModuleName = 'Microsoft.PowerShell.Management'; Guid = 'eefcb906-b326-4e99-9f54-8b4bb6ef3c6d'; ModuleVersion = '1.0' }
@@ -58,12 +58,12 @@ try
         @{ ModuleName = 'NetAdapter'; Guid = '1042b422-63a8-4016-a6d6-293e19e8f8a6'; ModuleVersion = '1.0' }
         @{ ModuleName = 'ScheduledTasks'; Guid = '5378ee8e-e349-49bb-83b9-f3d9c396c0a6'; ModuleVersion = '1.0' }
     )
-    $ImportedModules.ExportedCommands.Values | & {
+    $ImportedModules.get_ExportedCommands().get_Values() | & {
         process
         {
-            if (!$_.CommandType.Equals([System.Management.Automation.CommandTypes]::Alias))
+            if (!$_.get_CommandType().Equals([System.Management.Automation.CommandTypes]::Alias))
             {
-                $CommandTable.Add($_.Name, $_)
+                $CommandTable.Add($_.get_Name(), $_)
             }
         }
     }
@@ -80,15 +80,15 @@ try
     # Store the module info in a variable for further usage.
     if (!(Get-Variable -Name ModuleInfo -ErrorAction Ignore))
     {
-        New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
+        New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.get_MyCommand().get_ScriptBlock().get_Module() -Force
     }
 
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
             Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]("$PSScriptRoot\lib\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\PSADT.dll", "$PSScriptRoot\lib\PSADT.UserInterface.dll", "$PSScriptRoot\lib\PSADT.ClientServer.Common.dll", "$PSScriptRoot\lib\PSADT.ClientServer.Server.dll")
-            Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
-            Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
+            Compiled = $MyInvocation.get_MyCommand().get_Name().Equals('PSAppDeployToolkit.psm1')
+            Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.get_MyCommand().get_Path()).get_Status().Equals([System.Management.Automation.SignatureStatus]::Valid)
         }).AsReadOnly()
 
     # Import our assemblies, factoring in whether they're on a network share or not.
@@ -96,10 +96,10 @@ try
         begin
         {
             # Cache loaded assemblies to test whether they're already loaded.
-            $domainAssemblies = [System.AppDomain]::CurrentDomain.GetAssemblies()
+            $domainAssemblies = [System.AppDomain]::get_CurrentDomain().GetAssemblies()
 
             # Determine whether we're on a network location.
-            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or (($PSScriptRoot -match '^[A-Za-z]:\\') -and [System.IO.DriveInfo]::new($Matches.0).DriveType.Equals([System.IO.DriveType]::Network))
+            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).get_IsUnc() -or (($PSScriptRoot -match '^[A-Za-z]:\\') -and [System.IO.DriveInfo]::new($Matches.0).get_DriveType().Equals([System.IO.DriveType]::Network))
 
             # Add in system assemblies.
             Add-Type -AssemblyName @(
@@ -112,10 +112,10 @@ try
         process
         {
             # Test whether the assembly is already loaded.
-            if (($existingAssembly = $domainAssemblies | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals([System.IO.Path]::GetFileName($args[0]))) { return $_ } } } $_ | Select-Object -First 1))
+            if (($existingAssembly = $domainAssemblies | & { process { if (!$_.get_IsDynamic() -and [System.IO.Path]::GetFileName($_.get_Location()).Equals([System.IO.Path]::GetFileName($args[0]))) { return $_ } } } $_ | Select-Object -First 1))
             {
                 # Test the loaded assembly for SHA256 hash equality, returning early if the assembly is OK.
-                if (!(Get-FileHash -LiteralPath $existingAssembly.Location).Hash.Equals((Get-FileHash -LiteralPath $_).Hash))
+                if (!(Get-FileHash -LiteralPath $existingAssembly.get_Location()).Hash.Equals((Get-FileHash -LiteralPath $_).Hash))
                 {
                     throw [System.Management.Automation.ErrorRecord]::new(
                         [System.InvalidOperationException]::new("A PSAppDeployToolkit assembly of a different file hash is already loaded. Please restart PowerShell and try again."),
@@ -128,7 +128,7 @@ try
             }
 
             # If we're on a compiled build, confirm the DLLs are signed before proceeding.
-            if ($Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
+            if ($Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).get_Status().Equals([System.Management.Automation.SignatureStatus]::Valid))
             {
                 throw [System.Management.Automation.ErrorRecord]::new(
                     [System.InvalidOperationException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
@@ -171,16 +171,16 @@ try
     {
         $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
         $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
-        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
+        $MyInvocation.get_MyCommand().get_ScriptBlock().get_Ast().get_EndBlock().get_Statements() | & {
             process
             {
                 if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
                 {
-                    if ($_.Name.Contains(':'))
+                    if ($_.get_Name().Contains(':'))
                     {
-                        $PrivateFuncs.Add($_.Name.Split(':')[-1])
+                        $PrivateFuncs.Add($_.get_Name().Split(':')[-1])
                     }
-                    $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.Name.Split(':')[-1])")
+                    $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.get_Name().Split(':')[-1])")
                 }
             }
         }

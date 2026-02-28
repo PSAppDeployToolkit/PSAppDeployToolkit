@@ -53,7 +53,7 @@ function Export-ADTEnvironmentTableToSessionState
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SessionState]$SessionState = $PSCmdlet.SessionState
+        [System.Management.Automation.SessionState]$SessionState = $PSCmdlet.get_SessionState()
     )
 
     begin
@@ -67,7 +67,7 @@ function Export-ADTEnvironmentTableToSessionState
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -76,7 +76,7 @@ function Export-ADTEnvironmentTableToSessionState
         {
             try
             {
-                $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv)
+                $null = $ExecutionContext.get_InvokeCommand().InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.get_Key() -Value $_.get_Value() -Option ReadOnly -Force } } $args[0] }.get_Ast().GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv)
             }
             catch
             {
@@ -87,7 +87,7 @@ function Export-ADTEnvironmentTableToSessionState
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

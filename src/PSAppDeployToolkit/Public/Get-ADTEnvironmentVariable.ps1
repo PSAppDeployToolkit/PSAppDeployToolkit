@@ -67,7 +67,7 @@ function Get-ADTEnvironmentVariable
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -82,10 +82,10 @@ function Get-ADTEnvironmentVariable
                     {
                         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                         {
-                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
                             return
                         }
-                        Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$($runAsActiveUser.NTAccount)]"))."
+                        Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$($runAsActiveUser.get_NTAccount())]"))."
                         return Invoke-ADTClientServerOperation -GetEnvironmentVariable -User $runAsActiveUser -Variable $Variable
                     }
                     Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($Variable)] for [$Target]"))."
@@ -103,7 +103,7 @@ function Get-ADTEnvironmentVariable
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get $logSuffix."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to get $logSuffix."
         }
     }
 

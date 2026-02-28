@@ -101,8 +101,8 @@ function Send-ADTKeys
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $gawtParams = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters.($PSCmdlet.ParameterSetName) }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        $gawtParams = @{ $PSCmdlet.get_ParameterSetName() = $PSBoundParameters.($PSCmdlet.get_ParameterSetName()) }
     }
 
     process
@@ -110,7 +110,7 @@ function Send-ADTKeys
         # Bypass if no one's logged onto the device.
         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
             return
         }
 
@@ -151,7 +151,7 @@ function Send-ADTKeys
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to send keys to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]." -ErrorAction SilentlyContinue
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to send keys to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]." -ErrorAction SilentlyContinue
             }
         }
     }

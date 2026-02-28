@@ -68,7 +68,7 @@ function Remove-ADTEnvironmentVariable
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -83,11 +83,11 @@ function Remove-ADTEnvironmentVariable
                     {
                         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                         {
-                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
                             return
                         }
-                        Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)] for [$($runAsActiveUser.NTAccount)]"))."
-                        if ($PSCmdlet.ShouldProcess("$($PSBoundParameters.Variable) (User: $($runAsActiveUser.NTAccount))", 'Remove environment variable'))
+                        Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)] for [$($runAsActiveUser.get_NTAccount())]"))."
+                        if ($PSCmdlet.ShouldProcess("$($PSBoundParameters.Variable) (User: $($runAsActiveUser.get_NTAccount()))", 'Remove environment variable'))
                         {
                             Invoke-ADTClientServerOperation -RemoveEnvironmentVariable -User $runAsActiveUser -Variable $Variable
                         }
@@ -116,7 +116,7 @@ function Remove-ADTEnvironmentVariable
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove $logSuffix."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to remove $logSuffix."
         }
     }
 

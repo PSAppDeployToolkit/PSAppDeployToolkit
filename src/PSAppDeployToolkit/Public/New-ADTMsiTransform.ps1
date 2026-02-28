@@ -82,12 +82,12 @@ function New-ADTMsiTransform
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'If `-ApplyTransformPath` was specified: `<ApplyTransformPath>.new.mst`; If only `-MsiPath` was specified: `<MsiPath>.mst`')]
-        [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -97,18 +97,18 @@ function New-ADTMsiTransform
     begin
     {
         # Define properties for how the MSI database is opened.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
 
         # Determine the path for the new transform file that will be generated.
         if (!$NewTransformPath)
         {
             $NewTransformPath = if ($ApplyTransformPath)
             {
-                (Join-Path -Path (Get-Item -LiteralPath $MsiPath).DirectoryName -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [System.IO.Path]::GetExtension($ApplyTransformPath))).Trim()
+                (Join-Path -Path (Get-Item -LiteralPath $MsiPath).get_DirectoryName() -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [System.IO.Path]::GetExtension($ApplyTransformPath))).Trim()
             }
             else
             {
-                (Join-Path -Path (Get-Item -LiteralPath $MsiPath).DirectoryName -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst')).Trim()
+                (Join-Path -Path (Get-Item -LiteralPath $MsiPath).get_DirectoryName() -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst')).Trim()
             }
         }
     }
@@ -117,7 +117,7 @@ function New-ADTMsiTransform
     {
         Write-ADTLogEntry -Message "Creating a transform file for MSI [$MsiPath]."
         $propsDict = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
-        $TransformProperties.GetEnumerator() | & { process { $propsDict.Add($_.Key, $_.Value) } }
+        $TransformProperties.GetEnumerator() | & { process { $propsDict.Add($_.get_Key(), $_.get_Value()) } }
         try
         {
             try
@@ -132,7 +132,7 @@ function New-ADTMsiTransform
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create new transform file in path [$NewTransformPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to create new transform file in path [$NewTransformPath]."
         }
     }
 

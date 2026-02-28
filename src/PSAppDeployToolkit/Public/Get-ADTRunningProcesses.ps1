@@ -59,6 +59,6 @@ function Get-ADTRunningProcesses
         Write-ADTLogEntry -Message 'Specified processes are not running.'
         return
     }
-    Write-ADTLogEntry -Message "The following processes are running: ['$([System.String]::Join("', '", ($runningProcesses.Process.ProcessName | Select-Object -Unique)))']."
+    Write-ADTLogEntry -Message "The following processes are running: ['$([System.String]::Join("', '", ($runningProcesses.get_Process().get_ProcessName() | Select-Object -Unique)))']."
     return $runningProcesses
 }

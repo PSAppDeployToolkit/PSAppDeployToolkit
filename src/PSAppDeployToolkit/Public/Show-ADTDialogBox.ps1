@@ -141,12 +141,12 @@ function Show-ADTDialogBox
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
 
         # Set up defaults if not specified.
         $Title = if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $adtSession.InstallTitle
+            $adtSession.get_InstallTitle()
         }
         else
         {
@@ -167,12 +167,12 @@ function Show-ADTDialogBox
         # Bypass if in silent mode.
         if ($adtSession -and $adtSession.IsNonInteractive() -and !$Force)
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Mode: $($adtSession.get_DeployMode())]. Text: $Text"
             return
         }
         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
             return
         }
 
@@ -199,7 +199,7 @@ function Show-ADTDialogBox
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    Write-ADTLogEntry -Message "Displaying dialog box asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Text]."
+                    Write-ADTLogEntry -Message "Displaying dialog box asynchronously to [$($runAsActiveUser.get_NTAccount())] with message: [$Text]."
                     Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType DialogBox -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
@@ -233,7 +233,7 @@ function Show-ADTDialogBox
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

@@ -76,7 +76,7 @@ function Test-ADTBattery
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -87,7 +87,7 @@ function Test-ADTBattery
             try
             {
                 # Determine if the system is using AC power.
-                switch (($batteryInfo = [PSADT.DeviceManagement.BatteryInfo]::Get()).ACPowerLineStatus)
+                switch (($batteryInfo = [PSADT.DeviceManagement.BatteryInfo]::Get()).get_ACPowerLineStatus())
                 {
                     ([PSADT.DeviceManagement.PowerLineStatus]::Online)
                     {
@@ -103,11 +103,11 @@ function Test-ADTBattery
                     {
                         if ($batteryInfo.IsBatteryInvalid())
                         {
-                            Write-ADTLogEntry -Message "System power status is [$_] and battery charge status is [$($batteryInfo.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
+                            Write-ADTLogEntry -Message "System power status is [$_] and battery charge status is [$($batteryInfo.get_BatteryChargeStatus())]. This is most likely due to a damaged battery so we will report system is using AC power."
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "System power status is [$_] and battery charge status is [$($batteryInfo.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
+                            Write-ADTLogEntry -Message "System power status is [$_] and battery charge status is [$($batteryInfo.get_BatteryChargeStatus())]. Therefore, we will report system is using battery power."
                         }
                         break
                     }
@@ -118,7 +118,7 @@ function Test-ADTBattery
                 {
                     return $batteryInfo
                 }
-                return $batteryInfo.IsUsingACPower
+                return $batteryInfo.get_IsUsingACPower()
             }
             catch
             {
@@ -127,7 +127,7 @@ function Test-ADTBattery
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

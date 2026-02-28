@@ -17,7 +17,7 @@ function Private:Close-ADTClientServerProcess
         }
         throw (New-ADTErrorRecord @naerParams)
     }
-    if (!$Script:ADT.ClientServerProcess.IsRunning)
+    if (!$Script:ADT.ClientServerProcess.get_IsRunning())
     {
         Write-ADTLogEntry -Message 'Closing and disposing of tombstoned client/server instance.'
     }
@@ -32,6 +32,6 @@ function Private:Close-ADTClientServerProcess
     finally
     {
         $Script:ADT.ClientServerProcess = $null
-        Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+        Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.get_MyCommand().get_Name())
     }
 }

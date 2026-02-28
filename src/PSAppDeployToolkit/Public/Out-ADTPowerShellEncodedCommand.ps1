@@ -52,5 +52,5 @@ function Out-ADTPowerShellEncodedCommand
         [System.String]$Command
     )
 
-    return [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Command))
+    return [System.Convert]::ToBase64String([System.Text.Encoding]::get_Unicode().GetBytes($Command))
 }

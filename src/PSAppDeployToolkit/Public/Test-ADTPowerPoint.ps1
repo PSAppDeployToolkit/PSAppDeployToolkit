@@ -51,7 +51,7 @@ function Test-ADTPowerPoint
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         $procName = 'POWERPNT'
         $presenting = 'Unknown'
     }
@@ -66,7 +66,7 @@ function Test-ADTPowerPoint
                 # Bypass if no one's logged onto the device.
                 if (!(Get-ADTClientServerUser))
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
                     return
                 }
 
@@ -85,7 +85,7 @@ function Test-ADTPowerPoint
                     return ($presenting = $true)
                 }
                 Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] does not have a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
-                Write-ADTLogEntry -Message "PowerPoint process [$procName] has process ID(s) [$([System.String]::Join(', ', ($PowerPointProcessIDs = $PowerPointProcess.Id)))]."
+                Write-ADTLogEntry -Message "PowerPoint process [$procName] has process ID(s) [$([System.String]::Join(', ', ($PowerPointProcessIDs = $PowerPointProcess.get_Id())))]."
 
                 # If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher).
                 # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.
@@ -116,7 +116,7 @@ function Test-ADTPowerPoint
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

@@ -54,6 +54,6 @@ function Complete-ADTFunction
     # Write debug log messages and restore original global verbosity if a value was archived off.
     if ($InformationPreference -notmatch '^(SilentlyContinue|Ignore)$')
     {
-        Write-ADTLogEntry -Message 'Function End' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
+        Write-ADTLogEntry -Message 'Function End' -Source $Cmdlet.get_MyInvocation().get_MyCommand().get_Name() -DebugMessage
     }
 }

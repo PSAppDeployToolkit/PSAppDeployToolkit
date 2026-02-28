@@ -68,7 +68,7 @@ function Update-ADTGroupPolicy
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
     }
 
     process
@@ -78,7 +78,7 @@ function Update-ADTGroupPolicy
         {
             # Set up the parameters for Start-ADTProcess.
             $sapParams = @{
-                FilePath = "$([System.Environment]::SystemDirectory)\gpupdate.exe"
+                FilePath = "$([System.Environment]::get_SystemDirectory())\gpupdate.exe"
                 ArgumentList = $('/Target:Computer'; if ($Force) { '/Force' })
                 InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                 CreateNoWindow = $true
@@ -94,7 +94,7 @@ function Update-ADTGroupPolicy
                         if (($result = Start-ADTProcess @sapParams -ErrorAction SilentlyContinue -PassThru).ExitCode -ne 0)
                         {
                             $naerParams = @{
-                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$result.ExitCode].", $result.ExitCode)
+                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$($result.ExitCode)].", $result.ExitCode)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'GpUpdateComputerFailure'
                                 TargetObject = $result
@@ -110,7 +110,7 @@ function Update-ADTGroupPolicy
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
                 }
             }
             else
@@ -145,7 +145,7 @@ function Update-ADTGroupPolicy
                         if (($result = Invoke-ADTClientServerOperation @iacsoParams).ExitCode -ne 0)
                         {
                             $naerParams = @{
-                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$result.ExitCode].", $result.ExitCode)
+                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$($result.ExitCode)].", $result.ExitCode)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'GpUpdateUserFailure'
                                 TargetObject = $result
@@ -161,7 +161,7 @@ function Update-ADTGroupPolicy
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
                 }
             }
             else

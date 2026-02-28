@@ -163,11 +163,11 @@ function Show-ADTInstallationRestartPrompt
         # Initialise the string table.
         $sessionState = if ($adtSession)
         {
-            $adtSession.SessionState
+            $adtSession.get_SessionState()
         }
         if ($null -eq $sessionState)
         {
-            $sessionState = $PSCmdlet.SessionState
+            $sessionState = $PSCmdlet.get_SessionState()
         }
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
@@ -195,13 +195,13 @@ function Show-ADTInstallationRestartPrompt
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         $adtConfig = Get-ADTConfig
 
         # Set up DeploymentType.
         [System.String]$deploymentType = if ($adtSession)
         {
-            $adtSession.DeploymentType
+            $adtSession.get_DeploymentType()
         }
         else
         {
@@ -211,7 +211,7 @@ function Show-ADTInstallationRestartPrompt
         # Set up remainder if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
+            $PSBoundParameters.Add('Title', $adtSession.get_InstallTitle())
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
@@ -234,9 +234,9 @@ function Show-ADTInstallationRestartPrompt
             try
             {
                 # Check if we are already displaying a restart prompt.
-                if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
+                if (Get-Process | & { process { if ($_.get_MainWindowTitle() -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
                 {
-                    Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity Warning
+                    Write-ADTLogEntry -Message "$($MyInvocation.get_MyCommand().get_Name()) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity Warning
                     return
                 }
 
@@ -245,12 +245,12 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($SilentRestart)
                     {
-                        Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
+                        Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.get_DeployMode())] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
                         $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
+                        Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.get_DeployMode())] and [-SilentRestart] was not specified."
                     }
                     return
                 }
@@ -310,11 +310,11 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($NoCountdown)
                     {
-                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with no countdown..."
+                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.get_MyCommand().get_Name()) asynchronously with no countdown..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
+                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.get_MyCommand().get_Name()) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
                     Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType RestartDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
@@ -331,7 +331,7 @@ function Show-ADTInstallationRestartPrompt
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

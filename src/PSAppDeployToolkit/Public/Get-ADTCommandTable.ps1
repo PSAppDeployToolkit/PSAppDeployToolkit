@@ -44,11 +44,11 @@ function Get-ADTCommandTable
 
     # Create a new directory to insert only public functions into.
     $output = [System.Collections.Generic.Dictionary[System.String, System.Management.Automation.CommandInfo]]::new()
-    foreach ($command in $Script:CommandTable.Values.GetEnumerator())
+    foreach ($command in $Script:CommandTable.get_Values().GetEnumerator())
     {
-        if (!$Script:PrivateFuncs.Contains($command.Name))
+        if (!$Script:PrivateFuncs.Contains($command.get_Name()))
         {
-            $output.Add($command.Name, $command)
+            $output.Add($command.get_Name(), $command)
         }
     }
 

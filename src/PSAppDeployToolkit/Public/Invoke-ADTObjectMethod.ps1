@@ -81,20 +81,20 @@ function Invoke-ADTObjectMethod
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
     }
 
     process
     {
         try
         {
-            switch ($PSCmdlet.ParameterSetName)
+            switch ($PSCmdlet.get_ParameterSetName())
             {
                 Named
                 {
                     # Invoke method by using parameter names.
-                    return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([System.Object[]]$Parameter.Values), $null, $null, ([System.String[]]$Parameter.Keys))
+                    return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([System.Object[]]$Parameter.get_Values()), $null, $null, ([System.String[]]$Parameter.get_Keys()))
                 }
                 Positional
                 {

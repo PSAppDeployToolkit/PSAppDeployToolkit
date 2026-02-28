@@ -162,7 +162,7 @@ function Set-ADTItemPermission
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -175,7 +175,7 @@ function Set-ADTItemPermission
                 $pathInfo = Get-Item -LiteralPath $LiteralPath
 
                 # Directly apply the permissions if an ACL object has been provided.
-                if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
+                if ($PSCmdlet.get_ParameterSetName().Equals('AccessControlList'))
                 {
                     Write-ADTLogEntry -Message "Setting specifieds ACL on path [$LiteralPath]."
                     if (!$PSCmdlet.ShouldProcess("Path [$LiteralPath]", 'Set ACL'))
@@ -187,7 +187,7 @@ function Set-ADTItemPermission
                 }
 
                 # Get object ACLs for the given path.
-                $Acl = Get-Acl -LiteralPath $pathInfo.FullName
+                $Acl = Get-Acl -LiteralPath $pathInfo.get_FullName()
 
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
@@ -227,7 +227,7 @@ function Set-ADTItemPermission
                         return
                     }
                     $Acl.SetAccessRuleProtection($true, $true); [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
-                    $Acl = Get-Acl -LiteralPath $pathInfo.FullName
+                    $Acl = Get-Acl -LiteralPath $pathInfo.get_FullName()
                 }
 
                 # Apply permissions on each user.
@@ -264,7 +264,7 @@ function Set-ADTItemPermission
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

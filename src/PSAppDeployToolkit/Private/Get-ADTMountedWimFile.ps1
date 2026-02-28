@@ -22,6 +22,6 @@ function Private:Get-ADTMountedWimFile
     )
 
     # Get the caller's provided input via the ParameterSetName so we can filter on its name and value.
-    $parameter = Get-Variable -Name $PSCmdlet.ParameterSetName
-    return (Get-WindowsImage -Mounted | & { process { if ($parameter.Value.FullName.Contains($_.($parameter.Name))) { return $_ } } })
+    $parameter = Get-Variable -Name $PSCmdlet.get_ParameterSetName()
+    return (Get-WindowsImage -Mounted | & { process { if ($parameter.get_Value().get_FullName().Contains($_.($parameter.get_Name()))) { return $_ } } })
 }

@@ -40,5 +40,5 @@ function Test-ADTSessionActive
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTSessionActive
     #>
 
-    return !!$Script:ADT.Sessions.Count
+    return !!$Script:ADT.Sessions.get_Count()
 }

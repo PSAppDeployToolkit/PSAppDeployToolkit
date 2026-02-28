@@ -48,24 +48,24 @@ function Get-ADTFreeDiskSpace
     (
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!$_.TotalSize)
+                if (!$_.get_TotalSize())
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive does not exist or has no media loaded.'))
                 }
-                return !!$_.TotalSize
+                return !!$_.get_TotalSize()
             })]
-        [System.IO.DriveInfo]$Drive = [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory)
+        [System.IO.DriveInfo]$Drive = [System.IO.Path]::GetPathRoot([System.Environment]::get_SystemDirectory())
     )
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
     {
         Write-ADTLogEntry -Message "Retrieving free disk space for drive [$Drive]."
-        $freeDiskSpace = [System.Math]::Round($Drive.AvailableFreeSpace / 1MB)
+        $freeDiskSpace = [System.Math]::Round($Drive.get_AvailableFreeSpace() / 1MB)
         Write-ADTLogEntry -Message "Free disk space for drive [$Drive]: [$freeDiskSpace MB]."
         return $freeDiskSpace
     }

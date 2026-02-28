@@ -48,10 +48,10 @@ function Get-ADTConfig
     )
 
     # Return the config database if initialized.
-    if (!$Script:ADT.Config -or !$Script:ADT.Config.Count)
+    if (!$Script:ADT.Config -or !$Script:ADT.Config.get_Count())
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
+            Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.get_MyCommand().get_Module().get_Name()) functions.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTConfigNotLoaded'
             TargetObject = $Script:ADT.Config

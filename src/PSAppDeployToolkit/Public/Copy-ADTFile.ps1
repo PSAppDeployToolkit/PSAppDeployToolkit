@@ -111,7 +111,7 @@ function Copy-ADTFile
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$FileCopyMode = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IA:RASHCNETO /IS /IT /IM /XX /MT:4 /R:1 /W:1',
@@ -131,14 +131,14 @@ function Copy-ADTFile
         }
 
         # Verify that Robocopy can be used if selected
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Announce deprecation of Robocopy file copy mode.
             Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use the [Native] file copy mode and instead." -Severity Warning
 
             # Check if Robocopy is on the system.
-            if (Test-Path -LiteralPath "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
+            if (Test-Path -LiteralPath "$([System.Environment]::get_SystemDirectory())\Robocopy.exe" -PathType Leaf)
             {
                 # Disable Robocopy if $Path has a folder containing a * wildcard.
                 if ($Path -match '\*.*\\')
@@ -154,7 +154,7 @@ function Copy-ADTFile
                 }
                 else
                 {
-                    $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
+                    $robocopyCommand = "$([System.Environment]::get_SystemDirectory())\Robocopy.exe"
                     if ($Recurse -and !$Flatten)
                     {
                         # Add /E to Robocopy parameters if it is not already included.
@@ -190,12 +190,12 @@ function Copy-ADTFile
     {
         if ($FileCopyMode -eq 'Robocopy')
         {
-            foreach ($srcPath in $PSBoundParameters.($PSCmdlet.ParameterSetName))
+            foreach ($srcPath in $PSBoundParameters.($PSCmdlet.get_ParameterSetName()))
             {
                 try
                 {
                     # Determine whether the path exists before continuing. This will throw a suitable error for us.
-                    $pathSplat = @{ $PSCmdlet.ParameterSetName = $srcPath }
+                    $pathSplat = @{ $PSCmdlet.get_ParameterSetName() = $srcPath }
                     $null = Get-Item @pathSplat -Force
 
                     # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path.
@@ -211,9 +211,9 @@ function Copy-ADTFile
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $getItemSplat = @{ $PSCmdlet.ParameterSetName = $srcPath.TrimEnd('\') }
-                        $robocopySource = (Get-Item @getItemSplat -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath ([System.IO.Path]::GetFileName($($pathSplat.Values)))).Trim()
+                        $getItemSplat = @{ $PSCmdlet.get_ParameterSetName() = $srcPath.TrimEnd('\\') }
+                        $robocopySource = (Get-Item @getItemSplat -Force).get_FullName() -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopyDestination = (Join-Path -Path ((Get-Item -LiteralPath $Destination -Force).get_FullName() -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') -ChildPath ([System.IO.Path]::GetFileName($($pathSplat.get_Values())))).Trim()
                         $robocopyFile = '*'
                     }
                     else
@@ -225,14 +225,14 @@ function Copy-ADTFile
                         $ParentPath = Split-Path @pathSplat
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                         {
-                            $ExecutionContext.SessionState.Path.CurrentLocation.Path
+                            $ExecutionContext.get_SessionState().get_Path().get_CurrentLocation().get_Path()
                         }
                         else
                         {
-                            (Get-Item -LiteralPath $ParentPath -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                            (Get-Item -LiteralPath $ParentPath -Force).get_FullName() -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         }
-                        $robocopyDestination = (Get-Item -LiteralPath $Destination.TrimEnd('\') -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyFile = [System.IO.Path]::GetFileName($($pathSplat.Values))
+                        $robocopyDestination = (Get-Item -LiteralPath $Destination.TrimEnd('\') -Force).get_FullName() -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopyFile = [System.IO.Path]::GetFileName($($pathSplat.get_Values()))
                     }
 
                     # Set up copy operation.
@@ -262,9 +262,9 @@ function Copy-ADTFile
                         Get-ChildItem -LiteralPath $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
                             process
                             {
-                                if (Get-ChildItem -Path (Join-Path $_.FullName $robocopyFile) -File -Force -ErrorAction Ignore)
+                                if (Get-ChildItem -Path (Join-Path $_.get_FullName() $robocopyFile) -File -Force -ErrorAction Ignore)
                                 {
-                                    Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
+                                    Copy-ADTFile @copyFileSplat -Path (Join-Path $_.get_FullName() $robocopyFile)
                                 }
                             }
                         }
@@ -306,7 +306,7 @@ function Copy-ADTFile
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.Exception.Message)" -Severity Warning
+                        Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.get_Exception().get_Message())" -Severity Warning
                     }
 
                     # Process the resulting exit code.
@@ -359,7 +359,7 @@ function Copy-ADTFile
                 {
                     $iafehParams = @{
                         Cmdlet = $PSCmdlet
-                        SessionState = $ExecutionContext.SessionState
+                        SessionState = $ExecutionContext.get_SessionState()
                         ErrorRecord = $_
                         LogMessage = "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
                     }
@@ -377,14 +377,14 @@ function Copy-ADTFile
         }
         elseif ($FileCopyMode -eq 'Native')
         {
-            foreach ($srcPath in $PSBoundParameters.($PSCmdlet.ParameterSetName))
+            foreach ($srcPath in $PSBoundParameters.($PSCmdlet.get_ParameterSetName()))
             {
                 try
                 {
                     try
                     {
                         # Determine whether the path exists before continuing. This will throw a suitable error for us.
-                        $pathSplat = @{ $PSCmdlet.ParameterSetName = $srcPath }
+                        $pathSplat = @{ $PSCmdlet.get_ParameterSetName() = $srcPath }
                         $null = Get-Item @pathSplat -Force
 
                         # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist.
@@ -442,9 +442,9 @@ function Copy-ADTFile
                         }
 
                         # Measure success.
-                        if ($ContinueFileCopyOnError -and (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError) -and $FileCopyError -and $FileCopyError.Count)
+                        if ($ContinueFileCopyOnError -and (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError) -and $FileCopyError -and $FileCopyError.get_Count())
                         {
-                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.Exception.Message))" -Severity Warning
+                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.get_Exception().get_Message()))" -Severity Warning
                         }
                         else
                         {
@@ -460,7 +460,7 @@ function Copy-ADTFile
                 {
                     $iafehParams = @{
                         Cmdlet = $PSCmdlet
-                        SessionState = $ExecutionContext.SessionState
+                        SessionState = $ExecutionContext.get_SessionState()
                         ErrorRecord = $_
                         LogMessage = "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
                     }

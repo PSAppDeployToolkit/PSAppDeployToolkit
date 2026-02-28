@@ -128,7 +128,7 @@ function Invoke-ADTCommandWithRetries
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
     }
 
     process
@@ -155,7 +155,7 @@ function Invoke-ADTCommandWithRetries
                 $boundParams = Convert-ADTValuesFromRemainingArguments -RemainingArguments $Parameters
 
                 # If the command in question supports supplying an ErrorAction, force it to stop so the logic works.
-                if ($commandObj.Parameters.ContainsKey('ErrorAction'))
+                if ($commandObj.get_Parameters().ContainsKey('ErrorAction'))
                 {
                     $boundParams.Add('ErrorAction', $ErrorActionPreference)
                 }
@@ -181,7 +181,7 @@ function Invoke-ADTCommandWithRetries
                         {
                             if (($maxElapsedStopwatch.Elapsed -ge $MaximumElapsedTime) -or ($PSBoundParameters.ContainsKey('Retries') -and ($i -ge $Retries)))
                             {
-                                if ($commandObj.Module -eq $MyInvocation.MyCommand.Module.Name)
+                                if ($commandObj.get_Module() -eq $MyInvocation.get_MyCommand().get_Module().get_Name())
                                 {
                                     $PSCmdlet.ThrowTerminatingError($_)
                                 }
@@ -190,13 +190,13 @@ function Invoke-ADTCommandWithRetries
                         }
                         elseif ($i -ge $Retries)
                         {
-                            if ($commandObj.Module -eq $MyInvocation.MyCommand.Module.Name)
+                            if ($commandObj.get_Module() -eq $MyInvocation.get_MyCommand().get_Module().get_Name())
                             {
                                 $PSCmdlet.ThrowTerminatingError($_)
                             }
                             throw
                         }
-                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity Warning
+                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.get_Name())' failed with message: $($_.get_Exception().get_Message().TrimEnd('.')). Trying again in $($SleepDuration.get_TotalSeconds()) second$(if (!$SleepDuration.get_TotalSeconds().Equals(1)) {'s'})." -Severity Warning
                         [System.Threading.Thread]::Sleep($SleepDuration)
                     }
                     finally
@@ -214,7 +214,7 @@ function Invoke-ADTCommandWithRetries
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Silent
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -Silent
         }
     }
 

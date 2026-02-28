@@ -55,23 +55,23 @@ function Private:Import-ADTModuleDataFile
         foreach ($section in $NewData.GetEnumerator())
         {
             # Recursively process hashtables, otherwise just update the value.
-            if ($section.Value -is [System.Collections.Hashtable])
+            if ($section.get_Value() -is [System.Collections.Hashtable])
             {
-                if (!$DataFile.ContainsKey($section.Key) -or ($DataFile.($section.Key) -isnot [System.Collections.Hashtable]))
+                if (!$DataFile.ContainsKey($section.get_Key()) -or ($DataFile.($section.get_Key()) -isnot [System.Collections.Hashtable]))
                 {
-                    $DataFile.($section.Key) = @{}
+                    $DataFile.($section.get_Key()) = @{}
                 }
-                & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value
+                & $MyInvocation.get_MyCommand() -DataFile $DataFile.($section.get_Key()) -NewData $section.get_Value()
             }
-            elseif (!$DataFile.ContainsKey($section.Key) -or ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
+            elseif (!$DataFile.ContainsKey($section.get_Key()) -or ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.get_Value())))
             {
-                $DataFile.($section.Key) = $section.Value
+                $DataFile.($section.get_Key()) = $section.get_Value()
             }
         }
     }
 
     # Establish directory paths for the specified input.
-    $moduleDirectory = $Script:ADT.Directories.Defaults.([System.Globalization.CultureInfo]::InvariantCulture.TextInfo.ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName)))
+    $moduleDirectory = $Script:ADT.Directories.Defaults.([System.Globalization.CultureInfo]::get_InvariantCulture().get_TextInfo().ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName)))
     $callerDirectory = $BaseDirectory
 
     # If we're running a release module, ensure the psd1 files haven't been tampered with.
@@ -82,7 +82,7 @@ function Private:Import-ADTModuleDataFile
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'ADTDataFileSignatureError'
             TargetObject = $badFiles
-            RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
+            RecommendedAction = "Please re-download $($MyInvocation.get_MyCommand().get_Module().get_Name()) and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
@@ -93,7 +93,7 @@ function Private:Import-ADTModuleDataFile
     $importedData = Import-LocalizedData @PSBoundParameters
 
     # Validate we imported something from our default location.
-    if (!$importedData.Count)
+    if (!$importedData.get_Count())
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("The importation of the module's default $FileName file returned a null or empty result.")

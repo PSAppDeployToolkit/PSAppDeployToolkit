@@ -79,7 +79,7 @@ function Remove-ADTDesktopShortcut
     begin
     {
         # Initialise function. We depend on a session being active when we're removing shortcuts since session start.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         $adtSession = try
         {
             Get-ADTSession
@@ -95,7 +95,7 @@ function Remove-ADTDesktopShortcut
             RunAsActiveUser = @{
                 Path = if ($adtEnv.RunAsActiveUser)
                 {
-                    (Get-ADTUserProfiles -SID $adtEnv.RunAsActiveUser.SID -LoadProfilePaths -InformationAction SilentlyContinue).DesktopPath.FullName
+                    (Get-ADTUserProfiles -SID $adtEnv.RunAsActiveUser.get_SID() -LoadProfilePaths -InformationAction SilentlyContinue).get_DesktopPath().get_FullName()
                 }
             }
             AllUsersDesktop = @{
@@ -111,14 +111,14 @@ function Remove-ADTDesktopShortcut
         {
             # Get all shortcuts and filter the results down appropriately.
             $contents = Get-ChildItem -LiteralPath ($desktopPath = $scopeTable.$desktop.Path) -Filter *.lnk
-            $shortcuts = switch ($PSCmdlet.ParameterSetName)
+            $shortcuts = switch ($PSCmdlet.get_ParameterSetName())
             {
                 SinceSessionStart
                 {
                     $contents | & {
                         process
                         {
-                            if ($_.LastWriteTime -gt $adtSession.CurrentDateTime)
+                            if ($_.get_LastWriteTime() -gt $adtSession.get_CurrentDateTime())
                             {
                                 return $_
                             }
@@ -142,7 +142,7 @@ function Remove-ADTDesktopShortcut
             if ($shortcuts)
             {
                 # We have shortcuts to delete. Count them up and get started.
-                Write-ADTLogEntry -Message "Removing [$(($shortcutsCount = ($shortcuts | Measure-Object).Count))] shortcut$(if ($shortcutsCount -gt 1) { 's' }) from path [$desktopPath]."
+                Write-ADTLogEntry -Message "Removing [$(($shortcutsCount = ($shortcuts | Measure-Object).get_Count()))] shortcut$(if ($shortcutsCount -gt 1) { 's' }) from path [$desktopPath]."
                 try
                 {
                     try
@@ -150,8 +150,8 @@ function Remove-ADTDesktopShortcut
                         # Track how many failures we have. If all fail, throw entirely.
                         $failures = foreach ($shortcut in $shortcuts)
                         {
-                            Write-ADTLogEntry -Message "Removing shortcut [$($shortcut.Name)]."
-                            if (!$PSCmdlet.ShouldProcess($shortcut.FullName, 'Delete desktop shortcut'))
+                            Write-ADTLogEntry -Message "Removing shortcut [$($shortcut.get_Name())]."
+                            if (!$PSCmdlet.ShouldProcess($shortcut.get_FullName(), 'Delete desktop shortcut'))
                             {
                                 continue
                             }
@@ -168,14 +168,14 @@ function Remove-ADTDesktopShortcut
                             }
                             catch
                             {
-                                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove desktop shortcut [$($shortcut.FullName)].";
+                                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to remove desktop shortcut [$($shortcut.get_FullName())].";
                                 $_
                             }
                         }
-                        if (($failures | Measure-Object).Count -eq $shortcutsCount)
+                        if (($failures | Measure-Object).get_Count() -eq $shortcutsCount)
                         {
                             $naerParams = @{
-                                Exception = [System.AggregateException]::new("Failed to remove all desktop shortcuts from [$desktopPath].", [System.Exception[]]$failures.Exception)
+                                Exception = [System.AggregateException]::new("Failed to remove all desktop shortcuts from [$desktopPath].", [System.Exception[]]$failures.get_Exception())
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'ShortcutDeletionFullFailure'
                                 TargetObject = $shortcuts
@@ -191,7 +191,7 @@ function Remove-ADTDesktopShortcut
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
                 }
             }
             else

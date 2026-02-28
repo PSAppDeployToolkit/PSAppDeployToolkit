@@ -115,7 +115,7 @@ function Set-ADTActiveSetup
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -137,18 +137,18 @@ function Set-ADTActiveSetup
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input should consist of numbers and dots/commas to separate version segments.'))
                 }
-                if ([System.Text.RegularExpressions.Regex]::Matches($_, '\.|,').Count -gt 3)
+                if ([System.Text.RegularExpressions.Regex]::Matches($_, '\.|,').get_Count() -gt 3)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Version -ProvidedValue $_ -ExceptionMessage 'The specified input can only have a maximum of four octets.'))
                 }
                 return !!$_
             })]
-        [System.String]$Version = [System.DateTime]::Now.ToString('yyMM,ddHH,mmss'), # Ex: 1405,1515,0522
+        [System.String]$Version = [System.DateTime]::get_Now().ToString('yyMM,ddHH,mmss'), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Locale = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
@@ -197,12 +197,12 @@ function Set-ADTActiveSetup
     begin
     {
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $Description = if ($PSCmdlet.ParameterSetName.Equals('Create'))
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        $Description = if ($PSCmdlet.get_ParameterSetName().Equals('Create'))
         {
             if (!$PSBoundParameters.ContainsKey('Description'))
             {
-                $adtSession.InstallName
+                $adtSession.get_InstallName()
             }
             else
             {
@@ -211,7 +211,7 @@ function Set-ADTActiveSetup
         }
         $Key = if (!$PSBoundParameters.ContainsKey('Key'))
         {
-            $adtSession.InstallName
+            $adtSession.get_InstallName()
         }
         else
         {
@@ -280,7 +280,7 @@ function Set-ADTActiveSetup
                     end
                     {
                         # Return null if we've got nothing.
-                        if ($chars.Count -eq 0)
+                        if ($chars.get_Count() -eq 0)
                         {
                             return
                         }
@@ -302,7 +302,7 @@ function Set-ADTActiveSetup
                                 {
                                     if (!$skip -or [System.Char]::IsDigit($_))
                                     {
-                                        if ([System.Char]::IsDigit($_) -or !$chars.Count -or ($chars[-1] -ne '.'))
+                                        if ([System.Char]::IsDigit($_) -or !$chars.get_Count() -or ($chars[-1] -ne '.'))
                                         {
                                             $chars.Add($_)
                                         }
@@ -316,7 +316,7 @@ function Set-ADTActiveSetup
                             })
 
                         # Return null if we've got more than four octets (not a valid version).
-                        if (($delimiters = ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).Count) -gt 3)
+                        if (($delimiters = ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).get_Count()) -gt 3)
                         {
                             return
                         }
@@ -334,7 +334,7 @@ function Set-ADTActiveSetup
                         }
 
                         # Finally, padd out the version to a full four octets.
-                        if (($padding = 3 - ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).Count) -gt 0)
+                        if (($padding = 3 - ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).get_Count()) -gt 0)
                         {
                             for ($i = 0; $i -lt $padding; $i++)
                             {
@@ -343,7 +343,7 @@ function Set-ADTActiveSetup
                         }
 
                         # Join the characters back into a string and return as a version to the caller.
-                        return [System.Version][System.String]::Join([System.Management.Automation.Language.NullString]::Value, $chars)
+                        return [System.Version][System.String]::Join([System.Management.Automation.Language.NullString]::get_Value(), $chars)
                     }
                 }
             }
@@ -443,11 +443,11 @@ function Set-ADTActiveSetup
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$Version = [System.Management.Automation.Language.NullString]::Value,
+                [System.String]$Version = [System.Management.Automation.Language.NullString]::get_Value(),
 
                 [Parameter(Mandatory = $false)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
+                [System.String]$Locale = [System.Management.Automation.Language.NullString]::get_Value(),
 
                 [Parameter(Mandatory = $false)]
                 [System.Management.Automation.SwitchParameter]$DisableActiveSetup
@@ -477,7 +477,7 @@ function Set-ADTActiveSetup
             try
             {
                 # Set up the relevant keys, factoring in bitness and architecture.
-                if ($Wow6432Node -and [System.Environment]::Is64BitOperatingSystem)
+                if ($Wow6432Node -and [System.Environment]::get_Is64BitOperatingSystem())
                 {
                     $HKLMRegKey = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
                     $HKCURegKey = "Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\$Key"
@@ -502,18 +502,18 @@ function Set-ADTActiveSetup
                     # All remaining users thereafter.
                     Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
                     Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser) -ScriptBlock {
-                        if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
+                        if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.get_SID())
                         {
-                            Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
+                            Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.get_SID() -Recurse
                         }
                     }
                     return
                 }
 
                 # Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there).
-                if ($adtSession -and $adtSession.DirFiles)
+                if ($adtSession -and $adtSession.get_DirFiles())
                 {
-                    $StubExeFile = (Join-Path -Path $adtSession.DirFiles -ChildPath $ActiveSetupFileName).Trim()
+                    $StubExeFile = (Join-Path -Path $adtSession.get_DirFiles() -ChildPath $ActiveSetupFileName).Trim()
                     if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.
@@ -553,7 +553,7 @@ function Set-ADTActiveSetup
                     }
                     { $_ -in '.js', '.vbs' }
                     {
-                        $CUStubExePath = "$([System.Environment]::SystemDirectory)\wscript.exe"
+                        $CUStubExePath = "$([System.Environment]::get_SystemDirectory())\wscript.exe"
                         $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
                             "//nologo `"$StubExePath`""
@@ -567,7 +567,7 @@ function Set-ADTActiveSetup
                     }
                     { $_ -in '.cmd', '.bat' }
                     {
-                        $CUStubExePath = "$([System.Environment]::SystemDirectory)\cmd.exe"
+                        $CUStubExePath = "$([System.Environment]::get_SystemDirectory())\cmd.exe"
                         # Prefix any CMD.exe metacharacters ^ or & with ^ to escape them - parentheses only require escaping when there's no space in the path!
                         $StubExePath = if ($StubExePath.Trim() -match '\s')
                         {
@@ -638,13 +638,13 @@ function Set-ADTActiveSetup
                     }
 
                     # Skip if Active Setup reg key is present and Version is equal or higher
-                    if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -SID $runAsActiveUser.SID))
+                    if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -SID $runAsActiveUser.get_SID()))
                     {
-                        Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity Warning
+                        Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.get_NTAccount())]." -Severity Warning
                         return
                     }
 
-                    Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
+                    Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.get_NTAccount())]."
                     $processResult = if ($CUArguments)
                     {
                         Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -ExpandEnvironmentVariables -CreateNoWindow -PassThru:$PassThru
@@ -655,7 +655,7 @@ function Set-ADTActiveSetup
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
-                    Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey -SID $runAsActiveUser.SID
+                    Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey -SID $runAsActiveUser.get_SID()
                 }
                 else
                 {
@@ -671,7 +671,7 @@ function Set-ADTActiveSetup
                     {
                         if ($StubExeExt -eq '.ps1')
                         {
-                            $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", [System.Management.Automation.Language.NullString]::Value)
+                            $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", [System.Management.Automation.Language.NullString]::get_Value())
                         }
                         Start-ADTProcess -FilePath $CUStubExePath -UseUnelevatedToken -CreateNoWindow -PassThru:$PassThru -ArgumentList $CUArguments
                     }
@@ -697,7 +697,7 @@ function Set-ADTActiveSetup
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set Active Setup registry entry."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to set Active Setup registry entry."
         }
     }
 

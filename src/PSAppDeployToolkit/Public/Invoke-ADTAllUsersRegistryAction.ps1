@@ -94,7 +94,7 @@ function Invoke-ADTAllUsersRegistryAction
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
 
         # Set up default value for $UserProfiles if not provided.
         if (!$UserProfiles)
@@ -116,10 +116,10 @@ function Invoke-ADTAllUsersRegistryAction
         {
             # Set the path to the user's registry hive file.
             $manualRegHives = $(
-                @{ Path = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'; Mountpoint = "HKEY_USERS\$($UserProfile.SID)"; Mounted = $false }
-                if ($false -and !$UserProfile.SID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NullSid))
+                @{ Path = Join-Path -Path $UserProfile.get_ProfilePath() -ChildPath 'NTUSER.DAT'; Mountpoint = "HKEY_USERS\$($UserProfile.get_SID())"; Mounted = $false }
+                if ($false -and !$UserProfile.get_SID().IsWellKnown([System.Security.Principal.WellKnownSidType]::NullSid))
                 {
-                    @{ Path = Join-Path -Path $UserProfile.LocalAppDataPath -ChildPath 'Microsoft\Windows\UsrClass.dat'; Mountpoint = "HKEY_USERS\$($UserProfile.SID)_Classes"; Mounted = $false }
+                    @{ Path = Join-Path -Path $UserProfile.get_LocalAppDataPath() -ChildPath 'Microsoft\Windows\UsrClass.dat'; Mountpoint = "HKEY_USERS\$($UserProfile.get_SID())_Classes"; Mounted = $false }
                 }
             )
             try
@@ -127,23 +127,23 @@ function Invoke-ADTAllUsersRegistryAction
                 try
                 {
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
-                    if (!(Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))
+                    if (!(Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.get_SID())"))
                     {
                         # Only load the profile if we've been asked to.
                         if ($SkipUnloadedProfiles)
                         {
-                            Write-ADTLogEntry -Message "Skipping User [$($UserProfile.NTAccount)] as the registry hive is not loaded."
+                            Write-ADTLogEntry -Message "Skipping User [$($UserProfile.get_NTAccount())] as the registry hive is not loaded."
                             continue
                         }
 
                         # Load the User registry hive if the registry hive file exists.
-                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.get_NTAccount())] registry hive in path [HKEY_USERS\$($UserProfile.get_SID())]."
                         foreach ($regHive in $manualRegHives)
                         {
                             if (!(Test-Path -LiteralPath $regHive.Path -PathType Leaf))
                             {
                                 $naerParams = @{
-                                    Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$($regHive.Path)] for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Continue...", $regHive.Path)
+                                    Exception = [System.IO.FileNotFoundException]::new("Failed to find the registry hive file [$($regHive.Path)] for User [$($UserProfile.get_NTAccount())] with SID [$($UserProfile.get_SID())]. Continue...", $regHive.Path)
                                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                                     ErrorId = "$([System.IO.Path]::GetFileNameWithoutExtension($regHive.Path).ToUpperInvariant())RegistryHiveFileNotFound"
                                     TargetObject = $regHive.Path
@@ -151,14 +151,14 @@ function Invoke-ADTAllUsersRegistryAction
                                 }
                                 throw (New-ADTErrorRecord @naerParams)
                             }
-                            $null = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD $regHive.Mountpoint $regHive.Path 2>&1
+                            $null = & "$([System.Environment]::get_SystemDirectory())\reg.exe" LOAD $regHive.Mountpoint $regHive.Path 2>&1
                             $regHive.Mounted = $true
                         }
                     }
 
                     # Invoke changes against registry.
-                    Write-ADTLogEntry -Message "Executing scriptblock to modify HKCU registry settings for [$($UserProfile.NTAccount)]."
-                    if ($PSCmdlet.ShouldProcess("User [$($UserProfile.NTAccount)] registry hive", 'Modify'))
+                    Write-ADTLogEntry -Message "Executing scriptblock to modify HKCU registry settings for [$($UserProfile.get_NTAccount())]."
+                    if ($PSCmdlet.ShouldProcess("User [$($UserProfile.get_NTAccount())] registry hive", 'Modify'))
                     {
                         ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $ScriptBlock
                     }
@@ -170,7 +170,7 @@ function Invoke-ADTAllUsersRegistryAction
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
+                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.get_NTAccount())] with SID [$($UserProfile.get_SID())]`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
             }
             finally
             {
@@ -181,14 +181,14 @@ function Invoke-ADTAllUsersRegistryAction
                 {
                     if ($regHive.Mounted)
                     {
-                        Write-ADTLogEntry -Message "Unloading the User [$($UserProfile.NTAccount)] registry hive in path [$($regHive.Mountpoint)]."
+                        Write-ADTLogEntry -Message "Unloading the User [$($UserProfile.get_NTAccount())] registry hive in path [$($regHive.Mountpoint)]."
                         try
                         {
-                            $null = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD $regHive.Mountpoint 2>&1
+                            $null = & "$([System.Environment]::get_SystemDirectory())\reg.exe" UNLOAD $regHive.Mountpoint 2>&1
                         }
                         catch
                         {
-                            Write-ADTLogEntry -Message "Failed to unload the registry path [$($regHive.Mountpoint)] for User [$($UserProfile.NTAccount)]. REG.exe exit code [$Global:LASTEXITCODE]. Error message: [$($_.Exception.Message)]" -Severity Error
+                            Write-ADTLogEntry -Message "Failed to unload the registry path [$($regHive.Mountpoint)] for User [$($UserProfile.get_NTAccount())]. REG.exe exit code [$Global:LASTEXITCODE]. Error message: [$($_.get_Exception().get_Message())]" -Severity Error
                         }
                     }
                 }

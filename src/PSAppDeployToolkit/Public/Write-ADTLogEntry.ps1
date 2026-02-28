@@ -88,11 +88,11 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Source = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Source = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -101,11 +101,11 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -121,7 +121,7 @@ function Write-ADTLogEntry
     begin
     {
         # Get the caller's preference values and set them within this scope.
-        Set-ADTPreferenceVariables -SessionState $ExecutionContext.SessionState
+        Set-ADTPreferenceVariables -SessionState $ExecutionContext.get_SessionState()
 
         # Set up collector for piped in messages.
         $messages = [System.Collections.Generic.List[System.String]]::new()
@@ -150,7 +150,7 @@ function Write-ADTLogEntry
     end
     {
         # Return early if we have no messages to write out.
-        if (!$messages.Count)
+        if (!$messages.get_Count())
         {
             return
         }

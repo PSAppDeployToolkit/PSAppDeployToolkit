@@ -102,7 +102,7 @@ function Resolve-ADTErrorRecord
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         $propsIsWildCard = $($Property).Equals('*')
 
         # Allows selecting and filtering the properties on the error object if they exist.
@@ -134,22 +134,22 @@ function Resolve-ADTErrorRecord
     {
         # Build out error objects to process in the right order.
         $errorObjects = $(
-            $canDoException = !$ExcludeErrorException -and $ErrorRecord.Exception
+            $canDoException = !$ExcludeErrorException -and $ErrorRecord.get_Exception()
             if (!$propsIsWildCard -and $canDoException)
             {
-                $ErrorRecord.Exception
+                $ErrorRecord.get_Exception()
             }
             if (!$ExcludeErrorRecord)
             {
                 $ErrorRecord
             }
-            if (!$ExcludeErrorInvocation -and $ErrorRecord.InvocationInfo)
+            if (!$ExcludeErrorInvocation -and $ErrorRecord.get_InvocationInfo())
             {
-                $ErrorRecord.InvocationInfo
+                $ErrorRecord.get_InvocationInfo()
             }
             if ($propsIsWildCard -and $canDoException)
             {
-                $ErrorRecord.Exception
+                $ErrorRecord.get_Exception()
             }
         )
 
@@ -158,7 +158,7 @@ function Resolve-ADTErrorRecord
         foreach ($errorObject in $errorObjects)
         {
             # Store initial property count.
-            $propCount = $logErrorProperties.Count
+            $propCount = $logErrorProperties.get_Count()
 
             # Add in all properties for the object.
             foreach ($propName in ($errorObject | Get-ErrorPropertyNames))
@@ -178,16 +178,16 @@ function Resolve-ADTErrorRecord
             }
 
             # Append a new line to the last value for formatting purposes.
-            if (!$propCount.Equals($logErrorProperties.Count))
+            if (!$propCount.Equals($logErrorProperties.get_Count()))
             {
-                $logErrorProperties.($logErrorProperties.Keys | Select-Object -Last 1) += "`n"
+                $logErrorProperties.($logErrorProperties.get_Keys() | Select-Object -Last 1) += "`n"
             }
         }
 
         # Add some fudging to give TargetObject some buffering.
         if ($logErrorProperties.Contains('TargetObject'))
         {
-            $prevPropertyIndex = ([System.String[]]$logErrorProperties.Keys).IndexOf('TargetObject')
+            $prevPropertyIndex = ([System.String[]]$logErrorProperties.get_Keys()).IndexOf('TargetObject')
             if (($prevPropertyIndex -gt 0) -and !$logErrorProperties[$prevPropertyIndex - 1].EndsWith("`n"))
             {
                 $logErrorProperties[$prevPropertyIndex - 1] += "`n"
@@ -202,24 +202,24 @@ function Resolve-ADTErrorRecord
         $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
 
         # Capture Error Inner Exception(s).
-        if ($IncludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
+        if ($IncludeErrorInnerException -and $ErrorRecord.get_Exception() -and $ErrorRecord.get_Exception().get_InnerException())
         {
             # Set up initial variables.
             $innerExceptions = [System.Collections.Generic.List[System.String]]::new()
-            $errInnerException = $ErrorRecord.Exception.InnerException
+            $errInnerException = $ErrorRecord.get_Exception().get_InnerException()
 
             # Get all inner exceptions.
             while ($errInnerException)
             {
                 # Add a divider if we've already added a record.
-                if ($innerExceptions.Count)
+                if ($innerExceptions.get_Count())
                 {
                     $innerExceptions.Add("`n$('~' * 40)`n")
                 }
 
                 # Add error record and get next inner exception.
                 $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
-                $errInnerException = $errInnerException.InnerException
+                $errInnerException = $errInnerException.get_InnerException()
             }
 
             # Output all inner exceptions to the caller.

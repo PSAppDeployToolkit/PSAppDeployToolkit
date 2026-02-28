@@ -65,8 +65,8 @@ function Get-ADTObjectProperty
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
     }
 
     process
@@ -84,7 +84,7 @@ function Get-ADTObjectProperty
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
         }
     }
 

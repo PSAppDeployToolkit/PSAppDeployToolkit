@@ -82,7 +82,7 @@ function New-ADTZipFile
         [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
         [ValidateSet('Fastest', 'NoCompression', 'Optimal')]
-        [System.String]$CompressionLevel = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$CompressionLevel = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
@@ -100,14 +100,14 @@ function New-ADTZipFile
     begin
     {
         # Remove parameters from PSBoundParameters that don't apply to Compress-Archive.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
         if ($PSBoundParameters.ContainsKey('RemoveSourceAfterArchiving'))
         {
             $null = $PSBoundParameters.Remove('RemoveSourceAfterArchiving')
         }
 
         # Get the specified source variable.
-        $sourcePath = $PSBoundParameters.($PSCmdlet.ParameterSetName)
+        $sourcePath = $PSBoundParameters.($PSCmdlet.get_ParameterSetName())
     }
 
     process
@@ -148,7 +148,7 @@ function New-ADTZipFile
                         }
                         catch
                         {
-                            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to recursively delete [$sourcePath]." -ErrorAction SilentlyContinue
+                            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to recursively delete [$sourcePath]." -ErrorAction SilentlyContinue
                         }
                     }
                 }
@@ -162,7 +162,7 @@ function New-ADTZipFile
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to apply parent folder's [$parentPath] permissions to file [$DestinationPath]." -ErrorAction SilentlyContinue
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to apply parent folder's [$parentPath] permissions to file [$DestinationPath]." -ErrorAction SilentlyContinue
                 }
             }
             catch
@@ -174,7 +174,7 @@ function New-ADTZipFile
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to archive the requested file(s)."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to archive the requested file(s)."
         }
     }
 

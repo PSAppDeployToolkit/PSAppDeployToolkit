@@ -100,7 +100,7 @@ function Get-ADTRegistryKey
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -119,8 +119,8 @@ function Get-ADTRegistryKey
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-        $pathParam = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters.($PSCmdlet.ParameterSetName) }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
+        $pathParam = @{ $PSCmdlet.get_ParameterSetName() = $PSBoundParameters.($PSCmdlet.get_ParameterSetName()) }
     }
 
     process
@@ -130,29 +130,29 @@ function Get-ADTRegistryKey
             try
             {
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-                $pathParam.($PSCmdlet.ParameterSetName) = if ($PSBoundParameters.ContainsKey('SID'))
+                $pathParam.($PSCmdlet.get_ParameterSetName()) = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node -SID $SID
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.get_ParameterSetName()) -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.get_ParameterSetName()) -Wow6432Node:$Wow6432Node
                 }
 
                 # Check if the registry key exists before continuing.
                 if (!(Test-Path @pathParam))
                 {
-                    Write-ADTLogEntry -Message "Registry key [$($pathParam.($PSCmdlet.ParameterSetName))] does not exist. Return `$null." -Severity Warning
+                    Write-ADTLogEntry -Message "Registry key [$($pathParam.($PSCmdlet.get_ParameterSetName()))] does not exist. Return `$null." -Severity Warning
                     return
                 }
 
                 if ($PSBoundParameters.ContainsKey('Name'))
                 {
-                    Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.ParameterSetName))] value [$Name]."
+                    Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.get_ParameterSetName()))] value [$Name]."
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.ParameterSetName))] and all property values."
+                    Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.get_ParameterSetName()))] and all property values."
                 }
 
                 # Get all property values for registry key and enumerate.
@@ -170,18 +170,18 @@ function Get-ADTRegistryKey
                             }
                             if ($DoNotExpandEnvironmentNames)
                             {
-                                return $_.GetValue($(if ($Name -ne '(Default)') { $Name }), $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                                return $_.GetValue($(if ($Name -ne '(Default)') { $Name } else { [System.Management.Automation.Language.NullString]::get_Value() }), $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                             }
                             elseif ($Name -like '(Default)')
                             {
-                                return $_.GetValue($null)
+                                return $_.GetValue([System.Management.Automation.Language.NullString]::get_Value())
                             }
                             else
                             {
                                 return Get-ItemProperty -LiteralPath $_.PSPath | Select-Object -ExpandProperty $Name
                             }
                         }
-                        elseif ($_.Property.Count -eq 0)
+                        elseif ($_.get_Property().get_Count() -eq 0)
                         {
                             # Select all properties or return empty key object.
                             if ($ReturnEmptyKeyIfExists)
@@ -208,7 +208,7 @@ function Get-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$($pathParam.($PSCmdlet.ParameterSetName))]$(if ($Name) {" value [$Name]"})."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to read registry key [$($pathParam.($PSCmdlet.get_ParameterSetName()))]$(if ($Name) {" value [$Name]"})."
         }
     }
 
