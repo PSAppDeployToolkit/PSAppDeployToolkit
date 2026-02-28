@@ -221,6 +221,7 @@ namespace PSADT.Interop
         internal static BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, Span<byte> TokenInformation, out uint ReturnLength)
         {
             BOOL res = PInvoke.GetTokenInformation(TokenHandle.ThrowIfNullOrInvalid(), TokenInformationClass, TokenInformation, out ReturnLength);
+            ReturnLength = ReturnLength.ThrowIfZero();
             return !res && 0 != TokenInformation.Length ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -268,6 +269,7 @@ namespace PSADT.Interop
                     res = PInvoke.AdjustTokenPrivileges(TokenHandle.ThrowIfNullOrInvalid(), DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength);
                 }
             }
+            ReturnLength = ReturnLength.ThrowIfZero();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -300,6 +302,7 @@ namespace PSADT.Interop
         {
             cchName = (uint)lpName.Length;
             BOOL res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref cchName);
+            cchName = cchName.ThrowIfZero();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -553,6 +556,7 @@ namespace PSADT.Interop
         internal static BOOL QueryServiceStatusEx(SafeHandle hService, SC_STATUS_TYPE InfoLevel, Span<byte> lpBuffer, out uint pcbBytesNeeded)
         {
             BOOL res = PInvoke.QueryServiceStatusEx(hService.ThrowIfNullOrInvalid(), InfoLevel, lpBuffer, out pcbBytesNeeded);
+            pcbBytesNeeded = pcbBytesNeeded.ThrowIfZero();
             return !res && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0)
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
@@ -1864,6 +1868,7 @@ namespace PSADT.Interop
         internal static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, Span<byte> lpJobObjectInformation, out uint lpReturnLength)
         {
             BOOL res = PInvoke.QueryInformationJobObject(hJob?.ThrowIfNullOrInvalid(), JobObjectInformationClass, lpJobObjectInformation, out lpReturnLength);
+            lpReturnLength = lpReturnLength.ThrowIfZero();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -1881,7 +1886,9 @@ namespace PSADT.Interop
         internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, out uint applicationUserModelIdLength, Span<char> applicationUserModelId)
         {
             applicationUserModelIdLength = (uint)applicationUserModelId.Length;
-            return PInvoke.GetApplicationUserModelId(hProcess.ThrowIfNullOrClosed(), ref applicationUserModelIdLength, applicationUserModelId).ThrowOnFailure();
+            WIN32_ERROR res = PInvoke.GetApplicationUserModelId(hProcess.ThrowIfNullOrClosed(), ref applicationUserModelIdLength, applicationUserModelId).ThrowOnFailure();
+            applicationUserModelIdLength = applicationUserModelIdLength.ThrowIfZero();
+            return res;
         }
 
         /// <summary>
@@ -2076,6 +2083,7 @@ namespace PSADT.Interop
         {
             lpdwSize = (uint)lpExeName.Length;
             BOOL res = PInvoke.QueryFullProcessImageName(hProcess.ThrowIfNullOrClosed(), dwFlags, lpExeName, ref lpdwSize);
+            lpdwSize = lpdwSize.ThrowIfZero();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -2235,6 +2243,7 @@ namespace PSADT.Interop
         {
             pcchValueBuf = (uint)szValueBuf.Length;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo.ThrowIfNullOrInvalid(), (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
+            pcchValueBuf = pcchValueBuf.ThrowIfZero();
             puiDataType = (VARENUM)puiDataTypeLocal;
             return res;
         }
@@ -2255,7 +2264,9 @@ namespace PSADT.Interop
         internal static WIN32_ERROR MsiExtractPatchXMLData(string szPatchPath, Span<char> szXMLData, out uint pcchXMLData)
         {
             pcchXMLData = (uint)szXMLData.Length;
-            return ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath.ThrowIfFileDoesNotExist(), szXMLData, ref pcchXMLData)).ThrowOnFailure();
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiExtractPatchXMLData(szPatchPath.ThrowIfFileDoesNotExist(), szXMLData, ref pcchXMLData)).ThrowOnFailure();
+            pcchXMLData = pcchXMLData.ThrowIfZero();
+            return res;
         }
 
         /// <summary>
@@ -2326,6 +2337,7 @@ namespace PSADT.Interop
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
                 }
             }
+            ReturnLength = ReturnLength.ThrowIfZero();
             return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length))
                 ? throw ExceptionUtilities.GetException(res)
                 : res;
@@ -2367,6 +2379,7 @@ namespace PSADT.Interop
                     Handle?.DangerousRelease();
                 }
             }
+            ReturnLength = ReturnLength.ThrowIfZero();
             return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length))
                 ? throw ExceptionUtilities.GetException(res)
                 : res;
@@ -2499,6 +2512,7 @@ namespace PSADT.Interop
                     ProcessHandle.DangerousRelease();
                 }
             }
+            ReturnLength = ReturnLength.ThrowIfZero();
             return res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0)
                 ? throw ExceptionUtilities.GetException(res)
                 : res;
@@ -2529,6 +2543,7 @@ namespace PSADT.Interop
                     hProcess.DangerousRelease();
                 }
             }
+            lpcbNeeded = lpcbNeeded.ThrowIfZero();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -2595,6 +2610,7 @@ namespace PSADT.Interop
         internal static HRESULT GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
         {
             HRESULT res = PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY);
+            dpiX = dpiX.ThrowIfZero(); dpiY = dpiY.ThrowIfZero();
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
@@ -2609,6 +2625,7 @@ namespace PSADT.Interop
         internal static HRESULT GetDpiForDefaultMonitor(MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
         {
             HRESULT res = GetDpiForMonitor(MonitorFromPoint(new(0, 0), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY), dpiType, out dpiX, out dpiY);
+            dpiX = dpiX.ThrowIfZero(); dpiY = dpiY.ThrowIfZero();
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
@@ -2931,6 +2948,7 @@ namespace PSADT.Interop
                     res = GetWindowThreadProcessId(hWnd, p);
                 }
             }
+            lpdwProcessId = lpdwProcessId.ThrowIfZero();
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -3283,6 +3301,7 @@ namespace PSADT.Interop
                         throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, $"Failed to query [{lpSubBlock}] version value.");
                     }
                     lplpBuffer = (nint)lplpBufferLocal;
+                    puLen = puLen.ThrowIfZero();
                 }
             }
             return res;
@@ -3329,6 +3348,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
+                pCount = pCount.ThrowIfZero();
                 pSessionInfo = new(((nint)ppSessionInfo).ThrowIfZeroOrMinusOne(), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             }
             return res;
@@ -3358,6 +3378,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            bytesReturned = bytesReturned.ThrowIfZero();
             pBuffer = new(ppBuffer.ToIntPtr().ThrowIfZeroOrMinusOne(), (int)bytesReturned, true);
             return res;
         }
@@ -3476,7 +3497,9 @@ namespace PSADT.Interop
         internal static WIN32_ERROR MsiRecordGetString(SafeHandle hRecord, uint iField, [Optional] Span<char> szValueBuf, out uint pcchValueBuf)
         {
             pcchValueBuf = (uint)szValueBuf.Length;
-            return ((WIN32_ERROR)PInvoke.MsiRecordGetString(hRecord.ThrowIfNullOrInvalid(), iField, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiRecordGetString(hRecord.ThrowIfNullOrInvalid(), iField, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
+            pcchValueBuf = pcchValueBuf.ThrowIfZero();
+            return res;
         }
 
         /// <summary>
