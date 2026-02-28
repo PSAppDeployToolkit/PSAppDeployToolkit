@@ -63,11 +63,11 @@ function Write-Log
         [System.Int16]$Severity,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Source = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 3)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 4)]
@@ -75,16 +75,16 @@ function Write-Log
         [System.String]$LogType = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 5)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 6)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 7)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$AppendToLogFile,
+        [System.Nullable[System.Boolean]]$AppendToLogFile,
 
         [Parameter(Mandatory = $false, Position = 8)]
         [ValidateNotNullOrEmpty()]
@@ -92,15 +92,15 @@ function Write-Log
 
         [Parameter(Mandatory = $false, Position = 9)]
         [ValidateNotNullOrEmpty()]
-        [System.Decimal]$MaxLogFileSizeMB,
+        [System.Nullable[System.Decimal]]$MaxLogFileSizeMB,
 
         [Parameter(Mandatory = $false, Position = 10)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true,
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true,
 
         [Parameter(Mandatory = $false, Position = 11)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$WriteHost,
+        [System.Nullable[System.Boolean]]$WriteHost,
 
         [Parameter(Mandatory = $false, Position = 12)]
         [System.Management.Automation.SwitchParameter]$PassThru,
@@ -110,7 +110,7 @@ function Write-Log
 
         [Parameter(Mandatory = $false, Position = 14)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$LogDebugMessage
+        [System.Nullable[System.Boolean]]$LogDebugMessage
     )
 
     begin
@@ -257,7 +257,7 @@ function Get-HardwarePlatform
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -290,12 +290,12 @@ function Get-FreeDiskSpace
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Drive = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -391,11 +391,11 @@ function Get-InstalledApplication
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Name,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ProductCode = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -466,7 +466,7 @@ function Remove-MSIApplications
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
@@ -477,11 +477,11 @@ function Remove-MSIApplications
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments', 'Parameters')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('AddParameters')]
         [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
 
@@ -497,7 +497,7 @@ function Remove-MSIApplications
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -510,7 +510,7 @@ function Remove-MSIApplications
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -628,7 +628,7 @@ function Get-FileVersion
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$File,
 
         [Parameter(Mandatory = $false)]
@@ -636,7 +636,7 @@ function Get-FileVersion
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -675,16 +675,16 @@ function Get-UserProfiles
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExcludeSystemProfiles = $true,
+        [System.Nullable[System.Boolean]]$ExcludeSystemProfiles = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExcludeServiceProfiles = $true,
+        [System.Nullable[System.Boolean]]$ExcludeServiceProfiles = $true,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
@@ -728,7 +728,7 @@ function Update-Desktop
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -764,7 +764,7 @@ function Update-SessionEnvironmentVariables
         [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables,
 
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -797,11 +797,11 @@ function Copy-File
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
@@ -812,18 +812,18 @@ function Copy-File
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true,
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueFileCopyOnError = $false,
+        [System.Nullable[System.Boolean]]$ContinueFileCopyOnError = $false,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$UseRobocopy,
+        [System.Nullable[System.Boolean]]$UseRobocopy,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
 
         [Parameter(Mandatory = $false)]
@@ -887,11 +887,11 @@ function Remove-File
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
@@ -899,7 +899,7 @@ function Remove-File
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -954,23 +954,23 @@ function Copy-FileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$UseRobocopy,
+        [System.Nullable[System.Boolean]]$UseRobocopy,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExcludeSystemProfiles = $true,
+        [System.Nullable[System.Boolean]]$ExcludeSystemProfiles = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExcludeServiceProfiles = $true,
+        [System.Nullable[System.Boolean]]$ExcludeServiceProfiles = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -978,11 +978,11 @@ function Copy-FileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true,
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueFileCopyOnError
+        [System.Nullable[System.Boolean]]$ContinueFileCopyOnError
     )
 
     begin
@@ -1065,11 +1065,11 @@ function Show-InstallationPrompt
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Title = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
@@ -1077,15 +1077,15 @@ function Show-InstallationPrompt
         [System.String]$MessageAlignment = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -1107,11 +1107,11 @@ function Show-InstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExitOnTimeout,
+        [System.Nullable[System.Boolean]]$ExitOnTimeout,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$TopMost
+        [System.Nullable[System.Boolean]]$TopMost
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1160,7 +1160,7 @@ function Show-InstallationProgress
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -1169,7 +1169,7 @@ function Show-InstallationProgress
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$TopMost = $true,
+        [System.Nullable[System.Boolean]]$TopMost = $true,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Quiet,
@@ -1216,11 +1216,11 @@ function Show-DialogBox
     param
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Text,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Title = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -1236,12 +1236,12 @@ function Show-DialogBox
         [System.String]$Icon = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Timeout = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$TopMost
+        [System.Nullable[System.Boolean]]$TopMost
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1277,7 +1277,7 @@ function Show-InstallationWelcome
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$CloseApps = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -1315,7 +1315,7 @@ function Show-InstallationWelcome
         [System.Nullable[System.Int32]]$DeferDays,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DeferDeadline = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
@@ -1327,11 +1327,11 @@ function Show-InstallationWelcome
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$MinimizeWindows = $true,
+        [System.Nullable[System.Boolean]]$MinimizeWindows = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$TopMost = $true,
+        [System.Nullable[System.Boolean]]$TopMost = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1458,7 +1458,7 @@ function Show-InstallationRestartPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$NoSilentRestart = $true,
+        [System.Nullable[System.Boolean]]$NoSilentRestart = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1466,7 +1466,7 @@ function Show-InstallationRestartPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$TopMost = $true,
+        [System.Nullable[System.Boolean]]$TopMost = $true,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoCountdown
@@ -1510,11 +1510,11 @@ function Show-BalloonTip
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$BalloonTipText,
 
         [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$BalloonTipTitle = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 2)]
@@ -1561,7 +1561,7 @@ function Copy-ContentToCache
     param
     (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path
     )
 
@@ -1593,7 +1593,7 @@ function Remove-ContentFromCache
     param
     (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path
     )
 
@@ -1680,16 +1680,16 @@ function Get-IniValue
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1738,11 +1738,11 @@ function Set-IniValue
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $true)]
@@ -1751,7 +1751,7 @@ function Set-IniValue
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1790,12 +1790,12 @@ function New-Folder
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1862,7 +1862,7 @@ function Update-GroupPolicy
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1904,12 +1904,12 @@ function Get-UniversalDate
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DateTime = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $false
+        [System.Nullable[System.Boolean]]$ContinueOnError = $false
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -1947,11 +1947,11 @@ function Test-ServiceExists
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -1959,7 +1959,7 @@ function Test-ServiceExists
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2003,7 +2003,7 @@ function Disable-TerminalServerInstallMode
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2046,7 +2046,7 @@ function Enable-TerminalServerInstallMode
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2096,7 +2096,7 @@ function Configure-EdgeExtension
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Remove')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ExtensionID,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
@@ -2104,11 +2104,11 @@ function Configure-EdgeExtension
         [System.String]$InstallationMode,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$UpdateUrl,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Add')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$MinimumVersionRequired
     )
 
@@ -2145,7 +2145,7 @@ function Resolve-Error
         [System.Array]$ErrorRecord,
 
         [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Property,
 
         [Parameter(Mandatory = $false, Position = 2)]
@@ -2237,17 +2237,17 @@ function Get-ServiceStartMode
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Name')]
         [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2296,17 +2296,17 @@ function Set-ServiceStartMode
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Name')]
         [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$StartMode = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2351,12 +2351,12 @@ function Execute-Process
     (
         [Parameter(Mandatory = $true)]
         [Alias('Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments', 'Parameters')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
@@ -2387,7 +2387,7 @@ function Execute-Process
         [System.Nullable[System.Int32]]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -2396,15 +2396,15 @@ function Execute-Process
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExitOnProcessFailure = $true,
+        [System.Nullable[System.Boolean]]$ExitOnProcessFailure = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$UseShellExecute,
+        [System.Nullable[System.Boolean]]$UseShellExecute,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $false
+        [System.Nullable[System.Boolean]]$ContinueOnError = $false
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2466,16 +2466,16 @@ function Execute-MSI
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Transform = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Arguments', 'Parameters')]
         [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('AddParameters')]
         [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
 
@@ -2484,20 +2484,20 @@ function Execute-MSI
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Patch = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('LogName')]
         [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -2513,7 +2513,7 @@ function Execute-MSI
         [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -2522,15 +2522,15 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExitOnProcessFailure = $true,
+        [System.Nullable[System.Boolean]]$ExitOnProcessFailure = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$RepairFromSource,
+        [System.Nullable[System.Boolean]]$RepairFromSource,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $false
+        [System.Nullable[System.Boolean]]$ContinueOnError = $false
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2594,7 +2594,7 @@ function Execute-MSP
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AddParameters
     )
 
@@ -2648,7 +2648,7 @@ function Block-AppExecution
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ProcessName
     )
 
@@ -2678,16 +2678,16 @@ function Test-RegistryValue
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Key,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Value')]
         [System.Object]$Name,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -2744,19 +2744,19 @@ function Convert-RegistryPath
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$DisableFunctionLogging = $true
+        [System.Nullable[System.Boolean]]$DisableFunctionLogging = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2794,12 +2794,12 @@ function Test-MSUpdates
     param
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter the KB Number for the Microsoft Update')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$KbNumber,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2872,12 +2872,12 @@ function Start-ServiceAndDependencies
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Name')]
         [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -2895,7 +2895,7 @@ function Start-ServiceAndDependencies
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -2948,12 +2948,12 @@ function Stop-ServiceAndDependencies
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Name')]
         [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -2971,7 +2971,7 @@ function Stop-ServiceAndDependencies
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3024,14 +3024,15 @@ function Set-RegistryKey
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Value,
 
         [Parameter(Mandatory = $false)]
@@ -3042,12 +3043,12 @@ function Set-RegistryKey
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3090,23 +3091,23 @@ function Remove-RegistryKey
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3149,34 +3150,34 @@ function Remove-FileFromUserProfiles
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExcludeSystemProfiles = $true,
+        [System.Nullable[System.Boolean]]$ExcludeSystemProfiles = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExcludeServiceProfiles = $true,
+        [System.Nullable[System.Boolean]]$ExcludeServiceProfiles = $true,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3223,11 +3224,11 @@ function Get-RegistryKey
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Value')]
         [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
 
@@ -3235,7 +3236,7 @@ function Get-RegistryKey
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -3246,7 +3247,7 @@ function Get-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3288,7 +3289,7 @@ function Install-MSUpdates
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Directory
     )
 
@@ -3320,12 +3321,12 @@ function Get-SchedulerTask
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$TaskName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     begin
@@ -3425,7 +3426,7 @@ function Invoke-RegisterOrUnregisterDLL
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
@@ -3435,7 +3436,7 @@ function Invoke-RegisterOrUnregisterDLL
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3477,12 +3478,12 @@ function Register-DLL
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3524,12 +3525,12 @@ function Unregister-DLL
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3572,7 +3573,7 @@ function Remove-Folder
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
@@ -3580,7 +3581,7 @@ function Remove-Folder
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3623,30 +3624,30 @@ function Set-ActiveSetup
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$StubExePath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Version = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Locale = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -3657,11 +3658,11 @@ function Set-ActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ExecuteForCurrentUser = $true,
+        [System.Nullable[System.Boolean]]$ExecuteForCurrentUser = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3714,7 +3715,7 @@ function Set-ItemPermission
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('File', 'Folder')]
         [System.String]$Path,
 
@@ -3785,15 +3786,15 @@ function New-MsiTransform
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$MsiPath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $true)]
@@ -3802,7 +3803,7 @@ function New-MsiTransform
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3849,7 +3850,7 @@ function Invoke-SCCMTask
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3900,7 +3901,7 @@ function Install-SCCMSoftwareUpdates
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -3942,8 +3943,7 @@ function Send-Keys
     param
     (
         [Parameter(Mandatory = $false, Position = 0)]
-        [AllowEmptyString()]
-        [ValidateNotNull()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WindowTitle = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 1)]
@@ -3952,10 +3952,10 @@ function Send-Keys
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNullOrEmpty()]
-        [System.IntPtr]$WindowHandle,
+        [System.Nullable[System.IntPtr]]$WindowHandle,
 
         [Parameter(Mandatory = $false, Position = 3)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Keys = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, Position = 4)]
@@ -3995,12 +3995,12 @@ function Get-Shortcut
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4043,7 +4043,7 @@ function Set-Shortcut
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Default')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Pipeline')]
@@ -4051,27 +4051,27 @@ function Set-Shortcut
         [System.Collections.Hashtable]$PathHash,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$IconIndex = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -4082,12 +4082,12 @@ function Set-Shortcut
         [System.Nullable[System.Boolean]]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     begin
@@ -4161,19 +4161,19 @@ function New-Shortcut
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$TargetPath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -4181,11 +4181,11 @@ function New-Shortcut
         [System.Nullable[System.Int32]]$IconIndex,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -4196,12 +4196,12 @@ function New-Shortcut
         [System.Management.Automation.SwitchParameter]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4244,20 +4244,20 @@ function Execute-ProcessAsUser
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$UserName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Path')]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$TempPath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Parameters')]
         [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
 
@@ -4277,12 +4277,12 @@ function Execute-ProcessAsUser
         [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4389,15 +4389,15 @@ function ConvertTo-NTAccountOrSID
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AccountName,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SIDToNTAccount', ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$SID,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownName', ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WellKnownSIDName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
@@ -4528,15 +4528,15 @@ function Get-MsiTableProperty
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$TransformPath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Table = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
@@ -4552,7 +4552,7 @@ function Get-MsiTableProperty
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4599,16 +4599,16 @@ function Set-MsiProperty
         [System.__ComObject]$DataBase,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$PropertyName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$PropertyValue,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -4684,15 +4684,15 @@ function Get-ObjectProperty
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$InputObject,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$PropertyName,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object[]]$ArgumentList
     )
 
@@ -4726,15 +4726,15 @@ function Invoke-ObjectMethod
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$InputObject,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$MethodName,
 
         [Parameter(Mandatory = $false, Position = 2, ParameterSetName = 'Positional')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object[]]$ArgumentList,
 
         [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'Named')]
@@ -4777,7 +4777,7 @@ function Get-PEFileArchitecture
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Systemn.Boolean]$ContinueOnError = $true,
+        [System.Nullable[Systemn.Boolean]]$ContinueOnError = $true,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
@@ -4934,11 +4934,11 @@ function New-ZipFile
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DestinationArchiveDirectoryPath,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DestinationArchiveFileName,
 
         [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'SourceDirectoryPath')]
@@ -4957,7 +4957,7 @@ function New-ZipFile
 
         [Parameter(Mandatory = $false, Position = 5)]
         [ValidateNotNullOrEmpty()]
-        [System.Boolean]$ContinueOnError = $true
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true
     )
 
     # Set strict mode to the highest within this function's scope.
@@ -5024,7 +5024,7 @@ function Set-PinnedApplication
         [System.String]$Action,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath
     )
 
@@ -5048,7 +5048,7 @@ function Write-FunctionHeaderOrFooter
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$CmdletName,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Header')]

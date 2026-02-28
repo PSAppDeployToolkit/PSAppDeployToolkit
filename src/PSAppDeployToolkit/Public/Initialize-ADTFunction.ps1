@@ -66,11 +66,11 @@ function Initialize-ADTFunction
         param
         (
             [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
+            [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
             [System.String]$Name,
 
             [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
+            [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
             [System.Object]$Value
         )
 

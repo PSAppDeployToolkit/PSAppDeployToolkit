@@ -55,7 +55,7 @@ function Remove-ADTEdgeExtension
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ExtensionID
     )
 

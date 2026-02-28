@@ -14,7 +14,7 @@ function Private:Unblock-ADTAppExecutionInternal
         [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'TaskName')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$TaskName
     )
 

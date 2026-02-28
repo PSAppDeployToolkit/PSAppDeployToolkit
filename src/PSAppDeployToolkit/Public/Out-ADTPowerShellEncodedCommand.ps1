@@ -48,7 +48,7 @@ function Out-ADTPowerShellEncodedCommand
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Command
     )
 

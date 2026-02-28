@@ -11,7 +11,7 @@ function Private:Invoke-ADTServiceAndDependencyOperation
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name,
 
         [Parameter(Mandatory = $true)]

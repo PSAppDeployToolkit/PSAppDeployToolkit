@@ -63,7 +63,7 @@ function Set-ADTIniValue
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]

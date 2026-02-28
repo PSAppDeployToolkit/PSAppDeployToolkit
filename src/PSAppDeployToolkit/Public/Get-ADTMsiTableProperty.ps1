@@ -97,19 +97,19 @@ function Get-ADTMsiTableProperty
         [System.String[]]$TransformPath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = 'MSI file: "Property"; MSP file: "MsiPatchMetadata"')]
         [System.String]$Table = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'MSI file: 1; MSP file: 2')]
-        [System.Int32]$TablePropertyNameColumnNum,
+        [System.Nullable[System.Int32]]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'MSI file: 2; MSP file: 3')]
-        [System.Int32]$TablePropertyValueColumnNum,
+        [System.Nullable[System.Int32]]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation

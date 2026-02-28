@@ -200,27 +200,27 @@ function Start-ADTMsiProcessAsUser
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = 'Install (Normal): (Get-ADTConfig).MSI.InstallParams; Install (Silent): (Get-ADTConfig).MSI.SilentParams; Uninstall (Normal): (Get-ADTConfig).MSI.UninstallParams; Uninstall (Silent): (Get-ADTConfig).MSI.SilentParams')]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Transforms,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Patches,
 
         [Parameter(Mandatory = $false)]
@@ -239,7 +239,7 @@ function Start-ADTMsiProcessAsUser
         [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -285,7 +285,7 @@ function Start-ADTMsiProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'ProductCode')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
         [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]

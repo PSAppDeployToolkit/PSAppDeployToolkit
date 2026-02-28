@@ -89,17 +89,17 @@ function Get-ADTRegistryKey
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Key')]
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]

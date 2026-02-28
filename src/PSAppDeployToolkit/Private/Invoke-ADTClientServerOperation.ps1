@@ -89,11 +89,11 @@ function Private:Invoke-ADTClientServerOperation
         [PSADT.UserInterface.DialogStyle]$DialogStyle,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ProgressMessage = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ProgressDetailMessage = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
@@ -107,11 +107,11 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Variable,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
@@ -131,7 +131,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Options,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]

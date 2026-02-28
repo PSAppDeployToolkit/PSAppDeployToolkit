@@ -49,7 +49,7 @@ function New-ADTFolder
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Path', 'PSPath')]
         [System.String]$LiteralPath
     )

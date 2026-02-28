@@ -88,16 +88,16 @@ function Copy-ADTFile
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]

@@ -131,14 +131,14 @@ function Show-ADTInstallationPrompt
         [System.Management.Automation.SwitchParameter]$RequestInput,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_DefaultValue')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DefaultValue,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog_SecureInput')]
         [System.Management.Automation.SwitchParameter]$SecureInput,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
@@ -146,15 +146,15 @@ function Show-ADTInstallationPrompt
         [PSADT.UserInterface.DialogMessageAlignment]$MessageAlignment = [PSADT.UserInterface.DialogMessageAlignment]::Center,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -162,7 +162,7 @@ function Show-ADTInstallationPrompt
         [PSADT.UserInterface.DialogSystemIcon]$Icon,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ListItems,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowListSelectionDialog')]
@@ -209,13 +209,13 @@ function Show-ADTInstallationPrompt
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "Title of the prompt. Optionally used to override the active DeploymentSession's `InstallTitle` value." }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
         $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Subtitle', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "Subtitle of the prompt. Optionally used to override the subtitle defined in the `strings.psd1` file." }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(

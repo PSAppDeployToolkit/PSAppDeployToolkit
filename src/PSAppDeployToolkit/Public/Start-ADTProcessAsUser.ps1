@@ -176,18 +176,18 @@ function Start-ADTProcessAsUser
         [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -227,7 +227,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$StandardInput,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
@@ -305,7 +305,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
         [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$IgnoreExitCodes,
 

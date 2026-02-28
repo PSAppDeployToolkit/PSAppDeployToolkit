@@ -53,7 +53,7 @@ function New-ADTLogFileName
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Discriminator,
 
         [Parameter(Mandatory = $true)]

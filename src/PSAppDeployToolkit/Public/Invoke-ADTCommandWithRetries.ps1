@@ -83,7 +83,7 @@ function Invoke-ADTCommandWithRetries
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Command,
 
         [Parameter(Mandatory = $false)]
@@ -121,7 +121,7 @@ function Invoke-ADTCommandWithRetries
         [System.TimeSpan]$MaximumElapsedTime,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Collections.Generic.IReadOnlyList[System.Object]]$Parameters
     )
 

@@ -114,7 +114,7 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -147,7 +147,7 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Locale = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -179,14 +179,14 @@ function Set-ADTActiveSetup
         $paramDictionary.Add('Key', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Key', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Name of the registry key for the Active Setup entry. Defaults to active session InstallName.' }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
         $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Description', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Defaults to active session InstallName.'; ParameterSetName = 'Create' }
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Defaults to active session InstallName.'; ParameterSetName = 'CreateNoExecute' }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
 
@@ -234,11 +234,11 @@ function Set-ADTActiveSetup
             param
             (
                 [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$HKLMKey,
 
                 [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$HKCUKey,
 
                 [Parameter(Mandatory = $false)]
@@ -254,7 +254,7 @@ function Set-ADTActiveSetup
                 param
                 (
                     [Parameter(Mandatory = $true)]
-                    [ValidateNotNullOrEmpty()]
+                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                     [System.String]$InputObject
                 )
 
@@ -434,7 +434,7 @@ function Set-ADTActiveSetup
             param
             (
                 [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$RegPath,
 
                 [Parameter(Mandatory = $false)]
@@ -442,11 +442,11 @@ function Set-ADTActiveSetup
                 [System.Security.Principal.SecurityIdentifier]$SID,
 
                 [Parameter(Mandatory = $false)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$Version = [System.Management.Automation.Language.NullString]::get_Value(),
 
                 [Parameter(Mandatory = $false)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$Locale = [System.Management.Automation.Language.NullString]::get_Value(),
 
                 [Parameter(Mandatory = $false)]

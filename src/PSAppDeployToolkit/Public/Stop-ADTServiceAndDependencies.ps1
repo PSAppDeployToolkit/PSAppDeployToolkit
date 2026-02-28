@@ -72,7 +72,7 @@ function Stop-ADTServiceAndDependencies
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Service')]
         [System.String]$Name,
 

@@ -74,12 +74,12 @@ function Remove-ADTFileFromUserProfiles
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
@@ -87,7 +87,7 @@ function Remove-ADTFileFromUserProfiles
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false)]

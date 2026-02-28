@@ -81,16 +81,16 @@ function Send-ADTKeys
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'WindowTitle')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WindowTitle,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
-        [System.IntPtr]$WindowHandle,
+        [System.Nullable[System.IntPtr]]$WindowHandle,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WindowTitle')]
         [Parameter(Mandatory = $true, ParameterSetName = 'WindowHandle')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Keys,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]

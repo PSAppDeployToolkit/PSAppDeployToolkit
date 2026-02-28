@@ -102,7 +102,7 @@ function Get-ADTApplication
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Name,
 
         [Parameter(Mandatory = $false)]

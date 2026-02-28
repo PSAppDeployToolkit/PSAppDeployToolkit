@@ -87,7 +87,7 @@ function Get-ADTWindowTitle
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$WindowTitle,
 
         [Parameter(Mandatory = $false)]
@@ -95,7 +95,7 @@ function Get-ADTWindowTitle
         [System.IntPtr[]]$WindowHandle,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ParentProcess,
 
         [Parameter(Mandatory = $false)]

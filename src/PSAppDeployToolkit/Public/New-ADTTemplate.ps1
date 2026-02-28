@@ -67,11 +67,11 @@ function New-ADTTemplate
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Destination = $ExecutionContext.get_SessionState().get_Path().get_CurrentLocation().get_Path(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = "PSAppDeployToolkit_<ModuleVersion>")]
         [System.String]$Name = "$($MyInvocation.get_MyCommand().get_Module().get_Name())_$($MyInvocation.get_MyCommand().get_Module().get_Version())",
 

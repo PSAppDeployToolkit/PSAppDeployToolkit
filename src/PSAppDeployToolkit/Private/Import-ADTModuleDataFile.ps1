@@ -25,7 +25,7 @@ function Private:Import-ADTModuleDataFile
         [System.String[]]$BaseDirectory,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$FileName,
 
         [Parameter(Mandatory = $false)]

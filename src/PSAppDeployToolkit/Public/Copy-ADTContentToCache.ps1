@@ -59,7 +59,7 @@ function Copy-ADTContentToCache
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Path', 'PSPath')]
         [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).get_InstallName())"
     )

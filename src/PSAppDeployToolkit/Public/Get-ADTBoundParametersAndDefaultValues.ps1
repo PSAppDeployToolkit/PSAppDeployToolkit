@@ -67,15 +67,15 @@ function Get-ADTBoundParametersAndDefaultValues
         [System.Management.Automation.InvocationInfo]$Invocation,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$ParameterSetName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$HelpMessage = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Exclude,
 
         [Parameter(Mandatory = $false)]
@@ -100,11 +100,11 @@ function Get-ADTBoundParametersAndDefaultValues
                 [System.Management.Automation.Language.ParameterAst]$Parameter,
 
                 [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$Argument,
 
                 [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.String]$Value
             )
 

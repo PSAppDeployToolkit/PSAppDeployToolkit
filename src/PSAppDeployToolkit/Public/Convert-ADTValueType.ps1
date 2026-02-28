@@ -51,7 +51,7 @@ function Convert-ADTValueType
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Int64]$Value,
+        [System.Nullable[System.Int64]]$Value,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

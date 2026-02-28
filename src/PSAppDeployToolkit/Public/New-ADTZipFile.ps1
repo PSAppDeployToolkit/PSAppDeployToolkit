@@ -65,18 +65,18 @@ function New-ADTZipFile
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DestinationPath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Path')]

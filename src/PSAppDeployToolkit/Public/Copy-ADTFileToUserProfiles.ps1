@@ -105,16 +105,16 @@ function Copy-ADTFileToUserProfiles
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'CalculatedProfiles')]
     param (
         [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'Path')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'LiteralPath', ValueFromPipeline = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Destination = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -142,7 +142,7 @@ function Copy-ADTFileToUserProfiles
         [PSADT.Types.UserProfileInfo[]]$UserProfiles,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]

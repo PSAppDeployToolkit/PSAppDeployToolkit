@@ -51,15 +51,15 @@ function Get-ADTObjectProperty
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$InputObject,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$PropertyName,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object[]]$ArgumentList
     )
 

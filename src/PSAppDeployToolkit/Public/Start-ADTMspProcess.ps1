@@ -126,7 +126,7 @@ function Start-ADTMspProcess
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
@@ -155,7 +155,7 @@ function Start-ADTMspProcess
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
@@ -178,7 +178,7 @@ function Start-ADTMspProcess
 
         [Parameter(Mandatory = $false)]
         [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]

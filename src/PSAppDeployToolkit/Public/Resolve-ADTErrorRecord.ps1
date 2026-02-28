@@ -82,7 +82,7 @@ function Resolve-ADTErrorRecord
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Property = ('Message', 'InnerException', 'FullyQualifiedErrorId', 'ScriptStackTrace', 'TargetObject', 'PositionMessage'),
 
@@ -112,7 +112,7 @@ function Resolve-ADTErrorRecord
             param
             (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-                [ValidateNotNullOrEmpty()]
+                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
                 [System.Object]$InputObject
             )
 

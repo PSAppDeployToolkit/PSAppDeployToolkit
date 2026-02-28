@@ -63,7 +63,7 @@ function Convert-ADTRegistryPath
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]

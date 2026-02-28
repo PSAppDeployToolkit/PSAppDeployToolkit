@@ -191,27 +191,27 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppVendor = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppVersion = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppArch = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppLang = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppRevision = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
@@ -223,19 +223,19 @@ function Open-ADTSession
         [System.DateTime]$AppScriptDate,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$InstallName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$InstallTitle = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DeployAppScriptFriendlyName = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
@@ -304,15 +304,15 @@ function Open-ADTSession
         [System.String]$DirSupportFiles = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DefaultMsiFile = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$DefaultMstFile = [System.Management.Automation.Language.NullString]::get_Value(),
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$DefaultMspFiles,
 
         [Parameter(Mandatory = $false)]
