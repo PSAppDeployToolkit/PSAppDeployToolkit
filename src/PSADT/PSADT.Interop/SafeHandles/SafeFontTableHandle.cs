@@ -22,7 +22,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="context">A pointer to the native font table context to be managed by the handle.</param>
         /// <param name="ownsHandle">true to indicate that the handle is responsible for releasing the native resource; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if fontFace is null.</exception>
-        internal SafeFontTableHandle(IDWriteFontFace fontFace, IntPtr context, bool ownsHandle) : base(ownsHandle)
+        internal SafeFontTableHandle(IDWriteFontFace fontFace, nint context, bool ownsHandle) : base(ownsHandle)
         {
             FontFace = fontFace ?? throw new ArgumentNullException(nameof(fontFace));
             SetHandle(context.ThrowIfInvalid());
