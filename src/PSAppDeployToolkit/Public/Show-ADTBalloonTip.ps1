@@ -151,6 +151,11 @@ function Show-ADTBalloonTip
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
                     return
                 }
+                if (Test-ADTEspActive -InformationAction SilentlyContinue)
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is an active Enrollment Status Page (ESP) on the system."
+                    return
+                }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
                     if (!$Force)
