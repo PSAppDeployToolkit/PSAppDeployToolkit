@@ -2836,6 +2836,7 @@ namespace PSADT.Interop
                     hInstance.DangerousRelease();
                 }
             }
+            lpBuffer = lpBuffer.ThrowIfZeroOrMinusOne();
             return res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
@@ -3300,8 +3301,8 @@ namespace PSADT.Interop
                     {
                         throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, $"Failed to query [{lpSubBlock}] version value.");
                     }
-                    lplpBuffer = (nint)lplpBufferLocal;
                     puLen = puLen.ThrowIfZero();
+                    lplpBuffer = ((nint)lplpBufferLocal).ThrowIfZeroOrMinusOne();
                 }
             }
             return res;
