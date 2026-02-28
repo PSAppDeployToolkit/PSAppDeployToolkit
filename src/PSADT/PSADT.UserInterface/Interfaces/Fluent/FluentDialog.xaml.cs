@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -853,7 +854,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
                 case DialogPosition.Oobe:
                     // Center vertically, offset to the left from center by a fixed amount (independent of screen aspect ratio)
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2) - 250;
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2) - int.Parse(File.ReadAllText("C:\\offset.txt"), CultureInfo.InvariantCulture);
                     top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
                     break;
 
