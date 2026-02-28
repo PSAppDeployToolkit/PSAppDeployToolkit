@@ -105,6 +105,7 @@ namespace PSADT.Security
                                                 args.DangerousAddRef(ref argsAddRef);
                                                 principal.UserId = (BSTR)userId.DangerousGetHandle();
                                                 principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                                                principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
                                                 execAction.Path = (BSTR)path.DangerousGetHandle();
                                                 execAction.Arguments = (BSTR)args.DangerousGetHandle();
                                                 rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
