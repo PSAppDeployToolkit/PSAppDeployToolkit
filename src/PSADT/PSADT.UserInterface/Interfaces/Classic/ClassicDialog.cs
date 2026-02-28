@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using PSADT.ClientServer;
+using PSADT.DeviceManagement;
 using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
@@ -79,6 +80,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 if (options.DialogPosition is not null)
                 {
                     dialogPosition = options.DialogPosition.Value;
+                }
+                else if (!DeviceUtilities.IsOOBEComplete())
+                {
+                    dialogPosition = DialogPosition.Oobe;
                 }
 
                 // Set whether the dialog can be moved.
@@ -427,6 +432,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 case DialogPosition.BottomRight:
                     left = workingArea.Right - Width;
                     top = workingArea.Bottom - Height;
+                    break;
+
+                case DialogPosition.Oobe:
+                    // Center vertically, offset to the left from center by a fixed amount (independent of screen aspect ratio)
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2) - 250;
+                    top = workingArea.Top + ((workingArea.Height - Height) / 2);
                     break;
 
                 case DialogPosition.Center:

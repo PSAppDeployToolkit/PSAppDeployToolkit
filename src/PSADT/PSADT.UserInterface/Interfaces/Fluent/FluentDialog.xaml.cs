@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using PSADT.AccountManagement;
+using PSADT.DeviceManagement;
 using PSADT.ClientServer;
 using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
@@ -88,6 +89,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (options.DialogPosition is not null)
             {
                 _dialogPosition = options.DialogPosition.Value;
+            }
+            else if (!DeviceUtilities.IsOOBEComplete())
+            {
+                _dialogPosition = DialogPosition.Oobe;
             }
             if (options.DialogAllowMove is not null)
             {
@@ -844,6 +849,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     // Center horizontally, align to bottom but not to the bottom of the screen
                     left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
                     top = workingArea.Top + ((workingArea.Height - ActualHeight) * (5.0 / 6.0));
+                    break;
+
+                case DialogPosition.Oobe:
+                    // Center vertically, offset to the left from center by a fixed amount (independent of screen aspect ratio)
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2) - 250;
+                    top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
                     break;
 
                 case DialogPosition.BottomRight:

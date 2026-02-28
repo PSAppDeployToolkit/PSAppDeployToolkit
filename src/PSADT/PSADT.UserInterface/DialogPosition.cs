@@ -54,5 +54,11 @@
         /// Represents the bottom-middle area of the screen, half way between the bottom and center.
         /// </summary>
         BottomCenter,
+
+        /// <summary>
+        /// Represents a center-left position designed for OOBE (Out Of Box Experience) screens.
+        /// The dialog is vertically centered and horizontally offset to the left from the center of the screen.
+        /// </summary>
+        Oobe,
     }
 }
