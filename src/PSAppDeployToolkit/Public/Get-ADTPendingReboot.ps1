@@ -104,7 +104,7 @@ function Get-ADTPendingReboot
                         if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace root/ccm/ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending -Verbose:$false).ReturnValue -ne 0)
                         {
                             $naerParams = @{
-                                Exception = [System.InvalidOperationException]::new("The 'DetermineIfRebootPending' method of 'root/ccm/ClientSDK/CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)].")
+                                Exception = [System.Runtime.InteropServices.ExternalException]::new("The 'DetermineIfRebootPending' method of 'root/ccm/ClientSDK/CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)].", $SCCMClientRebootStatus.ReturnValue)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'DetermineIfRebootPendingInvalidReturn'
                                 TargetObject = $SCCMClientRebootStatus

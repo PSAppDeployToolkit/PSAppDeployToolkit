@@ -620,7 +620,7 @@ function Start-ADTProcess
             if (!$adtSession)
             {
                 $naerParams = @{
-                    Exception = [System.InvalidOperationException]::new("The function [Start-ADTProcess] attempted to set a session exit code, but no deployment session is active.")
+                    Exception = [System.InvalidProgramException]::new("The function [Start-ADTProcess] attempted to set a session exit code, but no deployment session is active.")
                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                     ErrorId = 'NoActiveAdtDeploymentSession'
                     TargetObject = $ExitCode
@@ -631,7 +631,7 @@ function Start-ADTProcess
             if (!$canSetExitCode)
             {
                 $naerParams = @{
-                    Exception = [System.InvalidOperationException]::new("The function [Start-ADTProcess] is attempting to set a session exit code when it shouldn't.")
+                    Exception = [System.InvalidProgramException]::new("The function [Start-ADTProcess] is attempting to set a session exit code when it shouldn't.")
                     Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                     ErrorId = 'SetAdtDeploymentSessionExitCodeError'
                     TargetObject = $ExitCode
@@ -817,7 +817,7 @@ function Start-ADTProcess
                     if (!$UseShellExecute)
                     {
                         $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("The launching of the process returned a null result.")
+                            Exception = [System.InvalidProgramException]::new("The launching of the process returned a null result.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'ProcessExecutionNullReturn'
                             TargetObject = $execution

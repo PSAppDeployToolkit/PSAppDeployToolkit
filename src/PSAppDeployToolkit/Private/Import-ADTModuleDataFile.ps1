@@ -78,7 +78,7 @@ function Private:Import-ADTModuleDataFile
     if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $moduleDirectory))
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The module's default $FileName file has been modified from its released state.")
+            Exception = [System.Security.Cryptography.CryptographicException]::new("The module's default $FileName file has been modified from its released state.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'ADTDataFileSignatureError'
             TargetObject = $badFiles
@@ -96,8 +96,8 @@ function Private:Import-ADTModuleDataFile
     if (!$importedData.get_Count())
     {
         $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The importation of the module's default $FileName file returned a null or empty result.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            Exception = [System.InvalidProgramException]::new("The importation of the module's default $FileName file returned a null or empty result.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
             ErrorId = 'ADTDataFileImportFailure'
             TargetObject = Join-Path -Path $PSBoundParameters.BaseDirectory -ChildPath $FileName
             RecommendedAction = "Please ensure that this module is not corrupt or missing files, then try again."

@@ -89,7 +89,7 @@ function Invoke-ADTSCCMTask
                 if (($null -ne $result.ReturnValue) -and ($result.ReturnValue -ne 0))
                 {
                     $naerParams = @{
-                        Exception = [System.InvalidOperationException]::new("The TriggerSchedule method invocation returned an error code of [$($result.ReturnValue)].")
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new("The TriggerSchedule method invocation returned an error code of [$($result.ReturnValue)].", $result.ReturnValue)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'TriggerScheduleMethodInvalidResult'
                         TargetObject = $result

@@ -220,7 +220,7 @@ function Uninstall-ADTApplication
             if (!($PSBoundParameters.get_Keys() -match '^(Name|ProductCode|FilterScript)$'))
             {
                 $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
+                    Exception = [System.InvalidOperationException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId = 'NullParameterValue'
                     RecommendedAction = "Review the supplied parameter values and try again."

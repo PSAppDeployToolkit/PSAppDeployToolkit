@@ -129,7 +129,7 @@ function Add-ADTFont
                         {
                             # Whatever we have isn't valid. Throw and let the caller handle it.
                             $naerParams = @{
-                                Exception = [System.ArgumentException]::new("The specified Path of [$resolvedPath] could not be found.")
+                                Exception = [System.IO.IOException]::new("The specified Path of [$resolvedPath] could not be found.")
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                                 ErrorId = 'PathInvalidError'
                                 TargetObject = $resolvedPath

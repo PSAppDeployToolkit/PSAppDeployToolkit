@@ -151,7 +151,7 @@ function Install-ADTSCCMSoftwareUpdates
                 if ($result.get_ReturnValue() -ne 0)
                 {
                     $naerParams = @{
-                        Exception = [System.InvalidOperationException]::new("The InstallUpdates method invocation returned an error code of [$($result.get_ReturnValue())].")
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new("The InstallUpdates method invocation returned an error code of [$($result.get_ReturnValue())].", $result.get_ReturnValue())
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'InstallUpdatesMethodInvalidResult'
                         TargetObject = $result

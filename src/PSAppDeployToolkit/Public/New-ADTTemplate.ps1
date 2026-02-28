@@ -125,7 +125,7 @@ function New-ADTTemplate
                 if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $Script:PSScriptRoot))
                 {
                     $naerParams = @{
-                        Exception = [System.InvalidOperationException]::new("One or more files within this module have invalid digital signatures.")
+                        Exception = [System.Security.Cryptography.CryptographicException]::new("One or more files within this module have invalid digital signatures.")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidData
                         ErrorId = 'ADTDataFileSignatureError'
                         TargetObject = $badFiles

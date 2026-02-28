@@ -384,7 +384,7 @@ function Private:Invoke-ADTClientServerOperation
                     default
                     {
                         $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("The requested dialog type [$DialogType] is not supported in standalone mode.")
+                            Exception = [System.ArgumentException]::new("The requested dialog type [$DialogType] is not supported in standalone mode.", 'DialogType')
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                             ErrorId = "$($PSCmdlet.get_ParameterSetName())Error"
                             TargetObject = $PSBoundParameters

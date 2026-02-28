@@ -522,7 +522,7 @@ function Start-ADTMsiProcess
                             if (($installedApps | Measure-Object).get_Count() -gt 1)
                             {
                                 $naerParams = @{
-                                    Exception = [System.InvalidOperationException]::new("More than one InstalledApplication object was found for product code [$msiProductCode].")
+                                    Exception = [System.InvalidProgramException]::new("More than one InstalledApplication object was found for product code [$msiProductCode].")
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                     ErrorId = 'MultipleInstalledAppsFound'
                                     TargetObject = $installedApps
@@ -552,7 +552,7 @@ function Start-ADTMsiProcess
                             if (($installedApps | Measure-Object).get_Count() -gt 1)
                             {
                                 $naerParams = @{
-                                    Exception = [System.InvalidOperationException]::new("More than one InstalledApplication object was found for MSI application [$($msiPropertyTable.ProductName)] with version [$($msiPropertyTable.ProductVersion)].")
+                                    Exception = [System.InvalidProgramException]::new("More than one InstalledApplication object was found for MSI application [$($msiPropertyTable.ProductName)] with version [$($msiPropertyTable.ProductVersion)].")
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                     ErrorId = 'MultipleInstalledAppsFound'
                                     TargetObject = $installedApps

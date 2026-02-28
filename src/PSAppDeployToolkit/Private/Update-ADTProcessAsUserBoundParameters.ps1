@@ -28,7 +28,7 @@ function Private:Update-ADTProcessAsUserBoundParameters
             try
             {
                 $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new("Could not find a valid logged on user session$(if ($Cmdlet.get_MyInvocation().get_BoundParameters().ContainsKey('Username')) { " for [$($Cmdlet.get_MyInvocation().get_BoundParameters().Username)]" }).", $null)
+                    Exception = [System.InvalidOperationException]::new("Could not find a valid logged on user session$(if ($Cmdlet.get_MyInvocation().get_BoundParameters().ContainsKey('Username')) { " for [$($Cmdlet.get_MyInvocation().get_BoundParameters().Username)]" }).")
                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId = 'NoActiveUserError'
                     TargetObject = $(if ($Cmdlet.get_MyInvocation().get_BoundParameters().ContainsKey('Username')) { $Cmdlet.get_MyInvocation().get_BoundParameters().Username })

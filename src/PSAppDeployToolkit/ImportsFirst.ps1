@@ -30,7 +30,7 @@ https://psappdeploytoolkit.com
 if (!([System.Environment]::get_StackTrace().Split("`n") -like '*Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
 {
     throw [System.Management.Automation.ErrorRecord]::new(
-        [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply them."),
+        [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for any module that provides such a file."),
         'ModuleImportError',
         [System.Management.Automation.ErrorCategory]::InvalidOperation,
         $MyInvocation.get_MyCommand().get_ScriptBlock().get_Module()
@@ -118,7 +118,7 @@ try
                 if (!(Get-FileHash -LiteralPath $existingAssembly.get_Location()).Hash.Equals((Get-FileHash -LiteralPath $_).Hash))
                 {
                     throw [System.Management.Automation.ErrorRecord]::new(
-                        [System.InvalidOperationException]::new("A PSAppDeployToolkit assembly of a different file hash is already loaded. Please restart PowerShell and try again."),
+                        [System.InvalidProgramException]::new("A PSAppDeployToolkit assembly of a different file hash is already loaded. Please restart PowerShell and try again."),
                         'ConflictingModuleLoaded',
                         [System.Management.Automation.ErrorCategory]::InvalidOperation,
                         $existingAssembly
@@ -131,7 +131,7 @@ try
             if ($Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).get_Status().Equals([System.Management.Automation.SignatureStatus]::Valid))
             {
                 throw [System.Management.Automation.ErrorRecord]::new(
-                    [System.InvalidOperationException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
+                    [System.Security.Cryptography.CryptographicException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
                     'ADTAssemblyFileSignatureError',
                     [System.Management.Automation.ErrorCategory]::SecurityError,
                     $badFile
