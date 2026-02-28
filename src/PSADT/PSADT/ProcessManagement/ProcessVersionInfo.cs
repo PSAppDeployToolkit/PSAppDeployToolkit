@@ -176,7 +176,8 @@ namespace PSADT.ProcessManagement
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
-            _ = NativeMethods.EnumProcessModules(processHandle, null, out uint bytesNeeded); Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
+            _ = NativeMethods.EnumProcessModules(processHandle, null, out uint bytesNeeded);
+            Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
             _ = NativeMethods.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
             ref readonly HMODULE hModule = ref moduleBuffer.AsReadOnlyStructure<HMODULE>();
             _ = NativeMethods.GetModuleInformation(processHandle, in hModule, out MODULEINFO moduleInfo);
