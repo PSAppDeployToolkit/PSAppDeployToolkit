@@ -86,8 +86,12 @@ namespace PSADT.ProcessManagement
             FilePath = filePath.StartsWith("\"") && filePath.EndsWith("\"") ? filePath.TrimStart('"').TrimEnd('"') : filePath;
 
             // Validate the file path is rooted.
-            if (!Path.IsPathRooted(FilePath) && !useShellExecute && !FilePath.StartsWith("%"))
+            if (!Path.IsPathRooted(FilePath))
             {
+                if (FilePath.StartsWith("%") && !expandEnvironmentVariables)
+                {
+                    throw new DriveNotFoundException("File paths with an environment variable must have environment variable expansion enabled.");
+                }
                 throw new DriveNotFoundException("File path must be fully qualified.");
             }
 
