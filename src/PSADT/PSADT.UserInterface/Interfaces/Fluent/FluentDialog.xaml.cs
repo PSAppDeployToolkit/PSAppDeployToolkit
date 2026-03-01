@@ -146,7 +146,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             _dialogBitmapCache = new(new Dictionary<ApplicationTheme, BitmapSource>()
             {
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
-                { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage) },
+                { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage ?? options.AppIconImage) },
             });
             ThemeManager.AddActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
             SetDialogIcon();

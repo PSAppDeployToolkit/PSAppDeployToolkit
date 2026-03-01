@@ -36,7 +36,7 @@ namespace PSADT.UserInterface.DialogOptions
             (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
             options["Subtitle"] as string ?? null!,
             options["AppIconImage"] as string ?? null!,
-            options["AppIconDarkImage"] as string ?? null!,
+            options["AppIconDarkImage"] as string,
             options["AppBannerImage"] as string ?? null!,
             options["AppTaskbarIconImage"] as string,
             options["DialogTopMost"] as bool? ?? false,
@@ -70,7 +70,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             // Confirm that the language parameter is not null before attempting to access its properties.
             if (language is null)
@@ -82,7 +82,6 @@ namespace PSADT.UserInterface.DialogOptions
             AppTitle = appTitle.ThrowIfNullOrWhiteSpace();
             Subtitle = subtitle.ThrowIfNullOrWhiteSpace();
             AppIconImage = appIconImage.ThrowIfNullOrWhiteSpace();
-            AppIconDarkImage = appIconDarkImage.ThrowIfNullOrWhiteSpace();
             AppBannerImage = appBannerImage.ThrowIfNullOrWhiteSpace();
 
             // Test that the specified image paths are valid.
@@ -90,16 +89,20 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new FileNotFoundException($"The specified AppIconImage [{AppIconImage}] cannot be found", AppIconImage);
             }
-            if (!(MiscUtilities.GetBase64StringBytes(AppIconDarkImage)?.Length > 0) && !File.Exists(AppIconDarkImage))
-            {
-                throw new FileNotFoundException($"The specified AppIconDarkImage [{AppIconDarkImage}] cannot be found", AppIconDarkImage);
-            }
             if (!(MiscUtilities.GetBase64StringBytes(AppBannerImage)?.Length > 0) && !File.Exists(AppBannerImage))
             {
                 throw new FileNotFoundException($"The specified AppBannerImage [{AppBannerImage}] cannot be found", AppBannerImage);
             }
 
             // AppTaskbarIconImage is optional, so only validate it if it has a value.
+            if (!string.IsNullOrWhiteSpace(appIconDarkImage))
+            {
+                if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage!)?.Length > 0) && !File.Exists(appIconDarkImage))
+                {
+                    throw new FileNotFoundException($"The specified AppIconDarkImage [{appIconDarkImage}] cannot be found", appIconDarkImage);
+                }
+                AppIconDarkImage = appIconDarkImage;
+            }
             if (!string.IsNullOrWhiteSpace(appTaskbarIconImage))
             {
                 if (!(MiscUtilities.GetBase64StringBytes(appTaskbarIconImage!)?.Length > 0) && !File.Exists(appTaskbarIconImage))
@@ -145,7 +148,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly string AppIconDarkImage;
+        public readonly string? AppIconDarkImage;
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.

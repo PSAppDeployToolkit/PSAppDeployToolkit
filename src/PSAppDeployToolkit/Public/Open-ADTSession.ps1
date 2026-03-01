@@ -527,7 +527,6 @@ function Open-ADTSession
                         {
                             $adtSessionProps = $adtSession.PSObject.get_Properties()
                         }
-
                         process
                         {
                             $adtSessionProps.Add([System.Management.Automation.PSNoteProperty]::new($_.get_Key(), $_.get_Value()))

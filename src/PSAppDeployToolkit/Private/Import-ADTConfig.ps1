@@ -27,7 +27,7 @@ function Private:Import-ADTConfig
             }
 
             # Skip if the value is null (some are optional).
-            if ($asset.get_Key() -eq 'TaskbarIcon' -and [System.String]::IsNullOrWhiteSpace($asset.get_Value()))
+            if (($asset.get_Key().Equals('LogoDark') -or $asset.get_Key().Equals('TaskbarIcon')) -and [System.String]::IsNullOrWhiteSpace($asset.get_Value()))
             {
                 continue
             }

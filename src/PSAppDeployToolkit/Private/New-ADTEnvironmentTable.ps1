@@ -27,7 +27,6 @@ function Private:New-ADTEnvironmentTable
             {
                 $adtEnvProps = $adtEnv.PSObject.get_Properties()
             }
-
             process
             {
                 $adtEnvProps.Add([System.Management.Automation.PSNoteProperty]::new($_.get_Key(), $_.get_Value()))

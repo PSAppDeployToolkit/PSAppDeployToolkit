@@ -157,9 +157,15 @@ function New-ADTTemplate
                 $null = New-Item -Name 'Add Setup Files Here.txt' -Path "$templatePath\Files" -ItemType File -Force
                 $null = New-Item -Name 'Add Supporting Files Here.txt' -Path "$templatePath\SupportFiles" -ItemType File -Force
 
-                # Copy in the frontend files and the assets.
+                # Copy in the frontend files.
                 Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
-                Copy-Item -LiteralPath "$Script:PSScriptRoot\Assets" -Destination $templatePath -Recurse -Force
+
+                # Export default module assets to disk.
+                $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
+                $assets = $Script:ADT.ModuleDefaults.Config.''.get_Ast().get_EndBlock().get_Statements().get_PipelineElements().get_Expression().get_KeyValuePairs().Where({ $_.get_Item1().get_Value().Equals('Assets') }).get_Item2().get_PipelineElements().get_Expression().get_KeyValuePairs()
+                [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $assets.Where({ $_.get_Item1().get_Value().Equals('Banner') }).get_Item2().get_PipelineElements().get_Expression().get_Value())))
+                [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.png", [System.Convert]::FromBase64String(($logo = $assets.Where({ $_.get_Item1().get_Value().Equals('Logo') }).get_Item2().get_PipelineElements().get_Expression().get_Value())))
+                $config = [System.Management.Automation.ScriptBlock]::Create($ADT.ModuleDefaults.Config.''.ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png'))
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
@@ -176,7 +182,7 @@ function New-ADTTemplate
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
-                Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Config.'' -LiteralPath "$templatePath\Config\config.psd1"
+                Export-ADTScriptBlockToFile -ScriptBlock $config -LiteralPath "$templatePath\Config\config.psd1"
 
                 # Remove any digital signatures from the ps*1 files.
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {

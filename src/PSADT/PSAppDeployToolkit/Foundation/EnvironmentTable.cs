@@ -238,7 +238,7 @@ namespace PSAppDeployToolkit.Foundation
                 RunAsActiveUser = RunAsActiveUser.Get(LoggedOnUserSessions);
                 if (RunAsActiveUser is not null)
                 {
-                    RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName ? new CultureInfo(localeName) : null;
+                    RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName ? new(localeName) : null;
                     RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", null) as string;
                     UserProfileName = RunAsUserProfile?.Substring(RunAsUserProfile.LastIndexOf(Path.DirectorySeparatorChar) + 1);
                 }
